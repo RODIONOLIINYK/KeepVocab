@@ -1,8 +1,8 @@
-import { driveSync } from '../services/driveSync.js?v=41';
-import { findRelevantImages } from '../services/imageSearch.js?v=41';
-import { updateWordRepetition } from '../services/srsEngine.js?v=41';
+import { driveSync } from '../services/driveSync.js?v=42';
+import { findRelevantImages } from '../services/imageSearch.js?v=42';
+import { updateWordRepetition } from '../services/srsEngine.js?v=42';
 import { escapeHtml } from '../utils/html.js';
-import { stableWordChoices } from './PracticeModes.js?v=41';
+import { stableWordChoices } from './PracticeModes.js?v=42';
 
 function shuffle(items) {
   const result = [...items];

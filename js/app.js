@@ -1,19 +1,19 @@
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=41';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=41';
+import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=42';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=42';
 import { speakWord } from './services/speechService.js';
-import { updateWordRepetition, getDueWords } from './services/srsEngine.js?v=41';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=41';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=41';
+import { updateWordRepetition, getDueWords } from './services/srsEngine.js?v=42';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=42';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=42';
 
-import { renderReviewView } from './components/ReviewView.js?v=41';
-import { renderLibraryView } from './components/LibraryView.js?v=41';
-import { renderStatsView } from './components/StatsView.js?v=41';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=41';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=41';
-import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=41';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=41';
+import { renderReviewView } from './components/ReviewView.js?v=42';
+import { renderLibraryView } from './components/LibraryView.js?v=42';
+import { renderStatsView } from './components/StatsView.js?v=42';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=42';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=42';
+import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=42';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=42';
 
 function localDateKey(date = new Date()) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');

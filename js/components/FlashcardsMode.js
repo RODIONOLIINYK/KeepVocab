@@ -1,8 +1,8 @@
 // Visual 3D Flip Flashcards Component
 
-import { driveSync } from '../services/driveSync.js?v=41';
+import { driveSync } from '../services/driveSync.js?v=42';
 import { speakWord } from '../services/speechService.js';
-import { updateWordRepetition } from '../services/srsEngine.js?v=41';
+import { updateWordRepetition } from '../services/srsEngine.js?v=42';
 
 export function renderFlashcardsMode(container, onNavigate) {
   const activeNotebook = driveSync.getActiveNotebook();

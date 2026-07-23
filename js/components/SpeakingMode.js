@@ -8,8 +8,8 @@ import {
   getLessonPlan,
   buildCoachInitiativeCue,
   buildSpeakingInstruction
-} from '../data/speakingLessons.js?v=41';
-import { GeminiLiveSession, GEMINI_KEY_STORAGE } from '../services/geminiLive.js?v=41';
+} from '../data/speakingLessons.js?v=42';
+import { GeminiLiveSession, GEMINI_KEY_STORAGE } from '../services/geminiLive.js?v=42';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
 export const COACH_SILENCE_MS = 9000;

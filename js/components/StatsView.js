@@ -1,5 +1,5 @@
-import { driveSync } from '../services/driveSync.js?v=41';
-import { getDueWords } from '../services/srsEngine.js?v=41';
+import { driveSync } from '../services/driveSync.js?v=42';
+import { getDueWords } from '../services/srsEngine.js?v=42';
 import { escapeHtml } from '../utils/html.js';
 
 function dateKey(date) {

@@ -1,6 +1,6 @@
 // Leitner Spaced Repetition System (SRS) Engine
 
-import { driveSync } from './driveSync.js?v=41';
+import { driveSync } from './driveSync.js?v=42';
 
 // Intervals in days per Leitner Box (Box 1 to 5)
 const BOX_INTERVALS = {

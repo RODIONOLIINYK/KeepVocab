@@ -19,8 +19,10 @@ const TOKEN_RESTORE_BUFFER_MS = 30_000;
 
 function getNativeDriveAuthPlugin() {
   const capacitor = globalThis.Capacitor;
-  if (capacitor?.getPlatform?.() !== 'android' || typeof capacitor.registerPlugin !== 'function') return null;
-  return capacitor.Plugins?.DriveAuth || capacitor.registerPlugin('DriveAuth');
+  if (capacitor?.getPlatform?.() !== 'android') return null;
+  if (capacitor.Plugins?.DriveAuth) return capacitor.Plugins.DriveAuth;
+  if (typeof capacitor.registerPlugin === 'function') return capacitor.registerPlugin('DriveAuth');
+  return null;
 }
 
 export function usesNativeGoogleAuthorization() {

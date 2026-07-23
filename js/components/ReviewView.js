@@ -1,6 +1,6 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=41';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=42';
 import { speakWord } from '../services/speechService.js';
-import { getDueWords, updateWordRepetition } from '../services/srsEngine.js?v=41';
+import { getDueWords, updateWordRepetition } from '../services/srsEngine.js?v=42';
 import { escapeHtml } from '../utils/html.js';
 
 function normalizeAnswer(value) {

@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import {
   DriveSyncService,
   MemoryStorage,
-  getCurrentMonthNotebookTitle
+  getCurrentMonthNotebookTitle,
+  usesNativeGoogleAuthorization
 } from '../js/services/driveSync.js';
 
 function response(payload, status = 200) {
@@ -298,11 +299,11 @@ test('the Android app authorizes Drive through the native account chooser withou
   };
   globalThis.Capacitor = {
     getPlatform: () => 'android',
-    Plugins: { DriveAuth: plugin },
-    registerPlugin: () => plugin
+    Plugins: { DriveAuth: plugin }
   };
 
   try {
+    assert.equal(usesNativeGoogleAuthorization(), true);
     const result = await service.connectGoogleDrive('');
     assert.deepEqual(calls, [{ interactive: true }]);
     assert.equal(result.email, 'android@example.com');

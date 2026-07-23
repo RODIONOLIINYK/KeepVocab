@@ -133,7 +133,7 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(component, /COACH_SILENCE_MS = 9000/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'start'\)/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'silence'\)/);
-  assert.match(serviceWorker, /SpeakingMode\.js\?v=41/);
-  assert.match(serviceWorker, /speakingLessons\.js\?v=41/);
-  assert.match(serviceWorker, /geminiLive\.js\?v=41/);
+  assert.match(serviceWorker, /SpeakingMode\.js\?v=42/);
+  assert.match(serviceWorker, /speakingLessons\.js\?v=42/);
+  assert.match(serviceWorker, /geminiLive\.js\?v=42/);
 });
