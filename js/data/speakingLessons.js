@@ -7,6 +7,8 @@ export const SPEAKING_CATEGORIES = [
   { id: 'advanced', label: 'Advanced', icon: 'fa-chart-line', tone: 'green' }
 ];
 
+export const DEFAULT_SPEAKING_LEVEL = 'B2';
+
 const lessons = [
   ['coffee-small-talk', 'Coffee shop small talk', 'everyday', 'A2', 6, 'Start and keep a friendly conversation at a coffee shop.', 'a customer', 'a friendly barista', ['Could I have…?', 'What would you recommend?', 'That sounds great.']],
   ['introduce-yourself', 'Introduce yourself naturally', 'everyday', 'A1', 5, 'Share who you are and ask simple follow-up questions.', 'a new class member', 'another learner', ['I’m originally from…', 'What about you?', 'Nice to meet you.']],
@@ -57,7 +59,7 @@ export const SPEAKING_LESSONS = lessons.map(([id, title, category, level, durati
 }));
 
 export const FREE_CONVERSATION_LESSON = {
-  id: 'free-conversation', title: 'Free conversation', category: 'social', level: 'Any', duration: 12,
+  id: 'free-conversation', title: 'Free conversation', category: 'social', level: DEFAULT_SPEAKING_LEVEL, duration: 12,
   goal: 'Build fluency in a natural conversation about a topic you choose.',
   learnerRole: 'yourself', coachRole: 'a warm and curious conversation partner',
   targetPhrases: ['Could you tell me more?', 'What I mean is…', 'Let me put it another way.'], freeConversation: true
@@ -68,12 +70,16 @@ export function getSpeakingLesson(id) {
 }
 
 export function buildSpeakingInstruction(lesson) {
+  const levelFocus = lesson.level === 'B2'
+    ? 'Use natural upper-intermediate vocabulary. Encourage the learner to explain reasons, compare options, paraphrase when stuck, and sustain answers beyond one sentence. Correct recurring grammar or word-choice errors after the learner finishes a thought.'
+    : 'Match your vocabulary, pace, and question complexity to the stated learner level.';
   return `You are Mira, KeepVocab's encouraging English speaking coach. Run a short live role-play lesson.
 Lesson: ${lesson.title}.
 Learner level: ${lesson.level}.
 Goal: ${lesson.goal}
 The learner is ${lesson.learnerRole}; you are ${lesson.coachRole}.
 Useful target phrases: ${lesson.targetPhrases.join('; ')}.
+Level focus: ${levelFocus}
 
 Speak only in English unless the learner explicitly asks for a brief translation. Begin with one short, natural line that immediately starts the scenario. Keep each turn concise so the learner speaks more than you. Ask one question at a time. Adapt your pace and vocabulary to the learner's level. If an error blocks meaning, give a gentle one-sentence correction and invite the learner to say the improved version once; otherwise do not interrupt fluency. Notice grammar, word choice, clarity, and clearly audible pronunciation issues, but never pretend to provide phoneme-level scoring. Encourage the target phrases naturally rather than forcing all of them. If the learner says they want to finish, give a concise spoken recap: one strength, one correction, and one useful phrase to remember. Never claim the session is recorded or saved remotely by KeepVocab.`;
 }

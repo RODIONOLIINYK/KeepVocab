@@ -3,9 +3,10 @@ import {
   SPEAKING_CATEGORIES,
   SPEAKING_LESSONS,
   FREE_CONVERSATION_LESSON,
+  DEFAULT_SPEAKING_LEVEL,
   getSpeakingLesson,
   buildSpeakingInstruction
-} from '../data/speakingLessons.js?v=34';
+} from '../data/speakingLessons.js?v=37';
 import { GeminiLiveSession, GEMINI_KEY_STORAGE } from '../services/geminiLive.js?v=34';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
@@ -14,10 +15,12 @@ let activeSession = null;
 let sessionTimer = null;
 
 function readProgress() {
+  const defaults = { completed: [], lastLessonId: 'rent-apartment', weeklyGoal: 5, level: DEFAULT_SPEAKING_LEVEL };
   try {
-    return JSON.parse(localStorage.getItem(PROGRESS_STORAGE) || '{"completed":[],"lastLessonId":"present-idea","weeklyGoal":5}') || {};
+    const saved = JSON.parse(localStorage.getItem(PROGRESS_STORAGE) || '{}') || {};
+    return { ...defaults, ...saved, completed: Array.isArray(saved.completed) ? saved.completed : [] };
   } catch {
-    return { completed: [], lastLessonId: 'present-idea', weeklyGoal: 5 };
+    return defaults;
   }
 }
 
@@ -55,10 +58,15 @@ function renderVoiceOrb(status = 'idle', level = 0) {
 function renderCatalog(container, onNavigate) {
   const progress = readProgress();
   const completed = new Set(progress.completed || []);
-  const lastLesson = getSpeakingLesson(progress.lastLessonId) || SPEAKING_LESSONS[14];
+  const learnerLevel = progress.level || DEFAULT_SPEAKING_LEVEL;
+  const savedLastLesson = getSpeakingLesson(progress.lastLessonId);
+  const nextLevelLesson = SPEAKING_LESSONS.find(lesson => lesson.level === learnerLevel && !completed.has(lesson.id));
+  const lastLesson = savedLastLesson?.level === learnerLevel
+    ? savedLastLesson
+    : nextLevelLesson || SPEAKING_LESSONS.find(lesson => lesson.level === learnerLevel) || SPEAKING_LESSONS[15];
   const weeklyCount = Math.min(progress.weeklyGoal || 5, completed.size);
   let categoryFilter = 'all';
-  let levelFilter = 'all';
+  let levelFilter = learnerLevel;
 
   const renderLessons = () => {
     const filtered = SPEAKING_LESSONS.filter(lesson => (categoryFilter === 'all' || lesson.category === categoryFilter) && (levelFilter === 'all' || lesson.level === levelFilter));
@@ -81,9 +89,9 @@ function renderCatalog(container, onNavigate) {
   };
 
   container.innerHTML = `<section class="speaking-hub full-view-stack" aria-labelledby="speaking-heading">
-    <div class="speaking-title-row"><div><span class="eyebrow"><i class="fa-solid fa-microphone-lines"></i> Live conversation practice</span><h1 id="speaking-heading">AI Speaking</h1><p>Real conversations. Clear goals. Feedback you can use.</p></div><button class="speaking-settings-btn" id="speaking-settings" title="Gemini connection settings"><i class="fa-solid fa-key"></i><span>Gemini setup</span></button></div>
+    <div class="speaking-title-row"><div><span class="eyebrow"><i class="fa-solid fa-microphone-lines"></i> Live conversation practice · ${escapeHtml(learnerLevel)}</span><h1 id="speaking-heading">AI Speaking</h1><p>Upper-intermediate conversations with useful, focused feedback.</p></div><button class="speaking-settings-btn" id="speaking-settings" title="Gemini connection settings"><i class="fa-solid fa-key"></i><span>Gemini setup</span></button></div>
     <section class="speaking-hero">
-      <div class="speaking-hero-copy"><span class="hero-kicker">Your next lesson</span><h2>Speak English with confidence</h2><p>Practice a useful situation, get gentle corrections, and leave with one clear takeaway.</p>
+      <div class="speaking-hero-copy"><span class="hero-kicker">Your ${escapeHtml(learnerLevel)} pathway</span><h2>Speak with confidence and precision</h2><p>Explain ideas in detail, handle nuanced situations, and turn recurring mistakes into useful habits.</p>
         <div class="weekly-progress"><div><span>Weekly progress</span><strong>${weeklyCount} of ${progress.weeklyGoal || 5} lessons</strong></div><i><b style="width:${Math.round(weeklyCount / Math.max(1, progress.weeklyGoal || 5) * 100)}%"></b></i></div>
         <div class="hero-action-row"><button class="btn-green-solid hero-continue" id="speaking-continue">${completed.has(lastLesson.id) ? 'Practice again' : 'Continue lesson'} <i class="fa-solid fa-arrow-right"></i></button><div><strong>${escapeHtml(lastLesson.title)}</strong><span>${lastLesson.level} · ${lastLesson.duration} min</span></div></div>
       </div>
@@ -91,11 +99,11 @@ function renderCatalog(container, onNavigate) {
     </section>
     <div class="speaking-filter-row" aria-label="Speaking lesson filters">
       <div class="speaking-category-tabs"><button class="active" data-speaking-category="all"><i class="fa-solid fa-grip"></i> All topics</button>${SPEAKING_CATEGORIES.map(category => `<button data-speaking-category="${category.id}"><i class="fa-solid ${category.icon}"></i> ${escapeHtml(category.label)}</button>`).join('')}</div>
-      <label class="speaking-level-filter">Level <select id="speaking-level"><option value="all">All levels</option>${['A1', 'A2', 'B1', 'B2', 'C1'].map(level => `<option>${level}</option>`).join('')}</select></label>
+      <label class="speaking-level-filter">Your level <select id="speaking-level"><option value="all">All levels</option>${['A1', 'A2', 'B1', 'B2', 'C1'].map(level => `<option${level === levelFilter ? ' selected' : ''}>${level}</option>`).join('')}</select></label>
     </div>
-    <div class="speaking-curriculum-heading"><div><h2>Choose a lesson</h2><p>Six topic tracks, from first conversations to confident professional speaking.</p></div><span id="speaking-result-count"></span></div>
+    <div class="speaking-curriculum-heading"><div><h2>Choose a ${escapeHtml(learnerLevel)} lesson</h2><p>Practise longer answers, precise vocabulary, negotiation, discussion, and natural self-correction.</p></div><span id="speaking-result-count"></span></div>
     <div class="speaking-lesson-grid" id="speaking-lesson-grid"></div>
-    <section class="free-conversation-card"><div class="free-chat-icon"><i class="fa-solid fa-comment-dots"></i><i class="fa-solid fa-comment"></i></div><div><span>Open practice</span><h2>Free conversation</h2><p>Choose any topic and let Mira adapt the conversation to you.</p><div class="free-topic-pills"><span>Talk about your day</span><span>Hobbies</span><span>Future plans</span><span>Surprise me</span></div></div><button id="start-free-conversation">Start free chat <i class="fa-solid fa-wave-square"></i></button></section>
+    <section class="free-conversation-card"><div class="free-chat-icon"><i class="fa-solid fa-comment-dots"></i><i class="fa-solid fa-comment"></i></div><div><span>${escapeHtml(learnerLevel)} open practice</span><h2>Free conversation</h2><p>Choose any topic; Mira will expect detailed answers, follow-up reasoning, and natural paraphrasing.</p><div class="free-topic-pills"><span>Current events</span><span>Work and study</span><span>Culture</span><span>Surprise me</span></div></div><button id="start-free-conversation">Start free chat <i class="fa-solid fa-wave-square"></i></button></section>
     <aside class="speaking-privacy-note"><i class="fa-solid fa-shield-halved"></i><div><strong>Your privacy matters</strong><p>Gemini connects only after you press Start. Your key and speaking progress stay in this browser and are never copied to Google Drive.</p></div></aside>
   </section>`;
 
@@ -107,7 +115,16 @@ function renderCatalog(container, onNavigate) {
     container.querySelectorAll('[data-speaking-category]').forEach(item => item.classList.toggle('active', item === button));
     renderLessons();
   }));
-  container.querySelector('#speaking-level').addEventListener('change', event => { levelFilter = event.target.value; renderLessons(); });
+  container.querySelector('#speaking-level').addEventListener('change', event => {
+    levelFilter = event.target.value;
+    if (levelFilter === 'all') return renderLessons();
+    progress.level = levelFilter;
+    progress.lastLessonId = SPEAKING_LESSONS.find(lesson => lesson.level === levelFilter && !completed.has(lesson.id))?.id
+      || SPEAKING_LESSONS.find(lesson => lesson.level === levelFilter)?.id
+      || progress.lastLessonId;
+    writeProgress(progress);
+    renderCatalog(container, onNavigate);
+  });
   renderLessons();
 }
 

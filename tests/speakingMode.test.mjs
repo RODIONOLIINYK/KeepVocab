@@ -7,6 +7,7 @@ import {
   SPEAKING_CATEGORIES,
   SPEAKING_LESSONS,
   FREE_CONVERSATION_LESSON,
+  DEFAULT_SPEAKING_LEVEL,
   buildSpeakingInstruction
 } from '../js/data/speakingLessons.js';
 import {
@@ -31,6 +32,15 @@ test('the speaking curriculum contains six complete tracks and many distinct les
     assert.ok(lesson.targetPhrases.length >= 3);
     assert.ok(lesson.duration >= 5 && lesson.duration <= 12);
   }
+});
+
+test('the speaking experience defaults to the learner B2 profile', () => {
+  assert.equal(DEFAULT_SPEAKING_LEVEL, 'B2');
+  assert.equal(FREE_CONVERSATION_LESSON.level, 'B2');
+  assert.ok(SPEAKING_LESSONS.filter(lesson => lesson.level === 'B2').length >= 8);
+  const component = readFileSync(resolve(projectRoot, 'js/components/SpeakingMode.js'), 'utf8');
+  assert.match(component, /lastLessonId: 'rent-apartment'/);
+  assert.match(component, /let levelFilter = learnerLevel/);
 });
 
 test('lesson coaching instructions set a concrete role, level, correction style, and honest scoring boundary', () => {
@@ -80,7 +90,7 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(app, /renderSpeakingMode/);
   assert.match(component, /Gemini connects only after you press Start/);
   assert.match(component, /never copied to Google Drive/);
-  assert.match(serviceWorker, /SpeakingMode\.js\?v=34/);
-  assert.match(serviceWorker, /speakingLessons\.js\?v=34/);
+  assert.match(serviceWorker, /SpeakingMode\.js\?v=37/);
+  assert.match(serviceWorker, /speakingLessons\.js\?v=37/);
   assert.match(serviceWorker, /geminiLive\.js\?v=34/);
 });
