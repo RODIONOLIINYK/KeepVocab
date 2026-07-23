@@ -1166,9 +1166,6 @@ body {
 
 @media (max-width: 720px) {
   .speaking-view .app-container { margin-top:14px; }
-  .speaking-view .nav-links { overflow-x:auto; justify-content:flex-start; scrollbar-width:none; }
-  .speaking-view .nav-links::-webkit-scrollbar { display:none; }
-  .speaking-view .nav-link-item { flex:0 0 auto; padding:7px 10px; }
   .speaking-title-row { align-items:center; }.speaking-title-row h1 { font-size:1.85rem; }.speaking-title-row > div > p { font-size:.78rem; }.speaking-settings-btn span { display:none; }.speaking-settings-btn { width:42px; height:42px; justify-content:center; padding:0; }
   .speaking-hero { min-height:0; grid-template-columns:1fr; }.speaking-hero-copy { padding:22px; }.speaking-hero h2 { font-size:1.75rem; }.speaking-hero-copy > p { font-size:.82rem; }.speaking-hero-visual { min-height:210px; grid-row:1; }.speaking-hero-visual .speaking-orb { transform:scale(.86); }.floating-word.one{left:7%;top:18%}.floating-word.two{right:5%;top:23%}.floating-word.three{left:12%;bottom:15%}.weekly-progress{margin-top:18px}.hero-action-row{align-items:stretch;flex-direction:column}.hero-continue{width:100%;justify-content:center}.hero-action-row>div{flex-direction:row;justify-content:space-between}
   .speaking-filter-row { align-items:stretch; flex-direction:column; }.speaking-category-tabs { margin:0 -14px; padding:2px 14px; }.speaking-level-filter { justify-content:space-between; }.speaking-level-filter select { min-width:130px; }.speaking-curriculum-heading { align-items:flex-start; }.speaking-curriculum-heading p { display:none; }
@@ -1178,6 +1175,10 @@ body {
   .speaking-setup-card { padding:22px; }.setup-actions { align-items:stretch; flex-direction:column-reverse; }.setup-actions .btn-green-solid{justify-content:center;min-height:46px}
   .live-header { grid-template-columns:auto 1fr auto; gap:7px; }.live-header .speaking-back { font-size:0; }.live-header .speaking-back i { font-size:.9rem; }.live-header h1{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;margin:auto}.live-stage { display:flex; flex-direction:column; min-height:calc(100dvh - 180px); border-radius:19px; overflow:visible; }.live-coach-panel { min-height:500px; padding:68px 18px 22px; overflow:hidden; border-radius:19px 19px 0 0; }.live-coach-panel .speaking-orb{width:180px;height:180px}.live-coach-panel .orb-core{width:112px;height:112px}.live-status-pill{top:16px;max-width:calc(100% - 32px)}.live-controls{position:sticky;bottom:max(10px,env(safe-area-inset-bottom));z-index:4}.live-control,.end-lesson-button{min-width:92px;min-height:61px}.live-text-fallback{margin-top:16px}.live-side-panel { border-left:0; border-top:1px solid var(--border-card); padding:12px; }.live-goal-card{display:none}.live-transcript-card{min-height:300px}.live-transcript{max-height:310px}.live-error{position:absolute;left:12px;right:12px;bottom:10px;grid-template-columns:auto 1fr}
   .speaking-summary-shell { grid-template-columns:1fr; }.speaking-summary-card{padding:24px 18px}.summary-metrics{gap:5px}.summary-actions{align-items:stretch;flex-direction:column}.summary-actions button{width:100%;justify-content:center;min-height:44px}
+}
+
+@media (max-width: 420px) {
+  .nav-link-item { padding-inline: 6px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

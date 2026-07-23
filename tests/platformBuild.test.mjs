@@ -47,6 +47,12 @@ test('the dashboard omits redundant Cloze and exposes Choose Word', () => {
   assert.match(html, />Choose Word</);
 });
 
+test('the Speak route keeps the same responsive top navigation layout as every other route', () => {
+  const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
+  assert.doesNotMatch(styles, /\.speaking-view\s+\.nav-links/);
+  assert.doesNotMatch(styles, /\.speaking-view\s+\.nav-link-item/);
+});
+
 test('all cache-busted JavaScript module imports resolve to real source files', () => {
   const queue = ['js/app.js'];
   const visited = new Set();
