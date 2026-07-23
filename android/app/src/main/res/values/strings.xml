@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">KeepVocab</string>
+    <string name="title_activity_main">KeepVocab</string>
+    <string name="package_name">com.keepvocab.app</string>
+    <string name="custom_url_scheme">com.keepvocab.app</string>
+</resources>

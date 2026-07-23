@@ -1,0 +1,8 @@
+{
+  "appId": "com.keepvocab.app",
+  "appName": "KeepVocab",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
