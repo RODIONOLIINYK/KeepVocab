@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KeepVocab - Vocabulary Gym</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/keepvocab-mark-v2-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/keepvocab-mark-v2-180.png">
+  <meta name="theme-color" content="#22c55e">
+
+  <!-- Google Identity Services for user-approved Drive backup access -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Specification Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css?v=34">
+</head>
+<body>
+
+  <!-- Header Navigation (72px Height) -->
+  <header class="header-nav">
+    <a href="#dashboard" class="nav-brand">
+      <div class="brand-icon-box">
+        <img src="icons/keepvocab-mark-v2-192.png" alt="" aria-hidden="true">
+      </div>
+      <span class="brand-name-text">KeepVocab</span>
+    </a>
+
+    <nav class="nav-links">
+      <a href="#dashboard" class="nav-link-item active" data-view="dashboard">
+        <i class="fa-solid fa-house"></i> Dashboard
+      </a>
+      <a href="#review" class="nav-link-item" data-view="review">
+        <i class="fa-solid fa-calendar-check"></i> Review
+      </a>
+      <a href="#speaking" class="nav-link-item" data-view="speaking">
+        <i class="fa-solid fa-microphone-lines"></i> Speak
+      </a>
+      <a href="#library" class="nav-link-item" data-view="library">
+        <i class="fa-solid fa-book-open"></i> Library
+      </a>
+      <a href="#stats" class="nav-link-item" data-view="stats">
+        <i class="fa-solid fa-chart-column"></i> Stats
+      </a>
+    </nav>
+
+    <div class="nav-user-area">
+      <button class="btn-green-solid" id="btn-header-quick-add" style="padding: 8px 16px; font-size: 0.85rem; margin-right: 8px;">
+        <i class="fa-solid fa-plus"></i> Add Word
+      </button>
+
+      <div class="badge-pill badge-streak">
+        <i class="fa-solid fa-fire"></i> <span id="hdr-streak-count">12</span> day streak
+      </div>
+      <div class="badge-pill badge-goal">
+        <i class="fa-solid fa-bullseye"></i> Daily goal <strong style="margin-left: 4px;" id="hdr-goal-count">16 / 20</strong>
+      </div>
+    </div>
+  </header>
+
+  <!-- App Container -->
+  <div class="app-container">
+
+    <!-- Google Drive backup status -->
+    <div class="keep-banner disconnected" id="keep-banner-card">
+      <div class="banner-info">
+        <div class="banner-icon" id="banner-icon-el">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+        </div>
+        <div>
+          <div class="banner-text-title" id="banner-text-title">Google Drive backup is off</div>
+          <div class="banner-text-sub" id="banner-text-sub">Connect Drive to back up monthly vocabulary files and restore them after reinstalling.</div>
+        </div>
+      </div>
+
+      <div class="banner-actions">
+        <div class="banner-status-pills">
+          <span class="status-pill connected" id="pill-connected" style="display: none;">
+            <i class="fa-solid fa-circle-check"></i> Connected
+          </span>
+          <span class="status-pill syncing" id="pill-syncing" style="display: none;">
+            <i class="fa-solid fa-rotate"></i> Syncing
+          </span>
+          <span class="status-pill attention" id="pill-attention" style="display: none;">
+            <i class="fa-solid fa-triangle-exclamation"></i> Needs Attention
+          </span>
+          <span class="status-pill offline" id="pill-offline">
+            <i class="fa-solid fa-cloud"></i> Disconnected
+          </span>
+        </div>
+
+        <button class="btn-connect-auth" id="btn-open-drive-auth">
+          <i class="fa-brands fa-google-drive"></i> Connect Drive
+        </button>
+      </div>
+    </div>
+
+    <!-- Section Header & Active Month Dropdown -->
+    <div class="section-header">
+      <div class="section-title-group">
+        <i class="fa-solid fa-dumbbell section-icon"></i>
+        <div>
+          <h1 class="section-title">Vocabulary Gym</h1>
+          <div class="section-sub">Train today. Remember forever.</div>
+        </div>
+      </div>
+
+      <div style="position: relative;">
+        <button class="month-dropdown-btn" id="month-dropdown-btn">
+          <span>Active Month</span>
+          <strong id="active-month-label">July 2026</strong>
+          <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
+        </button>
+
+        <div class="month-menu" id="month-menu">
+          <div class="month-option" data-month="July 2026">July 2026 Vocabulary</div>
+          <div class="month-option" data-month="August 2026">August 2026 Vocabulary</div>
+          <div class="month-option" data-month="September 2026">September 2026 Vocabulary</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12-Column Main Dashboard Grid -->
+    <div class="dashboard-12col-grid" id="view-container">
+      <!-- Main Study Area (8 Columns) -->
+      <div class="main-study-area">
+
+        <!-- Flashcard Component Card -->
+        <div class="spec-card" id="flashcard-spec-card">
+          <div class="card-header-bar">
+            <div class="card-tag">
+              <i class="fa-solid fa-clone" style="color: var(--primary-green);"></i> Flashcard
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+              <span id="fc-index">1</span> of <span id="fc-total">3</span>
+            </div>
+          </div>
+
+          <div class="flashcard-word-main">
+            <span id="fc-word">abundant</span>
+            <button class="audio-btn-circle" id="fc-audio-btn" title="Listen Audio">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+            <button class="status-pill offline" id="btn-toggle-speech-speed" style="font-size: 0.75rem; padding: 4px 8px;">1.0x</button>
+          </div>
+
+          <div class="flashcard-pos" id="fc-pos">adjective</div>
+
+          <p class="flashcard-def-text" id="fc-def">
+            "existing in large quantities; more than enough."
+          </p>
+
+          <div class="flashcard-quote" id="fc-example">
+            "The region is abundant in natural resources."
+          </div>
+
+          <!-- 4 Rating Buttons -->
+          <div class="ratings-grid">
+            <button class="rate-btn again" id="btn-rate-again">
+              <span class="rate-label">Again</span>
+              <span class="rate-time">&lt; 1 min</span>
+            </button>
+
+            <button class="rate-btn hard" id="btn-rate-hard">
+              <span class="rate-label">Hard</span>
+              <span class="rate-time">~ 10 min</span>
+            </button>
+
+            <button class="rate-btn good" id="btn-rate-good">
+              <span class="rate-label">Good</span>
+              <span class="rate-time">~ 3 days</span>
+            </button>
+
+            <button class="rate-btn easy" id="btn-rate-easy">
+              <span class="rate-label">Easy</span>
+              <span class="rate-time">~ 7 days</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="spec-card">
+          <div class="card-header-bar">
+            <div class="card-tag"><i class="fa-solid fa-gamepad" style="color: #7c3aed;"></i> More learning modes</div>
+            <span class="muted-label">Practice the active month in different ways</span>
+          </div>
+          <div class="learning-mode-grid">
+            <button class="learning-mode-card spelling" id="btn-mode-spelling">
+              <i class="fa-solid fa-headphones"></i>
+              <span><strong>Listen &amp; Spell</strong><small>Hear a word and type it from memory</small></span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <button class="learning-mode-card challenge" id="btn-mode-choose">
+              <i class="fa-solid fa-list-check"></i>
+              <span><strong>Choose Word</strong><small>Pick the correct word for each meaning</small></span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <button class="learning-mode-card visual" id="btn-mode-visual">
+              <i class="fa-solid fa-images"></i>
+              <span><strong>Visual Match</strong><small>Connect pictures with the right words</small></span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <button class="learning-mode-card match" id="btn-mode-match">
+              <i class="fa-solid fa-stopwatch"></i>
+              <span><strong>Match Sprint</strong><small>Pair exact meanings with words against the clock</small></span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <button class="learning-mode-card speaking" id="btn-mode-speaking">
+              <i class="fa-solid fa-microphone-lines"></i>
+              <span><strong>AI Speaking</strong><small>Practice live topic lessons with Gemini</small></span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Utility Rail (4 Columns) -->
+      <div class="right-utility-rail">
+
+        <!-- Leitner 5-Box (SRS) Card -->
+        <div class="spec-card">
+          <div class="card-header-bar">
+            <div class="card-tag">
+              <i class="fa-solid fa-shapes" style="color: var(--primary-green);"></i> Leitner 5-Box (SRS)
+              <i class="fa-solid fa-circle-info" style="font-size: 0.75rem; color: var(--text-dim);"></i>
+            </div>
+            <a href="#stats" style="font-size: 0.82rem; color: var(--primary-green-hover); font-weight: 700; text-decoration: none;">Explore boxes</a>
+          </div>
+
+          <div class="leitner-boxes-row">
+            <div class="leitner-box-card b1">
+              <span class="box-tag">Box 1</span>
+              <span class="box-sub">New</span>
+              <span class="box-num" id="b1-count">24</span>
+            </div>
+
+            <div class="leitner-box-card b2">
+              <span class="box-tag">Box 2</span>
+              <span class="box-sub">Learn</span>
+              <span class="box-num" id="b2-count">18</span>
+            </div>
+
+            <div class="leitner-box-card b3">
+              <span class="box-tag">Box 3</span>
+              <span class="box-sub">Review</span>
+              <span class="box-num" id="b3-count">32</span>
+            </div>
+
+            <div class="leitner-box-card b4">
+              <span class="box-tag">Box 4</span>
+              <span class="box-sub">Reinforce</span>
+              <span class="box-num" id="b4-count">14</span>
+            </div>
+
+            <div class="leitner-box-card b5">
+              <span class="box-tag">Box 5</span>
+              <span class="box-sub">Mastered</span>
+              <span class="box-num" id="b5-count">68</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Sync Summary Card -->
+        <div class="spec-card">
+          <div class="card-header-bar">
+            <div class="card-tag">
+              <i class="fa-solid fa-list-check" style="color: var(--primary-green);"></i> Study Summary
+            </div>
+            <span style="font-size: 0.78rem; color: var(--text-muted);"><i class="fa-solid fa-rotate"></i> <span id="sync-time-label">Not connected</span></span>
+          </div>
+
+          <div class="sync-summary-list">
+            <div class="sync-summary-item">
+              <span><i class="fa-solid fa-clock" style="margin-right: 6px;"></i> Due for review</span>
+              <strong id="stat-synced-today">0</strong>
+            </div>
+            <div class="sync-summary-item">
+              <span><i class="fa-solid fa-book" style="margin-right: 6px;"></i> Words this month</span>
+              <strong id="stat-words-added">36</strong>
+            </div>
+            <div class="sync-summary-item">
+              <span><i class="fa-solid fa-seedling" style="margin-right: 6px;"></i> Still learning</span>
+              <strong id="stat-keep-updates">0</strong>
+            </div>
+            <div class="sync-summary-item">
+              <span><i class="fa-solid fa-clock-rotate-left" style="margin-right: 6px;"></i> Last Drive sync</span>
+              <span style="color: var(--primary-green-hover); font-weight: 700;" id="stat-last-sync">Pending Auth</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Streak & Today Widget Card (SVG Radial Progress Ring) -->
+        <div class="spec-card">
+          <div class="streak-widget-wrapper">
+            <div>
+              <div class="card-tag" style="margin-bottom: 6px;">
+                <i class="fa-solid fa-fire" style="color: #ea580c;"></i> Streak & Today
+              </div>
+              <div style="font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--text-main); line-height: 1;" id="streak-num">
+                12
+              </div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">day streak</div>
+            </div>
+
+            <!-- Radial SVG Progress Ring (96px Diameter) -->
+            <div class="radial-goal-box">
+              <svg class="radial-svg" width="96" height="96" viewBox="0 0 96 96">
+                <!-- Background Circle -->
+                <circle cx="48" cy="48" r="38" stroke="#e2e8f0" stroke-width="7" fill="none" />
+                <!-- Green Progress Circle (80% = 16/20) -->
+                <circle cx="48" cy="48" r="38" stroke="#22c55e" stroke-width="7" stroke-dasharray="238.76" stroke-dashoffset="47.75" stroke-linecap="round" fill="none" />
+              </svg>
+
+              <!-- Center Text Content -->
+              <div class="radial-center-content">
+                <div class="radial-goal-text" id="goal-number-el">16 / 20</div>
+                <div class="radial-goal-sub">daily goal</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="streak-days-row">
+            <div class="day-circle">Mon</div>
+            <div class="day-circle">Tue</div>
+            <div class="day-circle">Wed</div>
+            <div class="day-circle">Thu</div>
+            <div class="day-circle">Fri</div>
+            <div class="day-circle">Sat</div>
+            <div class="day-circle">Sun</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Drive monthly backup modal -->
+  <div class="modal-backdrop" id="drive-auth-modal">
+    <div class="modal-box">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="width: 56px; height: 56px; border-radius: 14px; background: var(--primary-green-light); color: var(--primary-green-hover); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 10px;">
+          <i class="fa-brands fa-google-drive"></i>
+        </div>
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800;">Automatic Google Drive backup</h2>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;">
+          Reinstall safely: reconnect the same Google account and the app restores every monthly vocabulary archive.
+        </p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="padding: 14px; background: var(--bg-subtle); border: 1px solid var(--border-card); border-radius: 12px;">
+          <strong style="font-size: 0.9rem;">Dedicated backup folder</strong>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 0;">The app creates <strong>KeepVocab Dictionary Backup</strong> in My Drive. It stores one JSON file per adding month, such as <strong>Dictionary July 2026.json</strong>, plus one settings file. Unrelated Drive files are never read.</p>
+        </div>
+
+        <div style="padding: 14px; background: var(--bg-subtle); border: 1px solid var(--border-card); border-radius: 12px;">
+          <strong style="font-size: 0.9rem;">Google Drive connection</strong>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 10px;">Access is limited to files this app creates. On this device, the short-lived Drive session is saved locally so reloads stay connected. Disconnecting removes it.</p>
+          <p class="oauth-origin-note">Authorized JavaScript origin: <code id="drive-origin-value">http://127.0.0.1:8085</code></p>
+          <label for="modal-client-id-input" style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">OAuth web client ID</label>
+          <input type="text" id="modal-client-id-input" autocomplete="off" placeholder="123456789-example.apps.googleusercontent.com" style="box-sizing: border-box; width: 100%; margin-top: 5px; padding: 12px; border-radius: 10px; border: 1px solid var(--border-card); outline: none;">
+          <button class="btn-green-solid" id="btn-modal-oauth" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; margin-top: 10px;">
+            <i class="fa-brands fa-google-drive"></i> Connect and synchronize
+          </button>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <button class="status-pill connected" id="btn-sync-drive-now" style="justify-content: center; flex: 1;">
+              <i class="fa-solid fa-rotate"></i> Sync now
+            </button>
+            <button class="status-pill offline" id="btn-disconnect-drive" style="justify-content: center; flex: 1;">
+              <i class="fa-solid fa-link-slash"></i> Disconnect
+            </button>
+          </div>
+        </div>
+
+        <p id="drive-auth-status" role="status" aria-live="polite" style="font-size: 0.8rem; color: var(--text-muted); margin: 0;"></p>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button class="status-pill offline" id="btn-close-modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Add New Word Modal -->
+  <div class="modal-backdrop" id="add-word-modal">
+    <div class="modal-box sense-modal-box">
+      <div class="sense-modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800;">
+          <i class="fa-solid fa-circle-plus" style="color: var(--primary-green);"></i> Add Word to Library
+        </h2>
+        <button class="status-pill offline" id="btn-close-add-modal" style="font-size: 0.8rem; padding: 4px 8px;">✕</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <form class="quick-add-row" id="add-word-lookup-form" style="display: flex; gap: 10px;">
+          <input type="text" id="add-word-input" placeholder="Type a word, then press Enter" enterkeyhint="search" autocomplete="off" autocapitalize="none" autofocus style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 0.95rem; outline: none;">
+          <button type="submit" class="btn-green-solid" id="btn-auto-fetch-word" style="padding: 10px 16px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings</button>
+        </form>
+
+        <div id="add-word-preview" class="sense-picker-preview" style="display: none;">
+          <div class="sense-picker-heading">
+            <div><strong id="prev-w-title">Serendipity</strong><span id="prev-w-phonetic">/ˌser.ənˈdɪp.ə.ti/</span></div>
+            <span id="sense-count-label">Choose a meaning</span>
+          </div>
+          <p class="sense-helper">Select every meaning you want. Each meaning becomes its own learning card, while exercises prevent duplicate-looking answers.</p>
+          <div id="add-word-sense-list" class="sense-option-list" role="group" aria-label="Dictionary meanings"></div>
+        </div>
+
+        <div id="add-word-editor" class="sense-editor">
+          <div class="sense-editor-heading"><strong id="meaning-editor-title">Meaning to save</strong><span id="meaning-editor-subtitle">You can edit the focused meaning</span></div>
+          <div class="sense-editor-grid">
+            <label>Part of speech<input id="add-word-pos" type="text" placeholder="noun, verb, adjective…" autocomplete="off"></label>
+            <label>Phonetic<input id="add-word-phonetic" type="text" placeholder="Optional pronunciation" autocomplete="off"></label>
+            <label class="wide">Definition<textarea id="add-word-definition" placeholder="Describe the exact intended meaning" required></textarea></label>
+            <label class="wide">Example sentence<textarea id="add-word-example" placeholder="A sentence that makes this meaning clear"></textarea></label>
+          </div>
+          <p id="add-word-form-status" class="form-message" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="sense-modal-actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button class="status-pill offline" id="btn-cancel-add-modal">Cancel</button>
+        <button class="btn-green-solid" id="btn-save-new-word">Save to Library</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js?v=34"></script>
+</body>
+</html>
