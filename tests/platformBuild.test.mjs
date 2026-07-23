@@ -52,6 +52,12 @@ test('the Android build declares microphone access and native Drive authorizatio
   assert.match(activity, /registerPlugin\(DriveAuthPlugin\.class\)/);
   assert.match(plugin, /auth\/drive\.file/);
   assert.match(plugin, /Identity\.getAuthorizationClient/);
+  assert.match(plugin, /23308644025-i69m4ncivbe9jvf3pa1kepj8fb8ruh4g\.apps\.googleusercontent\.com/);
+  assert.doesNotMatch(plugin, /resultCode != Activity\.RESULT_OK \|\| data == null/);
+  assert.ok(
+    plugin.indexOf('if (data == null)') < plugin.indexOf('getAuthorizationResultFromIntent(data)'),
+    'Native auth must parse every returned Intent instead of discarding non-OK result codes'
+  );
 });
 
 test('the dashboard omits redundant Cloze and exposes Choose Word', () => {

@@ -24,6 +24,9 @@ public class DriveAuthPlugin extends Plugin {
     static final int REQUEST_AUTHORIZE = 7301;
     private static final String DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";
     private static final String USERINFO_EMAIL_SCOPE = "https://www.googleapis.com/auth/userinfo.email";
+    // Google matches this Android OAuth client through the APK package and signing SHA-1.
+    // AuthorizationClient does not accept the client ID as a request parameter.
+    private static final String ANDROID_OAUTH_CLIENT_ID = "23308644025-i69m4ncivbe9jvf3pa1kepj8fb8ruh4g.apps.googleusercontent.com";
     private static final int DEFAULT_TOKEN_LIFETIME_SECONDS = 3600;
     private static final List<Scope> REQUESTED_SCOPES = Arrays.asList(
         new Scope(DRIVE_FILE_SCOPE),
@@ -83,12 +86,18 @@ public class DriveAuthPlugin extends Plugin {
         PluginCall call = getSavedCall();
         if (call == null) return;
 
-        if (resultCode != Activity.RESULT_OK || data == null) {
-            call.reject("Google authorization was cancelled.", "AUTH_CANCELLED");
+        if (data == null) {
+            String message = resultCode == Activity.RESULT_CANCELED
+                ? "Google authorization did not complete after account selection. Confirm Android OAuth client " +
+                    ANDROID_OAUTH_CLIENT_ID + " is registered for com.keepvocab.app and this APK's SHA-1, and that your account is an OAuth test user."
+                : "Google returned no authorization result. Please try again.";
+            call.reject(message, "AUTH_NOT_COMPLETED");
             freeSavedCall();
             return;
         }
 
+        // Parse every returned Intent so Google can surface the token or the
+        // specific ApiException instead of losing that detail to resultCode alone.
         try {
             AuthorizationResult result = client().getAuthorizationResultFromIntent(data);
             resolveAuthorization(call, result);
@@ -119,7 +128,8 @@ public class DriveAuthPlugin extends Plugin {
     private void rejectAuthorization(PluginCall call, Exception error) {
         int statusCode = error instanceof ApiException ? ((ApiException) error).getStatusCode() : -1;
         String message = statusCode == 10
-            ? "Android Google Drive authorization is not configured. Add an Android OAuth client for com.keepvocab.app and this APK's SHA-1 certificate."
+            ? "Android Google Drive authorization is not configured. Confirm OAuth client " + ANDROID_OAUTH_CLIENT_ID +
+                " is registered for com.keepvocab.app and this APK's SHA-1 certificate."
             : "Google Drive authorization failed. Check Google Play services and try again.";
         call.reject(message, statusCode < 0 ? "AUTH_FAILED" : "GOOGLE_AUTH_" + statusCode, error);
     }
