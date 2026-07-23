@@ -16,6 +16,7 @@ import {
   GEMINI_LIVE_MODEL,
   buildGeminiLiveUrl,
   buildGeminiSetupMessage,
+  parseGeminiLiveMessage,
   downsampleAudio,
   float32ToPcm16
 } from '../js/services/geminiLive.js';
@@ -85,6 +86,18 @@ test('Gemini Live setup uses the current native-audio model and transcription', 
   assert.match(buildGeminiLiveUrl('key with spaces'), /key=key%20with%20spaces$/);
 });
 
+test('Gemini Live parses text, Blob, binary, typed-array, and decoded WebSocket messages', async () => {
+  const payload = { serverContent: { turnComplete: true } };
+  const json = JSON.stringify(payload);
+  const bytes = new TextEncoder().encode(json);
+  assert.deepEqual(await parseGeminiLiveMessage(json), payload);
+  assert.deepEqual(await parseGeminiLiveMessage(new Blob([json], { type: 'application/json' })), payload);
+  assert.deepEqual(await parseGeminiLiveMessage(bytes.buffer), payload);
+  assert.deepEqual(await parseGeminiLiveMessage(bytes), payload);
+  assert.equal(await parseGeminiLiveMessage(payload), payload);
+  await assert.rejects(() => parseGeminiLiveMessage(new Blob(['[object Object]'])), /not valid JSON|Unexpected/);
+});
+
 test('Gemini credentials are device-local and never embedded in source', () => {
   const service = readFileSync(resolve(projectRoot, 'js/services/geminiLive.js'), 'utf8');
   const component = readFileSync(resolve(projectRoot, 'js/components/SpeakingMode.js'), 'utf8');
@@ -114,7 +127,7 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(component, /COACH_SILENCE_MS = 9000/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'start'\)/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'silence'\)/);
-  assert.match(serviceWorker, /SpeakingMode\.js\?v=39/);
-  assert.match(serviceWorker, /speakingLessons\.js\?v=39/);
-  assert.match(serviceWorker, /geminiLive\.js\?v=39/);
+  assert.match(serviceWorker, /SpeakingMode\.js\?v=40/);
+  assert.match(serviceWorker, /speakingLessons\.js\?v=40/);
+  assert.match(serviceWorker, /geminiLive\.js\?v=40/);
 });

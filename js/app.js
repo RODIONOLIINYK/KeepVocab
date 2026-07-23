@@ -13,7 +13,7 @@ import { renderStatsView } from './components/StatsView.js?v=33';
 import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=33';
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=33';
 import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=33';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=39';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=40';
 
 function localDateKey(date = new Date()) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');

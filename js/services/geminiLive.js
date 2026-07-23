@@ -1,6 +1,18 @@
 export const GEMINI_LIVE_MODEL = 'gemini-3.1-flash-live-preview';
 export const GEMINI_KEY_STORAGE = 'keepvocab_gemini_live_key_v1';
 
+export async function parseGeminiLiveMessage(data) {
+  if (typeof data === 'string') return JSON.parse(data);
+  if (typeof Blob !== 'undefined' && data instanceof Blob) return JSON.parse(await data.text());
+  if (data instanceof ArrayBuffer) return JSON.parse(new TextDecoder().decode(new Uint8Array(data)));
+  if (ArrayBuffer.isView(data)) {
+    const bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+  if (data && typeof data === 'object') return data;
+  throw new TypeError('Gemini Live returned an unsupported message format.');
+}
+
 export function buildGeminiLiveUrl(apiKey, model = GEMINI_LIVE_MODEL) {
   if (!String(apiKey || '').trim()) throw new Error('A Gemini API key is required.');
   const endpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
@@ -121,9 +133,9 @@ export class GeminiLiveSession extends EventTarget {
       const timeout = window.setTimeout(() => fail(new Error('Gemini Live took too long to connect.')), 15000);
 
       socket.addEventListener('open', () => socket.send(JSON.stringify(buildGeminiSetupMessage(instruction))));
-      socket.addEventListener('message', event => {
+      socket.addEventListener('message', async event => {
         try {
-          const message = JSON.parse(event.data);
+          const message = await parseGeminiLiveMessage(event.data);
           if (message.setupComplete && !settled) {
             settled = true;
             window.clearTimeout(timeout);
