@@ -5,6 +5,16 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "start": "python3 -m http.server 8085 --bind 127.0.0.1"
+    "start": "python3 -m http.server 8085 --bind 127.0.0.1",
+    "build:web": "node scripts/build-web.mjs",
+    "android:sync": "npm run build:web && cap sync android",
+    "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.2",
+    "@capacitor/core": "^8.4.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.4.2"
   }
 }
