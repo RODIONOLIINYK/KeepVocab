@@ -4,7 +4,7 @@ KeepVocab is a local-first browser vocabulary trainer with automatic, reinstall-
 
 ## AI Speaking
 
-The Speak route contains 36 goal-based lessons across everyday life, travel, work, social, academic, and advanced tracks, plus adaptive free conversation. Each preview defines the learner and coach roles, a level, a realistic duration, and target phrases. Live sessions use Gemini's native-audio WebSocket API only after an explicit Start action, stream microphone audio, play the coach response, display both transcriptions, allow typed replies, and store completion progress locally.
+The Speak route contains 84 goal-based lessons across everyday life, travel, work, social, academic, and advanced tracks, including 58 B2 lessons plus adaptive free conversation. Every preview shows a five-stage Warm up → Build → Challenge → Resolve → Improve plan, role-specific questions, a realistic complication, and target phrases. Live sessions use Gemini's native-audio WebSocket API only after an explicit Start action, stream microphone audio, play the coach response, display both transcriptions, allow typed replies, and store completion progress locally. Mira opens every lesson herself, keeps turns moving with specific follow-up questions, and sends a scaffolded rescue prompt after nine seconds of learner silence.
 
 Gemini credentials are never committed or included in Drive backups. For a private localhost installation, save a personal key through **Speak → Gemini setup**; it remains in that browser's local storage. A public deployment must replace direct-key authentication with server-issued ephemeral tokens.
 

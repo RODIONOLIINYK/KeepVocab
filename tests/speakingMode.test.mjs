@@ -8,6 +8,8 @@ import {
   SPEAKING_LESSONS,
   FREE_CONVERSATION_LESSON,
   DEFAULT_SPEAKING_LEVEL,
+  getLessonPlan,
+  buildCoachInitiativeCue,
   buildSpeakingInstruction
 } from '../js/data/speakingLessons.js';
 import {
@@ -20,16 +22,19 @@ import {
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-test('the speaking curriculum contains six complete tracks and many distinct lessons', () => {
+test('the speaking curriculum contains six complete tracks and 84 distinct lessons', () => {
   assert.equal(SPEAKING_CATEGORIES.length, 6);
-  assert.equal(SPEAKING_LESSONS.length, 36);
-  assert.equal(new Set(SPEAKING_LESSONS.map(lesson => lesson.id)).size, 36);
+  assert.equal(SPEAKING_LESSONS.length, 84);
+  assert.equal(new Set(SPEAKING_LESSONS.map(lesson => lesson.id)).size, 84);
   for (const category of SPEAKING_CATEGORIES) {
-    assert.equal(SPEAKING_LESSONS.filter(lesson => lesson.category === category.id).length, 6);
+    assert.equal(SPEAKING_LESSONS.filter(lesson => lesson.category === category.id).length, 14);
   }
   for (const lesson of [...SPEAKING_LESSONS, FREE_CONVERSATION_LESSON]) {
     assert.ok(lesson.title && lesson.goal && lesson.learnerRole && lesson.coachRole);
     assert.ok(lesson.targetPhrases.length >= 3);
+    assert.ok(lesson.coachQuestions.length >= 3);
+    assert.ok(lesson.scenarioTwist);
+    assert.equal(getLessonPlan(lesson).length, 5);
     assert.ok(lesson.duration >= 5 && lesson.duration <= 12);
   }
 });
@@ -37,7 +42,7 @@ test('the speaking curriculum contains six complete tracks and many distinct les
 test('the speaking experience defaults to the learner B2 profile', () => {
   assert.equal(DEFAULT_SPEAKING_LEVEL, 'B2');
   assert.equal(FREE_CONVERSATION_LESSON.level, 'B2');
-  assert.ok(SPEAKING_LESSONS.filter(lesson => lesson.level === 'B2').length >= 8);
+  assert.equal(SPEAKING_LESSONS.filter(lesson => lesson.level === 'B2').length, 58);
   const component = readFileSync(resolve(projectRoot, 'js/components/SpeakingMode.js'), 'utf8');
   assert.match(component, /lastLessonId: 'rent-apartment'/);
   assert.match(component, /let levelFilter = learnerLevel/);
@@ -53,12 +58,28 @@ test('lesson coaching instructions set a concrete role, level, correction style,
   assert.match(instruction, /never pretend to provide phoneme-level scoring/);
 });
 
+test('every lesson has a visible five-stage plan and the coach initiates and rescues silence', () => {
+  const lesson = SPEAKING_LESSONS.find(item => item.id === 'clarify-brief');
+  assert.deepEqual(getLessonPlan(lesson).map(step => step.phase), ['Warm up', 'Build', 'Challenge', 'Resolve', 'Improve']);
+  assert.match(getLessonPlan(lesson)[2].detail, /speed, quality, and low cost/);
+  assert.match(buildCoachInitiativeCue(lesson, 'start'), /Do not wait for the learner/);
+  assert.match(buildCoachInitiativeCue(lesson, 'silence'), /offer two concrete answer options/);
+  assert.match(buildCoachInitiativeCue(lesson, 'silence'), /To make sure I understand/);
+  const instruction = buildSpeakingInstruction(lesson);
+  assert.match(instruction, /Structured lesson plan:/);
+  assert.match(instruction, /always carry the initiative/);
+  assert.match(instruction, /If the learner says “I don’t know”/);
+});
+
 test('Gemini Live setup uses the current native-audio model and transcription', () => {
   const message = buildGeminiSetupMessage('Coach this learner.');
   assert.equal(message.setup.model, `models/${GEMINI_LIVE_MODEL}`);
   assert.deepEqual(message.setup.generationConfig.responseModalities, ['AUDIO']);
   assert.deepEqual(message.setup.inputAudioTranscription, {});
   assert.deepEqual(message.setup.outputAudioTranscription, {});
+  assert.equal(message.setup.realtimeInputConfig.automaticActivityDetection.disabled, false);
+  assert.equal(message.setup.realtimeInputConfig.automaticActivityDetection.prefixPaddingMs, 40);
+  assert.equal(message.setup.realtimeInputConfig.automaticActivityDetection.silenceDurationMs, 800);
   assert.equal(message.setup.systemInstruction.parts[0].text, 'Coach this learner.');
   assert.match(buildGeminiLiveUrl('key with spaces'), /^wss:\/\//);
   assert.match(buildGeminiLiveUrl('key with spaces'), /key=key%20with%20spaces$/);
@@ -90,7 +111,10 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(app, /renderSpeakingMode/);
   assert.match(component, /Gemini connects only after you press Start/);
   assert.match(component, /never copied to Google Drive/);
-  assert.match(serviceWorker, /SpeakingMode\.js\?v=37/);
-  assert.match(serviceWorker, /speakingLessons\.js\?v=37/);
-  assert.match(serviceWorker, /geminiLive\.js\?v=34/);
+  assert.match(component, /COACH_SILENCE_MS = 9000/);
+  assert.match(component, /buildCoachInitiativeCue\(lesson, 'start'\)/);
+  assert.match(component, /buildCoachInitiativeCue\(lesson, 'silence'\)/);
+  assert.match(serviceWorker, /SpeakingMode\.js\?v=39/);
+  assert.match(serviceWorker, /speakingLessons\.js\?v=39/);
+  assert.match(serviceWorker, /geminiLive\.js\?v=39/);
 });

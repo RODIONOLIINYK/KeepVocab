@@ -16,6 +16,13 @@ export function buildGeminiSetupMessage(instruction, model = GEMINI_LIVE_MODEL) 
       },
       inputAudioTranscription: {},
       outputAudioTranscription: {},
+      realtimeInputConfig: {
+        automaticActivityDetection: {
+          disabled: false,
+          prefixPaddingMs: 40,
+          silenceDurationMs: 800
+        }
+      },
       systemInstruction: { parts: [{ text: String(instruction || '') }] }
     }
   };
@@ -191,10 +198,11 @@ export class GeminiLiveSession extends EventTarget {
     if (content.interrupted) {
       this.nextAudioTime = this.outputContext?.currentTime || 0;
       this.dispatchEvent(eventDetail('status', 'listening'));
+    } else if (content.turnComplete) {
+      this.dispatchEvent(eventDetail('turncomplete', true));
+      this.dispatchEvent(eventDetail('status', this.muted ? 'muted' : 'listening'));
     } else if (content.modelTurn) {
       this.dispatchEvent(eventDetail('status', 'speaking'));
-    } else if (content.turnComplete) {
-      this.dispatchEvent(eventDetail('status', this.muted ? 'muted' : 'listening'));
     }
   }
 
