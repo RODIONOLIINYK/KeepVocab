@@ -1,19 +1,19 @@
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, getCurrentMonthNotebookTitle } from './services/driveSync.js?v=33';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=33';
+import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=41';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=41';
 import { speakWord } from './services/speechService.js';
-import { updateWordRepetition, getDueWords } from './services/srsEngine.js?v=33';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=33';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=33';
+import { updateWordRepetition, getDueWords } from './services/srsEngine.js?v=41';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=41';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=41';
 
-import { renderReviewView } from './components/ReviewView.js?v=33';
-import { renderLibraryView } from './components/LibraryView.js?v=33';
-import { renderStatsView } from './components/StatsView.js?v=33';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=33';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=33';
-import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=33';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=40';
+import { renderReviewView } from './components/ReviewView.js?v=41';
+import { renderLibraryView } from './components/LibraryView.js?v=41';
+import { renderStatsView } from './components/StatsView.js?v=41';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=41';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=41';
+import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=41';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=41';
 
 function localDateKey(date = new Date()) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
@@ -454,9 +454,14 @@ function setupDriveBackupModal() {
   const clientIdInput = document.getElementById('modal-client-id-input');
   const status = document.getElementById('drive-auth-status');
   const origin = document.getElementById('drive-origin-value');
+  const webOAuthConfig = document.getElementById('drive-web-oauth-config');
+  const androidOAuthNote = document.getElementById('drive-android-oauth-note');
+  const nativeAuthorization = usesNativeGoogleAuthorization();
 
   clientIdInput.value = driveSync.getGoogleClientId();
   if (origin) origin.textContent = window.location.origin;
+  if (webOAuthConfig) webOAuthConfig.hidden = nativeAuthorization;
+  if (androidOAuthNote) androidOAuthNote.hidden = !nativeAuthorization;
   btnOpen.addEventListener('click', () => {
     status.textContent = '';
     modal.classList.add('active');
@@ -467,7 +472,9 @@ function setupDriveBackupModal() {
     const original = btnOAuth.innerHTML;
     btnOAuth.disabled = true;
     btnOAuth.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Waiting for Google…';
-    status.textContent = 'Complete authorization in the Google dialog.';
+    status.textContent = nativeAuthorization
+      ? 'Choose the Google account that will store your KeepVocab backup.'
+      : 'Complete authorization in the Google dialog.';
     document.getElementById('pill-syncing').style.display = 'inline-flex';
     try {
       const result = await driveSync.connectGoogleDrive(clientIdInput.value);

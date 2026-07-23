@@ -40,6 +40,20 @@ test('the local launch contract keeps the installed app on the API-authorized po
   assert.match(handoff, /http:\/\/127\.0\.0\.1:8085/);
 });
 
+test('the Android build declares microphone access and native Drive authorization', () => {
+  const manifest = readFileSync(resolve(projectRoot, 'android/app/src/main/AndroidManifest.xml'), 'utf8');
+  const gradle = readFileSync(resolve(projectRoot, 'android/app/build.gradle'), 'utf8');
+  const activity = readFileSync(resolve(projectRoot, 'android/app/src/main/java/com/keepvocab/app/MainActivity.java'), 'utf8');
+  const plugin = readFileSync(resolve(projectRoot, 'android/app/src/main/java/com/keepvocab/app/DriveAuthPlugin.java'), 'utf8');
+
+  assert.match(manifest, /android\.permission\.RECORD_AUDIO/);
+  assert.match(manifest, /android\.permission\.MODIFY_AUDIO_SETTINGS/);
+  assert.match(gradle, /play-services-auth:21\.6\.0/);
+  assert.match(activity, /registerPlugin\(DriveAuthPlugin\.class\)/);
+  assert.match(plugin, /auth\/drive\.file/);
+  assert.match(plugin, /Identity\.getAuthorizationClient/);
+});
+
 test('the dashboard omits redundant Cloze and exposes Choose Word', () => {
   const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
   assert.doesNotMatch(html, /Cloze Quiz/);

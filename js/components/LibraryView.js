@@ -1,7 +1,7 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=33';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=41';
 import { speakWord } from '../services/speechService.js';
-import { buildVisualSearchQueries, findRelevantImages, getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=33';
-import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=33';
+import { buildVisualSearchQueries, findRelevantImages, getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=41';
+import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=41';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
 
 function isDue(word) {

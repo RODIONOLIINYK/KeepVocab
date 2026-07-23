@@ -359,9 +359,12 @@
         <div style="padding: 14px; background: var(--bg-subtle); border: 1px solid var(--border-card); border-radius: 12px;">
           <strong style="font-size: 0.9rem;">Google Drive connection</strong>
           <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 10px;">Access is limited to files this app creates. On this device, the short-lived Drive session is saved locally so reloads stay connected. Disconnecting removes it.</p>
-          <p class="oauth-origin-note">Authorized JavaScript origin: <code id="drive-origin-value">http://127.0.0.1:8085</code></p>
-          <label for="modal-client-id-input" style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">OAuth web client ID</label>
-          <input type="text" id="modal-client-id-input" autocomplete="off" placeholder="123456789-example.apps.googleusercontent.com" style="box-sizing: border-box; width: 100%; margin-top: 5px; padding: 12px; border-radius: 10px; border: 1px solid var(--border-card); outline: none;">
+          <div id="drive-web-oauth-config">
+            <p class="oauth-origin-note">Authorized JavaScript origin: <code id="drive-origin-value">http://127.0.0.1:8085</code></p>
+            <label for="modal-client-id-input" style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">OAuth web client ID</label>
+            <input type="text" id="modal-client-id-input" autocomplete="off" placeholder="123456789-example.apps.googleusercontent.com" style="box-sizing: border-box; width: 100%; margin-top: 5px; padding: 12px; border-radius: 10px; border: 1px solid var(--border-card); outline: none;">
+          </div>
+          <p id="drive-android-oauth-note" hidden style="font-size: 0.8rem; color: var(--text-muted); margin: 8px 0 0;">Android uses the Google account chooser on this device. No web client ID is needed here.</p>
           <button class="btn-green-solid" id="btn-modal-oauth" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; margin-top: 10px;">
             <i class="fa-brands fa-google-drive"></i> Connect and synchronize
           </button>
@@ -428,6 +431,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=40"></script>
+  <script type="module" src="js/app.js?v=41"></script>
 </body>
 </html>

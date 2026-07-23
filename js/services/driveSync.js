@@ -17,6 +17,16 @@ const BACKUP_APP_PROPERTY = 'keepVocabBackup';
 const SCHEMA_VERSION = 1;
 const TOKEN_RESTORE_BUFFER_MS = 30_000;
 
+function getNativeDriveAuthPlugin() {
+  const capacitor = globalThis.Capacitor;
+  if (capacitor?.getPlatform?.() !== 'android' || typeof capacitor.registerPlugin !== 'function') return null;
+  return capacitor.Plugins?.DriveAuth || capacitor.registerPlugin('DriveAuth');
+}
+
+export function usesNativeGoogleAuthorization() {
+  return Boolean(getNativeDriveAuthPlugin());
+}
+
 export function getCurrentMonthNotebookTitle(date = new Date()) {
   const monthName = date.toLocaleString('en-US', { month: 'long' });
   return `${monthName} ${date.getFullYear()} Vocabulary`;
@@ -269,6 +279,12 @@ export class DriveSyncService {
   }
 
   async connectGoogleDrive(clientId) {
+    const nativeAuth = getNativeDriveAuthPlugin();
+    if (nativeAuth) {
+      const result = await nativeAuth.authorize({ interactive: true });
+      this.acceptGoogleToken({ access_token: result.accessToken, expires_in: result.expiresIn });
+      return this.finishGoogleConnection();
+    }
     const cleanClientId = this.setGoogleClientId(clientId);
     if (!globalThis.google?.accounts?.oauth2) throw new Error('Google Identity Services did not load. Check your connection and try again.');
     const tokenResponse = await this.requestGoogleToken(cleanClientId, 'consent');
@@ -313,11 +329,15 @@ export class DriveSyncService {
 
   async resumeGoogleDrive() {
     const status = this.getDriveStatus();
+    if (!status.remembered) return null;
+    const nativeAuth = getNativeDriveAuthPlugin();
     const clientId = this.getGoogleClientId();
-    if (!status.remembered || !clientId) return null;
-    if (!globalThis.google?.accounts?.oauth2) throw new Error('Google Identity Services did not load.');
+    if (!nativeAuth && !clientId) return null;
+    if (!nativeAuth && !globalThis.google?.accounts?.oauth2) throw new Error('Google Identity Services did not load.');
     try {
-      const tokenResponse = await this.requestGoogleToken(clientId, '');
+      const tokenResponse = nativeAuth
+        ? await nativeAuth.authorize({ interactive: false }).then(result => ({ access_token: result.accessToken, expires_in: result.expiresIn }))
+        : await this.requestGoogleToken(clientId, '');
       this.acceptGoogleToken(tokenResponse);
       return await this.finishGoogleConnection();
     } catch (error) {
@@ -328,7 +348,10 @@ export class DriveSyncService {
   }
 
   disconnectGoogleDrive(revoke = true) {
-    if (revoke && this.accessToken && globalThis.google?.accounts?.oauth2?.revoke) {
+    const nativeAuth = getNativeDriveAuthPlugin();
+    if (revoke && nativeAuth) {
+      nativeAuth.revoke().catch(() => {});
+    } else if (revoke && this.accessToken && globalThis.google?.accounts?.oauth2?.revoke) {
       globalThis.google.accounts.oauth2.revoke(this.accessToken, () => {});
     }
     this.clearGoogleToken();

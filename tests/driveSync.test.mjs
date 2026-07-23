@@ -280,6 +280,40 @@ test('a remembered Drive connection silently renews on a later app launch', asyn
   }
 });
 
+test('the Android app authorizes Drive through the native account chooser without a web client ID', async () => {
+  const drive = new MockDrive();
+  const storage = new MemoryStorage();
+  const service = new DriveSyncService(storage, async (url, options) => {
+    if (String(url).includes('/oauth2/v3/userinfo')) return response({ email: 'android@example.com' });
+    return drive.fetch(url, options);
+  });
+  const previousCapacitor = globalThis.Capacitor;
+  const calls = [];
+  const plugin = {
+    async authorize(options) {
+      calls.push(options);
+      return { accessToken: 'native-android-token', expiresIn: 3600 };
+    },
+    async revoke() {}
+  };
+  globalThis.Capacitor = {
+    getPlatform: () => 'android',
+    Plugins: { DriveAuth: plugin },
+    registerPlugin: () => plugin
+  };
+
+  try {
+    const result = await service.connectGoogleDrive('');
+    assert.deepEqual(calls, [{ interactive: true }]);
+    assert.equal(result.email, 'android@example.com');
+    assert.equal(service.getGoogleClientId(), '');
+    assert.equal(service.getDriveStatus().isConnected, true);
+    assert.equal(service.accessToken, 'native-android-token');
+  } finally {
+    globalThis.Capacitor = previousCapacitor;
+  }
+});
+
 test('a valid Drive token survives a page reload and remains connected', () => {
   const storage = new MemoryStorage();
   const firstPage = new DriveSyncService(storage, async () => { throw new Error('unused'); });

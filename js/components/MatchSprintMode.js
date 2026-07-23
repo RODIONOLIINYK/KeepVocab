@@ -1,5 +1,5 @@
-import { driveSync } from '../services/driveSync.js?v=33';
-import { updateWordRepetition } from '../services/srsEngine.js?v=33';
+import { driveSync } from '../services/driveSync.js?v=41';
+import { updateWordRepetition } from '../services/srsEngine.js?v=41';
 import { escapeHtml } from '../utils/html.js';
 
 function shuffle(items) {

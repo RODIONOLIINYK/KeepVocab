@@ -1,6 +1,6 @@
 // Free Dictionary API client with validation, examples, timeout, and an offline cache.
 
-import { fetchExamplesForSenses, sanitizeExistingExamples } from './exampleSearch.js?v=33';
+import { fetchExamplesForSenses, sanitizeExistingExamples } from './exampleSearch.js?v=41';
 
 const DICTIONARY_API_BASE = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 const CACHE_KEY = 'keepvocab_dictionary_cache_v3';

@@ -18,7 +18,8 @@ import {
   buildGeminiSetupMessage,
   parseGeminiLiveMessage,
   downsampleAudio,
-  float32ToPcm16
+  float32ToPcm16,
+  microphoneAccessError
 } from '../js/services/geminiLive.js';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -114,6 +115,11 @@ test('browser audio is converted to bounded 16-bit PCM and downsampled to 16 kHz
   assert.deepEqual([...pcm], [-32768, -16384, 0, 16383, 32767]);
 });
 
+test('microphone permission failures explain how to recover on Android', () => {
+  const error = microphoneAccessError(Object.assign(new Error('Permission denied'), { name: 'NotAllowedError' }));
+  assert.match(error.message, /Allow Microphone for KeepVocab in Android Settings/);
+});
+
 test('the speaking route is visible in navigation, offline packaged, and explicit about connection timing', () => {
   const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
   const app = readFileSync(resolve(projectRoot, 'js/app.js'), 'utf8');
@@ -127,7 +133,7 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(component, /COACH_SILENCE_MS = 9000/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'start'\)/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'silence'\)/);
-  assert.match(serviceWorker, /SpeakingMode\.js\?v=40/);
-  assert.match(serviceWorker, /speakingLessons\.js\?v=40/);
-  assert.match(serviceWorker, /geminiLive\.js\?v=40/);
+  assert.match(serviceWorker, /SpeakingMode\.js\?v=41/);
+  assert.match(serviceWorker, /speakingLessons\.js\?v=41/);
+  assert.match(serviceWorker, /geminiLive\.js\?v=41/);
 });

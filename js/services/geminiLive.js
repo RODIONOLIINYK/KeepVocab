@@ -64,6 +64,14 @@ export function downsampleAudio(samples, sourceRate, targetRate = 16000) {
   return output;
 }
 
+export function microphoneAccessError(error) {
+  const denied = error?.name === 'NotAllowedError' || /permission denied|not allowed/i.test(String(error?.message || ''));
+  if (denied) {
+    return new Error('Microphone permission was denied. Allow Microphone for KeepVocab in Android Settings, then try again.');
+  }
+  return error instanceof Error ? error : new Error('Microphone access failed.');
+}
+
 function bytesToBase64(buffer) {
   const bytes = new Uint8Array(buffer);
   let binary = '';
@@ -162,9 +170,13 @@ export class GeminiLiveSession extends EventTarget {
 
   async startMicrophone() {
     if (!navigator.mediaDevices?.getUserMedia) throw new Error('This browser does not support microphone access.');
-    this.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-    });
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      });
+    } catch (error) {
+      throw microphoneAccessError(error);
+    }
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     this.inputContext = new AudioContextClass();
     await this.inputContext.resume();

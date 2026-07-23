@@ -1,7 +1,7 @@
 // Leitner 5-Box Spaced Repetition System Gym View
 
-import { driveSync } from '../services/driveSync.js?v=20';
-import { getDueWords, updateWordRepetition } from '../services/srsEngine.js?v=20';
+import { driveSync } from '../services/driveSync.js?v=41';
+import { getDueWords, updateWordRepetition } from '../services/srsEngine.js?v=41';
 import { speakWord } from '../services/speechService.js';
 
 export function renderLeitnerGymMode(container, onNavigate) {
