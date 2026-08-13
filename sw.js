@@ -1,21 +1,21 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v43';
+const CACHE_NAME = 'keepvocab-v45';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './css/styles.css',
-  './css/styles.css?v=40',
+  './css/styles.css?v=42',
   './js/app.js',
-  './js/app.js?v=43',
+  './js/app.js?v=45',
   './js/services/driveSync.js',
   './js/services/driveSync.js?v=42',
   './js/services/dictionaryApi.js',
-  './js/services/dictionaryApi.js?v=42',
+  './js/services/dictionaryApi.js?v=45',
   './js/services/speechService.js',
   './js/services/speechService.js?v=43',
   './js/services/bulkWords.js',
-  './js/services/bulkWords.js?v=43',
+  './js/services/bulkWords.js?v=45',
   './js/services/imageSearch.js',
   './js/services/imageSearch.js?v=42',
   './js/services/exampleSearch.js',

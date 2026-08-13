@@ -53,7 +53,59 @@ test('404 and invalid inputs are explicit errors, not fabricated entries', async
   await assert.rejects(
     () => fetchWordDetails('notaword', {
       storage: null,
-      fetchImpl: async () => ({ ok: false, status: 404 })
+      fetchImpl: async url => url.includes('api.languagetool.org')
+        ? ({ ok: true, status: 200, async json() { return { matches: [] }; } })
+        : url.includes('api.datamuse.com')
+          ? ({ ok: true, status: 200, async json() { return []; } })
+        : ({ ok: false, status: 404 })
+    }),
+    error => error instanceof DictionaryApiError && error.code === 'NOT_FOUND'
+  );
+});
+
+test('a close misspelling is corrected only after the original dictionary lookup fails', async () => {
+  const calls = [];
+  const result = await fetchWordDetails('recieve', {
+    storage: new MemoryStorage(),
+    fetchImpl: async url => {
+      calls.push(url);
+      if (url.endsWith('/recieve')) return { ok: false, status: 404 };
+      if (url.includes('api.languagetool.org')) {
+        return {
+          ok: true,
+          status: 200,
+          async json() {
+            return { matches: [{ rule: { issueType: 'misspelling' }, replacements: [{ value: 'receive' }, { value: 'relieve' }] }] };
+          }
+        };
+      }
+      if (url.endsWith('/receive')) {
+        return {
+          ok: true,
+          status: 200,
+          async json() {
+            return [{ word: 'receive', meanings: [{ partOfSpeech: 'verb', definitions: [{ definition: 'To be given something.' }] }] }];
+          }
+        };
+      }
+      throw new Error(`Unexpected URL ${url}`);
+    }
+  });
+
+  assert.equal(result.word, 'receive');
+  assert.equal(result.correctedFrom, 'recieve');
+  assert.deepEqual(calls.map(url => new URL(url).hostname), ['api.dictionaryapi.dev', 'api.languagetool.org', 'api.dictionaryapi.dev']);
+});
+
+test('an unrelated spelling suggestion is not silently accepted', async () => {
+  await assert.rejects(
+    () => fetchWordDetails('zzzzzz', {
+      storage: null,
+      fetchImpl: async url => url.includes('api.languagetool.org')
+        ? ({ ok: true, status: 200, async json() { return { matches: [{ rule: { issueType: 'misspelling' }, replacements: [{ value: 'banana' }] }] }; } })
+        : url.includes('api.datamuse.com')
+          ? ({ ok: true, status: 200, async json() { return [{ word: 'banana' }]; } })
+        : ({ ok: false, status: 404 })
     }),
     error => error instanceof DictionaryApiError && error.code === 'NOT_FOUND'
   );

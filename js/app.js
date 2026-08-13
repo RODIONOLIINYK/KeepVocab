@@ -1,12 +1,13 @@
 // Native application controller with monthly Google Drive backup.
 
 import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=42';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=42';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=45';
 import { speakWord } from './services/speechService.js?v=43';
 import { updateWordRepetition, getDueWords } from './services/srsEngine.js?v=42';
 import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=42';
 import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=42';
-import { MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, bulkResultToWord } from './services/bulkWords.js?v=43';
+import { findRelevantImages } from './services/imageSearch.js?v=42';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=45';
 
 import { renderReviewView } from './components/ReviewView.js?v=43';
 import { renderLibraryView } from './components/LibraryView.js?v=43';
@@ -258,12 +259,43 @@ function setupQuickAddModal() {
   const bulkResultsList = document.getElementById('bulk-word-results');
   const bulkStatus = document.getElementById('bulk-word-status');
   const bulkSave = document.getElementById('btn-save-bulk-words');
+  const bulkRetryMissing = document.getElementById('retry-bulk-missing');
+  const bulkProgress = document.getElementById('bulk-import-progress');
+  const bulkProgressPhase = document.getElementById('bulk-progress-phase');
+  const bulkProgressEta = document.getElementById('bulk-progress-eta');
+  const bulkProgressTrack = document.getElementById('bulk-progress-track');
+  const bulkProgressFill = document.getElementById('bulk-progress-fill');
+  const bulkProgressCount = document.getElementById('bulk-progress-count');
   let senseDrafts = new Map();
   let selectedSenseIds = new Set();
   let focusedSenseId = null;
   let bulkResults = [];
 
   if (!btnOpen) return;
+
+  const updateBulkProgress = ({ completed, total, phase, startedAt, finished = false }) => {
+    const safeTotal = Math.max(1, Number(total) || 1);
+    const safeCompleted = Math.max(0, Math.min(safeTotal, Number(completed) || 0));
+    const percent = Math.round((safeCompleted / safeTotal) * 100);
+    bulkProgress.hidden = false;
+    bulkProgressPhase.textContent = phase;
+    bulkProgressCount.textContent = `Processed ${safeCompleted} of ${total} word${total === 1 ? '' : 's'} · ${percent}%`;
+    bulkProgressFill.style.width = `${percent}%`;
+    bulkProgressTrack.setAttribute('aria-valuenow', String(percent));
+    if (finished || safeCompleted >= safeTotal) {
+      bulkProgressEta.textContent = 'Complete';
+      return;
+    }
+    if (!safeCompleted) {
+      bulkProgressEta.textContent = 'Estimating time…';
+      return;
+    }
+    const elapsedMs = Date.now() - startedAt;
+    const remainingSeconds = Math.max(1, Math.ceil((elapsedMs / safeCompleted) * (safeTotal - safeCompleted) / 1000));
+    bulkProgressEta.textContent = remainingSeconds < 60
+      ? `About ${remainingSeconds} sec left`
+      : `About ${Math.ceil(remainingSeconds / 60)} min left`;
+  };
 
   const openModal = () => {
     modal.classList.add('active');
@@ -288,6 +320,9 @@ function setupQuickAddModal() {
     });
     bulkSave.disabled = !complete;
     bulkSave.innerHTML = `<i class="fa-solid fa-bookmark"></i> Save ${bulkResults.length || ''} word${bulkResults.length === 1 ? '' : 's'}`;
+    const missingCount = bulkResults.filter(result => result.status !== 'ready').length;
+    bulkRetryMissing.hidden = missingCount === 0;
+    bulkRetryMissing.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Retry ${missingCount || ''} missing meaning${missingCount === 1 ? '' : 's'}`;
   };
 
   const renderBulkResults = () => {
@@ -308,7 +343,15 @@ function setupQuickAddModal() {
         renderBulkResults();
         bulkStatus.textContent = `${bulkResults.length} word${bulkResults.length === 1 ? '' : 's'} ready to review.`;
       });
-      heading.append(title, remove);
+      const titleGroup = document.createElement('span');
+      titleGroup.appendChild(title);
+      if (result.data?.correctedFrom) {
+        const correction = document.createElement('small');
+        correction.className = 'spelling-correction';
+        correction.textContent = `Corrected from ${result.data.correctedFrom}`;
+        titleGroup.appendChild(correction);
+      }
+      heading.append(titleGroup, remove);
       row.appendChild(heading);
 
       if (result.status === 'ready') {
@@ -369,9 +412,11 @@ function setupQuickAddModal() {
     bulkInput.value = '';
     bulkCount.textContent = '0 words';
     bulkStatus.textContent = '';
+    bulkProgress.hidden = true;
     bulkResults = [];
     bulkResultsList.innerHTML = '';
     bulkSave.disabled = true;
+    bulkRetryMissing.hidden = true;
     setAddMode('single', false);
     currentFetchedData = null;
   };
@@ -467,6 +512,8 @@ function setupQuickAddModal() {
     bulkResults = [];
     bulkResultsList.innerHTML = '';
     bulkSave.disabled = true;
+    bulkProgress.hidden = true;
+    bulkRetryMissing.hidden = true;
   });
   bulkPrepare.addEventListener('click', async () => {
     const allTerms = parseBulkWordList(bulkInput.value, Number.MAX_SAFE_INTEGER);
@@ -478,19 +525,62 @@ function setupQuickAddModal() {
     bulkPrepare.disabled = true;
     bulkPrepare.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finding meanings…';
     bulkStatus.textContent = `Looking up ${allTerms.length} word${allTerms.length === 1 ? '' : 's'}…`;
+    const lookupStartedAt = Date.now();
+    updateBulkProgress({ completed: 0, total: allTerms.length, phase: 'Finding meanings', startedAt: lookupStartedAt });
     try {
-      bulkResults = await lookupBulkWords(allTerms, fetchWordDetails, 3);
+      const lookedUp = await lookupBulkWords(allTerms, fetchWordDetails, {
+        delayMs: BULK_LOOKUP_DELAY_MS,
+        retries: 2,
+        retryDelayMs: 750,
+        onProgress: ({ completed, total, term }) => {
+          bulkStatus.textContent = `Looking up ${completed} of ${total}: ${term}`;
+          updateBulkProgress({ completed, total, phase: 'Finding meanings', startedAt: lookupStartedAt });
+        }
+      });
+      bulkResults = dedupeBulkResults(lookedUp);
       renderBulkResults();
       const manualCount = bulkResults.filter(result => result.status === 'manual').length;
+      const mergedCount = lookedUp.length - bulkResults.length;
+      updateBulkProgress({ completed: lookedUp.length, total: lookedUp.length, phase: 'Meanings ready', startedAt: lookupStartedAt, finished: true });
       bulkStatus.textContent = manualCount
         ? `${bulkResults.length - manualCount} ready; ${manualCount} need${manualCount === 1 ? 's' : ''} a manual definition.`
-        : `${bulkResults.length} words ready. Review each selected meaning, then save the list.`;
+        : `${bulkResults.length} words ready${mergedCount ? `; ${mergedCount} corrected duplicate${mergedCount === 1 ? ' was' : 's were'} merged` : ''}. Review each meaning, then save; images are chosen automatically.`;
     } finally {
       bulkPrepare.disabled = false;
       bulkPrepare.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
     }
   });
-  bulkSave.addEventListener('click', () => {
+  bulkRetryMissing.addEventListener('click', async () => {
+    const missingCount = bulkResults.filter(result => result.status !== 'ready').length;
+    if (!missingCount) return;
+    const retryStartedAt = Date.now();
+    bulkRetryMissing.disabled = true;
+    bulkPrepare.disabled = true;
+    updateBulkProgress({ completed: 0, total: missingCount, phase: 'Retrying missing meanings', startedAt: retryStartedAt });
+    bulkStatus.textContent = `Retrying only ${missingCount} missing word${missingCount === 1 ? '' : 's'}…`;
+    try {
+      bulkResults = await retryMissingBulkWords(bulkResults, fetchWordDetails, {
+        delayMs: BULK_LOOKUP_DELAY_MS,
+        retries: 2,
+        retryDelayMs: 1000,
+        onProgress: ({ completed, total, term }) => {
+          bulkStatus.textContent = `Retrying ${completed} of ${total}: ${term}`;
+          updateBulkProgress({ completed, total, phase: 'Retrying missing meanings', startedAt: retryStartedAt });
+        }
+      });
+      bulkResults = dedupeBulkResults(bulkResults);
+      renderBulkResults();
+      const remaining = bulkResults.filter(result => result.status !== 'ready').length;
+      updateBulkProgress({ completed: missingCount, total: missingCount, phase: 'Retry finished', startedAt: retryStartedAt, finished: true });
+      bulkStatus.textContent = remaining
+        ? `${missingCount - remaining} recovered; ${remaining} still need${remaining === 1 ? 's' : ''} a meaning. You can retry again or enter it manually.`
+        : `All ${bulkResults.length} meanings are ready. Review them, then save.`;
+    } finally {
+      bulkRetryMissing.disabled = false;
+      bulkPrepare.disabled = false;
+    }
+  });
+  bulkSave.addEventListener('click', async () => {
     const items = bulkResults.map((result, index) => {
       const senseIndex = result.selectedSenseIndex || 0;
       const manualDefinition = result.manualDefinition || '';
@@ -500,8 +590,22 @@ function setupQuickAddModal() {
       bulkStatus.textContent = 'Every word needs an intended meaning before the list can be saved.';
       return;
     }
+    const originalButton = bulkSave.innerHTML;
+    bulkSave.disabled = true;
+    const imageStartedAt = Date.now();
+    updateBulkProgress({ completed: 0, total: items.length, phase: 'Choosing images', startedAt: imageStartedAt });
     try {
-      const saved = driveSync.addWords(items.map(item => sanitizeExistingExamples(item.word, [item])[0]));
+      const checkedItems = items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
+      const existingImageUrls = driveSync.getWords().flatMap(item => [item.imageUrl, item.imageSourceUrl]).filter(Boolean);
+      const enrichedItems = await attachImagesSequentially(checkedItems, findRelevantImages, {
+        excludeUrls: existingImageUrls,
+        onProgress: ({ completed, total, word }) => {
+          bulkStatus.textContent = `Choosing image ${completed} of ${total}: ${word}`;
+          bulkSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Choosing images ${completed}/${total}`;
+          updateBulkProgress({ completed, total, phase: 'Choosing images', startedAt: imageStartedAt });
+        }
+      });
+      const saved = driveSync.addWords(enrichedItems);
       driveSync.setActiveNotebook(saved[0].notebook);
       wordsQueue = buildStudyQueue();
       currentIndex = 0;
@@ -511,6 +615,8 @@ function setupQuickAddModal() {
     } catch (error) {
       bulkStatus.textContent = error.message;
       showToast(error.message, 'error');
+      bulkSave.disabled = false;
+      bulkSave.innerHTML = originalButton;
     }
   });
   input.addEventListener('input', () => {
@@ -535,9 +641,13 @@ function setupQuickAddModal() {
 
     try {
       currentFetchedData = await fetchWordDetails(w);
+      if (currentFetchedData.correctedFrom) input.value = currentFetchedData.word;
       document.getElementById('prev-w-title').textContent = currentFetchedData.word;
       document.getElementById('prev-w-phonetic').textContent = currentFetchedData.phonetic;
       renderSenses(currentFetchedData);
+      if (currentFetchedData.correctedFrom) {
+        formStatus.textContent = `Spelling corrected from “${currentFetchedData.correctedFrom}” to “${currentFetchedData.word}”. Review the meaning before saving.`;
+      }
       preview.style.display = 'block';
     } catch (err) {
       currentFetchedData = null;
@@ -550,7 +660,7 @@ function setupQuickAddModal() {
     }
   });
 
-  btnSave.addEventListener('click', () => {
+  btnSave.addEventListener('click', async () => {
     const wordText = input.value.trim();
     if (!wordText) return;
 
@@ -580,9 +690,19 @@ function setupQuickAddModal() {
       return;
     }
 
+    const originalButton = btnSave.innerHTML;
+    btnSave.disabled = true;
     try {
       const senseCheckedItems = items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
-      const saved = driveSync.addWords(senseCheckedItems);
+      const existingImageUrls = driveSync.getWords().flatMap(item => [item.imageUrl, item.imageSourceUrl]).filter(Boolean);
+      const enrichedItems = await attachImagesSequentially(senseCheckedItems, findRelevantImages, {
+        excludeUrls: existingImageUrls,
+        onProgress: ({ completed, total }) => {
+          formStatus.textContent = `Choosing image ${completed} of ${total}…`;
+          btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Choosing images ${completed}/${total}`;
+        }
+      });
+      const saved = driveSync.addWords(enrichedItems);
       driveSync.setActiveNotebook(saved[0].notebook);
       wordsQueue = buildStudyQueue();
       currentIndex = 0;
@@ -591,6 +711,8 @@ function setupQuickAddModal() {
       navigateTo(currentView);
     } catch (error) {
       showToast(error.message, 'error');
+      btnSave.disabled = false;
+      btnSave.innerHTML = originalButton;
     }
   });
 }
