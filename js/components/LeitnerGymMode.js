@@ -2,7 +2,7 @@
 
 import { driveSync } from '../services/driveSync.js?v=42';
 import { getDueWords, updateWordRepetition } from '../services/srsEngine.js?v=42';
-import { speakWord } from '../services/speechService.js';
+import { speakWord } from '../services/speechService.js?v=43';
 
 export function renderLeitnerGymMode(container, onNavigate) {
   const activeNotebook = driveSync.getActiveNotebook();
@@ -167,7 +167,7 @@ export function renderLeitnerGymMode(container, onNavigate) {
       </div>
     `;
 
-    container.querySelector('#btn-srs-audio').addEventListener('click', () => speakWord(word.word));
+    container.querySelector('#btn-srs-audio').addEventListener('click', () => speakWord(word.word, 'en-US', 0.9, word.audioUrl));
 
     if (!sessionRevealed) {
       container.querySelector('#btn-reveal-answer').addEventListener('click', () => {
@@ -188,7 +188,7 @@ export function renderLeitnerGymMode(container, onNavigate) {
       container.querySelector('#btn-srs-easy').addEventListener('click', () => submitGrade('easy'));
     }
 
-    speakWord(word.word);
+    speakWord(word.word, 'en-US', 0.9, word.audioUrl);
   }
 
   renderGymOverview();

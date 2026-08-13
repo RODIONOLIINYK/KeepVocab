@@ -1,7 +1,7 @@
 // Context Sentence Cloze & Multiple-Choice Quiz Engine Component
 
 import { driveSync } from '../services/driveSync.js?v=42';
-import { speakWord } from '../services/speechService.js';
+import { speakWord } from '../services/speechService.js?v=43';
 import { updateWordRepetition } from '../services/srsEngine.js?v=42';
 
 export function renderContextQuizMode(container, onNavigate) {
@@ -114,7 +114,7 @@ export function renderContextQuizMode(container, onNavigate) {
           btn.classList.add('correct');
           score++;
           updateWordRepetition(targetWord.id, 'good');
-          speakWord(targetWord.word);
+          speakWord(targetWord.word, 'en-US', 0.9, targetWord.audioUrl);
         } else {
           btn.classList.add('incorrect');
           // Highlight correct option

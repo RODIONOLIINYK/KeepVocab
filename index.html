@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KeepVocab - Vocabulary Gym</title>
 
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/keepvocab-mark-v2-192.png" type="image/png">
   <link rel="apple-touch-icon" href="icons/keepvocab-mark-v2-180.png">
-  <meta name="theme-color" content="#22c55e">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
   <!-- Google Identity Services for user-approved Drive backup access -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -17,7 +19,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Specification Stylesheet -->
-  <link rel="stylesheet" href="css/styles.css?v=39">
+  <link rel="stylesheet" href="css/styles.css?v=40">
 </head>
 <body>
 
@@ -397,6 +399,12 @@
         <button class="status-pill offline" id="btn-close-add-modal" style="font-size: 0.8rem; padding: 4px 8px;">✕</button>
       </div>
 
+      <div class="add-mode-tabs" role="tablist" aria-label="Add vocabulary mode">
+        <button type="button" class="active" id="single-add-tab" role="tab" aria-selected="true" aria-controls="single-add-panel"><i class="fa-solid fa-font"></i> One word</button>
+        <button type="button" id="bulk-add-tab" role="tab" aria-selected="false" aria-controls="bulk-add-panel"><i class="fa-solid fa-list"></i> Word list</button>
+      </div>
+
+      <div id="single-add-panel" role="tabpanel" aria-labelledby="single-add-tab">
       <div style="display: flex; flex-direction: column; gap: 12px;">
         <form class="quick-add-row" id="add-word-lookup-form" style="display: flex; gap: 10px;">
           <input type="text" id="add-word-input" placeholder="Type a word, then press Enter" enterkeyhint="search" autocomplete="off" autocapitalize="none" autofocus style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 0.95rem; outline: none;">
@@ -428,9 +436,20 @@
         <button class="status-pill offline" id="btn-cancel-add-modal">Cancel</button>
         <button class="btn-green-solid" id="btn-save-new-word">Save to Library</button>
       </div>
+      </div>
+
+      <div id="bulk-add-panel" class="bulk-add-panel" role="tabpanel" aria-labelledby="bulk-add-tab" hidden>
+        <label for="bulk-word-input"><strong>Paste your word list</strong><span>Use one word per line, or separate words with commas or semicolons.</span></label>
+        <textarea id="bulk-word-input" rows="6" maxlength="3000" placeholder="resilient&#10;meticulous&#10;take into account"></textarea>
+        <div class="bulk-add-toolbar"><span id="bulk-word-count">0 words</span><button type="button" class="btn-green-solid" id="prepare-bulk-words"><i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings</button></div>
+        <p class="sense-helper">KeepVocab shows a meaning for every word before saving, so you can choose the intended sense instead of importing the wrong one.</p>
+        <div id="bulk-word-results" class="bulk-word-results" aria-live="polite"></div>
+        <p id="bulk-word-status" class="form-message" role="status" aria-live="polite"></p>
+        <div class="sense-modal-actions bulk-actions"><button type="button" class="status-pill offline" id="btn-cancel-bulk-add">Cancel</button><button type="button" class="btn-green-solid" id="btn-save-bulk-words" disabled><i class="fa-solid fa-bookmark"></i> Save word list</button></div>
+      </div>
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=42"></script>
+  <script type="module" src="js/app.js?v=43"></script>
 </body>
 </html>

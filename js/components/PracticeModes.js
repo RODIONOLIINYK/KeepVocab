@@ -1,5 +1,5 @@
 import { driveSync } from '../services/driveSync.js?v=42';
-import { speakWord } from '../services/speechService.js';
+import { speakWord } from '../services/speechService.js?v=43';
 import { updateWordRepetition } from '../services/srsEngine.js?v=42';
 import { escapeHtml } from '../utils/html.js';
 
@@ -73,12 +73,24 @@ export function renderSpellingMode(container, onNavigate) {
           <p>Listen, then type the word that matches this definition.</p>
           <blockquote>${escapeHtml(word.definition)}</blockquote>
           <div class="listen-controls"><button class="audio-btn-circle large" id="spell-listen" aria-label="Play word"><i class="fa-solid fa-volume-high"></i></button><button class="status-pill offline" id="spell-listen-slow"><i class="fa-solid fa-gauge-simple-low"></i> Slow</button></div>
+          <p class="speech-help" id="spell-audio-status" role="status" aria-live="polite">Tap the speaker to hear the word. Use Slow to repeat it clearly.</p>
           ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word returns to Box 1 for another review.'}</span></div><button class="btn-green-solid" id="spell-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid">Check</button></form>`}
         </div>
       </div></section>`;
     container.querySelector('#spell-exit').addEventListener('click', () => go('dashboard', onNavigate));
-    container.querySelector('#spell-listen').addEventListener('click', () => speakWord(word.word));
-    container.querySelector('#spell-listen-slow').addEventListener('click', () => speakWord(word.word, 'en-US', 0.72));
+    const playWord = async (button, rate = 0.9) => {
+      button.disabled = true;
+      button.classList.add('playing');
+      const played = await speakWord(word.word, 'en-US', rate, word.audioUrl);
+      button.disabled = false;
+      button.classList.remove('playing');
+      if (!played) {
+        const status = container.querySelector('#spell-audio-status');
+        if (status) status.textContent = 'Speech is unavailable. Install or enable an English voice in this device’s speech settings.';
+      }
+    };
+    container.querySelector('#spell-listen').addEventListener('click', event => playWord(event.currentTarget));
+    container.querySelector('#spell-listen-slow').addEventListener('click', event => playWord(event.currentTarget, 0.72));
     container.querySelector('#spell-form')?.addEventListener('submit', event => {
       event.preventDefault();
       const answer = container.querySelector('#spell-answer').value.trim().toLowerCase();

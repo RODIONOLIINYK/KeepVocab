@@ -1,7 +1,7 @@
 // Visual 3D Flip Flashcards Component
 
 import { driveSync } from '../services/driveSync.js?v=42';
-import { speakWord } from '../services/speechService.js';
+import { speakWord } from '../services/speechService.js?v=43';
 import { updateWordRepetition } from '../services/srsEngine.js?v=42';
 
 export function renderFlashcardsMode(container, onNavigate) {
@@ -99,7 +99,7 @@ export function renderFlashcardsMode(container, onNavigate) {
 
     container.querySelector('#btn-speak-word').addEventListener('click', (e) => {
       e.stopPropagation();
-      speakWord(word.word);
+      speakWord(word.word, 'en-US', 0.9, word.audioUrl);
     });
 
     container.querySelector('#btn-back-dashboard').addEventListener('click', () => onNavigate('dashboard'));
@@ -135,7 +135,7 @@ export function renderFlashcardsMode(container, onNavigate) {
     });
 
     // Auto-speak on first show
-    speakWord(word.word);
+    speakWord(word.word, 'en-US', 0.9, word.audioUrl);
   }
 
   renderCard();

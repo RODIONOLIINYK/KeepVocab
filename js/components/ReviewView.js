@@ -1,5 +1,5 @@
 import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=42';
-import { speakWord } from '../services/speechService.js';
+import { speakWord } from '../services/speechService.js?v=43';
 import { getDueWords, updateWordRepetition } from '../services/srsEngine.js?v=42';
 import { escapeHtml } from '../utils/html.js';
 
@@ -73,7 +73,7 @@ export function renderReviewView(container, onNavigate) {
     container.querySelector('#review-go-dashboard')?.addEventListener('click', () => goTo('dashboard'));
     container.querySelector('#review-go-stats')?.addEventListener('click', () => goTo('stats'));
     container.querySelector('#review-exit')?.addEventListener('click', () => goTo('dashboard'));
-    container.querySelector('#review-speak')?.addEventListener('click', () => speakWord(current.word));
+    container.querySelector('#review-speak')?.addEventListener('click', () => speakWord(current.word, 'en-US', 0.9, current.audioUrl));
     container.querySelector('#review-form')?.addEventListener('submit', event => {
       event.preventDefault();
       const answer = container.querySelector('#review-answer').value;

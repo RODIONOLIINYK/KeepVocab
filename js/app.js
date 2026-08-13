@@ -2,18 +2,19 @@
 
 import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=42';
 import { fetchWordDetails } from './services/dictionaryApi.js?v=42';
-import { speakWord } from './services/speechService.js';
+import { speakWord } from './services/speechService.js?v=43';
 import { updateWordRepetition, getDueWords } from './services/srsEngine.js?v=42';
 import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=42';
 import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=42';
+import { MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, bulkResultToWord } from './services/bulkWords.js?v=43';
 
-import { renderReviewView } from './components/ReviewView.js?v=42';
-import { renderLibraryView } from './components/LibraryView.js?v=42';
+import { renderReviewView } from './components/ReviewView.js?v=43';
+import { renderLibraryView } from './components/LibraryView.js?v=43';
 import { renderStatsView } from './components/StatsView.js?v=42';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=42';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=43';
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=42';
 import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=42';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=42';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=43';
 
 function localDateKey(date = new Date()) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
@@ -247,15 +248,102 @@ function setupQuickAddModal() {
   const formStatus = document.getElementById('add-word-form-status');
   const editorTitle = document.getElementById('meaning-editor-title');
   const editorSubtitle = document.getElementById('meaning-editor-subtitle');
+  const singleTab = document.getElementById('single-add-tab');
+  const bulkTab = document.getElementById('bulk-add-tab');
+  const singlePanel = document.getElementById('single-add-panel');
+  const bulkPanel = document.getElementById('bulk-add-panel');
+  const bulkInput = document.getElementById('bulk-word-input');
+  const bulkCount = document.getElementById('bulk-word-count');
+  const bulkPrepare = document.getElementById('prepare-bulk-words');
+  const bulkResultsList = document.getElementById('bulk-word-results');
+  const bulkStatus = document.getElementById('bulk-word-status');
+  const bulkSave = document.getElementById('btn-save-bulk-words');
   let senseDrafts = new Map();
   let selectedSenseIds = new Set();
   let focusedSenseId = null;
+  let bulkResults = [];
 
   if (!btnOpen) return;
 
   const openModal = () => {
     modal.classList.add('active');
     window.setTimeout(() => input.focus(), 0);
+  };
+
+  const setAddMode = (mode, focus = true) => {
+    const bulk = mode === 'bulk';
+    singleTab.classList.toggle('active', !bulk);
+    bulkTab.classList.toggle('active', bulk);
+    singleTab.setAttribute('aria-selected', String(!bulk));
+    bulkTab.setAttribute('aria-selected', String(bulk));
+    singlePanel.hidden = bulk;
+    bulkPanel.hidden = !bulk;
+    if (focus) window.setTimeout(() => (bulk ? bulkInput : input).focus(), 0);
+  };
+
+  const updateBulkSaveState = () => {
+    const complete = bulkResults.length > 0 && bulkResults.every((result, index) => {
+      if (result.status === 'ready') return true;
+      return Boolean(result.manualDefinition?.trim());
+    });
+    bulkSave.disabled = !complete;
+    bulkSave.innerHTML = `<i class="fa-solid fa-bookmark"></i> Save ${bulkResults.length || ''} word${bulkResults.length === 1 ? '' : 's'}`;
+  };
+
+  const renderBulkResults = () => {
+    bulkResultsList.innerHTML = '';
+    bulkResults.forEach((result, index) => {
+      const row = document.createElement('article');
+      row.className = `bulk-word-row ${result.status}`;
+      const heading = document.createElement('div');
+      heading.className = 'bulk-word-heading';
+      const title = document.createElement('strong');
+      title.textContent = result.data?.word || result.term;
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.setAttribute('aria-label', `Remove ${result.term}`);
+      remove.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      remove.addEventListener('click', () => {
+        bulkResults.splice(index, 1);
+        renderBulkResults();
+        bulkStatus.textContent = `${bulkResults.length} word${bulkResults.length === 1 ? '' : 's'} ready to review.`;
+      });
+      heading.append(title, remove);
+      row.appendChild(heading);
+
+      if (result.status === 'ready') {
+        const senses = Array.isArray(result.data?.senses) && result.data.senses.length ? result.data.senses : [result.data];
+        const label = document.createElement('label');
+        label.textContent = 'Meaning to import';
+        const select = document.createElement('select');
+        select.dataset.bulkSense = String(index);
+        senses.forEach((sense, senseIndex) => {
+          const option = document.createElement('option');
+          option.value = String(senseIndex);
+          option.textContent = `${sense.partOfSpeech || 'word'} — ${sense.definition || 'Definition unavailable'}`;
+          select.appendChild(option);
+        });
+        select.value = String(result.selectedSenseIndex || 0);
+        select.addEventListener('change', () => { result.selectedSenseIndex = Number(select.value); });
+        label.appendChild(select);
+        row.appendChild(label);
+      } else {
+        const note = document.createElement('p');
+        note.textContent = result.error || 'No dictionary meaning was found.';
+        const label = document.createElement('label');
+        label.textContent = 'Add the intended meaning manually';
+        const definition = document.createElement('textarea');
+        definition.rows = 2;
+        definition.dataset.bulkManual = String(index);
+        definition.placeholder = `Definition of ${result.term}`;
+        definition.value = result.manualDefinition || '';
+        definition.addEventListener('input', () => { result.manualDefinition = definition.value; updateBulkSaveState(); });
+        label.appendChild(definition);
+        row.append(note, label);
+      }
+      bulkResultsList.appendChild(row);
+    });
+    updateBulkSaveState();
   };
 
   const clearSenseState = () => {
@@ -278,6 +366,13 @@ function setupQuickAddModal() {
     definitionInput.value = '';
     exampleInput.value = '';
     formStatus.textContent = '';
+    bulkInput.value = '';
+    bulkCount.textContent = '0 words';
+    bulkStatus.textContent = '';
+    bulkResults = [];
+    bulkResultsList.innerHTML = '';
+    bulkSave.disabled = true;
+    setAddMode('single', false);
     currentFetchedData = null;
   };
 
@@ -360,8 +455,64 @@ function setupQuickAddModal() {
   };
 
   btnOpen.addEventListener('click', openModal);
+  singleTab.addEventListener('click', () => setAddMode('single'));
+  bulkTab.addEventListener('click', () => setAddMode('bulk'));
   btnClose.addEventListener('click', closeModal);
   btnCancel.addEventListener('click', closeModal);
+  document.getElementById('btn-cancel-bulk-add').addEventListener('click', closeModal);
+  bulkInput.addEventListener('input', () => {
+    const terms = parseBulkWordList(bulkInput.value, Number.MAX_SAFE_INTEGER);
+    bulkCount.textContent = `${terms.length} word${terms.length === 1 ? '' : 's'}`;
+    bulkStatus.textContent = terms.length > MAX_BULK_WORDS ? `You can import up to ${MAX_BULK_WORDS} words at once.` : '';
+    bulkResults = [];
+    bulkResultsList.innerHTML = '';
+    bulkSave.disabled = true;
+  });
+  bulkPrepare.addEventListener('click', async () => {
+    const allTerms = parseBulkWordList(bulkInput.value, Number.MAX_SAFE_INTEGER);
+    if (!allTerms.length) { bulkInput.focus(); return; }
+    if (allTerms.length > MAX_BULK_WORDS) {
+      bulkStatus.textContent = `This list has ${allTerms.length} words. Keep the first ${MAX_BULK_WORDS} or split it into smaller batches.`;
+      return;
+    }
+    bulkPrepare.disabled = true;
+    bulkPrepare.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finding meanings…';
+    bulkStatus.textContent = `Looking up ${allTerms.length} word${allTerms.length === 1 ? '' : 's'}…`;
+    try {
+      bulkResults = await lookupBulkWords(allTerms, fetchWordDetails, 3);
+      renderBulkResults();
+      const manualCount = bulkResults.filter(result => result.status === 'manual').length;
+      bulkStatus.textContent = manualCount
+        ? `${bulkResults.length - manualCount} ready; ${manualCount} need${manualCount === 1 ? 's' : ''} a manual definition.`
+        : `${bulkResults.length} words ready. Review each selected meaning, then save the list.`;
+    } finally {
+      bulkPrepare.disabled = false;
+      bulkPrepare.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
+    }
+  });
+  bulkSave.addEventListener('click', () => {
+    const items = bulkResults.map((result, index) => {
+      const senseIndex = result.selectedSenseIndex || 0;
+      const manualDefinition = result.manualDefinition || '';
+      return bulkResultToWord(result, senseIndex, manualDefinition);
+    });
+    if (!items.length || items.some(item => !item.definition)) {
+      bulkStatus.textContent = 'Every word needs an intended meaning before the list can be saved.';
+      return;
+    }
+    try {
+      const saved = driveSync.addWords(items.map(item => sanitizeExistingExamples(item.word, [item])[0]));
+      driveSync.setActiveNotebook(saved[0].notebook);
+      wordsQueue = buildStudyQueue();
+      currentIndex = 0;
+      closeModal();
+      showToast(`Saved ${saved.length} words to ${saved[0].notebook}.`);
+      navigateTo(currentView);
+    } catch (error) {
+      bulkStatus.textContent = error.message;
+      showToast(error.message, 'error');
+    }
+  });
   input.addEventListener('input', () => {
     if (!currentFetchedData) return;
     currentFetchedData = null;
@@ -672,7 +823,8 @@ function setupFlashcardControls() {
 
   if (audioBtn) {
     audioBtn.addEventListener('click', () => {
-      speakWord(wordsQueue[currentIndex].word, 'en-US', speechSpeed);
+      const word = wordsQueue[currentIndex];
+      speakWord(word.word, 'en-US', speechSpeed, word.audioUrl);
     });
   }
 
@@ -751,7 +903,8 @@ function setupKeyboardShortcuts() {
     if (e.key === ' ') {
       if (!wordsQueue.length || currentView !== 'dashboard') return;
       e.preventDefault();
-      speakWord(wordsQueue[currentIndex].word, 'en-US', speechSpeed);
+      const word = wordsQueue[currentIndex];
+      speakWord(word.word, 'en-US', speechSpeed, word.audioUrl);
     } else if (e.key === '1') {
       const btn = document.getElementById('btn-rate-again');
       if (btn) btn.click();

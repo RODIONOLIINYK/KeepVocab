@@ -1,7 +1,7 @@
 // Speed Active Spelling & Recall Challenge Component
 
 import { driveSync } from '../services/driveSync.js?v=42';
-import { speakWord } from '../services/speechService.js';
+import { speakWord } from '../services/speechService.js?v=43';
 import { updateWordRepetition } from '../services/srsEngine.js?v=42';
 
 export function renderSpeedSpellingMode(container, onNavigate) {
@@ -103,7 +103,7 @@ export function renderSpeedSpellingMode(container, onNavigate) {
       onNavigate('dashboard');
     });
 
-    container.querySelector('#btn-listen-spelling').addEventListener('click', () => speakWord(currentWord.word));
+    container.querySelector('#btn-listen-spelling').addEventListener('click', () => speakWord(currentWord.word, 'en-US', 0.9, currentWord.audioUrl));
 
     const inputEl = container.querySelector('#spelling-input');
     inputEl.focus();
@@ -122,7 +122,7 @@ export function renderSpeedSpellingMode(container, onNavigate) {
       renderWord();
     });
 
-    speakWord(currentWord.word);
+    speakWord(currentWord.word, 'en-US', 0.9, currentWord.audioUrl);
   }
 
   renderWord();

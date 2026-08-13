@@ -9,7 +9,7 @@ import {
   buildCoachInitiativeCue,
   buildSpeakingInstruction
 } from '../data/speakingLessons.js?v=42';
-import { GeminiLiveSession, GEMINI_KEY_STORAGE } from '../services/geminiLive.js?v=42';
+import { GeminiLiveSession, GEMINI_KEY_STORAGE } from '../services/geminiLive.js?v=43';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
 export const COACH_SILENCE_MS = 9000;
@@ -202,9 +202,9 @@ async function startLiveLesson(container, lesson, onNavigate) {
   };
   const scheduleInitiative = () => {
     clearInitiativeTimer();
-    if (muted || activeSession !== session) return;
+    if (muted || status !== 'listening' || activeSession !== session) return;
     initiativeTimer = window.setTimeout(() => {
-      if (muted || activeSession !== session) return;
+      if (muted || status !== 'listening' || activeSession !== session) return;
       const sent = session.sendText(buildCoachInitiativeCue(lesson, 'silence'));
       if (sent) updateStatus('helping');
     }, COACH_SILENCE_MS);
@@ -213,8 +213,18 @@ async function startLiveLesson(container, lesson, onNavigate) {
   const updateStatus = nextStatus => {
     status = nextStatus;
     const label = container.querySelector('#live-status-label');
+    const turnCue = container.querySelector('#live-turn-cue');
+    const interruptButton = container.querySelector('#interrupt-live-coach');
     const orb = container.querySelector('#speaking-orb');
-    if (label) label.textContent = ({ connecting: 'Connecting securely…', ready: 'Preparing microphone…', listening: 'Listening — speak naturally', speaking: 'Mira is speaking', helping: 'Mira is helping you continue…', muted: 'Microphone paused', closed: 'Lesson ended' })[status] || status;
+    if (label) label.textContent = ({ connecting: 'Connecting securely…', ready: 'Preparing microphone…', listening: 'Your turn — Mira is listening', speaking: 'Mira’s turn — listening is paused', helping: 'Mira is helping you continue…', muted: 'Microphone paused', closed: 'Lesson ended' })[status] || status;
+    if (turnCue) turnCue.textContent = status === 'speaking'
+      ? 'Want to answer now? Start speaking to interrupt, or tap Stop Mira.'
+      : status === 'listening'
+        ? 'Speak now. Mira will wait until your turn is complete.'
+        : status === 'muted'
+          ? 'Unmute when you are ready to take your turn.'
+          : 'Setting up clear turn-by-turn audio…';
+    if (interruptButton) interruptButton.hidden = status !== 'speaking';
     if (orb) orb.className = `speaking-orb ${status}`;
     if (status === 'speaking' || status === 'muted' || status === 'closed') clearInitiativeTimer();
     else if (status === 'listening') scheduleInitiative();
@@ -229,8 +239,8 @@ async function startLiveLesson(container, lesson, onNavigate) {
   container.innerHTML = `<section class="speaking-live-shell" aria-labelledby="live-lesson-title">
     <header class="live-header"><button id="live-back" class="speaking-back"><i class="fa-solid fa-chevron-left"></i> Leave</button><div><span>Live lesson</span><h1 id="live-lesson-title">${escapeHtml(lesson.title)}</h1></div><time id="live-timer">00:00</time></header>
     <div class="live-stage">
-      <main class="live-coach-panel"><div class="live-status-pill"><i></i><span id="live-status-label">Connecting securely…</span></div>${renderVoiceOrb('connecting')}<div class="coach-identity"><strong>Mira</strong><span>Your AI speaking coach</span></div><p class="live-prompt">${escapeHtml(lesson.goal)}</p>
-        <div class="live-controls"><button id="toggle-live-mic" class="live-control"><i class="fa-solid fa-microphone"></i><span>Mute</span></button><button id="end-live-lesson" class="end-lesson-button"><i class="fa-solid fa-stop"></i><span>End lesson</span></button></div>
+      <main class="live-coach-panel"><div class="live-status-pill"><i></i><span id="live-status-label">Connecting securely…</span></div>${renderVoiceOrb('connecting')}<div class="coach-identity"><strong>Mira</strong><span>Your AI speaking coach</span></div><p class="live-prompt">${escapeHtml(lesson.goal)}</p><p class="live-turn-cue" id="live-turn-cue" aria-live="polite">Setting up clear turn-by-turn audio…</p>
+        <div class="live-controls"><button id="interrupt-live-coach" class="live-control interrupt" hidden><i class="fa-solid fa-hand"></i><span>Stop Mira</span></button><button id="toggle-live-mic" class="live-control"><i class="fa-solid fa-microphone"></i><span>Mute</span></button><button id="end-live-lesson" class="end-lesson-button"><i class="fa-solid fa-stop"></i><span>End lesson</span></button></div>
         <form id="live-text-fallback" class="live-text-fallback"><input id="live-text-input" placeholder="Or type a reply" autocomplete="off"><button aria-label="Send typed reply"><i class="fa-solid fa-paper-plane"></i></button></form>
       </main>
       <aside class="live-side-panel"><div class="live-goal-card"><span>Lesson goal</span><p>${escapeHtml(lesson.goal)}</p></div><div class="live-plan-card"><span>Today’s route</span><ol>${getLessonPlan(lesson).map(step => `<li>${escapeHtml(step.phase)}</li>`).join('')}</ol></div><div class="live-phrase-card"><span>Try a target phrase</span><strong id="live-target-phrase">${escapeHtml(lesson.targetPhrases[0])}</strong><button id="next-live-phrase">Another phrase <i class="fa-solid fa-rotate"></i></button></div><div class="live-transcript-card"><div><span>Live transcript</span><small>Generated by Gemini</small></div><div id="live-transcript" class="live-transcript" aria-live="polite"></div></div></aside>
@@ -243,7 +253,7 @@ async function startLiveLesson(container, lesson, onNavigate) {
   session.addEventListener('level', event => {
     const orb = container.querySelector('#speaking-orb');
     if (orb) orb.style.setProperty('--voice-level', Math.max(.15, event.detail));
-    if (event.detail > .08 && !muted) scheduleInitiative();
+    if (event.detail > .08 && !muted && status === 'listening') scheduleInitiative();
   });
   session.addEventListener('transcript', event => { mergeTranscript(transcript, event.detail.role, event.detail.text); renderTranscript(); });
   session.addEventListener('turncomplete', scheduleInitiative);
@@ -266,6 +276,7 @@ async function startLiveLesson(container, lesson, onNavigate) {
     event.currentTarget.classList.toggle('muted', muted);
     event.currentTarget.innerHTML = `<i class="fa-solid ${muted ? 'fa-microphone-slash' : 'fa-microphone'}"></i><span>${muted ? 'Unmute' : 'Mute'}</span>`;
   });
+  container.querySelector('#interrupt-live-coach').addEventListener('click', () => session.interruptOutput('button'));
   let phraseIndex = 0;
   container.querySelector('#next-live-phrase').addEventListener('click', () => { phraseIndex = (phraseIndex + 1) % lesson.targetPhrases.length; container.querySelector('#live-target-phrase').textContent = lesson.targetPhrases[phraseIndex]; });
   container.querySelector('#live-text-fallback').addEventListener('submit', event => {

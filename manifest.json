@@ -7,7 +7,7 @@
   "scope": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
-  "theme_color": "#22c55e",
+  "theme_color": "#ffffff",
   "icons": [
     {
       "src": "icons/keepvocab-mark-v2-192.png",

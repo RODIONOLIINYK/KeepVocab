@@ -50,6 +50,10 @@ test('the Android build declares microphone access and native Drive authorizatio
   assert.match(manifest, /android\.permission\.MODIFY_AUDIO_SETTINGS/);
   assert.match(gradle, /play-services-auth:21\.6\.0/);
   assert.match(activity, /registerPlugin\(DriveAuthPlugin\.class\)/);
+  assert.match(activity, /registerPlugin\(NativeSpeechPlugin\.class\)/);
+  const speechPlugin = readFileSync(resolve(projectRoot, 'android/app/src/main/java/com/keepvocab/app/NativeSpeechPlugin.java'), 'utf8');
+  assert.match(speechPlugin, /TextToSpeech/);
+  assert.match(speechPlugin, /TextToSpeech\.QUEUE_FLUSH/);
   assert.match(plugin, /auth\/drive\.file/);
   assert.match(plugin, /Identity\.getAuthorizationClient/);
   assert.match(plugin, /23308644025-i69m4ncivbe9jvf3pa1kepj8fb8ruh4g\.apps\.googleusercontent\.com/);
@@ -58,6 +62,19 @@ test('the Android build declares microphone access and native Drive authorizatio
     plugin.indexOf('if (data == null)') < plugin.indexOf('getAuthorizationResultFromIntent(data)'),
     'Native auth must parse every returned Intent instead of discarding non-OK result codes'
   );
+});
+
+test('mobile system chrome and the app header use one white top surface', () => {
+  const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
+  const manifest = JSON.parse(readFileSync(resolve(projectRoot, 'manifest.json'), 'utf8'));
+  const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
+  const androidStyles = readFileSync(resolve(projectRoot, 'android/app/src/main/res/values/styles.xml'), 'utf8');
+  assert.match(html, /name="theme-color" content="#ffffff"/);
+  assert.match(html, /viewport-fit=cover/);
+  assert.equal(manifest.theme_color, '#ffffff');
+  assert.match(styles, /env\(safe-area-inset-top\)/);
+  assert.match(androidStyles, /android:statusBarColor">#FFFFFF/);
+  assert.match(androidStyles, /android:windowLightStatusBar">true/);
 });
 
 test('the dashboard omits redundant Cloze and exposes Choose Word', () => {

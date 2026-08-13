@@ -1,5 +1,5 @@
 import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=42';
-import { speakWord } from '../services/speechService.js';
+import { speakWord } from '../services/speechService.js?v=43';
 import { buildVisualSearchQueries, findRelevantImages, getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=42';
 import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=42';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
@@ -99,7 +99,7 @@ export function renderLibraryView(container) {
         ${word.imageUrl && !hasDuplicateImage ? `<img class="library-word-image" src="${escapeHtml(word.imageUrl)}" alt="Visual cue for ${escapeHtml(word.word)}">` : hasDuplicateImage ? `<div class="duplicate-image-warning"><i class="fa-solid fa-images"></i><span><strong>Reused visual cue</strong>Choose a distinct image for this meaning.</span></div>` : ''}
         <div class="library-card-heading">
           <div><h3>${escapeHtml(word.word)}</h3><span>${escapeHtml(word.phonetic || word.partOfSpeech || '')}</span></div>
-          <button class="audio-btn-circle" data-speak="${escapeHtml(word.word)}" aria-label="Hear ${escapeHtml(word.word)}"><i class="fa-solid fa-volume-high"></i></button>
+          <button class="audio-btn-circle" data-speak="${escapeHtml(word.word)}" data-audio-url="${escapeHtml(word.audioUrl || '')}" aria-label="Hear ${escapeHtml(word.word)}"><i class="fa-solid fa-volume-high"></i></button>
         </div>
         <p class="library-pos">${escapeHtml(word.partOfSpeech || 'word')}</p>
         <p>${escapeHtml(word.definition)}</p>
@@ -193,7 +193,7 @@ export function renderLibraryView(container) {
     container.querySelector('#library-search').addEventListener('input', event => { query = event.target.value; render(); container.querySelector('#library-search')?.focus(); });
     container.querySelector('#library-filter').addEventListener('change', event => { filter = event.target.value; render(); });
     container.querySelector('#library-sort').addEventListener('change', event => { sort = event.target.value; render(); });
-    container.querySelectorAll('[data-speak]').forEach(button => button.addEventListener('click', () => speakWord(button.dataset.speak)));
+    container.querySelectorAll('[data-speak]').forEach(button => button.addEventListener('click', () => speakWord(button.dataset.speak, 'en-US', 0.9, button.dataset.audioUrl)));
     container.querySelectorAll('[data-edit-word]').forEach(button => button.addEventListener('click', () => { beginEditing(button.dataset.editWord); container.querySelector('#library-edit-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
     container.querySelectorAll('[data-change-image]').forEach(button => button.addEventListener('click', () => { beginEditing(button.dataset.changeImage); container.querySelector('#library-edit-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
     container.querySelectorAll('[data-delete-word]').forEach(button => button.addEventListener('click', () => { deleteId = button.dataset.deleteWord; render(); }));

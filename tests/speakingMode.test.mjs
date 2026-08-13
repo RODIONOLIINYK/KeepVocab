@@ -13,6 +13,7 @@ import {
   buildSpeakingInstruction
 } from '../js/data/speakingLessons.js';
 import {
+  GeminiLiveSession,
   GEMINI_LIVE_MODEL,
   buildGeminiLiveUrl,
   buildGeminiSetupMessage,
@@ -133,7 +134,41 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(component, /COACH_SILENCE_MS = 9000/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'start'\)/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'silence'\)/);
-  assert.match(serviceWorker, /SpeakingMode\.js\?v=42/);
+  assert.match(component, /id="interrupt-live-coach"/);
+  assert.match(component, /Your turn — Mira is listening/);
+  assert.match(serviceWorker, /SpeakingMode\.js\?v=43/);
   assert.match(serviceWorker, /speakingLessons\.js\?v=42/);
-  assert.match(serviceWorker, /geminiLive\.js\?v=42/);
+  assert.match(serviceWorker, /geminiLive\.js\?v=43/);
+  assert.match(serviceWorker, /speechService\.js\?v=43/);
+});
+
+test('live speaking interruption stops every queued audio source and suppresses stale chunks', () => {
+  const service = readFileSync(resolve(projectRoot, 'js/services/geminiLive.js'), 'utf8');
+  assert.match(service, /this\.outputSources = new Set\(\)/);
+  assert.match(service, /interruptOutput\(source = 'button'\)/);
+  assert.match(service, /for \(const source of this\.outputSources\)/);
+  assert.match(service, /this\.ignoreCurrentModelAudio = true/);
+  assert.match(service, /BARGE_IN_FRAMES/);
+});
+
+test('interrupting Mira immediately stops all scheduled playback and hands the turn to the learner', () => {
+  const session = new GeminiLiveSession();
+  let stopped = 0;
+  let disconnected = 0;
+  const first = { stop: () => { stopped += 1; }, disconnect: () => { disconnected += 1; } };
+  const second = { stop: () => { stopped += 1; }, disconnect: () => { disconnected += 1; } };
+  session.outputContext = { currentTime: 12.5 };
+  session.outputSources.add(first);
+  session.outputSources.add(second);
+  session.sessionStatus = 'speaking';
+  const statuses = [];
+  session.addEventListener('status', event => statuses.push(event.detail));
+
+  assert.equal(session.interruptOutput('button'), true);
+  assert.equal(stopped, 2);
+  assert.equal(disconnected, 2);
+  assert.equal(session.outputSources.size, 0);
+  assert.equal(session.nextAudioTime, 12.5);
+  assert.equal(session.ignoreCurrentModelAudio, true);
+  assert.deepEqual(statuses, ['listening']);
 });

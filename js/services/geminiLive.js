@@ -1,5 +1,7 @@
 export const GEMINI_LIVE_MODEL = 'gemini-3.1-flash-live-preview';
 export const GEMINI_KEY_STORAGE = 'keepvocab_gemini_live_key_v1';
+export const BARGE_IN_LEVEL = 0.12;
+export const BARGE_IN_FRAMES = 2;
 
 export async function parseGeminiLiveMessage(data) {
   if (typeof data === 'string') return JSON.parse(data);
@@ -114,7 +116,19 @@ export class GeminiLiveSession extends EventTarget {
     this.inputSource = null;
     this.muted = false;
     this.nextAudioTime = 0;
+    this.outputSources = new Set();
+    this.outputGeneration = 0;
+    this.pendingAudioChunks = 0;
+    this.pendingTurnComplete = false;
+    this.sessionStatus = 'closed';
+    this.loudInputFrames = 0;
+    this.ignoreCurrentModelAudio = false;
     this.closedByUser = false;
+  }
+
+  updateStatus(status) {
+    this.sessionStatus = status;
+    this.dispatchEvent(eventDetail('status', status));
   }
 
   async prepareAudioOutput() {
@@ -126,7 +140,7 @@ export class GeminiLiveSession extends EventTarget {
 
   async connect({ apiKey, instruction }) {
     this.closedByUser = false;
-    this.dispatchEvent(eventDetail('status', 'connecting'));
+    this.updateStatus('connecting');
     const socket = new WebSocket(buildGeminiLiveUrl(apiKey));
     this.socket = socket;
 
@@ -147,7 +161,7 @@ export class GeminiLiveSession extends EventTarget {
           if (message.setupComplete && !settled) {
             settled = true;
             window.clearTimeout(timeout);
-            this.dispatchEvent(eventDetail('status', 'ready'));
+            this.updateStatus('ready');
             resolve();
           }
           this.handleServerMessage(message);
@@ -163,7 +177,7 @@ export class GeminiLiveSession extends EventTarget {
           fail(error);
           this.dispatchEvent(eventDetail('error', error));
         }
-        this.dispatchEvent(eventDetail('status', 'closed'));
+        this.updateStatus('closed');
       });
     });
   }
@@ -185,27 +199,63 @@ export class GeminiLiveSession extends EventTarget {
     this.processor.onaudioprocess = event => {
       if (this.muted || this.socket?.readyState !== WebSocket.OPEN) return;
       const source = event.inputBuffer.getChannelData(0);
+      const level = Math.min(1, source.reduce((sum, value) => sum + Math.abs(value), 0) / source.length * 5);
+      if (this.sessionStatus === 'speaking' && level >= BARGE_IN_LEVEL) {
+        this.loudInputFrames += 1;
+        if (this.loudInputFrames >= BARGE_IN_FRAMES) this.interruptOutput('voice');
+      } else {
+        this.loudInputFrames = 0;
+      }
       const pcm = float32ToPcm16(downsampleAudio(source, this.inputContext.sampleRate, 16000));
       this.socket.send(JSON.stringify({
         realtimeInput: { audio: { data: bytesToBase64(pcm.buffer), mimeType: 'audio/pcm;rate=16000' } }
       }));
-      const level = Math.min(1, source.reduce((sum, value) => sum + Math.abs(value), 0) / source.length * 5);
       this.dispatchEvent(eventDetail('level', level));
     };
     this.inputSource.connect(this.processor);
     this.processor.connect(this.inputContext.destination);
-    this.dispatchEvent(eventDetail('status', 'listening'));
+    this.updateStatus('listening');
   }
 
   setMuted(muted) {
     this.muted = Boolean(muted);
     for (const track of this.stream?.getAudioTracks?.() || []) track.enabled = !this.muted;
-    this.dispatchEvent(eventDetail('status', this.muted ? 'muted' : 'listening'));
+    const modelStillSpeaking = this.sessionStatus === 'speaking' || this.outputSources.size || this.pendingAudioChunks || this.pendingTurnComplete;
+    this.updateStatus(modelStillSpeaking ? 'speaking' : this.muted ? 'muted' : 'listening');
   }
 
   sendText(text) {
     if (this.socket?.readyState !== WebSocket.OPEN) return false;
+    if (this.sessionStatus === 'speaking') this.interruptOutput('typed');
     this.socket.send(JSON.stringify({ realtimeInput: { text: String(text) } }));
+    return true;
+  }
+
+  cancelOutputAudio() {
+    this.outputGeneration += 1;
+    for (const source of this.outputSources) {
+      try { source.stop(); } catch {}
+      try { source.disconnect(); } catch {}
+    }
+    this.outputSources.clear();
+    this.nextAudioTime = this.outputContext?.currentTime || 0;
+  }
+
+  finishOutputTurnIfReady() {
+    if (!this.pendingTurnComplete || this.pendingAudioChunks || this.outputSources.size) return;
+    this.pendingTurnComplete = false;
+    this.dispatchEvent(eventDetail('turncomplete', true));
+    this.updateStatus(this.muted ? 'muted' : 'listening');
+  }
+
+  interruptOutput(source = 'button') {
+    if (this.sessionStatus !== 'speaking' && !this.outputSources.size) return false;
+    this.ignoreCurrentModelAudio = true;
+    this.pendingTurnComplete = false;
+    this.cancelOutputAudio();
+    this.loudInputFrames = 0;
+    this.updateStatus(this.muted ? 'muted' : 'listening');
+    this.dispatchEvent(eventDetail('interrupted', { source }));
     return true;
   }
 
@@ -214,40 +264,63 @@ export class GeminiLiveSession extends EventTarget {
     if (!content) return;
     if (content.inputTranscription?.text) this.dispatchEvent(eventDetail('transcript', { role: 'learner', text: content.inputTranscription.text }));
     if (content.outputTranscription?.text) this.dispatchEvent(eventDetail('transcript', { role: 'coach', text: content.outputTranscription.text }));
-    for (const part of content.modelTurn?.parts || []) {
-      if (!part.inlineData?.data) continue;
-      const rateMatch = String(part.inlineData.mimeType || '').match(/rate=(\d+)/);
-      this.playAudio(part.inlineData.data, Number(rateMatch?.[1] || 24000));
-    }
     if (content.interrupted) {
-      this.nextAudioTime = this.outputContext?.currentTime || 0;
-      this.dispatchEvent(eventDetail('status', 'listening'));
-    } else if (content.turnComplete) {
-      this.dispatchEvent(eventDetail('turncomplete', true));
-      this.dispatchEvent(eventDetail('status', this.muted ? 'muted' : 'listening'));
-    } else if (content.modelTurn) {
-      this.dispatchEvent(eventDetail('status', 'speaking'));
+      this.pendingTurnComplete = false;
+      this.cancelOutputAudio();
+      this.ignoreCurrentModelAudio = false;
+      this.updateStatus(this.muted ? 'muted' : 'listening');
+      return;
+    }
+    if (content.modelTurn) {
+      if (!this.ignoreCurrentModelAudio) this.updateStatus('speaking');
+    }
+    if (!this.ignoreCurrentModelAudio) {
+      for (const part of content.modelTurn?.parts || []) {
+        if (!part.inlineData?.data) continue;
+        const rateMatch = String(part.inlineData.mimeType || '').match(/rate=(\d+)/);
+        this.playAudio(part.inlineData.data, Number(rateMatch?.[1] || 24000));
+      }
+    }
+    if (content.turnComplete) {
+      this.ignoreCurrentModelAudio = false;
+      this.pendingTurnComplete = true;
+      this.finishOutputTurnIfReady();
     }
   }
 
   async playAudio(base64, sampleRate) {
+    const generation = this.outputGeneration;
+    this.pendingAudioChunks += 1;
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!this.outputContext) this.outputContext = new AudioContextClass({ sampleRate });
-    await this.outputContext.resume();
-    const samples = pcm16ToFloat32(base64ToBytes(base64));
-    const buffer = this.outputContext.createBuffer(1, samples.length, sampleRate);
-    buffer.copyToChannel(samples, 0);
-    const source = this.outputContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(this.outputContext.destination);
-    const now = this.outputContext.currentTime;
-    const startAt = Math.max(now, this.nextAudioTime);
-    source.start(startAt);
-    this.nextAudioTime = startAt + buffer.duration;
+    try {
+      if (!this.outputContext) this.outputContext = new AudioContextClass({ sampleRate });
+      await this.outputContext.resume();
+      if (generation !== this.outputGeneration || this.ignoreCurrentModelAudio) return;
+      const samples = pcm16ToFloat32(base64ToBytes(base64));
+      const buffer = this.outputContext.createBuffer(1, samples.length, sampleRate);
+      buffer.copyToChannel(samples, 0);
+      const source = this.outputContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(this.outputContext.destination);
+      this.outputSources.add(source);
+      source.onended = () => {
+        this.outputSources.delete(source);
+        try { source.disconnect(); } catch {}
+        this.finishOutputTurnIfReady();
+      };
+      const now = this.outputContext.currentTime;
+      const startAt = Math.max(now, this.nextAudioTime);
+      source.start(startAt);
+      this.nextAudioTime = startAt + buffer.duration;
+    } finally {
+      this.pendingAudioChunks -= 1;
+      this.finishOutputTurnIfReady();
+    }
   }
 
   async disconnect() {
     this.closedByUser = true;
+    this.cancelOutputAudio();
     this.processor?.disconnect();
     this.inputSource?.disconnect();
     for (const track of this.stream?.getTracks?.() || []) track.stop();
@@ -260,5 +333,9 @@ export class GeminiLiveSession extends EventTarget {
     this.inputSource = null;
     this.inputContext = null;
     this.outputContext = null;
+    this.sessionStatus = 'closed';
+    this.pendingAudioChunks = 0;
+    this.pendingTurnComplete = false;
+    this.ignoreCurrentModelAudio = false;
   }
 }
