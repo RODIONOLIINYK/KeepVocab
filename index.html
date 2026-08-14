@@ -364,7 +364,7 @@
         <img src="assets/keepvocab-sprig-reminder.png" alt="Sprig holding a reminder bell">
         <div>
           <h2>Build your learning routine</h2>
-          <p>Choose a gentle daily nudge and keep interaction sounds on or off.</p>
+          <p>Let Sprig adapt reminders to your study rhythm, due words, and daily goal.</p>
         </div>
         <button type="button" class="status-pill offline" id="btn-close-engagement-settings" aria-label="Close routine settings"><i class="fa-solid fa-xmark"></i></button>
       </div>
@@ -375,8 +375,13 @@
           <span><strong>Daily reminder</strong><small>Get a nudge before your streak slips.</small></span>
           <input type="checkbox" id="reminder-enabled" class="setting-toggle">
         </label>
+        <label class="engagement-setting-row" for="smart-reminder-enabled">
+          <span class="setting-icon bell"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+          <span><strong>Smart timing</strong><small>Learn when you usually study and adapt each reminder to what is due.</small></span>
+          <input type="checkbox" id="smart-reminder-enabled" class="setting-toggle" checked>
+        </label>
         <label class="engagement-time-row" for="reminder-time">
-          <span>Reminder time</span>
+          <span>Preferred reminder time</span>
           <input type="time" id="reminder-time" value="19:00">
         </label>
         <label class="engagement-setting-row" for="sound-enabled">
@@ -511,6 +516,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=51"></script>
+  <script type="module" src="js/app.js?v=54"></script>
 </body>
 </html>

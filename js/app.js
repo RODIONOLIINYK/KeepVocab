@@ -9,7 +9,7 @@ import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/ex
 import { findRelevantImages } from './services/imageSearch.js?v=42';
 import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=45';
 import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=49';
-import { cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder } from './services/reminderService.js?v=46';
+import { appendStudyMoment, buildSmartReminderPlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=54';
 
 import { renderReviewView } from './components/ReviewView.js?v=49';
 import { renderLibraryView } from './components/LibraryView.js?v=51';
@@ -53,6 +53,13 @@ repairContradictoryExamples();
 let wordsQueue = buildStudyQueue();
 
 let currentIndex = 0;
+const reminderDefaults = driveSync.getSettings();
+if (typeof reminderDefaults.smartReminderEnabled !== 'boolean' || !Array.isArray(reminderDefaults.reviewStartMoments)) {
+  driveSync.updateSettings({
+    smartReminderEnabled: typeof reminderDefaults.smartReminderEnabled === 'boolean' ? reminderDefaults.smartReminderEnabled : true,
+    reviewStartMoments: Array.isArray(reminderDefaults.reviewStartMoments) ? reminderDefaults.reviewStartMoments : []
+  }, { silent: true });
+}
 const initialSettings = driveSync.getSettings();
 let goalCount = initialSettings.reviewsDate === localDateKey() ? Number(initialSettings.reviewsToday || 0) : 0;
 if (initialSettings.reviewsDate !== localDateKey()) {
@@ -63,6 +70,7 @@ let speechSpeed = 1.0;
 let dashboardOriginalHTML = '';
 let currentFetchedData = null;
 let viewEnterTimer = null;
+let reminderRefreshTimer = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('view-container');
@@ -79,6 +87,7 @@ function initApp() {
   setupDriveBackupModal();
   setupQuickAddModal();
   setupEngagementSystem();
+  setupReminderNavigation().catch(error => console.warn('Reminder navigation setup failed.', error));
   setupFlashcardControls();
   setupMonthDropdown();
   setupKeyboardShortcuts();
@@ -87,9 +96,12 @@ function initApp() {
   resumeRememberedDriveConnection();
 
   window.addEventListener('keepvocab:progress', () => {
+    rememberStudyStart();
     const settings = driveSync.getSettings();
     goalCount = settings.reviewsDate === localDateKey() ? Number(settings.reviewsToday || 0) : 0;
     updateGoalDisplay();
+    updateEngagementCard();
+    queueSmartReminderRefresh();
   });
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
@@ -171,6 +183,48 @@ function updateDashboardDerivedState() {
   renderConnectionState();
 }
 
+function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
+  const settings = { ...driveSync.getSettings(), ...settingsOverride };
+  const reviewsToday = settings.reviewsDate === localDateKey(now) ? Number(settings.reviewsToday || 0) : 0;
+  const dueCount = getDueWords().filter(word => word.notebook === driveSync.getActiveNotebook()).length;
+  return buildSmartReminderPlan({
+    preferredTime: settings.reminderTime || '19:00',
+    smartTiming: settings.smartReminderEnabled !== false,
+    reviewMoments: settings.reviewStartMoments || [],
+    dueCount,
+    reviewsToday,
+    dailyGoal: settings.dailyGoal || 20,
+    streak: settings.dailyStreak || 0,
+    now
+  });
+}
+
+function rememberStudyStart(now = new Date()) {
+  const settings = driveSync.getSettings();
+  const previous = Array.isArray(settings.reviewStartMoments) ? settings.reviewStartMoments : [];
+  const next = appendStudyMoment(previous, now);
+  if (next.join('|') !== previous.join('|')) driveSync.updateSettings({ reviewStartMoments: next }, { silent: true });
+}
+
+async function refreshSmartReminder({ requestPermission = false, settingsOverride = {} } = {}) {
+  const settings = { ...driveSync.getSettings(), ...settingsOverride };
+  if (!settings.reminderEnabled) {
+    await cancelDailyReminder();
+    return { status: 'disabled', plan: null };
+  }
+  const plan = currentSmartReminderPlan(settingsOverride);
+  const result = await scheduleDailyReminder({ ...plan, requestPermission });
+  return { ...result, plan };
+}
+
+function queueSmartReminderRefresh() {
+  globalThis.clearTimeout(reminderRefreshTimer);
+  if (!driveSync.getSettings().reminderEnabled) return;
+  reminderRefreshTimer = globalThis.setTimeout(() => {
+    refreshSmartReminder().catch(error => console.warn('Smart reminder refresh failed.', error));
+  }, 400);
+}
+
 function updateEngagementCard() {
   const title = document.getElementById('coach-title');
   const copy = document.getElementById('coach-copy');
@@ -215,30 +269,52 @@ function updateEngagementCard() {
       : 'assets/keepvocab-sprout-mascot.png';
   weeklyStatus.innerHTML = `<i class="fa-solid fa-chart-line"></i> ${activeDays} / 5 active days`;
 
+  const reminderPlan = currentSmartReminderPlan();
   status.innerHTML = settings.reminderEnabled
-    ? `<i class="fa-solid fa-bell"></i> Daily reminder at ${formatReminderTime(settings.reminderTime || '19:00')}`
+    ? `<i class="fa-solid fa-bell"></i> ${settings.smartReminderEnabled !== false ? 'Smart reminder' : 'Daily reminder'} at ${formatReminderTime(reminderPlan.time)} · ${reminderPlan.summary}`
     : '<i class="fa-regular fa-bell"></i> Daily reminder is off';
 }
 
 function setupEngagementSystem() {
   const modal = document.getElementById('engagement-settings-modal');
   const reminderEnabled = document.getElementById('reminder-enabled');
+  const smartReminderEnabled = document.getElementById('smart-reminder-enabled');
   const reminderTime = document.getElementById('reminder-time');
   const soundEnabled = document.getElementById('sound-enabled');
   const helper = document.getElementById('reminder-helper');
   const save = document.getElementById('btn-save-engagement-settings');
-  if (!modal || !reminderEnabled || !reminderTime || !soundEnabled || !helper || !save) return;
+  if (!modal || !reminderEnabled || !smartReminderEnabled || !reminderTime || !soundEnabled || !helper || !save) return;
+
+  const updateHelper = () => {
+    if (!reminderEnabled.checked) {
+      helper.textContent = 'Reminders are off. Your progress and app sounds still work normally.';
+      return;
+    }
+    const plan = currentSmartReminderPlan({
+      reminderTime: normalizeReminderTime(reminderTime.value),
+      smartReminderEnabled: smartReminderEnabled.checked
+    });
+    const learnedTime = smartReminderEnabled.checked && plan.time !== normalizeReminderTime(reminderTime.value);
+    const timingCopy = !smartReminderEnabled.checked
+      ? 'Fixed timing is active.'
+      : learnedTime
+        ? 'Timing learned from your recent study days.'
+        : 'Smart timing will learn after three study days; your preferred time is used for now.';
+    helper.textContent = `Next plan: ${formatReminderTime(plan.time)} · ${plan.title}. ${timingCopy}`;
+  };
 
   const updateTimeState = () => {
     reminderTime.disabled = !reminderEnabled.checked;
+    smartReminderEnabled.disabled = !reminderEnabled.checked;
+    updateHelper();
   };
 
   const openSettings = () => {
     const settings = driveSync.getSettings();
     reminderEnabled.checked = Boolean(settings.reminderEnabled);
+    smartReminderEnabled.checked = settings.smartReminderEnabled !== false;
     reminderTime.value = normalizeReminderTime(settings.reminderTime || '19:00');
     soundEnabled.checked = settings.soundEnabled !== false;
-    helper.textContent = 'On Android, reminders are scheduled by the device. In a browser, notifications work while KeepVocab is open or installed.';
     updateTimeState();
     modal.classList.add('active');
   };
@@ -246,6 +322,8 @@ function setupEngagementSystem() {
   const closeSettings = () => modal.classList.remove('active');
 
   reminderEnabled.addEventListener('change', updateTimeState);
+  smartReminderEnabled.addEventListener('change', updateHelper);
+  reminderTime.addEventListener('input', updateHelper);
   document.addEventListener('click', event => {
     const control = event.target.closest('button, a');
     if (!control) return;
@@ -257,18 +335,24 @@ function setupEngagementSystem() {
   save.addEventListener('click', async () => {
     const enabled = reminderEnabled.checked;
     const time = normalizeReminderTime(reminderTime.value);
+    const smartTiming = smartReminderEnabled.checked;
     save.disabled = true;
     save.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
     helper.textContent = enabled ? 'Requesting notification access and scheduling your reminder…' : 'Turning the daily reminder off…';
     try {
+      driveSync.updateSettings({
+        reminderEnabled: enabled,
+        smartReminderEnabled: smartTiming,
+        reminderTime: time,
+        soundEnabled: soundEnabled.checked
+      });
       const result = enabled
-        ? await scheduleDailyReminder({ time, requestPermission: true })
+        ? await refreshSmartReminder({ requestPermission: true })
         : (await cancelDailyReminder(), { status: 'disabled' });
-      driveSync.updateSettings({ reminderEnabled: enabled, reminderTime: time, soundEnabled: soundEnabled.checked });
       updateEngagementCard();
       closeSettings();
       const message = result.status === 'scheduled'
-        ? `Daily reminder set for ${formatReminderTime(time)}.`
+        ? `${smartTiming ? 'Smart' : 'Daily'} reminder set for ${formatReminderTime(result.plan?.time || time)}.`
         : result.status === 'permission-required'
           ? 'Reminder saved. Enable notification permission for alerts outside the app.'
           : enabled
@@ -286,7 +370,7 @@ function setupEngagementSystem() {
 
   const settings = driveSync.getSettings();
   if (settings.reminderEnabled) {
-    scheduleDailyReminder({ time: settings.reminderTime || '19:00' }).catch(error => console.warn('Daily reminder restore failed.', error));
+    refreshSmartReminder().catch(error => console.warn('Smart reminder restore failed.', error));
   }
 }
 
@@ -1111,8 +1195,10 @@ function setupFlashcardControls() {
     if (!wordsQueue.length) return;
     const current = wordsQueue[currentIndex];
     if (current.id) updateWordRepetition(current.id, type.toLowerCase());
+    rememberStudyStart();
     goalCount = Number(driveSync.getSettings().reviewsToday || 0);
     updateGoalDisplay();
+    queueSmartReminderRefresh();
 
     showToast(`Rated “${current.word}” as ${type}. Review schedule updated.`);
     currentIndex = (currentIndex + 1) % wordsQueue.length;
