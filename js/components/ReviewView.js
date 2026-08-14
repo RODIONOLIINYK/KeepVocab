@@ -1,6 +1,7 @@
 import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=42';
 import { speakWord } from '../services/speechService.js?v=43';
 import { getDueWords, updateWordRepetition } from '../services/srsEngine.js?v=42';
+import { playInteractionSound } from '../services/interactionSound.js?v=49';
 import { escapeHtml } from '../utils/html.js';
 
 function normalizeAnswer(value) {
@@ -35,13 +36,13 @@ export function renderReviewView(container, onNavigate) {
 
           ${originalCount === 0 ? `
             <div class="useful-empty-state">
-              <i class="fa-solid fa-circle-check"></i>
+              <img class="mascot-result" src="assets/keepvocab-sprig-celebrate.png" alt="Sprig celebrating">
               <h2>All caught up</h2>
               <p>No words are due in this notebook. Choose a learning mode from the dashboard if you want extra practice.</p>
               <div class="inline-actions"><button class="btn-green-solid" id="review-go-dashboard">Open learning modes</button><button class="status-pill offline" id="review-go-library">Open library</button></div>
             </div>` : complete ? `
             <div class="useful-empty-state mode-complete">
-              <i class="fa-solid fa-trophy"></i>
+              <img class="mascot-result" src="assets/keepvocab-sprig-celebrate.png" alt="Sprig celebrating">
               <h2>Review complete</h2>
               <p>You typed ${score} of ${originalCount} due words correctly. Missed words were repeated once.</p>
               <div class="review-score-orb"><strong>${score}</strong><span>correct</span></div>
@@ -63,7 +64,7 @@ export function renderReviewView(container, onNavigate) {
                 <div class="inline-actions"><button class="status-pill offline" id="review-speak"><i class="fa-solid fa-volume-high"></i> Hear answer</button><button class="btn-green-solid" id="review-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button></div>` : `
                 <form class="practice-answer-form" id="review-form">
                   <input id="review-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word" aria-label="Review answer">
-                  <button class="btn-green-solid">Check</button>
+                  <button class="btn-green-solid" data-sound="none">Check</button>
                 </form>`}
             </div>`}
         </div>
@@ -79,6 +80,7 @@ export function renderReviewView(container, onNavigate) {
       const answer = container.querySelector('#review-answer').value;
       if (!answer.trim()) return;
       correct = normalizeAnswer(answer) === normalizeAnswer(current.word);
+      playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
       if (!correct && !retried.has(current.id)) {
         retried.add(current.id);

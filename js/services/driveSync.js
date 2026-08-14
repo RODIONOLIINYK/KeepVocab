@@ -205,6 +205,9 @@ export class DriveSyncService {
         reviewsToday: 0,
         reviewsDate: null,
         reviewActivity: {},
+        reminderEnabled: false,
+        reminderTime: '19:00',
+        soundEnabled: true,
         updatedAt: new Date().toISOString()
       });
     }
@@ -219,6 +222,11 @@ export class DriveSyncService {
     this.refreshNotebooks();
     const settings = this.getSettings();
     if (!Number.isFinite(Number(settings.dailyGoal)) || Number(settings.dailyGoal) < 1) this.updateSettings({ dailyGoal: 20 }, { silent: true });
+    const engagementDefaults = {};
+    if (typeof settings.reminderEnabled !== 'boolean') engagementDefaults.reminderEnabled = false;
+    if (!/^\d{2}:\d{2}$/.test(String(settings.reminderTime || ''))) engagementDefaults.reminderTime = '19:00';
+    if (typeof settings.soundEnabled !== 'boolean') engagementDefaults.soundEnabled = true;
+    if (Object.keys(engagementDefaults).length) this.updateSettings(engagementDefaults, { silent: true });
   }
 
   getGoogleClientId() {

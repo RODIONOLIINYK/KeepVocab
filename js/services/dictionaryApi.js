@@ -3,6 +3,8 @@
 import { fetchExamplesForSenses, sanitizeExistingExamples } from './exampleSearch.js?v=42';
 
 const DICTIONARY_API_BASE = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
+const SPELLING_API_BASE = 'https://api.languagetool.org/v2/check';
+const SPELLING_FALLBACK_API_BASE = 'https://api.datamuse.com/sug';
 const CACHE_KEY = 'keepvocab_dictionary_cache_v3';
 const CACHE_MAX_ENTRIES = 250;
 
@@ -47,6 +49,65 @@ function writeCache(storage, cache) {
 
 function normalizeDefinition(value) {
   return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+export function damerauLevenshtein(leftValue, rightValue) {
+  const left = String(leftValue || '').toLowerCase();
+  const right = String(rightValue || '').toLowerCase();
+  const matrix = Array.from({ length: left.length + 1 }, () => new Array(right.length + 1).fill(0));
+  for (let i = 0; i <= left.length; i += 1) matrix[i][0] = i;
+  for (let j = 0; j <= right.length; j += 1) matrix[0][j] = j;
+  for (let i = 1; i <= left.length; i += 1) {
+    for (let j = 1; j <= right.length; j += 1) {
+      const cost = left[i - 1] === right[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost);
+      if (i > 1 && j > 1 && left[i - 1] === right[j - 2] && left[i - 2] === right[j - 1]) {
+        matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + 1);
+      }
+    }
+  }
+  return matrix[left.length][right.length];
+}
+
+function credibleCorrection(original, suggestions) {
+  const maxDistance = original.length <= 4 ? 1 : original.length <= 8 ? 2 : 3;
+  return (suggestions || [])
+    .map(item => String(item?.word || item?.value || '').trim().toLowerCase())
+    .filter(word => word && word !== original && /^[\p{L}'’\- ]+$/u.test(word))
+    .map(word => ({ word, distance: damerauLevenshtein(original, word) }))
+    .filter(item => item.distance <= maxDistance)
+    .sort((left, right) => left.distance - right.distance)[0]?.word || '';
+}
+
+async function findSpellingCorrection(cleanWord, fetchImpl, signal) {
+  try {
+    const response = await fetchImpl(SPELLING_API_BASE, {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ text: cleanWord, language: 'en-US' }).toString(),
+      signal
+    });
+    if (response.ok) {
+      const payload = await response.json();
+      const replacements = (payload?.matches || [])
+        .filter(match => match?.rule?.issueType === 'misspelling' || match?.rule?.id === 'MORFOLOGIK_RULE_EN_US')
+        .flatMap(match => match.replacements || []);
+      const correction = credibleCorrection(cleanWord, replacements);
+      if (correction) return correction;
+    }
+  } catch {
+    // Fall through to the lighter spelling suggestion service.
+  }
+
+  try {
+    const suggestionUrl = new URL(SPELLING_FALLBACK_API_BASE);
+    suggestionUrl.searchParams.set('s', cleanWord);
+    suggestionUrl.searchParams.set('max', '5');
+    const response = await fetchImpl(suggestionUrl.toString(), { headers: { Accept: 'application/json' }, signal });
+    return response.ok ? credibleCorrection(cleanWord, await response.json()) : '';
+  } catch {
+    return '';
+  }
 }
 
 function parseEntries(entries, cleanWord) {
@@ -116,13 +177,31 @@ export async function fetchWordDetails(word, options = {}) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetchImpl(`${DICTIONARY_API_BASE}${encodeURIComponent(cleanWord)}`, {
+    let resolvedWord = cleanWord;
+    let response = await fetchImpl(`${DICTIONARY_API_BASE}${encodeURIComponent(cleanWord)}`, {
       headers: { Accept: 'application/json' },
       signal: controller.signal
     });
 
     if (response.status === 404) {
-      throw new DictionaryApiError(`“${cleanWord}” was not found in the dictionary.`, 'NOT_FOUND');
+      try {
+        const suggestion = await findSpellingCorrection(cleanWord, fetchImpl, controller.signal);
+        if (suggestion) {
+          const correctedResponse = await fetchImpl(`${DICTIONARY_API_BASE}${encodeURIComponent(suggestion)}`, {
+            headers: { Accept: 'application/json' },
+            signal: controller.signal
+          });
+          if (correctedResponse.ok) {
+            resolvedWord = suggestion;
+            response = correctedResponse;
+          }
+        }
+      } catch {
+        // Preserve the original not-found result when the spelling helper is unavailable.
+      }
+      if (response.status === 404) {
+        throw new DictionaryApiError(`“${cleanWord}” was not found in the dictionary.`, 'NOT_FOUND');
+      }
     }
     if (!response.ok) {
       throw new DictionaryApiError(`Dictionary service returned HTTP ${response.status}.`, 'HTTP');
@@ -133,13 +212,15 @@ export async function fetchWordDetails(word, options = {}) {
       throw new DictionaryApiError(`No dictionary entry was returned for “${cleanWord}”.`, 'BAD_RESPONSE');
     }
 
-    let result = parseEntries(payload, cleanWord);
+    let result = parseEntries(payload, resolvedWord);
+    if (resolvedWord !== cleanWord) result = { ...result, correctedFrom: cleanWord };
     const exampleFetchImpl = options.exampleFetchImpl ?? (options.fetchImpl ? null : globalThis.fetch?.bind(globalThis));
     if (exampleFetchImpl) {
       const senses = await fetchExamplesForSenses(result.word, result.senses, exampleFetchImpl);
       result = { ...result, senses, ...senses[0] };
     }
     cache[cleanWord] = { cachedAt: Date.now(), data: result };
+    if (resolvedWord !== cleanWord) cache[resolvedWord] = { cachedAt: Date.now(), data: result };
     writeCache(storage, cache);
     return result;
   } catch (error) {

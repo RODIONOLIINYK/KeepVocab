@@ -1,19 +1,22 @@
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=42';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=42';
+import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=46';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=45';
 import { speakWord } from './services/speechService.js?v=43';
 import { updateWordRepetition, getDueWords } from './services/srsEngine.js?v=42';
 import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=42';
 import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=42';
-import { MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, bulkResultToWord } from './services/bulkWords.js?v=43';
+import { findRelevantImages } from './services/imageSearch.js?v=42';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=45';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=49';
+import { appendStudyMoment, buildSmartReminderPlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=54';
 
-import { renderReviewView } from './components/ReviewView.js?v=43';
-import { renderLibraryView } from './components/LibraryView.js?v=43';
+import { renderReviewView } from './components/ReviewView.js?v=49';
+import { renderLibraryView } from './components/LibraryView.js?v=51';
 import { renderStatsView } from './components/StatsView.js?v=42';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=43';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=42';
-import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=42';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=49';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=49';
+import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=49';
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=43';
 
 function localDateKey(date = new Date()) {
@@ -50,6 +53,13 @@ repairContradictoryExamples();
 let wordsQueue = buildStudyQueue();
 
 let currentIndex = 0;
+const reminderDefaults = driveSync.getSettings();
+if (typeof reminderDefaults.smartReminderEnabled !== 'boolean' || !Array.isArray(reminderDefaults.reviewStartMoments)) {
+  driveSync.updateSettings({
+    smartReminderEnabled: typeof reminderDefaults.smartReminderEnabled === 'boolean' ? reminderDefaults.smartReminderEnabled : true,
+    reviewStartMoments: Array.isArray(reminderDefaults.reviewStartMoments) ? reminderDefaults.reviewStartMoments : []
+  }, { silent: true });
+}
 const initialSettings = driveSync.getSettings();
 let goalCount = initialSettings.reviewsDate === localDateKey() ? Number(initialSettings.reviewsToday || 0) : 0;
 if (initialSettings.reviewsDate !== localDateKey()) {
@@ -60,6 +70,7 @@ let speechSpeed = 1.0;
 let dashboardOriginalHTML = '';
 let currentFetchedData = null;
 let viewEnterTimer = null;
+let reminderRefreshTimer = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('view-container');
@@ -70,9 +81,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
+  setInteractionSoundEnabledProvider(() => driveSync.getSettings().soundEnabled !== false);
+  setupButtonSounds();
   setupNavigation();
   setupDriveBackupModal();
   setupQuickAddModal();
+  setupEngagementSystem();
+  setupReminderNavigation().catch(error => console.warn('Reminder navigation setup failed.', error));
   setupFlashcardControls();
   setupMonthDropdown();
   setupKeyboardShortcuts();
@@ -81,9 +96,12 @@ function initApp() {
   resumeRememberedDriveConnection();
 
   window.addEventListener('keepvocab:progress', () => {
+    rememberStudyStart();
     const settings = driveSync.getSettings();
     goalCount = settings.reviewsDate === localDateKey() ? Number(settings.reviewsToday || 0) : 0;
     updateGoalDisplay();
+    updateEngagementCard();
+    queueSmartReminderRefresh();
   });
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
@@ -114,6 +132,7 @@ function showToast(msg, type = 'success') {
   label.textContent = String(msg);
   toast.append(icon, label);
   document.body.appendChild(toast);
+  playInteractionSound(type === 'success' ? 'success' : 'error');
 
   setTimeout(() => toast.remove(), 4000);
 }
@@ -160,7 +179,199 @@ function updateDashboardDerivedState() {
     const key = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
     element.classList.toggle('checked', Number(activity[key] || 0) > 0);
   });
+  updateEngagementCard();
   renderConnectionState();
+}
+
+function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
+  const settings = { ...driveSync.getSettings(), ...settingsOverride };
+  const reviewsToday = settings.reviewsDate === localDateKey(now) ? Number(settings.reviewsToday || 0) : 0;
+  const dueCount = getDueWords().filter(word => word.notebook === driveSync.getActiveNotebook()).length;
+  return buildSmartReminderPlan({
+    preferredTime: settings.reminderTime || '19:00',
+    smartTiming: settings.smartReminderEnabled !== false,
+    reviewMoments: settings.reviewStartMoments || [],
+    dueCount,
+    reviewsToday,
+    dailyGoal: settings.dailyGoal || 20,
+    streak: settings.dailyStreak || 0,
+    now
+  });
+}
+
+function rememberStudyStart(now = new Date()) {
+  const settings = driveSync.getSettings();
+  const previous = Array.isArray(settings.reviewStartMoments) ? settings.reviewStartMoments : [];
+  const next = appendStudyMoment(previous, now);
+  if (next.join('|') !== previous.join('|')) driveSync.updateSettings({ reviewStartMoments: next }, { silent: true });
+}
+
+async function refreshSmartReminder({ requestPermission = false, settingsOverride = {} } = {}) {
+  const settings = { ...driveSync.getSettings(), ...settingsOverride };
+  if (!settings.reminderEnabled) {
+    await cancelDailyReminder();
+    return { status: 'disabled', plan: null };
+  }
+  const plan = currentSmartReminderPlan(settingsOverride);
+  const result = await scheduleDailyReminder({ ...plan, requestPermission });
+  return { ...result, plan };
+}
+
+function queueSmartReminderRefresh() {
+  globalThis.clearTimeout(reminderRefreshTimer);
+  if (!driveSync.getSettings().reminderEnabled) return;
+  reminderRefreshTimer = globalThis.setTimeout(() => {
+    refreshSmartReminder().catch(error => console.warn('Smart reminder refresh failed.', error));
+  }, 400);
+}
+
+function updateEngagementCard() {
+  const title = document.getElementById('coach-title');
+  const copy = document.getElementById('coach-copy');
+  const status = document.getElementById('coach-reminder-status');
+  const weeklyStatus = document.getElementById('coach-weekly-status');
+  const mascot = document.getElementById('coach-mascot-image');
+  if (!title || !copy || !status || !weeklyStatus || !mascot) return;
+
+  const settings = driveSync.getSettings();
+  const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
+  const reviewsToday = settings.reviewsDate === localDateKey() ? Number(settings.reviewsToday || 0) : 0;
+  const dueCount = getDueWords().filter(word => word.notebook === driveSync.getActiveNotebook()).length;
+  const streak = Number(settings.dailyStreak || 0);
+  const activity = settings.reviewActivity || {};
+  const today = new Date();
+  const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - ((today.getDay() + 6) % 7));
+  const activeDays = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + index);
+    return Number(activity[localDateKey(date)] || 0) > 0;
+  }).filter(Boolean).length;
+  const isStreakMilestone = reviewsToday > 0 && [3, 7, 14, 30, 50, 100, 365].includes(streak);
+
+  if (isStreakMilestone) {
+    title.textContent = `${streak}-day streak!`;
+    copy.textContent = 'Sprig is celebrating the routine you built one short session at a time.';
+  } else if (reviewsToday >= dailyGoal) {
+    title.textContent = 'Daily goal complete!';
+    copy.textContent = 'Nice work. Sprig will keep tomorrow’s practice short and focused.';
+  } else if (dueCount > 0) {
+    title.textContent = `${dueCount} word${dueCount === 1 ? '' : 's'} ready for review`;
+    copy.textContent = `A five-minute session moves you ${Math.min(dueCount, dailyGoal - reviewsToday)} step${Math.min(dueCount, dailyGoal - reviewsToday) === 1 ? '' : 's'} closer to today’s goal.`;
+  } else {
+    title.textContent = 'Your memory garden is growing';
+    copy.textContent = 'Add a new word or practice a learning mode to keep your routine alive.';
+  }
+
+  mascot.src = isStreakMilestone || reviewsToday >= dailyGoal
+    ? 'assets/keepvocab-sprig-celebrate.png'
+    : dueCount > 0
+      ? 'assets/keepvocab-sprig-thinking.png'
+      : 'assets/keepvocab-sprout-mascot.png';
+  weeklyStatus.innerHTML = `<i class="fa-solid fa-chart-line"></i> ${activeDays} / 5 active days`;
+
+  const reminderPlan = currentSmartReminderPlan();
+  status.innerHTML = settings.reminderEnabled
+    ? `<i class="fa-solid fa-bell"></i> ${settings.smartReminderEnabled !== false ? 'Smart reminder' : 'Daily reminder'} at ${formatReminderTime(reminderPlan.time)} · ${reminderPlan.summary}`
+    : '<i class="fa-regular fa-bell"></i> Daily reminder is off';
+}
+
+function setupEngagementSystem() {
+  const modal = document.getElementById('engagement-settings-modal');
+  const reminderEnabled = document.getElementById('reminder-enabled');
+  const smartReminderEnabled = document.getElementById('smart-reminder-enabled');
+  const reminderTime = document.getElementById('reminder-time');
+  const soundEnabled = document.getElementById('sound-enabled');
+  const helper = document.getElementById('reminder-helper');
+  const save = document.getElementById('btn-save-engagement-settings');
+  if (!modal || !reminderEnabled || !smartReminderEnabled || !reminderTime || !soundEnabled || !helper || !save) return;
+
+  const updateHelper = () => {
+    if (!reminderEnabled.checked) {
+      helper.textContent = 'Reminders are off. Your progress and app sounds still work normally.';
+      return;
+    }
+    const plan = currentSmartReminderPlan({
+      reminderTime: normalizeReminderTime(reminderTime.value),
+      smartReminderEnabled: smartReminderEnabled.checked
+    });
+    const learnedTime = smartReminderEnabled.checked && plan.time !== normalizeReminderTime(reminderTime.value);
+    const timingCopy = !smartReminderEnabled.checked
+      ? 'Fixed timing is active.'
+      : learnedTime
+        ? 'Timing learned from your recent study days.'
+        : 'Smart timing will learn after three study days; your preferred time is used for now.';
+    helper.textContent = `Next plan: ${formatReminderTime(plan.time)} · ${plan.title}. ${timingCopy}`;
+  };
+
+  const updateTimeState = () => {
+    reminderTime.disabled = !reminderEnabled.checked;
+    smartReminderEnabled.disabled = !reminderEnabled.checked;
+    updateHelper();
+  };
+
+  const openSettings = () => {
+    const settings = driveSync.getSettings();
+    reminderEnabled.checked = Boolean(settings.reminderEnabled);
+    smartReminderEnabled.checked = settings.smartReminderEnabled !== false;
+    reminderTime.value = normalizeReminderTime(settings.reminderTime || '19:00');
+    soundEnabled.checked = settings.soundEnabled !== false;
+    updateTimeState();
+    modal.classList.add('active');
+  };
+
+  const closeSettings = () => modal.classList.remove('active');
+
+  reminderEnabled.addEventListener('change', updateTimeState);
+  smartReminderEnabled.addEventListener('change', updateHelper);
+  reminderTime.addEventListener('input', updateHelper);
+  document.addEventListener('click', event => {
+    const control = event.target.closest('button, a');
+    if (!control) return;
+    if (control.id === 'btn-open-engagement-settings') openSettings();
+    if (control.id === 'btn-coach-review') window.location.hash = 'review';
+    if (control.id === 'btn-close-engagement-settings' || control.id === 'btn-cancel-engagement-settings') closeSettings();
+  });
+
+  save.addEventListener('click', async () => {
+    const enabled = reminderEnabled.checked;
+    const time = normalizeReminderTime(reminderTime.value);
+    const smartTiming = smartReminderEnabled.checked;
+    save.disabled = true;
+    save.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+    helper.textContent = enabled ? 'Requesting notification access and scheduling your reminder…' : 'Turning the daily reminder off…';
+    try {
+      driveSync.updateSettings({
+        reminderEnabled: enabled,
+        smartReminderEnabled: smartTiming,
+        reminderTime: time,
+        soundEnabled: soundEnabled.checked
+      });
+      const result = enabled
+        ? await refreshSmartReminder({ requestPermission: true })
+        : (await cancelDailyReminder(), { status: 'disabled' });
+      updateEngagementCard();
+      closeSettings();
+      const message = result.status === 'scheduled'
+        ? `${smartTiming ? 'Smart' : 'Daily'} reminder set for ${formatReminderTime(result.plan?.time || time)}.`
+        : result.status === 'permission-required'
+          ? 'Reminder saved. Enable notification permission for alerts outside the app.'
+          : enabled
+            ? 'In-app reminder saved.'
+            : 'Daily reminder turned off.';
+      showToast(message);
+    } catch (error) {
+      helper.textContent = error.message || 'The reminder could not be scheduled on this device.';
+      showToast(helper.textContent, 'error');
+    } finally {
+      save.disabled = false;
+      save.innerHTML = '<i class="fa-solid fa-check"></i> Save routine';
+    }
+  });
+
+  const settings = driveSync.getSettings();
+  if (settings.reminderEnabled) {
+    refreshSmartReminder().catch(error => console.warn('Smart reminder restore failed.', error));
+  }
 }
 
 function navigateTo(viewName) {
@@ -258,6 +469,13 @@ function setupQuickAddModal() {
   const bulkResultsList = document.getElementById('bulk-word-results');
   const bulkStatus = document.getElementById('bulk-word-status');
   const bulkSave = document.getElementById('btn-save-bulk-words');
+  const bulkRetryMissing = document.getElementById('retry-bulk-missing');
+  const bulkProgress = document.getElementById('bulk-import-progress');
+  const bulkProgressPhase = document.getElementById('bulk-progress-phase');
+  const bulkProgressEta = document.getElementById('bulk-progress-eta');
+  const bulkProgressTrack = document.getElementById('bulk-progress-track');
+  const bulkProgressFill = document.getElementById('bulk-progress-fill');
+  const bulkProgressCount = document.getElementById('bulk-progress-count');
   let senseDrafts = new Map();
   let selectedSenseIds = new Set();
   let focusedSenseId = null;
@@ -265,7 +483,52 @@ function setupQuickAddModal() {
 
   if (!btnOpen) return;
 
+  const updateBulkProgress = ({ completed, total, phase, startedAt, finished = false }) => {
+    const safeTotal = Math.max(1, Number(total) || 1);
+    const safeCompleted = Math.max(0, Math.min(safeTotal, Number(completed) || 0));
+    const percent = Math.round((safeCompleted / safeTotal) * 100);
+    bulkProgress.hidden = false;
+    bulkProgressPhase.textContent = phase;
+    bulkProgressCount.textContent = `Processed ${safeCompleted} of ${total} word${total === 1 ? '' : 's'} · ${percent}%`;
+    bulkProgressFill.style.width = `${percent}%`;
+    bulkProgressTrack.setAttribute('aria-valuenow', String(percent));
+    if (finished || safeCompleted >= safeTotal) {
+      bulkProgressEta.textContent = 'Complete';
+      return;
+    }
+    if (!safeCompleted) {
+      bulkProgressEta.textContent = 'Estimating time…';
+      return;
+    }
+    const elapsedMs = Date.now() - startedAt;
+    const remainingSeconds = Math.max(1, Math.ceil((elapsedMs / safeCompleted) * (safeTotal - safeCompleted) / 1000));
+    bulkProgressEta.textContent = remainingSeconds < 60
+      ? `About ${remainingSeconds} sec left`
+      : `About ${Math.ceil(remainingSeconds / 60)} min left`;
+  };
+
+  const resetAsyncControls = () => {
+    btnFetch.disabled = false;
+    btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
+    btnSave.disabled = false;
+    btnSave.innerHTML = '<i class="fa-solid fa-bookmark"></i> Save meaning';
+    bulkPrepare.disabled = false;
+    bulkPrepare.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
+    bulkSave.disabled = true;
+    bulkSave.innerHTML = '<i class="fa-solid fa-bookmark"></i> Save word list';
+    bulkRetryMissing.disabled = false;
+    bulkRetryMissing.hidden = true;
+    bulkRetryMissing.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Retry missing meanings';
+    bulkProgress.hidden = true;
+    bulkProgressPhase.textContent = 'Finding meanings';
+    bulkProgressEta.textContent = 'Estimating time…';
+    bulkProgressCount.textContent = 'Processed 0 of 0 words';
+    bulkProgressFill.style.width = '0%';
+    bulkProgressTrack.setAttribute('aria-valuenow', '0');
+  };
+
   const openModal = () => {
+    resetAsyncControls();
     modal.classList.add('active');
     window.setTimeout(() => input.focus(), 0);
   };
@@ -288,6 +551,9 @@ function setupQuickAddModal() {
     });
     bulkSave.disabled = !complete;
     bulkSave.innerHTML = `<i class="fa-solid fa-bookmark"></i> Save ${bulkResults.length || ''} word${bulkResults.length === 1 ? '' : 's'}`;
+    const missingCount = bulkResults.filter(result => result.status !== 'ready').length;
+    bulkRetryMissing.hidden = missingCount === 0;
+    bulkRetryMissing.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Retry ${missingCount || ''} missing meaning${missingCount === 1 ? '' : 's'}`;
   };
 
   const renderBulkResults = () => {
@@ -308,7 +574,15 @@ function setupQuickAddModal() {
         renderBulkResults();
         bulkStatus.textContent = `${bulkResults.length} word${bulkResults.length === 1 ? '' : 's'} ready to review.`;
       });
-      heading.append(title, remove);
+      const titleGroup = document.createElement('span');
+      titleGroup.appendChild(title);
+      if (result.data?.correctedFrom) {
+        const correction = document.createElement('small');
+        correction.className = 'spelling-correction';
+        correction.textContent = `Corrected from ${result.data.correctedFrom}`;
+        titleGroup.appendChild(correction);
+      }
+      heading.append(titleGroup, remove);
       row.appendChild(heading);
 
       if (result.status === 'ready') {
@@ -369,9 +643,10 @@ function setupQuickAddModal() {
     bulkInput.value = '';
     bulkCount.textContent = '0 words';
     bulkStatus.textContent = '';
+    bulkProgress.hidden = true;
     bulkResults = [];
     bulkResultsList.innerHTML = '';
-    bulkSave.disabled = true;
+    resetAsyncControls();
     setAddMode('single', false);
     currentFetchedData = null;
   };
@@ -467,6 +742,8 @@ function setupQuickAddModal() {
     bulkResults = [];
     bulkResultsList.innerHTML = '';
     bulkSave.disabled = true;
+    bulkProgress.hidden = true;
+    bulkRetryMissing.hidden = true;
   });
   bulkPrepare.addEventListener('click', async () => {
     const allTerms = parseBulkWordList(bulkInput.value, Number.MAX_SAFE_INTEGER);
@@ -478,19 +755,65 @@ function setupQuickAddModal() {
     bulkPrepare.disabled = true;
     bulkPrepare.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finding meanings…';
     bulkStatus.textContent = `Looking up ${allTerms.length} word${allTerms.length === 1 ? '' : 's'}…`;
+    const lookupStartedAt = Date.now();
+    updateBulkProgress({ completed: 0, total: allTerms.length, phase: 'Finding meanings', startedAt: lookupStartedAt });
     try {
-      bulkResults = await lookupBulkWords(allTerms, fetchWordDetails, 3);
+      const lookedUp = await lookupBulkWords(allTerms, fetchWordDetails, {
+        delayMs: BULK_LOOKUP_DELAY_MS,
+        retries: 2,
+        retryDelayMs: 750,
+        onProgress: ({ completed, total, term }) => {
+          bulkStatus.textContent = `Looking up ${completed} of ${total}: ${term}`;
+          updateBulkProgress({ completed, total, phase: 'Finding meanings', startedAt: lookupStartedAt });
+        }
+      });
+      bulkResults = dedupeBulkResults(lookedUp);
       renderBulkResults();
       const manualCount = bulkResults.filter(result => result.status === 'manual').length;
+      const mergedCount = lookedUp.length - bulkResults.length;
+      updateBulkProgress({ completed: lookedUp.length, total: lookedUp.length, phase: 'Meanings ready', startedAt: lookupStartedAt, finished: true });
       bulkStatus.textContent = manualCount
         ? `${bulkResults.length - manualCount} ready; ${manualCount} need${manualCount === 1 ? 's' : ''} a manual definition.`
-        : `${bulkResults.length} words ready. Review each selected meaning, then save the list.`;
+        : `${bulkResults.length} words ready${mergedCount ? `; ${mergedCount} corrected duplicate${mergedCount === 1 ? ' was' : 's were'} merged` : ''}. Review each meaning, then save; images are chosen automatically.`;
+    } catch (error) {
+      bulkStatus.textContent = error.message || 'Some meanings could not be loaded. Try again.';
+      showToast(bulkStatus.textContent, 'error');
     } finally {
       bulkPrepare.disabled = false;
       bulkPrepare.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
     }
   });
-  bulkSave.addEventListener('click', () => {
+  bulkRetryMissing.addEventListener('click', async () => {
+    const missingCount = bulkResults.filter(result => result.status !== 'ready').length;
+    if (!missingCount) return;
+    const retryStartedAt = Date.now();
+    bulkRetryMissing.disabled = true;
+    bulkPrepare.disabled = true;
+    updateBulkProgress({ completed: 0, total: missingCount, phase: 'Retrying missing meanings', startedAt: retryStartedAt });
+    bulkStatus.textContent = `Retrying only ${missingCount} missing word${missingCount === 1 ? '' : 's'}…`;
+    try {
+      bulkResults = await retryMissingBulkWords(bulkResults, fetchWordDetails, {
+        delayMs: BULK_LOOKUP_DELAY_MS,
+        retries: 2,
+        retryDelayMs: 1000,
+        onProgress: ({ completed, total, term }) => {
+          bulkStatus.textContent = `Retrying ${completed} of ${total}: ${term}`;
+          updateBulkProgress({ completed, total, phase: 'Retrying missing meanings', startedAt: retryStartedAt });
+        }
+      });
+      bulkResults = dedupeBulkResults(bulkResults);
+      renderBulkResults();
+      const remaining = bulkResults.filter(result => result.status !== 'ready').length;
+      updateBulkProgress({ completed: missingCount, total: missingCount, phase: 'Retry finished', startedAt: retryStartedAt, finished: true });
+      bulkStatus.textContent = remaining
+        ? `${missingCount - remaining} recovered; ${remaining} still need${remaining === 1 ? 's' : ''} a meaning. You can retry again or enter it manually.`
+        : `All ${bulkResults.length} meanings are ready. Review them, then save.`;
+    } finally {
+      bulkRetryMissing.disabled = false;
+      bulkPrepare.disabled = false;
+    }
+  });
+  bulkSave.addEventListener('click', async () => {
     const items = bulkResults.map((result, index) => {
       const senseIndex = result.selectedSenseIndex || 0;
       const manualDefinition = result.manualDefinition || '';
@@ -500,8 +823,22 @@ function setupQuickAddModal() {
       bulkStatus.textContent = 'Every word needs an intended meaning before the list can be saved.';
       return;
     }
+    const originalButton = bulkSave.innerHTML;
+    bulkSave.disabled = true;
+    const imageStartedAt = Date.now();
+    updateBulkProgress({ completed: 0, total: items.length, phase: 'Choosing images', startedAt: imageStartedAt });
     try {
-      const saved = driveSync.addWords(items.map(item => sanitizeExistingExamples(item.word, [item])[0]));
+      const checkedItems = items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
+      const existingImageUrls = driveSync.getWords().flatMap(item => [item.imageUrl, item.imageSourceUrl]).filter(Boolean);
+      const enrichedItems = await attachImagesSequentially(checkedItems, findRelevantImages, {
+        excludeUrls: existingImageUrls,
+        onProgress: ({ completed, total, word }) => {
+          bulkStatus.textContent = `Choosing image ${completed} of ${total}: ${word}`;
+          bulkSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Choosing images ${completed}/${total}`;
+          updateBulkProgress({ completed, total, phase: 'Choosing images', startedAt: imageStartedAt });
+        }
+      });
+      const saved = driveSync.addWords(enrichedItems);
       driveSync.setActiveNotebook(saved[0].notebook);
       wordsQueue = buildStudyQueue();
       currentIndex = 0;
@@ -511,6 +848,8 @@ function setupQuickAddModal() {
     } catch (error) {
       bulkStatus.textContent = error.message;
       showToast(error.message, 'error');
+      bulkSave.disabled = false;
+      bulkSave.innerHTML = originalButton;
     }
   });
   input.addEventListener('input', () => {
@@ -535,9 +874,13 @@ function setupQuickAddModal() {
 
     try {
       currentFetchedData = await fetchWordDetails(w);
+      if (currentFetchedData.correctedFrom) input.value = currentFetchedData.word;
       document.getElementById('prev-w-title').textContent = currentFetchedData.word;
       document.getElementById('prev-w-phonetic').textContent = currentFetchedData.phonetic;
       renderSenses(currentFetchedData);
+      if (currentFetchedData.correctedFrom) {
+        formStatus.textContent = `Spelling corrected from “${currentFetchedData.correctedFrom}” to “${currentFetchedData.word}”. Review the meaning before saving.`;
+      }
       preview.style.display = 'block';
     } catch (err) {
       currentFetchedData = null;
@@ -550,7 +893,7 @@ function setupQuickAddModal() {
     }
   });
 
-  btnSave.addEventListener('click', () => {
+  btnSave.addEventListener('click', async () => {
     const wordText = input.value.trim();
     if (!wordText) return;
 
@@ -580,9 +923,19 @@ function setupQuickAddModal() {
       return;
     }
 
+    const originalButton = btnSave.innerHTML;
+    btnSave.disabled = true;
     try {
       const senseCheckedItems = items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
-      const saved = driveSync.addWords(senseCheckedItems);
+      const existingImageUrls = driveSync.getWords().flatMap(item => [item.imageUrl, item.imageSourceUrl]).filter(Boolean);
+      const enrichedItems = await attachImagesSequentially(senseCheckedItems, findRelevantImages, {
+        excludeUrls: existingImageUrls,
+        onProgress: ({ completed, total }) => {
+          formStatus.textContent = `Choosing image ${completed} of ${total}…`;
+          btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Choosing images ${completed}/${total}`;
+        }
+      });
+      const saved = driveSync.addWords(enrichedItems);
       driveSync.setActiveNotebook(saved[0].notebook);
       wordsQueue = buildStudyQueue();
       currentIndex = 0;
@@ -591,6 +944,8 @@ function setupQuickAddModal() {
       navigateTo(currentView);
     } catch (error) {
       showToast(error.message, 'error');
+      btnSave.disabled = false;
+      btnSave.innerHTML = originalButton;
     }
   });
 }
@@ -840,8 +1195,10 @@ function setupFlashcardControls() {
     if (!wordsQueue.length) return;
     const current = wordsQueue[currentIndex];
     if (current.id) updateWordRepetition(current.id, type.toLowerCase());
+    rememberStudyStart();
     goalCount = Number(driveSync.getSettings().reviewsToday || 0);
     updateGoalDisplay();
+    queueSmartReminderRefresh();
 
     showToast(`Rated “${current.word}” as ${type}. Review schedule updated.`);
     currentIndex = (currentIndex + 1) % wordsQueue.length;

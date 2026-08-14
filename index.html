@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Specification Stylesheet -->
-  <link rel="stylesheet" href="css/styles.css?v=40">
+  <link rel="stylesheet" href="css/styles.css?v=51">
 </head>
 <body>
 
@@ -51,7 +51,7 @@
     </nav>
 
     <div class="nav-user-area">
-      <button class="btn-green-solid" id="btn-header-quick-add" style="padding: 8px 16px; font-size: 0.85rem; margin-right: 8px;">
+      <button class="btn-green-solid" id="btn-header-quick-add">
         <i class="fa-solid fa-plus"></i> Add Word
       </button>
 
@@ -335,6 +335,66 @@
           </div>
         </div>
 
+        <div class="spec-card coach-card">
+          <div class="coach-mascot-stage" aria-hidden="true">
+            <img id="coach-mascot-image" src="assets/keepvocab-sprout-mascot.png" alt="">
+          </div>
+          <div class="coach-card-content">
+            <div class="card-tag"><i class="fa-solid fa-seedling"></i> Sprig, your word coach</div>
+            <strong id="coach-title">Your memory garden is growing</strong>
+            <p id="coach-copy">A short review today keeps new words within reach.</p>
+            <div class="coach-status-row">
+              <span id="coach-weekly-status" class="coach-weekly-status"><i class="fa-solid fa-chart-line"></i> 0 / 5 active days</span>
+              <span id="coach-reminder-status" class="coach-reminder-status"><i class="fa-regular fa-bell"></i> Daily reminder is off</span>
+            </div>
+            <div class="coach-actions">
+              <button type="button" class="btn-green-solid" id="btn-coach-review"><i class="fa-solid fa-play"></i> Start 5-min review</button>
+              <button type="button" class="status-pill offline" id="btn-open-engagement-settings"><i class="fa-solid fa-sliders"></i> Routine</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="engagement-settings-modal">
+    <div class="modal-box engagement-modal-box">
+      <div class="engagement-modal-heading">
+        <img src="assets/keepvocab-sprig-reminder.png" alt="Sprig holding a reminder bell">
+        <div>
+          <h2>Build your learning routine</h2>
+          <p>Let Sprig adapt reminders to your study rhythm, due words, and daily goal.</p>
+        </div>
+        <button type="button" class="status-pill offline" id="btn-close-engagement-settings" aria-label="Close routine settings"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="engagement-setting-list">
+        <label class="engagement-setting-row" for="reminder-enabled">
+          <span class="setting-icon bell"><i class="fa-solid fa-bell"></i></span>
+          <span><strong>Daily reminder</strong><small>Get a nudge before your streak slips.</small></span>
+          <input type="checkbox" id="reminder-enabled" class="setting-toggle">
+        </label>
+        <label class="engagement-setting-row" for="smart-reminder-enabled">
+          <span class="setting-icon bell"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+          <span><strong>Smart timing</strong><small>Learn when you usually study and adapt each reminder to what is due.</small></span>
+          <input type="checkbox" id="smart-reminder-enabled" class="setting-toggle" checked>
+        </label>
+        <label class="engagement-time-row" for="reminder-time">
+          <span>Preferred reminder time</span>
+          <input type="time" id="reminder-time" value="19:00">
+        </label>
+        <label class="engagement-setting-row" for="sound-enabled">
+          <span class="setting-icon sound"><i class="fa-solid fa-music"></i></span>
+          <span><strong>App sounds</strong><small>Short taps and success cues during learning.</small></span>
+          <input type="checkbox" id="sound-enabled" class="setting-toggle" checked>
+        </label>
+      </div>
+
+      <p id="reminder-helper" class="reminder-helper" role="status" aria-live="polite"></p>
+      <div class="engagement-modal-actions">
+        <button type="button" class="status-pill offline" id="btn-cancel-engagement-settings">Cancel</button>
+        <button type="button" class="btn-green-solid" id="btn-save-engagement-settings"><i class="fa-solid fa-check"></i> Save routine</button>
       </div>
     </div>
   </div>
@@ -439,17 +499,23 @@
       </div>
 
       <div id="bulk-add-panel" class="bulk-add-panel" role="tabpanel" aria-labelledby="bulk-add-tab" hidden>
-        <label for="bulk-word-input"><strong>Paste your word list</strong><span>Use one word per line, or separate words with commas or semicolons.</span></label>
-        <textarea id="bulk-word-input" rows="6" maxlength="3000" placeholder="resilient&#10;meticulous&#10;take into account"></textarea>
+        <label for="bulk-word-input"><strong>Paste up to 100 words</strong><span>Use one word per line, or separate words with commas or semicolons.</span></label>
+        <textarea id="bulk-word-input" rows="6" maxlength="10000" placeholder="resilient&#10;meticulous&#10;take into account"></textarea>
         <div class="bulk-add-toolbar"><span id="bulk-word-count">0 words</span><button type="button" class="btn-green-solid" id="prepare-bulk-words"><i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings</button></div>
-        <p class="sense-helper">KeepVocab shows a meaning for every word before saving, so you can choose the intended sense instead of importing the wrong one.</p>
+        <p class="sense-helper">Words are looked up one at a time. KeepVocab checks close spellings, lets you review every meaning, and automatically chooses a distinct image when you save.</p>
+        <div id="bulk-import-progress" class="bulk-import-progress" hidden>
+          <div class="bulk-progress-copy"><span><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> <strong id="bulk-progress-phase">Finding meanings</strong></span><span id="bulk-progress-eta">Estimating time…</span></div>
+          <div class="bulk-progress-track" id="bulk-progress-track" role="progressbar" aria-label="Bulk import progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="bulk-progress-fill"></span></div>
+          <span id="bulk-progress-count">Processed 0 of 0 words</span>
+        </div>
         <div id="bulk-word-results" class="bulk-word-results" aria-live="polite"></div>
         <p id="bulk-word-status" class="form-message" role="status" aria-live="polite"></p>
+        <button type="button" class="bulk-retry-missing" id="retry-bulk-missing" hidden><i class="fa-solid fa-rotate-right"></i> Retry missing meanings</button>
         <div class="sense-modal-actions bulk-actions"><button type="button" class="status-pill offline" id="btn-cancel-bulk-add">Cancel</button><button type="button" class="btn-green-solid" id="btn-save-bulk-words" disabled><i class="fa-solid fa-bookmark"></i> Save word list</button></div>
       </div>
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=43"></script>
+  <script type="module" src="js/app.js?v=54"></script>
 </body>
 </html>

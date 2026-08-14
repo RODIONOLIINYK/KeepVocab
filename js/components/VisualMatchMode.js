@@ -1,8 +1,9 @@
 import { driveSync } from '../services/driveSync.js?v=42';
 import { findRelevantImages } from '../services/imageSearch.js?v=42';
 import { updateWordRepetition } from '../services/srsEngine.js?v=42';
+import { playInteractionSound } from '../services/interactionSound.js?v=49';
 import { escapeHtml } from '../utils/html.js';
-import { stableWordChoices } from './PracticeModes.js?v=43';
+import { stableWordChoices } from './PracticeModes.js?v=49';
 
 function shuffle(items) {
   const result = [...items];
@@ -165,7 +166,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
         <div class="practice-topline"><button class="status-pill offline" id="visual-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${index + 1} of ${queue.length}</span><strong>Score ${score}</strong></div>
         <div class="review-progress"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div>
         <div class="visual-prompt"><p>Which word best matches this image?</p><figure><img src="${escapeHtml(target.image.url)}" alt="Visual clue"><figcaption><a href="${escapeHtml(target.image.sourceUrl)}" target="_blank" rel="noopener noreferrer">Image source</a>${target.image.attribution ? ` · ${escapeHtml(target.image.attribution)}` : ''}${target.image.license ? ` · ${escapeHtml(target.image.license)}` : ''}</figcaption></figure><button class="status-pill offline" id="visual-change-cue"><i class="fa-solid fa-rotate"></i> Change automatic suggestion</button>
-          <div class="choice-grid">${options.map(option => { const state = answered ? option.id === target.word.id ? ' correct' : option.id === selectedId ? ' incorrect' : '' : ''; const icon = answered && option.id === target.word.id ? '<i class="fa-solid fa-check choice-result-icon" aria-hidden="true"></i>' : answered && option.id === selectedId ? '<i class="fa-solid fa-xmark choice-result-icon" aria-hidden="true"></i>' : ''; return `<button class="choice-button${state}" data-visual-choice="${escapeHtml(option.id)}" ${answered ? 'disabled' : ''}><span>${escapeHtml(option.word)}</span>${icon}</button>`; }).join('')}</div>
+          <div class="choice-grid">${options.map(option => { const state = answered ? option.id === target.word.id ? ' correct' : option.id === selectedId ? ' incorrect' : '' : ''; const icon = answered && option.id === target.word.id ? '<i class="fa-solid fa-check choice-result-icon" aria-hidden="true"></i>' : answered && option.id === selectedId ? '<i class="fa-solid fa-xmark choice-result-icon" aria-hidden="true"></i>' : ''; return `<button class="choice-button${state}" data-visual-choice="${escapeHtml(option.id)}" data-sound="none" ${answered ? 'disabled' : ''}><span>${escapeHtml(option.word)}</span>${icon}</button>`; }).join('')}</div>
           <div class="answer-feedback-slot" aria-live="polite">${answered ? `${correct ? '<span class="success-burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}"><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${correct ? 'Excellent!' : 'Not quite'}</strong><span>${correct ? escapeHtml(target.word.definition) : `The correct answer is <b>${escapeHtml(target.word.word)}</b>. ${escapeHtml(target.word.definition)}`}</span></div></div>` : ''}</div>
           <div class="answer-action-slot">${answered ? `<button class="btn-green-solid" id="visual-next">${index + 1 === queue.length ? 'See result' : 'Next image'}</button>` : ''}</div>
         </div>
@@ -175,6 +176,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
       container.querySelectorAll('[data-visual-choice]').forEach(button => button.addEventListener('click', () => {
         selectedId = button.dataset.visualChoice;
         const isCorrect = selectedId === target.word.id;
+        playInteractionSound(isCorrect ? 'correct' : 'wrong');
         if (isCorrect) score += 1;
         if (!isCorrect && !retried.has(target.word.id)) { retried.add(target.word.id); queue.push(target); }
         updateWordRepetition(target.word.id, isCorrect ? 'good' : 'again');

@@ -1,5 +1,6 @@
 import { driveSync } from '../services/driveSync.js?v=42';
 import { updateWordRepetition } from '../services/srsEngine.js?v=42';
+import { playInteractionSound } from '../services/interactionSound.js?v=49';
 import { escapeHtml } from '../utils/html.js';
 
 function shuffle(items) {
@@ -74,6 +75,7 @@ export function renderMatchSprintMode(container, onNavigate) {
       const id = selectedTerm;
       correctPair = id;
       resolvingPair = true;
+      playInteractionSound('correct');
       render();
       updateWordRepetition(id, missed.has(id) ? 'hard' : 'good');
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
@@ -90,6 +92,7 @@ export function renderMatchSprintMode(container, onNavigate) {
       return;
     }
     mistakes += 1;
+    playInteractionSound('wrong');
     missed.add(selectedTerm);
     missed.add(selectedDefinition);
     wrongPair = { term: selectedTerm, definition: selectedDefinition };
