@@ -1,6 +1,6 @@
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=42';
+import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=46';
 import { fetchWordDetails } from './services/dictionaryApi.js?v=45';
 import { speakWord } from './services/speechService.js?v=43';
 import { updateWordRepetition, getDueWords } from './services/srsEngine.js?v=42';
@@ -8,11 +8,13 @@ import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/sync
 import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=42';
 import { findRelevantImages } from './services/imageSearch.js?v=42';
 import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=45';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=46';
+import { cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder } from './services/reminderService.js?v=46';
 
-import { renderReviewView } from './components/ReviewView.js?v=43';
+import { renderReviewView } from './components/ReviewView.js?v=47';
 import { renderLibraryView } from './components/LibraryView.js?v=43';
 import { renderStatsView } from './components/StatsView.js?v=42';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=43';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=47';
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=42';
 import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=42';
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=43';
@@ -71,9 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
+  setInteractionSoundEnabledProvider(() => driveSync.getSettings().soundEnabled !== false);
+  setupButtonSounds();
   setupNavigation();
   setupDriveBackupModal();
   setupQuickAddModal();
+  setupEngagementSystem();
   setupFlashcardControls();
   setupMonthDropdown();
   setupKeyboardShortcuts();
@@ -115,6 +120,7 @@ function showToast(msg, type = 'success') {
   label.textContent = String(msg);
   toast.append(icon, label);
   document.body.appendChild(toast);
+  playInteractionSound(type === 'success' ? 'success' : 'error');
 
   setTimeout(() => toast.remove(), 4000);
 }
@@ -161,7 +167,127 @@ function updateDashboardDerivedState() {
     const key = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
     element.classList.toggle('checked', Number(activity[key] || 0) > 0);
   });
+  updateEngagementCard();
   renderConnectionState();
+}
+
+function updateEngagementCard() {
+  const title = document.getElementById('coach-title');
+  const copy = document.getElementById('coach-copy');
+  const status = document.getElementById('coach-reminder-status');
+  const weeklyStatus = document.getElementById('coach-weekly-status');
+  const mascot = document.getElementById('coach-mascot-image');
+  if (!title || !copy || !status || !weeklyStatus || !mascot) return;
+
+  const settings = driveSync.getSettings();
+  const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
+  const reviewsToday = settings.reviewsDate === localDateKey() ? Number(settings.reviewsToday || 0) : 0;
+  const dueCount = getDueWords().filter(word => word.notebook === driveSync.getActiveNotebook()).length;
+  const streak = Number(settings.dailyStreak || 0);
+  const activity = settings.reviewActivity || {};
+  const today = new Date();
+  const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - ((today.getDay() + 6) % 7));
+  const activeDays = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + index);
+    return Number(activity[localDateKey(date)] || 0) > 0;
+  }).filter(Boolean).length;
+  const isStreakMilestone = reviewsToday > 0 && [3, 7, 14, 30, 50, 100, 365].includes(streak);
+
+  if (isStreakMilestone) {
+    title.textContent = `${streak}-day streak!`;
+    copy.textContent = 'Sprig is celebrating the routine you built one short session at a time.';
+  } else if (reviewsToday >= dailyGoal) {
+    title.textContent = 'Daily goal complete!';
+    copy.textContent = 'Nice work. Sprig will keep tomorrow’s practice short and focused.';
+  } else if (dueCount > 0) {
+    title.textContent = `${dueCount} word${dueCount === 1 ? '' : 's'} ready for review`;
+    copy.textContent = `A five-minute session moves you ${Math.min(dueCount, dailyGoal - reviewsToday)} step${Math.min(dueCount, dailyGoal - reviewsToday) === 1 ? '' : 's'} closer to today’s goal.`;
+  } else {
+    title.textContent = 'Your memory garden is growing';
+    copy.textContent = 'Add a new word or practice a learning mode to keep your routine alive.';
+  }
+
+  mascot.src = isStreakMilestone || reviewsToday >= dailyGoal
+    ? 'assets/keepvocab-sprig-celebrate.png'
+    : dueCount > 0
+      ? 'assets/keepvocab-sprig-thinking.png'
+      : 'assets/keepvocab-sprout-mascot.png';
+  weeklyStatus.innerHTML = `<i class="fa-solid fa-chart-line"></i> ${activeDays} / 5 active days`;
+
+  status.innerHTML = settings.reminderEnabled
+    ? `<i class="fa-solid fa-bell"></i> Daily reminder at ${formatReminderTime(settings.reminderTime || '19:00')}`
+    : '<i class="fa-regular fa-bell"></i> Daily reminder is off';
+}
+
+function setupEngagementSystem() {
+  const modal = document.getElementById('engagement-settings-modal');
+  const reminderEnabled = document.getElementById('reminder-enabled');
+  const reminderTime = document.getElementById('reminder-time');
+  const soundEnabled = document.getElementById('sound-enabled');
+  const helper = document.getElementById('reminder-helper');
+  const save = document.getElementById('btn-save-engagement-settings');
+  if (!modal || !reminderEnabled || !reminderTime || !soundEnabled || !helper || !save) return;
+
+  const updateTimeState = () => {
+    reminderTime.disabled = !reminderEnabled.checked;
+  };
+
+  const openSettings = () => {
+    const settings = driveSync.getSettings();
+    reminderEnabled.checked = Boolean(settings.reminderEnabled);
+    reminderTime.value = normalizeReminderTime(settings.reminderTime || '19:00');
+    soundEnabled.checked = settings.soundEnabled !== false;
+    helper.textContent = 'On Android, reminders are scheduled by the device. In a browser, notifications work while KeepVocab is open or installed.';
+    updateTimeState();
+    modal.classList.add('active');
+  };
+
+  const closeSettings = () => modal.classList.remove('active');
+
+  reminderEnabled.addEventListener('change', updateTimeState);
+  document.addEventListener('click', event => {
+    const control = event.target.closest('button, a');
+    if (!control) return;
+    if (control.id === 'btn-open-engagement-settings') openSettings();
+    if (control.id === 'btn-coach-review') window.location.hash = 'review';
+    if (control.id === 'btn-close-engagement-settings' || control.id === 'btn-cancel-engagement-settings') closeSettings();
+  });
+
+  save.addEventListener('click', async () => {
+    const enabled = reminderEnabled.checked;
+    const time = normalizeReminderTime(reminderTime.value);
+    save.disabled = true;
+    save.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+    helper.textContent = enabled ? 'Requesting notification access and scheduling your reminder…' : 'Turning the daily reminder off…';
+    try {
+      const result = enabled
+        ? await scheduleDailyReminder({ time, requestPermission: true })
+        : (await cancelDailyReminder(), { status: 'disabled' });
+      driveSync.updateSettings({ reminderEnabled: enabled, reminderTime: time, soundEnabled: soundEnabled.checked });
+      updateEngagementCard();
+      closeSettings();
+      const message = result.status === 'scheduled'
+        ? `Daily reminder set for ${formatReminderTime(time)}.`
+        : result.status === 'permission-required'
+          ? 'Reminder saved. Enable notification permission for alerts outside the app.'
+          : enabled
+            ? 'In-app reminder saved.'
+            : 'Daily reminder turned off.';
+      showToast(message);
+    } catch (error) {
+      helper.textContent = error.message || 'The reminder could not be scheduled on this device.';
+      showToast(helper.textContent, 'error');
+    } finally {
+      save.disabled = false;
+      save.innerHTML = '<i class="fa-solid fa-check"></i> Save routine';
+    }
+  });
+
+  const settings = driveSync.getSettings();
+  if (settings.reminderEnabled) {
+    scheduleDailyReminder({ time: settings.reminderTime || '19:00' }).catch(error => console.warn('Daily reminder restore failed.', error));
+  }
 }
 
 function navigateTo(viewName) {
@@ -297,7 +423,28 @@ function setupQuickAddModal() {
       : `About ${Math.ceil(remainingSeconds / 60)} min left`;
   };
 
+  const resetAsyncControls = () => {
+    btnFetch.disabled = false;
+    btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
+    btnSave.disabled = false;
+    btnSave.innerHTML = '<i class="fa-solid fa-bookmark"></i> Save meaning';
+    bulkPrepare.disabled = false;
+    bulkPrepare.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
+    bulkSave.disabled = true;
+    bulkSave.innerHTML = '<i class="fa-solid fa-bookmark"></i> Save word list';
+    bulkRetryMissing.disabled = false;
+    bulkRetryMissing.hidden = true;
+    bulkRetryMissing.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Retry missing meanings';
+    bulkProgress.hidden = true;
+    bulkProgressPhase.textContent = 'Finding meanings';
+    bulkProgressEta.textContent = 'Estimating time…';
+    bulkProgressCount.textContent = 'Processed 0 of 0 words';
+    bulkProgressFill.style.width = '0%';
+    bulkProgressTrack.setAttribute('aria-valuenow', '0');
+  };
+
   const openModal = () => {
+    resetAsyncControls();
     modal.classList.add('active');
     window.setTimeout(() => input.focus(), 0);
   };
@@ -415,8 +562,7 @@ function setupQuickAddModal() {
     bulkProgress.hidden = true;
     bulkResults = [];
     bulkResultsList.innerHTML = '';
-    bulkSave.disabled = true;
-    bulkRetryMissing.hidden = true;
+    resetAsyncControls();
     setAddMode('single', false);
     currentFetchedData = null;
   };
@@ -545,6 +691,9 @@ function setupQuickAddModal() {
       bulkStatus.textContent = manualCount
         ? `${bulkResults.length - manualCount} ready; ${manualCount} need${manualCount === 1 ? 's' : ''} a manual definition.`
         : `${bulkResults.length} words ready${mergedCount ? `; ${mergedCount} corrected duplicate${mergedCount === 1 ? ' was' : 's were'} merged` : ''}. Review each meaning, then save; images are chosen automatically.`;
+    } catch (error) {
+      bulkStatus.textContent = error.message || 'Some meanings could not be loaded. Try again.';
+      showToast(bulkStatus.textContent, 'error');
     } finally {
       bulkPrepare.disabled = false;
       bulkPrepare.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';

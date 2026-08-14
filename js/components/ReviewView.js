@@ -35,13 +35,13 @@ export function renderReviewView(container, onNavigate) {
 
           ${originalCount === 0 ? `
             <div class="useful-empty-state">
-              <i class="fa-solid fa-circle-check"></i>
+              <img class="mascot-result" src="assets/keepvocab-sprig-celebrate.png" alt="Sprig celebrating">
               <h2>All caught up</h2>
               <p>No words are due in this notebook. Choose a learning mode from the dashboard if you want extra practice.</p>
               <div class="inline-actions"><button class="btn-green-solid" id="review-go-dashboard">Open learning modes</button><button class="status-pill offline" id="review-go-library">Open library</button></div>
             </div>` : complete ? `
             <div class="useful-empty-state mode-complete">
-              <i class="fa-solid fa-trophy"></i>
+              <img class="mascot-result" src="assets/keepvocab-sprig-celebrate.png" alt="Sprig celebrating">
               <h2>Review complete</h2>
               <p>You typed ${score} of ${originalCount} due words correctly. Missed words were repeated once.</p>
               <div class="review-score-orb"><strong>${score}</strong><span>correct</span></div>

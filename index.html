@@ -19,7 +19,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Specification Stylesheet -->
-  <link rel="stylesheet" href="css/styles.css?v=42">
+  <link rel="stylesheet" href="css/styles.css?v=47">
 </head>
 <body>
 
@@ -335,6 +335,61 @@
           </div>
         </div>
 
+        <div class="spec-card coach-card">
+          <div class="coach-mascot-stage" aria-hidden="true">
+            <img id="coach-mascot-image" src="assets/keepvocab-sprout-mascot.png" alt="">
+          </div>
+          <div class="coach-card-content">
+            <div class="card-tag"><i class="fa-solid fa-seedling"></i> Sprig, your word coach</div>
+            <strong id="coach-title">Your memory garden is growing</strong>
+            <p id="coach-copy">A short review today keeps new words within reach.</p>
+            <div class="coach-status-row">
+              <span id="coach-weekly-status" class="coach-weekly-status"><i class="fa-solid fa-chart-line"></i> 0 / 5 active days</span>
+              <span id="coach-reminder-status" class="coach-reminder-status"><i class="fa-regular fa-bell"></i> Daily reminder is off</span>
+            </div>
+            <div class="coach-actions">
+              <button type="button" class="btn-green-solid" id="btn-coach-review"><i class="fa-solid fa-play"></i> Start 5-min review</button>
+              <button type="button" class="status-pill offline" id="btn-open-engagement-settings"><i class="fa-solid fa-sliders"></i> Routine</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="engagement-settings-modal">
+    <div class="modal-box engagement-modal-box">
+      <div class="engagement-modal-heading">
+        <img src="assets/keepvocab-sprig-reminder.png" alt="Sprig holding a reminder bell">
+        <div>
+          <h2>Build your learning routine</h2>
+          <p>Choose a gentle daily nudge and keep interaction sounds on or off.</p>
+        </div>
+        <button type="button" class="status-pill offline" id="btn-close-engagement-settings" aria-label="Close routine settings"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="engagement-setting-list">
+        <label class="engagement-setting-row" for="reminder-enabled">
+          <span class="setting-icon bell"><i class="fa-solid fa-bell"></i></span>
+          <span><strong>Daily reminder</strong><small>Get a nudge before your streak slips.</small></span>
+          <input type="checkbox" id="reminder-enabled" class="setting-toggle">
+        </label>
+        <label class="engagement-time-row" for="reminder-time">
+          <span>Reminder time</span>
+          <input type="time" id="reminder-time" value="19:00">
+        </label>
+        <label class="engagement-setting-row" for="sound-enabled">
+          <span class="setting-icon sound"><i class="fa-solid fa-music"></i></span>
+          <span><strong>App sounds</strong><small>Short taps and success cues during learning.</small></span>
+          <input type="checkbox" id="sound-enabled" class="setting-toggle" checked>
+        </label>
+      </div>
+
+      <p id="reminder-helper" class="reminder-helper" role="status" aria-live="polite"></p>
+      <div class="engagement-modal-actions">
+        <button type="button" class="status-pill offline" id="btn-cancel-engagement-settings">Cancel</button>
+        <button type="button" class="btn-green-solid" id="btn-save-engagement-settings"><i class="fa-solid fa-check"></i> Save routine</button>
       </div>
     </div>
   </div>
@@ -456,6 +511,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=45"></script>
+  <script type="module" src="js/app.js?v=47"></script>
 </body>
 </html>

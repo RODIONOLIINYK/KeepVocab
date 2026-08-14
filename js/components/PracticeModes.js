@@ -58,7 +58,7 @@ export function renderSpellingMode(container, onNavigate) {
 
   function render() {
     if (index >= queue.length) {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-bolt"></i><h2>Spelling session complete</h2><p>You recalled ${score} of ${originalCount} words. Missed words were repeated once at the end.</p><div class="inline-actions"><button class="btn-green-solid" id="spell-again">Practice again</button><button class="status-pill offline" id="spell-dashboard">Dashboard</button></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.png" alt="Sprig celebrating"><h2>Spelling session complete</h2><p>You recalled ${score} of ${originalCount} words. Missed words were repeated once at the end.</p><div class="inline-actions"><button class="btn-green-solid" id="spell-again">Practice again</button><button class="status-pill offline" id="spell-dashboard">Dashboard</button></div></div></section>`;
       container.querySelector('#spell-again').addEventListener('click', () => renderSpellingMode(container, onNavigate));
       container.querySelector('#spell-dashboard').addEventListener('click', () => go('dashboard', onNavigate));
       return;
@@ -122,7 +122,7 @@ export function renderChooseWordMode(container, onNavigate) {
 
   function render() {
     if (index >= queue.length) {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><i class="fa-solid fa-trophy"></i><h2>Choose Word complete</h2><p>You mastered ${score} of ${originalCount} definitions. Missed choices were repeated once.</p><div class="inline-actions"><button class="btn-green-solid" id="choose-again">Try again</button><button class="status-pill offline" id="choose-dashboard">Dashboard</button></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.png" alt="Sprig celebrating"><h2>Choose Word complete</h2><p>You mastered ${score} of ${originalCount} definitions. Missed choices were repeated once.</p><div class="inline-actions"><button class="btn-green-solid" id="choose-again">Try again</button><button class="status-pill offline" id="choose-dashboard">Dashboard</button></div></div></section>`;
       container.querySelector('#choose-again').addEventListener('click', () => renderChooseWordMode(container, onNavigate));
       container.querySelector('#choose-dashboard').addEventListener('click', () => go('dashboard', onNavigate));
       return;
@@ -136,7 +136,7 @@ export function renderChooseWordMode(container, onNavigate) {
         <div class="practice-topline"><button class="status-pill offline" id="choose-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>Choose Word · ${index + 1} of ${queue.length}</span><strong>Score ${score}</strong></div>
         <div class="review-progress"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div>
         <div class="practice-prompt choose-prompt">
-          <div class="practice-icon purple"><i class="fa-solid fa-list-check"></i></div>
+          <img class="practice-mascot" src="assets/keepvocab-sprig-thinking.png" alt="" aria-hidden="true">
           <p>Which word matches this definition?</p>
           <blockquote>${escapeHtml(target.definition)}</blockquote>
           <div class="choice-grid">${options.map(option => {
