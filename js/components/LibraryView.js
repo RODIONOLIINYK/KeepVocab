@@ -1,11 +1,12 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=42';
-import { speakWord } from '../services/speechService.js?v=43';
-import { buildVisualSearchQueries, findRelevantImages, getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=42';
-import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=42';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=63';
+import { speakWord } from '../services/speechService.js?v=63';
+import { buildVisualSearchQueries, findRelevantImages, generateMemoryImage, getImageProviderSettings, saveImageProviderSettings, updateImageFeedback } from '../services/imageSearch.js?v=63';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=63';
+import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=63';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
 
 function isDue(word) {
-  return !word.mastered && new Date(word.nextReviewDate || word.createdAt) <= new Date();
+  return new Date(word.nextReviewDate || word.createdAt) <= new Date();
 }
 
 export function reusedImageUrls(words) {
@@ -48,7 +49,9 @@ export function renderLibraryView(container) {
       refresh,
       excludeUrls,
       extraQueries: activeImageConcept ? [activeImageConcept] : [],
-      onlyExtraQueries: customActive
+      onlyExtraQueries: customActive,
+      aiScenes: true,
+      semanticRerank: true
     });
     if (editId !== wordId || requestId !== imageRequestId) return;
     imageCandidates = Array.isArray(results) ? results : [];
@@ -139,11 +142,13 @@ export function renderLibraryView(container) {
     const imageConcepts = [...new Set([customImageConcept, ...generatedImageConcepts].filter(Boolean))];
     if (editing && !activeImageConcept) activeImageConcept = imageConcepts[0] || '';
     const pexelsActive = Boolean(imageProviderSettings.provider === 'pexels' && imageProviderSettings.pexelsApiKey);
+    const geminiImageReady = getGeminiSettings().enabled;
     const pexelsFallback = pexelsActive && imageCandidates.length && !imageCandidates.some(image => image.source === 'Pexels');
     container.innerHTML = `
-      <section class="full-view-stack" aria-labelledby="library-heading">
+      <section class="full-view-stack library-view" aria-labelledby="library-heading">
+        <div class="content-title-row"><div><span class="eyebrow">Your vocabulary</span><h1 id="library-heading">Library</h1><p>Manage exact meanings, visual cues, and review-ready vocabulary.</p></div><button class="btn-green-solid" id="library-add-word"><i class="fa-solid fa-plus"></i> Add word</button></div>
         <div class="spec-card">
-          <div class="card-header-bar"><div class="card-tag" id="library-heading"><i class="fa-solid fa-calendar-days"></i> Monthly vocabulary</div><span class="muted-label">Choose the notebook you want to manage</span></div>
+          <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-calendar-days"></i> Monthly vocabulary</div><span class="muted-label">Choose the notebook you want to manage</span></div>
           <div class="archive-tabs">
             ${archives.map(archive => `<button class="status-pill ${archive.monthYear === selectedMonthYear ? 'connected' : 'offline'}" data-month="${escapeHtml(archive.monthYear)}"><strong>${escapeHtml(archive.monthYear)}</strong><span>${archive.count} words · ${archive.mastered} mastered</span></button>`).join('')}
           </div>
@@ -181,10 +186,11 @@ export function renderLibraryView(container) {
                 ${customImageConcept ? '<button type="button" class="status-pill offline" id="clear-custom-image-concept">Remove custom</button>' : ''}
               </div>
               ${imageConcepts.length ? `<div>${imageConcepts.map(concept => `<button type="button" class="${activeImageConcept === concept ? 'active' : ''}" data-image-concept="${escapeHtml(concept)}">${escapeHtml(concept)}${customImageConcept === concept ? ' · custom' : ''}</button>`).join('')}</div>` : ''}
-              <small>The custom concept is saved only with this word meaning and is tried first for image searches.</small>
+              <small>Automatic suggestions use only the selected definition—never the dictionary example sentence. A custom concept is saved with this meaning and intentionally overrides the automatic interpretation.</small>
             </div>
-            ${(selectedImage?.url || editing.imageUrl) ? `<div class="selected-image-preview"><img src="${escapeHtml(selectedImage?.url || editing.imageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span></div></div>` : ''}
+            ${(selectedImage?.url || editing.imageUrl) ? `<div class="selected-image-preview"><img src="${escapeHtml(selectedImage?.url || editing.imageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span></div></div><div class="image-feedback-actions" aria-label="Image feedback"><button type="button" class="status-pill connected" id="image-good"><i class="fa-solid fa-thumbs-up"></i> Good image</button><button type="button" class="status-pill offline" id="image-wrong"><i class="fa-solid fa-triangle-exclamation"></i> Wrong meaning</button><button type="button" class="status-pill offline" id="image-more-like"><i class="fa-solid fa-images"></i> More like this</button></div>` : ''}
             ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Finding visual cues for this exact meaning…</span></div>` : imageCandidates.length ? `<div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.title)}"><span>${escapeHtml(image.title)}</span></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
+            <div class="generated-image-offer"><div><strong>Need a clearer memory image?</strong><span>Generate an original illustration only when stock photos are not specific enough.</span></div><button type="button" class="status-pill ${geminiImageReady ? 'connected' : 'offline'}" id="generate-memory-image" ${geminiImageReady ? '' : 'disabled'}><i class="fa-solid fa-wand-magic-sparkles"></i> Generate memory image</button></div>
             <p class="image-license-note">${imageCandidates.some(image => image.source === 'Pexels') ? '<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Photos provided by Pexels</a>. Photographer credit is saved with your word.' : "Images come from Openverse's openly licensed catalog. KeepVocab saves the creator, source, and license with your word."}</p>
           </section>
           <div class="inline-actions"><button class="btn-green-solid" type="submit">Save changes</button></div>
@@ -203,6 +209,7 @@ export function renderLibraryView(container) {
       </section>`;
     container.querySelector('#library-filter').value = filter;
     container.querySelector('#library-sort').value = sort;
+    container.querySelector('#library-add-word').addEventListener('click', () => document.getElementById('btn-header-quick-add')?.click());
 
     container.querySelectorAll('[data-month]').forEach(button => button.addEventListener('click', () => {
       selectedMonthYear = button.dataset.month;
@@ -251,6 +258,50 @@ export function renderLibraryView(container) {
       imageQuery = selectedImage?.searchQuery || imageQuery;
       render();
     }));
+    const feedbackImage = () => selectedImage || (editing?.imageUrl ? {
+      url: editing.imageUrl,
+      sourceUrl: editing.imageSourceUrl,
+      searchQuery: editing.imageSearchQuery,
+      title: editing.imageAttribution
+    } : null);
+    container.querySelector('#image-good')?.addEventListener('click', () => {
+      const image = feedbackImage();
+      if (!image) return;
+      driveSync.updateWord(editId, { imageFeedback: updateImageFeedback(editing, 'good', image, activeImageConcept) });
+      const message = container.querySelector('#library-edit-message');
+      if (message) message.textContent = 'Saved. KeepVocab will favor images like this for this meaning.';
+    });
+    container.querySelector('#image-wrong')?.addEventListener('click', () => {
+      const image = feedbackImage();
+      if (!image) return;
+      const patch = { imageFeedback: updateImageFeedback(editing, 'wrong', image, activeImageConcept) };
+      if (!selectedImage) Object.assign(patch, { imageUrl: '', imageSourceUrl: '', imageAttribution: '', imageLicense: '', imageSearchQuery: '', imageKind: '' });
+      driveSync.updateWord(editId, patch);
+      selectedImage = null;
+      loadImageCandidates(editId, true);
+    });
+    container.querySelector('#image-more-like')?.addEventListener('click', () => {
+      const image = feedbackImage();
+      if (!image) return;
+      activeImageConcept = image.searchQuery || activeImageConcept;
+      driveSync.updateWord(editId, { imageFeedback: updateImageFeedback(editing, 'more-like-this', image, activeImageConcept) });
+      loadImageCandidates(editId, true);
+    });
+    container.querySelector('#generate-memory-image')?.addEventListener('click', async event => {
+      const button = event.currentTarget;
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating…';
+      const message = container.querySelector('#library-edit-message');
+      try {
+        selectedImage = await generateMemoryImage(editing, activeImageConcept || customImageConcept);
+        imageQuery = selectedImage.searchQuery;
+        render();
+      } catch (error) {
+        if (message) message.textContent = error.message;
+        button.disabled = false;
+        button.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Generate memory image';
+      }
+    });
     container.querySelector('#library-edit-form')?.addEventListener('submit', event => {
       event.preventDefault();
       const data = Object.fromEntries(new FormData(event.currentTarget));
@@ -267,7 +318,11 @@ export function renderLibraryView(container) {
         imageSourceUrl: selectedImage.sourceUrl,
         imageAttribution: selectedImage.attribution,
         imageLicense: selectedImage.license,
-        imageSearchQuery: imageQuery
+        imageSearchQuery: imageQuery,
+        imageKind: selectedImage.imageKind || 'external',
+        imageGeneratedModel: selectedImage.generatedModel || '',
+        imageGeneratedAt: selectedImage.generatedAt || '',
+        imageGeneratedPrompt: selectedImage.generatedPrompt || ''
       });
       try { driveSync.updateWord(editId, data); editId = null; selectedImage = null; render(); }
       catch (error) { container.querySelector('#library-edit-message').textContent = error.message; }

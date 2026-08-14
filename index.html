@@ -12,6 +12,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
+  <!-- Sprig is part of the first learning surface; preload the optimized states so route changes never flash empty artwork. -->
+  <link rel="preload" as="image" type="image/webp" href="assets/keepvocab-sprig-thinking.webp" fetchpriority="high">
+  <link rel="preload" as="image" type="image/webp" href="assets/keepvocab-sprout-mascot.webp">
+  <link rel="preload" as="image" type="image/webp" href="assets/keepvocab-sprig-celebrate.webp">
+  <link rel="preload" as="image" type="image/webp" href="assets/keepvocab-sprig-reminder.webp">
+
   <!-- Google Identity Services for user-approved Drive backup access -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -19,7 +25,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Specification Stylesheet -->
-  <link rel="stylesheet" href="css/styles.css?v=51">
+  <link rel="stylesheet" href="css/styles.css?v=63">
 </head>
 <body>
 
@@ -34,10 +40,10 @@
 
     <nav class="nav-links">
       <a href="#dashboard" class="nav-link-item active" data-view="dashboard">
-        <i class="fa-solid fa-house"></i> Dashboard
+        <i class="fa-solid fa-house"></i> Today
       </a>
       <a href="#review" class="nav-link-item" data-view="review">
-        <i class="fa-solid fa-calendar-check"></i> Review
+        <i class="fa-solid fa-dumbbell"></i> Practice
       </a>
       <a href="#speaking" class="nav-link-item" data-view="speaking">
         <i class="fa-solid fa-microphone-lines"></i> Speak
@@ -46,7 +52,7 @@
         <i class="fa-solid fa-book-open"></i> Library
       </a>
       <a href="#stats" class="nav-link-item" data-view="stats">
-        <i class="fa-solid fa-chart-column"></i> Stats
+        <i class="fa-solid fa-chart-column"></i> Progress
       </a>
     </nav>
 
@@ -68,7 +74,7 @@
   <div class="app-container">
 
     <!-- Google Drive backup status -->
-    <div class="keep-banner disconnected" id="keep-banner-card">
+    <div class="keep-banner disconnected" id="keep-banner-card" hidden>
       <div class="banner-info">
         <div class="banner-icon" id="banner-icon-el">
           <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -337,7 +343,7 @@
 
         <div class="spec-card coach-card">
           <div class="coach-mascot-stage" aria-hidden="true">
-            <img id="coach-mascot-image" src="assets/keepvocab-sprout-mascot.png" alt="">
+            <img id="coach-mascot-image" src="assets/keepvocab-sprout-mascot.webp" alt="">
           </div>
           <div class="coach-card-content">
             <div class="card-tag"><i class="fa-solid fa-seedling"></i> Sprig, your word coach</div>
@@ -361,7 +367,7 @@
   <div class="modal-backdrop" id="engagement-settings-modal">
     <div class="modal-box engagement-modal-box">
       <div class="engagement-modal-heading">
-        <img src="assets/keepvocab-sprig-reminder.png" alt="Sprig holding a reminder bell">
+        <img src="assets/keepvocab-sprig-reminder.webp" alt="Sprig holding a reminder bell">
         <div>
           <h2>Build your learning routine</h2>
           <p>Let Sprig adapt reminders to your study rhythm, due words, and daily goal.</p>
@@ -516,6 +522,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=54"></script>
+  <script type="module" src="js/app.js?v=63"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -88,6 +88,63 @@ test('the Speak route keeps the same responsive top navigation layout as every o
   const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
   assert.doesNotMatch(styles, /\.speaking-view\s+\.nav-links/);
   assert.doesNotMatch(styles, /\.speaking-view\s+\.nav-link-item/);
+});
+
+test('routine settings can open from the dedicated Settings route', () => {
+  const app = readFileSync(resolve(projectRoot, 'js/app.js'), 'utf8');
+  const settings = readFileSync(resolve(projectRoot, 'js/components/SettingsView.js'), 'utf8');
+  assert.match(settings, /id="settings-routine"/);
+  assert.match(app, /control\.id === 'settings-routine'\) openSettings\(\)/);
+});
+
+test('exercise routes share an aligned header and content routes use the same title system', () => {
+  const app = readFileSync(resolve(projectRoot, 'js/app.js'), 'utf8');
+  const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
+  const flashcards = readFileSync(resolve(projectRoot, 'js/components/FlashcardsMode.js'), 'utf8');
+  const context = readFileSync(resolve(projectRoot, 'js/components/ContextQuizMode.js'), 'utf8');
+  const library = readFileSync(resolve(projectRoot, 'js/components/LibraryView.js'), 'utf8');
+  assert.match(app, /'library', 'stats', 'settings'/);
+  assert.match(styles, /\.exercise-topbar\s*\{[^}]*display:grid;[^}]*grid-template-columns:auto minmax\(0,1fr\) auto/);
+  assert.match(flashcards, /class="exercise-topbar"/);
+  assert.match(context, /class="exercise-topbar"/);
+  assert.match(flashcards, /flashcard-exit'[\s\S]*go\('dashboard', onNavigate\)/);
+  assert.match(context, /context-exit'[\s\S]*go\('dashboard', onNavigate\)/);
+  assert.match(library, /class="content-title-row"/);
+  assert.match(styles, /\.settings-icon\.ai,[\s\S]*\.settings-icon\.routine\s*\{[^}]*primary-green/);
+});
+
+test('optimized Sprig artwork is preloaded and packaged for instant route changes', () => {
+  const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
+  const serviceWorker = readFileSync(resolve(projectRoot, 'sw.js'), 'utf8');
+  const mascotFiles = [
+    'keepvocab-sprig-thinking.webp',
+    'keepvocab-sprig-celebrate.webp',
+    'keepvocab-sprig-reminder.webp',
+    'keepvocab-sprout-mascot.webp'
+  ];
+  for (const file of mascotFiles) {
+    assert.match(html, new RegExp(`rel="preload"[^>]+${file}`));
+    assert.match(serviceWorker, new RegExp(`assets/${file}`));
+    assert.ok(statSync(resolve(projectRoot, 'assets', file)).size < 100_000, `${file} should remain under 100 KB`);
+  }
+});
+
+test('mobile navigation and reduced motion are first-class behavior', () => {
+  const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
+  const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
+  for (const label of ['Today', 'Practice', 'Speak', 'Library', 'Progress']) assert.match(html, new RegExp(`\\b${label}\\b`));
+  assert.match(styles, /@media \(max-width:\s*720px\)[\s\S]*\.nav-links[\s\S]*position:\s*fixed/);
+  assert.match(styles, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*animation-duration:\s*\.001ms/);
+});
+
+test('answer states include icons and status semantics instead of relying on color alone', () => {
+  const daily = readFileSync(resolve(projectRoot, 'js/components/DailySessionMode.js'), 'utf8');
+  const visual = readFileSync(resolve(projectRoot, 'js/components/VisualMatchMode.js'), 'utf8');
+  assert.match(daily, /role="status"/);
+  assert.match(daily, /fa-check|fa-xmark/);
+  assert.match(visual, /choice-result-icon/);
+  assert.match(visual, /fa-check/);
+  assert.match(visual, /fa-xmark/);
 });
 
 test('all cache-busted JavaScript module imports resolve to real source files', () => {

@@ -1,138 +1,104 @@
-// Context Sentence Cloze & Multiple-Choice Quiz Engine Component
+import { driveSync } from '../services/driveSync.js?v=63';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=63';
+import { clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=63';
+import { escapeHtml } from '../utils/html.js';
 
-import { driveSync } from '../services/driveSync.js?v=42';
-import { speakWord } from '../services/speechService.js?v=43';
-import { updateWordRepetition } from '../services/srsEngine.js?v=42';
+function go(view, onNavigate) {
+  if (window.location.hash === `#${view}`) onNavigate(view);
+  else window.location.hash = view;
+}
+
+function shuffle(values) {
+  return [...values].sort(() => Math.random() - .5);
+}
+
+export function selectContextWords(words, limit = 7) {
+  const now = Date.now();
+  return [...(words || [])]
+    .filter(word => word?.word && word?.definition)
+    .sort((a, b) => {
+      const score = word => (Date.parse(word.nextReviewDate || 0) <= now ? 20 : 0)
+        + Number(word.mistakes?.recentFailures?.length || word.mistakes?.recentFailures || 0) * 4;
+      return score(b) - score(a);
+    })
+    .slice(0, Math.max(0, limit));
+}
 
 export function renderContextQuizMode(container, onNavigate) {
-  const activeNotebook = driveSync.getActiveNotebook();
-  const allWords = driveSync.getWords().filter(w => w.notebook === activeNotebook);
-
-  if (allWords.length < 3) {
-    container.innerHTML = `
-      <div class="glass-card" style="text-align: center; padding: 48px;">
-        <i class="fa-solid fa-puzzle-piece" style="font-size: 3rem; color: var(--accent-orange); margin-bottom: 16px;"></i>
-        <h2>Need at least 3 words in "${activeNotebook}"</h2>
-        <p style="color: var(--text-muted); margin: 12px 0 24px;">Add more words to unlock contextual multiple-choice & cloze quizzes!</p>
-        <button class="btn btn-primary" id="btn-add-for-quiz"><i class="fa-solid fa-plus"></i> Quick Add Word</button>
-      </div>
-    `;
-    container.querySelector('#btn-add-for-quiz').addEventListener('click', () => {
-      document.getElementById('quick-add-modal').classList.add('active');
-    });
+  const allWords = driveSync.getWords();
+  const contextWords = selectContextWords(allWords);
+  if (contextWords.length < 3) {
+    container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow">Context</span><h1>Add 3 words to unlock Context</h1><p>KeepVocab needs a few meanings to create useful sentence choices.</p><button class="btn-green-solid" id="context-add">Add vocabulary</button></section>`;
+    container.querySelector('#context-add').addEventListener('click', () => document.getElementById('quick-add-modal')?.classList.add('active'));
     return;
   }
 
-  let currentQuestion = 0;
+  let contextSet = null;
+  let current = 0;
   let score = 0;
-  const totalQuestions = Math.min(10, allWords.length);
+  let answered = false;
+  let selectedId = '';
 
-  // Shuffle words for quiz session
-  const quizWords = [...allWords].sort(() => Math.random() - 0.5).slice(0, totalQuestions);
+  function renderSetup() {
+    container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow">AI Context</span><h1>Connect Gemini to create Context sentences</h1><p>Gemini writes a fresh sentence for each selected vocabulary sense. Definitions stay hidden while you answer.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="context-settings"><i class="fa-solid fa-key"></i> Set up Google AI Studio</button><button class="status-pill offline" id="context-home">Today</button></div></section>`;
+    container.querySelector('#context-settings').addEventListener('click', () => go('settings', onNavigate));
+    container.querySelector('#context-home').addEventListener('click', () => go('dashboard', onNavigate));
+  }
 
-  function renderQuestion() {
-    if (currentQuestion >= totalQuestions) {
-      container.innerHTML = `
-        <div class="glass-card" style="text-align: center; padding: 48px; max-width: 520px; margin: 40px auto;">
-          <div style="font-size: 4rem; color: var(--accent-orange); margin-bottom: 16px;">
-            <i class="fa-solid fa-trophy"></i>
-          </div>
-          <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.8rem;">Quiz Finished!</h2>
-          <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 16px 0;">
-            ${score} / ${totalQuestions}
-          </div>
-          <p style="color: var(--text-muted); margin-bottom: 24px;">Great work practicing word contexts and definitions!</p>
-          <div style="display: flex; gap: 12px; justify-content: center;">
-            <button class="btn btn-secondary" id="btn-retry-quiz"><i class="fa-solid fa-rotate-right"></i> Retry Quiz</button>
-            <button class="btn btn-primary" id="btn-exit-quiz"><i class="fa-solid fa-house"></i> Dashboard</button>
-          </div>
-        </div>
-      `;
-      container.querySelector('#btn-retry-quiz').addEventListener('click', () => renderContextQuizMode(container, onNavigate));
-      container.querySelector('#btn-exit-quiz').addEventListener('click', () => onNavigate('dashboard'));
+  function renderLoading() {
+    container.innerHTML = `<section class="mode-empty-state" aria-live="polite"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> Gemini is writing</span><h1>Creating fresh context sentences…</h1><p>Each sentence is based on the exact meaning you saved.</p><button class="status-pill offline" id="context-cancel">Cancel</button></section>`;
+    container.querySelector('#context-cancel').addEventListener('click', () => go('dashboard', onNavigate));
+  }
+
+  function renderError(error) {
+    container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprout-mascot.webp" alt="Sprig encouraging you"><span class="eyebrow">Context paused</span><h1>Gemini could not create these sentences</h1><p role="alert">${escapeHtml(error?.message || 'Check your connection and try again.')}</p><div class="mode-completion-actions"><button class="btn-green-solid" id="context-retry">Try again</button><button class="status-pill offline" id="context-settings">Check AI settings</button></div></section>`;
+    container.querySelector('#context-retry').addEventListener('click', () => load(true));
+    container.querySelector('#context-settings').addEventListener('click', () => go('settings', onNavigate));
+  }
+
+  async function load(force = false) {
+    if (!getGeminiSettings().enabled) return renderSetup();
+    renderLoading();
+    try {
+      contextSet = await generateContextExerciseSet(contextWords, { force });
+      current = 0;
+      score = 0;
+      answered = false;
+      selectedId = '';
+      render();
+    } catch (error) {
+      renderError(error);
+    }
+  }
+
+  function render() {
+    if (!contextSet) return renderLoading();
+    if (current >= contextWords.length) {
+      container.innerHTML = `<section class="mode-completion-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Context complete</span><h1>${score} of ${contextWords.length}</h1><p>You inferred meaning from AI-generated sentences without definition clues.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="context-again">New AI sentences</button><button class="status-pill offline" id="context-home">Today</button></div></section>`;
+      container.querySelector('#context-again').addEventListener('click', () => load(true));
+      container.querySelector('#context-home').addEventListener('click', () => go('dashboard', onNavigate));
       return;
     }
 
-    const targetWord = quizWords[currentQuestion];
-
-    // Build 4 multiple choice options (1 correct, 3 distractors)
-    const distractors = allWords.filter(w => w.id !== targetWord.id).sort(() => Math.random() - 0.5).slice(0, 3);
-    const options = [targetWord, ...distractors].sort(() => Math.random() - 0.5);
-
-    // Create cloze sentence by masking target word
-    const clozeSentence = targetWord.example
-      ? targetWord.example.replace(new RegExp(targetWord.word, 'gi'), '__________')
-      : `Complete the sentence with the word that means: "${targetWord.definition}".`;
-
-    container.innerHTML = `
-      <div style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <button class="btn btn-outline" id="btn-back-dash"><i class="fa-solid fa-arrow-left"></i> Exit Quiz</button>
-          <span style="font-size: 0.9rem; color: var(--text-muted);">
-            Question <strong>${currentQuestion + 1}</strong> of <strong>${totalQuestions}</strong>
-          </span>
-          <span class="badge" style="background: var(--accent-orange);">Score: ${score}</span>
-        </div>
-
-        <div class="glass-card">
-          <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-orange); font-weight: 700; margin-bottom: 12px;">
-            <i class="fa-solid fa-align-left"></i> Contextual Cloze Quiz
-          </div>
-
-          <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.3rem; line-height: 1.5; color: #fff; margin-bottom: 16px;">
-            "${clozeSentence}"
-          </h2>
-
-          <div style="font-size: 0.9rem; color: var(--text-muted); padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); border-left: 3px solid var(--primary);">
-            <strong>Definition clue:</strong> ${targetWord.definition}
-          </div>
-
-          <div class="options-grid" id="options-container">
-            ${options.map((opt, i) => `
-              <button class="option-btn" data-word="${opt.word}">
-                <strong>${String.fromCharCode(65 + i)}.</strong> ${opt.word}
-              </button>
-            `).join('')}
-          </div>
-        </div>
-
-        <div id="quiz-feedback-box" style="display: none; padding: 16px; border-radius: var(--radius-md); text-align: center; font-weight: 600;"></div>
-      </div>
-    `;
-
-    container.querySelector('#btn-back-dash').addEventListener('click', () => onNavigate('dashboard'));
-
-    const optionBtns = container.querySelectorAll('.option-btn');
-    optionBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const selectedWord = btn.getAttribute('data-word');
-        const isCorrect = selectedWord.toLowerCase() === targetWord.word.toLowerCase();
-
-        optionBtns.forEach(b => b.disabled = true);
-
-        if (isCorrect) {
-          btn.classList.add('correct');
-          score++;
-          updateWordRepetition(targetWord.id, 'good');
-          speakWord(targetWord.word, 'en-US', 0.9, targetWord.audioUrl);
-        } else {
-          btn.classList.add('incorrect');
-          // Highlight correct option
-          optionBtns.forEach(b => {
-            if (b.getAttribute('data-word').toLowerCase() === targetWord.word.toLowerCase()) {
-              b.classList.add('correct');
-            }
-          });
-          updateWordRepetition(targetWord.id, 'again');
-        }
-
-        setTimeout(() => {
-          currentQuestion++;
-          renderQuestion();
-        }, 1400);
-      });
-    });
+    const target = contextWords[current];
+    const generatedItem = contextSet.items.find(item => item.wordId === String(target.id));
+    const options = shuffle([target, ...shuffle(allWords.filter(word => word.id !== target.id && word.word !== target.word)).slice(0, 3)]);
+    const cloze = clozeContextSentence(generatedItem.sentence, target.word);
+    container.innerHTML = `<section class="context-mode context-sentence-mode" aria-labelledby="context-heading"><header class="exercise-topbar"><button class="status-pill offline" id="context-exit"><i class="fa-solid fa-arrow-left"></i> Exit</button><div class="exercise-progress"><span>${current + 1} of ${contextWords.length}</span><i><b style="width:${Math.round((current + 1) / contextWords.length * 100)}%"></b></i></div><strong>${score} correct</strong></header>
+      <article class="daily-exercise-card context-question-card"><span class="eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> AI-generated sentence</span><h1 id="context-heading">Choose the word that fits</h1><h2>“${escapeHtml(cloze)}”</h2><div class="choice-grid">${options.map(option => { const state = answered ? option.id === target.id ? ' correct' : option.id === selectedId ? ' incorrect' : '' : ''; return `<button class="choice-button${state}" data-context-word="${escapeHtml(option.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(option.word)}${answered && option.id === target.id ? '<i class="fa-solid fa-check" aria-hidden="true"></i>' : answered && option.id === selectedId ? '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' : ''}</button>`; }).join('')}</div>${answered ? `<div class="practice-feedback ${selectedId === target.id ? 'correct' : 'incorrect'}" role="status"><strong>${selectedId === target.id ? 'That fits the situation.' : `Answer: ${escapeHtml(target.word)}`}</strong><span>${escapeHtml(generatedItem.sentence)}</span></div><button class="btn-green-solid" id="context-next">${current + 1 === contextWords.length ? 'See results' : 'Next sentence'}</button>` : ''}</article></section>`;
+    container.querySelector('#context-exit').addEventListener('click', () => go('dashboard', onNavigate));
+    container.querySelectorAll('[data-context-word]').forEach(button => button.addEventListener('click', () => {
+      if (answered) return;
+      selectedId = button.dataset.contextWord;
+      answered = true;
+      const correct = selectedId === target.id;
+      if (correct) score += 1;
+      recordExerciseResult({ wordId: target.id, exerciseType: 'context-cloze', correct, recallType: 'context', producedUnaided: false, confusedWithWordId: correct ? '' : selectedId });
+      render();
+    }));
+    container.querySelector('#context-next')?.addEventListener('click', () => { current += 1; answered = false; selectedId = ''; render(); });
   }
 
-  renderQuestion();
+  load();
 }

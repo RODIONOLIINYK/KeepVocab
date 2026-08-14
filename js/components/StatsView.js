@@ -1,128 +1,56 @@
-import { driveSync } from '../services/driveSync.js?v=42';
-import { getDueWords } from '../services/srsEngine.js?v=42';
+import { driveSync } from '../services/driveSync.js?v=63';
+import { getDueWords } from '../services/srsEngine.js?v=63';
+import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=63';
+import { normalizeLearningStats } from '../services/learningStats.js?v=63';
+import { weaknessScore } from '../services/dailySession.js?v=63';
 import { escapeHtml } from '../utils/html.js';
 
 function dateKey(date) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
 }
 
+function go(view, onNavigate) {
+  if (window.location.hash === `#${view}`) onNavigate(view); else window.location.hash = view;
+}
+
 export function renderStatsView(container, onNavigate) {
   const words = driveSync.getWords();
   const settings = driveSync.getSettings();
-  const mastered = words.filter(word => word.mastered).length;
-  const dueWords = getDueWords();
-  const masteredWords = words.filter(word => word.mastered);
-  const due = dueWords.length;
-  const learning = words.length - mastered;
+  const stats = normalizeLearningStats(settings);
+  const dueWords = getDueWords(words);
+  const mastery = words.map(word => ({ word, data: normalizeMastery(word) }));
+  const recognized = mastery.filter(item => ['recognized', 'recalled', 'context', 'productive'].includes(masteryStage(item.data))).length;
+  const recalled = mastery.filter(item => ['recalled', 'context', 'productive'].includes(masteryStage(item.data))).length;
+  const context = mastery.filter(item => ['context', 'productive'].includes(masteryStage(item.data))).length;
+  const productive = mastery.filter(item => item.data.productive >= .65).length;
+  const spoken = mastery.filter(item => item.data.speaking >= .65).length;
+  const weak = words.filter(word => weaknessScore(word) > 0).length;
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
   const reviewsToday = settings.reviewsDate === dateKey(new Date()) ? Number(settings.reviewsToday || 0) : 0;
-  const goalPercent = Math.min(100, Math.round(reviewsToday / dailyGoal * 100));
   const activity = settings.reviewActivity || {};
-  const boxCounts = [1, 2, 3, 4, 5].map(box => words.filter(word => Number(word.box || 1) === box).length);
-  const maxBox = Math.max(1, ...boxCounts);
   const weekly = Array.from({ length: 7 }, (_, offset) => {
     const date = new Date();
-    date.setHours(0, 0, 0, 0);
     date.setDate(date.getDate() - (6 - offset));
-    return { label: date.toLocaleDateString('en-US', { weekday: 'short' }), count: Number(activity[dateKey(date)] || 0) };
+    return { label: date.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 2), count: Number(activity[dateKey(date)] || 0) };
   });
   const maxActivity = Math.max(1, ...weekly.map(day => day.count));
+  const boxCounts = [1,2,3,4,5].map(box => words.filter(word => Number(word.box || 1) === box).length);
+  const auth = driveSync.getDriveStatus();
 
-  container.innerHTML = `
-    <section class="full-view-stack" aria-labelledby="stats-heading">
-      <div class="spec-card">
-        <div class="card-header-bar"><div class="card-tag" id="stats-heading"><i class="fa-solid fa-chart-column"></i> Learning overview</div><span class="muted-label">Based on your saved reviews</span></div>
-        <div class="stats-metric-grid">
-          <div class="metric-card"><i class="fa-solid fa-fire orange"></i><strong>${Number(settings.dailyStreak || 0)}</strong><span>day streak</span></div>
-          <div class="metric-card"><i class="fa-solid fa-bullseye green"></i><strong>${reviewsToday}/${dailyGoal}</strong><span>daily goal · ${goalPercent}%</span></div>
-          <div class="metric-card"><i class="fa-solid fa-clock blue"></i><strong>${due}</strong><span>due now</span></div>
-          <div class="metric-card"><i class="fa-solid fa-graduation-cap purple"></i><strong>${mastered}</strong><span>mastered · ${words.length ? Math.round(mastered / words.length * 100) : 0}%</span></div>
-        </div>
-      </div>
+  container.innerHTML = `<section class="full-view-stack progress-view" aria-labelledby="progress-heading"><div class="progress-hero"><div><span class="eyebrow">Real learning, not just box counts</span><h1 id="progress-heading">Your vocabulary is becoming usable</h1><p>Recognition is the start. Recall, context, and speaking show what you can actively use.</p></div><button class="btn-green-solid" id="progress-workout">${dueWords.length ? `Review ${dueWords.length} due` : 'Start a workout'}</button></div>
+    <div class="progress-mastery-grid"><article><span>Saved</span><strong>${words.length}</strong><small>vocabulary cards</small></article><article><span>Recognized</span><strong>${recognized}</strong><small>meaning identified</small></article><article><span>Reliably recalled</span><strong>${recalled}</strong><small>produced from memory</small></article><article><span>Used in context</span><strong>${context}</strong><small>understood in a situation</small></article><article><span>Used productively</span><strong>${productive}</strong><small>own sentences</small></article><article><span>Used while speaking</span><strong>${spoken}</strong><small>activated with Mira</small></article></div>
+    <div class="progress-detail-grid"><article class="spec-card"><div class="today-section-heading"><div><span class="eyebrow">Last 7 days</span><h2>${weekly.reduce((sum, day) => sum + day.count, 0)} exercises</h2></div><span>${reviewsToday}/${dailyGoal} today</span></div><div class="activity-chart">${weekly.map(day => `<div title="${day.count} exercises"><span>${day.count || ''}</span><i style="height:${day.count ? Math.max(18, Math.round(day.count / maxActivity * 120)) : 8}px"></i><small>${day.label}</small></div>`).join('')}</div></article>
+      <article class="spec-card progress-outcomes"><span class="eyebrow">Learning outcomes</span><div><span>Sessions completed</span><strong>${stats.sessionsCompleted}</strong></div><div><span>Weak words improved</span><strong>${stats.weakWordsImproved}</strong></div><div><span>Speaking minutes</span><strong>${Math.round(stats.speakingMinutes)}</strong></div><div><span>Weak words now</span><strong>${weak}</strong></div><p><i class="fa-solid fa-cloud"></i> ${auth.isConnected ? 'These stats are included in your Drive backup.' : 'Connect Drive in Settings to restore these stats on another installation.'}</p></article></div>
+    <article class="spec-card algorithm-details"><div class="today-section-heading"><div><span class="eyebrow">Scheduling detail</span><h2>Adaptive review by legacy box</h2></div><span>Mastered words still return</span></div><div class="box-distribution">${boxCounts.map((count, index) => `<div><span>Box ${index + 1}</span><i><b style="width:${Math.round(count / Math.max(1,...boxCounts) * 100)}%"></b></i><strong>${count}</strong></div>`).join('')}</div><p class="section-helper">Boxes remain for backward compatibility. Actual intervals adapt to difficulty, failures, and the strength of each answer.</p></article>
+    <article class="spec-card goal-settings"><div><span class="eyebrow">Daily goal</span><h2>Keep it realistic</h2><p>Choose how many exercises you want to complete on a typical day.</p></div><form id="daily-goal-form"><input type="number" id="daily-goal-input" min="1" max="200" value="${dailyGoal}" aria-label="Daily exercise goal"><button class="btn-green-solid">Save goal</button></form><p id="goal-save-message" role="status" aria-live="polite"></p></article>
+    ${dueWords.length ? `<article class="spec-card due-preview"><div class="today-section-heading"><div><span class="eyebrow">Due now</span><h2>${dueWords.length} word${dueWords.length === 1 ? '' : 's'} ready</h2></div></div><div class="status-word-list">${dueWords.slice(0,6).map(word => `<article class="status-word-row"><div><strong>${escapeHtml(word.word)}</strong><p>${escapeHtml(word.definition)}</p><span>${word.mastered ? 'Long-term review' : `Box ${word.box || 1}`}</span></div></article>`).join('')}</div></article>` : ''}</section>`;
 
-      <div class="stats-detail-grid">
-        <div class="spec-card">
-          <div class="card-header-bar"><div class="card-tag">Last 7 days</div><strong>${weekly.reduce((sum, day) => sum + day.count, 0)} reviews</strong></div>
-          <div class="activity-chart">${weekly.map(day => `<div title="${day.count} reviews"><span>${day.count || ''}</span><i style="height:${day.count ? Math.max(18, Math.round(day.count / maxActivity * 120)) : 8}px"></i><small>${day.label}</small></div>`).join('')}</div>
-        </div>
-        <div class="spec-card">
-          <div class="card-header-bar"><div class="card-tag">Leitner distribution</div><span>${learning} learning</span></div>
-          <div class="box-distribution">${boxCounts.map((count, index) => `<div><span>Box ${index + 1}</span><i><b style="width:${Math.round(count / maxBox * 100)}%"></b></i><strong>${count}</strong></div>`).join('')}</div>
-        </div>
-      </div>
-
-      <div class="stats-word-sections">
-        <div class="spec-card word-status-section due-section">
-          <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-clock"></i> Due now</div><span class="status-count">${dueWords.length}</span></div>
-          <p class="section-helper">Words whose scheduled review time has arrived.</p>
-          <div class="status-word-list">
-            ${dueWords.length ? dueWords.map(word => `<article class="status-word-row"><div><strong>${escapeHtml(word.word)}</strong><p>${escapeHtml(word.definition)}</p><span>${escapeHtml(word.monthYear || word.notebook || '')} · Box ${Number(word.box || 1)}</span></div><button data-review-notebook="${escapeHtml(word.notebook)}">Review</button></article>`).join('') : `<div class="status-list-empty"><i class="fa-solid fa-circle-check"></i><span>Nothing is due right now.</span></div>`}
-          </div>
-        </div>
-        <div class="spec-card word-status-section mastered-section">
-          <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-graduation-cap"></i> Mastered</div><span class="status-count">${masteredWords.length}</span></div>
-          <p class="section-helper">Words that reached Box 5 in spaced repetition.</p>
-          <div class="status-word-list">
-            ${masteredWords.length ? masteredWords.map(word => `<article class="status-word-row"><div><strong>${escapeHtml(word.word)}</strong><p>${escapeHtml(word.definition)}</p><span>${escapeHtml(word.monthYear || word.notebook || '')} · Box 5</span></div><button data-open-notebook="${escapeHtml(word.notebook)}">View</button></article>`).join('') : `<div class="status-list-empty"><i class="fa-solid fa-seedling"></i><span>Keep reviewing to master your first word.</span></div>`}
-          </div>
-        </div>
-      </div>
-
-      <div class="spec-card box-explorer" id="box-explorer">
-        <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-boxes-stacked"></i> Words in each Leitner box</div><span class="muted-label">Select a box to inspect its contents</span></div>
-        <div class="box-filter-tabs" role="tablist" aria-label="Leitner boxes">
-          ${boxCounts.map((count, index) => `<button class="box-filter-tab ${index === 0 ? 'active' : ''}" data-box-filter="${index + 1}" role="tab" aria-selected="${index === 0}"><span>Box ${index + 1}</span><strong>${count}</strong><small>${['New / relearn', 'Learning', 'Reviewing', 'Reinforcing', 'Mastered'][index]}</small></button>`).join('')}
-        </div>
-        <div class="box-contents-heading"><strong id="selected-box-title">Box 1 contents</strong><span id="selected-box-count"></span></div>
-        <div class="status-word-list" id="box-contents-list"></div>
-      </div>
-
-      <div class="spec-card stats-action-card">
-        <div><div class="card-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> Recommended next step</div><h2>${due ? `Review ${due} due ${due === 1 ? 'word' : 'words'}` : learning ? 'Keep your learning streak moving' : 'Build your first vocabulary set'}</h2><p>${due ? 'A short session now keeps the spaced-repetition schedule accurate.' : learning ? 'Nothing is overdue. Practice from the dashboard or add another word.' : 'Add vocabulary, then review it on a schedule.'}</p></div>
-        <button class="btn-green-solid" id="stats-primary-action">${due ? 'Start review' : learning ? 'Open dashboard' : 'Open library'}</button>
-      </div>
-
-      <div class="spec-card goal-settings">
-        <div><div class="card-tag"><i class="fa-solid fa-sliders"></i> Daily goal</div><p>Choose a realistic number of reviews for each day.</p></div>
-        <form id="daily-goal-form"><input type="number" id="daily-goal-input" min="1" max="200" value="${dailyGoal}" aria-label="Daily review goal"><button class="btn-green-solid">Save goal</button></form>
-        <p id="goal-save-message" role="status"></p>
-      </div>
-    </section>`;
-
-  container.querySelector('#stats-primary-action').addEventListener('click', () => {
-    const view = due ? 'review' : learning ? 'dashboard' : 'library';
-    if (window.location.hash === `#${view}`) onNavigate(view); else window.location.hash = view;
-  });
-  container.querySelectorAll('[data-review-notebook]').forEach(button => button.addEventListener('click', () => {
-    driveSync.setActiveNotebook(button.dataset.reviewNotebook);
-    if (window.location.hash === '#review') onNavigate('review'); else window.location.hash = 'review';
-  }));
-  const openNotebook = notebook => {
-    driveSync.setActiveNotebook(notebook);
-    if (window.location.hash === '#library') onNavigate('library'); else window.location.hash = 'library';
-  };
-  container.querySelectorAll('[data-open-notebook]').forEach(button => button.addEventListener('click', () => openNotebook(button.dataset.openNotebook)));
-  const renderBoxContents = box => {
-    const boxWords = words.filter(word => Number(word.box || 1) === box);
-    container.querySelector('#selected-box-title').textContent = `Box ${box} contents`;
-    container.querySelector('#selected-box-count').textContent = `${boxWords.length} ${boxWords.length === 1 ? 'word' : 'words'}`;
-    container.querySelector('#box-contents-list').innerHTML = boxWords.length
-      ? boxWords.map(word => `<article class="status-word-row"><div><strong>${escapeHtml(word.word)}</strong><p>${escapeHtml(word.definition)}</p><span>${escapeHtml(word.monthYear || word.notebook || '')} · ${word.mastered ? 'Mastered' : 'Next: ' + new Date(word.nextReviewDate || word.createdAt).toLocaleDateString()}</span></div><button data-box-open-notebook="${escapeHtml(word.notebook)}">View</button></article>`).join('')
-      : `<div class="status-list-empty"><i class="fa-solid fa-box-open"></i><span>No words are in Box ${box}.</span></div>`;
-    container.querySelectorAll('[data-box-open-notebook]').forEach(button => button.addEventListener('click', () => openNotebook(button.dataset.boxOpenNotebook)));
-  };
-  container.querySelectorAll('[data-box-filter]').forEach(button => button.addEventListener('click', () => {
-    container.querySelectorAll('[data-box-filter]').forEach(tab => { tab.classList.remove('active'); tab.setAttribute('aria-selected', 'false'); });
-    button.classList.add('active');
-    button.setAttribute('aria-selected', 'true');
-    renderBoxContents(Number(button.dataset.boxFilter));
-  }));
-  renderBoxContents(1);
+  container.querySelector('#progress-workout').addEventListener('click', () => go('daily', onNavigate));
   container.querySelector('#daily-goal-form').addEventListener('submit', event => {
     event.preventDefault();
-    const value = Math.max(1, Math.min(200, Number(container.querySelector('#daily-goal-input').value)));
+    const value = Math.max(1, Math.min(200, Number(container.querySelector('#daily-goal-input').value) || 20));
     driveSync.updateSettings({ dailyGoal: value });
+    container.querySelector('#goal-save-message').textContent = `Daily goal saved: ${value} exercises.`;
     window.dispatchEvent(new CustomEvent('keepvocab:progress'));
-    container.querySelector('#goal-save-message').textContent = `Daily goal saved: ${value} reviews.`;
   });
 }

@@ -100,11 +100,12 @@ test('Gemini Live parses text, Blob, binary, typed-array, and decoded WebSocket 
   await assert.rejects(() => parseGeminiLiveMessage(new Blob(['[object Object]'])), /not valid JSON|Unexpected/);
 });
 
-test('Gemini credentials are device-local and never embedded in source', () => {
+test('Gemini credentials are user-configured and never embedded in source', () => {
   const service = readFileSync(resolve(projectRoot, 'js/services/geminiLive.js'), 'utf8');
   const component = readFileSync(resolve(projectRoot, 'js/components/SpeakingMode.js'), 'utf8');
   assert.doesNotMatch(service, /AIza[0-9A-Za-z_-]{20,}/);
-  assert.match(component, /localStorage\.setItem\(GEMINI_KEY_STORAGE/);
+  assert.match(component, /getGeminiSettings\(\)\.apiKey/);
+  assert.doesNotMatch(component, /localStorage\.setItem\(GEMINI_KEY_STORAGE/);
   assert.doesNotMatch(component, /DEFAULT_GEMINI_API_KEY/);
 });
 
@@ -130,16 +131,16 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(html, /id="btn-mode-speaking"/);
   assert.match(app, /renderSpeakingMode/);
   assert.match(component, /Gemini connects only after you press Start/);
-  assert.match(component, /never copied to Google Drive/);
+  assert.match(component, /key stays in KeepVocab storage and joins your private Drive backup/);
   assert.match(component, /COACH_SILENCE_MS = 9000/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'start'\)/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'silence'\)/);
   assert.match(component, /id="interrupt-live-coach"/);
   assert.match(component, /Your turn — Mira is listening/);
-  assert.match(serviceWorker, /SpeakingMode\.js\?v=43/);
-  assert.match(serviceWorker, /speakingLessons\.js\?v=42/);
-  assert.match(serviceWorker, /geminiLive\.js\?v=43/);
-  assert.match(serviceWorker, /speechService\.js\?v=43/);
+  assert.match(serviceWorker, /SpeakingMode\.js\?v=\d+/);
+  assert.match(serviceWorker, /speakingLessons\.js\?v=\d+/);
+  assert.match(serviceWorker, /geminiLive\.js\?v=\d+/);
+  assert.match(serviceWorker, /speechService\.js\?v=\d+/);
 });
 
 test('live speaking interruption stops every queued audio source and suppresses stale chunks', () => {

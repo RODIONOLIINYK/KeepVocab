@@ -7,6 +7,7 @@ import {
   getCurrentMonthNotebookTitle,
   usesNativeGoogleAuthorization
 } from '../js/services/driveSync.js';
+import { getGeminiSettings, saveGeminiSettings } from '../js/services/geminiSettings.js';
 
 function response(payload, status = 200) {
   return {
@@ -141,7 +142,7 @@ test('first sync creates one dedicated folder, monthly files, and a settings fil
   service.saveWords([], { silent: true });
   service.addWord({ word: 'bank', partOfSpeech: 'noun', definition: 'The land beside a river.', createdAt: '2026-05-10T10:00:00.000Z' }, 'May 2026 Vocabulary');
   service.addWord({ word: 'yield', partOfSpeech: 'verb', definition: 'To furnish or produce.', createdAt: '2026-07-20T10:00:00.000Z' }, 'July 2026 Vocabulary');
-  service.updateSettings({ dailyGoal: 27 }, { silent: true });
+  service.updateSettings({ dailyGoal: 27, learningStats: { sessionsCompleted: 4, speakingMinutes: 18 }, speakingProgress: { completed: ['rent-apartment'], level: 'B2' } }, { silent: true });
   authorize(service);
 
   const result = await service.syncGoogleDrive();
@@ -157,6 +158,8 @@ test('first sync creates one dedicated folder, monthly files, and a settings fil
   assert.equal(drive.payloadByName('Dictionary May 2026.json').words[0].definition, 'The land beside a river.');
   assert.equal(drive.payloadByName('Dictionary July 2026.json').monthYear, 'July 2026');
   assert.equal(drive.payloadByName('KeepVocab Settings.json').settings.dailyGoal, 27);
+  assert.equal(drive.payloadByName('KeepVocab Settings.json').settings.learningStats.sessionsCompleted, 4);
+  assert.deepEqual(drive.payloadByName('KeepVocab Settings.json').settings.speakingProgress.completed, ['rent-apartment']);
   assert.equal(result.months, 2);
   assert.equal(result.createdFiles, 3);
   assert.ok(drive.calls.some(call => new URL(call.url).searchParams.get('q')?.includes("appProperties has { key='keepVocabBackup' and value='folder' }")));
@@ -177,7 +180,7 @@ test('fresh reinstall restores exact meanings, original months, settings, and pr
     nextReviewDate: '2026-08-01T00:00:00.000Z'
   }, 'May 2026 Vocabulary');
   original.addWord({ word: 'inflict', partOfSpeech: 'verb', definition: 'To cause something unpleasant to be suffered.', createdAt: '2026-07-02T09:00:00.000Z' }, 'July 2026 Vocabulary');
-  original.updateSettings({ dailyGoal: 31, activeNotebook: 'May 2026 Vocabulary' }, { silent: true });
+  original.updateSettings({ dailyGoal: 31, activeNotebook: 'May 2026 Vocabulary', learningStats: { sessionsCompleted: 7, weakWordsImproved: 3 }, speakingProgress: { completed: ['rent-apartment', 'present-idea'], level: 'B2' } }, { silent: true });
   authorize(original);
   await original.syncGoogleDrive();
 
@@ -197,7 +200,48 @@ test('fresh reinstall restores exact meanings, original months, settings, and pr
   assert.equal(restored.box, 4);
   assert.equal(restored.nextReviewDate, '2026-08-01T00:00:00.000Z');
   assert.equal(reinstalled.getSettings().dailyGoal, 31);
+  assert.equal(reinstalled.getSettings().learningStats.sessionsCompleted, 7);
+  assert.deepEqual(reinstalled.getSettings().speakingProgress.completed, ['rent-apartment', 'present-idea']);
   assert.deepEqual(reinstalled.getMonthlyArchives().map(archive => archive.monthYear), ['July 2026', 'May 2026']);
+});
+
+test('Google Drive backs up and restores the centralized Google AI Studio key', async () => {
+  const drive = new MockDrive();
+  const originalStorage = new MemoryStorage();
+  saveGeminiSettings({ apiKey: 'AIza-drive-backed-key-123456789', textModel: 'gemini-3.1-flash-lite' }, originalStorage, { silent: true });
+  const original = new DriveSyncService(originalStorage, drive.fetch);
+  original.saveWords([], { silent: true });
+  original.addWord({ word: 'restore', partOfSpeech: 'verb', definition: 'To bring back.' }, 'July 2026 Vocabulary');
+  authorize(original);
+  await original.syncGoogleDrive();
+
+  const payload = drive.payloadByName('KeepVocab Settings.json');
+  assert.equal(payload.googleAiStudio.apiKey, 'AIza-drive-backed-key-123456789');
+  assert.equal(payload.googleAiStudio.textModel, 'gemini-3.1-flash-lite');
+
+  const reinstalledStorage = new MemoryStorage();
+  const reinstalled = new DriveSyncService(reinstalledStorage, drive.fetch);
+  authorize(reinstalled);
+  await reinstalled.syncGoogleDrive();
+  assert.equal(getGeminiSettings(reinstalledStorage).apiKey, 'AIza-drive-backed-key-123456789');
+});
+
+test('an older Drive backup without AI settings does not erase a local key', async () => {
+  const drive = new MockDrive();
+  const older = new DriveSyncService(new MemoryStorage(), drive.fetch);
+  older.saveWords([], { silent: true });
+  older.addWord({ word: 'legacy', partOfSpeech: 'noun', definition: 'Something inherited from the past.' }, 'July 2026 Vocabulary');
+  authorize(older);
+  await older.syncGoogleDrive();
+  assert.equal(drive.payloadByName('KeepVocab Settings.json').googleAiStudio, undefined);
+
+  const currentStorage = new MemoryStorage();
+  saveGeminiSettings({ apiKey: 'AIza-local-key-survives-123456789' }, currentStorage, { silent: true });
+  const current = new DriveSyncService(currentStorage, drive.fetch);
+  authorize(current);
+  await current.syncGoogleDrive();
+  assert.equal(getGeminiSettings(currentStorage).apiKey, 'AIza-local-key-survives-123456789');
+  assert.equal(drive.payloadByName('KeepVocab Settings.json').googleAiStudio.apiKey, 'AIza-local-key-survives-123456789');
 });
 
 test('deletion tombstones prevent a removed word from returning after reinstall', async () => {
@@ -329,6 +373,69 @@ test('a valid Drive token survives a page reload and remains connected', () => {
   assert.equal(reloadedPage.getDriveStatus().email, 'learner@example.com');
 });
 
+test('an expired Drive token is silently renewed before the next API request', async () => {
+  const storage = new MemoryStorage();
+  const authorizationHeaders = [];
+  const service = new DriveSyncService(storage, async (_url, options) => {
+    authorizationHeaders.push(options.headers.Authorization);
+    return response({ ok: true });
+  });
+  service.setDriveStatus({ isConnected: true, remembered: true, email: 'learner@example.com' });
+  service.accessToken = 'expired-token';
+  service.tokenExpiresAt = Date.now() - 1;
+  const previousCapacitor = globalThis.Capacitor;
+  const calls = [];
+  globalThis.Capacitor = {
+    getPlatform: () => 'android',
+    Plugins: { DriveAuth: {
+      async authorize(options) {
+        calls.push(options);
+        return { accessToken: 'renewed-token', expiresIn: 3600 };
+      }
+    } }
+  };
+
+  try {
+    await service.authorizedFetch('https://www.googleapis.com/drive/v3/files');
+    assert.deepEqual(calls, [{ interactive: false }]);
+    assert.deepEqual(authorizationHeaders, ['Bearer renewed-token']);
+    assert.equal(service.getDriveStatus().isConnected, true);
+    assert.equal(service.getDriveStatus().lastError, null);
+  } finally {
+    globalThis.Capacitor = previousCapacitor;
+  }
+});
+
+test('a rejected Drive token is silently renewed and the request is retried once', async () => {
+  const storage = new MemoryStorage();
+  const authorizationHeaders = [];
+  const service = new DriveSyncService(storage, async (_url, options) => {
+    authorizationHeaders.push(options.headers.Authorization);
+    return authorizationHeaders.length === 1
+      ? response({ error: { message: 'Invalid Credentials' } }, 401)
+      : response({ files: [] });
+  });
+  service.setDriveStatus({ isConnected: true, remembered: true, email: 'learner@example.com' });
+  service.accessToken = 'rejected-token';
+  service.tokenExpiresAt = Date.now() + 60_000;
+  const previousCapacitor = globalThis.Capacitor;
+  globalThis.Capacitor = {
+    getPlatform: () => 'android',
+    Plugins: { DriveAuth: {
+      async authorize() { return { accessToken: 'replacement-token', expiresIn: 3600 }; }
+    } }
+  };
+
+  try {
+    const result = await service.authorizedFetch('https://www.googleapis.com/drive/v3/files');
+    assert.equal(result.status, 200);
+    assert.deepEqual(authorizationHeaders, ['Bearer rejected-token', 'Bearer replacement-token']);
+    assert.equal(service.getDriveStatus().isConnected, true);
+  } finally {
+    globalThis.Capacitor = previousCapacitor;
+  }
+});
+
 test('expired saved Drive tokens are discarded and require renewal', () => {
   const storage = new MemoryStorage();
   storage.setItem('keepvocab_drive_auth', JSON.stringify({ isConnected: true, remembered: true, email: 'learner@example.com' }));
@@ -339,6 +446,21 @@ test('expired saved Drive tokens are discarded and require renewal', () => {
   assert.equal(service.getDriveStatus().isConnected, false);
   assert.equal(service.getDriveStatus().remembered, true);
   assert.equal(storage.getItem('keepvocab_drive_token'), null);
+});
+
+test('legacy session-expired banner state is cleared before silent renewal', () => {
+  const storage = new MemoryStorage();
+  storage.setItem('keepvocab_drive_auth', JSON.stringify({
+    isConnected: false,
+    remembered: true,
+    email: 'learner@example.com',
+    lastError: 'Your Google Drive session expired. Renewing access is required.'
+  }));
+
+  const service = new DriveSyncService(storage, async () => { throw new Error('unused'); });
+
+  assert.equal(service.getDriveStatus().remembered, true);
+  assert.equal(service.getDriveStatus().lastError, null);
 });
 
 test('disconnecting removes the saved Drive token from this device', () => {

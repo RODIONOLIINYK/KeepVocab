@@ -1,5 +1,7 @@
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=63';
+
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
 const STORAGE_KEY_SETTINGS = 'keepvocab_settings';
@@ -103,6 +105,12 @@ function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource
     definition: definition || 'Definition not provided.',
     example: String(candidate.example || '').trim(),
     imageCustomConcept: String(candidate.imageCustomConcept || '').trim().slice(0, 160),
+    imageFeedback: candidate.imageFeedback && typeof candidate.imageFeedback === 'object' ? {
+      rejectedUrls: [...new Set((candidate.imageFeedback.rejectedUrls || []).map(String).filter(Boolean))].slice(0, 80),
+      goodUrls: [...new Set((candidate.imageFeedback.goodUrls || []).map(String).filter(Boolean))].slice(0, 40),
+      preferredConcepts: [...new Set((candidate.imageFeedback.preferredConcepts || []).map(String).filter(Boolean))].slice(0, 20),
+      updatedAt: candidate.imageFeedback.updatedAt || null
+    } : undefined,
     audioUrl: String(candidate.audioUrl || '').trim(),
     imageUrl: String(candidate.imageUrl || '').trim(),
     notebook: notebookFromMonthYear(monthYear),
@@ -173,6 +181,7 @@ export class DriveSyncService {
     this.fetchImpl = fetchImpl;
     this.accessToken = null;
     this.tokenExpiresAt = 0;
+    this.tokenRefreshPromise = null;
     this.syncPromise = null;
     this.suppressEvents = false;
     this.isFreshInstall = !this.storage.getItem(STORAGE_KEY_WORDS);
@@ -215,9 +224,14 @@ export class DriveSyncService {
       this.write(STORAGE_KEY_DRIVE_AUTH, { isConnected: false, remembered: false, email: null, lastSynced: null, lastError: null, folderId: null });
     } else {
       const storedDrive = this.read(STORAGE_KEY_DRIVE_AUTH, {});
+      let normalizedDrive = storedDrive;
       if (!storedDrive.remembered && storedDrive.isConnected && storedDrive.email && storedDrive.lastSynced) {
-        this.write(STORAGE_KEY_DRIVE_AUTH, { ...storedDrive, remembered: true });
+        normalizedDrive = { ...normalizedDrive, remembered: true };
       }
+      if (normalizedDrive.remembered && /session expired|renewing access is required|reconnect drive once to renew/i.test(String(normalizedDrive.lastError || ''))) {
+        normalizedDrive = { ...normalizedDrive, lastError: null };
+      }
+      if (normalizedDrive !== storedDrive) this.write(STORAGE_KEY_DRIVE_AUTH, normalizedDrive);
     }
     this.refreshNotebooks();
     const settings = this.getSettings();
@@ -324,6 +338,36 @@ export class DriveSyncService {
     this.persistGoogleToken();
   }
 
+  async renewGoogleToken({ interactive = false } = {}) {
+    if (this.tokenRefreshPromise) return this.tokenRefreshPromise;
+    this.tokenRefreshPromise = (async () => {
+      const nativeAuth = getNativeDriveAuthPlugin();
+      const clientId = this.getGoogleClientId();
+      if (!nativeAuth && !clientId) throw new Error('Connect Google Drive once on this device to enable automatic renewal.');
+      if (!nativeAuth && !globalThis.google?.accounts?.oauth2) throw new Error('Google Identity Services did not load.');
+      const tokenResponse = nativeAuth
+        ? await nativeAuth.authorize({ interactive }).then(result => ({ access_token: result.accessToken, expires_in: result.expiresIn }))
+        : await this.requestGoogleToken(clientId, interactive ? 'consent' : '');
+      this.acceptGoogleToken(tokenResponse);
+      this.setDriveStatus({ isConnected: true, remembered: true, lastError: null });
+      return tokenResponse;
+    })();
+    try {
+      return await this.tokenRefreshPromise;
+    } finally {
+      this.tokenRefreshPromise = null;
+    }
+  }
+
+  renewalFailureMessage(error) {
+    const code = String(error?.code || error?.type || '').toUpperCase();
+    if (code.includes('RECONNECT') || code.includes('CONSENT') || code.includes('INTERACTION')) {
+      return 'Google Drive needs one confirmation. Tap Reconnect Drive once.';
+    }
+    if (globalThis.navigator?.onLine === false) return 'Drive will reconnect automatically when this device is online.';
+    return 'Drive could not renew in the background. Tap Reconnect Drive once if it does not recover automatically.';
+  }
+
   async finishGoogleConnection() {
     try {
       const profileResponse = await this.authorizedFetch('https://www.googleapis.com/oauth2/v3/userinfo');
@@ -340,19 +384,12 @@ export class DriveSyncService {
   async resumeGoogleDrive() {
     const status = this.getDriveStatus();
     if (!status.remembered) return null;
-    const nativeAuth = getNativeDriveAuthPlugin();
-    const clientId = this.getGoogleClientId();
-    if (!nativeAuth && !clientId) return null;
-    if (!nativeAuth && !globalThis.google?.accounts?.oauth2) throw new Error('Google Identity Services did not load.');
     try {
-      const tokenResponse = nativeAuth
-        ? await nativeAuth.authorize({ interactive: false }).then(result => ({ access_token: result.accessToken, expires_in: result.expiresIn }))
-        : await this.requestGoogleToken(clientId, '');
-      this.acceptGoogleToken(tokenResponse);
+      await this.renewGoogleToken({ interactive: false });
       return await this.finishGoogleConnection();
     } catch (error) {
       this.clearGoogleToken();
-      this.setDriveStatus({ isConnected: false, remembered: true, lastError: 'Google needs you to reconnect Drive once to renew access.' });
+      this.setDriveStatus({ isConnected: false, remembered: true, lastError: this.renewalFailureMessage(error) });
       throw error;
     }
   }
@@ -368,12 +405,18 @@ export class DriveSyncService {
     return this.setDriveStatus({ isConnected: false, remembered: false, lastError: null });
   }
 
-  async authorizedFetch(url, options = {}) {
+  async authorizedFetch(url, options = {}, retriedAfterRenewal = false) {
     if (!this.fetchImpl) throw new Error('This browser does not support network requests.');
     if (!this.accessToken || Date.now() >= this.tokenExpiresAt) {
       this.clearGoogleToken();
-      this.setDriveStatus({ isConnected: false, remembered: true, lastError: 'Your Google Drive session expired. Renewing access is required.' });
-      throw new Error('Your Google Drive session expired. Reconnect to continue syncing.');
+      if (!this.getDriveStatus().remembered) throw new Error('Connect Google Drive to start syncing.');
+      try {
+        await this.renewGoogleToken({ interactive: false });
+      } catch (error) {
+        const message = this.renewalFailureMessage(error);
+        this.setDriveStatus({ isConnected: false, remembered: true, lastError: message });
+        throw new Error(message, { cause: error });
+      }
     }
     const response = await this.fetchImpl(url, {
       ...options,
@@ -382,10 +425,22 @@ export class DriveSyncService {
     if (!response.ok) {
       let detail = '';
       try { detail = (await response.json())?.error?.message || ''; } catch { /* non-JSON failure */ }
+      if (response.status === 401 && !retriedAfterRenewal && this.getDriveStatus().remembered) {
+        this.clearGoogleToken();
+        try {
+          await this.renewGoogleToken({ interactive: false });
+          return this.authorizedFetch(url, options, true);
+        } catch (error) {
+          const message = this.renewalFailureMessage(error);
+          this.setDriveStatus({ isConnected: false, remembered: true, lastError: message });
+          throw new Error(message, { cause: error });
+        }
+      }
       if (response.status === 401) {
         this.clearGoogleToken();
-        this.setDriveStatus({ isConnected: false, remembered: true, lastError: 'Google rejected the saved session. Reconnect to Google Drive.' });
-        throw new Error('Google rejected the session. Reconnect to Google Drive.');
+        const message = 'Google Drive needs one confirmation. Tap Reconnect Drive once.';
+        this.setDriveStatus({ isConnected: false, remembered: true, lastError: message });
+        throw new Error(message);
       }
       if (response.status === 403) throw new Error(`Google Drive access was denied.${detail ? ` ${detail}` : ''}`);
       throw new Error(`Google Drive request failed (${response.status}).${detail ? ` ${detail}` : ''}`);
@@ -564,13 +619,19 @@ export class DriveSyncService {
     const words = this.getWords();
     const index = words.findIndex(word => word.id === wordId);
     if (index === -1) throw new Error('That vocabulary entry no longer exists.');
-    const allowed = ['word', 'phonetic', 'partOfSpeech', 'definition', 'example', 'exampleSourceUrl', 'exampleAttribution', 'exampleLicense', 'audioUrl', 'imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery', 'imageCustomConcept'];
+    const allowed = ['word', 'phonetic', 'partOfSpeech', 'definition', 'example', 'exampleSourceUrl', 'exampleAttribution', 'exampleLicense', 'audioUrl', 'imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery', 'imageCustomConcept', 'imageKind', 'imageGeneratedModel', 'imageGeneratedAt', 'imageGeneratedPrompt'];
     const cleanPatch = Object.fromEntries(allowed.filter(key => Object.prototype.hasOwnProperty.call(patch, key)).map(key => [key, String(patch[key] ?? '').trim()]));
+    if (patch.imageFeedback && typeof patch.imageFeedback === 'object') cleanPatch.imageFeedback = {
+      rejectedUrls: [...new Set((patch.imageFeedback.rejectedUrls || []).map(String).filter(Boolean))].slice(0, 80),
+      goodUrls: [...new Set((patch.imageFeedback.goodUrls || []).map(String).filter(Boolean))].slice(0, 40),
+      preferredConcepts: [...new Set((patch.imageFeedback.preferredConcepts || []).map(String).filter(Boolean))].slice(0, 20),
+      updatedAt: patch.imageFeedback.updatedAt || new Date().toISOString()
+    };
     if (cleanPatch.word !== undefined) cleanPatch.word = normalizeWordText(cleanPatch.word).toLowerCase();
     if (!cleanPatch.word && cleanPatch.word !== undefined) throw new Error('Word cannot be empty.');
     if (!cleanPatch.definition && cleanPatch.definition !== undefined) throw new Error('Definition cannot be empty.');
     if (cleanPatch.imageCustomConcept !== undefined) cleanPatch.imageCustomConcept = cleanPatch.imageCustomConcept.slice(0, 160);
-    if (cleanPatch.imageUrl && !/^https:\/\//i.test(cleanPatch.imageUrl)) throw new Error('Image URL must start with https://.');
+    if (cleanPatch.imageUrl && !/^https:\/\//i.test(cleanPatch.imageUrl) && !/^data:image\/(?:png|jpeg|webp);base64,/i.test(cleanPatch.imageUrl)) throw new Error('Image URL must start with https:// or be a generated image.');
     if (cleanPatch.imageSourceUrl && !/^https:\/\//i.test(cleanPatch.imageSourceUrl)) throw new Error('Image source URL must start with https://.');
     const updated = { ...words[index], ...cleanPatch, updatedAt: new Date().toISOString() };
     if (words.some((word, candidateIndex) => candidateIndex !== index && senseIdentity(word) === senseIdentity(updated))) {
@@ -738,11 +799,23 @@ export class DriveSyncService {
     if (settingsFile) remoteSettingsPayload = await this.downloadJsonFile(settingsFile.id);
     const remoteSettings = remoteSettingsPayload?.settings;
     if (remoteSettings && (this.isFreshInstall || recordTimestamp(remoteSettings) > recordTimestamp(settings))) settings = remoteSettings;
-    const settingsPayload = { schemaVersion: SCHEMA_VERSION, app: 'KeepVocab', updatedAt: new Date().toISOString(), settings };
+    const localGemini = getGeminiBackupRecord(this.storage);
+    const remoteGemini = remoteSettingsPayload?.googleAiStudio || null;
+    const chosenGemini = remoteGemini && (this.isFreshInstall || !localGemini || recordTimestamp(remoteGemini) > recordTimestamp(localGemini))
+      ? remoteGemini
+      : localGemini;
+    const settingsPayload = {
+      schemaVersion: SCHEMA_VERSION,
+      app: 'KeepVocab',
+      updatedAt: new Date().toISOString(),
+      settings,
+      ...(chosenGemini ? { googleAiStudio: chosenGemini } : {})
+    };
     if (!settingsFile) {
       await this.createJsonFile(folder.id, 'KeepVocab Settings.json', 'settings', settingsPayload);
       createdFiles += 1;
-    } else if (JSON.stringify(remoteSettings || {}) !== JSON.stringify(settings)) {
+    } else if (JSON.stringify(remoteSettings || {}) !== JSON.stringify(settings)
+      || JSON.stringify(remoteGemini || null) !== JSON.stringify(chosenGemini || null)) {
       await this.updateJsonFile(settingsFile.id, settingsPayload);
       updatedFiles += 1;
     }
@@ -751,6 +824,7 @@ export class DriveSyncService {
     this.saveWords(finalWords, { silent: true });
     this.saveTombstones(finalTombstones, { silent: true });
     this.write(STORAGE_KEY_SETTINGS, settings);
+    if (chosenGemini) restoreGeminiBackupRecord(chosenGemini, this.storage);
     this.refreshNotebooks();
     this.suppressEvents = false;
     const lastSynced = new Date().toISOString();

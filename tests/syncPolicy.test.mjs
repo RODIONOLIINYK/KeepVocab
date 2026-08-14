@@ -20,4 +20,6 @@ test('background Drive paths never navigate or rebuild the active view', () => {
   assert.doesNotMatch(backgroundSection, /navigateTo\(|visibilitychange/);
   assert.match(backgroundSection, /keepvocab:data-changed/);
   assert.match(backgroundSection, /hasPendingDriveChanges/);
+  assert.match(backgroundSection, /await driveSync\.resumeGoogleDrive\(\)/);
+  assert.match(backgroundSection, /waitForGoogleIdentity/);
 });

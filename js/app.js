@@ -1,23 +1,30 @@
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=46';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=45';
-import { speakWord } from './services/speechService.js?v=43';
-import { updateWordRepetition, getDueWords } from './services/srsEngine.js?v=42';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=42';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=42';
-import { findRelevantImages } from './services/imageSearch.js?v=42';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=45';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=49';
-import { appendStudyMoment, buildSmartReminderPlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=54';
+import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=63';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=63';
+import { speakWord } from './services/speechService.js?v=63';
+import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=63';
+import { recordExerciseResult } from './services/exerciseResult.js?v=63';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=63';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=63';
+import { findRelevantImages } from './services/imageSearch.js?v=63';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=63';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=63';
+import { appendStudyMoment, buildSmartReminderPlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=63';
 
-import { renderReviewView } from './components/ReviewView.js?v=49';
-import { renderLibraryView } from './components/LibraryView.js?v=51';
-import { renderStatsView } from './components/StatsView.js?v=42';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=49';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=49';
-import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=49';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=43';
+import { renderReviewView } from './components/ReviewView.js?v=63';
+import { renderLibraryView } from './components/LibraryView.js?v=63';
+import { renderStatsView } from './components/StatsView.js?v=63';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=63';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=63';
+import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=63';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=63';
+import { renderDashboardView } from './components/DashboardView.js?v=63';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=63';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=63';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=63';
+import { renderUseItMode } from './components/UseItMode.js?v=63';
+import { renderSettingsView } from './components/SettingsView.js?v=63';
 
 function localDateKey(date = new Date()) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
@@ -263,10 +270,10 @@ function updateEngagementCard() {
   }
 
   mascot.src = isStreakMilestone || reviewsToday >= dailyGoal
-    ? 'assets/keepvocab-sprig-celebrate.png'
+    ? 'assets/keepvocab-sprig-celebrate.webp'
     : dueCount > 0
-      ? 'assets/keepvocab-sprig-thinking.png'
-      : 'assets/keepvocab-sprout-mascot.png';
+      ? 'assets/keepvocab-sprig-thinking.webp'
+      : 'assets/keepvocab-sprout-mascot.webp';
   weeklyStatus.innerHTML = `<i class="fa-solid fa-chart-line"></i> ${activeDays} / 5 active days`;
 
   const reminderPlan = currentSmartReminderPlan();
@@ -327,7 +334,7 @@ function setupEngagementSystem() {
   document.addEventListener('click', event => {
     const control = event.target.closest('button, a');
     if (!control) return;
-    if (control.id === 'btn-open-engagement-settings') openSettings();
+    if (control.id === 'btn-open-engagement-settings' || control.id === 'settings-routine') openSettings();
     if (control.id === 'btn-coach-review') window.location.hash = 'review';
     if (control.id === 'btn-close-engagement-settings' || control.id === 'btn-cancel-engagement-settings') closeSettings();
   });
@@ -376,10 +383,12 @@ function setupEngagementSystem() {
 
 function navigateTo(viewName) {
   if (viewName === 'challenge') viewName = 'choose';
-  if (!['dashboard', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'speaking'].includes(viewName)) viewName = 'dashboard';
+  if (!['dashboard', 'daily', 'weak', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'speaking', 'settings'].includes(viewName)) viewName = 'dashboard';
   if (currentView === 'speaking' && viewName !== 'speaking') teardownSpeakingMode();
   currentView = viewName;
   document.body.classList.toggle('speaking-view', viewName === 'speaking');
+  document.body.classList.toggle('dashboard-view', viewName === 'dashboard');
+  document.body.classList.toggle('immersive-view', ['daily', 'weak', 'review', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'library', 'stats', 'settings'].includes(viewName));
   const activeMonthLabel = document.getElementById('active-month-label');
   if (activeMonthLabel) activeMonthLabel.textContent = driveSync.getActiveNotebook().replace(/ Vocabulary$/, '');
 
@@ -390,7 +399,11 @@ function navigateTo(viewName) {
   const container = document.getElementById('view-container');
   if (!container) return;
 
-  if (viewName === 'review') {
+  if (viewName === 'daily') {
+    renderDailySessionMode(container, navigateTo);
+  } else if (viewName === 'weak') {
+    renderDailySessionMode(container, navigateTo, { kind: 'weak' });
+  } else if (viewName === 'review') {
     renderReviewView(container, navigateTo);
   } else if (viewName === 'library') {
     renderLibraryView(container, navigateTo);
@@ -404,16 +417,21 @@ function navigateTo(viewName) {
     renderVisualMatchMode(container, navigateTo);
   } else if (viewName === 'match') {
     renderMatchSprintMode(container, navigateTo);
+  } else if (viewName === 'flashcards') {
+    renderFlashcardsMode(container, navigateTo);
+  } else if (viewName === 'context') {
+    renderContextQuizMode(container, navigateTo);
+  } else if (viewName === 'useit') {
+    renderUseItMode(container, navigateTo);
   } else if (viewName === 'speaking') {
     renderSpeakingMode(container, navigateTo);
+  } else if (viewName === 'settings') {
+    renderSettingsView(container, navigateTo);
   } else {
-    if (dashboardOriginalHTML) {
-      container.innerHTML = dashboardOriginalHTML;
-      setupFlashcardControls();
-      setupLearningModeButtons();
-      updateDashboardDerivedState();
-    }
+    renderDashboardView(container, navigateTo);
+    updateDashboardDerivedState();
   }
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   container.classList.remove('view-enter');
   if (viewEnterTimer) window.clearTimeout(viewEnterTimer);
   requestAnimationFrame(() => {
@@ -1032,6 +1050,7 @@ let driveChangeRevision = 0;
 let syncedDriveRevision = 0;
 let lastAutomaticDriveSyncAt = 0;
 let automaticSyncRunning = false;
+let driveResumeRunning = false;
 
 async function runDriveSync() {
   document.getElementById('pill-syncing').style.display = 'inline-flex';
@@ -1080,14 +1099,45 @@ function setupAutomaticDriveBackup() {
     driveChangeRevision += 1;
     scheduleAutomaticDriveSync();
   });
-  window.addEventListener('online', scheduleAutomaticDriveSync);
+  window.addEventListener('online', () => {
+    resumeRememberedDriveConnection();
+    scheduleAutomaticDriveSync();
+  });
   window.setInterval(scheduleAutomaticDriveSync, DRIVE_SYNC_MIN_INTERVAL_MS);
 }
 
-function resumeRememberedDriveConnection() {
-  // Restoring the UI is intentionally local-only. Network access starts after
-  // the user connects/syncs or changes vocabulary, never just because a page opened.
+function waitForGoogleIdentity(timeoutMs = 6_000) {
+  if (usesNativeGoogleAuthorization() || globalThis.google?.accounts?.oauth2) return Promise.resolve(true);
+  return new Promise(resolve => {
+    const startedAt = Date.now();
+    const check = () => {
+      if (globalThis.google?.accounts?.oauth2) resolve(true);
+      else if (Date.now() - startedAt >= timeoutMs) resolve(false);
+      else window.setTimeout(check, 150);
+    };
+    check();
+  });
+}
+
+async function resumeRememberedDriveConnection() {
+  if (driveResumeRunning) return;
   renderConnectionState();
+  const auth = driveSync.getDriveStatus();
+  if (!auth.remembered || auth.isConnected) return;
+  driveResumeRunning = true;
+  const syncingPill = document.getElementById('pill-syncing');
+  if (syncingPill) syncingPill.style.display = 'inline-flex';
+  try {
+    if (!(await waitForGoogleIdentity())) return;
+    await driveSync.resumeGoogleDrive();
+    syncedDriveRevision = driveChangeRevision;
+    lastAutomaticDriveSyncAt = Date.now();
+  } catch (error) {
+    console.warn('Drive background renewal is waiting for account confirmation or connectivity.', error);
+  } finally {
+    driveResumeRunning = false;
+    renderConnectionState();
+  }
 }
 
 function renderConnectionState() {
@@ -1100,6 +1150,7 @@ function renderConnectionState() {
   const syncingPill = document.getElementById('pill-syncing');
   const offlinePill = document.getElementById('pill-offline');
   const openButton = document.getElementById('btn-open-drive-auth');
+  banner.hidden = !auth.lastError;
 
   if (auth.isConnected) {
     banner.className = 'keep-banner connected';
@@ -1169,6 +1220,11 @@ function setupFlashcardControls() {
     defEl.textContent = `"${current.definition}"`;
     exampleEl.textContent = `"${current.example}"`;
     indexEl.textContent = currentIndex + 1;
+    const previews = getRatingPreviews(current);
+    for (const rating of ['again', 'hard', 'good', 'easy']) {
+      const label = document.querySelector(`#btn-rate-${rating} .rate-time`);
+      if (label) label.textContent = previews[rating].label;
+    }
     const card = document.getElementById('flashcard-spec-card');
     if (card) {
       card.classList.remove('flashcard-pop');
@@ -1194,7 +1250,15 @@ function setupFlashcardControls() {
   const rateAction = (type) => {
     if (!wordsQueue.length) return;
     const current = wordsQueue[currentIndex];
-    if (current.id) updateWordRepetition(current.id, type.toLowerCase());
+    if (current.id) recordExerciseResult({
+      wordId: current.id,
+      exerciseType: 'flashcard-self-rating',
+      correct: type !== 'Again',
+      hintsUsed: 1,
+      recallType: 'recognition',
+      producedUnaided: false,
+      learnerRating: type.toLowerCase()
+    });
     rememberStudyStart();
     goalCount = Number(driveSync.getSettings().reviewsToday || 0);
     updateGoalDisplay();

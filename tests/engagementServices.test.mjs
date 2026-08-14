@@ -77,4 +77,6 @@ test('interaction sounds stay short and use distinct feedback contours', () => {
   assert.notDeepEqual(correct, success);
   assert.notDeepEqual(wrong, error);
   assert.ok([...success, ...error, ...correct, ...wrong].every(tone => tone.duration <= 0.15));
+  assert.ok(getInteractionSoundProfile('tap')[0].volume >= 0.1);
+  assert.ok([...success, ...error, ...correct, ...wrong].every(tone => tone.volume >= 0.13));
 });

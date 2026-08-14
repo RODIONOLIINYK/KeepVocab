@@ -1,7 +1,7 @@
-import { driveSync } from '../services/driveSync.js?v=42';
-import { speakWord } from '../services/speechService.js?v=43';
-import { updateWordRepetition } from '../services/srsEngine.js?v=42';
-import { playInteractionSound } from '../services/interactionSound.js?v=49';
+import { driveSync } from '../services/driveSync.js?v=63';
+import { speakWord } from '../services/speechService.js?v=63';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
+import { playInteractionSound } from '../services/interactionSound.js?v=63';
 import { escapeHtml } from '../utils/html.js';
 
 function activeWords() {
@@ -56,10 +56,11 @@ export function renderSpellingMode(container, onNavigate) {
   let score = 0;
   let answered = false;
   let correct = false;
+  let questionStartedAt = performance.now();
 
   function render() {
     if (index >= queue.length) {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.png" alt="Sprig celebrating"><h2>Spelling session complete</h2><p>You recalled ${score} of ${originalCount} words. Missed words were repeated once at the end.</p><div class="inline-actions"><button class="btn-green-solid" id="spell-again">Practice again</button><button class="status-pill offline" id="spell-dashboard">Dashboard</button></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Spelling session complete</h2><p>You recalled ${score} of ${originalCount} words. Missed words were repeated once at the end.</p><div class="inline-actions"><button class="btn-green-solid" id="spell-again">Practice again</button><button class="status-pill offline" id="spell-dashboard">Dashboard</button></div></div></section>`;
       container.querySelector('#spell-again').addEventListener('click', () => renderSpellingMode(container, onNavigate));
       container.querySelector('#spell-dashboard').addEventListener('click', () => go('dashboard', onNavigate));
       return;
@@ -100,12 +101,12 @@ export function renderSpellingMode(container, onNavigate) {
       playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
       if (!correct && !retried.has(word.id)) { retried.add(word.id); queue.push(word); }
-      updateWordRepetition(word.id, correct ? 'easy' : 'again');
+      recordExerciseResult({ wordId: word.id, exerciseType: 'listen-and-spell', correct, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'listening-recall', producedUnaided: correct });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       answered = true;
       render();
     });
-    container.querySelector('#spell-next')?.addEventListener('click', () => { index += 1; answered = false; correct = false; render(); });
+    container.querySelector('#spell-next')?.addEventListener('click', () => { index += 1; answered = false; correct = false; questionStartedAt = performance.now(); render(); });
     container.querySelector('#spell-answer')?.focus();
   }
   render();
@@ -120,11 +121,12 @@ export function renderChooseWordMode(container, onNavigate) {
   let index = 0;
   let score = 0;
   let selectedId = null;
+  let questionStartedAt = performance.now();
   const choiceState = { targetId: null, options: [] };
 
   function render() {
     if (index >= queue.length) {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.png" alt="Sprig celebrating"><h2>Choose Word complete</h2><p>You mastered ${score} of ${originalCount} definitions. Missed choices were repeated once.</p><div class="inline-actions"><button class="btn-green-solid" id="choose-again">Try again</button><button class="status-pill offline" id="choose-dashboard">Dashboard</button></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Choose Word complete</h2><p>You mastered ${score} of ${originalCount} definitions. Missed choices were repeated once.</p><div class="inline-actions"><button class="btn-green-solid" id="choose-again">Try again</button><button class="status-pill offline" id="choose-dashboard">Dashboard</button></div></div></section>`;
       container.querySelector('#choose-again').addEventListener('click', () => renderChooseWordMode(container, onNavigate));
       container.querySelector('#choose-dashboard').addEventListener('click', () => go('dashboard', onNavigate));
       return;
@@ -138,7 +140,7 @@ export function renderChooseWordMode(container, onNavigate) {
         <div class="practice-topline"><button class="status-pill offline" id="choose-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>Choose Word · ${index + 1} of ${queue.length}</span><strong>Score ${score}</strong></div>
         <div class="review-progress"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div>
         <div class="practice-prompt choose-prompt">
-          <img class="practice-mascot" src="assets/keepvocab-sprig-thinking.png" alt="" aria-hidden="true">
+          <img class="practice-mascot" src="assets/keepvocab-sprig-thinking.webp" alt="" aria-hidden="true">
           <p>Which word matches this definition?</p>
           <blockquote>${escapeHtml(target.definition)}</blockquote>
           <div class="choice-grid">${options.map(option => {
@@ -157,11 +159,11 @@ export function renderChooseWordMode(container, onNavigate) {
       playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
       if (!correct && !retried.has(target.id)) { retried.add(target.id); queue.push(target); }
-      updateWordRepetition(target.id, correct ? 'good' : 'again');
+      recordExerciseResult({ wordId: target.id, exerciseType: 'choose-word', correct, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: correct ? '' : selectedId });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       render();
     }));
-    container.querySelector('#choose-next')?.addEventListener('click', () => { index += 1; selectedId = null; choiceState.targetId = null; render(); });
+    container.querySelector('#choose-next')?.addEventListener('click', () => { index += 1; selectedId = null; questionStartedAt = performance.now(); choiceState.targetId = null; render(); });
   }
   render();
 }

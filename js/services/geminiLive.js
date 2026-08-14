@@ -1,5 +1,7 @@
-export const GEMINI_LIVE_MODEL = 'gemini-3.1-flash-live-preview';
-export const GEMINI_KEY_STORAGE = 'keepvocab_gemini_live_key_v1';
+import { DEFAULT_GEMINI_LIVE_MODEL, GEMINI_KEY_STORAGE } from './geminiSettings.js?v=63';
+
+export const GEMINI_LIVE_MODEL = DEFAULT_GEMINI_LIVE_MODEL;
+export { GEMINI_KEY_STORAGE };
 export const BARGE_IN_LEVEL = 0.12;
 export const BARGE_IN_FRAMES = 2;
 
@@ -138,7 +140,7 @@ export class GeminiLiveSession extends EventTarget {
     await this.outputContext.resume();
   }
 
-  async connect({ apiKey, instruction }) {
+  async connect({ apiKey, instruction, model = GEMINI_LIVE_MODEL }) {
     this.closedByUser = false;
     this.updateStatus('connecting');
     const socket = new WebSocket(buildGeminiLiveUrl(apiKey));
@@ -154,7 +156,7 @@ export class GeminiLiveSession extends EventTarget {
       };
       const timeout = window.setTimeout(() => fail(new Error('Gemini Live took too long to connect.')), 15000);
 
-      socket.addEventListener('open', () => socket.send(JSON.stringify(buildGeminiSetupMessage(instruction))));
+      socket.addEventListener('open', () => socket.send(JSON.stringify(buildGeminiSetupMessage(instruction, model))));
       socket.addEventListener('message', async event => {
         try {
           const message = await parseGeminiLiveMessage(event.data);

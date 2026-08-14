@@ -8,8 +8,12 @@ import {
   getLessonPlan,
   buildCoachInitiativeCue,
   buildSpeakingInstruction
-} from '../data/speakingLessons.js?v=42';
-import { GeminiLiveSession, GEMINI_KEY_STORAGE } from '../services/geminiLive.js?v=43';
+} from '../data/speakingLessons.js?v=63';
+import { GeminiLiveSession } from '../services/geminiLive.js?v=63';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=63';
+import { driveSync } from '../services/driveSync.js?v=63';
+import { recordSpeakingStats } from '../services/learningStats.js?v=63';
+import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=63';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
 export const COACH_SILENCE_MS = 9000;
@@ -21,7 +25,9 @@ let initiativeTimer = null;
 function readProgress() {
   const defaults = { completed: [], lastLessonId: 'rent-apartment', weeklyGoal: 5, level: DEFAULT_SPEAKING_LEVEL };
   try {
-    const saved = JSON.parse(localStorage.getItem(PROGRESS_STORAGE) || '{}') || {};
+    const synced = driveSync.getSettings().speakingProgress;
+    const legacy = JSON.parse(localStorage.getItem(PROGRESS_STORAGE) || '{}') || {};
+    const saved = synced && typeof synced === 'object' ? synced : legacy;
     return { ...defaults, ...saved, completed: Array.isArray(saved.completed) ? saved.completed : [] };
   } catch {
     return defaults;
@@ -30,10 +36,11 @@ function readProgress() {
 
 function writeProgress(progress) {
   localStorage.setItem(PROGRESS_STORAGE, JSON.stringify(progress));
+  driveSync.updateSettings({ speakingProgress: progress });
 }
 
 function getGeminiKey() {
-  return localStorage.getItem(GEMINI_KEY_STORAGE) || '';
+  return getGeminiSettings().apiKey || '';
 }
 
 function navigate(view, onNavigate) {
@@ -108,12 +115,13 @@ function renderCatalog(container, onNavigate) {
     <div class="speaking-curriculum-heading"><div><h2>Choose a ${escapeHtml(learnerLevel)} lesson</h2><p>Practise longer answers, precise vocabulary, negotiation, discussion, and natural self-correction.</p></div><span id="speaking-result-count"></span></div>
     <div class="speaking-lesson-grid" id="speaking-lesson-grid"></div>
     <section class="free-conversation-card"><div class="free-chat-icon"><i class="fa-solid fa-comment-dots"></i><i class="fa-solid fa-comment"></i></div><div><span>${escapeHtml(learnerLevel)} open practice</span><h2>Free conversation</h2><p>Choose any topic; Mira will expect detailed answers, follow-up reasoning, and natural paraphrasing.</p><div class="free-topic-pills"><span>Current events</span><span>Work and study</span><span>Culture</span><span>Surprise me</span></div></div><button id="start-free-conversation">Start free chat <i class="fa-solid fa-wave-square"></i></button></section>
-    <aside class="speaking-privacy-note"><i class="fa-solid fa-shield-halved"></i><div><strong>Your privacy matters</strong><p>Gemini connects only after you press Start. Your key and speaking progress stay in this browser and are never copied to Google Drive.</p></div></aside>
+    <aside class="speaking-privacy-note"><i class="fa-solid fa-shield-halved"></i><div><strong>Your privacy matters</strong><p>Gemini connects only after you press Start. Your key stays in KeepVocab storage and joins your private Drive backup when sync is enabled.</p></div></aside>
   </section>`;
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 
   container.querySelector('#speaking-continue').addEventListener('click', () => renderLessonPreview(container, lastLesson.id, onNavigate));
   container.querySelector('#start-free-conversation').addEventListener('click', () => renderLessonPreview(container, FREE_CONVERSATION_LESSON.id, onNavigate));
-  container.querySelector('#speaking-settings').addEventListener('click', () => renderConnectionSetup(container, null, onNavigate));
+  container.querySelector('#speaking-settings').addEventListener('click', () => navigate('settings', onNavigate));
   container.querySelectorAll('[data-speaking-category]').forEach(button => button.addEventListener('click', () => {
     categoryFilter = button.dataset.speakingCategory;
     container.querySelectorAll('[data-speaking-category]').forEach(item => item.classList.toggle('active', item === button));
@@ -132,50 +140,24 @@ function renderCatalog(container, onNavigate) {
   renderLessons();
 }
 
-function renderConnectionSetup(container, lessonId, onNavigate) {
-  const savedKey = getGeminiKey();
-  container.innerHTML = `<section class="full-view-stack speaking-setup-shell"><button class="speaking-back" id="setup-back"><i class="fa-solid fa-arrow-left"></i> ${lessonId ? 'Lesson' : 'AI Speaking'}</button>
-    <div class="spec-card speaking-setup-card"><div class="setup-icon"><i class="fa-solid fa-satellite-dish"></i></div><span class="eyebrow">One-time connection</span><h1>Connect Gemini Live</h1><p>Gemini provides the live voice conversation. For this local installation, enter a personal Gemini API key. It is stored only in this browser and is never added to Drive backups.</p>
-      <form id="gemini-key-form"><label for="gemini-key-input">Gemini API key</label><div class="key-input-row"><input type="password" id="gemini-key-input" value="${escapeHtml(savedKey)}" autocomplete="off" placeholder="AIza…" required><button type="button" id="toggle-gemini-key" aria-label="Show or hide API key"><i class="fa-solid fa-eye"></i></button></div>
-        <label class="local-key-consent"><input type="checkbox" id="gemini-key-consent" required><span>I understand this direct-key option is for my private localhost installation, not a public website.</span></label>
-        <p id="gemini-key-status" class="form-message" role="status"></p>
-        <div class="setup-actions"><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Get a key in Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square"></i></a><button class="btn-green-solid">Save on this device</button></div>
-      </form>
-      ${savedKey ? '<button class="clear-local-key" id="clear-gemini-key"><i class="fa-solid fa-trash"></i> Remove saved key</button>' : ''}
-      <div class="production-auth-note"><i class="fa-solid fa-circle-info"></i><p>A public deployment should issue short-lived ephemeral tokens from a server. KeepVocab uses the direct key only because this build runs privately on <strong>127.0.0.1:8085</strong>.</p></div>
-    </div></section>`;
-  container.querySelector('#setup-back').addEventListener('click', () => lessonId ? renderLessonPreview(container, lessonId, onNavigate) : renderCatalog(container, onNavigate));
-  container.querySelector('#toggle-gemini-key').addEventListener('click', event => {
-    const input = container.querySelector('#gemini-key-input');
-    input.type = input.type === 'password' ? 'text' : 'password';
-    event.currentTarget.querySelector('i').className = `fa-solid ${input.type === 'password' ? 'fa-eye' : 'fa-eye-slash'}`;
-  });
-  container.querySelector('#gemini-key-form').addEventListener('submit', event => {
-    event.preventDefault();
-    const key = container.querySelector('#gemini-key-input').value.trim();
-    if (key.length < 20) { container.querySelector('#gemini-key-status').textContent = 'That key looks incomplete.'; return; }
-    localStorage.setItem(GEMINI_KEY_STORAGE, key);
-    container.querySelector('#gemini-key-status').textContent = 'Saved only on this device.';
-    window.setTimeout(() => lessonId ? renderLessonPreview(container, lessonId, onNavigate) : renderCatalog(container, onNavigate), 550);
-  });
-  container.querySelector('#clear-gemini-key')?.addEventListener('click', () => { localStorage.removeItem(GEMINI_KEY_STORAGE); renderConnectionSetup(container, lessonId, onNavigate); });
-}
-
 function renderLessonPreview(container, lessonId, onNavigate) {
   const lesson = getSpeakingLesson(lessonId);
   if (!lesson) return renderCatalog(container, onNavigate);
   const category = CATEGORY_BY_ID.get(lesson.category);
   const hasKey = Boolean(getGeminiKey());
   const lessonPlan = getLessonPlan(lesson);
+  const vocabularyTargets = selectSpeakingTargets(driveSync.getWords(), { limit: 3 });
   container.innerHTML = `<section class="full-view-stack speaking-preview-shell"><button class="speaking-back" id="lesson-back"><i class="fa-solid fa-arrow-left"></i> All lessons</button>
     <div class="speaking-preview-card">
       <div class="preview-main"><div class="preview-lesson-icon ${category?.tone || 'green'}"><i class="fa-solid ${lessonIcon(lesson)}"></i></div><span class="eyebrow">${escapeHtml(category?.label || 'Open practice')} · ${escapeHtml(lesson.level)}</span><h1>${escapeHtml(lesson.title)}</h1><p class="preview-goal">${escapeHtml(lesson.goal)}</p>
         <div class="role-play-box"><i class="fa-solid fa-masks-theater"></i><div><strong>Your role</strong><span>${escapeHtml(lesson.learnerRole)}</span></div><i class="fa-solid fa-arrow-right"></i><div><strong>Mira’s role</strong><span>${escapeHtml(lesson.coachRole)}</span></div></div>
+        ${vocabularyTargets.length ? `<div class="speaking-vocabulary-targets"><span>Words to activate</span><div>${vocabularyTargets.map(word => `<button type="button" title="${escapeHtml(word.definition)}">${escapeHtml(word.word)}</button>`).join('')}</div><small>Mira will create natural openings for these words without giving them away.</small></div>` : ''}
         <div class="target-phrases"><span>Try these phrases</span>${lesson.targetPhrases.map(phrase => `<button data-copy-phrase="${escapeHtml(phrase)}"><i class="fa-regular fa-copy"></i> ${escapeHtml(phrase)}</button>`).join('')}</div>
-        <div class="preview-actions"><button class="btn-green-solid start-live-lesson" id="start-live-lesson"><i class="fa-solid fa-microphone"></i> ${hasKey ? 'Start live lesson' : 'Connect Gemini to start'}</button><span><i class="fa-regular fa-clock"></i> About ${lesson.duration} minutes</span></div>
+        <div class="preview-actions"><button class="btn-green-solid start-live-lesson" id="start-live-lesson"><i class="fa-solid fa-microphone"></i> ${hasKey ? 'Start live lesson' : 'Set up Gemini to start'}</button><button class="status-pill offline" id="cant-speak-now"><i class="fa-solid fa-keyboard"></i> Can’t speak now</button><span><i class="fa-regular fa-clock"></i> About ${lesson.duration} minutes</span></div>
       </div>
       <aside class="preview-side lesson-plan-side"><div class="preview-orb-wrap">${renderVoiceOrb('preview')}</div><h2>Your lesson plan</h2><ol class="lesson-plan-list">${lessonPlan.map(step => `<li><b>${escapeHtml(step.phase)}</b><span>${escapeHtml(step.detail)}</span></li>`).join('')}</ol><p class="mic-privacy"><i class="fa-solid fa-lock"></i> Your microphone starts only after you press Start and allow access.</p></aside>
     </div></section>`;
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   container.querySelector('#lesson-back').addEventListener('click', () => renderCatalog(container, onNavigate));
   container.querySelectorAll('[data-copy-phrase]').forEach(button => button.addEventListener('click', async () => {
     await navigator.clipboard?.writeText(button.dataset.copyPhrase);
@@ -183,12 +165,13 @@ function renderLessonPreview(container, lessonId, onNavigate) {
     window.setTimeout(() => button.classList.remove('copied'), 700);
   }));
   container.querySelector('#start-live-lesson').addEventListener('click', () => {
-    if (!getGeminiKey()) return renderConnectionSetup(container, lesson.id, onNavigate);
-    startLiveLesson(container, lesson, onNavigate);
+    if (!getGeminiKey()) return navigate('settings', onNavigate);
+    startLiveLesson(container, lesson, vocabularyTargets, onNavigate);
   });
+  container.querySelector('#cant-speak-now').addEventListener('click', () => navigate('useit', onNavigate));
 }
 
-async function startLiveLesson(container, lesson, onNavigate) {
+async function startLiveLesson(container, lesson, vocabularyTargets, onNavigate) {
   if (activeSession) await activeSession.disconnect();
   activeSession = new GeminiLiveSession();
   const transcript = [];
@@ -243,9 +226,10 @@ async function startLiveLesson(container, lesson, onNavigate) {
         <div class="live-controls"><button id="interrupt-live-coach" class="live-control interrupt" hidden><i class="fa-solid fa-hand"></i><span>Stop Mira</span></button><button id="toggle-live-mic" class="live-control"><i class="fa-solid fa-microphone"></i><span>Mute</span></button><button id="end-live-lesson" class="end-lesson-button"><i class="fa-solid fa-stop"></i><span>End lesson</span></button></div>
         <form id="live-text-fallback" class="live-text-fallback"><input id="live-text-input" placeholder="Or type a reply" autocomplete="off"><button aria-label="Send typed reply"><i class="fa-solid fa-paper-plane"></i></button></form>
       </main>
-      <aside class="live-side-panel"><div class="live-goal-card"><span>Lesson goal</span><p>${escapeHtml(lesson.goal)}</p></div><div class="live-plan-card"><span>Today’s route</span><ol>${getLessonPlan(lesson).map(step => `<li>${escapeHtml(step.phase)}</li>`).join('')}</ol></div><div class="live-phrase-card"><span>Try a target phrase</span><strong id="live-target-phrase">${escapeHtml(lesson.targetPhrases[0])}</strong><button id="next-live-phrase">Another phrase <i class="fa-solid fa-rotate"></i></button></div><div class="live-transcript-card"><div><span>Live transcript</span><small>Generated by Gemini</small></div><div id="live-transcript" class="live-transcript" aria-live="polite"></div></div></aside>
+      <aside class="live-side-panel"><div class="live-goal-card"><span>Lesson goal</span><p>${escapeHtml(lesson.goal)}</p></div>${vocabularyTargets.length ? `<div class="live-vocabulary-card"><span>Words to activate</span><div>${vocabularyTargets.map(word => `<b>${escapeHtml(word.word)}</b>`).join('')}</div></div>` : ''}<div class="live-plan-card"><span>Today’s route</span><ol>${getLessonPlan(lesson).map(step => `<li>${escapeHtml(step.phase)}</li>`).join('')}</ol></div><div class="live-phrase-card"><span>Try a target phrase</span><strong id="live-target-phrase">${escapeHtml(lesson.targetPhrases[0])}</strong><button id="next-live-phrase">Another phrase <i class="fa-solid fa-rotate"></i></button></div><div class="live-transcript-card"><div><span>Live transcript</span><small>Generated by Gemini</small></div><div id="live-transcript" class="live-transcript" aria-live="polite"></div></div></aside>
     </div>
   </section>`;
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   renderTranscript();
 
   const session = activeSession;
@@ -260,7 +244,7 @@ async function startLiveLesson(container, lesson, onNavigate) {
   session.addEventListener('error', event => showLiveError(
     container,
     event.detail?.message || 'The live connection stopped.',
-    () => renderConnectionSetup(container, lesson.id, onNavigate)
+    () => navigate('settings', onNavigate)
   ));
 
   sessionTimer = window.setInterval(() => {
@@ -293,20 +277,20 @@ async function startLiveLesson(container, lesson, onNavigate) {
     sessionTimer = null;
     await session.disconnect();
     if (activeSession === session) activeSession = null;
-    completeSpeakingLesson(container, lesson, transcript, Math.max(1, Math.round((Date.now() - startedAt) / 60000)), onNavigate);
+    completeSpeakingLesson(container, lesson, vocabularyTargets, transcript, Math.max(1, Math.round((Date.now() - startedAt) / 60000)), onNavigate);
   };
   container.querySelector('#end-live-lesson').addEventListener('click', finish);
   container.querySelector('#live-back').addEventListener('click', finish);
 
   try {
     await session.prepareAudioOutput();
-    await session.connect({ apiKey: getGeminiKey(), instruction: buildSpeakingInstruction(lesson) });
+    await session.connect({ apiKey: getGeminiKey(), model: getGeminiSettings().liveModel, instruction: `${buildSpeakingInstruction(lesson)}${buildVocabularySpeakingInstruction(vocabularyTargets)}` });
     await session.startMicrophone();
     session.sendText(buildCoachInitiativeCue(lesson, 'start'));
     scheduleInitiative();
   } catch (error) {
     clearInitiativeTimer();
-    showLiveError(container, error.message, () => renderConnectionSetup(container, lesson.id, onNavigate));
+    showLiveError(container, error.message, () => navigate('settings', onNavigate));
   }
 }
 
@@ -320,18 +304,24 @@ function showLiveError(container, message, onSetup) {
   container.querySelector('#live-error-setup')?.addEventListener('click', onSetup);
 }
 
-function completeSpeakingLesson(container, lesson, transcript, minutes, onNavigate) {
+function completeSpeakingLesson(container, lesson, vocabularyTargets, transcript, minutes, onNavigate) {
   const progress = readProgress();
   progress.completed = [...new Set([...(progress.completed || []), lesson.id])];
   progress.lastLessonId = lesson.id;
   progress.lastCompletedAt = new Date().toISOString();
   writeProgress(progress);
+  recordSpeakingStats({ minutes });
   const learnerTurns = transcript.filter(entry => entry.role === 'learner').length;
   const usedPhrases = lesson.targetPhrases.filter(phrase => transcript.some(entry => entry.role === 'learner' && entry.text.toLowerCase().includes(phrase.replace(/[.…?]/g, '').toLowerCase().slice(0, 10))));
+  const activations = storeSpeakingActivations(vocabularyTargets, transcript, driveSync);
+  const highlights = speakingSessionHighlights(transcript, activations);
   container.innerHTML = `<section class="speaking-summary-shell"><div class="speaking-summary-card"><div class="summary-celebration" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><span><i class="fa-solid fa-check"></i></span></div><span class="eyebrow">Lesson complete</span><h1>Nice work — you showed up and spoke.</h1><p>${escapeHtml(lesson.title)} is now part of your speaking progress.</p><div class="summary-metrics"><div><strong>${minutes}</strong><span>minutes</span></div><div><strong>${learnerTurns}</strong><span>your turns</span></div><div><strong>${usedPhrases.length}/${lesson.targetPhrases.length}</strong><span>target phrases</span></div></div>
+    ${vocabularyTargets.length ? `<div class="speaking-activation-summary"><div><span>Activated</span><strong>${highlights.used.length ? highlights.used.map(word => escapeHtml(word.word)).join(' · ') : 'None yet'}</strong></div><div><span>Try next time</span><strong>${highlights.unused.length ? highlights.unused.map(word => escapeHtml(word.word)).join(' · ') : 'All target words used'}</strong></div></div>` : ''}
+    ${highlights.strongest.length ? `<div class="summary-strong-responses"><span>Your strongest response${highlights.strongest.length > 1 ? 's' : ''}</span>${highlights.strongest.map(text => `<blockquote>“${escapeHtml(text)}”</blockquote>`).join('')}</div>` : ''}
     <div class="summary-takeaway"><i class="fa-solid fa-lightbulb"></i><div><strong>Keep one phrase</strong><p>${escapeHtml(usedPhrases[0] || lesson.targetPhrases[0])}</p></div></div>
     <div class="summary-actions"><button class="btn-green-solid" id="summary-again">Practice again</button><button class="status-pill offline" id="summary-lessons">All lessons</button></div></div>
     <div class="summary-transcript spec-card"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-align-left"></i> Session transcript</div><span>${transcript.length} turns</span></div>${transcript.length ? transcript.map(entry => `<div class="transcript-turn ${entry.role}"><span>${entry.role === 'coach' ? 'Mira' : 'You'}</span><p>${escapeHtml(entry.text)}</p></div>`).join('') : '<p class="summary-empty">No transcript was received. You still completed the practice session.</p>'}</div></section>`;
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   container.querySelector('#summary-again').addEventListener('click', () => renderLessonPreview(container, lesson.id, onNavigate));
   container.querySelector('#summary-lessons').addEventListener('click', () => renderCatalog(container, onNavigate));
 }

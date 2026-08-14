@@ -1,9 +1,9 @@
-import { driveSync } from '../services/driveSync.js?v=42';
-import { findRelevantImages } from '../services/imageSearch.js?v=42';
-import { updateWordRepetition } from '../services/srsEngine.js?v=42';
-import { playInteractionSound } from '../services/interactionSound.js?v=49';
+import { driveSync } from '../services/driveSync.js?v=63';
+import { findRelevantImages } from '../services/imageSearch.js?v=63';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
+import { playInteractionSound } from '../services/interactionSound.js?v=63';
 import { escapeHtml } from '../utils/html.js';
-import { stableWordChoices } from './PracticeModes.js?v=49';
+import { stableWordChoices } from './PracticeModes.js?v=63';
 
 function shuffle(items) {
   const result = [...items];
@@ -179,7 +179,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
         playInteractionSound(isCorrect ? 'correct' : 'wrong');
         if (isCorrect) score += 1;
         if (!isCorrect && !retried.has(target.word.id)) { retried.add(target.word.id); queue.push(target); }
-        updateWordRepetition(target.word.id, isCorrect ? 'good' : 'again');
+        recordExerciseResult({ wordId: target.word.id, exerciseType: 'visual-match', correct: isCorrect, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: isCorrect ? '' : selectedId });
         window.dispatchEvent(new CustomEvent('keepvocab:progress'));
         render();
       }));

@@ -1,6 +1,6 @@
-import { driveSync } from '../services/driveSync.js?v=42';
-import { updateWordRepetition } from '../services/srsEngine.js?v=42';
-import { playInteractionSound } from '../services/interactionSound.js?v=49';
+import { driveSync } from '../services/driveSync.js?v=63';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
+import { playInteractionSound } from '../services/interactionSound.js?v=63';
 import { escapeHtml } from '../utils/html.js';
 
 function shuffle(items) {
@@ -77,7 +77,7 @@ export function renderMatchSprintMode(container, onNavigate) {
       resolvingPair = true;
       playInteractionSound('correct');
       render();
-      updateWordRepetition(id, missed.has(id) ? 'hard' : 'good');
+      recordExerciseResult({ wordId: id, exerciseType: 'match-sprint', correct: true, responseTimeMs: performance.now() - startedAt, hintsUsed: missed.has(id) ? 1 : 0, recallType: 'recognition', producedUnaided: false });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       window.setTimeout(() => {
         matched.add(id);
@@ -95,6 +95,7 @@ export function renderMatchSprintMode(container, onNavigate) {
     playInteractionSound('wrong');
     missed.add(selectedTerm);
     missed.add(selectedDefinition);
+    recordExerciseResult({ wordId: selectedTerm, exerciseType: 'match-sprint', correct: false, responseTimeMs: performance.now() - startedAt, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: selectedDefinition });
     wrongPair = { term: selectedTerm, definition: selectedDefinition };
     resolvingPair = true;
     render();

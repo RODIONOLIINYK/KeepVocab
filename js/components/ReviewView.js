@@ -1,7 +1,8 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=42';
-import { speakWord } from '../services/speechService.js?v=43';
-import { getDueWords, updateWordRepetition } from '../services/srsEngine.js?v=42';
-import { playInteractionSound } from '../services/interactionSound.js?v=49';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=63';
+import { speakWord } from '../services/speechService.js?v=63';
+import { getDueWords } from '../services/srsEngine.js?v=63';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
+import { playInteractionSound } from '../services/interactionSound.js?v=63';
 import { escapeHtml } from '../utils/html.js';
 
 function normalizeAnswer(value) {
@@ -17,6 +18,7 @@ export function renderReviewView(container, onNavigate) {
   let score = 0;
   let answered = false;
   let correct = false;
+  let questionStartedAt = performance.now();
 
   const goTo = view => {
     if (window.location.hash === `#${view}`) onNavigate(view);
@@ -36,13 +38,13 @@ export function renderReviewView(container, onNavigate) {
 
           ${originalCount === 0 ? `
             <div class="useful-empty-state">
-              <img class="mascot-result" src="assets/keepvocab-sprig-celebrate.png" alt="Sprig celebrating">
+              <img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating">
               <h2>All caught up</h2>
               <p>No words are due in this notebook. Choose a learning mode from the dashboard if you want extra practice.</p>
               <div class="inline-actions"><button class="btn-green-solid" id="review-go-dashboard">Open learning modes</button><button class="status-pill offline" id="review-go-library">Open library</button></div>
             </div>` : complete ? `
             <div class="useful-empty-state mode-complete">
-              <img class="mascot-result" src="assets/keepvocab-sprig-celebrate.png" alt="Sprig celebrating">
+              <img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating">
               <h2>Review complete</h2>
               <p>You typed ${score} of ${originalCount} due words correctly. Missed words were repeated once.</p>
               <div class="review-score-orb"><strong>${score}</strong><span>correct</span></div>
@@ -86,7 +88,15 @@ export function renderReviewView(container, onNavigate) {
         retried.add(current.id);
         queue.push(current);
       }
-      updateWordRepetition(current.id, correct ? 'good' : 'again');
+      recordExerciseResult({
+        wordId: current.id,
+        exerciseType: 'typed-review',
+        correct,
+        responseTimeMs: performance.now() - questionStartedAt,
+        hintsUsed: 0,
+        recallType: 'free-recall',
+        producedUnaided: correct
+      });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       answered = true;
       render();
@@ -95,6 +105,7 @@ export function renderReviewView(container, onNavigate) {
       index += 1;
       answered = false;
       correct = false;
+      questionStartedAt = performance.now();
       render();
     });
     container.querySelector('#review-answer')?.focus();

@@ -1,142 +1,61 @@
-// Visual 3D Flip Flashcards Component
+import { driveSync } from '../services/driveSync.js?v=63';
+import { speakWord } from '../services/speechService.js?v=63';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
+import { getRatingPreviews } from '../services/srsEngine.js?v=63';
+import { escapeHtml } from '../utils/html.js';
 
-import { driveSync } from '../services/driveSync.js?v=42';
-import { speakWord } from '../services/speechService.js?v=43';
-import { updateWordRepetition } from '../services/srsEngine.js?v=42';
+function go(view, onNavigate) {
+  if (window.location.hash === `#${view}`) onNavigate(view);
+  else window.location.hash = view;
+}
 
 export function renderFlashcardsMode(container, onNavigate) {
-  const activeNotebook = driveSync.getActiveNotebook();
-  const words = driveSync.getWords().filter(w => w.notebook === activeNotebook);
-
-  if (words.length === 0) {
-    container.innerHTML = `
-      <div class="glass-card" style="text-align: center; padding: 48px;">
-        <i class="fa-solid fa-folder-open" style="font-size: 3rem; color: var(--text-dim); margin-bottom: 16px;"></i>
-        <h2>No Words in "${activeNotebook}"</h2>
-        <p style="color: var(--text-muted); margin: 12px 0 24px;">Add a word to start learning with visual 3D flashcards!</p>
-        <button class="btn btn-primary" id="btn-add-first-flashcard"><i class="fa-solid fa-plus"></i> Quick Add Word</button>
-      </div>
-    `;
-    container.querySelector('#btn-add-first-flashcard').addEventListener('click', () => {
-      document.getElementById('quick-add-modal').classList.add('active');
-    });
+  const words = driveSync.getWords();
+  if (!words.length) {
+    container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow">Flashcards</span><h1>Your first card is waiting</h1><p>Add a word and KeepVocab will preserve its exact meaning, example, and visual cue.</p><button class="btn-green-solid" id="flashcard-add">Add vocabulary</button></section>`;
+    container.querySelector('#flashcard-add').addEventListener('click', () => document.getElementById('quick-add-modal')?.classList.add('active'));
     return;
   }
 
   let currentIndex = 0;
-  let isFlipped = false;
+  let revealed = false;
 
-  function renderCard() {
-    const word = words[currentIndex];
-
-    container.innerHTML = `
-      <div style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <button class="btn btn-outline" id="btn-back-dashboard"><i class="fa-solid fa-arrow-left"></i> Exit Gym</button>
-          <span style="font-size: 0.9rem; color: var(--text-muted);">
-            Card <strong>${currentIndex + 1}</strong> of <strong>${words.length}</strong>
-          </span>
-          <button class="btn-icon" id="btn-speak-word" title="Speak Word"><i class="fa-solid fa-volume-high"></i></button>
-        </div>
-
-        <!-- 3D Flip Card Container -->
-        <div class="flashcard-wrapper ${isFlipped ? 'flipped' : ''}" id="flashcard-card">
-          <div class="flashcard-inner">
-            <!-- Front of Flashcard -->
-            <div class="flashcard-front">
-              <img src="${word.imageUrl}" alt="${word.word}" class="flashcard-img" onerror="this.src='https://picsum.photos/seed/${encodeURIComponent(word.word)}/600/400'">
-              <div class="flashcard-word">${word.word}</div>
-              <div class="flashcard-phonetic">${word.phonetic}</div>
-              <div style="margin-top: 14px; font-size: 0.8rem; color: var(--text-dim);">
-                <i class="fa-solid fa-hand-pointer"></i> Click card or press <kbd>Space</kbd> to flip
-              </div>
-            </div>
-
-            <!-- Back of Flashcard -->
-            <div class="flashcard-back">
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                <span class="badge" style="background: var(--primary); color: #000;">${word.partOfSpeech}</span>
-                <span style="font-size: 0.85rem; color: var(--text-muted);">${word.notebook}</span>
-              </div>
-              <div class="flashcard-def">"${word.definition}"</div>
-              ${word.example ? `<div class="flashcard-example">"${word.example}"</div>` : ''}
-
-              <div style="margin-top: 20px; font-size: 0.8rem; color: var(--text-dim);">
-                Leitner Box: <strong>Box ${word.box || 1}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Controls & Grading Bar -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-          <button class="btn btn-secondary" id="btn-prev-card" ${currentIndex === 0 ? 'disabled' : ''}>
-            <i class="fa-solid fa-chevron-left"></i> Previous
-          </button>
-
-          <div style="display: flex; gap: 10px;">
-            <button class="btn btn-outline" style="border-color: var(--accent-danger);" id="btn-grade-again">
-              <i class="fa-solid fa-rotate-left"></i> Again
-            </button>
-            <button class="btn btn-primary" id="btn-grade-good">
-              <i class="fa-solid fa-circle-check"></i> Good
-            </button>
-          </div>
-
-          <button class="btn btn-secondary" id="btn-next-card" ${currentIndex === words.length - 1 ? 'disabled' : ''}>
-            Next <i class="fa-solid fa-chevron-right"></i>
-          </button>
-        </div>
-      </div>
-    `;
-
-    // Event Bindings
-    const cardEl = container.querySelector('#flashcard-card');
-    cardEl.addEventListener('click', () => {
-      isFlipped = !isFlipped;
-      cardEl.classList.toggle('flipped', isFlipped);
-    });
-
-    container.querySelector('#btn-speak-word').addEventListener('click', (e) => {
-      e.stopPropagation();
-      speakWord(word.word, 'en-US', 0.9, word.audioUrl);
-    });
-
-    container.querySelector('#btn-back-dashboard').addEventListener('click', () => onNavigate('dashboard'));
-
-    container.querySelector('#btn-prev-card').addEventListener('click', () => {
-      if (currentIndex > 0) {
-        currentIndex--;
-        isFlipped = false;
-        renderCard();
-      }
-    });
-
-    container.querySelector('#btn-next-card').addEventListener('click', () => {
-      if (currentIndex < words.length - 1) {
-        currentIndex++;
-        isFlipped = false;
-        renderCard();
-      }
-    });
-
-    container.querySelector('#btn-grade-again').addEventListener('click', () => {
-      updateWordRepetition(word.id, 'again');
-      if (currentIndex < words.length - 1) currentIndex++;
-      isFlipped = false;
-      renderCard();
-    });
-
-    container.querySelector('#btn-grade-good').addEventListener('click', () => {
-      updateWordRepetition(word.id, 'good');
-      if (currentIndex < words.length - 1) currentIndex++;
-      isFlipped = false;
-      renderCard();
-    });
-
-    // Auto-speak on first show
-    speakWord(word.word, 'en-US', 0.9, word.audioUrl);
+  function move(delta) {
+    currentIndex = Math.min(words.length - 1, Math.max(0, currentIndex + delta));
+    revealed = false;
+    render();
   }
 
-  renderCard();
+  function render() {
+    const word = driveSync.getWords().find(item => item.id === words[currentIndex].id) || words[currentIndex];
+    const previews = getRatingPreviews(word);
+    const earlyStage = !word.mastery || Number(word.mastery.recall || 0) < .55;
+    const showImageOnPrompt = Boolean(word.imageUrl && earlyStage);
+    container.innerHTML = `<section class="flashcard-mode" aria-labelledby="flashcard-word"><header class="exercise-topbar"><button class="status-pill offline" id="flashcard-exit"><i class="fa-solid fa-arrow-left"></i> Exit</button><div class="exercise-progress"><span>${currentIndex + 1} of ${words.length}</span><i><b style="width:${Math.round((currentIndex + 1) / words.length * 100)}%"></b></i></div><button class="audio-btn-circle" id="flashcard-speak" aria-label="Hear ${escapeHtml(word.word)}"><i class="fa-solid fa-volume-high"></i></button></header>
+      <button class="smart-flashcard ${revealed ? 'revealed' : ''}" id="flashcard-reveal" aria-expanded="${revealed}">
+        <div class="smart-flashcard-prompt">${showImageOnPrompt ? `<img src="${escapeHtml(word.imageUrl)}" alt="Visual cue for ${escapeHtml(word.word)}">` : ''}<span class="eyebrow">${showImageOnPrompt ? 'Image-supported review' : 'Recall the meaning'}</span><h1 id="flashcard-word">${escapeHtml(word.word)}</h1><p>${escapeHtml(word.phonetic || '')}</p><small><i class="fa-solid fa-hand-pointer"></i> Tap or press Space to reveal</small></div>
+        <div class="smart-flashcard-answer"><span class="eyebrow">${escapeHtml(word.partOfSpeech || 'word')}</span><h2>${escapeHtml(word.definition)}</h2>${word.example ? `<blockquote>“${escapeHtml(word.example)}”</blockquote>` : ''}${word.imageUrl && !showImageOnPrompt ? `<img src="${escapeHtml(word.imageUrl)}" alt="Memory image for ${escapeHtml(word.word)}">` : ''}</div>
+      </button>
+      ${revealed ? `<div class="flashcard-rating" aria-label="How well did you remember?"><p>How well did you remember?</p><div>${['again','hard','good','easy'].map(rating => `<button class="flashcard-grade ${rating}" data-flashcard-rating="${rating}"><strong>${rating[0].toUpperCase() + rating.slice(1)}</strong><span>${escapeHtml(previews[rating].label)}</span></button>`).join('')}</div></div>` : '<p class="flashcard-guidance">Think of the exact meaning before revealing the card.</p>'}
+      <div class="flashcard-nav"><button class="status-pill offline" id="flashcard-prev" ${currentIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i> Previous</button><button class="status-pill offline" id="flashcard-next" ${currentIndex === words.length - 1 ? 'disabled' : ''}>Next <i class="fa-solid fa-chevron-right"></i></button></div></section>`;
+    container.querySelector('#flashcard-exit').addEventListener('click', () => go('dashboard', onNavigate));
+    container.querySelector('#flashcard-speak').addEventListener('click', () => speakWord(word.word, 'en-US', .9, word.audioUrl));
+    container.querySelector('#flashcard-reveal').addEventListener('click', () => { revealed = !revealed; render(); });
+    container.querySelector('#flashcard-prev').addEventListener('click', () => move(-1));
+    container.querySelector('#flashcard-next').addEventListener('click', () => move(1));
+    container.querySelectorAll('[data-flashcard-rating]').forEach(button => button.addEventListener('click', () => {
+      const rating = button.dataset.flashcardRating;
+      recordExerciseResult({ wordId: word.id, exerciseType: 'flashcards', correct: rating !== 'again', hintsUsed: showImageOnPrompt ? 1 : 0, recallType: 'recognition', learnerRating: rating });
+      if (currentIndex < words.length - 1) move(1); else { revealed = false; render(); }
+    }));
+    const keyHandler = event => {
+      if (!container.querySelector('.flashcard-mode')) return;
+      if (event.target.matches('input,textarea,select')) return;
+      if (event.code === 'Space') { event.preventDefault(); revealed = !revealed; render(); }
+      if (event.key === 'ArrowLeft' && currentIndex > 0) move(-1);
+      if (event.key === 'ArrowRight' && currentIndex < words.length - 1) move(1);
+    };
+    container.onkeydown = keyHandler;
+  }
+  render();
 }
