@@ -222,6 +222,21 @@ body {
   gap: 16px;
 }
 
+#btn-header-quick-add {
+  flex: 0 0 auto;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-right: 8px;
+  padding: 9px 16px;
+  border-radius: var(--radius-pill);
+  font-size: .85rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .badge-pill {
   display: inline-flex;
   align-items: center;
@@ -261,6 +276,8 @@ body {
 .keep-banner.connected { background: #f0fdf4; border: 1px solid #86efac; }
 
 .banner-info {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -288,6 +305,7 @@ body {
 .keep-banner.connected .banner-text-sub { color: #15803d; }
 
 .banner-actions {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -313,6 +331,12 @@ body {
 .status-pill.offline { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
 
 .btn-connect-auth {
+  flex: 0 0 auto;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   background: #16a34a;
   color: #ffffff;
   padding: 8px 18px;
@@ -322,6 +346,8 @@ body {
   border: none;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .btn-connect-auth:hover { background: #15803d; }
@@ -931,8 +957,33 @@ body {
 @keyframes gentle-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
 @media (max-width: 1100px) {
-  .header-nav { padding-left: 20px; padding-right: 20px; }
+  .header-nav { gap: 12px; padding-left: 20px; padding-right: 20px; }
+  .nav-brand, .nav-user-area { flex: 0 0 auto; }
+  .nav-links { flex: 1 1 auto; justify-content: center; gap: 2px; min-width: 0; }
+  .nav-link-item { gap: 6px; padding: 8px 10px; font-size: .84rem; white-space: nowrap; }
   .nav-user-area .badge-pill { display: none; }
+}
+
+@media (min-width: 721px) and (max-width: 800px) {
+  .header-nav {
+    height: auto;
+    min-height: calc(64px + env(safe-area-inset-top));
+    padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .nav-links {
+    order: 3;
+    flex: 0 0 100%;
+    width: 100%;
+    justify-content: space-between;
+    gap: 3px;
+  }
+
+  .nav-link-item { padding: 7px 8px; gap: 4px; font-size: .74rem; }
+  .nav-user-area { gap: 6px; }
+  #btn-header-quick-add { margin-right: 0; padding: 8px 12px; }
 }
 
 @media (max-width: 720px) {

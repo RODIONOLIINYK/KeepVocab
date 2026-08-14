@@ -1,6 +1,7 @@
 import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=42';
 import { speakWord } from '../services/speechService.js?v=43';
 import { getDueWords, updateWordRepetition } from '../services/srsEngine.js?v=42';
+import { playInteractionSound } from '../services/interactionSound.js?v=49';
 import { escapeHtml } from '../utils/html.js';
 
 function normalizeAnswer(value) {
@@ -63,7 +64,7 @@ export function renderReviewView(container, onNavigate) {
                 <div class="inline-actions"><button class="status-pill offline" id="review-speak"><i class="fa-solid fa-volume-high"></i> Hear answer</button><button class="btn-green-solid" id="review-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button></div>` : `
                 <form class="practice-answer-form" id="review-form">
                   <input id="review-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word" aria-label="Review answer">
-                  <button class="btn-green-solid">Check</button>
+                  <button class="btn-green-solid" data-sound="none">Check</button>
                 </form>`}
             </div>`}
         </div>
@@ -79,6 +80,7 @@ export function renderReviewView(container, onNavigate) {
       const answer = container.querySelector('#review-answer').value;
       if (!answer.trim()) return;
       correct = normalizeAnswer(answer) === normalizeAnswer(current.word);
+      playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
       if (!correct && !retried.has(current.id)) {
         retried.add(current.id);

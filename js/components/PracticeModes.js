@@ -1,6 +1,7 @@
 import { driveSync } from '../services/driveSync.js?v=42';
 import { speakWord } from '../services/speechService.js?v=43';
 import { updateWordRepetition } from '../services/srsEngine.js?v=42';
+import { playInteractionSound } from '../services/interactionSound.js?v=49';
 import { escapeHtml } from '../utils/html.js';
 
 function activeWords() {
@@ -74,7 +75,7 @@ export function renderSpellingMode(container, onNavigate) {
           <blockquote>${escapeHtml(word.definition)}</blockquote>
           <div class="listen-controls"><button class="audio-btn-circle large" id="spell-listen" aria-label="Play word"><i class="fa-solid fa-volume-high"></i></button><button class="status-pill offline" id="spell-listen-slow"><i class="fa-solid fa-gauge-simple-low"></i> Slow</button></div>
           <p class="speech-help" id="spell-audio-status" role="status" aria-live="polite">Tap the speaker to hear the word. Use Slow to repeat it clearly.</p>
-          ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word returns to Box 1 for another review.'}</span></div><button class="btn-green-solid" id="spell-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid">Check</button></form>`}
+          ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word returns to Box 1 for another review.'}</span></div><button class="btn-green-solid" id="spell-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
         </div>
       </div></section>`;
     container.querySelector('#spell-exit').addEventListener('click', () => go('dashboard', onNavigate));
@@ -96,6 +97,7 @@ export function renderSpellingMode(container, onNavigate) {
       const answer = container.querySelector('#spell-answer').value.trim().toLowerCase();
       if (!answer) return;
       correct = answer === word.word.toLowerCase();
+      playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
       if (!correct && !retried.has(word.id)) { retried.add(word.id); queue.push(word); }
       updateWordRepetition(word.id, correct ? 'easy' : 'again');
@@ -142,7 +144,7 @@ export function renderChooseWordMode(container, onNavigate) {
           <div class="choice-grid">${options.map(option => {
             const state = answered ? option.id === target.id ? ' correct' : option.id === selectedId ? ' incorrect' : '' : '';
             const icon = answered && option.id === target.id ? '<i class="fa-solid fa-check choice-result-icon" aria-hidden="true"></i>' : answered && option.id === selectedId ? '<i class="fa-solid fa-xmark choice-result-icon" aria-hidden="true"></i>' : '';
-            return `<button class="choice-button${state}" data-choice="${escapeHtml(option.id)}" ${answered ? 'disabled' : ''}><span>${escapeHtml(option.word)}</span>${icon}</button>`;
+            return `<button class="choice-button${state}" data-choice="${escapeHtml(option.id)}" data-sound="none" ${answered ? 'disabled' : ''}><span>${escapeHtml(option.word)}</span>${icon}</button>`;
           }).join('')}</div>
           <div class="answer-feedback-slot" aria-live="polite">${answered ? `${isCorrect ? '<span class="success-burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}<div class="answer-feedback-card ${isCorrect ? 'correct' : 'incorrect'}"><i class="fa-solid ${isCorrect ? 'fa-check' : 'fa-xmark'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${isCorrect ? 'Excellent!' : 'Not quite'}</strong><span>${isCorrect ? escapeHtml(target.example || 'You matched the meaning.') : `The correct answer is <b>${escapeHtml(target.word)}</b>. ${escapeHtml(target.example || '')}`}</span></div></div>` : ''}</div>
           <div class="answer-action-slot">${answered ? `<button class="btn-green-solid" id="choose-next">${index + 1 === queue.length ? 'See result' : 'Next question'}</button>` : ''}</div>
@@ -152,6 +154,7 @@ export function renderChooseWordMode(container, onNavigate) {
     container.querySelectorAll('[data-choice]').forEach(button => button.addEventListener('click', () => {
       selectedId = button.dataset.choice;
       const correct = selectedId === target.id;
+      playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
       if (!correct && !retried.has(target.id)) { retried.add(target.id); queue.push(target); }
       updateWordRepetition(target.id, correct ? 'good' : 'again');

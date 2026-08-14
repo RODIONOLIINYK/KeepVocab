@@ -7,6 +7,14 @@ const PROFILES = {
     { frequency: 659.25, duration: 0.09, volume: 0.05, type: 'sine', delay: 0.065 },
     { frequency: 783.99, duration: 0.12, volume: 0.045, type: 'sine', delay: 0.14 }
   ],
+  correct: [
+    { frequency: 659.25, duration: 0.065, volume: 0.043, type: 'sine' },
+    { frequency: 880, duration: 0.11, volume: 0.05, type: 'sine', delay: 0.055 }
+  ],
+  wrong: [
+    { frequency: 246.94, duration: 0.075, volume: 0.03, type: 'triangle' },
+    { frequency: 196, duration: 0.12, volume: 0.028, type: 'triangle', delay: 0.06 }
+  ],
   error: [
     { frequency: 311.13, duration: 0.09, volume: 0.04, type: 'triangle' },
     { frequency: 233.08, duration: 0.13, volume: 0.04, type: 'triangle', delay: 0.075 }

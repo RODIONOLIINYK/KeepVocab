@@ -18,11 +18,17 @@ test('next reminder rolls to tomorrow after the selected time', () => {
   assert.match(formatReminderTime('19:00', 'en-US'), /7:00 PM/);
 });
 
-test('interaction sounds stay short and use distinct success and error contours', () => {
+test('interaction sounds stay short and use distinct feedback contours', () => {
   const success = getInteractionSoundProfile('success');
   const error = getInteractionSoundProfile('error');
+  const correct = getInteractionSoundProfile('correct');
+  const wrong = getInteractionSoundProfile('wrong');
   assert.ok(success.length >= 2);
   assert.ok(success.at(-1).frequency > success[0].frequency);
   assert.ok(error.at(-1).frequency < error[0].frequency);
-  assert.ok([...success, ...error].every(tone => tone.duration <= 0.15));
+  assert.ok(correct.at(-1).frequency > correct[0].frequency);
+  assert.ok(wrong.at(-1).frequency < wrong[0].frequency);
+  assert.notDeepEqual(correct, success);
+  assert.notDeepEqual(wrong, error);
+  assert.ok([...success, ...error, ...correct, ...wrong].every(tone => tone.duration <= 0.15));
 });

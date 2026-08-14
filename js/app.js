@@ -8,15 +8,15 @@ import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/sync
 import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=42';
 import { findRelevantImages } from './services/imageSearch.js?v=42';
 import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=45';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=46';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=49';
 import { cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder } from './services/reminderService.js?v=46';
 
-import { renderReviewView } from './components/ReviewView.js?v=47';
-import { renderLibraryView } from './components/LibraryView.js?v=43';
+import { renderReviewView } from './components/ReviewView.js?v=49';
+import { renderLibraryView } from './components/LibraryView.js?v=51';
 import { renderStatsView } from './components/StatsView.js?v=42';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=47';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=42';
-import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=42';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=49';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=49';
+import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=49';
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=43';
 
 function localDateKey(date = new Date()) {

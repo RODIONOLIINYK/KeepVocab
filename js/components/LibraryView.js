@@ -109,6 +109,27 @@ export function renderLibraryView(container) {
       </article>`;
   }
 
+  function bindWordCardEvents() {
+    container.querySelectorAll('[data-speak]').forEach(button => button.addEventListener('click', () => speakWord(button.dataset.speak, 'en-US', 0.9, button.dataset.audioUrl)));
+    container.querySelectorAll('[data-edit-word]').forEach(button => button.addEventListener('click', () => { beginEditing(button.dataset.editWord); container.querySelector('#library-edit-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
+    container.querySelectorAll('[data-change-image]').forEach(button => button.addEventListener('click', () => { beginEditing(button.dataset.changeImage); container.querySelector('#library-edit-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
+    container.querySelectorAll('[data-delete-word]').forEach(button => button.addEventListener('click', () => { deleteId = button.dataset.deleteWord; render(); }));
+    container.querySelector('[data-cancel-delete]')?.addEventListener('click', () => { deleteId = null; render(); });
+    container.querySelector('[data-confirm-delete]')?.addEventListener('click', event => { driveSync.deleteWord(event.currentTarget.dataset.confirmDelete); deleteId = null; render(); });
+  }
+
+  function renderWordResults() {
+    const words = selectedWords();
+    const resultCount = container.querySelector('.library-result-count');
+    const grid = container.querySelector('.library-grid');
+    if (resultCount) resultCount.textContent = `${words.length} shown`;
+    if (!grid) return;
+    grid.innerHTML = words.length
+      ? words.map(wordCard).join('')
+      : '<div class="useful-empty-state compact"><h2>No matching words</h2><p>Try another search or progress filter.</p></div>';
+    bindWordCardEvents();
+  }
+
   function render() {
     duplicateImages = reusedImageUrls(driveSync.getWords());
     const archives = driveSync.getMonthlyArchives();
@@ -190,15 +211,10 @@ export function renderLibraryView(container) {
       if (activeMonthLabel) activeMonthLabel.textContent = selectedMonthYear;
       editId = null; deleteId = null; selectedImage = null; render();
     }));
-    container.querySelector('#library-search').addEventListener('input', event => { query = event.target.value; render(); container.querySelector('#library-search')?.focus(); });
+    container.querySelector('#library-search').addEventListener('input', event => { query = event.currentTarget.value; renderWordResults(); });
     container.querySelector('#library-filter').addEventListener('change', event => { filter = event.target.value; render(); });
     container.querySelector('#library-sort').addEventListener('change', event => { sort = event.target.value; render(); });
-    container.querySelectorAll('[data-speak]').forEach(button => button.addEventListener('click', () => speakWord(button.dataset.speak, 'en-US', 0.9, button.dataset.audioUrl)));
-    container.querySelectorAll('[data-edit-word]').forEach(button => button.addEventListener('click', () => { beginEditing(button.dataset.editWord); container.querySelector('#library-edit-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
-    container.querySelectorAll('[data-change-image]').forEach(button => button.addEventListener('click', () => { beginEditing(button.dataset.changeImage); container.querySelector('#library-edit-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
-    container.querySelectorAll('[data-delete-word]').forEach(button => button.addEventListener('click', () => { deleteId = button.dataset.deleteWord; render(); }));
-    container.querySelector('[data-cancel-delete]')?.addEventListener('click', () => { deleteId = null; render(); });
-    container.querySelector('[data-confirm-delete]')?.addEventListener('click', event => { driveSync.deleteWord(event.currentTarget.dataset.confirmDelete); deleteId = null; render(); });
+    bindWordCardEvents();
     container.querySelector('#cancel-library-edit')?.addEventListener('click', () => { editId = null; selectedImage = null; render(); });
     container.querySelector('#refresh-library-images')?.addEventListener('click', () => loadImageCandidates(editId, true));
     container.querySelector('#save-image-provider')?.addEventListener('click', () => {
