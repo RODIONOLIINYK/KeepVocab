@@ -3,11 +3,14 @@ import assert from 'node:assert/strict';
 
 import {
   DriveSyncService,
+  GOOGLE_WEB_CLIENT_ID,
   MemoryStorage,
   getCurrentMonthNotebookTitle,
+  mergeDriveSettings,
   usesNativeGoogleAuthorization
 } from '../js/services/driveSync.js';
 import { getGeminiSettings, saveGeminiSettings } from '../js/services/geminiSettings.js';
+import { getImageProviderSettings, saveImageProviderSettings } from '../js/services/imageSearch.js';
 
 function response(payload, status = 200) {
   return {
@@ -97,6 +100,12 @@ test('new words always enter the real current month unless a migration target is
   assert.equal(service.getWordsByMonthYear(word.monthYear).some(item => item.id === word.id), true);
 });
 
+test('a fresh install starts with an empty library', () => {
+  const service = new DriveSyncService(new MemoryStorage(), async () => { throw new Error('unused'); });
+  assert.deepEqual(service.getWords(), []);
+  assert.equal(service.getNotebooks().length, 1);
+});
+
 test('library preserves separate intended senses and keeps stable identity when edited', () => {
   const service = new DriveSyncService(new MemoryStorage(), async () => { throw new Error('unused'); });
   service.saveWords([], { silent: true });
@@ -117,7 +126,7 @@ test('library preserves separate intended senses and keeps stable identity when 
   assert.throws(() => service.updateWord(river.id, { imageUrl: 'javascript:alert(1)' }), /https:\/\//);
 });
 
-test('multiple selected meanings are saved atomically as separate learning cards', () => {
+test('multiple selected meanings are saved atomically with separate learning identities', () => {
   const service = new DriveSyncService(new MemoryStorage(), async () => { throw new Error('unused'); });
   service.saveWords([], { silent: true });
   const saved = service.addWords([
@@ -127,6 +136,8 @@ test('multiple selected meanings are saved atomically as separate learning cards
 
   assert.equal(saved.length, 2);
   assert.equal(service.getWords().filter(item => item.word === 'bank').length, 2);
+  assert.equal(service.getMonthlyArchives()[0].wordCount, 1);
+  assert.equal(service.getMonthlyArchives()[0].count, 2);
   assert.notEqual(saved[0].id, saved[1].id);
   assert.notEqual(saved[0].senseId, saved[1].senseId);
   assert.throws(() => service.addWords([
@@ -205,6 +216,51 @@ test('fresh reinstall restores exact meanings, original months, settings, and pr
   assert.deepEqual(reinstalled.getMonthlyArchives().map(archive => archive.monthYear), ['July 2026', 'May 2026']);
 });
 
+test('Drive combines exercise activity from multiple devices without double counting repeated syncs', async () => {
+  const drive = new MockDrive();
+  const day = new Date(2026, 7, 21, 12);
+  const firstStorage = new MemoryStorage();
+  firstStorage.setItem('keepvocab_device_id', 'device-a');
+  const first = new DriveSyncService(firstStorage, drive.fetch);
+  first.recordReview(day);
+  first.recordReview(day);
+  authorize(first);
+  await first.syncGoogleDrive();
+
+  const secondStorage = new MemoryStorage();
+  secondStorage.setItem('keepvocab_device_id', 'device-b');
+  const second = new DriveSyncService(secondStorage, drive.fetch);
+  authorize(second);
+  await second.syncGoogleDrive();
+  second.recordReview(day);
+  second.recordReview(day);
+  second.recordReview(day);
+  await second.syncGoogleDrive();
+  await first.syncGoogleDrive();
+  await second.syncGoogleDrive();
+
+  for (const service of [first, second]) {
+    const settings = service.getSettings();
+    assert.equal(settings.reviewActivity['2026-08-21'], 5);
+    assert.equal(settings.reviewsDate, '2026-08-21');
+    assert.equal(settings.reviewsToday, 5);
+    assert.equal(settings.exerciseActivityByDevice['device-a']['2026-08-21'], 2);
+    assert.equal(settings.exerciseActivityByDevice['device-b']['2026-08-21'], 3);
+  }
+  assert.equal(drive.payloadByName('KeepVocab Settings.json').settings.reviewActivity['2026-08-21'], 5);
+});
+
+test('legacy review activity migrates into the mergeable Drive activity format', () => {
+  const merged = mergeDriveSettings(
+    { reviewActivity: { '2026-08-20': 2 }, updatedAt: '2026-08-20T20:00:00.000Z' },
+    { reviewActivity: { '2026-08-20': 3, '2026-08-19': 1 }, updatedAt: '2026-08-20T21:00:00.000Z' }
+  );
+
+  assert.deepEqual(merged.exerciseActivityByDevice.legacy, { '2026-08-20': 3, '2026-08-19': 1 });
+  assert.deepEqual(merged.reviewActivity, { '2026-08-20': 3, '2026-08-19': 1 });
+  assert.equal(merged.dailyStreak, 2);
+});
+
 test('Google Drive backs up and restores the centralized Google AI Studio key', async () => {
   const drive = new MockDrive();
   const originalStorage = new MemoryStorage();
@@ -224,6 +280,32 @@ test('Google Drive backs up and restores the centralized Google AI Studio key', 
   authorize(reinstalled);
   await reinstalled.syncGoogleDrive();
   assert.equal(getGeminiSettings(reinstalledStorage).apiKey, 'AIza-drive-backed-key-123456789');
+});
+
+test('Google Drive backs up and restores the Pexels provider and API key', async () => {
+  const drive = new MockDrive();
+  const originalStorage = new MemoryStorage();
+  saveImageProviderSettings({
+    provider: 'pexels',
+    pexelsApiKey: 'pexels-drive-backed-key-123456789',
+    updatedAt: '2026-08-21T10:00:00.000Z'
+  }, originalStorage, { silent: true });
+  const original = new DriveSyncService(originalStorage, drive.fetch);
+  original.saveWords([], { silent: true });
+  original.addWord({ word: 'restore', partOfSpeech: 'verb', definition: 'To bring back.' }, 'July 2026 Vocabulary');
+  authorize(original);
+  await original.syncGoogleDrive();
+
+  const payload = drive.payloadByName('KeepVocab Settings.json');
+  assert.equal(payload.imageSearchProvider.provider, 'pexels');
+  assert.equal(payload.imageSearchProvider.pexelsApiKey, 'pexels-drive-backed-key-123456789');
+
+  const reinstalledStorage = new MemoryStorage();
+  const reinstalled = new DriveSyncService(reinstalledStorage, drive.fetch);
+  authorize(reinstalled);
+  await reinstalled.syncGoogleDrive();
+  assert.equal(getImageProviderSettings(reinstalledStorage).provider, 'pexels');
+  assert.equal(getImageProviderSettings(reinstalledStorage).pexelsApiKey, 'pexels-drive-backed-key-123456789');
 });
 
 test('an older Drive backup without AI settings does not erase a local key', async () => {
@@ -298,14 +380,15 @@ test('a remembered Drive connection silently renews on a later app launch', asyn
     if (String(url).includes('/oauth2/v3/userinfo')) return response({ email: 'learner@example.com' });
     return drive.fetch(url, options);
   });
-  service.setGoogleClientId('23308644025-div17rqsfbtgihgf7saoaobcjs4n9h5h.apps.googleusercontent.com');
   service.setDriveStatus({ isConnected: false, remembered: true, email: 'learner@example.com' });
   let requestedPrompt = null;
   let requestedScope = null;
+  let requestedClientId = null;
   const previousGoogle = globalThis.google;
   globalThis.google = { accounts: { oauth2: {
     initTokenClient(config) {
       requestedScope = config.scope;
+      requestedClientId = config.client_id;
       return { requestAccessToken({ prompt }) { requestedPrompt = prompt; config.callback({ access_token: 'renewed-token', expires_in: 3600 }); } };
     },
     revoke(_token, callback) { callback(); }
@@ -314,8 +397,9 @@ test('a remembered Drive connection silently renews on a later app launch', asyn
   try {
     const result = await service.resumeGoogleDrive();
     assert.equal(requestedPrompt, '');
+    assert.equal(requestedClientId, GOOGLE_WEB_CLIENT_ID);
     assert.match(requestedScope, /auth\/drive\.file/);
-    assert.equal(result.email, 'learner@example.com');
+    assert.equal(result.folderName, 'KeepVocab Dictionary Backup');
     assert.equal(service.getDriveStatus().isConnected, true);
     assert.equal(service.getDriveStatus().remembered, true);
     service.disconnectGoogleDrive();
@@ -325,7 +409,7 @@ test('a remembered Drive connection silently renews on a later app launch', asyn
   }
 });
 
-test('the Android app authorizes Drive through the native account chooser without a web client ID', async () => {
+test('the Android app authorizes Drive through the native account chooser without requesting a web client ID', async () => {
   const drive = new MockDrive();
   const storage = new MemoryStorage();
   const service = new DriveSyncService(storage, async (url, options) => {
@@ -348,10 +432,10 @@ test('the Android app authorizes Drive through the native account chooser withou
 
   try {
     assert.equal(usesNativeGoogleAuthorization(), true);
-    const result = await service.connectGoogleDrive('');
+    const result = await service.connectGoogleDrive();
     assert.deepEqual(calls, [{ interactive: true }]);
-    assert.equal(result.email, 'android@example.com');
-    assert.equal(service.getGoogleClientId(), '');
+    assert.equal(result.folderName, 'KeepVocab Dictionary Backup');
+    assert.equal(service.getGoogleClientId(), GOOGLE_WEB_CLIENT_ID);
     assert.equal(service.getDriveStatus().isConnected, true);
     assert.equal(service.accessToken, 'native-android-token');
   } finally {

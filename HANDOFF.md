@@ -6,7 +6,7 @@ KeepVocab is a local-first browser vocabulary trainer with automatic, reinstall-
 
 The Speak route contains 84 goal-based lessons across everyday life, travel, work, social, academic, and advanced tracks, including 58 B2 lessons plus adaptive free conversation. Every preview shows a five-stage Warm up → Build → Challenge → Resolve → Improve plan, role-specific questions, a realistic complication, and target phrases. Live sessions use Gemini's native-audio WebSocket API only after an explicit Start action, stream microphone audio, play the coach response, display both transcriptions, allow typed replies, and store completion progress locally. Mira opens every lesson herself, keeps turns moving with specific follow-up questions, and sends a scaffolded rescue prompt after nine seconds of learner silence.
 
-Gemini credentials are never committed or included in Drive backups. For a private localhost installation, save a personal key through **Speak → Gemini setup**; it remains in that browser's local storage. A public deployment must replace direct-key authentication with server-issued ephemeral tokens.
+Gemini credentials are never committed. For a private installation, save a personal key through **Speak → Gemini setup**; the centralized Google AI Studio configuration is included in the user's private app-owned Drive settings backup so it can be restored on that user's other devices. A public deployment should replace direct-key authentication with server-issued ephemeral tokens.
 
 ## Google Drive backup contract
 
@@ -15,14 +15,16 @@ After the learner connects Google Drive, the app creates a visible `KeepVocab Di
 The folder contains:
 
 - `Dictionary Month YYYY.json` — one complete vocabulary archive for each adding month, including exact meaning, part of speech, example, media metadata, original creation time, and learning progress.
-- `KeepVocab Settings.json` — current month selection, daily goal, streak, and review activity.
+- `KeepVocab Settings.json` — current month selection, daily goal, streak, review activity, learning metrics, and the private Google AI Studio configuration.
 - deletion tombstones inside the relevant monthly file so a word deleted on one installation does not return from an older backup on another.
 
-The browser database is a responsive local cache. Google Drive is the durable copy used after reinstall: connect the same Google account, and the app merges every app-owned monthly file back into the library. OAuth uses the restricted `drive.file` scope. A valid short-lived access token can survive a reload; an expired session waits for an explicit reconnect instead of contacting Drive during page startup. Local edits mark the backup as dirty, background sync is capped to one run per minute, and neither automatic nor manual sync rebuilds the active screen. Disconnecting removes the saved token. The public OAuth client ID is also saved locally.
+The browser database is a responsive local cache. Google Drive is the durable copy used after reinstall: connect the same Google account, and the app merges every app-owned monthly file back into the library. OAuth uses the restricted `drive.file` scope and a built-in public web client ID, so users only see the connect/synchronize action. A valid short-lived access token can survive a reload; an expired session waits for an explicit reconnect instead of contacting Drive during page startup. Local edits mark the backup as dirty, background sync is capped to one run per minute, and neither automatic nor manual sync rebuilds the active screen. Disconnecting removes the saved token.
+
+Exercise activity is stored as per-device, per-day counters. Drive sync merges each device shard with a maximum counter and then rebuilds the aggregate `reviewActivity`, today count, and streak. This makes multi-device totals additive while repeated synchronization remains idempotent, and it migrates older unsharded `reviewActivity` into a legacy shard.
 
 New words always use the device's current calendar month even if an older month is being viewed. Editing a card preserves its stable record identity, and the next sync updates the same monthly record instead of creating another sense.
 
-When several dictionary meanings are selected, each meaning is saved as a separate card with its own definition, example, image, and review schedule. Choose Word and Visual Match remove duplicate spellings from each option set; Match Sprint uses at most one meaning for a spelling in a round. This lets the learner study every sense without seeing indistinguishable answer buttons.
+When several dictionary meanings are selected, the Library groups them into one word card while each meaning keeps its own definition, example, image, and review schedule. Practice sessions contain at most 10 questions, prioritize weak and overdue meanings, and use at most one meaning for a spelling in a session so answer choices stay unambiguous.
 
 ## Run and test
 
@@ -43,7 +45,7 @@ Open `http://127.0.0.1:8085`. Keep this exact origin in the Google OAuth authori
 - `js/services/srsEngine.js`: Leitner scheduling and streak persistence.
 - `js/components/LibraryView.js`, `ReviewView.js`, `StatsView.js`: editable monthly library, review, status lists, and box explorer.
 - `js/components/PracticeModes.js`, `VisualMatchMode.js`, `MatchSprintMode.js`: active learning modes.
-- `js/services/imageSearch.js`: definition-specific visual concepts, a per-meaning custom interpretation saved in `imageCustomConcept`, optional Pexels stock-photo search with a device-only personal key, no-key Openverse fallback, strict semantic relevance ranking, exclusion of images already attached to another card, duplicate/text-heavy-result rejection, and attribution metadata. The Library shows selectable concept chips; a custom concept is tried alone and first so a slower stale generated search cannot overwrite its results.
+- `js/services/imageSearch.js`: Pexels is the primary stock-photo source when a personal key is configured under Settings; the Library editor contains no credential controls. Saved provider settings are read automatically, Pexels results keep the API's relevance order, and three-word queries avoid over-specific searches. Openverse, Wikimedia Commons, Library of Congress, and NASA Images remain concurrent keyless fallbacks, with up to 10 results deduplicated and round-robin mixed by provider. The Pexels provider/key record is included in `KeepVocab Settings.json` and restored through Drive alongside Google AI Studio settings. Gemini scenes are constrained and normalized to 5–7 concrete words showing a visible subject + action + setting; outputs that repeat the word or paraphrase its definition are discarded. The Library searches only the highlighted concept, so suggested and custom text have identical behavior; the current saved image remains visible, and More images cycles the three visible concepts before requesting successive provider pages. The Library's single Edit flow also accepts an HTTPS image link or optimized JPEG/PNG/WebP upload; a per-meaning custom interpretation is saved in `imageCustomConcept` and searched first.
 - `js/services/syncPolicy.js`: one-minute Drive sync throttle used by the background scheduler.
 - `js/data/speakingLessons.js`: the structured 36-lesson speaking curriculum and Gemini coaching instructions.
 - `js/components/SpeakingMode.js`, `js/services/geminiLive.js`: the responsive speaking hub, live lesson lifecycle, transcript/progress UI, and native-audio WebSocket transport.

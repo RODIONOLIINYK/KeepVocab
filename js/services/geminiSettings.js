@@ -85,6 +85,7 @@ export async function generateGeminiParts(parts, options = {}) {
   const response = await fetchImpl(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(settings.apiKey)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(options.timeoutMs || 20_000),
     body: JSON.stringify({
       contents: [{ role: 'user', parts: Array.isArray(parts) ? parts : [{ text: String(parts || '') }] }],
       generationConfig: {

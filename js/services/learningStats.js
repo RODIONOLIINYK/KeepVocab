@@ -1,6 +1,14 @@
-import { driveSync } from './driveSync.js?v=63';
+import { driveSync } from './driveSync.js?v=79';
 
 const MAX_SESSION_HISTORY = 60;
+
+function localDateKey(date = new Date()) {
+  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+}
+
+export function completedExercisesToday(settings = {}, now = new Date()) {
+  return settings.reviewsDate === localDateKey(now) ? Math.max(0, Number(settings.reviewsToday || 0)) : 0;
+}
 
 export function normalizeLearningStats(settings = {}) {
   const current = settings.learningStats && typeof settings.learningStats === 'object' ? settings.learningStats : {};

@@ -1,9 +1,10 @@
-import { driveSync } from '../services/driveSync.js?v=63';
-import { findRelevantImages } from '../services/imageSearch.js?v=63';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
-import { playInteractionSound } from '../services/interactionSound.js?v=63';
+import { driveSync } from '../services/driveSync.js?v=79';
+import { findRelevantImages } from '../services/imageSearch.js?v=79';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
+import { playInteractionSound } from '../services/interactionSound.js?v=79';
 import { escapeHtml } from '../utils/html.js';
-import { stableWordChoices } from './PracticeModes.js?v=63';
+import { stableWordChoices } from './PracticeModes.js?v=79';
+import { selectPracticeWords } from '../services/dailySession.js?v=79';
 
 function shuffle(items) {
   const result = [...items];
@@ -35,7 +36,8 @@ async function findAutomaticImages(word, excludeUrls) {
 
 export async function renderVisualMatchMode(container, onNavigate) {
   const notebook = driveSync.getActiveNotebook();
-  const words = driveSync.getWords().filter(word => word.notebook === notebook);
+  const allWords = driveSync.getWords().filter(word => word.notebook === notebook);
+  const words = selectPracticeWords(allWords);
   if (words.length < 2) {
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images"></i><h2>Add at least two words</h2><p>Visual Match needs multiple choices from the active month.</p><button class="btn-green-solid" id="visual-back">Back to dashboard</button></div></section>`;
     container.querySelector('#visual-back').addEventListener('click', () => go('dashboard', onNavigate));
@@ -145,7 +147,6 @@ export async function renderVisualMatchMode(container, onNavigate) {
   function startGame() {
     const queue = shuffle(prepared);
     const originalCount = queue.length;
-    const retried = new Set();
     let index = 0;
     let score = 0;
     let selectedId = null;
@@ -153,13 +154,13 @@ export async function renderVisualMatchMode(container, onNavigate) {
 
     function render() {
       if (index >= queue.length) {
-        container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images"></i><h2>Visual session complete</h2><p>You matched ${score} of ${originalCount} image–word pairs. Missed pairs were repeated once.</p><div class="inline-actions"><button class="btn-green-solid" id="visual-again">Practice again</button><button class="status-pill offline" id="visual-done">Dashboard</button></div></div></section>`;
+        container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images"></i><h2>Visual session complete</h2><p>You matched ${score} of ${originalCount} image–word pairs. Missed meanings will be prioritized next time.</p><div class="inline-actions"><button class="btn-green-solid" id="visual-again">Practice again</button><button class="status-pill offline" id="visual-done">Dashboard</button></div></div></section>`;
         container.querySelector('#visual-again').addEventListener('click', () => renderVisualMatchMode(container, onNavigate));
         container.querySelector('#visual-done').addEventListener('click', () => go('dashboard', onNavigate));
         return;
       }
       const target = queue[index];
-      const options = stableWordChoices(choiceState, target.word, words);
+      const options = stableWordChoices(choiceState, target.word, allWords);
       const answered = selectedId !== null;
       const correct = selectedId === target.word.id;
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell visual-shell">
@@ -178,7 +179,6 @@ export async function renderVisualMatchMode(container, onNavigate) {
         const isCorrect = selectedId === target.word.id;
         playInteractionSound(isCorrect ? 'correct' : 'wrong');
         if (isCorrect) score += 1;
-        if (!isCorrect && !retried.has(target.word.id)) { retried.add(target.word.id); queue.push(target); }
         recordExerciseResult({ wordId: target.word.id, exerciseType: 'visual-match', correct: isCorrect, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: isCorrect ? '' : selectedId });
         window.dispatchEvent(new CustomEvent('keepvocab:progress'));
         render();

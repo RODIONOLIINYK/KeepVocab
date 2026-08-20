@@ -1,8 +1,8 @@
-import { driveSync } from '../services/driveSync.js?v=63';
-import { getDueWords } from '../services/srsEngine.js?v=63';
-import { buildDailySession, weaknessScore } from '../services/dailySession.js?v=63';
-import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=63';
-import { normalizeLearningStats } from '../services/learningStats.js?v=63';
+import { driveSync } from '../services/driveSync.js?v=79';
+import { getDueWords } from '../services/srsEngine.js?v=79';
+import { buildDailySession, weaknessScore } from '../services/dailySession.js?v=79';
+import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=79';
+import { completedExercisesToday } from '../services/learningStats.js?v=79';
 import { escapeHtml } from '../utils/html.js';
 
 function go(view, onNavigate) {
@@ -25,14 +25,13 @@ export function renderDashboardView(container, onNavigate) {
   const allWords = driveSync.getWords();
   const activeNotebook = driveSync.getActiveNotebook();
   const activeWords = allWords.filter(word => word.notebook === activeNotebook);
+  const activeWordCount = new Set(activeWords.map(word => String(word.word || '').trim().toLowerCase())).size;
   const session = buildDailySession(allWords);
   const due = getDueWords(allWords).length;
   const weak = allWords.filter(word => weaknessScore(word) > 0).length;
   const recent = allWords.filter(word => Date.now() - Date.parse(word.createdAt || 0) <= 14 * 24 * 60 * 60 * 1000).length;
   const settings = driveSync.getSettings();
-  const learningStats = normalizeLearningStats(settings);
-  const todayKey = new Date().toLocaleDateString('en-CA');
-  const completedToday = learningStats.sessionHistory.filter(item => String(item.completedAt || '').slice(0, 10) === todayKey).reduce((sum, item) => sum + Number(item.exercises || 0), 0);
+  const completedToday = completedExercisesToday(settings);
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
   const progress = Math.min(100, Math.round(completedToday / dailyGoal * 100));
   const stages = activeWords.reduce((counts, word) => {
@@ -53,7 +52,7 @@ export function renderDashboardView(container, onNavigate) {
     <div class="today-progress-card"><div class="today-progress-copy"><span>Daily progress</span><strong>${completedToday} of ${dailyGoal} exercises</strong></div><div class="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div><span class="today-streak"><i class="fa-solid fa-fire"></i> ${Number(settings.dailyStreak || 0)} day streak</span></div>
     <div class="today-grid">
       <section class="practice-launchpad" aria-labelledby="practice-heading"><div class="today-section-heading"><div><span class="eyebrow">Choose a skill</span><h2 id="practice-heading">Manual practice</h2></div><span>Optional</span></div><div class="practice-quick-grid">${MODES.map(([view, icon, title, copy]) => `<button class="practice-quick-card" data-practice-view="${view}"><i class="fa-solid ${icon}"></i><span><strong>${title}</strong><small>${copy}</small></span><i class="fa-solid fa-chevron-right"></i></button>`).join('')}</div></section>
-      <aside class="today-insights"><section class="today-insight-card"><div class="today-section-heading"><div><span class="eyebrow">Vocabulary health</span><h2>${activeWords.length} saved this month</h2></div></div><div class="mastery-mini-list"><div><span>Recognized</span><strong>${stages.recognized + stages.recalled + stages.context + stages.productive}</strong></div><div><span>Reliably recalled</span><strong>${stages.recalled + stages.context + stages.productive}</strong></div><div><span>Used in context</span><strong>${stages.context + stages.productive}</strong></div><div><span>Used productively</span><strong>${stages.productive}</strong></div></div><button class="text-action" data-practice-view="stats">See progress <i class="fa-solid fa-arrow-right"></i></button></section>
+      <aside class="today-insights"><section class="today-insight-card"><div class="today-section-heading"><div><span class="eyebrow">Vocabulary health</span><h2>${activeWordCount} saved this month</h2><small>${activeWords.length} tracked meaning${activeWords.length === 1 ? '' : 's'}</small></div></div><div class="mastery-mini-list"><div><span>Recognized</span><strong>${stages.recognized + stages.recalled + stages.context + stages.productive}</strong></div><div><span>Reliably recalled</span><strong>${stages.recalled + stages.context + stages.productive}</strong></div><div><span>Used in context</span><strong>${stages.context + stages.productive}</strong></div><div><span>Used productively</span><strong>${stages.productive}</strong></div></div><button class="text-action" data-practice-view="stats">See progress <i class="fa-solid fa-arrow-right"></i></button></section>
         <section class="today-insight-card compact"><span class="cloud-dot ${auth.isConnected ? 'connected' : auth.lastError ? 'error' : ''}"><i class="fa-solid fa-cloud"></i></span><div><strong>${auth.isConnected ? 'Drive backup active' : auth.lastError ? 'Backup needs attention' : 'Backup is off'}</strong><small>${auth.isConnected ? `Last sync ${auth.lastSynced ? new Date(auth.lastSynced).toLocaleDateString() : 'pending'}` : auth.lastError || 'Set up Drive in Settings'}</small></div><button class="icon-action" id="dashboard-drive-settings" aria-label="Open backup settings"><i class="fa-solid fa-chevron-right"></i></button></section>
         <section class="today-insight-card compact"><span class="cloud-dot"><i class="fa-solid fa-bookmark"></i></span><div><strong>${weak} weak · ${recent} recent</strong><small>${weak ? 'Already included without taking over your workout' : 'No recurring mistakes yet'}</small></div></section>
       </aside>

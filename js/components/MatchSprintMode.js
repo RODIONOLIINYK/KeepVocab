@@ -1,7 +1,8 @@
-import { driveSync } from '../services/driveSync.js?v=63';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
-import { playInteractionSound } from '../services/interactionSound.js?v=63';
+import { driveSync } from '../services/driveSync.js?v=79';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
+import { playInteractionSound } from '../services/interactionSound.js?v=79';
 import { escapeHtml } from '../utils/html.js';
+import { selectPracticeWords } from '../services/dailySession.js?v=79';
 
 function shuffle(items) {
   const result = [...items];
@@ -17,12 +18,7 @@ function go(view, onNavigate) {
 }
 
 function buildRound(words) {
-  const uniqueSpellings = new Map();
-  for (const word of shuffle(words)) {
-    const key = word.word.toLowerCase();
-    if (!uniqueSpellings.has(key)) uniqueSpellings.set(key, word);
-  }
-  return shuffle([...uniqueSpellings.values()]).slice(0, 6);
+  return shuffle(selectPracticeWords(words, { limit: 6 }));
 }
 
 export function getUnmatchedWords(items, matchedIds) {
@@ -122,7 +118,7 @@ export function renderMatchSprintMode(container, onNavigate) {
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card match-shell">
       <div class="practice-topline"><button class="status-pill offline" id="match-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${matched.size} of ${round.length} pairs</span><strong id="match-timer">${elapsedSeconds}s</strong></div>
       <div class="review-progress match-progress"><span class="${progressCelebration ? 'progress-celebrate' : ''}" style="width:${progress}%"></span></div>
-      <div class="match-intro"><div class="practice-icon match-icon"><i class="fa-solid fa-stopwatch"></i></div><div><h2>Match Sprint</h2><p>Tap a word, then tap its exact meaning. Different senses are learned as separate cards.</p></div><span>${mistakes} mistake${mistakes === 1 ? '' : 's'}</span></div>
+      <div class="match-intro"><div class="practice-icon match-icon"><i class="fa-solid fa-stopwatch"></i></div><div><h2>Match Sprint</h2><p>Tap a word, then tap its exact meaning. The most difficult meanings appear first.</p></div><span>${mistakes} mistake${mistakes === 1 ? '' : 's'}</span></div>
       <div class="match-board" aria-label="Word and definition matching board"><div class="match-column"><h3>Words</h3>${getUnmatchedWords(terms, matched).map((word, index) => tile(word, 'term', index)).join('')}</div><div class="match-column"><h3>Meanings</h3>${getUnmatchedWords(definitions, matched).map((word, index) => tile(word, 'definition', index)).join('')}</div></div>
     </div></section>`;
     animateBoard = false;

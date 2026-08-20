@@ -1,12 +1,17 @@
-import { driveSync } from '../services/driveSync.js?v=63';
-import { speakWord } from '../services/speechService.js?v=63';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
-import { playInteractionSound } from '../services/interactionSound.js?v=63';
+import { driveSync } from '../services/driveSync.js?v=79';
+import { speakWord } from '../services/speechService.js?v=79';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
+import { playInteractionSound } from '../services/interactionSound.js?v=79';
+import { selectPracticeWords } from '../services/dailySession.js?v=79';
 import { escapeHtml } from '../utils/html.js';
 
-function activeWords() {
+function activeLibraryWords() {
   const notebook = driveSync.getActiveNotebook();
   return driveSync.getWords().filter(word => word.notebook === notebook && word.word && word.definition);
+}
+
+function activeWords() {
+  return selectPracticeWords(activeLibraryWords());
 }
 
 function shuffle(items) {
@@ -48,10 +53,9 @@ function emptyMode(container, icon, title, detail, onNavigate) {
 }
 
 export function renderSpellingMode(container, onNavigate) {
-  const queue = shuffle(activeWords());
+  const queue = activeWords();
   if (!queue.length) return emptyMode(container, 'fa-keyboard', 'Add vocabulary first', 'Listen & Spell uses the words in your active month.', onNavigate);
   const originalCount = queue.length;
-  const retried = new Set();
   let index = 0;
   let score = 0;
   let answered = false;
@@ -60,7 +64,7 @@ export function renderSpellingMode(container, onNavigate) {
 
   function render() {
     if (index >= queue.length) {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Spelling session complete</h2><p>You recalled ${score} of ${originalCount} words. Missed words were repeated once at the end.</p><div class="inline-actions"><button class="btn-green-solid" id="spell-again">Practice again</button><button class="status-pill offline" id="spell-dashboard">Dashboard</button></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Spelling session complete</h2><p>You recalled ${score} of ${originalCount} words. Missed words will be prioritized in your next session.</p><div class="inline-actions"><button class="btn-green-solid" id="spell-again">Practice again</button><button class="status-pill offline" id="spell-dashboard">Dashboard</button></div></div></section>`;
       container.querySelector('#spell-again').addEventListener('click', () => renderSpellingMode(container, onNavigate));
       container.querySelector('#spell-dashboard').addEventListener('click', () => go('dashboard', onNavigate));
       return;
@@ -100,7 +104,6 @@ export function renderSpellingMode(container, onNavigate) {
       correct = answer === word.word.toLowerCase();
       playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
-      if (!correct && !retried.has(word.id)) { retried.add(word.id); queue.push(word); }
       recordExerciseResult({ wordId: word.id, exerciseType: 'listen-and-spell', correct, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'listening-recall', producedUnaided: correct });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       answered = true;
@@ -113,11 +116,10 @@ export function renderSpellingMode(container, onNavigate) {
 }
 
 export function renderChooseWordMode(container, onNavigate) {
-  const all = activeWords();
-  if (all.length < 2) return emptyMode(container, 'fa-list-check', 'Add at least two words', 'Choose Word needs another word to create meaningful choices.', onNavigate);
-  const queue = shuffle(all);
+  const all = activeLibraryWords();
+  const queue = selectPracticeWords(all);
+  if (queue.length < 2) return emptyMode(container, 'fa-list-check', 'Add at least two words', 'Choose Word needs another word to create meaningful choices.', onNavigate);
   const originalCount = queue.length;
-  const retried = new Set();
   let index = 0;
   let score = 0;
   let selectedId = null;
@@ -126,7 +128,7 @@ export function renderChooseWordMode(container, onNavigate) {
 
   function render() {
     if (index >= queue.length) {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Choose Word complete</h2><p>You mastered ${score} of ${originalCount} definitions. Missed choices were repeated once.</p><div class="inline-actions"><button class="btn-green-solid" id="choose-again">Try again</button><button class="status-pill offline" id="choose-dashboard">Dashboard</button></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Choose Word complete</h2><p>You mastered ${score} of ${originalCount} definitions. Missed meanings will come first next time.</p><div class="inline-actions"><button class="btn-green-solid" id="choose-again">Try again</button><button class="status-pill offline" id="choose-dashboard">Dashboard</button></div></div></section>`;
       container.querySelector('#choose-again').addEventListener('click', () => renderChooseWordMode(container, onNavigate));
       container.querySelector('#choose-dashboard').addEventListener('click', () => go('dashboard', onNavigate));
       return;
@@ -158,7 +160,6 @@ export function renderChooseWordMode(container, onNavigate) {
       const correct = selectedId === target.id;
       playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
-      if (!correct && !retried.has(target.id)) { retried.add(target.id); queue.push(target); }
       recordExerciseResult({ wordId: target.id, exerciseType: 'choose-word', correct, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: correct ? '' : selectedId });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       render();

@@ -1,6 +1,6 @@
 // Free Dictionary API client with validation, examples, timeout, and an offline cache.
 
-import { fetchExamplesForSenses, sanitizeExistingExamples } from './exampleSearch.js?v=63';
+import { fetchExamplesForSenses, sanitizeExistingExamples } from './exampleSearch.js?v=79';
 
 const DICTIONARY_API_BASE = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 const SPELLING_API_BASE = 'https://api.languagetool.org/v2/check';

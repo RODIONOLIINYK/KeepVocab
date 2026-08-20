@@ -1,4 +1,4 @@
-import { DEFAULT_GEMINI_LIVE_MODEL, GEMINI_KEY_STORAGE } from './geminiSettings.js?v=63';
+import { DEFAULT_GEMINI_LIVE_MODEL, GEMINI_KEY_STORAGE } from './geminiSettings.js?v=79';
 
 export const GEMINI_LIVE_MODEL = DEFAULT_GEMINI_LIVE_MODEL;
 export { GEMINI_KEY_STORAGE };

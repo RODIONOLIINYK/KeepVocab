@@ -1,6 +1,6 @@
 // Adaptive spaced-repetition scheduler with backward-compatible Leitner fields.
 
-import { driveSync } from './driveSync.js?v=63';
+import { driveSync } from './driveSync.js?v=79';
 
 export const SRS_VERSION = 2;
 export const MINUTE_MS = 60 * 1000;
@@ -150,12 +150,9 @@ export function updateWordRepetition(wordId, recallRating, options = {}) {
 export function updateStreak(now = new Date()) {
   const settings = driveSync.getSettings();
   const todayStr = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
-  const reviewActivity = { ...(settings.reviewActivity || {}) };
-  reviewActivity[todayStr] = Number(reviewActivity[todayStr] || 0) + 1;
-  const recentActivity = Object.fromEntries(Object.entries(reviewActivity).sort(([a], [b]) => b.localeCompare(a)).slice(0, 90));
   const legacyUtcToday = now.toISOString().slice(0, 10);
   if (settings.lastReviewDate === todayStr || settings.lastReviewDate === legacyUtcToday) {
-    driveSync.updateSettings({ lastReviewDate: todayStr, reviewActivity: recentActivity });
+    driveSync.updateSettings({ lastReviewDate: todayStr });
     return settings.dailyStreak || 1;
   }
   const parseLocalDate = value => {
@@ -171,6 +168,6 @@ export function updateStreak(now = new Date()) {
     if (diffDays === 1) streak += 1;
     else if (diffDays > 1) streak = 1;
   } else streak = 1;
-  driveSync.updateSettings({ dailyStreak: streak, lastReviewDate: todayStr, reviewActivity: recentActivity });
+  driveSync.updateSettings({ dailyStreak: streak, lastReviewDate: todayStr });
   return streak;
 }

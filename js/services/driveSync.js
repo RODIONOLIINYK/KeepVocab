@@ -1,19 +1,21 @@
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=63';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=79';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=79';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
 const STORAGE_KEY_SETTINGS = 'keepvocab_settings';
 const STORAGE_KEY_DRIVE_AUTH = 'keepvocab_drive_auth';
 const STORAGE_KEY_DRIVE_TOKEN = 'keepvocab_drive_token';
-const STORAGE_KEY_GOOGLE_CLIENT_ID = 'keepvocab_google_client_id';
 const STORAGE_KEY_TOMBSTONES = 'keepvocab_drive_tombstones';
+const STORAGE_KEY_DEVICE_ID = 'keepvocab_device_id';
+
+export const GOOGLE_WEB_CLIENT_ID = '23308644025-div17rqsfbtgihgf7saoaobcjs4n9h5h.apps.googleusercontent.com';
 
 const DRIVE_API_BASE = 'https://www.googleapis.com/drive/v3';
 const DRIVE_UPLOAD_BASE = 'https://www.googleapis.com/upload/drive/v3';
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
-const USERINFO_SCOPE = 'https://www.googleapis.com/auth/userinfo.email';
 const BACKUP_FOLDER_NAME = 'KeepVocab Dictionary Backup';
 const BACKUP_APP_PROPERTY = 'keepVocabBackup';
 const SCHEMA_VERSION = 1;
@@ -86,6 +88,80 @@ function recordTimestamp(record) {
   return Date.parse(record?.updatedAt || record?.lastReviewedAt || record?.createdAt || 0) || 0;
 }
 
+function localDateKey(date = new Date()) {
+  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+}
+
+function normalizedActivity(activity) {
+  return Object.fromEntries(Object.entries(activity && typeof activity === 'object' ? activity : {})
+    .filter(([date, count]) => /^\d{4}-\d{2}-\d{2}$/.test(date) && Number(count) > 0)
+    .sort(([a], [b]) => b.localeCompare(a))
+    .slice(0, 90)
+    .map(([date, count]) => [date, Math.max(0, Math.round(Number(count) || 0))]));
+}
+
+function activityByDevice(settings) {
+  const saved = settings?.exerciseActivityByDevice;
+  if (saved && typeof saved === 'object' && Object.keys(saved).length) {
+    return Object.fromEntries(Object.entries(saved)
+      .map(([deviceId, activity]) => [String(deviceId), normalizedActivity(activity)])
+      .filter(([, activity]) => Object.keys(activity).length));
+  }
+  const legacy = normalizedActivity(settings?.reviewActivity);
+  return Object.keys(legacy).length ? { legacy: legacy } : {};
+}
+
+function mergeActivityByDevice(localSettings, remoteSettings) {
+  const merged = activityByDevice(localSettings);
+  for (const [deviceId, remoteActivity] of Object.entries(activityByDevice(remoteSettings))) {
+    const localActivity = merged[deviceId] || {};
+    const dates = [...new Set([...Object.keys(localActivity), ...Object.keys(remoteActivity)])];
+    merged[deviceId] = normalizedActivity(Object.fromEntries(dates
+      .map(date => [date, Math.max(Number(localActivity[date] || 0), Number(remoteActivity[date] || 0))])));
+  }
+  return merged;
+}
+
+function aggregateActivity(shards) {
+  const totals = {};
+  for (const activity of Object.values(shards || {})) {
+    for (const [date, count] of Object.entries(activity || {})) totals[date] = Number(totals[date] || 0) + Number(count || 0);
+  }
+  return normalizedActivity(totals);
+}
+
+function streakFromActivity(activity) {
+  const dates = Object.keys(activity || {}).sort((a, b) => b.localeCompare(a));
+  if (!dates.length) return 0;
+  let streak = 1;
+  let cursor = new Date(`${dates[0]}T12:00:00`);
+  for (const date of dates.slice(1)) {
+    cursor.setDate(cursor.getDate() - 1);
+    if (localDateKey(cursor) !== date) break;
+    streak += 1;
+  }
+  return streak;
+}
+
+export function mergeDriveSettings(localSettings = {}, remoteSettings = {}, { freshInstall = false } = {}) {
+  const base = remoteSettings && Object.keys(remoteSettings).length
+    && (freshInstall || recordTimestamp(remoteSettings) > recordTimestamp(localSettings))
+    ? remoteSettings
+    : localSettings;
+  const exerciseActivityByDevice = mergeActivityByDevice(localSettings, remoteSettings);
+  const reviewActivity = aggregateActivity(exerciseActivityByDevice);
+  const reviewsDate = Object.keys(reviewActivity).sort((a, b) => b.localeCompare(a))[0] || null;
+  return {
+    ...base,
+    exerciseActivityByDevice,
+    reviewActivity,
+    reviewsDate,
+    reviewsToday: reviewsDate ? reviewActivity[reviewsDate] : 0,
+    lastReviewDate: reviewsDate || base.lastReviewDate || null,
+    dailyStreak: streakFromActivity(reviewActivity)
+  };
+}
+
 function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource = 'drive') {
   const word = normalizeWordText(candidate?.word).toLowerCase();
   if (!word || word.length > 100) return null;
@@ -143,31 +219,6 @@ function dataSignature(words, tombstones) {
   return JSON.stringify({ words: sortRecords(words), tombstones: sortRecords(tombstones) });
 }
 
-function seedWords() {
-  const seeds = [
-    ['serendipity', 'noun', 'The occurrence of events by chance in a happy or beneficial way.', 'A fortunate stroke of serendipity brought them together.', 0],
-    ['ephemeral', 'adjective', 'Lasting for a very short time; fleeting or transitory.', 'The beauty of cherry blossoms is ephemeral.', 0],
-    ['luminous', 'adjective', 'Emitting or reflecting light; glowing.', 'The luminous dial glowed in the dark.', -1],
-    ['eloquent', 'adjective', 'Fluent or persuasive in speaking or writing.', 'Her eloquent speech inspired the audience.', -1],
-    ['resilient', 'adjective', 'Able to withstand or recover quickly from difficult conditions.', 'The team proved resilient after early setbacks.', -2],
-    ['ubiquitous', 'adjective', 'Present, appearing, or found everywhere.', 'Smartphones have become ubiquitous.', -2]
-  ];
-  const now = new Date();
-  return seeds.map(([word, partOfSpeech, definition, example, monthOffset], index) => {
-    const date = new Date(now.getFullYear(), now.getMonth() + monthOffset, Math.max(1, 15 - index));
-    return normalizeStoredWord({
-      id: `w-seed-${word}`,
-      word,
-      partOfSpeech,
-      definition,
-      example,
-      box: Math.min(5, index + 1),
-      mastered: index >= 4,
-      createdAt: date.toISOString()
-    }, monthYearFromDate(date), 'sample');
-  });
-}
-
 export class MemoryStorage {
   constructor() { this.values = new Map(); }
   getItem(key) { return this.values.has(key) ? this.values.get(key) : null; }
@@ -185,8 +236,17 @@ export class DriveSyncService {
     this.syncPromise = null;
     this.suppressEvents = false;
     this.isFreshInstall = !this.storage.getItem(STORAGE_KEY_WORDS);
+    this.deviceId = this.getOrCreateDeviceId();
     this.initStorage();
     this.restoreGoogleToken();
+  }
+
+  getOrCreateDeviceId() {
+    const saved = String(this.storage.getItem(STORAGE_KEY_DEVICE_ID) || '').trim();
+    if (saved) return saved;
+    const generated = globalThis.crypto?.randomUUID?.() || `device-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    this.storage.setItem(STORAGE_KEY_DEVICE_ID, generated);
+    return generated;
   }
 
   read(key, fallback) {
@@ -203,7 +263,7 @@ export class DriveSyncService {
   }
 
   initStorage() {
-    if (!this.storage.getItem(STORAGE_KEY_WORDS)) this.saveWords(seedWords(), { silent: true });
+    if (!this.storage.getItem(STORAGE_KEY_WORDS)) this.saveWords([], { silent: true });
     if (!this.storage.getItem(STORAGE_KEY_TOMBSTONES)) this.write(STORAGE_KEY_TOMBSTONES, []);
     if (!this.storage.getItem(STORAGE_KEY_SETTINGS)) {
       this.write(STORAGE_KEY_SETTINGS, {
@@ -214,6 +274,7 @@ export class DriveSyncService {
         reviewsToday: 0,
         reviewsDate: null,
         reviewActivity: {},
+        exerciseActivityByDevice: {},
         reminderEnabled: false,
         reminderTime: '19:00',
         soundEnabled: true,
@@ -244,16 +305,7 @@ export class DriveSyncService {
   }
 
   getGoogleClientId() {
-    return this.storage.getItem(STORAGE_KEY_GOOGLE_CLIENT_ID) || '';
-  }
-
-  setGoogleClientId(clientId) {
-    const clean = String(clientId || '').trim();
-    if (!/^[0-9]+-[a-z0-9_-]+\.apps\.googleusercontent\.com$/i.test(clean)) {
-      throw new Error('Enter a valid Google OAuth web client ID ending in .apps.googleusercontent.com.');
-    }
-    this.storage.setItem(STORAGE_KEY_GOOGLE_CLIENT_ID, clean);
-    return clean;
+    return GOOGLE_WEB_CLIENT_ID;
   }
 
   getDriveStatus() {
@@ -302,16 +354,15 @@ export class DriveSyncService {
     return clean;
   }
 
-  async connectGoogleDrive(clientId) {
+  async connectGoogleDrive() {
     const nativeAuth = getNativeDriveAuthPlugin();
     if (nativeAuth) {
       const result = await nativeAuth.authorize({ interactive: true });
       this.acceptGoogleToken({ access_token: result.accessToken, expires_in: result.expiresIn });
       return this.finishGoogleConnection();
     }
-    const cleanClientId = this.setGoogleClientId(clientId);
     if (!globalThis.google?.accounts?.oauth2) throw new Error('Google Identity Services did not load. Check your connection and try again.');
-    const tokenResponse = await this.requestGoogleToken(cleanClientId, 'consent');
+    const tokenResponse = await this.requestGoogleToken(GOOGLE_WEB_CLIENT_ID, 'consent');
     this.acceptGoogleToken(tokenResponse);
     return this.finishGoogleConnection();
   }
@@ -320,9 +371,14 @@ export class DriveSyncService {
     return new Promise((resolve, reject) => {
       const client = globalThis.google.accounts.oauth2.initTokenClient({
         client_id: clientId,
-        scope: `${USERINFO_SCOPE} ${DRIVE_SCOPE}`,
+        scope: DRIVE_SCOPE,
         callback: response => {
-          if (response?.error) reject(new Error(response.error_description || response.error));
+          if (response?.error) {
+            const accessBlocked = /access_denied|org_internal|admin_policy_enforced/i.test(String(response.error));
+            reject(new Error(accessBlocked
+              ? 'Google blocked this account. The KeepVocab OAuth app owner must allow external users and publish the consent screen, or add this account as a test user.'
+              : (response.error_description || response.error)));
+          }
           else if (!response?.access_token) reject(new Error('Google did not return an access token.'));
           else resolve(response);
         },
@@ -370,11 +426,9 @@ export class DriveSyncService {
 
   async finishGoogleConnection() {
     try {
-      const profileResponse = await this.authorizedFetch('https://www.googleapis.com/oauth2/v3/userinfo');
-      const profile = await profileResponse.json();
-      this.setDriveStatus({ isConnected: true, remembered: true, email: profile.email || null, lastError: null });
+      this.setDriveStatus({ isConnected: true, remembered: true, lastError: null });
       const sync = await this.syncGoogleDrive();
-      return { email: profile.email || null, ...sync };
+      return { ...sync };
     } catch (error) {
       this.setDriveStatus({ isConnected: true, lastError: error.message });
       throw error;
@@ -563,13 +617,16 @@ export class DriveSyncService {
     const map = new Map();
     for (const word of this.getWords()) {
       const monthYear = word.monthYear || String(word.notebook || '').replace(/ Vocabulary$/, '');
-      if (!map.has(monthYear)) map.set(monthYear, { monthYear, words: [], count: 0, mastered: 0 });
+      if (!map.has(monthYear)) map.set(monthYear, { monthYear, words: [], count: 0, wordCount: 0, mastered: 0 });
       const archive = map.get(monthYear);
       archive.words.push(word);
       archive.count += 1;
       if (word.mastered) archive.mastered += 1;
     }
-    return [...map.values()].sort((a, b) => new Date(`${b.monthYear} 1`) - new Date(`${a.monthYear} 1`));
+    return [...map.values()].map(archive => ({
+      ...archive,
+      wordCount: new Set(archive.words.map(word => String(word.word || '').trim().toLowerCase())).size
+    })).sort((a, b) => new Date(`${b.monthYear} 1`) - new Date(`${a.monthYear} 1`));
   }
 
   saveWords(words, { silent = false } = {}) {
@@ -669,11 +726,20 @@ export class DriveSyncService {
   }
 
   recordReview(date = new Date()) {
-    const key = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+    const key = localDateKey(date);
     const settings = this.getSettings();
-    const count = settings.reviewsDate === key ? Number(settings.reviewsToday || 0) + 1 : 1;
-    this.updateSettings({ reviewsDate: key, reviewsToday: count });
-    return count;
+    const exerciseActivityByDevice = activityByDevice(settings);
+    const deviceActivity = { ...(exerciseActivityByDevice[this.deviceId] || {}) };
+    deviceActivity[key] = Number(deviceActivity[key] || 0) + 1;
+    exerciseActivityByDevice[this.deviceId] = normalizedActivity(deviceActivity);
+    const reviewActivity = aggregateActivity(exerciseActivityByDevice);
+    this.updateSettings({
+      exerciseActivityByDevice,
+      reviewActivity,
+      reviewsDate: key,
+      reviewsToday: Number(reviewActivity[key] || 0)
+    });
+    return Number(reviewActivity[key] || 0);
   }
 
   getActiveNotebook() {
@@ -721,7 +787,7 @@ export class DriveSyncService {
       remoteByMonth.set(monthYear, payloads);
     }
 
-    const localWordsForSync = this.getWords().filter(word => !(remoteByMonth.size > 0 && this.isFreshInstall && word.source === 'sample'));
+    const localWordsForSync = this.getWords();
     const allMonths = new Set([
       ...localWordsForSync.map(word => word.monthYear),
       ...this.getTombstones().map(item => item.monthYear),
@@ -794,28 +860,36 @@ export class DriveSyncService {
       }
     }
 
-    let settings = this.getSettings();
+    const localSettings = this.getSettings();
+    let settings = localSettings;
     let remoteSettingsPayload = null;
     if (settingsFile) remoteSettingsPayload = await this.downloadJsonFile(settingsFile.id);
-    const remoteSettings = remoteSettingsPayload?.settings;
-    if (remoteSettings && (this.isFreshInstall || recordTimestamp(remoteSettings) > recordTimestamp(settings))) settings = remoteSettings;
+    const remoteSettings = remoteSettingsPayload?.settings || {};
+    settings = mergeDriveSettings(localSettings, remoteSettings, { freshInstall: this.isFreshInstall });
     const localGemini = getGeminiBackupRecord(this.storage);
     const remoteGemini = remoteSettingsPayload?.googleAiStudio || null;
     const chosenGemini = remoteGemini && (this.isFreshInstall || !localGemini || recordTimestamp(remoteGemini) > recordTimestamp(localGemini))
       ? remoteGemini
       : localGemini;
+    const localImageProvider = getImageProviderBackupRecord(this.storage);
+    const remoteImageProvider = remoteSettingsPayload?.imageSearchProvider || null;
+    const chosenImageProvider = remoteImageProvider && (this.isFreshInstall || !localImageProvider || recordTimestamp(remoteImageProvider) > recordTimestamp(localImageProvider))
+      ? remoteImageProvider
+      : localImageProvider;
     const settingsPayload = {
       schemaVersion: SCHEMA_VERSION,
       app: 'KeepVocab',
       updatedAt: new Date().toISOString(),
       settings,
-      ...(chosenGemini ? { googleAiStudio: chosenGemini } : {})
+      ...(chosenGemini ? { googleAiStudio: chosenGemini } : {}),
+      ...(chosenImageProvider ? { imageSearchProvider: chosenImageProvider } : {})
     };
     if (!settingsFile) {
       await this.createJsonFile(folder.id, 'KeepVocab Settings.json', 'settings', settingsPayload);
       createdFiles += 1;
     } else if (JSON.stringify(remoteSettings || {}) !== JSON.stringify(settings)
-      || JSON.stringify(remoteGemini || null) !== JSON.stringify(chosenGemini || null)) {
+      || JSON.stringify(remoteGemini || null) !== JSON.stringify(chosenGemini || null)
+      || JSON.stringify(remoteImageProvider || null) !== JSON.stringify(chosenImageProvider || null)) {
       await this.updateJsonFile(settingsFile.id, settingsPayload);
       updatedFiles += 1;
     }
@@ -825,6 +899,7 @@ export class DriveSyncService {
     this.saveTombstones(finalTombstones, { silent: true });
     this.write(STORAGE_KEY_SETTINGS, settings);
     if (chosenGemini) restoreGeminiBackupRecord(chosenGemini, this.storage);
+    if (chosenImageProvider) restoreImageProviderBackupRecord(chosenImageProvider, this.storage);
     this.refreshNotebooks();
     this.suppressEvents = false;
     const lastSynced = new Date().toISOString();

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildVisualSceneDescriptions, buildVisualSearchQueries, canonicalVisualTerm, findPexelsImages, findRelevantImages, getImageProviderSettings, imageFeedbackFor, rankOpenverseImages, saveImageProviderSettings, updateImageFeedback } from '../js/services/imageSearch.js';
+import { buildVisualSceneDescriptions, buildVisualSearchQueries, canonicalVisualTerm, compactGeneratedScene, compactVisualSearchQuery, findLibraryOfCongressImages, findNasaImages, findPexelsImages, findRelevantImages, findWikimediaImages, generateVisualScenesWithGemini, getImageProviderBackupRecord, getImageProviderSettings, imageFeedbackFor, isConcreteVisualScene, rankOpenverseImages, restoreImageProviderBackupRecord, saveImageProviderSettings, updateImageFeedback } from '../js/services/imageSearch.js';
 
 const runningWord = {
   word: 'to run',
@@ -12,7 +12,8 @@ const runningWord = {
 test('image searches derive visible concepts from the selected definition', () => {
   assert.equal(canonicalVisualTerm('to run'), 'run');
   const queries = buildVisualSearchQueries(runningWord);
-  assert.ok(queries.some(query => query.includes('move speed faster than walk')));
+  assert.ok(queries.some(query => query.includes('athlete sprinting')));
+  assert.ok(queries.some(query => query.includes('run move speed faster')));
   assert.equal(queries.some(query => /phrasal|grammar|worksheet/.test(query)), false);
 });
 
@@ -32,9 +33,9 @@ test('person meanings become visible human scenes instead of raw-spelling search
     partOfSpeech: 'noun',
     definition: 'A stupid or foolish person.'
   });
-  assert.ok(queries.some(query => /^person /.test(query)));
-  assert.match(queries[0], /stupid|foolish/);
-  assert.equal(queries.some(query => query === 'idiot'), false);
+  assert.ok(queries.some(query => /person/.test(query)));
+  assert.match(queries[0], /confused person|obvious mistake/);
+  assert.notEqual(queries[0], 'idiot');
 });
 
 test('image suggestions remove duplicate variants of the same titled image', () => {
@@ -54,8 +55,8 @@ test('dictionary examples never influence automatic image concepts', () => {
     example: 'The beauty of cherry blossoms is ephemeral.'
   });
   const withoutExample = buildVisualSearchQueries({
-    word: 'something else',
-    partOfSpeech: 'noun',
+    word: 'ephemeral',
+    partOfSpeech: 'adjective',
     definition: 'lasting for a very short time',
     example: 'A completely different online dictionary context about city traffic.'
   });
@@ -68,18 +69,76 @@ test('different senses of the same spelling receive different visual concepts', 
   const musical = buildVisualSearchQueries({ word: 'augment', partOfSpeech: 'verb', definition: 'To slow the tempo or meter for a dramatic passage.' });
   const biological = buildVisualSearchQueries({ word: 'proliferation', partOfSpeech: 'noun', definition: 'The process by which an organism produces others of its kind; breeding and reproduction.' });
 
-  assert.match(louder[0], /increase|larger/);
-  assert.match(musical[0], /tempo|meter/);
+  assert.match(louder[0], /inflating|grows/);
+  assert.match(musical[0], /conductor|orchestra/);
   assert.match(biological[0], /organism|produces|breeding/);
   assert.notEqual(louder[0], musical[0]);
+});
+
+test('Gemini turns the exact word sense into concise public-catalog search scenes when configured', async () => {
+  const values = new Map([['keepvocab_gemini_live_key_v1', 'AIza-test-key-for-image-scenes-123456789']]);
+  const storage = { getItem: key => values.get(key) || null };
+  let prompt = '';
+  const scenes = await generateVisualScenesWithGemini(
+    { word: 'bank', partOfSpeech: 'noun', definition: 'The land beside a river.' },
+    {
+      storage,
+      fetchImpl: async (_url, options) => {
+        prompt = JSON.parse(options.body).contents[0].parts[0].text;
+        return { ok: true, async json() { return { candidates: [{ content: { parts: [{ text: '{"scenes":["family relaxing beside grassy river at sunset","children walking along shallow river shoreline","fisherman standing beside muddy river under trees"]}' }] } }] }; } };
+      }
+    }
+  );
+
+  assert.match(prompt, /Target word: bank/);
+  assert.match(prompt, /Exact selected definition: The land beside a river/);
+  assert.match(prompt, /Exactly 5-7 concrete words/);
+  assert.match(prompt, /worker cutting a metal sheet/);
+  assert.deepEqual(scenes, ['family relaxing beside grassy river at sunset', 'children walking along shallow river shoreline', 'fisherman standing beside muddy river under trees']);
+});
+
+test('AI visual descriptions are mechanically capped at seven useful words', () => {
+  assert.equal(
+    compactGeneratedScene('A family relaxing on the grassy river edge at sunset'),
+    'family relaxing grassy river edge sunset'
+  );
+});
+
+test('physical detachment uses separation scenes rather than destructive cutting', () => {
+  const scenes = buildVisualSceneDescriptions({
+    word: 'detachment',
+    partOfSpeech: 'noun',
+    definition: 'The action or process of detaching or separating something.'
+  });
+
+  assert.deepEqual(scenes, [
+    'carabiner unclipped from a climbing rope',
+    'mechanic removing a wheel from a bicycle',
+    'person unplugging a cable from a wall socket'
+  ]);
+  assert.equal(scenes.some(scene => /cut|sheet/.test(scene)), false);
+});
+
+test('visual-scene validation rejects word repetition and clipped definitions', () => {
+  const conquest = { word: 'conquest', definition: 'A victory gained through force.' };
+  assert.equal(isConcreteVisualScene('conquest victory gained through force', conquest), false);
+  assert.equal(isConcreteVisualScene('victory gained through military force', conquest), false);
+  assert.equal(isConcreteVisualScene('soldier planting a flag on a captured hilltop', conquest), false);
+  assert.equal(isConcreteVisualScene('soldier planting flag on captured hilltop', conquest), true);
+  assert.equal(compactVisualSearchQuery('soldier planting a flag on a captured hilltop'), 'soldier flag hilltop');
+  assert.deepEqual(buildVisualSceneDescriptions(conquest), [
+    'soldier planting flag on captured hilltop',
+    'victorious army entering a captured fortress',
+    'leader overlooking territory after a battle'
+  ]);
 });
 
 test('uncurated verb senses include definition words instead of searching spelling alone', () => {
   const movement = buildVisualSearchQueries({ word: 'run', partOfSpeech: 'verb', definition: 'Move quickly on foot.' });
   const business = buildVisualSearchQueries({ word: 'run', partOfSpeech: 'verb', definition: 'Manage and operate a business.' });
 
-  assert.match(movement[0], /move quickly foot/);
-  assert.match(business[0], /manage operate business/);
+  assert.match(movement[0], /athlete sprinting/);
+  assert.match(business[0], /manager directing employees/);
   assert.notEqual(movement[0], business[0]);
 });
 
@@ -98,7 +157,8 @@ test('a saved custom visual interpretation is searched before generated concepts
 test('an active custom interpretation can suppress unrelated generated fallbacks', async () => {
   const requestedQueries = [];
   const fetchImpl = async url => {
-    requestedQueries.push(new URL(url).searchParams.get('query'));
+    const request = new URL(url);
+    if (request.hostname === 'api.pexels.com') requestedQueries.push(request.searchParams.get('query'));
     return {
       ok: true,
       async json() {
@@ -124,8 +184,8 @@ test('an active custom interpretation can suppress unrelated generated fallbacks
     }
   );
 
-  assert.deepEqual(requestedQueries, ['soap bubble popping in sunlight']);
-  assert.equal(results[0].searchQuery, 'soap bubble popping in sunlight');
+  assert.deepEqual(requestedQueries, ['soap bubble popping']);
+  assert.equal(results[0].searchQuery, 'soap bubble popping');
 });
 
 test('already attached image URLs are excluded from new suggestions', async () => {
@@ -180,22 +240,206 @@ test('Pexels requests use the exact visual concept and preserve attribution meta
   assert.equal(results[0].sourceUrl, 'https://www.pexels.com/photo/42/');
 });
 
-test('image provider preference and key are stored only in the supplied browser storage', () => {
+test('Wikimedia Commons provides keyless image results with attribution metadata', async () => {
+  let requestedUrl = '';
+  const results = await findWikimediaImages('people running', async url => {
+    requestedUrl = url;
+    return {
+      ok: true,
+      async json() {
+        return { query: { pages: { 42: {
+          title: 'File:People running in a city park.jpg',
+          imageinfo: [{
+            thumburl: 'https://upload.wikimedia.org/running-thumb.jpg',
+            descriptionurl: 'https://commons.wikimedia.org/wiki/File:People_running.jpg',
+            thumbwidth: 1200,
+            thumbheight: 800,
+            mime: 'image/jpeg',
+            extmetadata: { Artist: { value: '<b>A Photographer</b>' }, LicenseShortName: { value: 'CC BY-SA 4.0' } }
+          }]
+        } } } };
+      }
+    };
+  });
+  const request = new URL(requestedUrl);
+  assert.equal(request.searchParams.get('origin'), '*');
+  assert.equal(request.searchParams.get('gsrnamespace'), '6');
+  assert.equal(results[0].source, 'Wikimedia Commons');
+  assert.equal(results[0].attribution, 'A Photographer via Wikimedia Commons');
+  assert.equal(results[0].license, 'CC BY-SA 4.0');
+});
+
+test('Wikimedia Commons rejects PDFs and other non-raster search results', async () => {
+  const results = await findWikimediaImages('unique-pdf-filter-query', async () => ({
+    ok: true,
+    async json() {
+      return { query: { pages: {
+        1: { title: 'File:Vocabulary handbook.pdf', imageinfo: [{ thumburl: 'https://upload.wikimedia.org/handbook.jpg', descriptionurl: 'https://commons.wikimedia.org/wiki/File:Handbook.pdf', mime: 'application/pdf' }] },
+        2: { title: 'File:Vocabulary learner.jpg', imageinfo: [{ thumburl: 'https://upload.wikimedia.org/learner.jpg', descriptionurl: 'https://commons.wikimedia.org/wiki/File:Learner.jpg', mime: 'image/jpeg', extmetadata: {} }] }
+      } } };
+    }
+  }));
+  assert.deepEqual(results.map(image => image.title), ['Vocabulary learner.jpg']);
+});
+
+test('Library of Congress adds a third keyless photo catalog with source metadata', async () => {
+  let requestedUrl = '';
+  const results = await findLibraryOfCongressImages('bank customer money', async url => {
+    requestedUrl = url;
+    return {
+      ok: true,
+      async json() {
+        return { results: [{
+          id: 'http://www.loc.gov/item/123/',
+          title: 'Customer depositing money at a bank counter',
+          image_url: ['https://tile.loc.gov/thumb.jpg', 'https://tile.loc.gov/medium.jpg'],
+          contributor: ['Example photographer'],
+          subject: ['banks', 'customers', 'money'],
+          item: { rights_advisory: 'No known restrictions on publication.' }
+        }] };
+      }
+    };
+  });
+  const request = new URL(requestedUrl);
+  assert.equal(request.origin, 'https://www.loc.gov');
+  assert.equal(request.pathname, '/photos/');
+  assert.equal(request.searchParams.get('q'), 'bank customer money');
+  assert.equal(request.searchParams.get('fo'), 'json');
+  assert.equal(results[0].source, 'Library of Congress');
+  assert.equal(results[0].sourceUrl, 'https://www.loc.gov/item/123/');
+  assert.match(results[0].attribution, /Example photographer/);
+});
+
+test('NASA Images adds a fourth keyless catalog with its official source page', async () => {
+  let requestedUrl = '';
+  const results = await findNasaImages('astronaut planting flag moon', async url => {
+    requestedUrl = url;
+    return {
+      ok: true,
+      async json() {
+        return { collection: { items: [{
+          data: [{ nasa_id: 'AS11-40-5875', title: 'Astronaut planting a flag on the Moon', center: 'JSC', keywords: ['astronaut', 'flag', 'moon'] }],
+          links: [{ href: 'https://images-assets.nasa.gov/image/AS11-40-5875/preview.jpg', render: 'image' }]
+        }] } };
+      }
+    };
+  });
+  const request = new URL(requestedUrl);
+  assert.equal(request.origin, 'https://images-api.nasa.gov');
+  assert.equal(request.searchParams.get('media_type'), 'image');
+  assert.equal(results[0].source, 'NASA Images');
+  assert.equal(results[0].sourceUrl, 'https://images.nasa.gov/details/AS11-40-5875');
+  assert.match(results[0].attribution, /JSC via NASA/);
+});
+
+test('all keyless catalogs run concurrently and ten results are mixed by source', { timeout: 2000 }, async () => {
+  const concept = 'soldier planting flag captured hilltop';
+  let started = 0;
+  let releaseSearches;
+  const allStarted = new Promise(resolve => { releaseSearches = resolve; });
+  const waitForAll = async () => {
+    started += 1;
+    if (started === 4) releaseSearches();
+    await allStarted;
+  };
+  const fetchImpl = async url => {
+    const request = new URL(url);
+    await waitForAll();
+    const titles = [1, 2, 3].map(index => `${concept} ${request.hostname} ${index}`);
+    if (request.hostname === 'api.openverse.org') return { ok: true, async json() { return { results: titles.map((title, index) => ({ title, thumbnail: `https://openverse.example/${index}.jpg`, foreign_landing_url: `https://openverse.example/source/${index}`, tags: concept.split(' '), category: 'photograph' })) }; } };
+    if (request.hostname === 'commons.wikimedia.org') return { ok: true, async json() { return { query: { pages: Object.fromEntries(titles.map((title, index) => [index, { title: `File:${title}.jpg`, imageinfo: [{ thumburl: `https://wikimedia.example/${index}.jpg`, descriptionurl: `https://commons.wikimedia.org/wiki/File:${index}.jpg`, mime: 'image/jpeg', extmetadata: { ImageDescription: { value: concept } } }] }])) } }; } };
+    if (request.hostname === 'www.loc.gov') return { ok: true, async json() { return { results: titles.map((title, index) => ({ id: `https://www.loc.gov/item/${index}/`, title, image_url: [`https://loc.example/${index}.jpg`], subject: concept.split(' ') })) }; } };
+    return { ok: true, async json() { return { collection: { items: titles.map((title, index) => ({ data: [{ nasa_id: `NASA-${index}`, title, keywords: concept.split(' ') }], links: [{ href: `https://nasa.example/${index}.jpg`, render: 'image' }] })) } }; } };
+  };
+
+  const results = await findRelevantImages({ word: 'conquest', definition: 'A victory gained through force.' }, {
+    fetchImpl,
+    aiScenes: false,
+    extraQueries: [concept],
+    onlyExtraQueries: true,
+    limit: 10
+  });
+
+  assert.equal(started, 4);
+  assert.equal(results.length, 10);
+  assert.deepEqual(results.slice(0, 4).map(result => result.source), ['Openverse', 'Wikimedia Commons', 'Library of Congress', 'NASA Images']);
+});
+
+test('result-page changes are forwarded to every image provider', async () => {
+  const requested = new Map();
+  const fetchImpl = async url => {
+    const request = new URL(url);
+    requested.set(request.hostname, request);
+    if (request.hostname === 'api.pexels.com') return { ok: true, async json() { return { photos: [] }; } };
+    if (request.hostname === 'api.openverse.org') return { ok: true, async json() { return { results: [] }; } };
+    if (request.hostname === 'commons.wikimedia.org') return { ok: true, async json() { return { query: { pages: {} } }; } };
+    if (request.hostname === 'www.loc.gov') return { ok: true, async json() { return { results: [] }; } };
+    return { ok: true, async json() { return { collection: { items: [] } }; } };
+  };
+
+  await findRelevantImages({ word: 'unique-pagination-word', definition: 'A test meaning.' }, {
+    provider: 'pexels', pexelsApiKey: 'test-key', fetchImpl, aiScenes: false,
+    extraQueries: ['unique pagination scene'], onlyExtraQueries: true, page: 2
+  });
+
+  assert.equal(requested.get('api.pexels.com').searchParams.get('page'), '2');
+  assert.equal(requested.get('api.openverse.org').searchParams.get('page'), '2');
+  assert.equal(requested.get('commons.wikimedia.org').searchParams.get('gsroffset'), '40');
+  assert.equal(requested.get('www.loc.gov').searchParams.get('sp'), '2');
+  assert.equal(requested.get('images-api.nasa.gov').searchParams.get('page'), '2');
+});
+
+test('image provider preference and key can be backed up and restored', () => {
   const values = new Map();
   const storage = {
     getItem: key => values.get(key) || null,
     setItem: (key, value) => values.set(key, value)
   };
-  saveImageProviderSettings({ provider: 'pexels', pexelsApiKey: ' local-key ' }, storage);
-  assert.deepEqual(getImageProviderSettings(storage), { provider: 'pexels', pexelsApiKey: 'local-key' });
+  saveImageProviderSettings({ provider: 'pexels', pexelsApiKey: ' local-key ', updatedAt: '2026-08-21T10:00:00.000Z' }, storage);
+  assert.deepEqual(getImageProviderSettings(storage), { provider: 'pexels', pexelsApiKey: 'local-key', updatedAt: '2026-08-21T10:00:00.000Z' });
+  const backup = getImageProviderBackupRecord(storage);
+  const restoredValues = new Map();
+  const restoredStorage = {
+    getItem: key => restoredValues.get(key) || null,
+    setItem: (key, value) => restoredValues.set(key, value)
+  };
+  restoreImageProviderBackupRecord(backup, restoredStorage);
+  assert.deepEqual(getImageProviderSettings(restoredStorage), backup);
+});
+
+test('saved Pexels settings are read automatically and Pexels results are returned first', async () => {
+  const values = new Map();
+  const storage = {
+    getItem: key => values.get(key) || null,
+    setItem: (key, value) => values.set(key, value)
+  };
+  saveImageProviderSettings({ provider: 'pexels', pexelsApiKey: 'saved-device-key', updatedAt: '2026-08-21T10:00:00.000Z' }, storage, { silent: true });
+  const requested = [];
+  const fetchImpl = async (url, options = {}) => {
+    const request = new URL(url);
+    requested.push({ host: request.hostname, query: request.searchParams.get('query') || request.searchParams.get('q'), authorization: options.headers?.Authorization || '' });
+    if (request.hostname === 'api.pexels.com') return { ok: true, async json() { return { photos: [{
+      url: 'https://www.pexels.com/photo/42/', photographer: 'A Photographer', alt: 'Soldier holding a flag', width: 1200, height: 800,
+      src: { large: 'https://images.pexels.com/photos/42/large.jpeg' }
+    }] }; } };
+    return { ok: true, async json() { return {}; } };
+  };
+
+  const results = await findRelevantImages({ word: 'conquest', definition: 'A victory gained through force.' }, {
+    storage, fetchImpl, aiScenes: false, extraQueries: ['soldier planting a flag on a captured hilltop'], onlyExtraQueries: true, limit: 10
+  });
+
+  assert.equal(requested.find(item => item.host === 'api.pexels.com')?.authorization, 'saved-device-key');
+  assert.equal(requested.find(item => item.host === 'api.pexels.com')?.query, 'soldier flag hilltop');
+  assert.equal(results[0].source, 'Pexels');
 });
 
 test('visual scenes are sense-specific for identical spellings without a curated exception list', () => {
   const movement = buildVisualSceneDescriptions({ word: 'run', partOfSpeech: 'verb', definition: 'Move quickly on foot.' });
   const business = buildVisualSceneDescriptions({ word: 'run', partOfSpeech: 'verb', definition: 'Manage and operate a business.' });
   assert.notDeepEqual(movement, business);
-  assert.match(movement[0], /move quickly foot/);
-  assert.match(business[0], /manage operate business/);
+  assert.match(movement[0], /athlete sprinting/);
+  assert.match(business[0], /manager directing employees/);
 });
 
 test('the same definition produces the same automatic concepts regardless of spelling or part of speech', () => {

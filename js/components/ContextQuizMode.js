@@ -1,8 +1,9 @@
-import { driveSync } from '../services/driveSync.js?v=63';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=63';
-import { clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=63';
+import { driveSync } from '../services/driveSync.js?v=79';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=79';
+import { clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=79';
 import { escapeHtml } from '../utils/html.js';
+import { DEFAULT_SESSION_SIZE, selectPracticeWords } from '../services/dailySession.js?v=79';
 
 function go(view, onNavigate) {
   if (window.location.hash === `#${view}`) onNavigate(view);
@@ -13,16 +14,8 @@ function shuffle(values) {
   return [...values].sort(() => Math.random() - .5);
 }
 
-export function selectContextWords(words, limit = 7) {
-  const now = Date.now();
-  return [...(words || [])]
-    .filter(word => word?.word && word?.definition)
-    .sort((a, b) => {
-      const score = word => (Date.parse(word.nextReviewDate || 0) <= now ? 20 : 0)
-        + Number(word.mistakes?.recentFailures?.length || word.mistakes?.recentFailures || 0) * 4;
-      return score(b) - score(a);
-    })
-    .slice(0, Math.max(0, limit));
+export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE) {
+  return selectPracticeWords(words, { limit });
 }
 
 export function renderContextQuizMode(container, onNavigate) {
@@ -95,6 +88,7 @@ export function renderContextQuizMode(container, onNavigate) {
       const correct = selectedId === target.id;
       if (correct) score += 1;
       recordExerciseResult({ wordId: target.id, exerciseType: 'context-cloze', correct, recallType: 'context', producedUnaided: false, confusedWithWordId: correct ? '' : selectedId });
+      window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       render();
     }));
     container.querySelector('#context-next')?.addEventListener('click', () => { current += 1; answered = false; selectedId = ''; render(); });

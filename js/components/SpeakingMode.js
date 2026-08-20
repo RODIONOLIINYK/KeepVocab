@@ -8,12 +8,12 @@ import {
   getLessonPlan,
   buildCoachInitiativeCue,
   buildSpeakingInstruction
-} from '../data/speakingLessons.js?v=63';
-import { GeminiLiveSession } from '../services/geminiLive.js?v=63';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=63';
-import { driveSync } from '../services/driveSync.js?v=63';
-import { recordSpeakingStats } from '../services/learningStats.js?v=63';
-import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=63';
+} from '../data/speakingLessons.js?v=79';
+import { GeminiLiveSession } from '../services/geminiLive.js?v=79';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=79';
+import { driveSync } from '../services/driveSync.js?v=79';
+import { recordSpeakingStats } from '../services/learningStats.js?v=79';
+import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=79';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
 export const COACH_SILENCE_MS = 9000;

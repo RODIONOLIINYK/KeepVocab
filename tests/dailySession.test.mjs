@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildDailySession, buildWeakWordsSession, hasImmediateDuplicates, recommendedExerciseType } from '../js/services/dailySession.js';
+import { DEFAULT_SESSION_SIZE, buildDailySession, buildWeakWordsSession, hasImmediateDuplicates, recommendedExerciseType, selectPracticeWords } from '../js/services/dailySession.js';
 
 const NOW = new Date('2026-08-14T12:00:00.000Z');
 
@@ -18,10 +18,9 @@ function makeWord(index, overrides = {}) {
 
 test('Daily Session prioritizes scheduled vocabulary', () => {
   const words = Array.from({ length: 20 }, (_, index) => makeWord(index, { nextReviewDate: index < 10 ? new Date(NOW.getTime() - index * 60000).toISOString() : new Date(NOW.getTime() + 86400000).toISOString() }));
-  const session = buildDailySession(words, { now: NOW, targetSize: 14 });
-  assert.equal(session.exercises.length, 14);
-  assert.ok(session.composition.due >= 7);
-  assert.ok(session.exercises.slice(0, 7).every(exercise => exercise.source === 'due'));
+  const session = buildDailySession(words, { now: NOW });
+  assert.equal(session.exercises.length, DEFAULT_SESSION_SIZE);
+  assert.ok(session.composition.due + session.composition.weak >= 8);
 });
 
 test('Daily Session includes weak vocabulary without letting it take over', () => {
@@ -38,6 +37,17 @@ test('Daily Session avoids immediate unnecessary duplicate words', () => {
   const session = buildDailySession(words, { now: NOW, targetSize: 6 });
   assert.equal(session.exercises.length, 6);
   assert.equal(hasImmediateDuplicates(session.exercises), false);
+});
+
+test('practice selection prioritizes problems and keeps one meaning per spelling', () => {
+  const words = [
+    makeWord(1, { word: 'bank', definition: 'A financial institution.', nextReviewDate: new Date(NOW.getTime() + 86400000).toISOString() }),
+    makeWord(2, { word: 'bank', definition: 'Land beside a river.', mistakes: { incorrectAttempts: 4, consecutiveFailures: 2, recentFailures: [NOW.toISOString()] } }),
+    makeWord(3, { word: 'steady', definition: 'Firmly fixed.', nextReviewDate: new Date(NOW.getTime() - 86400000).toISOString() }),
+    makeWord(4, { word: 'easy', definition: 'Not difficult.', nextReviewDate: new Date(NOW.getTime() + 86400000).toISOString(), mastery: { recognition: 1, recall: 1, context: 1, productive: 1 } })
+  ];
+  const selected = selectPracticeWords(words, { now: NOW, limit: 10 });
+  assert.deepEqual(selected.map(word => word.id), ['w-2', 'w-3', 'w-4']);
 });
 
 test('Daily Session handles empty and one-word libraries safely', () => {

@@ -1,9 +1,10 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=63';
-import { speakWord } from '../services/speechService.js?v=63';
-import { getDueWords } from '../services/srsEngine.js?v=63';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
-import { playInteractionSound } from '../services/interactionSound.js?v=63';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=79';
+import { speakWord } from '../services/speechService.js?v=79';
+import { getDueWords } from '../services/srsEngine.js?v=79';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
+import { playInteractionSound } from '../services/interactionSound.js?v=79';
 import { escapeHtml } from '../utils/html.js';
+import { selectPracticeWords } from '../services/dailySession.js?v=79';
 
 function normalizeAnswer(value) {
   return String(value || '').trim().toLowerCase().replace(/[’]/g, "'").replace(/\s+/g, ' ');
@@ -11,9 +12,8 @@ function normalizeAnswer(value) {
 
 export function renderReviewView(container, onNavigate) {
   const activeNotebook = driveSync.getActiveNotebook() || getCurrentMonthNotebookTitle();
-  const queue = [...getDueWords().filter(word => word.notebook === activeNotebook)];
+  const queue = selectPracticeWords(getDueWords().filter(word => word.notebook === activeNotebook));
   const originalCount = queue.length;
-  const retried = new Set();
   let index = 0;
   let score = 0;
   let answered = false;
@@ -46,7 +46,7 @@ export function renderReviewView(container, onNavigate) {
             <div class="useful-empty-state mode-complete">
               <img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating">
               <h2>Review complete</h2>
-              <p>You typed ${score} of ${originalCount} due words correctly. Missed words were repeated once.</p>
+              <p>You typed ${score} of ${originalCount} due words correctly. Missed words will lead your next review.</p>
               <div class="review-score-orb"><strong>${score}</strong><span>correct</span></div>
               <div class="inline-actions"><button class="btn-green-solid" id="review-go-dashboard">Back to dashboard</button><button class="status-pill offline" id="review-go-stats">View stats</button></div>
             </div>` : `
@@ -84,10 +84,6 @@ export function renderReviewView(container, onNavigate) {
       correct = normalizeAnswer(answer) === normalizeAnswer(current.word);
       playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
-      if (!correct && !retried.has(current.id)) {
-        retried.add(current.id);
-        queue.push(current);
-      }
       recordExerciseResult({
         wordId: current.id,
         exerciseType: 'typed-review',

@@ -1,8 +1,8 @@
-import { getDueWords } from './srsEngine.js?v=63';
-import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=63';
+import { getDueWords } from './srsEngine.js?v=79';
+import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=79';
 
-export const DEFAULT_SESSION_SIZE = 14;
-export const DEFAULT_SESSION_MIX = Object.freeze({ due: 0.55, weak: 0.23, growth: 0.22 });
+export const DEFAULT_SESSION_SIZE = 10;
+export const DEFAULT_SESSION_MIX = Object.freeze({ due: 0.35, weak: 0.5, growth: 0.15 });
 
 function stableSort(items, score) {
   return [...items].sort((a, b) => score(b) - score(a) || String(a.id).localeCompare(String(b.id)));
@@ -13,6 +13,37 @@ export function weaknessScore(word, now = new Date()) {
   const recentCutoff = now.getTime() - 14 * 24 * 60 * 60 * 1000;
   const recent = mistakes.recentFailures.filter(value => Date.parse(value) >= recentCutoff).length;
   return mistakes.consecutiveFailures * 4 + recent * 2 + mistakes.incorrectAttempts * 0.35 + Object.keys(mistakes.confusions).length;
+}
+
+export function practicePriorityScore(word, now = new Date()) {
+  const weakness = weaknessScore(word, now);
+  const dueAt = Date.parse(word?.nextReviewDate || word?.createdAt || 0);
+  const overdueDays = Number.isFinite(dueAt) && dueAt <= now.getTime()
+    ? Math.min(365, Math.max(0, (now.getTime() - dueAt) / (24 * 60 * 60 * 1000)))
+    : 0;
+  const mastery = normalizeMastery(word, now);
+  const recallNeed = 1 - Math.max(mastery.recognition, mastery.recall, mastery.context, mastery.productive, mastery.speaking);
+  const neverPracticed = mastery.lastPracticedAt ? 0 : 1;
+  return weakness * 10_000 + (dueAt <= now.getTime() ? 1_000 : 0) + overdueDays + recallNeed * 100 + neverPracticed * 25;
+}
+
+export function rankPracticeWords(words, options = {}) {
+  const now = options.now ? new Date(options.now) : new Date();
+  const valid = (Array.isArray(words) ? words : []).filter(word => word?.id && word.word && word.definition);
+  const ranked = stableSort(valid, word => practicePriorityScore(word, now));
+  if (options.uniqueSpellings === false) return ranked;
+  const seenSpellings = new Set();
+  return ranked.filter(word => {
+    const spelling = String(word.word).trim().toLowerCase();
+    if (seenSpellings.has(spelling)) return false;
+    seenSpellings.add(spelling);
+    return true;
+  });
+}
+
+export function selectPracticeWords(words, options = {}) {
+  const limit = Math.max(0, Math.round(options.limit ?? DEFAULT_SESSION_SIZE));
+  return rankPracticeWords(words, options).slice(0, limit);
 }
 
 export function recommendedExerciseType(word, previousTypes = []) {
@@ -48,8 +79,7 @@ export function buildDailySession(words, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
   const targetSize = Math.max(1, Math.round(options.targetSize || DEFAULT_SESSION_SIZE));
   const mix = { ...DEFAULT_SESSION_MIX, ...(options.mix || {}) };
-  const valid = (Array.isArray(words) ? words : []).filter(word => word?.id && word.word && word.definition);
-  const unique = [...new Map(valid.map(word => [word.id, word])).values()];
+  const unique = rankPracticeWords(words, { now });
   if (!unique.length) return { id: `daily-${now.toISOString().slice(0, 10)}`, createdAt: now.toISOString(), exercises: [], composition: { due: 0, weak: 0, growth: 0 }, estimatedMinutes: 0 };
 
   const sessionSize = sessionLengthForLibrary(unique.length, targetSize);
@@ -64,10 +94,10 @@ export function buildDailySession(words, options = {}) {
 
   const selectedIds = new Set();
   const selected = [];
-  const dueTarget = Math.min(sessionSize, Math.round(sessionSize * mix.due));
-  const weakTarget = Math.min(sessionSize - dueTarget, Math.round(sessionSize * mix.weak));
-  selected.push(...takeUnique(duePool, dueTarget, selectedIds).map(word => ({ word, source: 'due' })));
+  const weakTarget = Math.min(sessionSize, Math.round(sessionSize * mix.weak));
   selected.push(...takeUnique(weakPool, weakTarget, selectedIds).map(word => ({ word, source: 'weak' })));
+  const priorityTarget = Math.min(sessionSize, Math.round(sessionSize * (mix.weak + mix.due)));
+  selected.push(...takeUnique(duePool, priorityTarget - selected.length, selectedIds).map(word => ({ word, source: 'due' })));
   selected.push(...takeUnique(growthPool, sessionSize - selected.length, selectedIds).map(word => ({ word, source: 'growth' })));
   selected.push(...takeUnique(duePool, sessionSize - selected.length, selectedIds).map(word => ({ word, source: 'due' })));
   selected.push(...takeUnique(weakPool, sessionSize - selected.length, selectedIds).map(word => ({ word, source: 'weak' })));

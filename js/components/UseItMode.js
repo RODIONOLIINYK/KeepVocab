@@ -1,9 +1,9 @@
-import { driveSync } from '../services/driveSync.js?v=63';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=63';
-import { generateGeminiContent, getGeminiSettings } from '../services/geminiSettings.js?v=63';
-import { weaknessScore } from '../services/dailySession.js?v=63';
-import { playInteractionSound } from '../services/interactionSound.js?v=63';
-import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=63';
+import { driveSync } from '../services/driveSync.js?v=79';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
+import { generateGeminiContent, getGeminiSettings } from '../services/geminiSettings.js?v=79';
+import { selectPracticeWords } from '../services/dailySession.js?v=79';
+import { playInteractionSound } from '../services/interactionSound.js?v=79';
+import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=79';
 import { escapeHtml } from '../utils/html.js';
 
 function containsTarget(sentence, target) {
@@ -50,7 +50,7 @@ function go(view, onNavigate) {
 
 export function renderUseItMode(container, onNavigate) {
   const notebook = driveSync.getActiveNotebook();
-  const words = driveSync.getWords().filter(word => word.notebook === notebook).sort((a, b) => weaknessScore(b) - weaknessScore(a));
+  const words = selectPracticeWords(driveSync.getWords().filter(word => word.notebook === notebook));
   if (!words.length) {
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprout-mascot.webp" alt="Sprig"><h2>Add vocabulary first</h2><p>Use It turns saved meanings into active English.</p><button class="btn-green-solid" id="useit-back">Back to Today</button></div></section>`;
     container.querySelector('#useit-back').addEventListener('click', () => go('dashboard', onNavigate));
@@ -112,6 +112,7 @@ export function renderUseItMode(container, onNavigate) {
       button.textContent = 'Checking…';
       result = await evaluateUseItSentence(word, sentence);
       recordExerciseResult({ wordId: word.id, exerciseType: 'use-it', correct: result.correct, responseTimeMs: performance.now() - startedAt, hintsUsed: 0, recallType: 'productive', producedUnaided: true, learnerResponse: sentence });
+      window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       playInteractionSound(result.correct ? 'correct' : 'wrong');
       render();
     });

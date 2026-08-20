@@ -1,30 +1,30 @@
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=63';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=63';
-import { speakWord } from './services/speechService.js?v=63';
-import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=63';
-import { recordExerciseResult } from './services/exerciseResult.js?v=63';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=63';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=63';
-import { findRelevantImages } from './services/imageSearch.js?v=63';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=63';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=63';
-import { appendStudyMoment, buildSmartReminderPlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=63';
+import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=79';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=79';
+import { speakWord } from './services/speechService.js?v=79';
+import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=79';
+import { recordExerciseResult } from './services/exerciseResult.js?v=79';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=79';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=79';
+import { findRelevantImages } from './services/imageSearch.js?v=79';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=79';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=79';
+import { appendStudyMoment, buildSmartReminderPlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=79';
 
-import { renderReviewView } from './components/ReviewView.js?v=63';
-import { renderLibraryView } from './components/LibraryView.js?v=63';
-import { renderStatsView } from './components/StatsView.js?v=63';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=63';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=63';
-import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=63';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=63';
-import { renderDashboardView } from './components/DashboardView.js?v=63';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=63';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=63';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=63';
-import { renderUseItMode } from './components/UseItMode.js?v=63';
-import { renderSettingsView } from './components/SettingsView.js?v=63';
+import { renderReviewView } from './components/ReviewView.js?v=79';
+import { renderLibraryView } from './components/LibraryView.js?v=79';
+import { renderStatsView } from './components/StatsView.js?v=79';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=79';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=79';
+import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=79';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=79';
+import { renderDashboardView } from './components/DashboardView.js?v=79';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=79';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=79';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=79';
+import { renderUseItMode } from './components/UseItMode.js?v=79';
+import { renderSettingsView } from './components/SettingsView.js?v=79';
 
 function localDateKey(date = new Date()) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
@@ -162,7 +162,8 @@ function updateDashboardDerivedState() {
     const element = document.getElementById(`b${index + 1}-count`);
     if (element) element.textContent = String(count);
   });
-  const currentWords = allWords.filter(word => word.notebook === driveSync.getActiveNotebook()).length;
+  const currentEntries = allWords.filter(word => word.notebook === driveSync.getActiveNotebook());
+  const currentWords = new Set(currentEntries.map(word => String(word.word || '').trim().toLowerCase())).size;
   const added = document.getElementById('stat-words-added');
   if (added) added.textContent = String(currentWords);
   const due = document.getElementById('stat-synced-today');
@@ -689,7 +690,7 @@ function setupQuickAddModal() {
     exampleInput.value = draft.example || '';
     const position = [...senseDrafts.keys()].indexOf(focusedSenseId) + 1;
     editorTitle.textContent = `Edit meaning ${position}`;
-    editorSubtitle.textContent = selectedSenseIds.size > 1 ? `${selectedSenseIds.size} meanings will be saved` : 'This meaning will be saved as its own card';
+    editorSubtitle.textContent = selectedSenseIds.size > 1 ? `${selectedSenseIds.size} meanings will be grouped in one word card` : 'This meaning will be tracked inside the word card';
   };
 
   const renderSenseOptions = () => {
@@ -975,17 +976,9 @@ function setupDriveBackupModal() {
   const btnOAuth = document.getElementById('btn-modal-oauth');
   const btnSyncNow = document.getElementById('btn-sync-drive-now');
   const btnDisconnect = document.getElementById('btn-disconnect-drive');
-  const clientIdInput = document.getElementById('modal-client-id-input');
   const status = document.getElementById('drive-auth-status');
-  const origin = document.getElementById('drive-origin-value');
-  const webOAuthConfig = document.getElementById('drive-web-oauth-config');
-  const androidOAuthNote = document.getElementById('drive-android-oauth-note');
   const nativeAuthorization = usesNativeGoogleAuthorization();
 
-  clientIdInput.value = driveSync.getGoogleClientId();
-  if (origin) origin.textContent = window.location.origin;
-  if (webOAuthConfig) webOAuthConfig.hidden = nativeAuthorization;
-  if (androidOAuthNote) androidOAuthNote.hidden = !nativeAuthorization;
   btnOpen.addEventListener('click', () => {
     status.textContent = '';
     modal.classList.add('active');
@@ -1001,7 +994,7 @@ function setupDriveBackupModal() {
       : 'Complete authorization in the Google dialog.';
     document.getElementById('pill-syncing').style.display = 'inline-flex';
     try {
-      const result = await driveSync.connectGoogleDrive(clientIdInput.value);
+      const result = await driveSync.connectGoogleDrive();
       renderConnectionState();
       syncedDriveRevision = driveChangeRevision;
       lastAutomaticDriveSyncAt = Date.now();
@@ -1150,6 +1143,8 @@ function renderConnectionState() {
   const syncingPill = document.getElementById('pill-syncing');
   const offlinePill = document.getElementById('pill-offline');
   const openButton = document.getElementById('btn-open-drive-auth');
+  const connectButton = document.getElementById('btn-modal-oauth');
+  const connectedActions = document.getElementById('drive-connected-actions');
   banner.hidden = !auth.lastError;
 
   if (auth.isConnected) {
@@ -1178,6 +1173,8 @@ function renderConnectionState() {
     openButton.innerHTML = '<i class="fa-brands fa-google-drive"></i> Connect Drive';
   }
   syncingPill.style.display = 'none';
+  if (connectButton) connectButton.hidden = auth.isConnected;
+  if (connectedActions) connectedActions.hidden = !auth.isConnected;
 
   const lastSync = document.getElementById('stat-last-sync');
   const syncLabel = document.getElementById('sync-time-label');

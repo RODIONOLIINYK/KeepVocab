@@ -40,6 +40,31 @@ test('the local launch contract keeps the installed app on the API-authorized po
   assert.match(handoff, /http:\/\/127\.0\.0\.1:8085/);
 });
 
+test('Drive uses the built-in web client and the UI never asks users for OAuth configuration', () => {
+  const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
+  const driveSync = readFileSync(resolve(projectRoot, 'js/services/driveSync.js'), 'utf8');
+  assert.match(driveSync, /GOOGLE_WEB_CLIENT_ID = '23308644025-div17rqsfbtgihgf7saoaobcjs4n9h5h\.apps\.googleusercontent\.com'/);
+  assert.doesNotMatch(driveSync, /userinfo\.email|oauth2\/v3\/userinfo/);
+  assert.doesNotMatch(html, /modal-client-id-input|OAuth web client ID|Authorized JavaScript origin/);
+  assert.match(html, /> Connect and synchronize/);
+});
+
+test('the Library has one Edit action with Pexels-first search, public fallbacks, custom links, and file uploads', () => {
+  const library = readFileSync(resolve(projectRoot, 'js/components/LibraryView.js'), 'utf8');
+  const settings = readFileSync(resolve(projectRoot, 'js/components/SettingsView.js'), 'utf8');
+  assert.doesNotMatch(library, /data-change-image|generate-memory-image|id="pexels-api-key"|id="settings-pexels-key"/);
+  assert.match(settings, /id="settings-pexels-key"/);
+  assert.match(settings, /Pexels · recommended/);
+  assert.match(settings, /included in your private KeepVocab Google Drive backup/);
+  assert.match(library, /Openverse, Wikimedia Commons, Library of Congress, and NASA Images/);
+  assert.match(library, /searched in parallel/);
+  assert.match(library, /id="custom-image-url"/);
+  assert.match(library, /id="custom-image-file"/);
+  assert.match(library, /> More images</);
+  assert.match(library, /AI concepts stay concise at 5–7 concrete words/);
+  assert.doesNotMatch(library, /Refresh suggestions/);
+});
+
 test('the Android build declares microphone access and native Drive authorization', () => {
   const manifest = readFileSync(resolve(projectRoot, 'android/app/src/main/AndroidManifest.xml'), 'utf8');
   const gradle = readFileSync(resolve(projectRoot, 'android/app/build.gradle'), 'utf8');
@@ -102,6 +127,7 @@ test('exercise routes share an aligned header and content routes use the same ti
   const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
   const flashcards = readFileSync(resolve(projectRoot, 'js/components/FlashcardsMode.js'), 'utf8');
   const context = readFileSync(resolve(projectRoot, 'js/components/ContextQuizMode.js'), 'utf8');
+  const daily = readFileSync(resolve(projectRoot, 'js/components/DailySessionMode.js'), 'utf8');
   const library = readFileSync(resolve(projectRoot, 'js/components/LibraryView.js'), 'utf8');
   assert.match(app, /'library', 'stats', 'settings'/);
   assert.match(styles, /\.exercise-topbar\s*\{[^}]*display:grid;[^}]*grid-template-columns:auto minmax\(0,1fr\) auto/);
@@ -109,6 +135,12 @@ test('exercise routes share an aligned header and content routes use the same ti
   assert.match(context, /class="exercise-topbar"/);
   assert.match(flashcards, /flashcard-exit'[\s\S]*go\('dashboard', onNavigate\)/);
   assert.match(context, /context-exit'[\s\S]*go\('dashboard', onNavigate\)/);
+  assert.match(styles, /\.daily-session-top > button\s*\{[^}]*justify-self:\s*start;[^}]*width:\s*auto;/);
+  assert.match(styles, /\.daily-session-top \.status-pill\s*\{[^}]*width:\s*34px;[^}]*min-height:\s*34px;/);
+  assert.match(styles, /\.daily-session-top \.status-pill::after\s*\{[^}]*inset:\s*-5px;/);
+  assert.match(daily, /daily-answer-form \$\{exercise\.exerciseType === 'use-it' \? 'is-sentence' : 'is-recall'\}/);
+  assert.match(styles, /\.daily-answer-form\.is-recall\s*\{[^}]*grid-template-columns:minmax\(0,1fr\) auto;[^}]*border-radius:16px;/);
+  assert.match(styles, /\.daily-answer-form\.is-recall:focus-within\s*\{[^}]*border-color:#4ade80;/);
   assert.match(library, /class="content-title-row"/);
   assert.match(styles, /\.settings-icon\.ai,[\s\S]*\.settings-icon\.routine\s*\{[^}]*primary-green/);
 });

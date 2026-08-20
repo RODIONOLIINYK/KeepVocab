@@ -1,4 +1,4 @@
-import { generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=63';
+import { generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=79';
 
 export function canRecordForGemini(storage = globalThis.localStorage) {
   return Boolean(getGeminiSettings(storage).enabled

@@ -1,9 +1,37 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=63';
-import { speakWord } from '../services/speechService.js?v=63';
-import { buildVisualSearchQueries, findRelevantImages, generateMemoryImage, getImageProviderSettings, saveImageProviderSettings, updateImageFeedback } from '../services/imageSearch.js?v=63';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=63';
-import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=63';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=79';
+import { speakWord } from '../services/speechService.js?v=79';
+import { buildVisualSceneDescriptions, findRelevantImages, generateVisualScenesWithGemini, getImageProviderSettings, updateImageFeedback } from '../services/imageSearch.js?v=79';
+import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=79';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('The selected image file could not be read.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+export async function imageFileToDataUrl(file, maxDimension = 1280) {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file?.type)) throw new Error('Choose a JPEG, PNG, or WebP image.');
+  if (Number(file.size || 0) > 10_000_000) throw new Error('Choose an image smaller than 10 MB.');
+  const original = await readFileAsDataUrl(file);
+  const image = await new Promise((resolve, reject) => {
+    const element = new Image();
+    element.onload = () => resolve(element);
+    element.onerror = () => reject(new Error('The selected file is not a readable image.'));
+    element.src = original;
+  });
+  const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+  canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+  const encoded = canvas.toDataURL('image/webp', 0.84);
+  if (encoded.length > 4_000_000) throw new Error('This image is still too large after optimization. Choose a smaller file.');
+  return encoded;
+}
 
 function isDue(word) {
   return new Date(word.nextReviewDate || word.createdAt) <= new Date();
@@ -18,6 +46,49 @@ export function reusedImageUrls(words) {
   return new Set([...counts].filter(([, count]) => count > 1).map(([url]) => url));
 }
 
+export function groupWordCards(words) {
+  const groups = new Map();
+  for (const meaning of words || []) {
+    const key = String(meaning?.word || '').trim().toLowerCase();
+    if (!key) continue;
+    if (!groups.has(key)) groups.set(key, { word: meaning.word, meanings: [] });
+    groups.get(key).meanings.push(meaning);
+  }
+  return [...groups.values()];
+}
+
+export function nextImageSuggestionState(scenes, activeConcept, page = 1) {
+  const concepts = [...new Set((scenes || []).map(value => String(value || '').trim()).filter(Boolean))];
+  const currentPage = Math.max(1, Math.floor(Number(page) || 1));
+  if (!concepts.length) return { concept: String(activeConcept || '').trim(), page: currentPage + 1, index: -1 };
+  const currentIndex = concepts.indexOf(String(activeConcept || '').trim());
+  const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % concepts.length;
+  return {
+    concept: concepts[nextIndex],
+    page: currentIndex >= 0 && nextIndex === 0 ? currentPage + 1 : currentPage,
+    index: nextIndex
+  };
+}
+
+export function activeImageSearchQueries(activeConcept) {
+  const concept = String(activeConcept || '').trim();
+  return concept ? [concept] : [];
+}
+
+export function imageUrlsUsedByOtherWords(words, currentWordId) {
+  return (words || [])
+    .filter(item => item?.id !== currentWordId)
+    .flatMap(item => [item?.imageUrl, item?.imageSourceUrl])
+    .map(value => String(value || '').trim())
+    .filter(Boolean);
+}
+
+export function mergeCurrentImageCandidate(currentImage, results, limit = 10) {
+  const searched = Array.isArray(results) ? results : [];
+  if (!currentImage?.url) return searched.slice(0, limit);
+  return [currentImage, ...searched.filter(image => image?.url !== currentImage.url && (!currentImage.sourceUrl || image?.sourceUrl !== currentImage.sourceUrl))].slice(0, limit);
+}
+
 export function renderLibraryView(container) {
   let selectedMonthYear = (driveSync.getActiveNotebook() || getCurrentMonthNotebookTitle()).replace(/ Vocabulary$/, '');
   let query = '';
@@ -29,12 +100,15 @@ export function renderLibraryView(container) {
   let imageLoading = false;
   let imageError = '';
   let selectedImage = null;
+  let removeImage = false;
   let imageQuery = '';
   let duplicateImages = new Set();
   let activeImageConcept = '';
   let customImageConcept = '';
+  let suggestedImageScenes = [];
   let imageRequestId = 0;
-  let imageProviderSettings = getImageProviderSettings();
+  let imageResultPage = 1;
+  const imageProviderSettings = getImageProviderSettings();
 
   async function loadImageCandidates(wordId, refresh = false) {
     const word = driveSync.getWords().find(item => item.id === wordId);
@@ -43,23 +117,54 @@ export function renderLibraryView(container) {
     imageLoading = true;
     imageError = '';
     render();
-    const excludeUrls = driveSync.getWords().flatMap(item => [item.imageUrl, item.imageSourceUrl]).filter(Boolean);
+    const excludeUrls = imageUrlsUsedByOtherWords(driveSync.getWords(), wordId);
     const customActive = Boolean(customImageConcept && activeImageConcept === customImageConcept);
+    if (!customActive) {
+      const aiScenes = await generateVisualScenesWithGemini(word);
+      if (editId !== wordId || requestId !== imageRequestId) return;
+      const curatedScenes = buildVisualSceneDescriptions(word);
+      suggestedImageScenes = [...new Set([...curatedScenes, ...aiScenes])].slice(0, 3);
+      if (!activeImageConcept) activeImageConcept = suggestedImageScenes[0] || '';
+      if (refresh) {
+        const next = nextImageSuggestionState(suggestedImageScenes, activeImageConcept, imageResultPage);
+        activeImageConcept = next.concept;
+        imageResultPage = next.page;
+      }
+      render();
+    } else if (refresh) {
+      imageResultPage += 1;
+      render();
+    }
+    const sceneQueries = activeImageSearchQueries(activeImageConcept);
     const results = await findRelevantImages(word, {
       refresh,
       excludeUrls,
-      extraQueries: activeImageConcept ? [activeImageConcept] : [],
-      onlyExtraQueries: customActive,
-      aiScenes: true,
-      semanticRerank: true
+      extraQueries: sceneQueries,
+      onlyExtraQueries: Boolean(sceneQueries.length),
+      aiScenes: false,
+      provider: imageProviderSettings.provider,
+      pexelsApiKey: imageProviderSettings.pexelsApiKey,
+      page: imageResultPage,
+      limit: 10
     });
     if (editId !== wordId || requestId !== imageRequestId) return;
-    imageCandidates = Array.isArray(results) ? results : [];
+    const currentImage = !removeImage && word.imageUrl ? {
+      url: word.imageUrl,
+      sourceUrl: word.imageSourceUrl || '',
+      title: word.imageAttribution || `Current image for ${word.word}`,
+      attribution: word.imageAttribution || 'Current image',
+      license: word.imageLicense || '',
+      source: 'Current image',
+      searchQuery: word.imageSearchQuery || activeImageConcept,
+      imageKind: word.imageKind || 'external',
+      isCurrent: true
+    } : null;
+    imageCandidates = mergeCurrentImageCandidate(currentImage, results, 10);
     imageQuery = imageCandidates[0]?.searchQuery || '';
     imageLoading = false;
     imageError = imageCandidates.length ? '' : customActive
       ? 'No images matched this custom interpretation. Try a shorter, more concrete scene description.'
-      : 'No suitable public images were found. Try refreshing the suggestions.';
+      : 'No suitable images were found for this concept and page. Try More images or choose another concept.';
     render();
   }
 
@@ -71,9 +176,12 @@ export function renderLibraryView(container) {
     imageLoading = false;
     imageError = '';
     selectedImage = null;
+    removeImage = false;
     imageQuery = '';
     activeImageConcept = '';
     customImageConcept = String(driveSync.getWords().find(item => item.id === wordId)?.imageCustomConcept || '');
+    suggestedImageScenes = [];
+    imageResultPage = 1;
     render();
     loadImageCandidates(wordId);
   }
@@ -95,27 +203,35 @@ export function renderLibraryView(container) {
     return items;
   }
 
-  function wordCard(word) {
-    const hasDuplicateImage = duplicateImages.has(word.imageUrl);
+  function wordCard(group) {
+    const word = group.meanings[0];
+    const dueMeanings = group.meanings.filter(isDue).length;
+    const masteredMeanings = group.meanings.filter(meaning => meaning.mastered).length;
+    const meaningCard = (meaning, meaningIndex) => {
+      const hasDuplicateImage = duplicateImages.has(meaning.imageUrl);
+      return `<section class="library-meaning" data-meaning-id="${escapeHtml(meaning.id)}">
+        <div class="library-meaning-heading"><span>Meaning ${meaningIndex + 1}</span><strong>${escapeHtml(meaning.partOfSpeech || 'word')}</strong></div>
+        ${meaning.imageUrl && !hasDuplicateImage ? `<img class="library-word-image" src="${escapeHtml(meaning.imageUrl)}" alt="Visual cue for ${escapeHtml(meaning.word)} meaning ${meaningIndex + 1}">` : hasDuplicateImage ? `<div class="duplicate-image-warning"><i class="fa-solid fa-images"></i><span><strong>Reused visual cue</strong>Choose a distinct image for this meaning.</span></div>` : ''}
+        <p>${escapeHtml(meaning.definition)}</p>
+        ${meaning.example ? `<blockquote>“${escapeHtml(meaning.example)}”</blockquote>` : ''}
+        <div class="library-card-footer"><span>Box ${Number(meaning.box || 1)}</span><span>${meaning.mastered ? 'Mastered' : (isDue(meaning) ? 'Due now' : 'Learning')}</span></div>
+        ${deleteId === meaning.id ? `<div class="delete-confirm"><span>Delete this meaning of “${escapeHtml(meaning.word)}”?</span><button data-cancel-delete>Cancel</button><button data-confirm-delete="${escapeHtml(meaning.id)}">Delete</button></div>` : `<div class="library-card-actions"><button data-edit-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-pen"></i> Edit</button><button data-delete-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-trash"></i> Delete</button></div>`}
+      </section>`;
+    };
     return `
-      <article class="library-word-card" data-word-id="${escapeHtml(word.id)}">
-        ${word.imageUrl && !hasDuplicateImage ? `<img class="library-word-image" src="${escapeHtml(word.imageUrl)}" alt="Visual cue for ${escapeHtml(word.word)}">` : hasDuplicateImage ? `<div class="duplicate-image-warning"><i class="fa-solid fa-images"></i><span><strong>Reused visual cue</strong>Choose a distinct image for this meaning.</span></div>` : ''}
+      <article class="library-word-card grouped" data-word="${escapeHtml(word.word)}">
         <div class="library-card-heading">
-          <div><h3>${escapeHtml(word.word)}</h3><span>${escapeHtml(word.phonetic || word.partOfSpeech || '')}</span></div>
+          <div><h3>${escapeHtml(word.word)}</h3><span>${group.meanings.length} meaning${group.meanings.length === 1 ? '' : 's'}${word.phonetic ? ` · ${escapeHtml(word.phonetic)}` : ''}</span></div>
           <button class="audio-btn-circle" data-speak="${escapeHtml(word.word)}" data-audio-url="${escapeHtml(word.audioUrl || '')}" aria-label="Hear ${escapeHtml(word.word)}"><i class="fa-solid fa-volume-high"></i></button>
         </div>
-        <p class="library-pos">${escapeHtml(word.partOfSpeech || 'word')}</p>
-        <p>${escapeHtml(word.definition)}</p>
-        ${word.example ? `<blockquote>“${escapeHtml(word.example)}”</blockquote>` : ''}
-        <div class="library-card-footer"><span>Box ${Number(word.box || 1)}</span><span>${word.mastered ? 'Mastered' : (isDue(word) ? 'Due now' : 'Learning')}</span></div>
-        ${deleteId === word.id ? `<div class="delete-confirm"><span>Delete “${escapeHtml(word.word)}”?</span><button data-cancel-delete>Cancel</button><button data-confirm-delete="${escapeHtml(word.id)}">Delete</button></div>` : `<div class="library-card-actions"><button data-edit-word="${escapeHtml(word.id)}"><i class="fa-solid fa-pen"></i> Edit</button><button data-change-image="${escapeHtml(word.id)}"><i class="fa-solid fa-images"></i> ${hasDuplicateImage ? 'Replace duplicate' : word.imageUrl ? 'Change image' : 'Choose image'}</button><button data-delete-word="${escapeHtml(word.id)}"><i class="fa-solid fa-trash"></i> Delete</button></div>`}
+        <div class="library-group-status"><span>${dueMeanings} due</span><span>${masteredMeanings} mastered</span></div>
+        <div class="library-meaning-list">${group.meanings.map(meaningCard).join('')}</div>
       </article>`;
   }
 
   function bindWordCardEvents() {
     container.querySelectorAll('[data-speak]').forEach(button => button.addEventListener('click', () => speakWord(button.dataset.speak, 'en-US', 0.9, button.dataset.audioUrl)));
     container.querySelectorAll('[data-edit-word]').forEach(button => button.addEventListener('click', () => { beginEditing(button.dataset.editWord); container.querySelector('#library-edit-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
-    container.querySelectorAll('[data-change-image]').forEach(button => button.addEventListener('click', () => { beginEditing(button.dataset.changeImage); container.querySelector('#library-edit-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
     container.querySelectorAll('[data-delete-word]').forEach(button => button.addEventListener('click', () => { deleteId = button.dataset.deleteWord; render(); }));
     container.querySelector('[data-cancel-delete]')?.addEventListener('click', () => { deleteId = null; render(); });
     container.querySelector('[data-confirm-delete]')?.addEventListener('click', event => { driveSync.deleteWord(event.currentTarget.dataset.confirmDelete); deleteId = null; render(); });
@@ -123,12 +239,13 @@ export function renderLibraryView(container) {
 
   function renderWordResults() {
     const words = selectedWords();
+    const groups = groupWordCards(words);
     const resultCount = container.querySelector('.library-result-count');
     const grid = container.querySelector('.library-grid');
-    if (resultCount) resultCount.textContent = `${words.length} shown`;
+    if (resultCount) resultCount.textContent = `${groups.length} words · ${words.length} meanings`;
     if (!grid) return;
-    grid.innerHTML = words.length
-      ? words.map(wordCard).join('')
+    grid.innerHTML = groups.length
+      ? groups.map(wordCard).join('')
       : '<div class="useful-empty-state compact"><h2>No matching words</h2><p>Try another search or progress filter.</p></div>';
     bindWordCardEvents();
   }
@@ -137,20 +254,19 @@ export function renderLibraryView(container) {
     duplicateImages = reusedImageUrls(driveSync.getWords());
     const archives = driveSync.getMonthlyArchives();
     const words = selectedWords();
+    const groups = groupWordCards(words);
     const editing = editId ? driveSync.getWords().find(word => word.id === editId) : null;
-    const generatedImageConcepts = editing ? buildVisualSearchQueries({ ...editing, imageCustomConcept: '' }) : [];
-    const imageConcepts = [...new Set([customImageConcept, ...generatedImageConcepts].filter(Boolean))];
+    const imageConcepts = [...new Set([customImageConcept, ...suggestedImageScenes].filter(Boolean))];
     if (editing && !activeImageConcept) activeImageConcept = imageConcepts[0] || '';
+    const currentImageUrl = removeImage ? '' : (selectedImage?.url || editing?.imageUrl || '');
     const pexelsActive = Boolean(imageProviderSettings.provider === 'pexels' && imageProviderSettings.pexelsApiKey);
-    const geminiImageReady = getGeminiSettings().enabled;
-    const pexelsFallback = pexelsActive && imageCandidates.length && !imageCandidates.some(image => image.source === 'Pexels');
     container.innerHTML = `
       <section class="full-view-stack library-view" aria-labelledby="library-heading">
         <div class="content-title-row"><div><span class="eyebrow">Your vocabulary</span><h1 id="library-heading">Library</h1><p>Manage exact meanings, visual cues, and review-ready vocabulary.</p></div><button class="btn-green-solid" id="library-add-word"><i class="fa-solid fa-plus"></i> Add word</button></div>
         <div class="spec-card">
           <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-calendar-days"></i> Monthly vocabulary</div><span class="muted-label">Choose the notebook you want to manage</span></div>
           <div class="archive-tabs">
-            ${archives.map(archive => `<button class="status-pill ${archive.monthYear === selectedMonthYear ? 'connected' : 'offline'}" data-month="${escapeHtml(archive.monthYear)}"><strong>${escapeHtml(archive.monthYear)}</strong><span>${archive.count} words · ${archive.mastered} mastered</span></button>`).join('')}
+            ${archives.map(archive => `<button class="status-pill ${archive.monthYear === selectedMonthYear ? 'connected' : 'offline'}" data-month="${escapeHtml(archive.monthYear)}"><strong>${escapeHtml(archive.monthYear)}</strong><span>${archive.wordCount} words · ${archive.count} meanings</span></button>`).join('')}
           </div>
         </div>
 
@@ -165,18 +281,15 @@ export function renderLibraryView(container) {
           </div>
           <section class="library-image-chooser" aria-labelledby="library-image-heading">
             <div class="image-chooser-heading">
-              <div><strong id="library-image-heading">Choose a visual cue</strong><span>Select one of the images proposed by KeepVocab.</span></div>
-              <button type="button" class="status-pill offline" id="refresh-library-images"><i class="fa-solid fa-rotate"></i> Refresh suggestions</button>
+              <div><strong id="library-image-heading">Visual cue</strong><span>Search automatically, paste an image link, or upload a file.</span></div>
+              <button type="button" class="status-pill offline" id="refresh-library-images"><i class="fa-solid fa-images"></i> More images</button>
             </div>
-            <div class="image-provider-panel">
-              <div><strong>Photo source</strong><span>${pexelsFallback ? 'Pexels could not return a match. Openverse fallback is shown.' : pexelsActive ? 'Enhanced Pexels search is active for this device.' : imageProviderSettings.provider === 'pexels' ? 'Add a Pexels key to activate enhanced search. Openverse is the fallback.' : 'Openverse is active. Pexels generally returns stronger stock-photo matches.'}</span></div>
-              <div class="image-provider-controls" id="image-provider-controls">
-                <select id="image-provider-select" aria-label="Image provider"><option value="openverse" ${imageProviderSettings.provider === 'openverse' ? 'selected' : ''}>Openverse · no key</option><option value="pexels" ${imageProviderSettings.provider === 'pexels' ? 'selected' : ''}>Pexels · recommended</option></select>
-                <input id="pexels-api-key" type="password" autocomplete="off" value="${escapeHtml(imageProviderSettings.pexelsApiKey)}" placeholder="Personal Pexels API key" aria-label="Pexels API key">
-                <button class="status-pill connected" type="button" id="save-image-provider">Use source</button>
-                <a href="https://www.pexels.com/api/new/" target="_blank" rel="noopener noreferrer">Get a free key</a>
-              </div>
-              <small>The key stays only in this browser and is never copied to Google Drive.</small>
+            <div class="keyless-image-note"><i class="fa-solid fa-images"></i><span><strong>${pexelsActive ? 'Pexels search is active' : 'Public image search is active'}</strong>${pexelsActive ? 'Pexels is searched first; Openverse, Wikimedia Commons, Library of Congress, and NASA Images remain parallel fallbacks.' : 'Openverse, Wikimedia Commons, Library of Congress, and NASA Images are searched in parallel. Configure Pexels under Settings for the larger stock-photo library.'}</span></div>
+            <div class="custom-image-source">
+              <label for="custom-image-url">Custom image link</label>
+              <div><input id="custom-image-url" type="url" inputmode="url" placeholder="https://example.com/image.jpg"><button type="button" class="status-pill connected" id="use-custom-image-url">Use link</button></div>
+              <label class="custom-image-upload"><i class="fa-solid fa-upload"></i> Choose image file<input id="custom-image-file" type="file" accept="image/jpeg,image/png,image/webp"></label>
+              ${currentImageUrl ? '<button type="button" class="status-pill offline" id="remove-library-image"><i class="fa-solid fa-trash"></i> Remove image</button>' : ''}
             </div>
             <div class="image-concept-picker">
               <span>This exact meaning is interpreted as:</span>
@@ -186,25 +299,25 @@ export function renderLibraryView(container) {
                 ${customImageConcept ? '<button type="button" class="status-pill offline" id="clear-custom-image-concept">Remove custom</button>' : ''}
               </div>
               ${imageConcepts.length ? `<div>${imageConcepts.map(concept => `<button type="button" class="${activeImageConcept === concept ? 'active' : ''}" data-image-concept="${escapeHtml(concept)}">${escapeHtml(concept)}${customImageConcept === concept ? ' · custom' : ''}</button>`).join('')}</div>` : ''}
-              <small>Automatic suggestions use only the selected definition—never the dictionary example sentence. A custom concept is saved with this meaning and intentionally overrides the automatic interpretation.</small>
+              <small>AI concepts stay concise at 5–7 concrete words. Only the highlighted concept is searched, and identical concept text always uses the same query. “More images” moves to the next suggested concept; after the last concept it requests the next result page.</small>
+              ${activeImageConcept ? `<small class="active-image-search-state">Searching: “${escapeHtml(activeImageConcept)}” · page ${imageResultPage}</small>` : ''}
             </div>
-            ${(selectedImage?.url || editing.imageUrl) ? `<div class="selected-image-preview"><img src="${escapeHtml(selectedImage?.url || editing.imageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span></div></div><div class="image-feedback-actions" aria-label="Image feedback"><button type="button" class="status-pill connected" id="image-good"><i class="fa-solid fa-thumbs-up"></i> Good image</button><button type="button" class="status-pill offline" id="image-wrong"><i class="fa-solid fa-triangle-exclamation"></i> Wrong meaning</button><button type="button" class="status-pill offline" id="image-more-like"><i class="fa-solid fa-images"></i> More like this</button></div>` : ''}
-            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Finding visual cues for this exact meaning…</span></div>` : imageCandidates.length ? `<div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.title)}"><span>${escapeHtml(image.title)}</span></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
-            <div class="generated-image-offer"><div><strong>Need a clearer memory image?</strong><span>Generate an original illustration only when stock photos are not specific enough.</span></div><button type="button" class="status-pill ${geminiImageReady ? 'connected' : 'offline'}" id="generate-memory-image" ${geminiImageReady ? '' : 'disabled'}><i class="fa-solid fa-wand-magic-sparkles"></i> Generate memory image</button></div>
-            <p class="image-license-note">${imageCandidates.some(image => image.source === 'Pexels') ? '<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Photos provided by Pexels</a>. Photographer credit is saved with your word.' : "Images come from Openverse's openly licensed catalog. KeepVocab saves the creator, source, and license with your word."}</p>
+            ${currentImageUrl ? `<div class="selected-image-preview"><img src="${escapeHtml(currentImageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span></div></div><div class="image-feedback-actions" aria-label="Image feedback"><button type="button" class="status-pill connected" id="image-good"><i class="fa-solid fa-thumbs-up"></i> Good image</button><button type="button" class="status-pill offline" id="image-wrong"><i class="fa-solid fa-triangle-exclamation"></i> Wrong meaning</button><button type="button" class="status-pill offline" id="image-more-like"><i class="fa-solid fa-images"></i> More like this</button></div>` : ''}
+            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching for “${escapeHtml(activeImageConcept || editing.word)}” · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url || (!selectedImage && image.isCurrent) ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url || (!selectedImage && image.isCurrent)}"><img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.title)}"><span>${escapeHtml(image.title)}</span><small>${escapeHtml(image.isCurrent ? 'Current image' : (image.source || 'Public image'))}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
+            <p class="image-license-note">${imageCandidates.some(image => image.source === 'Pexels') ? '<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Photos provided by Pexels</a>. ' : ''}KeepVocab saves available creator, source, and rights information for every proposed image.</p>
           </section>
           <div class="inline-actions"><button class="btn-green-solid" type="submit">Save changes</button></div>
           <p class="form-message" id="library-edit-message" role="status"></p>
         </form>` : ''}
 
         <div class="spec-card">
-          <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-book-open"></i> ${escapeHtml(selectedMonthYear)} <span class="library-result-count">${words.length} shown</span></div><button class="btn-green-solid" id="export-library"><i class="fa-solid fa-download"></i> Export</button></div>
+          <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-book-open"></i> ${escapeHtml(selectedMonthYear)} <span class="library-result-count">${groups.length} words · ${words.length} meanings</span></div><button class="btn-green-solid" id="export-library"><i class="fa-solid fa-download"></i> Export</button></div>
           <div class="library-toolbar">
             <label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="library-search" value="${escapeHtml(query)}" placeholder="Search words or definitions"></label>
             <select id="library-filter" aria-label="Filter vocabulary"><option value="all">All progress</option><option value="due">Due now</option><option value="learning">Learning</option><option value="mastered">Mastered</option></select>
             <select id="library-sort" aria-label="Sort vocabulary"><option value="recent">Newest first</option><option value="alpha">A to Z</option><option value="due">Next review</option></select>
           </div>
-          <div class="library-grid">${words.length ? words.map(wordCard).join('') : `<div class="useful-empty-state compact"><h2>No matching words</h2><p>Try another search or progress filter.</p></div>`}</div>
+          <div class="library-grid">${groups.length ? groups.map(wordCard).join('') : `<div class="useful-empty-state compact"><h2>No matching words</h2><p>Try another search or progress filter.</p></div>`}</div>
         </div>
       </section>`;
     container.querySelector('#library-filter').value = filter;
@@ -224,21 +337,52 @@ export function renderLibraryView(container) {
     bindWordCardEvents();
     container.querySelector('#cancel-library-edit')?.addEventListener('click', () => { editId = null; selectedImage = null; render(); });
     container.querySelector('#refresh-library-images')?.addEventListener('click', () => loadImageCandidates(editId, true));
-    container.querySelector('#save-image-provider')?.addEventListener('click', () => {
-      imageProviderSettings = saveImageProviderSettings({
-        provider: container.querySelector('#image-provider-select')?.value,
-        pexelsApiKey: container.querySelector('#pexels-api-key')?.value
-      });
-      loadImageCandidates(editId, true);
+    const setEditorMessage = message => {
+      const output = container.querySelector('#library-edit-message');
+      if (output) output.textContent = message;
+    };
+    container.querySelector('#use-custom-image-url')?.addEventListener('click', () => {
+      const value = String(container.querySelector('#custom-image-url')?.value || '').trim();
+      try {
+        const url = new URL(value);
+        if (url.protocol !== 'https:') throw new Error('Image links must start with https://.');
+        selectedImage = { url: url.toString(), sourceUrl: url.toString(), title: 'Custom image link', attribution: 'Custom image link', license: '', imageKind: 'external' };
+        imageQuery = 'custom image link';
+        removeImage = false;
+        render();
+      } catch (error) {
+        setEditorMessage(error.message || 'Enter a valid https:// image link.');
+      }
+    });
+    container.querySelector('#custom-image-file')?.addEventListener('change', async event => {
+      const file = event.currentTarget.files?.[0];
+      if (!file) return;
+      setEditorMessage('Optimizing image for offline storage and Drive backup…');
+      try {
+        const url = await imageFileToDataUrl(file);
+        selectedImage = { url, sourceUrl: '', title: file.name, attribution: `Uploaded file: ${file.name}`, license: '', imageKind: 'upload' };
+        imageQuery = 'uploaded image';
+        removeImage = false;
+        render();
+      } catch (error) {
+        setEditorMessage(error.message);
+      }
+    });
+    container.querySelector('#remove-library-image')?.addEventListener('click', () => {
+      selectedImage = null;
+      removeImage = true;
+      render();
     });
     container.querySelectorAll('[data-image-concept]').forEach(button => button.addEventListener('click', () => {
       activeImageConcept = button.dataset.imageConcept;
+      imageResultPage = 1;
       loadImageCandidates(editId);
     }));
     const applyCustomImageConcept = () => {
       customImageConcept = String(container.querySelector('#custom-image-concept-input')?.value || '').trim().slice(0, 160);
       if (!customImageConcept) return;
       activeImageConcept = customImageConcept;
+      imageResultPage = 1;
       loadImageCandidates(editId);
     };
     container.querySelector('#use-custom-image-concept')?.addEventListener('click', applyCustomImageConcept);
@@ -250,15 +394,17 @@ export function renderLibraryView(container) {
     container.querySelector('#clear-custom-image-concept')?.addEventListener('click', () => {
       const removed = customImageConcept;
       customImageConcept = '';
-      if (activeImageConcept === removed) activeImageConcept = generatedImageConcepts[0] || '';
+      if (activeImageConcept === removed) activeImageConcept = suggestedImageScenes[0] || '';
+      imageResultPage = 1;
       loadImageCandidates(editId);
     });
     container.querySelectorAll('[data-library-image]').forEach(button => button.addEventListener('click', () => {
       selectedImage = imageCandidates[Number(button.dataset.libraryImage)] || null;
       imageQuery = selectedImage?.searchQuery || imageQuery;
+      removeImage = false;
       render();
     }));
-    const feedbackImage = () => selectedImage || (editing?.imageUrl ? {
+    const feedbackImage = () => selectedImage || (!removeImage && editing?.imageUrl ? {
       url: editing.imageUrl,
       sourceUrl: editing.imageSourceUrl,
       searchQuery: editing.imageSearchQuery,
@@ -287,21 +433,6 @@ export function renderLibraryView(container) {
       driveSync.updateWord(editId, { imageFeedback: updateImageFeedback(editing, 'more-like-this', image, activeImageConcept) });
       loadImageCandidates(editId, true);
     });
-    container.querySelector('#generate-memory-image')?.addEventListener('click', async event => {
-      const button = event.currentTarget;
-      button.disabled = true;
-      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating…';
-      const message = container.querySelector('#library-edit-message');
-      try {
-        selectedImage = await generateMemoryImage(editing, activeImageConcept || customImageConcept);
-        imageQuery = selectedImage.searchQuery;
-        render();
-      } catch (error) {
-        if (message) message.textContent = error.message;
-        button.disabled = false;
-        button.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Generate memory image';
-      }
-    });
     container.querySelector('#library-edit-form')?.addEventListener('submit', event => {
       event.preventDefault();
       const data = Object.fromEntries(new FormData(event.currentTarget));
@@ -324,7 +455,8 @@ export function renderLibraryView(container) {
         imageGeneratedAt: selectedImage.generatedAt || '',
         imageGeneratedPrompt: selectedImage.generatedPrompt || ''
       });
-      try { driveSync.updateWord(editId, data); editId = null; selectedImage = null; render(); }
+      if (removeImage) Object.assign(data, { imageUrl: '', imageSourceUrl: '', imageAttribution: '', imageLicense: '', imageSearchQuery: '', imageKind: '', imageGeneratedModel: '', imageGeneratedAt: '', imageGeneratedPrompt: '' });
+      try { driveSync.updateWord(editId, data); editId = null; selectedImage = null; removeImage = false; render(); }
       catch (error) { container.querySelector('#library-edit-message').textContent = error.message; }
     });
     container.querySelector('#export-library').addEventListener('click', () => {
