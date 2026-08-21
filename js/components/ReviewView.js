@@ -1,11 +1,12 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=86';
-import { speakWord } from '../services/speechService.js?v=86';
-import { getDueWords } from '../services/srsEngine.js?v=86';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
-import { playInteractionSound } from '../services/interactionSound.js?v=86';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=90';
+import { speakWord } from '../services/speechService.js?v=90';
+import { getDueWords } from '../services/srsEngine.js?v=90';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=90';
+import { playInteractionSound } from '../services/interactionSound.js?v=90';
 import { escapeHtml } from '../utils/html.js';
-import { selectPracticeWords } from '../services/dailySession.js?v=86';
-import { evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=86';
+import { selectPracticeWords } from '../services/dailySession.js?v=90';
+import { evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=90';
+import { navigateTo } from '../utils/navigation.js';
 
 export function renderReviewView(container, onNavigate) {
   const activeNotebook = driveSync.getActiveNotebook() || getCurrentMonthNotebookTitle();
@@ -17,10 +18,7 @@ export function renderReviewView(container, onNavigate) {
   let correct = false;
   let questionStartedAt = performance.now();
 
-  const goTo = view => {
-    if (window.location.hash === `#${view}`) onNavigate(view);
-    else window.location.hash = view;
-  };
+  const goTo = view => navigateTo(view, onNavigate);
 
   function render() {
     const current = queue[index];

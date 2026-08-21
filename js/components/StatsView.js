@@ -1,16 +1,13 @@
-import { driveSync } from '../services/driveSync.js?v=86';
-import { getDueWords } from '../services/srsEngine.js?v=86';
-import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=86';
-import { normalizeLearningStats } from '../services/learningStats.js?v=86';
-import { weaknessScore } from '../services/dailySession.js?v=86';
+import { driveSync } from '../services/driveSync.js?v=90';
+import { getDueWords } from '../services/srsEngine.js?v=90';
+import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=90';
+import { normalizeLearningStats } from '../services/learningStats.js?v=90';
+import { weaknessScore } from '../services/dailySession.js?v=90';
 import { escapeHtml } from '../utils/html.js';
+import { navigateTo as go } from '../utils/navigation.js';
 
 function dateKey(date) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
-}
-
-function go(view, onNavigate) {
-  if (window.location.hash === `#${view}`) onNavigate(view); else window.location.hash = view;
 }
 
 export function renderStatsView(container, onNavigate) {

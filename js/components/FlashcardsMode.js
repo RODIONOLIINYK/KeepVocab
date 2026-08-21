@@ -1,22 +1,19 @@
-import { driveSync } from '../services/driveSync.js?v=86';
-import { speakWord } from '../services/speechService.js?v=86';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
-import { getRatingPreviews } from '../services/srsEngine.js?v=86';
+import { driveSync } from '../services/driveSync.js?v=90';
+import { speakWord } from '../services/speechService.js?v=90';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=90';
+import { getRatingPreviews } from '../services/srsEngine.js?v=90';
 import { escapeHtml } from '../utils/html.js';
-import { selectPracticeWords } from '../services/dailySession.js?v=86';
-
-function go(view, onNavigate) {
-  if (window.location.hash === `#${view}`) onNavigate(view);
-  else window.location.hash = view;
-}
+import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=90';
+import { navigateTo as go } from '../utils/navigation.js';
 
 export function renderFlashcardsMode(container, onNavigate) {
-  const words = selectPracticeWords(driveSync.getWords());
+  const words = selectModeWords(driveSync.getWords(), { mode: 'flashcards', limit: 10 });
   if (!words.length) {
     container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow">Flashcards</span><h1>Your first card is waiting</h1><p>Add a word and KeepVocab will preserve its exact meaning, example, and visual cue.</p><button class="btn-green-solid" id="flashcard-add">Add vocabulary</button></section>`;
     container.querySelector('#flashcard-add').addEventListener('click', () => document.getElementById('quick-add-modal')?.classList.add('active'));
     return;
   }
+  recordModeWordSelections(driveSync, words, { mode: 'flashcards' });
 
   let currentIndex = 0;
   let revealed = false;

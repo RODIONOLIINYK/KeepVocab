@@ -1,3 +1,5 @@
+import { imageSelectionPatch } from './imageSearch.js?v=90';
+
 export const MAX_BULK_WORDS = 100;
 export const BULK_LOOKUP_DELAY_MS = 1000;
 
@@ -91,13 +93,7 @@ export async function attachImagesSequentially(words, findImages, options = {}) 
     try {
       const [image] = await findImages(word, { excludeUrls: [...excluded], limit: 1 });
       if (image?.url) {
-        Object.assign(word, {
-          imageUrl: image.url,
-          imageSourceUrl: image.sourceUrl || '',
-          imageAttribution: image.attribution || '',
-          imageLicense: image.license || '',
-          imageSearchQuery: image.searchQuery || ''
-        });
+        Object.assign(word, imageSelectionPatch(image));
         excluded.add(image.url);
         if (image.sourceUrl) excluded.add(image.sourceUrl);
       }

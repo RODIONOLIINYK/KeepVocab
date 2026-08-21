@@ -1,4 +1,5 @@
 import { recordExerciseResult } from './exerciseResult.js';
+import { selectModeWords } from './wordSelection.js?v=90';
 
 function dueNow(word, now) {
   return Date.parse(word.nextReviewDate || word.createdAt || 0) <= now.getTime();
@@ -6,7 +7,8 @@ function dueNow(word, now) {
 
 function weakness(word) {
   const mistakes = word.mistakes || {};
-  return Number(mistakes.recentFailures || 0) * 5 + Number(mistakes.consecutiveFailures || 0) * 7 + Number(mistakes.incorrectAttempts || 0);
+  const recentFailures = Array.isArray(mistakes.recentFailures) ? mistakes.recentFailures.length : Number(mistakes.recentFailures || 0);
+  return recentFailures * 5 + Number(mistakes.consecutiveFailures || 0) * 7 + Number(mistakes.incorrectAttempts || 0);
 }
 
 export function speakingTargetScore(word, now = new Date()) {
@@ -22,12 +24,14 @@ export function speakingTargetScore(word, now = new Date()) {
 }
 
 export function selectSpeakingTargets(words, { limit = 3, now = new Date() } = {}) {
-  return [...(words || [])]
-    .filter(word => word?.word && word?.definition)
-    .map(word => ({ word, score: speakingTargetScore(word, now) }))
-    .sort((a, b) => b.score - a.score || String(a.word.word).localeCompare(String(b.word.word)))
-    .slice(0, Math.max(0, limit))
-    .map(item => item.word);
+  return selectModeWords(words, {
+    mode: 'speaking',
+    limit,
+    now,
+    priorityShare: 0.5,
+    rotateWithinFocus: true,
+    priorityScore: speakingTargetScore
+  });
 }
 
 function usedInText(word, text) {

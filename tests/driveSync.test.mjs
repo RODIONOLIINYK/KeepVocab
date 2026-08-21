@@ -188,7 +188,8 @@ test('fresh reinstall restores exact meanings, original months, settings, and pr
     example: 'She went for a run.',
     createdAt: '2026-05-03T09:00:00.000Z',
     box: 4,
-    nextReviewDate: '2026-08-01T00:00:00.000Z'
+    nextReviewDate: '2026-08-01T00:00:00.000Z',
+    practiceStats: { version: 1, attempts: 7, recalled: 5, missed: 2, selections: 9, byMode: { flashcards: { attempts: 3, recalled: 2, missed: 1, selections: 4 } } }
   }, 'May 2026 Vocabulary');
   original.addWord({ word: 'inflict', partOfSpeech: 'verb', definition: 'To cause something unpleasant to be suffered.', createdAt: '2026-07-02T09:00:00.000Z' }, 'July 2026 Vocabulary');
   original.updateSettings({ dailyGoal: 31, activeNotebook: 'May 2026 Vocabulary', learningStats: { sessionsCompleted: 7, weakWordsImproved: 3 }, speakingProgress: { completed: ['rent-apartment', 'present-idea'], level: 'B2' } }, { silent: true });
@@ -210,6 +211,8 @@ test('fresh reinstall restores exact meanings, original months, settings, and pr
   assert.equal(restored.notebook, 'May 2026 Vocabulary');
   assert.equal(restored.box, 4);
   assert.equal(restored.nextReviewDate, '2026-08-01T00:00:00.000Z');
+  assert.equal(restored.practiceStats.recalled, 5);
+  assert.equal(restored.practiceStats.byMode.flashcards.missed, 1);
   assert.equal(reinstalled.getSettings().dailyGoal, 31);
   assert.equal(reinstalled.getSettings().learningStats.sessionsCompleted, 7);
   assert.deepEqual(reinstalled.getSettings().speakingProgress.completed, ['rent-apartment', 'present-idea']);

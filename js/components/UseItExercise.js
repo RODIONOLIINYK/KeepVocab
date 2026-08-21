@@ -1,6 +1,6 @@
-import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=86';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=86';
-import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=86';
+import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=90';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=90';
+import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=90';
 import { escapeHtml } from '../utils/html.js';
 
 export function mountUseItExercise(root, options) {

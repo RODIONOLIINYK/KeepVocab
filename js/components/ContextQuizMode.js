@@ -1,22 +1,19 @@
-import { driveSync } from '../services/driveSync.js?v=86';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=86';
-import { clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=86';
+import { driveSync } from '../services/driveSync.js?v=90';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=90';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=90';
+import { clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=90';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=86';
-import { DEFAULT_SESSION_SIZE, selectPracticeWords } from '../services/dailySession.js?v=86';
-
-function go(view, onNavigate) {
-  if (window.location.hash === `#${view}`) onNavigate(view);
-  else window.location.hash = view;
-}
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=90';
+import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=90';
+import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=90';
+import { navigateTo as go } from '../utils/navigation.js';
 
 function shuffle(values) {
   return [...values].sort(() => Math.random() - .5);
 }
 
-export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE) {
-  return selectPracticeWords(words, { limit });
+export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE, now = new Date()) {
+  return selectModeWords(words, { mode: 'context', limit, now });
 }
 
 export function renderContextQuizMode(container, onNavigate) {
@@ -33,6 +30,7 @@ export function renderContextQuizMode(container, onNavigate) {
   let score = 0;
   let answered = false;
   let selectedId = '';
+  let selectionRecorded = false;
 
   function renderSetup() {
     container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow">AI Context</span><h1>Connect Gemini to create Context sentences</h1><p>Gemini writes a fresh sentence for each selected vocabulary sense. Definitions stay hidden while you answer.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="context-settings"><i class="fa-solid fa-key"></i> Set up Google AI Studio</button><button class="status-pill offline" id="context-home">Today</button></div></section>`;
@@ -56,6 +54,10 @@ export function renderContextQuizMode(container, onNavigate) {
     renderLoading();
     try {
       contextSet = await generateContextExerciseSet(contextWords, { force });
+      if (!selectionRecorded) {
+        recordModeWordSelections(driveSync, contextWords, { mode: 'context' });
+        selectionRecorded = true;
+      }
       current = 0;
       score = 0;
       answered = false;
@@ -70,7 +72,7 @@ export function renderContextQuizMode(container, onNavigate) {
     if (!contextSet) return renderLoading();
     if (current >= contextWords.length) {
       container.innerHTML = `<section class="mode-completion-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Context complete</span><h1>${score} of ${contextWords.length}</h1><p>You inferred meaning from AI-generated sentences without definition clues.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="context-again">New AI sentences</button><button class="status-pill offline" id="context-home">Today</button></div></section>`;
-      container.querySelector('#context-again').addEventListener('click', () => load(true));
+      container.querySelector('#context-again').addEventListener('click', () => renderContextQuizMode(container, onNavigate));
       container.querySelector('#context-home').addEventListener('click', () => go('dashboard', onNavigate));
       return;
     }

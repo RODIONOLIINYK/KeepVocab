@@ -1,19 +1,16 @@
-import { driveSync } from '../services/driveSync.js?v=86';
-import { buildDailySession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=86';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
-import { recordSessionCompletion } from '../services/learningStats.js?v=86';
-import { speakWord } from '../services/speechService.js?v=86';
-import { playInteractionSound } from '../services/interactionSound.js?v=86';
-import { buildWordChoices } from './PracticeModes.js?v=86';
+import { driveSync } from '../services/driveSync.js?v=90';
+import { buildDailySession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=90';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=90';
+import { recordSessionCompletion } from '../services/learningStats.js?v=90';
+import { speakWord } from '../services/speechService.js?v=90';
+import { playInteractionSound } from '../services/interactionSound.js?v=90';
+import { buildWordChoices } from './PracticeModes.js?v=90';
 import { escapeHtml } from '../utils/html.js';
-import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=86';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=86';
-import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=86';
-import { mountUseItExercise } from './UseItExercise.js?v=86';
-
-function go(view, onNavigate) {
-  if (window.location.hash === `#${view}`) onNavigate(view); else window.location.hash = view;
-}
+import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=90';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=90';
+import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=90';
+import { mountUseItExercise } from './UseItExercise.js?v=90';
+import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {
   if (!word.example || !sentenceUsesTargetForm(word.example, word)) return `Complete with the word meaning “${word.definition}”.`;

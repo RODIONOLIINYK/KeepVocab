@@ -1,6 +1,7 @@
-import { driveSync } from './driveSync.js?v=86';
-import { migrateSrsState, scheduleWordReview, updateStreak } from './srsEngine.js?v=86';
-import { recordLearningExercise } from './learningStats.js?v=86';
+import { driveSync } from './driveSync.js?v=90';
+import { migrateSrsState, scheduleWordReview, updateStreak } from './srsEngine.js?v=90';
+import { recordLearningExercise } from './learningStats.js?v=90';
+import { updateWordPracticeStats } from './wordSelection.js?v=90';
 
 export const EXERCISE_RESULT_VERSION = 1;
 
@@ -131,11 +132,13 @@ export function applyExerciseResultToWord(word, input) {
   const scheduled = scheduleWordReview(migrated, result.rating, { now, evidenceStrength: result.evidenceStrength });
   const mastery = updateMastery(normalizeMastery(scheduled, now), result);
   const mistakes = updateMistakes(normalizeMistakes(scheduled), result);
+  const practiceStats = updateWordPracticeStats(migrated, result);
   return {
     word: {
       ...scheduled,
       mastery,
       mistakes,
+      practiceStats,
       productiveSamples: result.learnerResponse && ['productive', 'speaking'].includes(result.recallType)
         ? [...(Array.isArray(scheduled.productiveSamples) ? scheduled.productiveSamples : []), { text: result.learnerResponse, exerciseType: result.exerciseType, correct: result.correct, createdAt: result.occurredAt }].slice(-20)
         : scheduled.productiveSamples,

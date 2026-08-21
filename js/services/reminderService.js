@@ -1,3 +1,5 @@
+import { localDateKey } from '../utils/dates.js';
+
 export const DAILY_REMINDER_ID = 73001;
 export const STREAK_REMINDER_ID = 73002;
 const MIN_SMART_HOUR = 8;
@@ -34,10 +36,6 @@ export function formatReminderTime(time, locale) {
   const [hour, minute] = normalizeReminderTime(time).split(':').map(Number);
   const value = new Date(2000, 0, 1, hour, minute);
   return value.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
-}
-
-function localDateKey(date) {
-  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
 }
 
 export function appendStudyMoment(reviewMoments = [], now = new Date()) {

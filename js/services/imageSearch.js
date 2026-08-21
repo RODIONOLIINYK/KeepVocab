@@ -1,4 +1,4 @@
-import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=86';
+import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=90';
 
 const OPENVERSE_API = 'https://api.openverse.org/v1/images/';
 const WIKIMEDIA_COMMONS_API = 'https://commons.wikimedia.org/w/api.php';
@@ -23,6 +23,79 @@ function unique(values, limit = Infinity) {
 
 function uniqueRaw(values, limit = Infinity) {
   return [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))].slice(0, limit);
+}
+
+const wait = delayMs => new Promise(resolve => setTimeout(resolve, delayMs));
+
+function browserImageLoader(url, options = {}) {
+  if (typeof globalThis.document?.createElement !== 'function') return null;
+  return new Promise(resolve => {
+    const image = document.createElement('img');
+    const finish = loaded => {
+      clearTimeout(timer);
+      image.onload = null;
+      image.onerror = null;
+      resolve(Boolean(loaded && image.naturalWidth));
+    };
+    const timer = setTimeout(() => finish(false), Math.max(1000, Number(options.timeoutMs) || 6000));
+    image.decoding = 'async';
+    image.onload = () => finish(true);
+    image.onerror = () => finish(false);
+    image.src = url;
+  });
+}
+
+export async function filterLoadableImages(images, options = {}) {
+  const candidates = Array.isArray(images) ? images.filter(image => image?.url) : [];
+  const limit = Math.max(0, Math.floor(Number(options.limit) || candidates.length));
+  const loadImage = options.loadImage || (typeof globalThis.document?.createElement === 'function' ? browserImageLoader : null);
+  if (!candidates.length || !limit || !loadImage) return candidates.slice(0, limit);
+  const concurrency = Math.max(1, Math.min(3, Math.floor(Number(options.concurrency) || 2)));
+  const retries = Math.max(0, Math.min(2, Math.floor(Number(options.retries) || 1)));
+  const retryDelayMs = Math.max(0, Number(options.retryDelayMs) || 800);
+  const loaded = new Array(candidates.length).fill(false);
+  let nextIndex = 0;
+
+  const worker = async () => {
+    while (nextIndex < candidates.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      for (let attempt = 0; attempt <= retries; attempt += 1) {
+        if (attempt) await wait(retryDelayMs * attempt);
+        try {
+          if (await loadImage(candidates[index].url, { attempt, timeoutMs: options.timeoutMs })) {
+            loaded[index] = true;
+            break;
+          }
+        } catch { /* A failed thumbnail is omitted from selectable results. */ }
+      }
+    }
+  };
+
+  await Promise.all(Array.from({ length: Math.min(concurrency, candidates.length) }, () => worker()));
+  return candidates.filter((image, index) => loaded[index]).slice(0, limit);
+}
+
+export function imageUrlsForWords(words, options = {}) {
+  return (words || [])
+    .filter(word => word?.id !== options.excludeWordId)
+    .flatMap(word => [word?.imageUrl, word?.imageSourceUrl])
+    .map(value => String(value || '').trim())
+    .filter(Boolean);
+}
+
+export function imageSelectionPatch(image, fallbackQuery = '') {
+  return {
+    imageUrl: image?.url || '',
+    imageSourceUrl: image?.sourceUrl || '',
+    imageAttribution: image?.attribution || '',
+    imageLicense: image?.license || '',
+    imageSearchQuery: image?.searchQuery || fallbackQuery || ''
+  };
+}
+
+export function clearImageSelectionPatch() {
+  return imageSelectionPatch(null);
 }
 
 function plainMetadata(value) {
@@ -564,7 +637,8 @@ export async function findRelevantImages(word, options = {}) {
   const concepts = unique([...extraQueries, ...feedback.preferredConcepts, ...aiScenes, ...generated], 6);
   const excluded = new Set([...(options.excludeUrls || []), ...feedback.rejectedUrls].map(value => String(value || '').trim()).filter(Boolean));
   const seenUrls = new Set(); const seenTitles = new Set(); const collected = [];
-  const target = Math.max(limit, options.semanticRerank ? 12 : limit);
+  const validateImages = options.validateImages !== false && (options.loadImage || typeof globalThis.document?.createElement === 'function');
+  const target = Math.max(limit, options.semanticRerank ? 12 : limit, validateImages ? limit * 2 : limit);
   const page = searchPage(options);
   const collect = images => {
     for (const image of images) {
@@ -600,7 +674,15 @@ export async function findRelevantImages(word, options = {}) {
     }
   }
   const ranked = options.semanticRerank ? await rerankImagesWithGemini(word, collected, options) : collected;
-  return ranked.slice(0, limit);
+  if (!validateImages) return ranked.slice(0, limit);
+  return filterLoadableImages(ranked, {
+    limit,
+    loadImage: options.loadImage,
+    concurrency: options.imageLoadConcurrency,
+    retries: options.imageLoadRetries,
+    retryDelayMs: options.imageRetryDelayMs,
+    timeoutMs: options.imageLoadTimeoutMs
+  });
 }
 
 export const findRelevantCommonsImages = findRelevantImages;

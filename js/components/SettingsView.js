@@ -1,11 +1,8 @@
-import { driveSync } from '../services/driveSync.js?v=86';
-import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=86';
-import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=86';
+import { driveSync } from '../services/driveSync.js?v=90';
+import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=90';
+import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=90';
 import { escapeHtml } from '../utils/html.js';
-
-function go(view, onNavigate) {
-  if (window.location.hash === `#${view}`) onNavigate(view); else window.location.hash = view;
-}
+import { navigateTo as go } from '../utils/navigation.js';
 
 export function renderSettingsView(container, onNavigate) {
   const gemini = getGeminiSettings();

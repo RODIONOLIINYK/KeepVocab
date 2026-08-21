@@ -1,34 +1,31 @@
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=86';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=86';
-import { speakWord } from './services/speechService.js?v=86';
-import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=86';
-import { recordExerciseResult } from './services/exerciseResult.js?v=86';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=86';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=86';
-import { findRelevantImages } from './services/imageSearch.js?v=86';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=86';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=86';
-import { appendStudyMoment, buildSmartReminderPlan, buildStreakMaintenancePlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=86';
+import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=90';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=90';
+import { speakWord } from './services/speechService.js?v=90';
+import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=90';
+import { recordExerciseResult } from './services/exerciseResult.js?v=90';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=90';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=90';
+import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=90';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=90';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=90';
+import { appendStudyMoment, buildSmartReminderPlan, buildStreakMaintenancePlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=90';
+import { localDateKey } from './utils/dates.js';
 
-import { renderReviewView } from './components/ReviewView.js?v=86';
-import { renderLibraryView } from './components/LibraryView.js?v=86';
-import { renderStatsView } from './components/StatsView.js?v=86';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=86';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=86';
-import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=86';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=86';
-import { renderDashboardView } from './components/DashboardView.js?v=86';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=86';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=86';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=86';
-import { renderUseItMode } from './components/UseItMode.js?v=86';
-import { renderSettingsView } from './components/SettingsView.js?v=86';
-
-function localDateKey(date = new Date()) {
-  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
-}
+import { renderReviewView } from './components/ReviewView.js?v=90';
+import { renderLibraryView } from './components/LibraryView.js?v=90';
+import { renderStatsView } from './components/StatsView.js?v=90';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=90';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=90';
+import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=90';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=90';
+import { renderDashboardView } from './components/DashboardView.js?v=90';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=90';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=90';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=90';
+import { renderUseItMode } from './components/UseItMode.js?v=90';
+import { renderSettingsView } from './components/SettingsView.js?v=90';
 
 function buildStudyQueue() {
   const activeNotebook = driveSync.getActiveNotebook();
@@ -880,7 +877,7 @@ function setupQuickAddModal() {
     updateBulkProgress({ completed: 0, total: items.length, phase: 'Choosing images', startedAt: imageStartedAt });
     try {
       const checkedItems = items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
-      const existingImageUrls = driveSync.getWords().flatMap(item => [item.imageUrl, item.imageSourceUrl]).filter(Boolean);
+      const existingImageUrls = imageUrlsForWords(driveSync.getWords());
       const enrichedItems = await attachImagesSequentially(checkedItems, findRelevantImages, {
         excludeUrls: existingImageUrls,
         onProgress: ({ completed, total, word }) => {
@@ -978,7 +975,7 @@ function setupQuickAddModal() {
     btnSave.disabled = true;
     try {
       const senseCheckedItems = items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
-      const existingImageUrls = driveSync.getWords().flatMap(item => [item.imageUrl, item.imageSourceUrl]).filter(Boolean);
+      const existingImageUrls = imageUrlsForWords(driveSync.getWords());
       const enrichedItems = await attachImagesSequentially(senseCheckedItems, findRelevantImages, {
         excludeUrls: existingImageUrls,
         onProgress: ({ completed, total }) => {

@@ -1,24 +1,13 @@
-import { driveSync } from '../services/driveSync.js?v=86';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
-import { playInteractionSound } from '../services/interactionSound.js?v=86';
+import { driveSync } from '../services/driveSync.js?v=90';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=90';
+import { playInteractionSound } from '../services/interactionSound.js?v=90';
 import { escapeHtml } from '../utils/html.js';
-import { selectPracticeWords } from '../services/dailySession.js?v=86';
-
-function shuffle(items) {
-  const result = [...items];
-  for (let index = result.length - 1; index > 0; index -= 1) {
-    const swap = Math.floor(Math.random() * (index + 1));
-    [result[index], result[swap]] = [result[swap], result[index]];
-  }
-  return result;
-}
-
-function go(view, onNavigate) {
-  if (window.location.hash === `#${view}`) onNavigate(view); else window.location.hash = view;
-}
+import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=90';
+import { shuffleItems as shuffle } from '../utils/collections.js';
+import { navigateTo as go } from '../utils/navigation.js';
 
 function buildRound(words) {
-  return shuffle(selectPracticeWords(words, { limit: 6 }));
+  return shuffle(selectModeWords(words, { mode: 'match-sprint', limit: 6 }));
 }
 
 export function getUnmatchedWords(items, matchedIds) {
@@ -34,6 +23,7 @@ export function renderMatchSprintMode(container, onNavigate) {
     container.querySelector('#match-back').addEventListener('click', () => go('dashboard', onNavigate));
     return;
   }
+  recordModeWordSelections(driveSync, round, { mode: 'match-sprint' });
 
   const terms = shuffle(round);
   const definitions = shuffle(round);

@@ -1,7 +1,8 @@
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=86';
-import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=86';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=90';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=90';
+import { localDateKey } from '../utils/dates.js';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
@@ -86,10 +87,6 @@ function validIso(value, fallback = new Date().toISOString()) {
 
 function recordTimestamp(record) {
   return Date.parse(record?.updatedAt || record?.lastReviewedAt || record?.createdAt || 0) || 0;
-}
-
-function localDateKey(date = new Date()) {
-  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
 }
 
 function normalizedActivity(activity) {

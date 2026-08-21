@@ -8,12 +8,14 @@ import {
   getLessonPlan,
   buildCoachInitiativeCue,
   buildSpeakingInstruction
-} from '../data/speakingLessons.js?v=86';
-import { GeminiLiveSession } from '../services/geminiLive.js?v=86';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=86';
-import { driveSync } from '../services/driveSync.js?v=86';
-import { recordSpeakingStats } from '../services/learningStats.js?v=86';
-import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=86';
+} from '../data/speakingLessons.js?v=90';
+import { GeminiLiveSession } from '../services/geminiLive.js?v=90';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=90';
+import { driveSync } from '../services/driveSync.js?v=90';
+import { recordSpeakingStats } from '../services/learningStats.js?v=90';
+import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=90';
+import { recordModeWordSelections } from '../services/wordSelection.js?v=90';
+import { navigateTo as navigate } from '../utils/navigation.js';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
 export const COACH_SILENCE_MS = 9000;
@@ -41,11 +43,6 @@ function writeProgress(progress) {
 
 function getGeminiKey() {
   return getGeminiSettings().apiKey || '';
-}
-
-function navigate(view, onNavigate) {
-  if (window.location.hash === `#${view}`) onNavigate(view);
-  else window.location.hash = view;
 }
 
 function mergeTranscript(entries, role, text) {
@@ -166,6 +163,7 @@ function renderLessonPreview(container, lessonId, onNavigate) {
   }));
   container.querySelector('#start-live-lesson').addEventListener('click', () => {
     if (!getGeminiKey()) return navigate('settings', onNavigate);
+    recordModeWordSelections(driveSync, vocabularyTargets, { mode: 'speaking' });
     startLiveLesson(container, lesson, vocabularyTargets, onNavigate);
   });
   container.querySelector('#cant-speak-now').addEventListener('click', () => navigate('useit', onNavigate));

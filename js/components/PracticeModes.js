@@ -1,10 +1,12 @@
-import { driveSync } from '../services/driveSync.js?v=86';
-import { speakWord } from '../services/speechService.js?v=86';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
-import { playInteractionSound } from '../services/interactionSound.js?v=86';
-import { selectPracticeWords } from '../services/dailySession.js?v=86';
+import { driveSync } from '../services/driveSync.js?v=90';
+import { speakWord } from '../services/speechService.js?v=90';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=90';
+import { playInteractionSound } from '../services/interactionSound.js?v=90';
+import { selectPracticeWords } from '../services/dailySession.js?v=90';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=86';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=90';
+import { shuffleItems as shuffle } from '../utils/collections.js';
+import { navigateTo as go } from '../utils/navigation.js';
 
 function activeLibraryWords() {
   const notebook = driveSync.getActiveNotebook();
@@ -13,15 +15,6 @@ function activeLibraryWords() {
 
 function activeWords() {
   return selectPracticeWords(activeLibraryWords());
-}
-
-function shuffle(items) {
-  const result = [...items];
-  for (let index = result.length - 1; index > 0; index -= 1) {
-    const swap = Math.floor(Math.random() * (index + 1));
-    [result[index], result[swap]] = [result[swap], result[index]];
-  }
-  return result;
 }
 
 export function buildWordChoices(target, words, limit = 4) {
@@ -41,11 +34,6 @@ export function stableWordChoices(state, target, words, limit = 4) {
     state.options = buildWordChoices(target, words, limit);
   }
   return state.options;
-}
-
-function go(view, onNavigate) {
-  if (window.location.hash === `#${view}`) onNavigate(view);
-  else window.location.hash = view;
 }
 
 function emptyMode(container, icon, title, detail, onNavigate) {

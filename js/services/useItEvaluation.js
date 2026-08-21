@@ -1,5 +1,5 @@
-import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=86';
-import { sentenceUsesTargetForm, targetWordForms } from '../utils/wordForms.js?v=86';
+import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=90';
+import { sentenceUsesTargetForm, targetWordForms } from '../utils/wordForms.js?v=90';
 
 const WORD_CHECK_FEEDBACK = /(?:include|insert|use|write|contain).{0,35}(?:target|headword|word|\b[a-z][a-z'-]*\b).{0,25}(?:sentence|exact|form)|(?:missing|does not contain).{0,25}(?:target|headword|word)/i;
 

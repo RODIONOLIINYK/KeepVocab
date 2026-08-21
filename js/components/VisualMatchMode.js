@@ -1,24 +1,13 @@
-import { driveSync } from '../services/driveSync.js?v=86';
-import { findRelevantImages } from '../services/imageSearch.js?v=86';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
-import { playInteractionSound } from '../services/interactionSound.js?v=86';
+import { driveSync } from '../services/driveSync.js?v=90';
+import { findRelevantImages, imageSelectionPatch, imageUrlsForWords } from '../services/imageSearch.js?v=90';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=90';
+import { playInteractionSound } from '../services/interactionSound.js?v=90';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=86';
-import { stableWordChoices } from './PracticeModes.js?v=86';
-import { selectPracticeWords } from '../services/dailySession.js?v=86';
-
-function shuffle(items) {
-  const result = [...items];
-  for (let index = result.length - 1; index > 0; index -= 1) {
-    const swap = Math.floor(Math.random() * (index + 1));
-    [result[index], result[swap]] = [result[swap], result[index]];
-  }
-  return result;
-}
-
-function go(view, onNavigate) {
-  if (window.location.hash === `#${view}`) onNavigate(view); else window.location.hash = view;
-}
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=90';
+import { stableWordChoices } from './PracticeModes.js?v=90';
+import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=90';
+import { shuffleItems as shuffle } from '../utils/collections.js';
+import { navigateTo as go } from '../utils/navigation.js';
 
 function savedImage(word) {
   if (!/^https:\/\//i.test(word.imageUrl || '')) return null;
@@ -38,7 +27,7 @@ async function findAutomaticImages(word, excludeUrls) {
 export async function renderVisualMatchMode(container, onNavigate) {
   const notebook = driveSync.getActiveNotebook();
   const allWords = driveSync.getWords().filter(word => word.notebook === notebook);
-  const words = selectPracticeWords(allWords);
+  const words = selectModeWords(allWords, { mode: 'visual-match', limit: 10 });
   if (words.length < 2) {
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images"></i><h2>Add at least two words</h2><p>Visual Match needs multiple choices from the active month.</p><button class="btn-green-solid" id="visual-back">Back to dashboard</button></div></section>`;
     container.querySelector('#visual-back').addEventListener('click', () => go('dashboard', onNavigate));
@@ -70,13 +59,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
         if (image) {
           reservedImageUrls.add(image.url);
           reservedImageUrls.add(image.sourceUrl);
-          const updated = driveSync.updateWord(word.id, {
-            imageUrl: image.url,
-            imageSourceUrl: image.sourceUrl,
-            imageAttribution: image.attribution,
-            imageLicense: image.license,
-            imageSearchQuery: image.searchQuery || ''
-          });
+          const updated = driveSync.updateWord(word.id, imageSelectionPatch(image));
           prepared.push({ word: updated, image });
         }
         completed += 1;
@@ -114,14 +97,14 @@ export async function renderVisualMatchMode(container, onNavigate) {
     const word = forcedWord || missing[position];
     const query = searchOverride || word.imageSearchQuery || '';
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images fa-beat-fade"></i><h2>Finding images for “${escapeHtml(word.word)}”</h2><p>${escapeHtml(word.partOfSpeech || 'unknown')}: ${escapeHtml(word.definition)}</p></div></section>`;
-    const excludeUrls = new Set(driveSync.getWords().flatMap(item => [item.imageUrl, item.imageSourceUrl]).filter(Boolean));
+    const excludeUrls = new Set(imageUrlsForWords(driveSync.getWords()));
     const candidates = await findRelevantImages(word, { extraQueries: query ? [query] : [], excludeUrls });
     if (window.location.hash !== '#visual') return;
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card image-picker-shell">
       <div class="practice-topline"><button class="status-pill offline" id="visual-setup-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${forcedWord ? 'Replace visual cue' : `Visual setup ${position + 1} of ${missing.length}`}</span><strong>${prepared.length} selected</strong></div>
       <div class="image-picker-intro"><div class="card-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> Build a personal visual mnemonic</div><h2>Choose an image for “${escapeHtml(word.word)}” <small>(${escapeHtml(word.partOfSpeech || 'unknown')})</small></h2><p>${escapeHtml(word.definition)}</p></div>
       <form class="visual-search-form" id="visual-search-form"><input id="visual-search-input" value="${escapeHtml(query)}" placeholder="Optional extra visual clue" aria-label="Image search terms"><button class="btn-green-solid">Search this meaning</button></form>
-      ${candidates.length ? `<div class="image-candidate-grid">${candidates.map((image, index) => `<button data-image-candidate="${index}"><img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.title)}"><span>${escapeHtml(image.title)}</span></button>`).join('')}</div>` : `<div class="status-list-empty"><i class="fa-solid fa-image"></i><span>No suitable app-proposed images were found for this meaning.</span></div>`}
+      ${candidates.length ? `<div class="image-candidate-grid">${candidates.map((image, index) => `<button data-image-candidate="${index}"><img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.title)}" loading="lazy" decoding="async"><span>${escapeHtml(image.title)}</span></button>`).join('')}</div>` : `<div class="status-list-empty"><i class="fa-solid fa-image"></i><span>No suitable app-proposed images were found for this meaning.</span></div>`}
       <div class="inline-actions"><button class="status-pill offline" id="visual-skip-image">${forcedWord ? 'Keep current image' : 'Skip this word'}</button>${!forcedWord && prepared.length >= 2 ? `<button class="btn-green-solid" id="visual-start-ready">Start with ${prepared.length} images</button>` : ''}</div>
       <p class="image-license-note">Search combines the spelling with its selected definition. Refine the terms until the picture represents this exact meaning.</p>
     </div></section>`;
@@ -135,7 +118,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
     container.querySelector('#visual-start-ready')?.addEventListener('click', startGame);
     container.querySelectorAll('[data-image-candidate]').forEach(button => button.addEventListener('click', () => {
       const image = candidates[Number(button.dataset.imageCandidate)];
-      driveSync.updateWord(word.id, { imageUrl: image.url, imageSourceUrl: image.sourceUrl, imageAttribution: image.attribution, imageLicense: image.license, imageSearchQuery: image.searchQuery || query });
+      driveSync.updateWord(word.id, imageSelectionPatch(image, query));
       if (forcedWord) {
         renderVisualMatchMode(container, onNavigate);
         return;
@@ -147,6 +130,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
 
   function startGame() {
     const queue = shuffle(prepared);
+    recordModeWordSelections(driveSync, queue.map(item => item.word), { mode: 'visual-match' });
     const originalCount = queue.length;
     let index = 0;
     let score = 0;

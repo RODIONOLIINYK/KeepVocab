@@ -816,6 +816,10 @@ body {
 .library-word-card blockquote { color: var(--text-muted); font-size: .82rem; font-style: italic; }
 .library-pos { color: var(--text-dim); font-size: .74rem !important; font-weight: 750; text-transform: uppercase; }
 .library-card-footer { display: flex; justify-content: space-between; color: var(--text-muted); font-size: .76rem; margin-top: auto; padding-top: 6px; }
+.library-recall-stats { display:flex; flex-wrap:wrap; gap:6px 10px; padding:8px 0 2px; color:var(--text-muted); font-size:.69rem; }
+.library-recall-stats span { display:inline-flex; align-items:center; gap:4px; }
+.library-recall-stats .fa-check { color:#15803d; }
+.library-recall-stats .fa-xmark { color:#b91c1c; }
 .library-card-actions { display: flex; gap: 8px; border-top: 1px solid var(--border-card); padding-top: 10px; }
 .library-card-actions button, .delete-confirm button { background: transparent; border: 0; color: var(--text-muted); cursor: pointer; font-weight: 700; padding: 5px; }
 .library-card-actions button:last-child, .delete-confirm button:last-child { color: #dc2626; }

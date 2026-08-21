@@ -1,13 +1,10 @@
-import { driveSync } from '../services/driveSync.js?v=86';
-import { getDueWords } from '../services/srsEngine.js?v=86';
-import { buildDailySession, weaknessScore } from '../services/dailySession.js?v=86';
-import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=86';
-import { completedExercisesToday } from '../services/learningStats.js?v=86';
+import { driveSync } from '../services/driveSync.js?v=90';
+import { getDueWords } from '../services/srsEngine.js?v=90';
+import { buildDailySession, weaknessScore } from '../services/dailySession.js?v=90';
+import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=90';
+import { completedExercisesToday } from '../services/learningStats.js?v=90';
 import { escapeHtml } from '../utils/html.js';
-
-function go(view, onNavigate) {
-  if (window.location.hash === `#${view}`) onNavigate(view); else window.location.hash = view;
-}
+import { navigateTo as go } from '../utils/navigation.js';
 
 const MODES = [
   ['flashcards', 'fa-clone', 'Flashcards', 'Reveal, listen, and self-rate'],

@@ -1,6 +1,6 @@
 // Adaptive spaced-repetition scheduler with backward-compatible Leitner fields.
 
-import { driveSync } from './driveSync.js?v=86';
+import { driveSync } from './driveSync.js?v=90';
 
 export const SRS_VERSION = 2;
 export const MINUTE_MS = 60 * 1000;

@@ -1,7 +1,40 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildVisualSceneDescriptions, buildVisualSearchQueries, canonicalVisualTerm, compactGeneratedScene, compactVisualSearchQuery, findLibraryOfCongressImages, findNasaImages, findPexelsImages, findRelevantImages, findWikimediaImages, generateVisualScenesWithGemini, getImageProviderBackupRecord, getImageProviderSettings, imageFeedbackFor, isConcreteVisualScene, isPhysicalObjectSense, rankOpenverseImages, restoreImageProviderBackupRecord, saveImageProviderSettings, updateImageFeedback } from '../js/services/imageSearch.js';
+import { buildVisualSceneDescriptions, buildVisualSearchQueries, canonicalVisualTerm, compactGeneratedScene, compactVisualSearchQuery, filterLoadableImages, findLibraryOfCongressImages, findNasaImages, findPexelsImages, findRelevantImages, findWikimediaImages, generateVisualScenesWithGemini, getImageProviderBackupRecord, getImageProviderSettings, imageFeedbackFor, isConcreteVisualScene, isPhysicalObjectSense, rankOpenverseImages, restoreImageProviderBackupRecord, saveImageProviderSettings, updateImageFeedback } from '../js/services/imageSearch.js';
+
+test('candidate validation limits concurrent loads, retries failures, and preserves ranking order', async () => {
+  const candidates = ['first', 'retry', 'broken', 'last'].map(name => ({ url: `https://images.example/${name}.jpg`, title: name }));
+  let active = 0;
+  let maximumActive = 0;
+  const attempts = new Map();
+  const loaded = await filterLoadableImages(candidates, {
+    limit: 3,
+    concurrency: 2,
+    retryDelayMs: 1,
+    loadImage: async url => {
+      active += 1;
+      maximumActive = Math.max(maximumActive, active);
+      const count = (attempts.get(url) || 0) + 1;
+      attempts.set(url, count);
+      await new Promise(resolve => setTimeout(resolve, 2));
+      active -= 1;
+      if (url.includes('/broken.')) return false;
+      if (url.includes('/retry.')) return count > 1;
+      return true;
+    }
+  });
+
+  assert.equal(maximumActive, 2);
+  assert.equal(attempts.get(candidates[1].url), 2);
+  assert.equal(attempts.get(candidates[2].url), 2);
+  assert.deepEqual(loaded.map(image => image.title), ['first', 'retry', 'last']);
+});
+
+test('candidate validation is a no-op outside a browser when no loader is provided', async () => {
+  const candidates = [{ url: 'https://images.example/one.jpg' }];
+  assert.deepEqual(await filterLoadableImages(candidates), candidates);
+});
 
 const runningWord = {
   word: 'to run',
