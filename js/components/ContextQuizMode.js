@@ -1,9 +1,10 @@
-import { driveSync } from '../services/driveSync.js?v=79';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=79';
-import { clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=79';
+import { driveSync } from '../services/driveSync.js?v=86';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=86';
+import { clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=86';
 import { escapeHtml } from '../utils/html.js';
-import { DEFAULT_SESSION_SIZE, selectPracticeWords } from '../services/dailySession.js?v=79';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=86';
+import { DEFAULT_SESSION_SIZE, selectPracticeWords } from '../services/dailySession.js?v=86';
 
 function go(view, onNavigate) {
   if (window.location.hash === `#${view}`) onNavigate(view);
@@ -85,7 +86,7 @@ export function renderContextQuizMode(container, onNavigate) {
       if (answered) return;
       selectedId = button.dataset.contextWord;
       answered = true;
-      const correct = selectedId === target.id;
+      const correct = evaluateChoiceAnswer(target.id, selectedId);
       if (correct) score += 1;
       recordExerciseResult({ wordId: target.id, exerciseType: 'context-cloze', correct, recallType: 'context', producedUnaided: false, confusedWithWordId: correct ? '' : selectedId });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));

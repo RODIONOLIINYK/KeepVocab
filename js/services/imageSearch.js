@@ -1,4 +1,4 @@
-import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=79';
+import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=86';
 
 const OPENVERSE_API = 'https://api.openverse.org/v1/images/';
 const WIKIMEDIA_COMMONS_API = 'https://commons.wikimedia.org/w/api.php';
@@ -108,6 +108,18 @@ function definitionAnchor(word) {
   return meaningfulTokens(word?.definition).slice(0, 5).join(' ');
 }
 
+export function isPhysicalObjectSense(word) {
+  const term = canonicalVisualTerm(word?.word);
+  const definition = normalizeText(word?.definition);
+  const partOfSpeech = normalizeText(word?.partOfSpeech);
+  if (!term || !definition || (partOfSpeech && !/\bnoun\b/.test(partOfSpeech))) return false;
+  const singular = term.endsWith('s') ? term.slice(0, -1) : term;
+  const escapedSingular = singular.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (new RegExp(`\\bplural of ${escapedSingular}\\b`).test(definition)) return true;
+  return /\b(physical object|object|tool|device|machine|instrument|implement|utensil|appliance|container|computer|laptop|vehicle|weapon|furniture|garment|clothing|hardware|equipment)\b/.test(definition)
+    && !/\b(person|people|institution|organization|action|process|state|quality|feeling|emotion|event|victory|place|area|period|amount)\b/.test(definition);
+}
+
 // These are camera-ready fallbacks, not clipped dictionary definitions. They cover
 // recurring visual meanings when Gemini is unavailable; unknown meanings fall back
 // to private search keywords and are not presented as if they were scene ideas.
@@ -180,6 +192,7 @@ export function buildVisualSceneDescriptions(word) {
 export function isConcreteVisualScene(scene, word) {
   const clean = normalizeText(scene);
   const tokens = clean.split(' ').filter(Boolean);
+  if (clean === canonicalVisualTerm(word?.word) && isPhysicalObjectSense(word)) return true;
   if (tokens.length < 5 || tokens.length > 7 || DEFINITION_FRAGMENT_PATTERN.test(clean)) return false;
   const wordTokens = new Set(canonicalVisualTerm(word?.word).split(' ').filter(token => token.length > 2));
   if (tokens.some(token => [...wordTokens].some(wordToken => token === wordToken || (wordToken.length >= 3 && token.startsWith(wordToken) && token.length <= wordToken.length + 4)))) return false;
@@ -204,11 +217,15 @@ export function compactVisualSearchQuery(scene) {
 export async function generateVisualScenesWithGemini(word, options = {}) {
   const cacheKey = `gemini-scenes:${normalizeText(word?.word)}:${normalizeText(word?.partOfSpeech)}:${normalizeText(word?.definition)}`;
   if (memoryCache.has(cacheKey)) return memoryCache.get(cacheKey);
-  const prompt = `Act as a visual director, not a dictionary. Create three literal scenes that could each be captured in one photograph and used to remember the exact English meaning below.
+  const prompt = `Act as a visual director, not a dictionary. Create search queries that retrieve a photograph representing the exact English meaning below.
 
 Return only JSON: {\"scenes\":[\"...\",\"...\",\"...\"]}
 
-Hard rules for every scene:
+First decide whether the exact selected meaning is a concrete physical object directly named by the target word.
+- If it is a physical object, do not invent a scene. Return one search query containing only the target word, such as wrench. Keep the original plural when appropriate, such as laptops.
+- Use this direct-object rule only for tangible objects that can be photographed by themselves, not people, places, actions, events, qualities, emotions, or abstract nouns.
+
+Hard rules for every non-object scene:
 - Exactly 5-7 concrete words: visible subject + observable action + object or setting.
 - Write a compact search phrase, not a full sentence. Remove articles and decorative adjectives unless essential.
 - Never use the target word, a grammatical form of it, or a clipped/rephrased definition.
@@ -223,6 +240,9 @@ Quality example for \"disdain\": \"woman turning away with curled lip\".
 Bad example: \"feeling that someone is unworthy\" because a camera cannot see it.
 Quality example for \"detachment\" meaning physical separation: \"person unplugging cable from wall socket\".
 Bad example: \"worker cutting a metal sheet\" because cutting or destroying something is not detaching connected parts.
+Quality object example for \"wrench\": return only \"wrench\".
+Quality object example for \"laptops\": return only \"laptops\".
+Bad object example: \"mechanic holding wrench beside broken engine\" because the object name alone is a clearer search query.
 
 Target word: ${word?.word || ''}
 Part of speech: ${word?.partOfSpeech || ''}
@@ -244,7 +264,12 @@ export function buildVisualSearchQueries(word, { refresh = false } = {}) {
   const senseQuery = [term, ...anchors.slice(0, 3)].filter(Boolean).join(' ');
   const compactDefinition = anchors.slice(0, 3).join(' ');
   const scenes = buildVisualSceneDescriptions(word);
-  const concepts = unique([
+  const concepts = unique(isPhysicalObjectSense(word) ? [
+    custom,
+    term,
+    senseQuery,
+    compactDefinition
+  ] : [
     custom,
     ...scenes,
     senseQuery,

@@ -1,4 +1,4 @@
-import { driveSync } from './driveSync.js?v=79';
+import { driveSync } from './driveSync.js?v=86';
 
 const MAX_SESSION_HISTORY = 60;
 

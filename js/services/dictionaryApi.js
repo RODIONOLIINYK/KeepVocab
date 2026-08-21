@@ -1,6 +1,6 @@
 // Free Dictionary API client with validation, examples, timeout, and an offline cache.
 
-import { fetchExamplesForSenses, sanitizeExistingExamples } from './exampleSearch.js?v=79';
+import { fetchExamplesForSenses, sanitizeExistingExamples } from './exampleSearch.js?v=86';
 
 const DICTIONARY_API_BASE = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
 const SPELLING_API_BASE = 'https://api.languagetool.org/v2/check';
@@ -213,7 +213,7 @@ export async function fetchWordDetails(word, options = {}) {
     }
 
     let result = parseEntries(payload, resolvedWord);
-    if (resolvedWord !== cleanWord) result = { ...result, correctedFrom: cleanWord };
+    if (resolvedWord !== cleanWord || result.word !== cleanWord) result = { ...result, correctedFrom: cleanWord };
     const exampleFetchImpl = options.exampleFetchImpl ?? (options.fetchImpl ? null : globalThis.fetch?.bind(globalThis));
     if (exampleFetchImpl) {
       const senses = await fetchExamplesForSenses(result.word, result.senses, exampleFetchImpl);

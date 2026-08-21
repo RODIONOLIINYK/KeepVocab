@@ -1,7 +1,7 @@
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=79';
-import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=79';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=86';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=86';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
@@ -276,7 +276,10 @@ export class DriveSyncService {
         reviewActivity: {},
         exerciseActivityByDevice: {},
         reminderEnabled: false,
+        smartReminderEnabled: true,
+        streakReminderEnabled: true,
         reminderTime: '19:00',
+        reviewStartMoments: [],
         soundEnabled: true,
         updatedAt: new Date().toISOString()
       });
@@ -299,7 +302,10 @@ export class DriveSyncService {
     if (!Number.isFinite(Number(settings.dailyGoal)) || Number(settings.dailyGoal) < 1) this.updateSettings({ dailyGoal: 20 }, { silent: true });
     const engagementDefaults = {};
     if (typeof settings.reminderEnabled !== 'boolean') engagementDefaults.reminderEnabled = false;
+    if (typeof settings.smartReminderEnabled !== 'boolean') engagementDefaults.smartReminderEnabled = true;
+    if (typeof settings.streakReminderEnabled !== 'boolean') engagementDefaults.streakReminderEnabled = true;
     if (!/^\d{2}:\d{2}$/.test(String(settings.reminderTime || ''))) engagementDefaults.reminderTime = '19:00';
+    if (!Array.isArray(settings.reviewStartMoments)) engagementDefaults.reviewStartMoments = [];
     if (typeof settings.soundEnabled !== 'boolean') engagementDefaults.soundEnabled = true;
     if (Object.keys(engagementDefaults).length) this.updateSettings(engagementDefaults, { silent: true });
   }

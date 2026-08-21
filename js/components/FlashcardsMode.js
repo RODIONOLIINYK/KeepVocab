@@ -1,9 +1,9 @@
-import { driveSync } from '../services/driveSync.js?v=79';
-import { speakWord } from '../services/speechService.js?v=79';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
-import { getRatingPreviews } from '../services/srsEngine.js?v=79';
+import { driveSync } from '../services/driveSync.js?v=86';
+import { speakWord } from '../services/speechService.js?v=86';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
+import { getRatingPreviews } from '../services/srsEngine.js?v=86';
 import { escapeHtml } from '../utils/html.js';
-import { selectPracticeWords } from '../services/dailySession.js?v=79';
+import { selectPracticeWords } from '../services/dailySession.js?v=86';
 
 function go(view, onNavigate) {
   if (window.location.hash === `#${view}`) onNavigate(view);

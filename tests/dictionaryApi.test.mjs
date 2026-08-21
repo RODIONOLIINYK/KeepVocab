@@ -97,6 +97,25 @@ test('a close misspelling is corrected only after the original dictionary lookup
   assert.deepEqual(calls.map(url => new URL(url).hostname), ['api.dictionaryapi.dev', 'api.languagetool.org', 'api.dictionaryapi.dev']);
 });
 
+test('the dictionary response supplies the canonical spelling even on a successful first request', async () => {
+  const result = await fetchWordDetails('recieve', {
+    storage: new MemoryStorage(),
+    fetchImpl: async url => {
+      assert.match(url, /recieve$/);
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return [{ word: 'receive', meanings: [{ partOfSpeech: 'verb', definitions: [{ definition: 'To be given something.' }] }] }];
+        }
+      };
+    }
+  });
+
+  assert.equal(result.word, 'receive');
+  assert.equal(result.correctedFrom, 'recieve');
+});
+
 test('an unrelated spelling suggestion is not silently accepted', async () => {
   await assert.rejects(
     () => fetchWordDetails('zzzzzz', {

@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Specification Stylesheet -->
-  <link rel="stylesheet" href="css/styles.css?v=79">
+  <link rel="stylesheet" href="css/styles.css?v=86">
 </head>
 <body>
 
@@ -370,7 +370,7 @@
         <img src="assets/keepvocab-sprig-reminder.webp" alt="Sprig holding a reminder bell">
         <div>
           <h2>Build your learning routine</h2>
-          <p>Let Sprig adapt reminders to your study rhythm, due words, and daily goal.</p>
+          <p>Let Sprig schedule Android system notifications around your study rhythm, due words, and daily goal.</p>
         </div>
         <button type="button" class="status-pill offline" id="btn-close-engagement-settings" aria-label="Close routine settings"><i class="fa-solid fa-xmark"></i></button>
       </div>
@@ -378,13 +378,18 @@
       <div class="engagement-setting-list">
         <label class="engagement-setting-row" for="reminder-enabled">
           <span class="setting-icon bell"><i class="fa-solid fa-bell"></i></span>
-          <span><strong>Daily reminder</strong><small>Get a nudge before your streak slips.</small></span>
+          <span><strong>Daily reminder</strong><small>Get an Android system notification before your streak slips.</small></span>
           <input type="checkbox" id="reminder-enabled" class="setting-toggle">
         </label>
         <label class="engagement-setting-row" for="smart-reminder-enabled">
           <span class="setting-icon bell"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
           <span><strong>Smart timing</strong><small>Learn when you usually study and adapt each reminder to what is due.</small></span>
           <input type="checkbox" id="smart-reminder-enabled" class="setting-toggle" checked>
+        </label>
+        <label class="engagement-setting-row" for="streak-reminder-enabled">
+          <span class="setting-icon streak"><i class="fa-solid fa-fire"></i></span>
+          <span><strong>Streak protection</strong><small>If you have no activity, send one later Android notification before the day ends.</small></span>
+          <input type="checkbox" id="streak-reminder-enabled" class="setting-toggle" checked>
         </label>
         <label class="engagement-time-row" for="reminder-time">
           <span>Preferred reminder time</span>
@@ -516,6 +521,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=79"></script>
+  <script type="module" src="js/app.js?v=86"></script>
 </body>
 </html>

@@ -1,30 +1,30 @@
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=79';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=79';
-import { speakWord } from './services/speechService.js?v=79';
-import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=79';
-import { recordExerciseResult } from './services/exerciseResult.js?v=79';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=79';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=79';
-import { findRelevantImages } from './services/imageSearch.js?v=79';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=79';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=79';
-import { appendStudyMoment, buildSmartReminderPlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=79';
+import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=86';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=86';
+import { speakWord } from './services/speechService.js?v=86';
+import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=86';
+import { recordExerciseResult } from './services/exerciseResult.js?v=86';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=86';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=86';
+import { findRelevantImages } from './services/imageSearch.js?v=86';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=86';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=86';
+import { appendStudyMoment, buildSmartReminderPlan, buildStreakMaintenancePlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=86';
 
-import { renderReviewView } from './components/ReviewView.js?v=79';
-import { renderLibraryView } from './components/LibraryView.js?v=79';
-import { renderStatsView } from './components/StatsView.js?v=79';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=79';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=79';
-import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=79';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=79';
-import { renderDashboardView } from './components/DashboardView.js?v=79';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=79';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=79';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=79';
-import { renderUseItMode } from './components/UseItMode.js?v=79';
-import { renderSettingsView } from './components/SettingsView.js?v=79';
+import { renderReviewView } from './components/ReviewView.js?v=86';
+import { renderLibraryView } from './components/LibraryView.js?v=86';
+import { renderStatsView } from './components/StatsView.js?v=86';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=86';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=86';
+import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=86';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=86';
+import { renderDashboardView } from './components/DashboardView.js?v=86';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=86';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=86';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=86';
+import { renderUseItMode } from './components/UseItMode.js?v=86';
+import { renderSettingsView } from './components/SettingsView.js?v=86';
 
 function localDateKey(date = new Date()) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
@@ -61,9 +61,10 @@ let wordsQueue = buildStudyQueue();
 
 let currentIndex = 0;
 const reminderDefaults = driveSync.getSettings();
-if (typeof reminderDefaults.smartReminderEnabled !== 'boolean' || !Array.isArray(reminderDefaults.reviewStartMoments)) {
+if (typeof reminderDefaults.smartReminderEnabled !== 'boolean' || typeof reminderDefaults.streakReminderEnabled !== 'boolean' || !Array.isArray(reminderDefaults.reviewStartMoments)) {
   driveSync.updateSettings({
     smartReminderEnabled: typeof reminderDefaults.smartReminderEnabled === 'boolean' ? reminderDefaults.smartReminderEnabled : true,
+    streakReminderEnabled: typeof reminderDefaults.streakReminderEnabled === 'boolean' ? reminderDefaults.streakReminderEnabled : true,
     reviewStartMoments: Array.isArray(reminderDefaults.reviewStartMoments) ? reminderDefaults.reviewStartMoments : []
   }, { silent: true });
 }
@@ -207,6 +208,21 @@ function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
   });
 }
 
+function currentStreakMaintenancePlan(settingsOverride = {}, now = new Date()) {
+  const settings = { ...driveSync.getSettings(), ...settingsOverride };
+  const reviewsToday = settings.reviewsDate === localDateKey(now) ? Number(settings.reviewsToday || 0) : 0;
+  const dueCount = getDueWords().filter(word => word.notebook === driveSync.getActiveNotebook()).length;
+  const primaryPlan = currentSmartReminderPlan(settingsOverride, now);
+  return buildStreakMaintenancePlan({
+    enabled: settings.streakReminderEnabled !== false,
+    primaryTime: primaryPlan.time,
+    reviewsToday,
+    streak: settings.dailyStreak || 0,
+    dueCount,
+    now
+  });
+}
+
 function rememberStudyStart(now = new Date()) {
   const settings = driveSync.getSettings();
   const previous = Array.isArray(settings.reviewStartMoments) ? settings.reviewStartMoments : [];
@@ -221,8 +237,9 @@ async function refreshSmartReminder({ requestPermission = false, settingsOverrid
     return { status: 'disabled', plan: null };
   }
   const plan = currentSmartReminderPlan(settingsOverride);
-  const result = await scheduleDailyReminder({ ...plan, requestPermission });
-  return { ...result, plan };
+  const streakPlan = currentStreakMaintenancePlan(settingsOverride);
+  const result = await scheduleDailyReminder({ ...plan, streakPlan, requestPermission });
+  return { ...result, plan, streakPlan };
 }
 
 function queueSmartReminderRefresh() {
@@ -279,7 +296,7 @@ function updateEngagementCard() {
 
   const reminderPlan = currentSmartReminderPlan();
   status.innerHTML = settings.reminderEnabled
-    ? `<i class="fa-solid fa-bell"></i> ${settings.smartReminderEnabled !== false ? 'Smart reminder' : 'Daily reminder'} at ${formatReminderTime(reminderPlan.time)} · ${reminderPlan.summary}`
+    ? `<i class="fa-solid fa-bell"></i> ${settings.smartReminderEnabled !== false ? 'Smart reminder' : 'Daily reminder'} at ${formatReminderTime(reminderPlan.time)} · ${reminderPlan.summary}${currentStreakMaintenancePlan() ? ' · streak safeguard on' : ''}`
     : '<i class="fa-regular fa-bell"></i> Daily reminder is off';
 }
 
@@ -287,11 +304,12 @@ function setupEngagementSystem() {
   const modal = document.getElementById('engagement-settings-modal');
   const reminderEnabled = document.getElementById('reminder-enabled');
   const smartReminderEnabled = document.getElementById('smart-reminder-enabled');
+  const streakReminderEnabled = document.getElementById('streak-reminder-enabled');
   const reminderTime = document.getElementById('reminder-time');
   const soundEnabled = document.getElementById('sound-enabled');
   const helper = document.getElementById('reminder-helper');
   const save = document.getElementById('btn-save-engagement-settings');
-  if (!modal || !reminderEnabled || !smartReminderEnabled || !reminderTime || !soundEnabled || !helper || !save) return;
+  if (!modal || !reminderEnabled || !smartReminderEnabled || !streakReminderEnabled || !reminderTime || !soundEnabled || !helper || !save) return;
 
   const updateHelper = () => {
     if (!reminderEnabled.checked) {
@@ -300,7 +318,15 @@ function setupEngagementSystem() {
     }
     const plan = currentSmartReminderPlan({
       reminderTime: normalizeReminderTime(reminderTime.value),
-      smartReminderEnabled: smartReminderEnabled.checked
+      smartReminderEnabled: smartReminderEnabled.checked,
+      streakReminderEnabled: streakReminderEnabled.checked
+    });
+    const streakPlan = buildStreakMaintenancePlan({
+      enabled: streakReminderEnabled.checked,
+      primaryTime: plan.time,
+      reviewsToday: driveSync.getSettings().reviewsDate === localDateKey() ? Number(driveSync.getSettings().reviewsToday || 0) : 0,
+      streak: driveSync.getSettings().dailyStreak || 0,
+      dueCount: getDueWords().length
     });
     const learnedTime = smartReminderEnabled.checked && plan.time !== normalizeReminderTime(reminderTime.value);
     const timingCopy = !smartReminderEnabled.checked
@@ -308,12 +334,13 @@ function setupEngagementSystem() {
       : learnedTime
         ? 'Timing learned from your recent study days.'
         : 'Smart timing will learn after three study days; your preferred time is used for now.';
-    helper.textContent = `Next plan: ${formatReminderTime(plan.time)} · ${plan.title}. ${timingCopy}`;
+    helper.textContent = `Next plan: ${formatReminderTime(plan.time)} · ${plan.title}. ${timingCopy}${streakPlan ? ` A streak safeguard is planned for ${formatReminderTime(streakPlan.time)} if you still have no activity.` : ''}`;
   };
 
   const updateTimeState = () => {
     reminderTime.disabled = !reminderEnabled.checked;
     smartReminderEnabled.disabled = !reminderEnabled.checked;
+    streakReminderEnabled.disabled = !reminderEnabled.checked;
     updateHelper();
   };
 
@@ -321,6 +348,7 @@ function setupEngagementSystem() {
     const settings = driveSync.getSettings();
     reminderEnabled.checked = Boolean(settings.reminderEnabled);
     smartReminderEnabled.checked = settings.smartReminderEnabled !== false;
+    streakReminderEnabled.checked = settings.streakReminderEnabled !== false;
     reminderTime.value = normalizeReminderTime(settings.reminderTime || '19:00');
     soundEnabled.checked = settings.soundEnabled !== false;
     updateTimeState();
@@ -331,6 +359,7 @@ function setupEngagementSystem() {
 
   reminderEnabled.addEventListener('change', updateTimeState);
   smartReminderEnabled.addEventListener('change', updateHelper);
+  streakReminderEnabled.addEventListener('change', updateHelper);
   reminderTime.addEventListener('input', updateHelper);
   document.addEventListener('click', event => {
     const control = event.target.closest('button, a');
@@ -351,6 +380,7 @@ function setupEngagementSystem() {
       driveSync.updateSettings({
         reminderEnabled: enabled,
         smartReminderEnabled: smartTiming,
+        streakReminderEnabled: streakReminderEnabled.checked,
         reminderTime: time,
         soundEnabled: soundEnabled.checked
       });
@@ -362,9 +392,11 @@ function setupEngagementSystem() {
       const message = result.status === 'scheduled'
         ? `${smartTiming ? 'Smart' : 'Daily'} reminder set for ${formatReminderTime(result.plan?.time || time)}.`
         : result.status === 'permission-required'
-          ? 'Reminder saved. Enable notification permission for alerts outside the app.'
+          ? 'Reminder saved. Enable Android notification permission to receive it.'
+          : result.status === 'android-only'
+            ? 'Routine saved. Reminders are delivered only by the installed Android app.'
           : enabled
-            ? 'In-app reminder saved.'
+            ? 'Routine saved.'
             : 'Daily reminder turned off.';
       showToast(message);
     } catch (error) {
@@ -893,7 +925,7 @@ function setupQuickAddModal() {
 
     try {
       currentFetchedData = await fetchWordDetails(w);
-      if (currentFetchedData.correctedFrom) input.value = currentFetchedData.word;
+      input.value = currentFetchedData.word;
       document.getElementById('prev-w-title').textContent = currentFetchedData.word;
       document.getElementById('prev-w-phonetic').textContent = currentFetchedData.phonetic;
       renderSenses(currentFetchedData);

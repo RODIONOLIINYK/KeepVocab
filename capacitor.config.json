@@ -4,5 +4,11 @@
   "webDir": "www",
   "server": {
     "androidScheme": "https"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_keepvocab",
+      "iconColor": "#22C55E"
+    }
   }
 }

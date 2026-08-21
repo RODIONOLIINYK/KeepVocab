@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildVisualSceneDescriptions, buildVisualSearchQueries, canonicalVisualTerm, compactGeneratedScene, compactVisualSearchQuery, findLibraryOfCongressImages, findNasaImages, findPexelsImages, findRelevantImages, findWikimediaImages, generateVisualScenesWithGemini, getImageProviderBackupRecord, getImageProviderSettings, imageFeedbackFor, isConcreteVisualScene, rankOpenverseImages, restoreImageProviderBackupRecord, saveImageProviderSettings, updateImageFeedback } from '../js/services/imageSearch.js';
+import { buildVisualSceneDescriptions, buildVisualSearchQueries, canonicalVisualTerm, compactGeneratedScene, compactVisualSearchQuery, findLibraryOfCongressImages, findNasaImages, findPexelsImages, findRelevantImages, findWikimediaImages, generateVisualScenesWithGemini, getImageProviderBackupRecord, getImageProviderSettings, imageFeedbackFor, isConcreteVisualScene, isPhysicalObjectSense, rankOpenverseImages, restoreImageProviderBackupRecord, saveImageProviderSettings, updateImageFeedback } from '../js/services/imageSearch.js';
 
 const runningWord = {
   word: 'to run',
@@ -93,8 +93,30 @@ test('Gemini turns the exact word sense into concise public-catalog search scene
   assert.match(prompt, /Target word: bank/);
   assert.match(prompt, /Exact selected definition: The land beside a river/);
   assert.match(prompt, /Exactly 5-7 concrete words/);
+  assert.match(prompt, /If it is a physical object, do not invent a scene/);
+  assert.match(prompt, /such as wrench/);
+  assert.match(prompt, /such as laptops/);
   assert.match(prompt, /worker cutting a metal sheet/);
   assert.deepEqual(scenes, ['family relaxing beside grassy river at sunset', 'children walking along shallow river shoreline', 'fisherman standing beside muddy river under trees']);
+});
+
+test('physical object meanings search the object name without inventing a scene', async () => {
+  const values = new Map([['keepvocab_gemini_live_key_v1', 'AIza-test-key-for-object-query-123456789']]);
+  const storage = { getItem: key => values.get(key) || null };
+  const wrench = { word: 'wrench', partOfSpeech: 'noun', definition: 'A metal tool used for gripping and turning nuts and bolts.' };
+  const laptops = { word: 'laptops', partOfSpeech: 'noun', definition: 'Plural of laptop; portable computers small enough to use on the lap.' };
+  const scenes = await generateVisualScenesWithGemini(wrench, {
+    storage,
+    fetchImpl: async () => ({ ok: true, async json() { return { candidates: [{ content: { parts: [{ text: '{"scenes":["wrench"]}' }] } }] }; } })
+  });
+
+  assert.equal(isPhysicalObjectSense(wrench), true);
+  assert.equal(isPhysicalObjectSense(laptops), true);
+  assert.equal(isConcreteVisualScene('wrench', wrench), true);
+  assert.equal(isConcreteVisualScene('conquest', { word: 'conquest', partOfSpeech: 'noun', definition: 'A victory gained through force.' }), false);
+  assert.deepEqual(scenes, ['wrench']);
+  assert.equal(buildVisualSearchQueries(wrench)[0], 'wrench');
+  assert.equal(buildVisualSearchQueries(laptops)[0], 'laptops');
 });
 
 test('AI visual descriptions are mechanically capped at seven useful words', () => {

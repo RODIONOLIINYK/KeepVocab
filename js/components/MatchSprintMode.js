@@ -1,8 +1,8 @@
-import { driveSync } from '../services/driveSync.js?v=79';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
-import { playInteractionSound } from '../services/interactionSound.js?v=79';
+import { driveSync } from '../services/driveSync.js?v=86';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
+import { playInteractionSound } from '../services/interactionSound.js?v=86';
 import { escapeHtml } from '../utils/html.js';
-import { selectPracticeWords } from '../services/dailySession.js?v=79';
+import { selectPracticeWords } from '../services/dailySession.js?v=86';
 
 function shuffle(items) {
   const result = [...items];

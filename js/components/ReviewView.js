@@ -1,14 +1,11 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=79';
-import { speakWord } from '../services/speechService.js?v=79';
-import { getDueWords } from '../services/srsEngine.js?v=79';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
-import { playInteractionSound } from '../services/interactionSound.js?v=79';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=86';
+import { speakWord } from '../services/speechService.js?v=86';
+import { getDueWords } from '../services/srsEngine.js?v=86';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
+import { playInteractionSound } from '../services/interactionSound.js?v=86';
 import { escapeHtml } from '../utils/html.js';
-import { selectPracticeWords } from '../services/dailySession.js?v=79';
-
-function normalizeAnswer(value) {
-  return String(value || '').trim().toLowerCase().replace(/[’]/g, "'").replace(/\s+/g, ' ');
-}
+import { selectPracticeWords } from '../services/dailySession.js?v=86';
+import { evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=86';
 
 export function renderReviewView(container, onNavigate) {
   const activeNotebook = driveSync.getActiveNotebook() || getCurrentMonthNotebookTitle();
@@ -81,7 +78,7 @@ export function renderReviewView(container, onNavigate) {
       event.preventDefault();
       const answer = container.querySelector('#review-answer').value;
       if (!answer.trim()) return;
-      correct = normalizeAnswer(answer) === normalizeAnswer(current.word);
+      correct = evaluateRecallAnswer(current.word, answer);
       playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
       recordExerciseResult({

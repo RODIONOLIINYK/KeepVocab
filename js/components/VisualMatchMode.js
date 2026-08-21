@@ -1,10 +1,11 @@
-import { driveSync } from '../services/driveSync.js?v=79';
-import { findRelevantImages } from '../services/imageSearch.js?v=79';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
-import { playInteractionSound } from '../services/interactionSound.js?v=79';
+import { driveSync } from '../services/driveSync.js?v=86';
+import { findRelevantImages } from '../services/imageSearch.js?v=86';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
+import { playInteractionSound } from '../services/interactionSound.js?v=86';
 import { escapeHtml } from '../utils/html.js';
-import { stableWordChoices } from './PracticeModes.js?v=79';
-import { selectPracticeWords } from '../services/dailySession.js?v=79';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=86';
+import { stableWordChoices } from './PracticeModes.js?v=86';
+import { selectPracticeWords } from '../services/dailySession.js?v=86';
 
 function shuffle(items) {
   const result = [...items];
@@ -162,7 +163,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
       const target = queue[index];
       const options = stableWordChoices(choiceState, target.word, allWords);
       const answered = selectedId !== null;
-      const correct = selectedId === target.word.id;
+      const correct = evaluateChoiceAnswer(target.word.id, selectedId);
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell visual-shell">
         <div class="practice-topline"><button class="status-pill offline" id="visual-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${index + 1} of ${queue.length}</span><strong>Score ${score}</strong></div>
         <div class="review-progress"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div>
@@ -176,7 +177,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
       container.querySelector('#visual-change-cue').addEventListener('click', () => renderImageChooser(0, target.word));
       container.querySelectorAll('[data-visual-choice]').forEach(button => button.addEventListener('click', () => {
         selectedId = button.dataset.visualChoice;
-        const isCorrect = selectedId === target.word.id;
+        const isCorrect = evaluateChoiceAnswer(target.word.id, selectedId);
         playInteractionSound(isCorrect ? 'correct' : 'wrong');
         if (isCorrect) score += 1;
         recordExerciseResult({ wordId: target.word.id, exerciseType: 'visual-match', correct: isCorrect, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: isCorrect ? '' : selectedId });

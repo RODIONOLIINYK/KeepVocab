@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { activeImageSearchQueries, groupWordCards, imageUrlsUsedByOtherWords, mergeCurrentImageCandidate, nextImageSuggestionState, reusedImageUrls } from '../js/components/LibraryView.js';
+import { activeImageResultCandidates, activeImageSearchQueries, groupWordCards, imageUrlsUsedByOtherWords, nextImageSuggestionState, reusedImageUrls } from '../js/components/LibraryView.js';
 
 test('library identifies an image reused by multiple meaning cards', () => {
   const duplicates = reusedImageUrls([
@@ -50,11 +50,11 @@ test('a word keeps its own saved image eligible while images used by other words
   assert.deepEqual(excluded, ['https://images.example/other.jpg', 'https://source.example/other']);
 });
 
-test('the current saved image is always visible once and followed by new suggestions', () => {
+test('the current saved image stays outside fresh query results', () => {
   const current = { url: 'https://images.example/current.jpg', sourceUrl: 'https://source.example/current', isCurrent: true };
-  const merged = mergeCurrentImageCandidate(current, [
+  const results = activeImageResultCandidates(current, [
     { url: current.url, sourceUrl: current.sourceUrl },
     { url: 'https://images.example/new.jpg', sourceUrl: 'https://source.example/new' }
   ]);
-  assert.deepEqual(merged, [current, { url: 'https://images.example/new.jpg', sourceUrl: 'https://source.example/new' }]);
+  assert.deepEqual(results, [{ url: 'https://images.example/new.jpg', sourceUrl: 'https://source.example/new' }]);
 });

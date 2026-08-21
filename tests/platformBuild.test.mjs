@@ -135,14 +135,33 @@ test('exercise routes share an aligned header and content routes use the same ti
   assert.match(context, /class="exercise-topbar"/);
   assert.match(flashcards, /flashcard-exit'[\s\S]*go\('dashboard', onNavigate\)/);
   assert.match(context, /context-exit'[\s\S]*go\('dashboard', onNavigate\)/);
-  assert.match(styles, /\.daily-session-top > button\s*\{[^}]*justify-self:\s*start;[^}]*width:\s*auto;/);
-  assert.match(styles, /\.daily-session-top \.status-pill\s*\{[^}]*width:\s*34px;[^}]*min-height:\s*34px;/);
-  assert.match(styles, /\.daily-session-top \.status-pill::after\s*\{[^}]*inset:\s*-5px;/);
+  assert.match(styles, /\.daily-exit-button\s*\{[^}]*width:\s*76px;[^}]*min-height:\s*40px;/);
+  assert.match(styles, /\.daily-exit-button\s*\{[^}]*width:42px;[^}]*min-height:42px;[^}]*border-radius:50%/);
+  assert.match(daily, /class="daily-exit-button"/);
   assert.match(daily, /daily-answer-form \$\{exercise\.exerciseType === 'use-it' \? 'is-sentence' : 'is-recall'\}/);
-  assert.match(styles, /\.daily-answer-form\.is-recall\s*\{[^}]*grid-template-columns:minmax\(0,1fr\) auto;[^}]*border-radius:16px;/);
-  assert.match(styles, /\.daily-answer-form\.is-recall:focus-within\s*\{[^}]*border-color:#4ade80;/);
+  assert.match(styles, /\.daily-answer-form\.is-recall, \.daily-answer-form\.is-sentence\s*\{[^}]*grid-template-columns:minmax\(0,1fr\) auto;[^}]*border-radius:16px;/);
+  assert.match(styles, /\.daily-answer-form\.is-recall:focus-within,[^}]*border-color:#4ade80;/);
+  assert.match(daily, /exercise\.exerciseType === 'use-it' \? `<input id="daily-answer" type="text"/);
   assert.match(library, /class="content-title-row"/);
   assert.match(styles, /\.settings-icon\.ai,[\s\S]*\.settings-icon\.routine\s*\{[^}]*primary-green/);
+});
+
+test('streak protection uses device notifications without an internal notification center', () => {
+  const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
+  const app = readFileSync(resolve(projectRoot, 'js/app.js'), 'utf8');
+  const reminder = readFileSync(resolve(projectRoot, 'js/services/reminderService.js'), 'utf8');
+  const capacitor = readFileSync(resolve(projectRoot, 'capacitor.config.json'), 'utf8');
+  const notificationIcon = readFileSync(resolve(projectRoot, 'android/app/src/main/res/drawable/ic_stat_keepvocab.xml'), 'utf8');
+  assert.doesNotMatch(html, /id="btn-notification-center"/);
+  assert.doesNotMatch(html, /id="notification-popover"/);
+  assert.match(html, /id="streak-reminder-enabled"/);
+  assert.match(app, /buildStreakMaintenancePlan/);
+  assert.doesNotMatch(app, /setupNotificationCenter/);
+  assert.match(reminder, /STREAK_REMINDER_ID = 73002/);
+  assert.doesNotMatch(reminder, /Notification\.requestPermission|scheduleWebTimer/);
+  assert.match(reminder, /status: 'android-only'/);
+  assert.match(capacitor, /"smallIcon": "ic_stat_keepvocab"/);
+  assert.match(notificationIcon, /android:fillColor="#FFFFFFFF"/);
 });
 
 test('optimized Sprig artwork is preloaded and packaged for instant route changes', () => {

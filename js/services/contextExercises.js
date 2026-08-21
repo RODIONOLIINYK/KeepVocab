@@ -1,4 +1,4 @@
-import { generateGeminiContent } from './geminiSettings.js?v=79';
+import { generateGeminiContent } from './geminiSettings.js?v=86';
 
 export const CONTEXT_EXERCISE_CACHE = 'keepvocab_ai_context_cache_v1';
 

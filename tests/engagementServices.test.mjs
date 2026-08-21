@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { getInteractionSoundProfile } from '../js/services/interactionSound.js';
-import { appendStudyMoment, buildSmartReminderPlan, formatReminderTime, getHabitReminderTime, getNextReminderAt, normalizeReminderTime } from '../js/services/reminderService.js';
+import { appendStudyMoment, buildSmartReminderPlan, buildStreakMaintenancePlan, formatReminderTime, getHabitReminderTime, getNextReminderAt, getStreakReminderTime, normalizeReminderTime } from '../js/services/reminderService.js';
 
 test('reminder times are normalized and invalid input falls back safely', () => {
   assert.equal(normalizeReminderTime('7:05'), '07:05');
@@ -62,6 +62,18 @@ test('smart reminder stops asking for work after the daily goal is complete', ()
   assert.match(plan.title, /fresh goal/i);
   assert.equal(plan.nextAt.getDate(), 15);
   assert.equal(plan.nextAt.getHours(), 19);
+});
+
+test('streak protection schedules one later safeguard only before any activity', () => {
+  const now = new Date(2026, 7, 14, 12, 0);
+  const plan = buildStreakMaintenancePlan({ primaryTime: '19:00', reviewsToday: 0, streak: 12, dueCount: 3, now });
+  assert.equal(getStreakReminderTime('19:00'), '20:30');
+  assert.equal(plan.time, '20:30');
+  assert.equal(plan.route, 'review');
+  assert.equal(plan.repeat, false);
+  assert.match(plan.title, /12-day streak/);
+  assert.equal(buildStreakMaintenancePlan({ primaryTime: '19:00', reviewsToday: 1, streak: 12, now }), null);
+  assert.equal(buildStreakMaintenancePlan({ enabled: false, primaryTime: '19:00', reviewsToday: 0, streak: 12, now }), null);
 });
 
 test('interaction sounds stay short and use distinct feedback contours', () => {

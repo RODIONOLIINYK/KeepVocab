@@ -1,9 +1,10 @@
-import { driveSync } from '../services/driveSync.js?v=79';
-import { speakWord } from '../services/speechService.js?v=79';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=79';
-import { playInteractionSound } from '../services/interactionSound.js?v=79';
-import { selectPracticeWords } from '../services/dailySession.js?v=79';
+import { driveSync } from '../services/driveSync.js?v=86';
+import { speakWord } from '../services/speechService.js?v=86';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=86';
+import { playInteractionSound } from '../services/interactionSound.js?v=86';
+import { selectPracticeWords } from '../services/dailySession.js?v=86';
 import { escapeHtml } from '../utils/html.js';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=86';
 
 function activeLibraryWords() {
   const notebook = driveSync.getActiveNotebook();
@@ -101,7 +102,7 @@ export function renderSpellingMode(container, onNavigate) {
       event.preventDefault();
       const answer = container.querySelector('#spell-answer').value.trim().toLowerCase();
       if (!answer) return;
-      correct = answer === word.word.toLowerCase();
+      correct = evaluateRecallAnswer(word.word, answer);
       playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
       recordExerciseResult({ wordId: word.id, exerciseType: 'listen-and-spell', correct, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'listening-recall', producedUnaided: correct });
@@ -136,7 +137,7 @@ export function renderChooseWordMode(container, onNavigate) {
     const target = queue[index];
     const options = stableWordChoices(choiceState, target, all);
     const answered = selectedId !== null;
-    const isCorrect = selectedId === target.id;
+    const isCorrect = evaluateChoiceAnswer(target.id, selectedId);
     container.innerHTML = `
       <section class="full-view-stack"><div class="spec-card practice-shell">
         <div class="practice-topline"><button class="status-pill offline" id="choose-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>Choose Word · ${index + 1} of ${queue.length}</span><strong>Score ${score}</strong></div>
@@ -157,7 +158,7 @@ export function renderChooseWordMode(container, onNavigate) {
     container.querySelector('#choose-exit').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelectorAll('[data-choice]').forEach(button => button.addEventListener('click', () => {
       selectedId = button.dataset.choice;
-      const correct = selectedId === target.id;
+      const correct = evaluateChoiceAnswer(target.id, selectedId);
       playInteractionSound(correct ? 'correct' : 'wrong');
       if (correct) score += 1;
       recordExerciseResult({ wordId: target.id, exerciseType: 'choose-word', correct, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: correct ? '' : selectedId });

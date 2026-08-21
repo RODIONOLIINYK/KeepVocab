@@ -1,6 +1,6 @@
-import { driveSync } from './driveSync.js?v=79';
-import { migrateSrsState, scheduleWordReview, updateStreak } from './srsEngine.js?v=79';
-import { recordLearningExercise } from './learningStats.js?v=79';
+import { driveSync } from './driveSync.js?v=86';
+import { migrateSrsState, scheduleWordReview, updateStreak } from './srsEngine.js?v=86';
+import { recordLearningExercise } from './learningStats.js?v=86';
 
 export const EXERCISE_RESULT_VERSION = 1;
 

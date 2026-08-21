@@ -1,7 +1,7 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=79';
-import { speakWord } from '../services/speechService.js?v=79';
-import { buildVisualSceneDescriptions, findRelevantImages, generateVisualScenesWithGemini, getImageProviderSettings, updateImageFeedback } from '../services/imageSearch.js?v=79';
-import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=79';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=86';
+import { speakWord } from '../services/speechService.js?v=86';
+import { buildVisualSceneDescriptions, findRelevantImages, generateVisualScenesWithGemini, getImageProviderSettings, updateImageFeedback } from '../services/imageSearch.js?v=86';
+import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=86';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
 
 function readFileAsDataUrl(file) {
@@ -83,10 +83,11 @@ export function imageUrlsUsedByOtherWords(words, currentWordId) {
     .filter(Boolean);
 }
 
-export function mergeCurrentImageCandidate(currentImage, results, limit = 10) {
+export function activeImageResultCandidates(currentImage, results, limit = 10) {
   const searched = Array.isArray(results) ? results : [];
-  if (!currentImage?.url) return searched.slice(0, limit);
-  return [currentImage, ...searched.filter(image => image?.url !== currentImage.url && (!currentImage.sourceUrl || image?.sourceUrl !== currentImage.sourceUrl))].slice(0, limit);
+  return searched
+    .filter(image => image?.url && image.url !== currentImage?.url && (!currentImage?.sourceUrl || image.sourceUrl !== currentImage.sourceUrl))
+    .slice(0, limit);
 }
 
 export function renderLibraryView(container) {
@@ -156,11 +157,10 @@ export function renderLibraryView(container) {
       license: word.imageLicense || '',
       source: 'Current image',
       searchQuery: word.imageSearchQuery || activeImageConcept,
-      imageKind: word.imageKind || 'external',
-      isCurrent: true
+      imageKind: word.imageKind || 'external'
     } : null;
-    imageCandidates = mergeCurrentImageCandidate(currentImage, results, 10);
-    imageQuery = imageCandidates[0]?.searchQuery || '';
+    imageCandidates = activeImageResultCandidates(currentImage, results, 10);
+    imageQuery = imageCandidates[0]?.searchQuery || activeImageConcept;
     imageLoading = false;
     imageError = imageCandidates.length ? '' : customActive
       ? 'No images matched this custom interpretation. Try a shorter, more concrete scene description.'
@@ -302,8 +302,8 @@ export function renderLibraryView(container) {
               <small>AI concepts stay concise at 5–7 concrete words. Only the highlighted concept is searched, and identical concept text always uses the same query. “More images” moves to the next suggested concept; after the last concept it requests the next result page.</small>
               ${activeImageConcept ? `<small class="active-image-search-state">Searching: “${escapeHtml(activeImageConcept)}” · page ${imageResultPage}</small>` : ''}
             </div>
-            ${currentImageUrl ? `<div class="selected-image-preview"><img src="${escapeHtml(currentImageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span></div></div><div class="image-feedback-actions" aria-label="Image feedback"><button type="button" class="status-pill connected" id="image-good"><i class="fa-solid fa-thumbs-up"></i> Good image</button><button type="button" class="status-pill offline" id="image-wrong"><i class="fa-solid fa-triangle-exclamation"></i> Wrong meaning</button><button type="button" class="status-pill offline" id="image-more-like"><i class="fa-solid fa-images"></i> More like this</button></div>` : ''}
-            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching for “${escapeHtml(activeImageConcept || editing.word)}” · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url || (!selectedImage && image.isCurrent) ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url || (!selectedImage && image.isCurrent)}"><img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.title)}"><span>${escapeHtml(image.title)}</span><small>${escapeHtml(image.isCurrent ? 'Current image' : (image.source || 'Public image'))}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
+            ${currentImageUrl ? `<div class="selected-image-preview"><img src="${escapeHtml(currentImageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current saved image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span>${selectedImage ? '' : '<small>Saved separately — it is not one of the active query results below.</small>'}</div></div><div class="image-feedback-actions" aria-label="Image feedback"><button type="button" class="status-pill connected" id="image-good"><i class="fa-solid fa-thumbs-up"></i> Good image</button><button type="button" class="status-pill offline" id="image-wrong"><i class="fa-solid fa-triangle-exclamation"></i> Wrong meaning</button><button type="button" class="status-pill offline" id="image-more-like"><i class="fa-solid fa-images"></i> More like this</button></div>` : ''}
+            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching for “${escapeHtml(activeImageConcept || editing.word)}” · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-results-heading"><strong>Results for “${escapeHtml(activeImageConcept || imageQuery)}”</strong><span>${imageCandidates.length} images · page ${imageResultPage}</span></div><div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.title)}"><span>${escapeHtml(image.title)}</span><small>${escapeHtml(image.source || 'Public image')}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
             <p class="image-license-note">${imageCandidates.some(image => image.source === 'Pexels') ? '<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Photos provided by Pexels</a>. ' : ''}KeepVocab saves available creator, source, and rights information for every proposed image.</p>
           </section>
           <div class="inline-actions"><button class="btn-green-solid" type="submit">Save changes</button></div>

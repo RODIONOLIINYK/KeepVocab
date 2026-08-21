@@ -1,8 +1,9 @@
 export const DAILY_REMINDER_ID = 73001;
+export const STREAK_REMINDER_ID = 73002;
 const MIN_SMART_HOUR = 8;
 const MAX_SMART_MINUTES = 21 * 60 + 30;
-
-let webReminderTimer = null;
+const MIN_STREAK_MINUTES = 20 * 60 + 30;
+const MAX_STREAK_MINUTES = 22 * 60;
 
 export function normalizeReminderTime(value, fallback = '19:00') {
   const match = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
@@ -125,69 +126,89 @@ export function buildSmartReminderPlan({
   };
 }
 
+export function getStreakReminderTime(primaryTime = '19:00') {
+  const [hour, minute] = normalizeReminderTime(primaryTime).split(':').map(Number);
+  const primaryMinutes = hour * 60 + minute;
+  if (primaryMinutes >= MAX_STREAK_MINUTES) return '';
+  const lateMinutes = Math.min(MAX_STREAK_MINUTES, Math.max(MIN_STREAK_MINUTES, primaryMinutes + 90));
+  return `${String(Math.floor(lateMinutes / 60)).padStart(2, '0')}:${String(lateMinutes % 60).padStart(2, '0')}`;
+}
+
+export function buildStreakMaintenancePlan({
+  enabled = true,
+  primaryTime = '19:00',
+  reviewsToday = 0,
+  streak = 0,
+  dueCount = 0,
+  now = new Date()
+} = {}) {
+  const activeStreak = Math.max(0, Number(streak || 0));
+  const completed = Math.max(0, Number(reviewsToday || 0));
+  const time = getStreakReminderTime(primaryTime);
+  if (!enabled || !activeStreak || completed > 0 || !time) return null;
+  const due = Math.max(0, Number(dueCount || 0));
+  const [hour, minute] = time.split(':').map(Number);
+  const nextAt = new Date(now);
+  nextAt.setHours(hour, minute, 0, 0);
+  if (nextAt.getTime() <= now.getTime()) {
+    if (now.getHours() < 23) nextAt.setTime(now.getTime() + 5 * 60_000);
+    else {
+      nextAt.setDate(nextAt.getDate() + 1);
+      nextAt.setHours(hour, minute, 0, 0);
+    }
+  }
+  return {
+    time,
+    title: `Protect your ${activeStreak}-day streak`,
+    body: due
+      ? `One quick review keeps your streak alive. ${due} word${due === 1 ? ' is' : 's are'} ready.`
+      : 'Complete one quick exercise before the day ends to keep your streak alive.',
+    route: due ? 'review' : 'daily',
+    reason: 'streak-maintenance',
+    summary: `${activeStreak}-day streak safeguard`,
+    repeat: false,
+    nextAt
+  };
+}
+
 function getNativeNotifications(target = globalThis) {
   const capacitor = target.Capacitor;
   const platform = capacitor?.getPlatform?.();
-  if (!['android', 'ios'].includes(platform)) return null;
+  if (platform !== 'android') return null;
   if (capacitor.Plugins?.LocalNotifications) return capacitor.Plugins.LocalNotifications;
   if (typeof capacitor.registerPlugin === 'function') return capacitor.registerPlugin('LocalNotifications');
   return null;
 }
 
-async function scheduleNative(plugin, time, title, body, route, repeat, requestPermission) {
+async function scheduleNative(plugin, plan, streakPlan, requestPermission) {
   let permission = await plugin.checkPermissions();
   if (permission.display !== 'granted' && requestPermission) permission = await plugin.requestPermissions();
   if (permission.display !== 'granted') return { status: 'permission-required', platform: 'native' };
 
-  const [hour, minute] = time.split(':').map(Number);
-  await plugin.cancel({ notifications: [{ id: DAILY_REMINDER_ID }] });
-  await plugin.schedule({
-    notifications: [{
-      id: DAILY_REMINDER_ID,
-      title,
-      body,
-      schedule: repeat
-        ? { on: { hour, minute }, allowWhileIdle: true }
-        : { at: getTomorrowReminderAt(time), allowWhileIdle: true },
-      autoCancel: true,
-      extra: { route }
-    }]
+  const [hour, minute] = plan.time.split(':').map(Number);
+  const notifications = [{
+    id: DAILY_REMINDER_ID,
+    title: plan.title,
+    body: plan.body,
+    schedule: plan.repeat
+      ? { on: { hour, minute }, allowWhileIdle: true }
+      : { at: getTomorrowReminderAt(plan.time), allowWhileIdle: true },
+    autoCancel: true,
+    extra: { route: plan.route, reason: plan.reason }
+  }];
+  if (streakPlan) notifications.push({
+    id: STREAK_REMINDER_ID,
+    title: streakPlan.title,
+    body: streakPlan.body,
+    schedule: { at: streakPlan.nextAt || getNextReminderAt(streakPlan.time), allowWhileIdle: true },
+    autoCancel: true,
+    extra: { route: streakPlan.route, reason: streakPlan.reason }
   });
-  return { status: 'scheduled', platform: 'native', nextAt: getNextReminderAt(time) };
-}
-
-function clearWebTimer() {
-  if (webReminderTimer) globalThis.clearTimeout(webReminderTimer);
-  webReminderTimer = null;
-}
-
-function scheduleWebTimer(time, title, body, route, repeat) {
-  clearWebTimer();
-  const nextAt = repeat ? getNextReminderAt(time) : getTomorrowReminderAt(time);
-  webReminderTimer = globalThis.setTimeout(() => {
-    if (globalThis.Notification?.permission === 'granted') {
-      const notification = new Notification(title, {
-        body,
-        icon: './icons/keepvocab-mark-v2-192.png',
-        tag: 'keepvocab-daily-reminder'
-      });
-      notification.onclick = () => {
-        globalThis.focus?.();
-        globalThis.location.hash = route;
-        notification.close();
-      };
-    }
-    if (repeat) scheduleWebTimer(time, title, body, route, true);
-  }, Math.max(1000, nextAt.getTime() - Date.now()));
-  return nextAt;
-}
-
-async function scheduleWeb(time, title, body, route, repeat, requestPermission) {
-  if (!globalThis.Notification) return { status: 'in-app-only', platform: 'web', nextAt: getNextReminderAt(time) };
-  let permission = Notification.permission;
-  if (permission === 'default' && requestPermission) permission = await Notification.requestPermission();
-  if (permission !== 'granted') return { status: 'permission-required', platform: 'web', nextAt: getNextReminderAt(time) };
-  return { status: 'scheduled', platform: 'web', nextAt: scheduleWebTimer(time, title, body, route, repeat) };
+  await plugin.cancel({ notifications: [{ id: DAILY_REMINDER_ID }, { id: STREAK_REMINDER_ID }] });
+  await plugin.schedule({
+    notifications
+  });
+  return { status: 'scheduled', platform: 'native', nextAt: getNextReminderAt(plan.time), streakNextAt: streakPlan?.nextAt || null };
 }
 
 export async function scheduleDailyReminder({
@@ -196,12 +217,15 @@ export async function scheduleDailyReminder({
   body = 'Your five-minute review is ready.',
   route = 'review',
   repeat = true,
+  reason = 'daily-reminder',
+  streakPlan = null,
   requestPermission = false
 } = {}) {
   const normalizedTime = normalizeReminderTime(time);
+  const plan = { time: normalizedTime, title, body, route, repeat, reason };
   const nativePlugin = getNativeNotifications();
-  if (nativePlugin) return scheduleNative(nativePlugin, normalizedTime, title, body, route, repeat, requestPermission);
-  return scheduleWeb(normalizedTime, title, body, route, repeat, requestPermission);
+  if (nativePlugin) return scheduleNative(nativePlugin, plan, streakPlan, requestPermission);
+  return { status: 'android-only', platform: 'web', nextAt: null, streakNextAt: null };
 }
 
 export async function setupReminderNavigation(target = globalThis) {
@@ -209,7 +233,7 @@ export async function setupReminderNavigation(target = globalThis) {
   if (!plugin?.addListener) return false;
   await plugin.addListener('localNotificationActionPerformed', event => {
     const route = event?.notification?.extra?.route;
-    if (!['dashboard', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'speaking'].includes(route)) return;
+    if (!['dashboard', 'daily', 'weak', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'speaking'].includes(route)) return;
     if (target.location) target.location.hash = route;
     target.focus?.();
   });
@@ -217,7 +241,6 @@ export async function setupReminderNavigation(target = globalThis) {
 }
 
 export async function cancelDailyReminder() {
-  clearWebTimer();
   const nativePlugin = getNativeNotifications();
-  if (nativePlugin) await nativePlugin.cancel({ notifications: [{ id: DAILY_REMINDER_ID }] });
+  if (nativePlugin) await nativePlugin.cancel({ notifications: [{ id: DAILY_REMINDER_ID }, { id: STREAK_REMINDER_ID }] });
 }
