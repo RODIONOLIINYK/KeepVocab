@@ -40,6 +40,58 @@ test('the local launch contract keeps the installed app on the API-authorized po
   assert.match(handoff, /http:\/\/127\.0\.0\.1:8085/);
 });
 
+test('the macOS package is universal, sandboxed, and keeps the authorized local origin', () => {
+  const packageJson = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf8'));
+  const desktopMain = readFileSync(resolve(projectRoot, 'desktop/main.cjs'), 'utf8');
+  const macTarget = packageJson.build.mac.target.find(target => target.target === 'dmg');
+
+  assert.equal(packageJson.version, '1.4.0');
+  assert.equal(packageJson.main, 'desktop/main.cjs');
+  assert.deepEqual(macTarget.arch, ['universal']);
+  assert.equal(packageJson.build.mac.identity, null);
+  assert.ok(packageJson.build.files.includes('!node_modules/**/*'));
+  assert.match(packageJson.scripts['mac:build'], /build:web/);
+  assert.match(packageJson.scripts['mac:build'], /--universal/);
+  assert.match(desktopMain, /APP_HOST = '127\.0\.0\.1'/);
+  assert.match(desktopMain, /APP_PORT = 8085/);
+  assert.match(desktopMain, /protocol\.handle\('http'/);
+  assert.doesNotMatch(desktopMain, /createServer|\.listen\(/);
+  assert.match(desktopMain, /contextIsolation: true/);
+  assert.match(desktopMain, /nodeIntegration: false/);
+  assert.match(desktopMain, /sandbox: true/);
+  assert.doesNotMatch(desktopMain, /webSecurity:\s*false/);
+  assert.match(desktopMain, /new Tray\(icon\)/);
+  assert.match(desktopMain, /keepvocab-menubarTemplate\.png/);
+  assert.match(desktopMain, /process\.platform === 'darwin'\s*\? 'keepvocab-menubarTemplate\.png'\s*:\s*'keepvocab-mark-v2-192\.png'/);
+  assert.match(desktopMain, /if \(icon\.isEmpty\(\)\) throw new Error/);
+  assert.match(desktopMain, /Add a word…/);
+  assert.match(desktopMain, /quick-add\.html/);
+  assert.match(desktopMain, /setVisibleOnAllWorkspaces\(true, \{ visibleOnFullScreen: true \}\)/);
+  assert.match(readFileSync(resolve(projectRoot, 'scripts/build-web.mjs'), 'utf8'), /quick-add\.html/);
+  const menuBarSvg = readFileSync(resolve(projectRoot, 'icons/keepvocab-menubar-template.svg'), 'utf8');
+  assert.doesNotMatch(menuBarSvg, /<rect|#[0-9a-f]{6}[^>]*fill=/i, 'The menu-bar template must not include a background tile');
+  assert.equal(existsSync(resolve(projectRoot, 'icons/keepvocab-menubarTemplate.png')), true);
+  assert.equal(existsSync(resolve(projectRoot, 'icons/keepvocab-menubarTemplate@2x.png')), true);
+});
+
+test('menu-bar quick add enriches a saved meaning with the same image pipeline as the full app', () => {
+  const quickAdd = readFileSync(resolve(projectRoot, 'js/quickAdd.js'), 'utf8');
+  assert.match(quickAdd, /sanitizeExistingExamples\(item\.word, \[item\]\)/);
+  assert.match(quickAdd, /attachImagesSequentially\(\[senseChecked\], findRelevantImages/);
+  assert.match(quickAdd, /excludeUrls: imageUrlsForWords\(driveSync\.getWords\(\)\)/);
+  assert.match(quickAdd, /driveSync\.addWord\(enriched\)/);
+});
+
+test('the resizable app header uses non-wrapping badges and staged desktop breakpoints', () => {
+  const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
+  const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
+  assert.match(styles, /\.badge-pill\s*\{[^}]*white-space:\s*nowrap/);
+  assert.match(styles, /@media \(max-width:\s*1180px\)[\s\S]*\.badge-pill \.badge-detail\s*\{\s*display:\s*none/);
+  assert.match(styles, /@media \(min-width:\s*721px\) and \(max-width:\s*900px\)[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\)/);
+  assert.match(html, /class="badge-detail"> day streak/);
+  assert.match(html, /class="badge-detail">Daily goal/);
+});
+
 test('Drive uses the built-in web client and the UI never asks users for OAuth configuration', () => {
   const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
   const driveSync = readFileSync(resolve(projectRoot, 'js/services/driveSync.js'), 'utf8');

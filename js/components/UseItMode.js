@@ -1,13 +1,22 @@
-import { driveSync } from '../services/driveSync.js?v=90';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=90';
-import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=90';
-import { playInteractionSound } from '../services/interactionSound.js?v=90';
-import { mountUseItExercise } from './UseItExercise.js?v=90';
+import { driveSync } from '../services/driveSync.js?v=93';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
+import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=93';
+import { playInteractionSound } from '../services/interactionSound.js?v=93';
+import { mountUseItExercise } from './UseItExercise.js?v=93';
+import { createSpeechRecordingSession } from '../services/speechInput.js?v=93';
 import { navigateTo as go } from '../utils/navigation.js';
 
-export { evaluateUseItFallback, evaluateUseItSentence } from '../services/useItEvaluation.js?v=90';
+export { evaluateUseItFallback, evaluateUseItSentence } from '../services/useItEvaluation.js?v=93';
+
+let activeSpeechSession = null;
+
+export function teardownUseItMode() {
+  activeSpeechSession?.close();
+  activeSpeechSession = null;
+}
 
 export function renderUseItMode(container, onNavigate) {
+  teardownUseItMode();
   const notebook = driveSync.getActiveNotebook();
   const words = selectModeWords(driveSync.getWords().filter(word => word.notebook === notebook), { mode: 'use-it', limit: 10 });
   if (!words.length) {
@@ -15,6 +24,8 @@ export function renderUseItMode(container, onNavigate) {
     container.querySelector('#useit-back').addEventListener('click', () => go('dashboard', onNavigate));
     return;
   }
+  activeSpeechSession = createSpeechRecordingSession();
+  const speechSession = activeSpeechSession;
   recordModeWordSelections(driveSync, words, { mode: 'use-it' });
 
   let index = 0;
@@ -27,10 +38,12 @@ export function renderUseItMode(container, onNavigate) {
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell"><div class="practice-topline"><button class="status-pill offline" id="useit-exit"><i class="fa-solid fa-arrow-left"></i> Today</button><span>Use It · ${index + 1} of ${words.length}</span><strong>Active production</strong></div><div class="review-progress"><span style="width:${Math.round(index / words.length * 100)}%"></span></div><div id="useit-exercise-root"></div></div></section>`;
     container.querySelector('#useit-exit').addEventListener('click', () => {
       exerciseController?.destroy();
+      teardownUseItMode();
       go('dashboard', onNavigate);
     });
     exerciseController = mountUseItExercise(container.querySelector('#useit-exercise-root'), {
       word,
+      speechSession,
       nextLabel: index + 1 >= words.length ? 'Finish' : 'Next word',
       onEvaluated(result, sentence) {
         recordExerciseResult({ wordId: word.id, exerciseType: 'use-it', correct: result.correct, responseTimeMs: performance.now() - startedAt, hintsUsed: 0, recallType: 'productive', producedUnaided: true, learnerResponse: sentence });
@@ -40,6 +53,7 @@ export function renderUseItMode(container, onNavigate) {
       onNext() {
         if (index + 1 >= words.length) {
           exerciseController?.destroy();
+          teardownUseItMode();
           go('dashboard', onNavigate);
           return;
         }

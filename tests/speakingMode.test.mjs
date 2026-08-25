@@ -22,6 +22,7 @@ import {
   float32ToPcm16,
   microphoneAccessError
 } from '../js/services/geminiLive.js';
+import { getLessonPhrases, lessonPhraseLibraryEntries, lessonPhrasesMissingFromLibrary, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson, SPEAKING_CONTEXT_PROFILES } from '../js/services/speakingPhrases.js';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -40,6 +41,44 @@ test('the speaking curriculum contains six complete tracks and 84 distinct lesso
     assert.equal(getLessonPlan(lesson).length, 5);
     assert.ok(lesson.duration >= 5 && lesson.duration <= 12);
   }
+});
+
+test('every lesson teaches contextual non-literal expressions with spaced recall', () => {
+  const coveredIds = new Set(SPEAKING_CONTEXT_PROFILES.flatMap(profile => profile.lessonIds));
+  for (const lesson of [...SPEAKING_LESSONS, FREE_CONVERSATION_LESSON]) {
+    assert.equal(coveredIds.has(lesson.id), true, `missing phrase profile for ${lesson.id}`);
+    const expressions = getLessonPhrases(lesson);
+    assert.ok(expressions.length >= 3);
+    assert.ok(expressions.every(item => item.nonLiteral && item.meaning && item.example));
+  }
+  const lesson = SPEAKING_LESSONS.find(item => item.id === 'negotiate-deadline');
+  const selected = selectPhrasesForLesson(lesson, {}, { limit: 2, now: new Date('2026-08-25T10:00:00Z') });
+  assert.deepEqual(selected.map(item => item.text), ['buy some time', 'meet halfway']);
+  const practiced = recordPhrasePractice({}, selected, [{ role: 'learner', text: 'A phased launch could buy some time.' }], new Date('2026-08-25T10:00:00Z'));
+  assert.equal(practiced.results[0].used, true);
+  assert.equal(practiced.results[0].intervalDays, 1);
+  assert.equal(practiced.results[1].used, false);
+  assert.match(practiced.results[0].nextReviewAt, /^2026-08-26/);
+});
+
+test('completing a speaking lesson saves every tied phrase and meaning without duplicates', () => {
+  const lesson = SPEAKING_LESSONS.find(item => item.id === 'negotiate-deadline');
+  const entries = lessonPhraseLibraryEntries(lesson);
+  assert.equal(entries.length, 3);
+  assert.deepEqual(entries.map(entry => entry.word), ['buy some time', 'meet halfway', 'draw the line']);
+  assert.ok(entries.every(entry => entry.partOfSpeech === 'idiomatic expression' && entry.definition && entry.example));
+  assert.equal(lessonPhrasesMissingFromLibrary(lesson, []).length, 3);
+  assert.equal(lessonPhrasesMissingFromLibrary(lesson, entries).length, 0);
+  const stored = [];
+  const library = {
+    getWords: () => stored,
+    addWords: words => { stored.push(...words); return words; },
+  };
+  assert.equal(saveLessonPhrasesToLibrary(lesson, library).saved.length, 3);
+  assert.equal(saveLessonPhrasesToLibrary(lesson, library).saved.length, 0);
+  assert.equal(stored.length, 3);
+  const component = readFileSync(resolve(projectRoot, 'js/components/SpeakingMode.js'), 'utf8');
+  assert.match(component, /saveLessonPhrasesToLibrary\(lesson, driveSync\)/);
 });
 
 test('the speaking experience defaults to the learner B2 profile', () => {
@@ -133,8 +172,8 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(component, /Gemini connects only after you press Start/);
   assert.match(component, /key stays in KeepVocab storage and joins your private Drive backup/);
   assert.match(component, /COACH_SILENCE_MS = 9000/);
-  assert.match(component, /buildCoachInitiativeCue\(lesson, 'start'\)/);
-  assert.match(component, /buildCoachInitiativeCue\(lesson, 'silence'\)/);
+  assert.match(component, /buildCoachInitiativeCue\(lesson, 'start', phraseTargets\)/);
+  assert.match(component, /buildCoachInitiativeCue\(lesson, 'silence', phraseTargets\)/);
   assert.match(component, /id="interrupt-live-coach"/);
   assert.match(component, /Your turn — Mira is listening/);
   assert.match(serviceWorker, /SpeakingMode\.js\?v=\d+/);

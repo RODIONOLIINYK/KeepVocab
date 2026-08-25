@@ -1,11 +1,11 @@
-import { driveSync } from '../services/driveSync.js?v=90';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=90';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=90';
-import { clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=90';
+import { driveSync } from '../services/driveSync.js?v=93';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=93';
+import { clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=93';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=90';
-import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=90';
-import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=90';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=93';
+import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=93';
+import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=93';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function shuffle(values) {

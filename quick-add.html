@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>KeepVocab Quick Add</title>
+  <link rel="icon" href="icons/keepvocab-mark-v2-192.png" type="image/png">
+  <link rel="stylesheet" href="css/quick-add.css?v=93">
+</head>
+<body>
+  <main class="quick-add-shell">
+    <header>
+      <img src="icons/keepvocab-mark-v2-192.png" alt="">
+      <div><strong>Quick add</strong><span>Save a word without leaving what you’re watching</span></div>
+      <button id="quick-close" aria-label="Close">×</button>
+    </header>
+    <form id="quick-lookup-form">
+      <label for="quick-word">Word or expression</label>
+      <div class="lookup-row"><input id="quick-word" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type what you just heard…" required><button id="quick-find">Find</button></div>
+    </form>
+    <section id="quick-results" aria-live="polite"></section>
+    <div class="manual-meaning" id="quick-manual" hidden>
+      <label for="quick-definition">Meaning</label>
+      <textarea id="quick-definition" rows="2" placeholder="Write the meaning in this context"></textarea>
+    </div>
+    <p class="quick-status" id="quick-status" role="status" aria-live="polite">Press Return to find the intended meaning.</p>
+    <button class="save-button" id="quick-save" disabled>Save to Library</button>
+  </main>
+  <script type="module" src="js/quickAdd.js?v=93"></script>
+</body>
+</html>

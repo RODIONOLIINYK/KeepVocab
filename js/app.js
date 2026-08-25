@@ -1,31 +1,31 @@
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=90';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=90';
-import { speakWord } from './services/speechService.js?v=90';
-import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=90';
-import { recordExerciseResult } from './services/exerciseResult.js?v=90';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=90';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=90';
-import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=90';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=90';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=90';
-import { appendStudyMoment, buildSmartReminderPlan, buildStreakMaintenancePlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=90';
+import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=93';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=93';
+import { speakWord } from './services/speechService.js?v=93';
+import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=93';
+import { recordExerciseResult } from './services/exerciseResult.js?v=93';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=93';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=93';
+import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=93';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=93';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=93';
+import { appendStudyMoment, buildSmartReminderPlan, buildStreakMaintenancePlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=93';
 import { localDateKey } from './utils/dates.js';
 
-import { renderReviewView } from './components/ReviewView.js?v=90';
-import { renderLibraryView } from './components/LibraryView.js?v=90';
-import { renderStatsView } from './components/StatsView.js?v=90';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=90';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=90';
-import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=90';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=90';
-import { renderDashboardView } from './components/DashboardView.js?v=90';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=90';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=90';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=90';
-import { renderUseItMode } from './components/UseItMode.js?v=90';
-import { renderSettingsView } from './components/SettingsView.js?v=90';
+import { renderReviewView } from './components/ReviewView.js?v=93';
+import { renderLibraryView } from './components/LibraryView.js?v=93';
+import { renderStatsView } from './components/StatsView.js?v=93';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=93';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=93';
+import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=93';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=93';
+import { renderDashboardView } from './components/DashboardView.js?v=93';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=93';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=93';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=93';
+import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=93';
+import { renderSettingsView } from './components/SettingsView.js?v=93';
 
 function buildStudyQueue() {
   const activeNotebook = driveSync.getActiveNotebook();
@@ -415,6 +415,7 @@ function navigateTo(viewName) {
   if (viewName === 'challenge') viewName = 'choose';
   if (!['dashboard', 'daily', 'weak', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'speaking', 'settings'].includes(viewName)) viewName = 'dashboard';
   if (currentView === 'speaking' && viewName !== 'speaking') teardownSpeakingMode();
+  if (currentView === 'useit' && viewName !== 'useit') teardownUseItMode();
   currentView = viewName;
   document.body.classList.toggle('speaking-view', viewName === 'speaking');
   document.body.classList.toggle('dashboard-view', viewName === 'dashboard');

@@ -41,6 +41,15 @@ node --test
 
 Open `http://127.0.0.1:8085`. Keep this exact origin in the Google OAuth authorized JavaScript origins. The installed PWA keeps the same origin (including port 8085), while the service worker keeps the interface available offline.
 
+### macOS desktop app
+
+```bash
+npm run mac:dev
+npm run mac:build
+```
+
+The desktop build packages the same `www` assets in a sandboxed Electron window. Electron resolves the app's existing `http://127.0.0.1:8085` OAuth origin internally without opening a network listener or occupying a local port, preserving Drive authorization and offline service-worker behavior. `mac:build` creates a universal Intel/Apple-silicon DMG under `dist/macos/`. The local build is unsigned and unnotarized until it is rebuilt with an Apple Developer signing identity; macOS may therefore require Control-click → Open on first launch.
+
 ## Main files
 
 - `index.html`: app shell, Drive backup controls, and learning-mode launchers.

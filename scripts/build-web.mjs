@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outputDir = path.join(projectRoot, 'www');
-const files = ['index.html', 'manifest.json', 'sw.js'];
+const files = ['index.html', 'quick-add.html', 'manifest.json', 'sw.js'];
 const directories = ['assets', 'css', 'icons', 'js'];
 
 await rm(outputDir, { recursive: true, force: true });

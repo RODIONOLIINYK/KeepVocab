@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildVocabularySpeakingInstruction, detectSpeakingActivations, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../js/services/speakingVocabulary.js';
+import { buildVocabularySpeakingInstruction, detectSpeakingActivations, selectSpeakingTargets, speakingContextRelevance, speakingSessionHighlights, storeSpeakingActivations } from '../js/services/speakingVocabulary.js';
+import { getSpeakingLesson } from '../js/data/speakingLessons.js';
 
 const now = new Date('2026-08-15T10:00:00.000Z');
 const words = [
@@ -12,6 +13,19 @@ const words = [
 test('speaking targets prioritize due and weak Library vocabulary ready for activation', () => {
   const targets = selectSpeakingTargets(words, { limit: 2, now });
   assert.deepEqual(targets.map(word => word.id).sort(), ['due', 'weak']);
+});
+
+test('speaking targets must match the selected lesson context instead of filling random slots', () => {
+  const lesson = getSpeakingLesson('negotiate-deadline');
+  const candidates = [
+    { id: 'deadline', word: 'constraint', definition: 'a limitation that restricts a project or schedule', createdAt: now.toISOString(), nextReviewDate: now.toISOString() },
+    { id: 'romance', word: 'infatuated', definition: 'filled with an intense but short-lived romantic attraction', createdAt: now.toISOString(), nextReviewDate: now.toISOString() },
+    { id: 'anger', word: 'salty', definition: 'annoyed or resentful', createdAt: now.toISOString(), nextReviewDate: now.toISOString() },
+  ];
+  assert.ok(speakingContextRelevance(candidates[0], lesson) > 0);
+  assert.equal(speakingContextRelevance(candidates[1], lesson), 0);
+  assert.equal(speakingContextRelevance(candidates[2], lesson), 0);
+  assert.deepEqual(selectSpeakingTargets(candidates, { lesson, limit: 3, now }).map(item => item.id), ['deadline']);
 });
 
 test('speaking activation detects only learner-produced target vocabulary', () => {

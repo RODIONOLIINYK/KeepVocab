@@ -1,4 +1,4 @@
-import { generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=90';
+import { generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=93';
 
 export function canRecordForGemini(storage = globalThis.localStorage) {
   return Boolean(getGeminiSettings(storage).enabled
@@ -33,7 +33,8 @@ export async function createSpeechRecorder(options = {}) {
   if (!globalThis.navigator?.mediaDevices?.getUserMedia || !globalThis.MediaRecorder) {
     throw new Error('Audio recording is unavailable on this device.');
   }
-  const stream = await globalThis.navigator.mediaDevices.getUserMedia({ audio: true });
+  const stream = options.stream || await globalThis.navigator.mediaDevices.getUserMedia({ audio: true });
+  const stopTracksOnFinish = options.stopTracksOnFinish ?? !options.stream;
   const preferredTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
   const mimeType = preferredTypes.find(type => globalThis.MediaRecorder.isTypeSupported?.(type)) || '';
   const recorder = new globalThis.MediaRecorder(stream, mimeType ? { mimeType } : undefined);
@@ -42,7 +43,9 @@ export async function createSpeechRecorder(options = {}) {
   let resolveResult;
   let rejectResult;
   const result = new Promise((resolve, reject) => { resolveResult = resolve; rejectResult = reject; });
-  const stopTracks = () => stream.getTracks().forEach(track => track.stop());
+  const stopTracks = () => {
+    if (stopTracksOnFinish) stream.getTracks().forEach(track => track.stop());
+  };
   recorder.addEventListener('dataavailable', event => { if (event.data?.size) chunks.push(event.data); });
   recorder.addEventListener('error', event => {
     if (settled) return;
@@ -63,6 +66,52 @@ export async function createSpeechRecorder(options = {}) {
     cancel() {
       stopTracks();
       if (recorder.state !== 'inactive') recorder.stop();
+    }
+  };
+}
+
+export function createSpeechRecordingSession() {
+  let stream = null;
+  let streamPromise = null;
+  let closed = false;
+
+  const acquireStream = async () => {
+    if (closed) throw new Error('This speaking session has ended.');
+    const active = stream?.getAudioTracks?.().some(track => track.readyState === 'live');
+    if (active) return stream;
+    if (!streamPromise) {
+      streamPromise = globalThis.navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(nextStream => {
+          stream = nextStream;
+          return nextStream;
+        })
+        .finally(() => { streamPromise = null; });
+    }
+    return streamPromise;
+  };
+
+  return {
+    async createRecorder() {
+      const sharedStream = await acquireStream();
+      for (const track of sharedStream.getAudioTracks?.() || []) track.enabled = true;
+      const recorder = await createSpeechRecorder({ stream: sharedStream, stopTracksOnFinish: false });
+      const pauseTracks = () => {
+        for (const track of sharedStream.getAudioTracks?.() || []) track.enabled = false;
+      };
+      const pausedResult = recorder.result.then(
+        value => { pauseTracks(); return value; },
+        error => { pauseTracks(); throw error; }
+      );
+      return {
+        result: pausedResult,
+        stop() { recorder.stop(); return pausedResult; },
+        cancel() { recorder.cancel(); pauseTracks(); }
+      };
+    },
+    close() {
+      closed = true;
+      for (const track of stream?.getTracks?.() || []) track.stop();
+      stream = null;
     }
   };
 }

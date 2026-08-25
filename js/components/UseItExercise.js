@@ -1,6 +1,6 @@
-import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=90';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=90';
-import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=90';
+import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=93';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=93';
+import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=93';
 import { escapeHtml } from '../utils/html.js';
 
 export function mountUseItExercise(root, options) {
@@ -71,7 +71,9 @@ export function mountUseItExercise(root, options) {
         try {
           button.disabled = true;
           status.textContent = 'Requesting microphone access…';
-          speechRecorder = await createSpeechRecorder();
+          speechRecorder = options.speechSession
+            ? await options.speechSession.createRecorder()
+            : await createSpeechRecorder();
           button.disabled = false;
           button.innerHTML = '<i class="fa-solid fa-stop"></i> Stop recording';
           status.textContent = 'Listening… Speak your sentence, then tap Stop.';

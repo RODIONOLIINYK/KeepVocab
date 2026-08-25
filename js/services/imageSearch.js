@@ -1,4 +1,4 @@
-import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=90';
+import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=93';
 
 const OPENVERSE_API = 'https://api.openverse.org/v1/images/';
 const WIKIMEDIA_COMMONS_API = 'https://commons.wikimedia.org/w/api.php';

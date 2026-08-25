@@ -1,15 +1,15 @@
-import { driveSync } from '../services/driveSync.js?v=90';
-import { buildDailySession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=90';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=90';
-import { recordSessionCompletion } from '../services/learningStats.js?v=90';
-import { speakWord } from '../services/speechService.js?v=90';
-import { playInteractionSound } from '../services/interactionSound.js?v=90';
-import { buildWordChoices } from './PracticeModes.js?v=90';
+import { driveSync } from '../services/driveSync.js?v=93';
+import { buildDailySession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=93';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
+import { recordSessionCompletion } from '../services/learningStats.js?v=93';
+import { speakWord } from '../services/speechService.js?v=93';
+import { playInteractionSound } from '../services/interactionSound.js?v=93';
+import { buildWordChoices } from './PracticeModes.js?v=93';
 import { escapeHtml } from '../utils/html.js';
-import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=90';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=90';
-import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=90';
-import { mountUseItExercise } from './UseItExercise.js?v=90';
+import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=93';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=93';
+import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=93';
+import { mountUseItExercise } from './UseItExercise.js?v=93';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {

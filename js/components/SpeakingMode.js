@@ -8,13 +8,14 @@ import {
   getLessonPlan,
   buildCoachInitiativeCue,
   buildSpeakingInstruction
-} from '../data/speakingLessons.js?v=90';
-import { GeminiLiveSession } from '../services/geminiLive.js?v=90';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=90';
-import { driveSync } from '../services/driveSync.js?v=90';
-import { recordSpeakingStats } from '../services/learningStats.js?v=90';
-import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=90';
-import { recordModeWordSelections } from '../services/wordSelection.js?v=90';
+} from '../data/speakingLessons.js?v=93';
+import { GeminiLiveSession } from '../services/geminiLive.js?v=93';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=93';
+import { driveSync } from '../services/driveSync.js?v=93';
+import { recordSpeakingStats } from '../services/learningStats.js?v=93';
+import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=93';
+import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=93';
+import { recordModeWordSelections } from '../services/wordSelection.js?v=93';
 import { navigateTo as navigate } from '../utils/navigation.js';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
@@ -143,39 +144,37 @@ function renderLessonPreview(container, lessonId, onNavigate) {
   const category = CATEGORY_BY_ID.get(lesson.category);
   const hasKey = Boolean(getGeminiKey());
   const lessonPlan = getLessonPlan(lesson);
-  const vocabularyTargets = selectSpeakingTargets(driveSync.getWords(), { limit: 3 });
+  const vocabularyTargets = selectSpeakingTargets(driveSync.getWords(), { limit: 3, lesson });
+  const phraseTargets = selectPhrasesForLesson(lesson, readProgress(), { limit: 2 });
   container.innerHTML = `<section class="full-view-stack speaking-preview-shell"><button class="speaking-back" id="lesson-back"><i class="fa-solid fa-arrow-left"></i> All lessons</button>
     <div class="speaking-preview-card">
       <div class="preview-main"><div class="preview-lesson-icon ${category?.tone || 'green'}"><i class="fa-solid ${lessonIcon(lesson)}"></i></div><span class="eyebrow">${escapeHtml(category?.label || 'Open practice')} · ${escapeHtml(lesson.level)}</span><h1>${escapeHtml(lesson.title)}</h1><p class="preview-goal">${escapeHtml(lesson.goal)}</p>
         <div class="role-play-box"><i class="fa-solid fa-masks-theater"></i><div><strong>Your role</strong><span>${escapeHtml(lesson.learnerRole)}</span></div><i class="fa-solid fa-arrow-right"></i><div><strong>Mira’s role</strong><span>${escapeHtml(lesson.coachRole)}</span></div></div>
         ${vocabularyTargets.length ? `<div class="speaking-vocabulary-targets"><span>Words to activate</span><div>${vocabularyTargets.map(word => `<button type="button" title="${escapeHtml(word.definition)}">${escapeHtml(word.word)}</button>`).join('')}</div><small>Mira will create natural openings for these words without giving them away.</small></div>` : ''}
-        <div class="target-phrases"><span>Try these phrases</span>${lesson.targetPhrases.map(phrase => `<button data-copy-phrase="${escapeHtml(phrase)}"><i class="fa-regular fa-copy"></i> ${escapeHtml(phrase)}</button>`).join('')}</div>
+        <div class="target-phrases phrase-learning-preview"><div class="phrase-preview-heading"><span>Expressions you’ll remember</span><small>Meaning first → recall later → reuse near the end</small></div>${phraseTargets.map(target => { const learning = phraseLearningStatus(target, readProgress()); return `<article><div><strong>${escapeHtml(target.text)}</strong><em>${escapeHtml(learning.label)}</em></div><p>${escapeHtml(target.meaning)}</p><small>“${escapeHtml(target.example)}”</small></article>`; }).join('')}</div>
         <div class="preview-actions"><button class="btn-green-solid start-live-lesson" id="start-live-lesson"><i class="fa-solid fa-microphone"></i> ${hasKey ? 'Start live lesson' : 'Set up Gemini to start'}</button><button class="status-pill offline" id="cant-speak-now"><i class="fa-solid fa-keyboard"></i> Can’t speak now</button><span><i class="fa-regular fa-clock"></i> About ${lesson.duration} minutes</span></div>
       </div>
       <aside class="preview-side lesson-plan-side"><div class="preview-orb-wrap">${renderVoiceOrb('preview')}</div><h2>Your lesson plan</h2><ol class="lesson-plan-list">${lessonPlan.map(step => `<li><b>${escapeHtml(step.phase)}</b><span>${escapeHtml(step.detail)}</span></li>`).join('')}</ol><p class="mic-privacy"><i class="fa-solid fa-lock"></i> Your microphone starts only after you press Start and allow access.</p></aside>
     </div></section>`;
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   container.querySelector('#lesson-back').addEventListener('click', () => renderCatalog(container, onNavigate));
-  container.querySelectorAll('[data-copy-phrase]').forEach(button => button.addEventListener('click', async () => {
-    await navigator.clipboard?.writeText(button.dataset.copyPhrase);
-    button.classList.add('copied');
-    window.setTimeout(() => button.classList.remove('copied'), 700);
-  }));
   container.querySelector('#start-live-lesson').addEventListener('click', () => {
     if (!getGeminiKey()) return navigate('settings', onNavigate);
     recordModeWordSelections(driveSync, vocabularyTargets, { mode: 'speaking' });
-    startLiveLesson(container, lesson, vocabularyTargets, onNavigate);
+    startLiveLesson(container, lesson, vocabularyTargets, phraseTargets, onNavigate);
   });
   container.querySelector('#cant-speak-now').addEventListener('click', () => navigate('useit', onNavigate));
 }
 
-async function startLiveLesson(container, lesson, vocabularyTargets, onNavigate) {
+async function startLiveLesson(container, lesson, vocabularyTargets, phraseTargets, onNavigate) {
   if (activeSession) await activeSession.disconnect();
   activeSession = new GeminiLiveSession();
   const transcript = [];
   const startedAt = Date.now();
   let status = 'connecting';
   let muted = false;
+  let phraseIndex = 0;
+  let phraseHidden = false;
 
   const clearInitiativeTimer = () => {
     window.clearTimeout(initiativeTimer);
@@ -186,7 +185,7 @@ async function startLiveLesson(container, lesson, vocabularyTargets, onNavigate)
     if (muted || status !== 'listening' || activeSession !== session) return;
     initiativeTimer = window.setTimeout(() => {
       if (muted || status !== 'listening' || activeSession !== session) return;
-      const sent = session.sendText(buildCoachInitiativeCue(lesson, 'silence'));
+      const sent = session.sendText(buildCoachInitiativeCue(lesson, 'silence', phraseTargets));
       if (sent) updateStatus('helping');
     }, COACH_SILENCE_MS);
   };
@@ -215,6 +214,17 @@ async function startLiveLesson(container, lesson, vocabularyTargets, onNavigate)
     if (!list) return;
     list.innerHTML = transcript.length ? transcript.map(entry => `<div class="transcript-turn ${entry.role}"><span>${entry.role === 'coach' ? 'Mira' : 'You'}</span><p>${escapeHtml(entry.text)}</p></div>`).join('') : '<div class="transcript-empty"><i class="fa-solid fa-wave-square"></i><span>Your live transcript will appear here.</span></div>';
     list.scrollTop = list.scrollHeight;
+    const learnerTurns = transcript.filter(entry => entry.role === 'learner').length;
+    if (phraseTargets.length && learnerTurns >= 2 && learnerTurns % 2 === 0) {
+      phraseIndex = Math.min(phraseTargets.length - 1, Math.floor(learnerTurns / 2));
+    }
+    const target = phraseTargets[phraseIndex];
+    const phraseText = container.querySelector('#live-target-phrase');
+    const phraseMeaning = container.querySelector('#live-target-meaning');
+    const phraseStage = container.querySelector('#live-phrase-stage');
+    if (target && phraseText) phraseText.textContent = phraseHidden ? 'Say it from memory…' : target.text;
+    if (target && phraseMeaning) phraseMeaning.textContent = target.meaning;
+    if (phraseStage) phraseStage.textContent = learnerTurns < 2 ? 'Meet it in context' : learnerTurns < 5 ? 'Recall after a delay' : 'Reuse it once more';
   };
 
   container.innerHTML = `<section class="speaking-live-shell" aria-labelledby="live-lesson-title">
@@ -224,7 +234,7 @@ async function startLiveLesson(container, lesson, vocabularyTargets, onNavigate)
         <div class="live-controls"><button id="interrupt-live-coach" class="live-control interrupt" hidden><i class="fa-solid fa-hand"></i><span>Stop Mira</span></button><button id="toggle-live-mic" class="live-control"><i class="fa-solid fa-microphone"></i><span>Mute</span></button><button id="end-live-lesson" class="end-lesson-button"><i class="fa-solid fa-stop"></i><span>End lesson</span></button></div>
         <form id="live-text-fallback" class="live-text-fallback"><input id="live-text-input" placeholder="Or type a reply" autocomplete="off"><button aria-label="Send typed reply"><i class="fa-solid fa-paper-plane"></i></button></form>
       </main>
-      <aside class="live-side-panel"><div class="live-goal-card"><span>Lesson goal</span><p>${escapeHtml(lesson.goal)}</p></div>${vocabularyTargets.length ? `<div class="live-vocabulary-card"><span>Words to activate</span><div>${vocabularyTargets.map(word => `<b>${escapeHtml(word.word)}</b>`).join('')}</div></div>` : ''}<div class="live-plan-card"><span>Today’s route</span><ol>${getLessonPlan(lesson).map(step => `<li>${escapeHtml(step.phase)}</li>`).join('')}</ol></div><div class="live-phrase-card"><span>Try a target phrase</span><strong id="live-target-phrase">${escapeHtml(lesson.targetPhrases[0])}</strong><button id="next-live-phrase">Another phrase <i class="fa-solid fa-rotate"></i></button></div><div class="live-transcript-card"><div><span>Live transcript</span><small>Generated by Gemini</small></div><div id="live-transcript" class="live-transcript" aria-live="polite"></div></div></aside>
+      <aside class="live-side-panel"><div class="live-goal-card"><span>Lesson goal</span><p>${escapeHtml(lesson.goal)}</p></div>${vocabularyTargets.length ? `<div class="live-vocabulary-card"><span>Scenario-matched words</span><div>${vocabularyTargets.map(word => `<b>${escapeHtml(word.word)}</b>`).join('')}</div></div>` : ''}<div class="live-plan-card"><span>Today’s route</span><ol>${getLessonPlan(lesson).map(step => `<li>${escapeHtml(step.phase)}</li>`).join('')}</ol></div><div class="live-phrase-card"><div><span id="live-phrase-stage">Meet it in context</span><small>${phraseIndex + 1} of ${phraseTargets.length}</small></div><strong id="live-target-phrase">${escapeHtml(phraseTargets[0]?.text || '')}</strong><p id="live-target-meaning">${escapeHtml(phraseTargets[0]?.meaning || '')}</p><div><button id="hide-live-phrase">Hide & recall <i class="fa-solid fa-eye-slash"></i></button><button id="next-live-phrase">Next expression <i class="fa-solid fa-rotate"></i></button></div></div><div class="live-transcript-card"><div><span>Live transcript</span><small>Generated by Gemini</small></div><div id="live-transcript" class="live-transcript" aria-live="polite"></div></div></aside>
     </div>
   </section>`;
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -259,8 +269,20 @@ async function startLiveLesson(container, lesson, vocabularyTargets, onNavigate)
     event.currentTarget.innerHTML = `<i class="fa-solid ${muted ? 'fa-microphone-slash' : 'fa-microphone'}"></i><span>${muted ? 'Unmute' : 'Mute'}</span>`;
   });
   container.querySelector('#interrupt-live-coach').addEventListener('click', () => session.interruptOutput('button'));
-  let phraseIndex = 0;
-  container.querySelector('#next-live-phrase').addEventListener('click', () => { phraseIndex = (phraseIndex + 1) % lesson.targetPhrases.length; container.querySelector('#live-target-phrase').textContent = lesson.targetPhrases[phraseIndex]; });
+  container.querySelector('#hide-live-phrase').addEventListener('click', event => {
+    phraseHidden = !phraseHidden;
+    const target = phraseTargets[phraseIndex];
+    container.querySelector('#live-target-phrase').textContent = phraseHidden ? 'Say it from memory…' : target.text;
+    event.currentTarget.innerHTML = phraseHidden ? 'Reveal <i class="fa-solid fa-eye"></i>' : 'Hide & recall <i class="fa-solid fa-eye-slash"></i>';
+  });
+  container.querySelector('#next-live-phrase').addEventListener('click', () => {
+    phraseIndex = (phraseIndex + 1) % phraseTargets.length;
+    phraseHidden = false;
+    const target = phraseTargets[phraseIndex];
+    container.querySelector('#live-target-phrase').textContent = target.text;
+    container.querySelector('#live-target-meaning').textContent = target.meaning;
+    container.querySelector('#hide-live-phrase').innerHTML = 'Hide & recall <i class="fa-solid fa-eye-slash"></i>';
+  });
   container.querySelector('#live-text-fallback').addEventListener('submit', event => {
     event.preventDefault();
     const input = container.querySelector('#live-text-input');
@@ -275,16 +297,16 @@ async function startLiveLesson(container, lesson, vocabularyTargets, onNavigate)
     sessionTimer = null;
     await session.disconnect();
     if (activeSession === session) activeSession = null;
-    completeSpeakingLesson(container, lesson, vocabularyTargets, transcript, Math.max(1, Math.round((Date.now() - startedAt) / 60000)), onNavigate);
+    completeSpeakingLesson(container, lesson, vocabularyTargets, phraseTargets, transcript, Math.max(1, Math.round((Date.now() - startedAt) / 60000)), onNavigate);
   };
   container.querySelector('#end-live-lesson').addEventListener('click', finish);
   container.querySelector('#live-back').addEventListener('click', finish);
 
   try {
     await session.prepareAudioOutput();
-    await session.connect({ apiKey: getGeminiKey(), model: getGeminiSettings().liveModel, instruction: `${buildSpeakingInstruction(lesson)}${buildVocabularySpeakingInstruction(vocabularyTargets)}` });
+    await session.connect({ apiKey: getGeminiKey(), model: getGeminiSettings().liveModel, instruction: `${buildSpeakingInstruction(lesson, phraseTargets)}${buildVocabularySpeakingInstruction(vocabularyTargets)}${buildPhraseCoachingInstruction(phraseTargets)}` });
     await session.startMicrophone();
-    session.sendText(buildCoachInitiativeCue(lesson, 'start'));
+    session.sendText(buildCoachInitiativeCue(lesson, 'start', phraseTargets));
     scheduleInitiative();
   } catch (error) {
     clearInitiativeTimer();
@@ -302,21 +324,32 @@ function showLiveError(container, message, onSetup) {
   container.querySelector('#live-error-setup')?.addEventListener('click', onSetup);
 }
 
-function completeSpeakingLesson(container, lesson, vocabularyTargets, transcript, minutes, onNavigate) {
+function completeSpeakingLesson(container, lesson, vocabularyTargets, phraseTargets, transcript, minutes, onNavigate) {
   const progress = readProgress();
   progress.completed = [...new Set([...(progress.completed || []), lesson.id])];
   progress.lastLessonId = lesson.id;
   progress.lastCompletedAt = new Date().toISOString();
+  const phrasePractice = recordPhrasePractice(progress, phraseTargets, transcript);
+  progress.phraseProgress = phrasePractice.phraseProgress;
   writeProgress(progress);
   recordSpeakingStats({ minutes });
   const learnerTurns = transcript.filter(entry => entry.role === 'learner').length;
-  const usedPhrases = lesson.targetPhrases.filter(phrase => transcript.some(entry => entry.role === 'learner' && entry.text.toLowerCase().includes(phrase.replace(/[.…?]/g, '').toLowerCase().slice(0, 10))));
+  const usedPhrases = detectUsedPhrases(phraseTargets, transcript);
   const activations = storeSpeakingActivations(vocabularyTargets, transcript, driveSync);
   const highlights = speakingSessionHighlights(transcript, activations);
-  container.innerHTML = `<section class="speaking-summary-shell"><div class="speaking-summary-card"><div class="summary-celebration" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><span><i class="fa-solid fa-check"></i></span></div><span class="eyebrow">Lesson complete</span><h1>Nice work — you showed up and spoke.</h1><p>${escapeHtml(lesson.title)} is now part of your speaking progress.</p><div class="summary-metrics"><div><strong>${minutes}</strong><span>minutes</span></div><div><strong>${learnerTurns}</strong><span>your turns</span></div><div><strong>${usedPhrases.length}/${lesson.targetPhrases.length}</strong><span>target phrases</span></div></div>
+  const allLessonPhrases = lessonPhraseLibraryEntries(lesson);
+  let savedPhraseCount = 0;
+  let phraseSaveError = '';
+  try {
+    savedPhraseCount = saveLessonPhrasesToLibrary(lesson, driveSync).saved.length;
+  } catch (error) {
+    phraseSaveError = error instanceof Error ? error.message : String(error);
+  }
+  container.innerHTML = `<section class="speaking-summary-shell"><div class="speaking-summary-card"><div class="summary-celebration" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><span><i class="fa-solid fa-check"></i></span></div><span class="eyebrow">Lesson complete</span><h1>Nice work — you showed up and spoke.</h1><p>${escapeHtml(lesson.title)} is now part of your speaking progress.</p><div class="summary-metrics"><div><strong>${minutes}</strong><span>minutes</span></div><div><strong>${learnerTurns}</strong><span>your turns</span></div><div><strong>${usedPhrases.length}/${phraseTargets.length}</strong><span>expressions recalled</span></div></div>
     ${vocabularyTargets.length ? `<div class="speaking-activation-summary"><div><span>Activated</span><strong>${highlights.used.length ? highlights.used.map(word => escapeHtml(word.word)).join(' · ') : 'None yet'}</strong></div><div><span>Try next time</span><strong>${highlights.unused.length ? highlights.unused.map(word => escapeHtml(word.word)).join(' · ') : 'All target words used'}</strong></div></div>` : ''}
     ${highlights.strongest.length ? `<div class="summary-strong-responses"><span>Your strongest response${highlights.strongest.length > 1 ? 's' : ''}</span>${highlights.strongest.map(text => `<blockquote>“${escapeHtml(text)}”</blockquote>`).join('')}</div>` : ''}
-    <div class="summary-takeaway"><i class="fa-solid fa-lightbulb"></i><div><strong>Keep one phrase</strong><p>${escapeHtml(usedPhrases[0] || lesson.targetPhrases[0])}</p></div></div>
+    <div class="speaking-library-save ${phraseSaveError ? 'error' : ''}"><i class="fa-solid ${phraseSaveError ? 'fa-circle-exclamation' : 'fa-book-bookmark'}"></i><div><strong>${phraseSaveError ? 'The lesson phrases could not be saved' : `${allLessonPhrases.length} lesson expressions are in your Library`}</strong><p>${phraseSaveError ? escapeHtml(phraseSaveError) : savedPhraseCount ? `${savedPhraseCount} new expression${savedPhraseCount === 1 ? '' : 's'} added with ${savedPhraseCount === 1 ? 'its' : 'their'} idiomatic ${savedPhraseCount === 1 ? 'meaning' : 'meanings'}.` : 'They were already saved, so no duplicates were created.'}</p></div></div>
+    <div class="summary-takeaway"><i class="fa-solid fa-lightbulb"></i><div><strong>${usedPhrases.length ? `Next recall in ${phrasePractice.results.find(item => item.target.progressId === usedPhrases[0].progressId)?.intervalDays || 1} day${(phrasePractice.results.find(item => item.target.progressId === usedPhrases[0].progressId)?.intervalDays || 1) === 1 ? '' : 's'}` : 'This expression returns tomorrow'}</strong><p>${escapeHtml((usedPhrases[0] || phraseTargets[0])?.text || '')}</p></div></div>
     <div class="summary-actions"><button class="btn-green-solid" id="summary-again">Practice again</button><button class="status-pill offline" id="summary-lessons">All lessons</button></div></div>
     <div class="summary-transcript spec-card"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-align-left"></i> Session transcript</div><span>${transcript.length} turns</span></div>${transcript.length ? transcript.map(entry => `<div class="transcript-turn ${entry.role}"><span>${entry.role === 'coach' ? 'Mira' : 'You'}</span><p>${escapeHtml(entry.text)}</p></div>`).join('') : '<p class="summary-empty">No transcript was received. You still completed the practice session.</p>'}</div></section>`;
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });

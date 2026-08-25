@@ -7,3 +7,4 @@ android/.gradle/
 android/app/build/
 android/build/
 dist/*.apk
+dist/macos/

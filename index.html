@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Specification Stylesheet -->
-  <link rel="stylesheet" href="css/styles.css?v=90">
+  <link rel="stylesheet" href="css/styles.css?v=93">
 </head>
 <body>
 
@@ -62,10 +62,12 @@
       </button>
 
       <div class="badge-pill badge-streak">
-        <i class="fa-solid fa-fire"></i> <span id="hdr-streak-count">12</span> day streak
+        <i class="fa-solid fa-fire"></i>
+        <span id="hdr-streak-count">12</span><span class="badge-detail"> day streak</span><span class="badge-compact" aria-hidden="true">d</span>
       </div>
       <div class="badge-pill badge-goal">
-        <i class="fa-solid fa-bullseye"></i> Daily goal <strong style="margin-left: 4px;" id="hdr-goal-count">16 / 20</strong>
+        <i class="fa-solid fa-bullseye"></i>
+        <span class="badge-detail">Daily goal</span><strong id="hdr-goal-count">16 / 20</strong>
       </div>
     </div>
   </header>
@@ -521,6 +523,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=90"></script>
+  <script type="module" src="js/app.js?v=93"></script>
 </body>
 </html>

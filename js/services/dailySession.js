@@ -1,5 +1,5 @@
-import { getDueWords } from './srsEngine.js?v=90';
-import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=90';
+import { getDueWords } from './srsEngine.js?v=93';
+import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=93';
 
 export const DEFAULT_SESSION_SIZE = 10;
 export const DEFAULT_SESSION_MIX = Object.freeze({ due: 0.35, weak: 0.5, growth: 0.15 });

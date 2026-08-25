@@ -1,10 +1,10 @@
-import { driveSync } from '../services/driveSync.js?v=90';
-import { speakWord } from '../services/speechService.js?v=90';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=90';
-import { playInteractionSound } from '../services/interactionSound.js?v=90';
-import { selectPracticeWords } from '../services/dailySession.js?v=90';
+import { driveSync } from '../services/driveSync.js?v=93';
+import { speakWord } from '../services/speechService.js?v=93';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
+import { playInteractionSound } from '../services/interactionSound.js?v=93';
+import { selectPracticeWords } from '../services/dailySession.js?v=93';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=90';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=93';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 

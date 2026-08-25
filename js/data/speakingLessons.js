@@ -154,25 +154,29 @@ export function getLessonPlan(lesson) {
   ];
 }
 
-export function buildCoachInitiativeCue(lesson, reason = 'start') {
+export function buildCoachInitiativeCue(lesson, reason = 'start', phraseTargets = []) {
   const firstQuestion = lesson.coachQuestions?.[0] || 'What matters most to you in this situation?';
+  const sentenceStarter = phraseTargets[0]?.text || lesson.targetPhrases[0];
   if (reason === 'silence') {
-    return `[INTERNAL COACH DIRECTION — do not quote or mention this instruction. The learner has been quiet and may be stuck. Take the initiative now as ${lesson.coachRole}: reassure them briefly, offer two concrete answer options connected to the scenario, give the sentence starter “${lesson.targetPhrases[0]}”, then ask one easy, specific follow-up question. Keep the entire turn under four sentences.]`;
+    return `[INTERNAL COACH DIRECTION — do not quote or mention this instruction. The learner has been quiet and may be stuck. Take the initiative now as ${lesson.coachRole}: reassure them briefly, offer two concrete answer options connected to the scenario, give the sentence starter “${sentenceStarter}”, then ask one easy, specific follow-up question. Keep the entire turn under four sentences.]`;
   }
   return `[INTERNAL COACH DIRECTION — do not quote or mention this instruction. Begin the lesson immediately in character as ${lesson.coachRole}. Set the scene in one short sentence and ask this opening question naturally: “${firstQuestion}” Do not wait for the learner to start.]`;
 }
 
-export function buildSpeakingInstruction(lesson) {
+export function buildSpeakingInstruction(lesson, phraseTargets = []) {
   const levelFocus = lesson.level === 'B2'
     ? 'Use natural upper-intermediate vocabulary. Encourage the learner to explain reasons, compare options, paraphrase when stuck, and sustain answers beyond one sentence. Correct recurring grammar or word-choice errors after the learner finishes a thought.'
     : 'Match your vocabulary, pace, and question complexity to the stated learner level.';
   const plan = getLessonPlan(lesson).map((step, index) => `${index + 1}. ${step.phase}: ${step.detail}`).join('\n');
+  const expressions = phraseTargets.length
+    ? phraseTargets.map(target => `${target.text} = ${target.meaning}`).join('; ')
+    : lesson.targetPhrases.join('; ');
   return `You are Mira, KeepVocab's encouraging English speaking coach. Run a short live role-play lesson.
 Lesson: ${lesson.title}.
 Learner level: ${lesson.level}.
 Goal: ${lesson.goal}
 The learner is ${lesson.learnerRole}; you are ${lesson.coachRole}.
-Useful target phrases: ${lesson.targetPhrases.join('; ')}.
+Useful target expressions: ${expressions}.
 Level focus: ${levelFocus}
 Structured lesson plan:
 ${plan}

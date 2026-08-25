@@ -1,8 +1,8 @@
-import { driveSync } from '../services/driveSync.js?v=90';
-import { getDueWords } from '../services/srsEngine.js?v=90';
-import { buildDailySession, weaknessScore } from '../services/dailySession.js?v=90';
-import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=90';
-import { completedExercisesToday } from '../services/learningStats.js?v=90';
+import { driveSync } from '../services/driveSync.js?v=93';
+import { getDueWords } from '../services/srsEngine.js?v=93';
+import { buildDailySession, weaknessScore } from '../services/dailySession.js?v=93';
+import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=93';
+import { completedExercisesToday } from '../services/learningStats.js?v=93';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 

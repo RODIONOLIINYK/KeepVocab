@@ -1,7 +1,7 @@
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=90';
-import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=90';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=93';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=93';
 import { localDateKey } from '../utils/dates.js';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';

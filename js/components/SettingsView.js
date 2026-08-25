@@ -1,6 +1,6 @@
-import { driveSync } from '../services/driveSync.js?v=90';
-import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=90';
-import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=90';
+import { driveSync } from '../services/driveSync.js?v=93';
+import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=93';
+import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=93';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
