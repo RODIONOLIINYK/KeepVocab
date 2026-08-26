@@ -45,7 +45,7 @@ test('the macOS package is universal, sandboxed, and keeps the authorized local 
   const desktopMain = readFileSync(resolve(projectRoot, 'desktop/main.cjs'), 'utf8');
   const macTarget = packageJson.build.mac.target.find(target => target.target === 'dmg');
 
-  assert.equal(packageJson.version, '1.4.0');
+  assert.equal(packageJson.version, '1.4.1');
   assert.equal(packageJson.main, 'desktop/main.cjs');
   assert.deepEqual(macTarget.arch, ['universal']);
   assert.equal(packageJson.build.mac.identity, null);
