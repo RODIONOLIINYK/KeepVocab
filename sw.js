@@ -1,16 +1,16 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v93';
+const CACHE_NAME = 'keepvocab-v95';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './quick-add.html',
   './css/styles.css',
-  './css/styles.css?v=93',
+  './css/styles.css?v=95',
   './css/quick-add.css',
   './css/quick-add.css?v=93',
   './js/app.js',
-  './js/app.js?v=93',
+  './js/app.js?v=94',
   './js/services/driveSync.js',
   './js/services/driveSync.js?v=93',
   './js/services/dictionaryApi.js',
@@ -48,7 +48,7 @@ const ASSETS_TO_CACHE = [
   './js/services/contextExercises.js',
   './js/services/contextExercises.js?v=93',
   './js/services/speechInput.js',
-  './js/services/speechInput.js?v=93',
+  './js/services/speechInput.js?v=94',
   './js/services/interactionSound.js',
   './js/services/interactionSound.js?v=93',
   './js/services/reminderService.js',
@@ -78,9 +78,10 @@ const ASSETS_TO_CACHE = [
   './js/components/ContextQuizMode.js',
   './js/components/ContextQuizMode.js?v=93',
   './js/components/UseItMode.js',
-  './js/components/UseItMode.js?v=93',
+  './js/components/UseItMode.js?v=94',
   './js/components/UseItExercise.js',
   './js/components/UseItExercise.js?v=93',
+  './js/components/UseItExercise.js?v=94',
   './js/components/SettingsView.js',
   './js/components/SettingsView.js?v=93',
   './js/quickAdd.js',

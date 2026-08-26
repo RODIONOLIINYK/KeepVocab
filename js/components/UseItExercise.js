@@ -1,6 +1,6 @@
 import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=93';
 import { getGeminiSettings } from '../services/geminiSettings.js?v=93';
-import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=93';
+import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=94';
 import { escapeHtml } from '../utils/html.js';
 
 export function mountUseItExercise(root, options) {
@@ -86,14 +86,23 @@ export function mountUseItExercise(root, options) {
         return;
       }
       const Recognition = globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition;
-      const recognition = new Recognition();
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-      recognition.addEventListener('start', () => { button.innerHTML = '<i class="fa-solid fa-wave-square"></i> Listening…'; status.textContent = 'Listening for your sentence…'; });
-      recognition.addEventListener('result', event => { sentence = event.results[0][0].transcript; root.querySelector('[data-useit-sentence]').value = sentence; status.textContent = 'Speech added. Edit it if needed, then check the sentence.'; });
-      recognition.addEventListener('end', () => { button.innerHTML = '<i class="fa-solid fa-microphone"></i> Speak instead'; });
-      recognition.addEventListener('error', event => { status.textContent = `Speech recognition stopped (${event.error || 'unavailable'}). Check microphone permission or keep typing.`; });
-      try { recognition.start(); } catch (error) { status.textContent = `${error.message} You can keep typing.`; }
+      try {
+        button.disabled = true;
+        status.textContent = 'Preparing microphone…';
+        await options.speechSession?.prepare?.();
+        const recognition = new Recognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.addEventListener('start', () => { button.disabled = false; button.innerHTML = '<i class="fa-solid fa-wave-square"></i> Listening…'; status.textContent = 'Listening for your sentence…'; });
+        recognition.addEventListener('result', event => { sentence = event.results[0][0].transcript; root.querySelector('[data-useit-sentence]').value = sentence; status.textContent = 'Speech added. Edit it if needed, then check the sentence.'; });
+        recognition.addEventListener('end', () => { button.disabled = false; button.innerHTML = '<i class="fa-solid fa-microphone"></i> Speak instead'; });
+        recognition.addEventListener('error', event => { button.disabled = false; status.textContent = `Speech recognition stopped (${event.error || 'unavailable'}). Check microphone permission or keep typing.`; });
+        recognition.start();
+      } catch (error) {
+        button.disabled = false;
+        button.innerHTML = '<i class="fa-solid fa-microphone"></i> Speak instead';
+        status.textContent = `${error.message} You can keep typing.`;
+      }
     });
 
     root.querySelector('[data-useit-retry]')?.addEventListener('click', () => { result = null; render(); });

@@ -24,7 +24,7 @@ import { renderDashboardView } from './components/DashboardView.js?v=93';
 import { renderDailySessionMode } from './components/DailySessionMode.js?v=93';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=93';
 import { renderContextQuizMode } from './components/ContextQuizMode.js?v=93';
-import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=93';
+import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=94';
 import { renderSettingsView } from './components/SettingsView.js?v=93';
 
 function buildStudyQueue() {
@@ -424,7 +424,10 @@ function navigateTo(viewName) {
   if (activeMonthLabel) activeMonthLabel.textContent = driveSync.getActiveNotebook().replace(/ Vocabulary$/, '');
 
   document.querySelectorAll('.nav-link-item').forEach(link => {
-    link.classList.toggle('active', link.getAttribute('data-view') === viewName);
+    const isActive = link.getAttribute('data-view') === viewName;
+    link.classList.toggle('active', isActive);
+    if (isActive) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
   });
 
   const container = document.getElementById('view-container');

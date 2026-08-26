@@ -58,7 +58,11 @@ test('the macOS package is universal, sandboxed, and keeps the authorized local 
   assert.doesNotMatch(desktopMain, /createServer|\.listen\(/);
   assert.match(desktopMain, /contextIsolation: true/);
   assert.match(desktopMain, /nodeIntegration: false/);
+  assert.match(desktopMain, /preload: path\.join\(__dirname, 'preload\.cjs'\)/);
   assert.match(desktopMain, /sandbox: true/);
+  assert.match(desktopMain, /systemPreferences\.askForMediaAccess\('microphone'\)/);
+  assert.match(desktopMain, /keepvocab:request-microphone-access/);
+  assert.match(readFileSync(resolve(projectRoot, 'desktop/preload.cjs'), 'utf8'), /requestMicrophoneAccess/);
   assert.doesNotMatch(desktopMain, /webSecurity:\s*false/);
   assert.match(desktopMain, /new Tray\(icon\)/);
   assert.match(desktopMain, /keepvocab-menubarTemplate\.png/);
@@ -82,14 +86,17 @@ test('menu-bar quick add enriches a saved meaning with the same image pipeline a
   assert.match(quickAdd, /driveSync\.addWord\(enriched\)/);
 });
 
-test('the resizable app header uses non-wrapping badges and staged desktop breakpoints', () => {
+test('the resizable app header uses non-wrapping badges, readable controls, and staged desktop breakpoints', () => {
   const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
   const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
   assert.match(styles, /\.badge-pill\s*\{[^}]*white-space:\s*nowrap/);
-  assert.match(styles, /@media \(max-width:\s*1180px\)[\s\S]*\.badge-pill \.badge-detail\s*\{\s*display:\s*none/);
-  assert.match(styles, /@media \(min-width:\s*721px\) and \(max-width:\s*900px\)[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\)/);
+  assert.match(styles, /@media \(max-width:\s*1248px\)[\s\S]*\.badge-pill \.badge-detail\s*\{\s*display:\s*none/);
+  assert.match(styles, /\.header-nav\s*\{[^}]*grid-template-columns:\s*auto minmax\(0, 1fr\) auto/);
+  assert.match(styles, /@media \(min-width:\s*721px\) and \(max-width:\s*1040px\)[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\)/);
+  assert.match(styles, /@media \(max-width:\s*720px\)[\s\S]*\.nav-link-item\s*\{[^}]*font-size:\s*\.62rem/);
   assert.match(html, /class="badge-detail"> day streak/);
   assert.match(html, /class="badge-detail">Daily goal/);
+  assert.match(html, /aria-label="Primary navigation"/);
 });
 
 test('Drive uses the built-in web client and the UI never asks users for OAuth configuration', () => {

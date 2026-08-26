@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, Menu, nativeImage, net, protocol, screen, session, shell, Tray } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, net, protocol, screen, session, shell, systemPreferences, Tray } = require('electron');
 const { access, readFile, stat } = require('node:fs/promises');
 const path = require('node:path');
 
@@ -27,6 +27,7 @@ let mainWindow;
 let quickAddWindow;
 let menuBarTray;
 let isQuitting = false;
+let microphoneAccessPromise = null;
 
 function isAppUrl(rawUrl) {
   try {
@@ -130,6 +131,26 @@ function configurePermissions() {
   });
 }
 
+function requestMicrophoneAccess() {
+  if (process.platform !== 'darwin') return Promise.resolve(true);
+  const status = systemPreferences.getMediaAccessStatus('microphone');
+  if (status === 'granted') return Promise.resolve(true);
+  if (status === 'denied' || status === 'restricted') return Promise.resolve(false);
+  if (!microphoneAccessPromise) {
+    microphoneAccessPromise = systemPreferences.askForMediaAccess('microphone')
+      .catch(error => {
+        console.warn('Native microphone permission preflight was unavailable; falling back to Chromium.', error);
+        return true;
+      })
+      .finally(() => { microphoneAccessPromise = null; });
+  }
+  return microphoneAccessPromise;
+}
+
+function configureDesktopBridge() {
+  ipcMain.handle('keepvocab:request-microphone-access', () => requestMicrophoneAccess());
+}
+
 function configureNavigation(window) {
   window.webContents.setWindowOpenHandler(({ url }) => {
     if (isAllowedPopup(url)) {
@@ -191,6 +212,7 @@ function createMainWindow() {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
+      preload: path.join(__dirname, 'preload.cjs'),
       sandbox: true,
     },
   });
@@ -290,6 +312,7 @@ if (!app.requestSingleInstanceLock()) {
     try {
       await configureAppProtocol();
       configurePermissions();
+      configureDesktopBridge();
       createMainWindow();
       configureMenuBarQuickAdd();
     } catch (error) {

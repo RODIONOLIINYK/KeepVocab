@@ -70,13 +70,26 @@ export async function createSpeechRecorder(options = {}) {
   };
 }
 
-export function createSpeechRecordingSession() {
+export function createSpeechRecordingSession(options = {}) {
   let stream = null;
   let streamPromise = null;
+  let permissionPromise = null;
   let closed = false;
+
+  const requestPermission = options.requestPermission
+    || globalThis.keepVocabDesktop?.requestMicrophoneAccess;
+
+  const ensurePermission = async () => {
+    if (!requestPermission) return true;
+    if (!permissionPromise) permissionPromise = Promise.resolve(requestPermission());
+    const granted = await permissionPromise;
+    if (!granted) throw new Error('Microphone access is off. Enable KeepVocab in System Settings → Privacy & Security → Microphone, then restart the app.');
+    return true;
+  };
 
   const acquireStream = async () => {
     if (closed) throw new Error('This speaking session has ended.');
+    await ensurePermission();
     const active = stream?.getAudioTracks?.().some(track => track.readyState === 'live');
     if (active) return stream;
     if (!streamPromise) {
@@ -91,6 +104,10 @@ export function createSpeechRecordingSession() {
   };
 
   return {
+    async prepare() {
+      const sharedStream = await acquireStream();
+      for (const track of sharedStream.getAudioTracks?.() || []) track.enabled = false;
+    },
     async createRecorder() {
       const sharedStream = await acquireStream();
       for (const track of sharedStream.getAudioTracks?.() || []) track.enabled = true;

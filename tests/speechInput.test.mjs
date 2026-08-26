@@ -27,6 +27,7 @@ test('a Use It speech session requests microphone access once and reuses it acro
   const originalNavigator = globalThis.navigator;
   const originalMediaRecorder = globalThis.MediaRecorder;
   let requests = 0;
+  let permissionRequests = 0;
   let stoppedTracks = 0;
   const stream = { getTracks: () => [{ readyState: 'live', stop: () => { stoppedTracks += 1; } }], getAudioTracks: () => [{ readyState: 'live' }] };
   class FakeMediaRecorder extends EventTarget {
@@ -38,17 +39,32 @@ test('a Use It speech session requests microphone access once and reuses it acro
   Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { mediaDevices: { getUserMedia: async () => { requests += 1; return stream; } } } });
   globalThis.MediaRecorder = FakeMediaRecorder;
   try {
-    const session = createSpeechRecordingSession();
+    const session = createSpeechRecordingSession({ requestPermission: async () => { permissionRequests += 1; return true; } });
+    await session.prepare();
     const first = await session.createRecorder();
     await first.stop();
     const second = await session.createRecorder();
     await second.stop();
     assert.equal(requests, 1);
+    assert.equal(permissionRequests, 1);
     assert.equal(stoppedTracks, 0);
     session.close();
     assert.equal(stoppedTracks, 1);
   } finally {
     Object.defineProperty(globalThis, 'navigator', { configurable: true, value: originalNavigator });
     globalThis.MediaRecorder = originalMediaRecorder;
+  }
+});
+
+test('a denied desktop microphone permission stops before opening an audio stream', async () => {
+  const originalNavigator = globalThis.navigator;
+  let requests = 0;
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { mediaDevices: { getUserMedia: async () => { requests += 1; } } } });
+  try {
+    const session = createSpeechRecordingSession({ requestPermission: async () => false });
+    await assert.rejects(session.prepare(), /Microphone access is off/);
+    assert.equal(requests, 0);
+  } finally {
+    Object.defineProperty(globalThis, 'navigator', { configurable: true, value: originalNavigator });
   }
 });
