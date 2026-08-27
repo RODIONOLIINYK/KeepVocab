@@ -63,28 +63,19 @@ test('404 and invalid inputs are explicit errors, not fabricated entries', async
   );
 });
 
-test('a close misspelling is corrected only after the original dictionary lookup fails', async () => {
+test('a failed primary lookup uses one fast exact-definition fallback without spelling-service chaining', async () => {
   const calls = [];
-  const result = await fetchWordDetails('recieve', {
+  const result = await fetchWordDetails('resilient', {
     storage: new MemoryStorage(),
     fetchImpl: async url => {
       calls.push(url);
-      if (url.endsWith('/recieve')) return { ok: false, status: 404 };
-      if (url.includes('api.languagetool.org')) {
+      if (url.includes('freedictionaryapi.com')) return { ok: false, status: 503 };
+      if (url.includes('api.datamuse.com')) {
         return {
           ok: true,
           status: 200,
           async json() {
-            return { matches: [{ rule: { issueType: 'misspelling' }, replacements: [{ value: 'receive' }, { value: 'relieve' }] }] };
-          }
-        };
-      }
-      if (url.endsWith('/receive')) {
-        return {
-          ok: true,
-          status: 200,
-          async json() {
-            return [{ word: 'receive', meanings: [{ partOfSpeech: 'verb', definitions: [{ definition: 'To be given something.' }] }] }];
+            return [{ word: 'resilient', defs: ['adj\tAble to recover quickly from difficulties.'] }];
           }
         };
       }
@@ -92,9 +83,10 @@ test('a close misspelling is corrected only after the original dictionary lookup
     }
   });
 
-  assert.equal(result.word, 'receive');
-  assert.equal(result.correctedFrom, 'recieve');
-  assert.deepEqual(calls.map(url => new URL(url).hostname), ['api.dictionaryapi.dev', 'api.languagetool.org', 'api.dictionaryapi.dev']);
+  assert.equal(result.word, 'resilient');
+  assert.equal(result.definition, 'Able to recover quickly from difficulties.');
+  assert.equal(result.source, 'datamuse');
+  assert.deepEqual(calls.map(url => new URL(url).hostname), ['freedictionaryapi.com', 'api.datamuse.com']);
 });
 
 test('the dictionary response supplies the canonical spelling even on a successful first request', async () => {
@@ -173,4 +165,51 @@ test('dictionary-native examples are removed when they contradict the returned s
   });
 
   assert.match(result.example, /composer.*theme.*slower/i);
+});
+
+test('the maintained Wiktionary response shape returns pronunciations, quotes, and subsenses', async () => {
+  const result = await fetchWordDetails('resilient', {
+    storage: new MemoryStorage(),
+    fetchImpl: async () => ({
+      ok: true,
+      status: 200,
+      async json() {
+        return {
+          word: 'resilient',
+          entries: [{
+            partOfSpeech: 'adjective',
+            pronunciations: [{ type: 'ipa', text: '/ɹɪˈzɪl.jənt/' }],
+            synonyms: ['strong'],
+            senses: [{
+              definition: 'Returning quickly to normal after damage.',
+              quotes: [{ text: 'The resilient team recovered quickly.' }],
+              subsenses: [{ definition: 'Able to recover from trauma.', examples: ['She remained resilient.'] }]
+            }]
+          }]
+        };
+      }
+    })
+  });
+
+  assert.equal(result.phonetic, '/ɹɪˈzɪl.jənt/');
+  assert.equal(result.example, 'The resilient team recovered quickly.');
+  assert.equal(result.senses.length, 2);
+  assert.deepEqual(result.synonyms, ['strong']);
+});
+
+test('unreachable providers produce a network error instead of a misleading long timeout error', async () => {
+  const startedAt = Date.now();
+  await assert.rejects(
+    () => fetchWordDetails('resilient', {
+      storage: null,
+      timeoutMs: 20,
+      fetchImpl: (_url, options) => new Promise((_resolve, reject) => {
+        options.signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true });
+      })
+    }),
+    error => error instanceof DictionaryApiError
+      && error.code === 'NETWORK'
+      && !/timed out/i.test(error.message)
+  );
+  assert.ok(Date.now() - startedAt < 250, 'Both bounded provider attempts should fail quickly in the regression test.');
 });

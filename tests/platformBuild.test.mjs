@@ -68,7 +68,8 @@ test('the macOS package is universal, sandboxed, and keeps the authorized local 
   assert.match(desktopMain, /keepvocab-menubarTemplate\.png/);
   assert.match(desktopMain, /process\.platform === 'darwin'\s*\? 'keepvocab-menubarTemplate\.png'\s*:\s*'keepvocab-mark-v2-192\.png'/);
   assert.match(desktopMain, /if \(icon\.isEmpty\(\)\) throw new Error/);
-  assert.match(desktopMain, /Add a word…/);
+  assert.match(desktopMain, /menuBarTray\.on\('click', \(_event, bounds\) => showQuickAddWindow\(bounds\)\)/);
+  assert.doesNotMatch(desktopMain, /menuBarTray\.setContextMenu/, 'Clicking the menu-bar icon must open Quick Add without a dropdown menu');
   assert.match(desktopMain, /quick-add\.html/);
   assert.match(desktopMain, /setVisibleOnAllWorkspaces\(true, \{ visibleOnFullScreen: true \}\)/);
   assert.match(readFileSync(resolve(projectRoot, 'scripts/build-web.mjs'), 'utf8'), /quick-add\.html/);

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, net, protocol, screen, session, shell, systemPreferences, Tray } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, nativeImage, net, protocol, screen, session, shell, systemPreferences, Tray } = require('electron');
 const { access, readFile, stat } = require('node:fs/promises');
 const path = require('node:path');
 
@@ -287,15 +287,6 @@ function configureMenuBarQuickAdd() {
   menuBarTray = new Tray(icon);
   menuBarTray.setToolTip('KeepVocab quick add');
   menuBarTray.on('click', (_event, bounds) => showQuickAddWindow(bounds));
-  menuBarTray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Add a word…', click: () => showQuickAddWindow() },
-    { label: 'Open KeepVocab', click: () => {
-      if (!mainWindow) createMainWindow();
-      else { mainWindow.show(); mainWindow.focus(); }
-    } },
-    { type: 'separator' },
-    { label: 'Quit KeepVocab', click: () => app.quit() },
-  ]));
   createQuickAddWindow();
 }
 

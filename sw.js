@@ -1,20 +1,20 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v95';
+const CACHE_NAME = 'keepvocab-v96';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './quick-add.html',
   './css/styles.css',
-  './css/styles.css?v=95',
+  './css/styles.css?v=96',
   './css/quick-add.css',
-  './css/quick-add.css?v=93',
+  './css/quick-add.css?v=96',
   './js/app.js',
-  './js/app.js?v=94',
+  './js/app.js?v=96',
   './js/services/driveSync.js',
   './js/services/driveSync.js?v=93',
   './js/services/dictionaryApi.js',
-  './js/services/dictionaryApi.js?v=93',
+  './js/services/dictionaryApi.js?v=96',
   './js/services/speechService.js',
   './js/services/speechService.js?v=93',
   './js/services/bulkWords.js',
@@ -85,7 +85,7 @@ const ASSETS_TO_CACHE = [
   './js/components/SettingsView.js',
   './js/components/SettingsView.js?v=93',
   './js/quickAdd.js',
-  './js/quickAdd.js?v=93',
+  './js/quickAdd.js?v=96',
   './js/data/speakingLessons.js',
   './js/data/speakingLessons.js?v=93',
   './js/utils/html.js',

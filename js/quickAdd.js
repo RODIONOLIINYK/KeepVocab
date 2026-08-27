@@ -1,10 +1,11 @@
 import { driveSync } from './services/driveSync.js?v=93';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=93';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=96';
 import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=93';
 import { attachImagesSequentially } from './services/bulkWords.js?v=93';
 import { sanitizeExistingExamples } from './services/exampleSearch.js?v=93';
 import { escapeHtml } from './utils/html.js';
 
+const shell = document.querySelector('.quick-add-shell');
 const form = document.querySelector('#quick-lookup-form');
 const input = document.querySelector('#quick-word');
 const findButton = document.querySelector('#quick-find');
@@ -14,6 +15,24 @@ const definition = document.querySelector('#quick-definition');
 const status = document.querySelector('#quick-status');
 const save = document.querySelector('#quick-save');
 let lookup = null;
+
+function setShellState(state = '') {
+  shell.classList.remove('is-loading', 'has-results', 'has-error', 'is-saving', 'is-success');
+  if (!state) return;
+  shell.classList.add(state);
+  if (state === 'is-saving' || state === 'is-success') {
+    shell.classList.add(lookup ? 'has-results' : 'has-error');
+  }
+}
+
+function setFindLabel(label) {
+  findButton.innerHTML = `<span class="sparkle" aria-hidden="true">✦</span><span>${escapeHtml(label)}</span>`;
+}
+
+function setSaveLabel(label, saved = false) {
+  save.innerHTML = `<span>${escapeHtml(label)}</span><span class="button-arrow" aria-hidden="true">${saved ? '✓' : '→'}</span>`;
+  save.classList.toggle('is-saved', saved);
+}
 
 function setStatus(message, kind = '') {
   status.textContent = message;
@@ -26,11 +45,12 @@ function selectedSense() {
 }
 
 function renderSenses(data) {
-  results.innerHTML = data.senses.slice(0, 6).map((sense, index) => `<label class="sense-option"><input type="radio" name="quick-sense" value="${escapeHtml(sense.id)}"${index === 0 ? ' checked' : ''}><div><strong>${escapeHtml(sense.partOfSpeech || 'word')}</strong><span>${escapeHtml(sense.definition)}</span>${sense.example ? `<small>“${escapeHtml(sense.example)}”</small>` : ''}</div></label>`).join('');
+  results.innerHTML = data.senses.slice(0, 6).map((sense, index) => `<label class="sense-option" style="--sense-index:${index}"><input type="radio" name="quick-sense" value="${escapeHtml(sense.id)}"${index === 0 ? ' checked' : ''}><div><strong>${escapeHtml(sense.partOfSpeech || 'word')}</strong><span>${escapeHtml(sense.definition)}</span>${sense.example ? `<small>“${escapeHtml(sense.example)}”</small>` : ''}</div></label>`).join('');
   results.querySelectorAll('input').forEach(radio => radio.addEventListener('change', () => { save.disabled = false; }));
   manual.hidden = true;
   save.disabled = false;
-  setStatus(data.correctedFrom ? `Spelling corrected from “${data.correctedFrom}”. Choose the meaning you heard.` : 'Choose the meaning used in the film, then save.');
+  setShellState('has-results');
+  setStatus(data.correctedFrom ? `Spelling corrected from “${data.correctedFrom}”. Choose the meaning you heard.` : 'Choose the meaning you heard, then save.');
 }
 
 form.addEventListener('submit', async event => {
@@ -42,20 +62,24 @@ form.addEventListener('submit', async event => {
   manual.hidden = true;
   save.disabled = true;
   findButton.disabled = true;
-  findButton.textContent = 'Finding…';
+  setShellState('is-loading');
+  form.setAttribute('aria-busy', 'true');
+  setFindLabel('Finding meanings…');
   setStatus('Looking up meanings…');
   try {
     lookup = await fetchWordDetails(word);
     input.value = lookup.word;
     renderSenses(lookup);
   } catch (error) {
+    setShellState('has-error');
     manual.hidden = false;
     definition.focus();
     setStatus(`${error.message} You can still save the meaning manually.`, 'error');
-    save.disabled = false;
+    save.disabled = !definition.value.trim();
   } finally {
     findButton.disabled = false;
-    findButton.textContent = 'Find';
+    form.removeAttribute('aria-busy');
+    setFindLabel('Find meanings');
   }
 });
 
@@ -65,6 +89,8 @@ input.addEventListener('input', () => {
   manual.hidden = true;
   definition.value = '';
   save.disabled = true;
+  setShellState();
+  setSaveLabel('Save to Library');
   setStatus('Press Return to find the intended meaning.');
 });
 
@@ -91,8 +117,8 @@ save.addEventListener('click', async () => {
   };
   if (!item.word || !item.definition) return setStatus('Add a word and its intended meaning first.', 'error');
   save.disabled = true;
-  const originalLabel = save.textContent;
-  save.textContent = 'Choosing image…';
+  setShellState('is-saving');
+  setSaveLabel('Choosing image…');
   setStatus('Choosing a relevant memory image…');
   try {
     const senseChecked = sanitizeExistingExamples(item.word, [item])[0];
@@ -103,13 +129,15 @@ save.addEventListener('click', async () => {
         : 'No suitable image was available. Saving the word…'),
     });
     const saved = driveSync.addWord(enriched);
+    setShellState('is-success');
     setStatus(`Saved “${saved.word}” to ${saved.notebook}.`, 'success');
-    save.textContent = 'Saved';
+    setSaveLabel('Saved to Library', true);
     window.setTimeout(() => window.close(), 850);
   } catch (error) {
+    setShellState(sense ? 'has-results' : 'has-error');
     setStatus(error.message, 'error');
     save.disabled = false;
-    save.textContent = originalLabel;
+    setSaveLabel('Save to Library');
   }
 });
 

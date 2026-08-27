@@ -55,7 +55,7 @@ The desktop build packages the same `www` assets in a sandboxed Electron window.
 - `index.html`: app shell, Drive backup controls, and learning-mode launchers.
 - `js/app.js`: routing, study interactions, Google Drive connection, and automatic sync scheduling.
 - `js/services/driveSync.js`: local persistence, dedicated-folder Drive API access, monthly merge/restore, settings backup, and deletion tombstones.
-- `js/services/dictionaryApi.js`: validated dictionary lookup, distinct senses, timeouts, offline cache, and automatic example enrichment.
+- `js/services/dictionaryApi.js`: validated dictionary lookup using the maintained FreeDictionaryAPI Wiktionary endpoint, a short exact-definition Datamuse fallback, distinct senses, tightly bounded provider attempts, and an offline cache. The menu-bar flow no longer waits on a spelling-correction chain or reports a misleading timeout when the retired provider is unresponsive.
 - `js/services/exampleSearch.js`: sense-checked Tatoeba example assignment with source and license metadata. Multi-sense words require definition evidence, known cross-sense contradictions are rejected, and the musical `augment` sense repairs the recurring augmented-reality mismatch with a purpose-written example.
 - `js/services/srsEngine.js`: Leitner scheduling and streak persistence.
 - `js/components/LibraryView.js`, `ReviewView.js`, `StatsView.js`: editable monthly library, review, status lists, and box explorer.

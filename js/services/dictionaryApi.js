@@ -1,12 +1,14 @@
-// Free Dictionary API client with validation, examples, timeout, and an offline cache.
+// Fast dictionary lookup with a maintained Wiktionary source, a short fallback, and offline cache.
 
-import { fetchExamplesForSenses, sanitizeExistingExamples } from './exampleSearch.js?v=93';
+import { sanitizeExistingExamples } from './exampleSearch.js?v=93';
 
-const DICTIONARY_API_BASE = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
-const SPELLING_API_BASE = 'https://api.languagetool.org/v2/check';
-const SPELLING_FALLBACK_API_BASE = 'https://api.datamuse.com/sug';
-const CACHE_KEY = 'keepvocab_dictionary_cache_v3';
+const PRIMARY_API_BASE = 'https://freedictionaryapi.com/api/v1/entries/en/';
+const FALLBACK_API_BASE = 'https://api.datamuse.com/words';
+const CACHE_KEY = 'keepvocab_dictionary_cache_v4';
 const CACHE_MAX_ENTRIES = 250;
+const DEFAULT_TIMEOUT_MS = 3200;
+const PRIMARY_TIMEOUT_MS = 2200;
+const FALLBACK_TIMEOUT_MS = 1600;
 
 export class DictionaryApiError extends Error {
   constructor(message, code, cause) {
@@ -43,7 +45,7 @@ function writeCache(storage, cache) {
   try {
     storage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries(entries)));
   } catch {
-    // A full or privacy-restricted storage area should not break lookup.
+    // Storage availability should never decide whether a lookup succeeds.
   }
 }
 
@@ -51,122 +53,141 @@ function normalizeDefinition(value) {
   return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
-export function damerauLevenshtein(leftValue, rightValue) {
-  const left = String(leftValue || '').toLowerCase();
-  const right = String(rightValue || '').toLowerCase();
-  const matrix = Array.from({ length: left.length + 1 }, () => new Array(right.length + 1).fill(0));
-  for (let i = 0; i <= left.length; i += 1) matrix[i][0] = i;
-  for (let j = 0; j <= right.length; j += 1) matrix[0][j] = j;
-  for (let i = 1; i <= left.length; i += 1) {
-    for (let j = 1; j <= right.length; j += 1) {
-      const cost = left[i - 1] === right[j - 1] ? 0 : 1;
-      matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost);
-      if (i > 1 && j > 1 && left[i - 1] === right[j - 2] && left[i - 2] === right[j - 1]) {
-        matrix[i][j] = Math.min(matrix[i][j], matrix[i - 2][j - 2] + 1);
-      }
-    }
-  }
-  return matrix[left.length][right.length];
-}
-
-function credibleCorrection(original, suggestions) {
-  const maxDistance = original.length <= 4 ? 1 : original.length <= 8 ? 2 : 3;
-  return (suggestions || [])
-    .map(item => String(item?.word || item?.value || '').trim().toLowerCase())
-    .filter(word => word && word !== original && /^[\p{L}'’\- ]+$/u.test(word))
-    .map(word => ({ word, distance: damerauLevenshtein(original, word) }))
-    .filter(item => item.distance <= maxDistance)
-    .sort((left, right) => left.distance - right.distance)[0]?.word || '';
-}
-
-async function findSpellingCorrection(cleanWord, fetchImpl, signal) {
-  try {
-    const response = await fetchImpl(SPELLING_API_BASE, {
-      method: 'POST',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ text: cleanWord, language: 'en-US' }).toString(),
-      signal
-    });
-    if (response.ok) {
-      const payload = await response.json();
-      const replacements = (payload?.matches || [])
-        .filter(match => match?.rule?.issueType === 'misspelling' || match?.rule?.id === 'MORFOLOGIK_RULE_EN_US')
-        .flatMap(match => match.replacements || []);
-      const correction = credibleCorrection(cleanWord, replacements);
-      if (correction) return correction;
-    }
-  } catch {
-    // Fall through to the lighter spelling suggestion service.
-  }
-
-  try {
-    const suggestionUrl = new URL(SPELLING_FALLBACK_API_BASE);
-    suggestionUrl.searchParams.set('s', cleanWord);
-    suggestionUrl.searchParams.set('max', '5');
-    const response = await fetchImpl(suggestionUrl.toString(), { headers: { Accept: 'application/json' }, signal });
-    return response.ok ? credibleCorrection(cleanWord, await response.json()) : '';
-  } catch {
-    return '';
-  }
-}
-
-function parseEntries(entries, cleanWord) {
-  const usableEntries = entries.filter(entry => entry && Array.isArray(entry.meanings));
-  if (usableEntries.length === 0) {
-    throw new DictionaryApiError(`No usable definition was returned for “${cleanWord}”.`, 'BAD_RESPONSE');
-  }
-
-  const phonetics = usableEntries.flatMap(entry => Array.isArray(entry.phonetics) ? entry.phonetics : []);
-  const phonetic = usableEntries.find(entry => entry.phonetic)?.phonetic || phonetics.find(item => item?.text)?.text || '';
-  let audioUrl = phonetics.find(item => item?.audio)?.audio || '';
-  if (audioUrl.startsWith('//')) audioUrl = `https:${audioUrl}`;
-
-  const senses = [];
+function distinctSenses(senses, word) {
   const seen = new Set();
-  usableEntries.forEach((entry, entryIndex) => {
-    entry.meanings.forEach((meaning, meaningIndex) => {
-      if (!Array.isArray(meaning?.definitions)) return;
-      meaning.definitions.forEach((item, definitionIndex) => {
-        const definition = String(item?.definition || '').trim();
-        if (!definition) return;
-        const partOfSpeech = String(meaning.partOfSpeech || 'unknown').trim().toLowerCase();
-        const key = `${partOfSpeech}|${normalizeDefinition(definition)}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        senses.push({
-          id: `${entryIndex}-${meaningIndex}-${definitionIndex}`,
-          partOfSpeech,
-          definition,
-          example: String(item.example || '').trim(),
-          synonyms: [...new Set([...(meaning.synonyms || []), ...(item.synonyms || [])].filter(Boolean))].slice(0, 6),
-          antonyms: [...new Set([...(meaning.antonyms || []), ...(item.antonyms || [])].filter(Boolean))].slice(0, 6)
-        });
-      });
+  const cleaned = [];
+  for (const sense of senses) {
+    const definition = String(sense?.definition || '').trim();
+    if (!definition) continue;
+    const partOfSpeech = String(sense.partOfSpeech || 'word').trim().toLowerCase();
+    const key = `${partOfSpeech}|${normalizeDefinition(definition)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    cleaned.push({
+      id: `sense-${cleaned.length}`,
+      partOfSpeech,
+      definition,
+      example: String(sense.example || '').trim(),
+      synonyms: [...new Set((sense.synonyms || []).filter(Boolean))].slice(0, 6),
+      antonyms: [...new Set((sense.antonyms || []).filter(Boolean))].slice(0, 6)
     });
-  });
-
-  if (senses.length === 0) {
-    throw new DictionaryApiError(`No usable definition was returned for “${cleanWord}”.`, 'BAD_RESPONSE');
   }
+  if (!cleaned.length) {
+    throw new DictionaryApiError(`No usable definition was returned for “${word}”.`, 'BAD_RESPONSE');
+  }
+  return sanitizeExistingExamples(word, cleaned).slice(0, 30);
+}
 
-  const cleanedSenses = sanitizeExistingExamples(cleanWord, senses);
-  const firstSense = cleanedSenses[0];
+function finishResult(word, phonetic, audioUrl, senses, source) {
+  const firstSense = senses[0];
   return {
-    word: String(usableEntries[0].word || cleanWord).toLowerCase(),
-    phonetic,
-    audioUrl,
-    senses: cleanedSenses.slice(0, 30),
+    word,
+    phonetic: phonetic || '',
+    audioUrl: audioUrl || '',
+    senses,
     ...firstSense,
     imageUrl: '',
-    source: 'dictionaryapi.dev'
+    source
   };
+}
+
+function parseLegacyEntries(payload, cleanWord) {
+  const entries = payload.filter(entry => entry && Array.isArray(entry.meanings));
+  if (!entries.length) return null;
+  const phonetics = entries.flatMap(entry => Array.isArray(entry.phonetics) ? entry.phonetics : []);
+  const phonetic = entries.find(entry => entry.phonetic)?.phonetic || phonetics.find(item => item?.text)?.text || '';
+  let audioUrl = phonetics.find(item => item?.audio)?.audio || '';
+  if (audioUrl.startsWith('//')) audioUrl = `https:${audioUrl}`;
+  const senses = entries.flatMap(entry => entry.meanings.flatMap(meaning =>
+    (meaning?.definitions || []).map(item => ({
+      partOfSpeech: meaning.partOfSpeech,
+      definition: item?.definition,
+      example: item?.example,
+      synonyms: [...(meaning.synonyms || []), ...(item?.synonyms || [])],
+      antonyms: [...(meaning.antonyms || []), ...(item?.antonyms || [])]
+    }))
+  ));
+  const word = String(entries[0].word || cleanWord).toLowerCase();
+  return finishResult(word, phonetic, audioUrl, distinctSenses(senses, word), 'dictionary');
+}
+
+function flattenFreeApiSense(entry, sense, inherited = {}) {
+  const example = sense?.examples?.[0] || sense?.quotes?.[0]?.text || '';
+  const current = {
+    partOfSpeech: entry.partOfSpeech,
+    definition: sense?.definition,
+    example,
+    synonyms: [...(inherited.synonyms || []), ...(sense?.synonyms || [])],
+    antonyms: [...(inherited.antonyms || []), ...(sense?.antonyms || [])]
+  };
+  return [current, ...(sense?.subsenses || []).flatMap(subsense => flattenFreeApiSense(entry, subsense, current))];
+}
+
+function parseFreeDictionary(payload, cleanWord) {
+  if (Array.isArray(payload)) return parseLegacyEntries(payload, cleanWord);
+  const entries = Array.isArray(payload?.entries) ? payload.entries : [];
+  if (!entries.length) return null;
+  const pronunciation = entries.flatMap(entry => entry.pronunciations || []).find(item => item?.text)?.text || '';
+  const senses = entries.flatMap(entry => (entry.senses || []).flatMap(sense => flattenFreeApiSense(entry, sense, entry)));
+  const word = String(payload.word || cleanWord).toLowerCase();
+  return finishResult(word, pronunciation, '', distinctSenses(senses, word), 'freedictionaryapi.com');
+}
+
+function parseDatamuse(payload, cleanWord) {
+  const exact = (Array.isArray(payload) ? payload : []).find(item =>
+    String(item?.word || '').toLowerCase() === cleanWord && Array.isArray(item.defs) && item.defs.length
+  );
+  if (!exact) return null;
+  const senses = exact.defs.map(definition => {
+    const [rawPart, ...definitionParts] = String(definition).split('\t');
+    const partMap = { n: 'noun', v: 'verb', adj: 'adjective', adv: 'adverb', u: 'word' };
+    return {
+      partOfSpeech: partMap[rawPart] || rawPart || 'word',
+      definition: definitionParts.join(' ').trim()
+    };
+  });
+  return finishResult(cleanWord, '', '', distinctSenses(senses, cleanWord), 'datamuse');
+}
+
+async function requestJson(url, fetchImpl, timeoutMs) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetchImpl(url, {
+      headers: { Accept: 'application/json' },
+      signal: controller.signal
+    });
+    if (response.status === 404) throw new DictionaryApiError('Not found.', 'NOT_FOUND');
+    if (!response.ok) throw new DictionaryApiError(`Dictionary service returned HTTP ${response.status}.`, 'HTTP');
+    return await response.json();
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function lookupPrimary(cleanWord, fetchImpl, timeoutMs) {
+  const payload = await requestJson(`${PRIMARY_API_BASE}${encodeURIComponent(cleanWord)}`, fetchImpl, timeoutMs);
+  const result = parseFreeDictionary(payload, cleanWord);
+  if (!result) throw new DictionaryApiError(`“${cleanWord}” was not found in the dictionary.`, 'NOT_FOUND');
+  return result;
+}
+
+async function lookupFallback(cleanWord, fetchImpl, timeoutMs) {
+  const url = new URL(FALLBACK_API_BASE);
+  url.searchParams.set('sp', cleanWord);
+  url.searchParams.set('md', 'd');
+  url.searchParams.set('max', '3');
+  const payload = await requestJson(url.toString(), fetchImpl, timeoutMs);
+  const result = parseDatamuse(payload, cleanWord);
+  if (!result) throw new DictionaryApiError(`“${cleanWord}” was not found in the dictionary.`, 'NOT_FOUND');
+  return result;
 }
 
 export async function fetchWordDetails(word, options = {}) {
   const cleanWord = normalizeQuery(word);
   const fetchImpl = options.fetchImpl || globalThis.fetch?.bind(globalThis);
   const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
-  const timeoutMs = options.timeoutMs || 8000;
+  const timeoutMs = options.timeoutMs || DEFAULT_TIMEOUT_MS;
   const cache = readCache(storage);
 
   if (!fetchImpl) {
@@ -174,63 +195,35 @@ export async function fetchWordDetails(word, options = {}) {
     throw new DictionaryApiError('Dictionary lookup is unavailable in this browser.', 'NETWORK');
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  let primaryError;
+  let fallbackError;
+  let result;
   try {
-    let resolvedWord = cleanWord;
-    let response = await fetchImpl(`${DICTIONARY_API_BASE}${encodeURIComponent(cleanWord)}`, {
-      headers: { Accept: 'application/json' },
-      signal: controller.signal
-    });
-
-    if (response.status === 404) {
-      try {
-        const suggestion = await findSpellingCorrection(cleanWord, fetchImpl, controller.signal);
-        if (suggestion) {
-          const correctedResponse = await fetchImpl(`${DICTIONARY_API_BASE}${encodeURIComponent(suggestion)}`, {
-            headers: { Accept: 'application/json' },
-            signal: controller.signal
-          });
-          if (correctedResponse.ok) {
-            resolvedWord = suggestion;
-            response = correctedResponse;
-          }
-        }
-      } catch {
-        // Preserve the original not-found result when the spelling helper is unavailable.
-      }
-      if (response.status === 404) {
-        throw new DictionaryApiError(`“${cleanWord}” was not found in the dictionary.`, 'NOT_FOUND');
-      }
-    }
-    if (!response.ok) {
-      throw new DictionaryApiError(`Dictionary service returned HTTP ${response.status}.`, 'HTTP');
-    }
-
-    const payload = await response.json();
-    if (!Array.isArray(payload) || payload.length === 0) {
-      throw new DictionaryApiError(`No dictionary entry was returned for “${cleanWord}”.`, 'BAD_RESPONSE');
-    }
-
-    let result = parseEntries(payload, resolvedWord);
-    if (resolvedWord !== cleanWord || result.word !== cleanWord) result = { ...result, correctedFrom: cleanWord };
-    const exampleFetchImpl = options.exampleFetchImpl ?? (options.fetchImpl ? null : globalThis.fetch?.bind(globalThis));
-    if (exampleFetchImpl) {
-      const senses = await fetchExamplesForSenses(result.word, result.senses, exampleFetchImpl);
-      result = { ...result, senses, ...senses[0] };
-    }
-    cache[cleanWord] = { cachedAt: Date.now(), data: result };
-    if (resolvedWord !== cleanWord) cache[resolvedWord] = { cachedAt: Date.now(), data: result };
-    writeCache(storage, cache);
-    return result;
+    result = await lookupPrimary(cleanWord, fetchImpl, Math.min(timeoutMs, PRIMARY_TIMEOUT_MS));
   } catch (error) {
-    if (error instanceof DictionaryApiError) throw error;
-    if (cache[cleanWord]?.data) return { ...cache[cleanWord].data, source: 'cache' };
-    if (error?.name === 'AbortError') {
-      throw new DictionaryApiError('Dictionary lookup timed out. Try again.', 'TIMEOUT', error);
+    primaryError = error;
+    try {
+      result = await lookupFallback(cleanWord, fetchImpl, Math.min(timeoutMs, FALLBACK_TIMEOUT_MS));
+    } catch (fallback) {
+      fallbackError = fallback;
     }
-    throw new DictionaryApiError('Could not reach the dictionary service. Check your connection and try again.', 'NETWORK', error);
-  } finally {
-    clearTimeout(timeoutId);
   }
+
+  if (!result) {
+    if (cache[cleanWord]?.data) return { ...cache[cleanWord].data, source: 'cache' };
+    if (fallbackError instanceof DictionaryApiError && fallbackError.code === 'NOT_FOUND') {
+      throw new DictionaryApiError(`“${cleanWord}” was not found in the dictionary.`, 'NOT_FOUND', primaryError);
+    }
+    throw new DictionaryApiError(
+      'Could not reach a dictionary service. Check your connection and try again.',
+      'NETWORK',
+      fallbackError || primaryError
+    );
+  }
+
+  if (result.word !== cleanWord) result = { ...result, correctedFrom: cleanWord };
+  cache[cleanWord] = { cachedAt: Date.now(), data: result };
+  if (result.word !== cleanWord) cache[result.word] = { cachedAt: Date.now(), data: result };
+  writeCache(storage, cache);
+  return result;
 }

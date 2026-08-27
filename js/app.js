@@ -1,7 +1,7 @@
 // Native application controller with monthly Google Drive backup.
 
 import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=93';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=93';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=96';
 import { speakWord } from './services/speechService.js?v=93';
 import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=93';
 import { recordExerciseResult } from './services/exerciseResult.js?v=93';
