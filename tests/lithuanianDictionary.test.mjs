@@ -4,7 +4,7 @@ import fs from 'node:fs';
 
 import { MemoryStorage } from '../js/services/driveSync.js';
 import { fetchLithuanianWordDetails, parseLithuanianWiktionaryHtml } from '../js/services/lithuanianDictionary.js';
-import { translateLithuanianCoachText } from '../js/services/lithuanianEnrichment.js';
+import { enrichLithuanianEntry, translateLithuanianCoachText } from '../js/services/lithuanianEnrichment.js';
 import { saveGeminiSettings } from '../js/services/geminiSettings.js';
 
 const WIKTIONARY_HTML = `<!doctype html><html><body>
@@ -49,6 +49,36 @@ test('Lithuanian dictionary lookup is cached for offline Add Word use', async ()
   });
   assert.equal(calls, 1);
   assert.equal(cached.source, 'Wiktionary cache');
+});
+
+test('fresh Lithuanian dictionary entries avoid a repeated network lookup', async () => {
+  const storage = new MemoryStorage();
+  let calls = 0;
+  const fetchImpl = async () => {
+    calls += 1;
+    return { ok: true, status: 200, async json() { return { html: WIKTIONARY_HTML }; } };
+  };
+  await fetchLithuanianWordDetails('labas', { storage, fetchImpl });
+  const cached = await fetchLithuanianWordDetails('labas', { storage, fetchImpl });
+  assert.equal(calls, 1);
+  assert.equal(cached.source, 'Wiktionary cache');
+});
+
+test('Lithuanian AI enrichment is reused from a bounded device cache', async () => {
+  const storage = new MemoryStorage();
+  saveGeminiSettings({ apiKey: 'AIza-example-device-key-123456789', textModel: 'gemini-test' }, storage, { silent: true });
+  let calls = 0;
+  const fetchImpl = async () => {
+    calls += 1;
+    return { ok: true, async json() { return { candidates: [{ content: { parts: [{ text: JSON.stringify({
+      word: 'labas', lemma: 'labas', senses: [{ id: 'greeting', partOfSpeech: 'interjection', definition: 'hello', example: 'Labas, kaip sekasi?', acceptedForms: ['labas'], grammaticalTags: [] }]
+    }) }] } }] }; } };
+  };
+  const first = await enrichLithuanianEntry('labas', { storage, fetchImpl });
+  const second = await enrichLithuanianEntry('labas', { storage, fetchImpl });
+  assert.equal(first.senses[0].definition, 'hello');
+  assert.deepEqual(second, first);
+  assert.equal(calls, 1);
 });
 
 test('Lithuanian coach messages receive a concise English-only translation', async () => {

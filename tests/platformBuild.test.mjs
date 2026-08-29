@@ -45,7 +45,7 @@ test('the macOS package is universal, sandboxed, and keeps the authorized local 
   const desktopMain = readFileSync(resolve(projectRoot, 'desktop/main.cjs'), 'utf8');
   const macTarget = packageJson.build.mac.target.find(target => target.target === 'dmg');
 
-  assert.equal(packageJson.version, '1.5.0');
+  assert.equal(packageJson.version, '1.5.1');
   assert.equal(packageJson.main, 'desktop/main.cjs');
   assert.deepEqual(macTarget.arch, ['universal']);
   assert.equal(packageJson.build.mac.identity, null);
@@ -303,9 +303,13 @@ test('every cache-busted entrypoint and module import is included in the offline
   const serviceWorker = readFileSync(resolve(projectRoot, 'sw.js'), 'utf8');
   const precachedUrls = new Set([...serviceWorker.matchAll(/'\.\/([^']+)'/g)].map(match => match[1]));
   const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
+  assert.match(serviceWorker, /caches\.match\(event\.request, \{ ignoreSearch: true \}\)/);
+  assert.equal([...precachedUrls].some(url => /\?v=\d+/.test(url)), false, 'Offline cache should not download duplicate version aliases.');
+  assert.ok(precachedUrls.size < 90, `Offline install should stay compact; found ${precachedUrls.size} requests.`);
 
   for (const match of html.matchAll(/(?:src|href)=["']([^"']+\?v=\d+)["']/g)) {
-    assert.equal(precachedUrls.has(match[1]), true, `Versioned entrypoint is not available offline: ${match[1]}`);
+    const canonicalPath = match[1].split(/[?#]/)[0];
+    assert.equal(precachedUrls.has(canonicalPath), true, `Entrypoint path is not available offline: ${canonicalPath}`);
   }
 
   const sourceFiles = [...precachedUrls]
@@ -315,8 +319,8 @@ test('every cache-busted entrypoint and module import is included in the offline
   for (const relativePath of new Set(sourceFiles)) {
     const source = readFileSync(resolve(projectRoot, relativePath), 'utf8');
     for (const match of source.matchAll(/from\s+['"](\.{1,2}\/[^'"]+\?v=\d+)['"]/g)) {
-      const importedUrl = new URL(match[1], `https://keepvocab.local/${relativePath}`).pathname.slice(1) + new URL(match[1], `https://keepvocab.local/${relativePath}`).search;
-      assert.equal(precachedUrls.has(importedUrl), true, `Versioned module is not available offline: ${importedUrl}`);
+      const importedUrl = new URL(match[1], `https://keepvocab.local/${relativePath}`).pathname.slice(1);
+      assert.equal(precachedUrls.has(importedUrl), true, `Module path is not available offline: ${importedUrl}`);
     }
   }
 });

@@ -181,10 +181,10 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(component, /lesson\.languageCode === 'lt' \? 'Sprig' : 'Mira'/);
   assert.match(component, /renderLithuanianSpeakingPreview/);
   assert.match(component, /Module \$\{recommended\.unitNumber\}/);
-  assert.match(serviceWorker, /SpeakingMode\.js\?v=\d+/);
-  assert.match(serviceWorker, /speakingLessons\.js\?v=\d+/);
-  assert.match(serviceWorker, /geminiLive\.js\?v=\d+/);
-  assert.match(serviceWorker, /speechService\.js\?v=\d+/);
+  assert.match(serviceWorker, /\.\/js\/components\/SpeakingMode\.js/);
+  assert.match(serviceWorker, /\.\/js\/data\/speakingLessons\.js/);
+  assert.match(serviceWorker, /\.\/js\/services\/geminiLive\.js/);
+  assert.match(serviceWorker, /\.\/js\/services\/speechService\.js/);
 });
 
 test('Lithuanian speaking reuses the English catalog and preview design system', () => {

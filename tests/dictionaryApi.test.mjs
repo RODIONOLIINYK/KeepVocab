@@ -137,9 +137,29 @@ test('cached results are used when the network later fails', async () => {
 
   const cached = await fetchWordDetails('luminous', {
     storage,
+    force: true,
     fetchImpl: async () => { throw new TypeError('offline'); }
   });
   assert.equal(cached.definition, 'Emitting light.');
+  assert.equal(cached.source, 'cache');
+});
+
+test('fresh dictionary results avoid repeated provider requests', async () => {
+  const storage = new MemoryStorage();
+  let calls = 0;
+  const fetchImpl = async () => {
+    calls += 1;
+    return {
+      ok: true,
+      status: 200,
+      async json() {
+        return [{ word: 'luminous', meanings: [{ partOfSpeech: 'adjective', definitions: [{ definition: 'Emitting light.' }] }] }];
+      }
+    };
+  };
+  await fetchWordDetails('luminous', { storage, fetchImpl });
+  const cached = await fetchWordDetails('luminous', { storage, fetchImpl });
+  assert.equal(calls, 1);
   assert.equal(cached.source, 'cache');
 });
 

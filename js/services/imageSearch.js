@@ -1,4 +1,5 @@
 import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=93';
+import { bytesToBase64 } from '../utils/base64.js?v=117';
 
 const OPENVERSE_API = 'https://api.openverse.org/v1/images/';
 const WIKIMEDIA_COMMONS_API = 'https://commons.wikimedia.org/w/api.php';
@@ -7,6 +8,7 @@ const NASA_IMAGES_API = 'https://images-api.nasa.gov/search';
 const PEXELS_API = 'https://api.pexels.com/v1/search';
 const IMAGE_PROVIDER_SETTINGS_KEY = 'keepvocab_image_provider_v1';
 const memoryCache = new Map();
+const MEMORY_CACHE_LIMIT = 240;
 const providerCooldownUntil = new Map();
 const STOP_WORDS = new Set(['about', 'after', 'again', 'also', 'another', 'because', 'being', 'capable', 'could', 'does', 'every', 'from', 'have', 'into', 'more', 'most', 'other', 'someone', 'something', 'that', 'their', 'there', 'these', 'they', 'thing', 'this', 'those', 'typically', 'unattractively', 'usually', 'very', 'what', 'when', 'where', 'which', 'while', 'with', 'would']);
 const SEARCH_GLUE_WORDS = new Set(['across', 'after', 'along', 'around', 'before', 'beside', 'inside', 'near', 'onto', 'outside', 'through', 'toward', 'under', 'planting', 'entering', 'overlooking', 'standing', 'resting', 'turning', 'raising', 'handing', 'signing', 'watching', 'making', 'searching', 'growing', 'pouring', 'lowering', 'playing', 'directing', 'reviewing', 'organizing', 'inflating', 'adding', 'falling', 'blooming', 'bursting', 'melting', 'sprinting', 'running', 'crossing', 'showing', 'reacting', 'ignoring', 'causing', 'captured']);
@@ -23,6 +25,13 @@ function unique(values, limit = Infinity) {
 
 function uniqueRaw(values, limit = Infinity) {
   return [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))].slice(0, limit);
+}
+
+function remember(key, value) {
+  if (memoryCache.has(key)) memoryCache.delete(key);
+  memoryCache.set(key, value);
+  while (memoryCache.size > MEMORY_CACHE_LIMIT) memoryCache.delete(memoryCache.keys().next().value);
+  return value;
 }
 
 const wait = delayMs => new Promise(resolve => setTimeout(resolve, delayMs));
@@ -323,7 +332,7 @@ Exact selected definition: ${word?.definition || ''}`;
   try {
     const result = await generateGeminiContent(prompt, { ...options, json: true, maxOutputTokens: 220, timeoutMs: options.timeoutMs || 6000 });
     const scenes = unique(Array.isArray(result?.scenes) ? result.scenes.map(scene => compactGeneratedScene(scene)) : [], 4).filter(scene => isConcreteVisualScene(scene, word)).slice(0, 3);
-    memoryCache.set(cacheKey, scenes);
+    remember(cacheKey, scenes);
     return scenes;
   } catch {
     return [];
@@ -407,7 +416,7 @@ export async function findOpenverseImages(concept, fetchImpl = globalThis.fetch?
       source: item.source || 'Openverse', category: item.category || '', tags: item.tags || [], width: item.width, height: item.height,
       searchQuery: clean, imageKind: 'external'
     }));
-    memoryCache.set(cacheKey, result);
+    remember(cacheKey, result);
     return result;
   } catch {
     coolDownProvider('openverse');
@@ -444,7 +453,7 @@ export async function findWikimediaImages(concept, fetchImpl = globalThis.fetch?
         width: info.thumbwidth, height: info.thumbheight, searchQuery: clean, imageKind: 'external'
       }];
     });
-    memoryCache.set(cacheKey, result);
+    remember(cacheKey, result);
     return result;
   } catch {
     coolDownProvider('wikimedia');
@@ -482,7 +491,7 @@ export async function findLibraryOfCongressImages(concept, fetchImpl = globalThi
         tags: normalizeText(metadata).split(' '), width: 1000, height: 700, searchQuery: clean, imageKind: 'external'
       }];
     });
-    memoryCache.set(cacheKey, result);
+    remember(cacheKey, result);
     return result;
   } catch {
     coolDownProvider('loc');
@@ -526,7 +535,7 @@ export async function findNasaImages(concept, fetchImpl = globalThis.fetch?.bind
         imageKind: 'external'
       }];
     });
-    memoryCache.set(cacheKey, result);
+    remember(cacheKey, result);
     return result;
   } catch {
     coolDownProvider('nasa');
@@ -553,18 +562,11 @@ export async function findPexelsImages(concept, apiKey, fetchImpl = globalThis.f
       license: 'Pexels License', licenseUrl: 'https://www.pexels.com/license/', source: 'Pexels', category: 'photograph',
       tags: normalizeText(photo.alt).split(' '), width: photo.width, height: photo.height, searchQuery: clean, imageKind: 'external'
     }));
-    memoryCache.set(cacheKey, result);
+    remember(cacheKey, result);
     return result;
   } catch {
     return [];
   }
-}
-
-function arrayBufferToBase64(buffer) {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  for (let offset = 0; offset < bytes.length; offset += 0x8000) binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
-  return globalThis.btoa(binary);
 }
 
 export async function rerankImagesWithGemini(word, candidates, options = {}) {
@@ -578,7 +580,7 @@ export async function rerankImagesWithGemini(word, candidates, options = {}) {
       if (!response.ok) continue;
       const blob = await response.blob();
       if (!blob.type.startsWith('image/') || blob.size > 4_000_000) continue;
-      usable.push({ index, candidate, part: { inlineData: { mimeType: blob.type, data: arrayBufferToBase64(await blob.arrayBuffer()) } } });
+      usable.push({ index, candidate, part: { inlineData: { mimeType: blob.type, data: bytesToBase64(await blob.arrayBuffer()) } } });
     } catch { /* CORS/provider failure keeps deterministic ranking. */ }
   }
   if (!usable.length) return candidates;

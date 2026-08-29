@@ -4,7 +4,9 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { DEFAULT_GEMINI_TTS_MODEL, DEFAULT_GEMINI_TTS_VOICE, pcm16ToWavBytes } from '../js/services/geminiTts.js';
+import { DEFAULT_GEMINI_TTS_MODEL, DEFAULT_GEMINI_TTS_VOICE, getCachedOrGenerateTtsAudio, pcm16ToWavBytes } from '../js/services/geminiTts.js';
+import { MemoryStorage } from '../js/services/driveSync.js';
+import { GeminiRequestError, saveGeminiSettings } from '../js/services/geminiSettings.js';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
@@ -28,4 +30,30 @@ test('Lithuanian speech uses disposable IndexedDB caching before device fallback
   assert.match(speech, /getCachedOrGenerateTtsAudio/);
   assert.match(speech, /speakNatively\(cleanText, locale, rate\)/);
   assert.match(speech, /speakInBrowser\(cleanText, locale, rate\)/);
+});
+
+test('Lithuanian TTS retries transient failures once but never repeats a rejected key request', async () => {
+  const storage = new MemoryStorage();
+  saveGeminiSettings({ apiKey: 'AIza-example-device-key-123456789' }, storage, { silent: true });
+  let rejectedCalls = 0;
+  await assert.rejects(() => getCachedOrGenerateTtsAudio('Labas', {
+    storage,
+    indexedDb: null,
+    generate: async () => { rejectedCalls += 1; throw new GeminiRequestError('bad key', 401); }
+  }), /bad key/);
+  assert.equal(rejectedCalls, 1);
+
+  let transientCalls = 0;
+  const url = await getCachedOrGenerateTtsAudio('Ačiū', {
+    storage,
+    indexedDb: null,
+    generate: async () => {
+      transientCalls += 1;
+      if (transientCalls === 1) throw new GeminiRequestError('busy', 503);
+      return [{ inlineData: { mimeType: 'audio/L16;rate=24000', data: 'AAAAAA==' } }];
+    }
+  });
+  assert.equal(transientCalls, 2);
+  assert.match(url, /^blob:/);
+  URL.revokeObjectURL(url);
 });

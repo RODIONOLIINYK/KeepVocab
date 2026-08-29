@@ -1,6 +1,9 @@
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=117';
+
 const API_BASE = 'https://en.wiktionary.org/w/rest.php/v1/page/';
 const CACHE_KEY = 'keepvocab_lithuanian_dictionary_cache_v1';
 const CACHE_LIMIT = 180;
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const DEFAULT_TIMEOUT_MS = 4500;
 
 const PARTS_OF_SPEECH = new Set([
@@ -123,27 +126,13 @@ export function parseLithuanianWiktionaryHtml(html, term) {
   };
 }
 
-function readCache(storage) {
-  try {
-    const parsed = JSON.parse(storage?.getItem(CACHE_KEY) || '{}');
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeCache(storage, cache) {
-  if (!storage) return;
-  const trimmed = Object.entries(cache)
-    .sort(([, a], [, b]) => Number(b.cachedAt || 0) - Number(a.cachedAt || 0))
-    .slice(0, CACHE_LIMIT);
-  try { storage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries(trimmed))); } catch { /* optional cache */ }
-}
-
 export async function fetchLithuanianWordDetails(term, options = {}) {
   const cleanTerm = normalizeTerm(term);
   const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
-  const cache = readCache(storage);
+  const cache = readObjectCache(storage, CACHE_KEY);
+  if (!options.force && cacheEntryIsFresh(cache[cleanTerm], options.cacheTtlMs || CACHE_TTL_MS)) {
+    return { ...cache[cleanTerm].data, source: 'Wiktionary cache' };
+  }
   const fetchImpl = options.fetchImpl || globalThis.fetch?.bind(globalThis);
   if (!fetchImpl) {
     if (cache[cleanTerm]?.data) return { ...cache[cleanTerm].data, source: 'Wiktionary cache' };
@@ -163,7 +152,7 @@ export async function fetchLithuanianWordDetails(term, options = {}) {
     const result = parseLithuanianWiktionaryHtml(payload?.html, cleanTerm);
     if (!result) throw new LithuanianDictionaryError(`No Lithuanian definition was found for “${cleanTerm}”.`, 'NOT_FOUND');
     cache[cleanTerm] = { cachedAt: Date.now(), data: result };
-    writeCache(storage, cache);
+    writeRecentObjectCache(storage, CACHE_KEY, cache, CACHE_LIMIT);
     return result;
   } catch (error) {
     if (cache[cleanTerm]?.data) return { ...cache[cleanTerm].data, source: 'Wiktionary cache' };

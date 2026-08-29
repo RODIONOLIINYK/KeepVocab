@@ -1,11 +1,13 @@
 // Fast dictionary lookup with a maintained Wiktionary source, a short fallback, and offline cache.
 
 import { sanitizeExistingExamples } from './exampleSearch.js?v=93';
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=117';
 
 const PRIMARY_API_BASE = 'https://freedictionaryapi.com/api/v1/entries/en/';
 const FALLBACK_API_BASE = 'https://api.datamuse.com/words';
 const CACHE_KEY = 'keepvocab_dictionary_cache_v4';
 const CACHE_MAX_ENTRIES = 250;
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const DEFAULT_TIMEOUT_MS = 3200;
 const PRIMARY_TIMEOUT_MS = 2200;
 const FALLBACK_TIMEOUT_MS = 1600;
@@ -25,28 +27,6 @@ function normalizeQuery(word) {
     throw new DictionaryApiError('Use letters, spaces, apostrophes, or hyphens only.', 'INVALID_WORD');
   }
   return clean;
-}
-
-function readCache(storage) {
-  if (!storage) return {};
-  try {
-    const parsed = JSON.parse(storage.getItem(CACHE_KEY) || '{}');
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeCache(storage, cache) {
-  if (!storage) return;
-  const entries = Object.entries(cache)
-    .sort(([, a], [, b]) => (b.cachedAt || 0) - (a.cachedAt || 0))
-    .slice(0, CACHE_MAX_ENTRIES);
-  try {
-    storage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries(entries)));
-  } catch {
-    // Storage availability should never decide whether a lookup succeeds.
-  }
 }
 
 function normalizeDefinition(value) {
@@ -188,7 +168,11 @@ export async function fetchWordDetails(word, options = {}) {
   const fetchImpl = options.fetchImpl || globalThis.fetch?.bind(globalThis);
   const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
   const timeoutMs = options.timeoutMs || DEFAULT_TIMEOUT_MS;
-  const cache = readCache(storage);
+  const cache = readObjectCache(storage, CACHE_KEY);
+
+  if (!options.force && cacheEntryIsFresh(cache[cleanWord], options.cacheTtlMs || CACHE_TTL_MS)) {
+    return { ...cache[cleanWord].data, source: 'cache' };
+  }
 
   if (!fetchImpl) {
     if (cache[cleanWord]?.data) return { ...cache[cleanWord].data, source: 'cache' };
@@ -224,6 +208,6 @@ export async function fetchWordDetails(word, options = {}) {
   if (result.word !== cleanWord) result = { ...result, correctedFrom: cleanWord };
   cache[cleanWord] = { cachedAt: Date.now(), data: result };
   if (result.word !== cleanWord) cache[result.word] = { cachedAt: Date.now(), data: result };
-  writeCache(storage, cache);
+  writeRecentObjectCache(storage, CACHE_KEY, cache, CACHE_MAX_ENTRIES);
   return result;
 }

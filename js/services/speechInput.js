@@ -1,19 +1,12 @@
 import { generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=93';
+import { blobToBase64 } from '../utils/base64.js?v=117';
+
+export { blobToBase64 };
 
 export function canRecordForGemini(storage = globalThis.localStorage) {
   return Boolean(getGeminiSettings(storage).enabled
     && globalThis.navigator?.mediaDevices?.getUserMedia
     && globalThis.MediaRecorder);
-}
-
-export async function blobToBase64(blob) {
-  const bytes = new Uint8Array(await blob.arrayBuffer());
-  let binary = '';
-  const chunkSize = 0x8000;
-  for (let index = 0; index < bytes.length; index += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
-  }
-  return globalThis.btoa(binary);
 }
 
 export async function transcribeAudioBlob(blob, options = {}) {

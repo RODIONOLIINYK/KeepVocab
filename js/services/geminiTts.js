@@ -2,12 +2,15 @@ import {
   DEFAULT_GEMINI_TTS_MODEL,
   DEFAULT_GEMINI_TTS_VOICE,
   generateGeminiParts,
-  getGeminiSettings
-} from './geminiSettings.js?v=111';
+  getGeminiSettings,
+  isRetryableGeminiError
+} from './geminiSettings.js?v=117';
+import { base64ToBytes } from '../utils/base64.js?v=117';
 
 export { DEFAULT_GEMINI_TTS_MODEL, DEFAULT_GEMINI_TTS_VOICE };
 const DB_NAME = 'keepvocab_disposable_audio_v1';
 const STORE_NAME = 'tts';
+const AUDIO_CACHE_LIMIT = 160;
 
 function audioKey(text, locale, voice) {
   return `pronunciation-v2|${locale}|${voice}|${String(text || '').trim().toLocaleLowerCase(locale)}`;
@@ -29,9 +32,12 @@ async function readCachedBlob(key, indexedDb) {
   const db = await openAudioDb(indexedDb);
   if (!db) return null;
   return new Promise(resolve => {
-    const request = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get(key);
+    const transaction = db.transaction(STORE_NAME, 'readonly');
+    const request = transaction.objectStore(STORE_NAME).get(key);
     request.onsuccess = () => resolve(request.result?.blob || null);
     request.onerror = () => resolve(null);
+    transaction.oncomplete = () => db.close();
+    transaction.onerror = () => db.close();
   });
 }
 
@@ -40,9 +46,17 @@ async function writeCachedBlob(key, blob, indexedDb) {
   if (!db) return false;
   return new Promise(resolve => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
-    transaction.objectStore(STORE_NAME).put({ key, blob, cachedAt: new Date().toISOString() });
-    transaction.oncomplete = () => resolve(true);
-    transaction.onerror = () => resolve(false);
+    const store = transaction.objectStore(STORE_NAME);
+    store.put({ key, blob, cachedAt: new Date().toISOString() });
+    const all = store.getAll();
+    all.onsuccess = () => {
+      const expired = (all.result || [])
+        .sort((a, b) => String(b.cachedAt || '').localeCompare(String(a.cachedAt || '')))
+        .slice(AUDIO_CACHE_LIMIT);
+      expired.forEach(item => store.delete(item.key));
+    };
+    transaction.oncomplete = () => { db.close(); resolve(true); };
+    transaction.onerror = () => { db.close(); resolve(false); };
   });
 }
 
@@ -58,16 +72,11 @@ export function pcm16ToWavBytes(pcmBytes, sampleRate = 24000, channels = 1) {
   return new Uint8Array(buffer);
 }
 
-function decodeBase64(value) {
-  if (typeof globalThis.atob === 'function') return Uint8Array.from(globalThis.atob(value), character => character.charCodeAt(0));
-  return Uint8Array.from(Buffer.from(value, 'base64'));
-}
-
 function inlineAudioBlob(part) {
   const inline = part?.inlineData || part?.inline_data;
   if (!inline?.data) return null;
   const mimeType = String(inline.mimeType || inline.mime_type || 'audio/L16;rate=24000');
-  const bytes = decodeBase64(inline.data);
+  const bytes = base64ToBytes(inline.data);
   if (/wav|mpeg|mp3|ogg|webm/i.test(mimeType)) return new Blob([bytes], { type: mimeType });
   const rate = Number(mimeType.match(/rate=(\d+)/i)?.[1] || 24000);
   return new Blob([pcm16ToWavBytes(bytes, rate)], { type: 'audio/wav' });
@@ -96,7 +105,10 @@ export async function getCachedOrGenerateTtsAudio(text, { locale = 'lt-LT', voic
   });
   let parts;
   try { parts = await request(); }
-  catch { parts = await request(); }
+  catch (error) {
+    if (!isRetryableGeminiError(error)) throw error;
+    parts = await request();
+  }
   const blob = (parts || []).map(inlineAudioBlob).find(Boolean) || null;
   if (!blob) return null;
   await writeCachedBlob(key, blob, indexedDb).catch(() => false);

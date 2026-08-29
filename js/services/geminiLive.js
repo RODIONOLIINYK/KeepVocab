@@ -1,4 +1,5 @@
 import { DEFAULT_GEMINI_LIVE_MODEL, GEMINI_KEY_STORAGE } from './geminiSettings.js?v=113';
+import { base64ToBytes, bytesToBase64 } from '../utils/base64.js?v=117';
 
 export const GEMINI_LIVE_MODEL = DEFAULT_GEMINI_LIVE_MODEL;
 export { GEMINI_KEY_STORAGE };
@@ -77,23 +78,6 @@ export function microphoneAccessError(error) {
       : 'Microphone permission was denied. Allow Microphone for KeepVocab in Android Settings, then try again.');
   }
   return error instanceof Error ? error : new Error('Microphone access failed.');
-}
-
-function bytesToBase64(buffer) {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  const chunkSize = 0x8000;
-  for (let index = 0; index < bytes.length; index += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
-  }
-  return btoa(binary);
-}
-
-function base64ToBytes(value) {
-  const binary = atob(value);
-  const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
-  return bytes;
 }
 
 function pcm16ToFloat32(bytes) {

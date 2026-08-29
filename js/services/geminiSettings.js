@@ -7,6 +7,30 @@ export const DEFAULT_GEMINI_TTS_MODEL = 'gemini-3.1-flash-tts-preview';
 export const LEGACY_GEMINI_TTS_MODEL = 'gemini-2.5-flash-preview-tts';
 export const DEFAULT_GEMINI_TTS_VOICE = 'Achird';
 
+const inFlightRequests = new Map();
+const requestFunctionIds = new WeakMap();
+let nextRequestFunctionId = 1;
+
+export class GeminiRequestError extends Error {
+  constructor(message, status = 0, cause) {
+    super(message, { cause });
+    this.name = 'GeminiRequestError';
+    this.status = Number(status) || 0;
+  }
+}
+
+export function isRetryableGeminiError(error) {
+  const status = Number(error?.status || 0);
+  if (status) return status === 408 || status === 429 || status >= 500;
+  return error?.name === 'AbortError' || error?.name === 'TimeoutError' || error instanceof TypeError;
+}
+
+function requestFunctionId(fetchImpl, isDefault) {
+  if (isDefault) return 'default';
+  if (!requestFunctionIds.has(fetchImpl)) requestFunctionIds.set(fetchImpl, nextRequestFunctionId++);
+  return requestFunctionIds.get(fetchImpl);
+}
+
 function parse(raw, fallback) {
   try { return JSON.parse(raw) || fallback; } catch { return fallback; }
 }
@@ -96,40 +120,59 @@ export async function generateGeminiParts(parts, options = {}) {
   const settings = { ...getGeminiSettings(options.storage), ...(options.settings || {}) };
   if (!settings.apiKey) throw new Error('Add a Google AI Studio key in Settings to use AI feedback.');
   const model = options.model || settings.textModel;
-  const fetchImpl = options.fetchImpl || globalThis.fetch?.bind(globalThis);
+  const defaultFetch = !options.fetchImpl;
+  const fetchImpl = options.fetchImpl || globalThis.fetch;
   if (!fetchImpl) throw new Error('Network requests are unavailable on this device.');
   const isAudioRequest = Array.isArray(options.responseModalities) && options.responseModalities.includes('AUDIO');
   const configuredMaxOutputTokens = Number(options.maxOutputTokens);
-  const response = await fetchImpl(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(settings.apiKey)}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    signal: AbortSignal.timeout(options.timeoutMs || 20_000),
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: Array.isArray(parts) ? parts : [{ text: String(parts || '') }] }],
-      generationConfig: {
-        ...(options.generationConfig || {}),
-        ...(options.json ? { responseMimeType: 'application/json' } : {}),
-        ...(options.responseModalities ? { responseModalities: options.responseModalities } : {}),
-        // Generated audio can use far more output tokens than its transcript.
-        // Let the speech model choose its limit unless one is explicitly set.
-        ...(Number.isFinite(configuredMaxOutputTokens) && configuredMaxOutputTokens > 0
-          ? { maxOutputTokens: configuredMaxOutputTokens }
-          : isAudioRequest ? {} : { maxOutputTokens: 800 })
-      }
-    })
+  const body = JSON.stringify({
+    contents: [{ role: 'user', parts: Array.isArray(parts) ? parts : [{ text: String(parts || '') }] }],
+    generationConfig: {
+      ...(options.generationConfig || {}),
+      ...(options.json ? { responseMimeType: 'application/json' } : {}),
+      ...(options.responseModalities ? { responseModalities: options.responseModalities } : {}),
+      // Generated audio can use far more output tokens than its transcript.
+      // Let the speech model choose its limit unless one is explicitly set.
+      ...(Number.isFinite(configuredMaxOutputTokens) && configuredMaxOutputTokens > 0
+        ? { maxOutputTokens: configuredMaxOutputTokens }
+        : isAudioRequest ? {} : { maxOutputTokens: 800 })
+    }
   });
-  if (!response.ok) {
-    let detail = '';
-    try { detail = (await response.json())?.error?.message || ''; } catch { /* non-JSON response */ }
-    throw new Error(`Gemini request failed (${response.status}).${detail ? ` ${detail}` : ''}`);
-  }
-  const payload = await response.json();
-  const responseParts = payload?.candidates?.[0]?.content?.parts || [];
-  if (options.returnParts) return responseParts;
-  const text = responseParts.map(part => part.text || '').join('').trim();
-  if (!text) throw new Error('Gemini returned no usable response.');
-  if (!options.json) return text;
-  try { return JSON.parse(text.replace(/^```json\s*|\s*```$/g, '')); } catch { throw new Error('Gemini returned an invalid structured response.'); }
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(settings.apiKey)}`;
+  const timeoutMs = options.timeoutMs || 20_000;
+  const key = `${requestFunctionId(fetchImpl, defaultFetch)}|${url}|${timeoutMs}|${options.returnParts ? 'parts' : options.json ? 'json' : 'text'}|${body}`;
+  const execute = async () => {
+    let response;
+    try {
+      response = await fetchImpl(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: options.signal || AbortSignal.timeout(timeoutMs),
+        body
+      });
+    } catch (error) {
+      throw error instanceof Error ? error : new GeminiRequestError('Gemini request failed.', 0, error);
+    }
+    if (!response.ok) {
+      let detail = '';
+      try { detail = (await response.json())?.error?.message || ''; } catch { /* non-JSON response */ }
+      throw new GeminiRequestError(`Gemini request failed (${response.status}).${detail ? ` ${detail}` : ''}`, response.status);
+    }
+    const payload = await response.json();
+    const responseParts = payload?.candidates?.[0]?.content?.parts || [];
+    if (options.returnParts) return responseParts;
+    const text = responseParts.map(part => part.text || '').join('').trim();
+    if (!text) throw new Error('Gemini returned no usable response.');
+    if (!options.json) return text;
+    try { return JSON.parse(text.replace(/^```json\s*|\s*```$/g, '')); } catch { throw new Error('Gemini returned an invalid structured response.'); }
+  };
+  if (options.dedupe === false) return execute();
+  if (inFlightRequests.has(key)) return inFlightRequests.get(key);
+  const pending = execute().finally(() => {
+    if (inFlightRequests.get(key) === pending) inFlightRequests.delete(key);
+  });
+  inFlightRequests.set(key, pending);
+  return pending;
 }
 
 export async function generateGeminiContent(prompt, options = {}) {
