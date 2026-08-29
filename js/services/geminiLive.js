@@ -1,4 +1,4 @@
-import { DEFAULT_GEMINI_LIVE_MODEL, GEMINI_KEY_STORAGE } from './geminiSettings.js?v=93';
+import { DEFAULT_GEMINI_LIVE_MODEL, GEMINI_KEY_STORAGE } from './geminiSettings.js?v=113';
 
 export const GEMINI_LIVE_MODEL = DEFAULT_GEMINI_LIVE_MODEL;
 export { GEMINI_KEY_STORAGE };
@@ -71,7 +71,10 @@ export function downsampleAudio(samples, sourceRate, targetRate = 16000) {
 export function microphoneAccessError(error) {
   const denied = error?.name === 'NotAllowedError' || /permission denied|not allowed/i.test(String(error?.message || ''));
   if (denied) {
-    return new Error('Microphone permission was denied. Allow Microphone for KeepVocab in Android Settings, then try again.');
+    const isMac = /Mac/i.test(String(globalThis.navigator?.userAgent || globalThis.navigator?.platform || ''));
+    return new Error(isMac
+      ? 'Microphone permission was denied. Allow KeepVocab in System Settings → Privacy & Security → Microphone, then restart the app.'
+      : 'Microphone permission was denied. Allow Microphone for KeepVocab in Android Settings, then try again.');
   }
   return error instanceof Error ? error : new Error('Microphone access failed.');
 }

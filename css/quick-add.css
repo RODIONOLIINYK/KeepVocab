@@ -36,6 +36,7 @@ button { -webkit-tap-highlight-color:transparent; }
 .quick-heading { display:flex; min-width:0; flex-direction:column; }
 .quick-heading strong { font:850 1.18rem/1.08 Outfit,Inter,sans-serif; letter-spacing:-.02em; }
 .quick-heading span { margin-top:3px; overflow:hidden; color:var(--muted); font-size:.72rem; line-height:1.2; text-overflow:ellipsis; white-space:nowrap; }
+#quick-course-label { width:max-content; max-width:100%; border-radius:999px; padding:3px 8px; color:#166534; background:var(--green-soft); font-size:.64rem; font-weight:800; }
 #quick-close { display:grid; width:36px; height:36px; place-items:center; border:2px solid var(--line); border-bottom-width:3px; border-radius:11px; background:#fff; color:#667085; cursor:pointer; font-size:1.28rem; font-weight:650; line-height:1; transition:transform .12s ease,border-color .15s ease,background .15s ease; }
 #quick-close:hover { border-color:#cfd4dc; background:var(--soft); }
 #quick-close:active { transform:translateY(1px); border-bottom-width:2px; }

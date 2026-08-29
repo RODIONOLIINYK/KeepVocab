@@ -1,4 +1,4 @@
-import { getLithuanianSession, LITHUANIAN_SESSIONS, LITHUANIAN_UNITS } from '../data/lithuanianCurriculum.js?v=111';
+import { getLithuanianSession, LITHUANIAN_SESSIONS, LITHUANIAN_UNITS } from '../data/lithuanianCurriculum.js?v=116';
 
 export function normalizeAnswer(value) {
   return String(value || '')

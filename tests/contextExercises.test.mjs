@@ -42,6 +42,30 @@ test('Gemini Context results are complete, cached, and clozed without exposing m
   assert.equal(calls, 1);
 });
 
+test('Lithuanian Context requests Lithuanian-only sentences and hides punctuated phrase targets', async () => {
+  const lithuanianWords = [
+    { id: 'lt-1', courseId: 'lithuanian', word: 'Laba diena!', definition: 'Good afternoon!' },
+    { id: 'lt-2', courseId: 'lithuanian', word: 'Ačiū.', definition: 'Thank you.' },
+    { id: 'lt-3', courseId: 'lithuanian', word: 'Prašau.', definition: 'Please.' }
+  ];
+  const prompt = buildContextExercisePrompt(lithuanianWords, { courseId: 'lithuanian' });
+  assert.match(prompt, /Create Lithuanian context-cloze questions/);
+  assert.match(prompt, /natural Lithuanian only/);
+  assert.match(prompt, /Never place the target inside an English sentence/);
+  const generated = await generateContextExerciseSet(lithuanianWords, {
+    courseId: 'lithuanian',
+    storage: new MemoryStorage(),
+    generate: async () => ({ items: [
+      { wordId: 'lt-1', sentence: 'Laba diena! Ar turite laisvą kambarį?' },
+      { wordId: 'lt-2', sentence: 'Ačiū. Jūs man labai padėjote.' },
+      { wordId: 'lt-3', sentence: 'Prašau, sėskitės prie lango.' }
+    ] })
+  });
+  assert.equal(generated.items.length, 3);
+  assert.equal(clozeContextSentence(generated.items[0].sentence, 'Laba diena!'), '_____! Ar turite laisvą kambarį?');
+  assert.equal(clozeContextSentence(generated.items[1].sentence, 'Ačiū.'), '_____. Jūs man labai padėjote.');
+});
+
 test('Context UI renders only a generated sentence question, not a story or meaning clue', () => {
   const component = readFileSync(resolve(projectRoot, 'js/components/ContextQuizMode.js'), 'utf8');
   assert.match(component, /AI-generated sentence/);

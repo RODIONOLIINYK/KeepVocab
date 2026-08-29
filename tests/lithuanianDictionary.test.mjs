@@ -4,6 +4,8 @@ import fs from 'node:fs';
 
 import { MemoryStorage } from '../js/services/driveSync.js';
 import { fetchLithuanianWordDetails, parseLithuanianWiktionaryHtml } from '../js/services/lithuanianDictionary.js';
+import { translateLithuanianCoachText } from '../js/services/lithuanianEnrichment.js';
+import { saveGeminiSettings } from '../js/services/geminiSettings.js';
 
 const WIKTIONARY_HTML = `<!doctype html><html><body>
   <h2 id="English">English</h2><h3 id="Noun">Noun</h3><ol><li>an unrelated sense</li></ol>
@@ -47,6 +49,22 @@ test('Lithuanian dictionary lookup is cached for offline Add Word use', async ()
   });
   assert.equal(calls, 1);
   assert.equal(cached.source, 'Wiktionary cache');
+});
+
+test('Lithuanian coach messages receive a concise English-only translation', async () => {
+  const storage = new MemoryStorage();
+  saveGeminiSettings({ apiKey: 'AIza-example-device-key-123456789' }, storage, { silent: true });
+  let prompt = '';
+  const translated = await translateLithuanianCoachText('Kaip šiandien jautiesi?', {
+    storage,
+    fetchImpl: async (_url, options) => {
+      prompt = JSON.parse(options.body).contents[0].parts[0].text;
+      return { ok: true, async json() { return { candidates: [{ content: { parts: [{ text: 'How are you feeling today?' }] } }] }; } };
+    }
+  });
+  assert.equal(translated, 'How are you feeling today?');
+  assert.match(prompt, /Return only the English translation/);
+  assert.match(prompt, /Kaip šiandien jautiesi/);
 });
 
 test('the header uses a custom accessible course listbox instead of a native select', () => {

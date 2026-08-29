@@ -22,6 +22,24 @@ export function selectLocaleVoice(voices = [], lang = 'en-US') {
 export const selectEnglishVoice = selectLocaleVoice;
 export function getLastSpeechErrorCode() { return lastSpeechErrorCode; }
 
+export function describeSpeechError(code = lastSpeechErrorCode) {
+  if (code === 'invalid-gemini-key') return 'The saved Gemini key was rejected. Replace it in Audio settings.';
+  if (code === 'gemini-quota') return 'Gemini audio has reached its current quota. Check AI Studio billing or try again later.';
+  if (code === 'gemini-model-unavailable') return 'Gemini speech is not available for this key. Open Audio settings and test the connection.';
+  if (code === 'gemini-network') return 'Gemini audio could not be reached. Check the internet connection and try again.';
+  if (code === 'audio-playback-failed') return 'The audio was generated, but this device could not play it.';
+  return 'No compatible Lithuanian voice could start on this device. Open Audio settings to test the available options.';
+}
+
+function classifyGeminiSpeechError(error) {
+  const message = String(error?.message || '');
+  if (/api key not valid|unauthenticated|permission denied|\b40[13]\b/i.test(message)) return 'invalid-gemini-key';
+  if (/resource exhausted|quota|\b429\b/i.test(message)) return 'gemini-quota';
+  if (/model.+(?:not found|unsupported|unavailable)|\b404\b/i.test(message)) return 'gemini-model-unavailable';
+  if (/failed to fetch|network|timeout|timed out/i.test(message)) return 'gemini-network';
+  return 'gemini-unavailable';
+}
+
 function nativeSpeechPlugin(targetWindow) {
   const capacitor = targetWindow?.Capacitor;
   if (!capacitor || capacitor.getPlatform?.() !== 'android') return null;
@@ -177,15 +195,18 @@ export async function speakText(text, { locale = 'en-US', rate = 0.9, audioUrl =
   if (audioUrl && await playRecordedAudio(audioUrl, rate)) return true;
   if (String(locale).toLowerCase().startsWith('lt')) {
     try {
-      const { getCachedOrGenerateTtsAudio } = await import('./geminiTts.js?v=111');
+      const { getCachedOrGenerateTtsAudio } = await import('./geminiTts.js?v=113');
       const generatedUrl = await getCachedOrGenerateTtsAudio(cleanText, { locale });
       if (generatedUrl && await playRecordedAudio(generatedUrl, rate)) {
         URL.revokeObjectURL?.(generatedUrl);
         return true;
       }
-      if (generatedUrl) URL.revokeObjectURL?.(generatedUrl);
+      if (generatedUrl) {
+        URL.revokeObjectURL?.(generatedUrl);
+        lastSpeechErrorCode = 'audio-playback-failed';
+      }
     } catch (error) {
-      lastSpeechErrorCode = /api key not valid|unauthenticated|permission denied|\b40[13]\b/i.test(String(error?.message || '')) ? 'invalid-gemini-key' : 'gemini-unavailable';
+      lastSpeechErrorCode = classifyGeminiSpeechError(error);
       console.warn('[SpeechService] Gemini Lithuanian audio was unavailable; using device speech.', error);
     }
   }

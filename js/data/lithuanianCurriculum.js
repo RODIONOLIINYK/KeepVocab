@@ -61,6 +61,28 @@ function shuffleOrder(words, offset) {
   return rotated;
 }
 
+function phraseTokens(value) {
+  return [...String(value || '').matchAll(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu)];
+}
+
+function clozePhrase(phrases, startIndex) {
+  for (let offset = 0; offset < phrases.length; offset += 1) {
+    const phrase = phrases[(startIndex + offset) % phrases.length];
+    if (phraseTokens(phrase.lt).length > 1) return phrase;
+  }
+  return phrases[startIndex];
+}
+
+function makeCloze(phrase) {
+  const tokens = phraseTokens(phrase.lt);
+  const token = tokens[Math.min(1, tokens.length - 1)];
+  if (!token) return { answer: '', prompt: phrase.lt };
+  return {
+    answer: token[0],
+    prompt: `${phrase.lt.slice(0, token.index)}_____${phrase.lt.slice(token.index + token[0].length)}`
+  };
+}
+
 function makeExercises(unit, sessionIndex) {
   const types = sessionIndex === 0
     ? ['pattern', 'meaning-choice', 'word-order', 'cloze', 'listening-choice', 'read-repeat']
@@ -75,12 +97,12 @@ function makeExercises(unit, sessionIndex) {
             : ['mission', 'meaning-choice', 'cloze', 'dictation', 'matching', 'role-play'];
   return types.map((type, exerciseIndex) => {
     const focusIndex = (sessionIndex + exerciseIndex) % unit.phrases.length;
-    const focus = unit.phrases[focusIndex];
+    const focus = type === 'cloze' ? clozePhrase(unit.phrases, focusIndex) : unit.phrases[focusIndex];
     const second = unit.phrases[(focusIndex + 1) % unit.phrases.length];
-    const words = focus.lt.replace(/[?!.,–]/g, '').split(/\s+/);
-    const clozeIndex = Math.min(1, words.length - 1);
-    const clozeAnswer = words[clozeIndex];
-    const clozePrompt = focus.lt.replace(clozeAnswer, '_____');
+    const words = phraseTokens(focus.lt).map(token => token[0]);
+    const cloze = makeCloze(focus);
+    const clozeAnswer = cloze.answer;
+    const clozePrompt = cloze.prompt;
     const distractors = unit.phrases.filter(item => item.lt !== focus.lt).map(item => item.en);
     return {
       id: `${unit.id}-s${sessionIndex + 1}-e${exerciseIndex + 1}`,

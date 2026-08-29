@@ -87,17 +87,36 @@ test('menu-bar quick add enriches a saved meaning with the same image pipeline a
   assert.match(quickAdd, /driveSync\.addWord\(enriched\)/);
 });
 
+test('menu-bar quick add follows the active course and uses the matching dictionary', () => {
+  const quickAdd = readFileSync(resolve(projectRoot, 'js/quickAdd.js'), 'utf8');
+  const quickAddHtml = readFileSync(resolve(projectRoot, 'quick-add.html'), 'utf8');
+  assert.match(quickAdd, /fetchLithuanianEntry/);
+  assert.match(quickAdd, /driveSync\.getActiveCourseId\(\)/);
+  assert.match(quickAdd, /event\.key === 'keepvocab_settings'/);
+  assert.match(quickAdd, /requestedCourseId === 'lithuanian'/);
+  assert.match(quickAddHtml, /id="quick-course-label"/);
+  assert.match(quickAddHtml, /id="quick-word-label"/);
+});
+
 test('the resizable app header uses non-wrapping badges, readable controls, and staged desktop breakpoints', () => {
   const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
   const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
   assert.match(styles, /\.badge-pill\s*\{[^}]*white-space:\s*nowrap/);
   assert.match(styles, /@media \(max-width:\s*1248px\)[\s\S]*\.badge-pill \.badge-detail\s*\{\s*display:\s*none/);
   assert.match(styles, /\.header-nav\s*\{[^}]*grid-template-columns:\s*auto minmax\(0, 1fr\) auto/);
-  assert.match(styles, /@media \(min-width:\s*721px\) and \(max-width:\s*1040px\)[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\)/);
+  assert.match(styles, /@media \(min-width:\s*721px\) and \(max-width:\s*1069px\)[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\)/);
+  assert.match(styles, /\.nav-link-item \{ min-width:0; flex:1 1 0; justify-content:center/);
+  assert.match(styles, /@media\(min-width:1440px\)\{body\[data-course-id="lithuanian"\] \.nav-links\{width:min\(100%,clamp\(640px,44vw,680px\)\)\}\}/);
+  assert.match(styles, /body\[data-course-id="english"\] \.nav-links\{width:min\(100%,560px\)\}/);
   assert.match(styles, /@media \(max-width:\s*720px\)[\s\S]*\.nav-link-item\s*\{[^}]*font-size:\s*\.62rem/);
   assert.match(html, /class="badge-detail"> day streak/);
   assert.match(html, /class="badge-detail">Daily goal/);
   assert.match(html, /aria-label="Primary navigation"/);
+});
+
+test('Lithuanian listening lessons keep the audio panel clear of the exercise badge', () => {
+  const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
+  assert.match(styles, /\.lesson-audio-panel\{[^}]*margin:18px auto 18px/);
 });
 
 test('Drive uses the built-in web client and the UI never asks users for OAuth configuration', () => {

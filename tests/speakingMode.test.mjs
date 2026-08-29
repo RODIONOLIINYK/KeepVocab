@@ -23,6 +23,9 @@ import {
   microphoneAccessError
 } from '../js/services/geminiLive.js';
 import { getLessonPhrases, lessonPhraseLibraryEntries, lessonPhrasesMissingFromLibrary, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson, SPEAKING_CONTEXT_PROFILES } from '../js/services/speakingPhrases.js';
+import { LITHUANIAN_UNITS } from '../js/data/lithuanianCurriculum.js';
+import { getLithuanianSpeakingLessons, LITHUANIAN_SPEAKING_TOPICS, LITHUANIAN_SPEAKING_VARIANTS } from '../js/components/SpeakingMode.js';
+import { LITHUANIAN_A2_SPEAKING_SCENARIOS } from '../js/data/lithuanianSpeakingScenarios.js';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -194,6 +197,31 @@ test('Lithuanian speaking reuses the English catalog and preview design system',
   assert.ok((component.match(/class="preview-side lesson-plan-side"/g) || []).length >= 2);
   assert.doesNotMatch(component, /lithuanian-speaking(?:-preview)?/);
   assert.doesNotMatch(styles, /\.lithuanian-speaking/);
+});
+
+test('every Lithuanian curriculum topic provides guided, challenge, and recall conversations', () => {
+  assert.equal(LITHUANIAN_SPEAKING_VARIANTS.length, 3);
+  const lessons = LITHUANIAN_UNITS.flatMap(getLithuanianSpeakingLessons);
+  assert.equal(lessons.length, 108);
+  assert.equal(new Set(lessons.map(lesson => lesson.id)).size, 108);
+  assert.deepEqual(new Set(lessons.map(lesson => lesson.variantId)), new Set(['guided', 'challenge', 'fluency']));
+});
+
+test('the Lithuanian speaking catalog adds an authored A2 conversation lab', () => {
+  assert.equal(LITHUANIAN_A2_SPEAKING_SCENARIOS.length, 12);
+  assert.ok(LITHUANIAN_A2_SPEAKING_SCENARIOS.every(topic => topic.cefr === 'A2' && topic.phrases.length === 4));
+  const lessons = LITHUANIAN_SPEAKING_TOPICS.flatMap(getLithuanianSpeakingLessons);
+  assert.equal(lessons.length, 144);
+  assert.equal(new Set(lessons.map(lesson => lesson.id)).size, 144);
+  assert.equal(lessons.filter(lesson => lesson.level === 'A2').length, 93);
+});
+
+test('live Lithuanian turns are translated after transcription and before the summary', () => {
+  const component = readFileSync(resolve(projectRoot, 'js/components/SpeakingMode.js'), 'utf8');
+  assert.match(component, /translateLithuanianCoachText/);
+  assert.match(component, /English shown under every Sprig turn/);
+  assert.match(component, /class="transcript-translation/);
+  assert.ok(component.indexOf('await session.startMicrophone()') < component.indexOf('await session.connect('));
 });
 
 test('live speaking interruption stops every queued audio source and suppresses stale chunks', () => {

@@ -105,11 +105,14 @@ test('the path reports only self-paced progress and never calendar catch-up', ()
 });
 
 test('cloze exercises accept the missing word and matching exercises contain separate pairs', () => {
-  const cloze = LITHUANIAN_SESSIONS.flatMap(session => session.exercises).find(exercise => exercise.type === 'cloze');
+  const clozeExercises = LITHUANIAN_SESSIONS.flatMap(session => session.exercises).filter(exercise => exercise.type === 'cloze');
+  const cloze = clozeExercises[0];
   const matching = LITHUANIAN_SESSIONS.flatMap(session => session.exercises).find(exercise => exercise.type === 'matching');
   assert.equal(answerMatches(cloze, cloze.clozeAnswer), true);
   assert.equal(answerMatches(cloze, cloze.answer), true);
   assert.ok(cloze.clozePrompt.includes('_____'));
+  assert.ok(clozeExercises.every(exercise => exercise.answer.replace(/[?!.,–]/g, '').trim().split(/\s+/).length > 1));
+  assert.ok(clozeExercises.every(exercise => exercise.clozePrompt.replace(/[?!.,–]/g, '').trim() !== '_____'));
   assert.match(cloze.instruction, /English cue/);
   assert.equal(matching.matchPairs.length, 2);
   assert.notEqual(matching.matchPairs[0].lt, matching.matchPairs[0].en);

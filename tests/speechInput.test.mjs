@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { MemoryStorage } from '../js/services/driveSync.js';
 import { saveGeminiSettings } from '../js/services/geminiSettings.js';
 import { blobToBase64, createSpeechRecordingSession, transcribeAudioBlob } from '../js/services/speechInput.js';
+import { readFileSync } from 'node:fs';
 
 test('speech audio is encoded and sent to Gemini for transcription', async () => {
   const storage = new MemoryStorage();
@@ -67,4 +68,10 @@ test('a denied desktop microphone permission stops before opening an audio strea
   } finally {
     Object.defineProperty(globalThis, 'navigator', { configurable: true, value: originalNavigator });
   }
+});
+
+test('Use It relies on one getUserMedia permission path instead of a second Electron preflight', () => {
+  const service = readFileSync(new URL('../js/services/speechInput.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(service, /keepVocabDesktop\?\.requestMicrophoneAccess/);
+  assert.match(service, /getUserMedia\(\{ audio: true \}\)/);
 });

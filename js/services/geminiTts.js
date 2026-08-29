@@ -82,9 +82,11 @@ export async function getCachedOrGenerateTtsAudio(text, { locale = 'lt-LT', voic
   const cached = await readCachedBlob(key, indexedDb).catch(() => null);
   if (cached) return URL.createObjectURL(cached);
   if (!settings.apiKey || globalThis.navigator?.onLine === false) return null;
-  // Supplying only the target text prevents speech models from reading or
-  // paraphrasing an English instruction before the Lithuanian phrase.
-  const request = () => generate([{ text: clean }], {
+  // A bare short word can be rejected by the speech classifier as vague. The
+  // explicit transcript boundary keeps the request classified as speech while
+  // telling the model not to narrate or paraphrase the instruction.
+  const speechPrompt = `Generate speech for the Lithuanian transcript below. Read only the transcript, exactly as written. Do not translate, explain, or add words.\n\nTranscript:\n${clean}`;
+  const request = () => generate([{ text: speechPrompt }], {
     storage,
     model: settings.ttsModel || DEFAULT_GEMINI_TTS_MODEL,
     responseModalities: ['AUDIO'],

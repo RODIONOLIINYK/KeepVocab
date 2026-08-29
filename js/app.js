@@ -19,17 +19,17 @@ import { renderStatsView } from './components/StatsView.js?v=93';
 import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=93';
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=93';
 import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=93';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=111';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=114';
 import { renderDashboardView } from './components/DashboardView.js?v=93';
 import { renderDailySessionMode } from './components/DailySessionMode.js?v=93';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=93';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=100';
-import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=94';
-import { renderSettingsView } from './components/SettingsView.js?v=111';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=116';
+import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=113';
+import { renderSettingsView } from './components/SettingsView.js?v=113';
 import { renderLearningPathView } from './components/LearningPathView.js?v=111';
-import { renderLessonMode, teardownLessonMode } from './components/LessonMode.js?v=111';
+import { renderLessonMode, teardownLessonMode } from './components/LessonMode.js?v=116';
 import { getCourseDefinition } from './data/courses.js?v=111';
-import { fetchLithuanianEntry } from './services/lithuanianEnrichment.js?v=101';
+import { fetchLithuanianEntry } from './services/lithuanianEnrichment.js?v=113';
 
 function buildStudyQueue() {
   const activeNotebook = driveSync.getActiveNotebook();

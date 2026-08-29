@@ -3,7 +3,8 @@ export const GEMINI_SETTINGS_STORAGE = 'keepvocab_google_ai_settings_v1';
 export const DEFAULT_GEMINI_TEXT_MODEL = 'gemini-3.1-flash-lite';
 export const DEFAULT_GEMINI_LIVE_MODEL = 'gemini-3.1-flash-live-preview';
 export const DEFAULT_GEMINI_IMAGE_MODEL = 'gemini-3.1-flash-lite-image-preview';
-export const DEFAULT_GEMINI_TTS_MODEL = 'gemini-2.5-flash-preview-tts';
+export const DEFAULT_GEMINI_TTS_MODEL = 'gemini-3.1-flash-tts-preview';
+export const LEGACY_GEMINI_TTS_MODEL = 'gemini-2.5-flash-preview-tts';
 export const DEFAULT_GEMINI_TTS_VOICE = 'Achird';
 
 function parse(raw, fallback) {
@@ -17,12 +18,15 @@ function emitChange() {
 
 export function getGeminiSettings(storage = globalThis.localStorage) {
   const saved = storage ? parse(storage.getItem(GEMINI_SETTINGS_STORAGE), {}) : {};
+  const savedTtsModel = String(saved.ttsModel || '');
   return {
     apiKey: String(storage?.getItem(GEMINI_KEY_STORAGE) || '').trim(),
     textModel: String(saved.textModel || DEFAULT_GEMINI_TEXT_MODEL),
     liveModel: String(saved.liveModel || DEFAULT_GEMINI_LIVE_MODEL),
     imageModel: String(saved.imageModel || DEFAULT_GEMINI_IMAGE_MODEL),
-    ttsModel: String(saved.ttsModel || DEFAULT_GEMINI_TTS_MODEL),
+    // TTS is not user-selectable, so older installations can move forward
+    // without asking the learner to clear and recreate their settings.
+    ttsModel: !savedTtsModel || savedTtsModel === LEGACY_GEMINI_TTS_MODEL ? DEFAULT_GEMINI_TTS_MODEL : savedTtsModel,
     ttsVoice: String(saved.ttsVoice || DEFAULT_GEMINI_TTS_VOICE),
     updatedAt: saved.updatedAt || null,
     enabled: Boolean(storage?.getItem(GEMINI_KEY_STORAGE))
@@ -94,6 +98,8 @@ export async function generateGeminiParts(parts, options = {}) {
   const model = options.model || settings.textModel;
   const fetchImpl = options.fetchImpl || globalThis.fetch?.bind(globalThis);
   if (!fetchImpl) throw new Error('Network requests are unavailable on this device.');
+  const isAudioRequest = Array.isArray(options.responseModalities) && options.responseModalities.includes('AUDIO');
+  const configuredMaxOutputTokens = Number(options.maxOutputTokens);
   const response = await fetchImpl(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(settings.apiKey)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -104,7 +110,11 @@ export async function generateGeminiParts(parts, options = {}) {
         ...(options.generationConfig || {}),
         ...(options.json ? { responseMimeType: 'application/json' } : {}),
         ...(options.responseModalities ? { responseModalities: options.responseModalities } : {}),
-        maxOutputTokens: options.maxOutputTokens || 800
+        // Generated audio can use far more output tokens than its transcript.
+        // Let the speech model choose its limit unless one is explicitly set.
+        ...(Number.isFinite(configuredMaxOutputTokens) && configuredMaxOutputTokens > 0
+          ? { maxOutputTokens: configuredMaxOutputTokens }
+          : isAudioRequest ? {} : { maxOutputTokens: 800 })
       }
     })
   });

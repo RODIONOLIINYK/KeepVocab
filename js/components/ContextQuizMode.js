@@ -1,7 +1,7 @@
 import { driveSync } from '../services/driveSync.js?v=93';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
 import { getGeminiSettings } from '../services/geminiSettings.js?v=93';
-import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=100';
+import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=116';
 import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=93';
 import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=93';
@@ -18,6 +18,8 @@ export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE, now = ne
 
 export function renderContextQuizMode(container, onNavigate) {
   const allWords = driveSync.getWords();
+  const courseId = driveSync.getActiveCourseId();
+  const lithuanian = courseId === 'lithuanian';
   const contextWords = selectContextWords(allWords);
   if (contextWords.length < 3) {
     container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow">Context</span><h1>Add 3 words to unlock Context</h1><p>KeepVocab needs a few meanings to create useful sentence choices.</p><button class="btn-green-solid" id="context-add">Add vocabulary</button></section>`;
@@ -54,7 +56,7 @@ export function renderContextQuizMode(container, onNavigate) {
     if (!getGeminiSettings().enabled) return renderSetup();
     renderLoading();
     try {
-      contextSet = await generateContextExerciseSet(contextWords, { force });
+      contextSet = await generateContextExerciseSet(contextWords, { force, courseId });
       quizWords = contextWords.filter(word => contextSet.items.some(item => item.wordId === String(word.id)));
       if (!selectionRecorded) {
         recordModeWordSelections(driveSync, contextWords, { mode: 'context' });
@@ -93,9 +95,10 @@ export function renderContextQuizMode(container, onNavigate) {
     const generatedItem = contextSet.items.find(item => item.wordId === String(target.id));
     const options = shuffle([target, ...shuffle(allWords.filter(word => word.id !== target.id && word.word !== target.word)).slice(0, 3)]);
     const cloze = clozeContextSentence(generatedItem.sentence, target.word);
-    const sourceLabel = generatedItem.source === 'saved-example' ? 'Saved example fallback' : contextSet.kind === 'mixed' ? 'Resilient context set' : 'AI-generated sentence';
+    const sourceLabel = generatedItem.source === 'saved-example' ? 'Saved example fallback' : contextSet.kind === 'mixed' ? 'Resilient context set' : lithuanian ? 'AI-generated Lithuanian sentence' : 'AI-generated sentence';
+    const question = lithuanian ? 'Choose the Lithuanian phrase that fits' : 'Choose the word that fits';
     container.innerHTML = `<section class="context-mode context-sentence-mode" aria-labelledby="context-heading"><header class="exercise-topbar"><button class="status-pill offline" id="context-exit"><i class="fa-solid fa-arrow-left"></i> Exit</button><div class="exercise-progress"><span>${current + 1} of ${quizWords.length}</span><i><b style="width:${Math.round((current + 1) / quizWords.length * 100)}%"></b></i></div><strong>${score} correct</strong></header>
-      <article class="daily-exercise-card context-question-card"><span class="eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> ${sourceLabel}</span><h1 id="context-heading">Choose the word that fits</h1><h2>“${escapeHtml(cloze)}”</h2><div class="choice-grid">${options.map(option => { const state = answered ? option.id === target.id ? ' correct' : option.id === selectedId ? ' incorrect' : '' : ''; return `<button class="choice-button${state}" data-context-word="${escapeHtml(option.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(option.word)}${answered && option.id === target.id ? '<i class="fa-solid fa-check" aria-hidden="true"></i>' : answered && option.id === selectedId ? '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' : ''}</button>`; }).join('')}</div>${answered ? `<div class="practice-feedback ${selectedId === target.id ? 'correct' : 'incorrect'}" role="status"><strong>${selectedId === target.id ? 'That fits the situation.' : `Answer: ${escapeHtml(target.word)}`}</strong><span>${escapeHtml(generatedItem.sentence)}</span></div><button class="btn-green-solid" id="context-next">${current + 1 === quizWords.length ? 'See results' : 'Next sentence'}</button>` : ''}</article></section>`;
+      <article class="daily-exercise-card context-question-card"><span class="eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> ${sourceLabel}</span><h1 id="context-heading">${question}</h1><h2 lang="${lithuanian ? 'lt' : 'en'}">“${escapeHtml(cloze)}”</h2><div class="choice-grid">${options.map(option => { const state = answered ? option.id === target.id ? ' correct' : option.id === selectedId ? ' incorrect' : '' : ''; return `<button class="choice-button${state}" data-context-word="${escapeHtml(option.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(option.word)}${answered && option.id === target.id ? '<i class="fa-solid fa-check" aria-hidden="true"></i>' : answered && option.id === selectedId ? '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' : ''}</button>`; }).join('')}</div>${answered ? `<div class="practice-feedback ${selectedId === target.id ? 'correct' : 'incorrect'}" role="status"><strong>${selectedId === target.id ? 'That fits the situation.' : `Answer: ${escapeHtml(target.word)}`}</strong><span>${escapeHtml(generatedItem.sentence)}</span></div><button class="btn-green-solid" id="context-next">${current + 1 === quizWords.length ? 'See results' : 'Next sentence'}</button>` : ''}</article></section>`;
     container.querySelector('#context-exit').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelectorAll('[data-context-word]').forEach(button => button.addEventListener('click', () => {
       if (answered) return;

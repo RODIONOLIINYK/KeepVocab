@@ -1,18 +1,27 @@
 import { generateGeminiContent } from './geminiSettings.js?v=93';
 
-export const CONTEXT_EXERCISE_CACHE = 'keepvocab_ai_context_cache_v1';
+export const CONTEXT_EXERCISE_CACHE = 'keepvocab_ai_context_cache_v2';
 
 function normalize(value) {
   return String(value || '').trim().replace(/\s+/g, ' ');
 }
 
-function containsTarget(sentence, target) {
-  const escaped = normalize(target).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`(^|[^a-z])${escaped}([^a-z]|$)`, 'i').test(normalize(sentence));
+function lexicalTarget(value) {
+  return normalize(value).replace(/^[\p{P}\p{S}\s]+|[\p{P}\p{S}\s]+$/gu, '');
 }
 
-function cacheKey(words) {
-  return (words || []).map(word => `${word.id}|${word.word}|${word.definition}|${word.updatedAt || ''}`).join('||');
+function targetPattern(target, flags = 'iu') {
+  const escaped = lexicalTarget(target).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return escaped ? new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}(?=$|[^\\p{L}\\p{N}])`, flags) : null;
+}
+
+function containsTarget(sentence, target) {
+  const pattern = targetPattern(target);
+  return pattern ? pattern.test(normalize(sentence)) : false;
+}
+
+function cacheKey(words, courseId) {
+  return `${courseId}::${(words || []).map(word => `${word.id}|${word.word}|${word.definition}|${word.updatedAt || ''}`).join('||')}`;
 }
 
 function readCache(storage) {
@@ -43,19 +52,22 @@ function localContextItems(words) {
   }).filter(Boolean);
 }
 
-export function buildContextExercisePrompt(words) {
+export function buildContextExercisePrompt(words, options = {}) {
+  const courseId = options.courseId || words?.[0]?.courseId || 'english';
+  const lithuanian = courseId === 'lithuanian';
   const targets = (words || []).map(word => ({
     wordId: String(word.id),
     word: normalize(word.word),
-    selectedMeaning: normalize(word.definition)
+    selectedMeaning: normalize(word.translation || word.definition)
   }));
-  return `Create English context-cloze questions for an upper-intermediate learner.
+  return `Create ${lithuanian ? 'Lithuanian' : 'English'} context-cloze questions for ${lithuanian ? 'an A1–A2 Lithuanian learner' : 'an upper-intermediate English learner'}.
 
 Return JSON only with this shape:
 {"items":[{"wordId":"exact supplied id","sentence":"one natural sentence containing the exact target word"}]}
 
 Rules:
 - Base every sentence on the exact selected meaning supplied below.
+- Write the entire sentence in ${lithuanian ? 'natural Lithuanian only. Never place the target inside an English sentence' : 'natural English'}.
 - Write one item for every target and preserve every wordId exactly.
 - Each item sentence must contain its target spelling exactly once.
 - The sentence must make the intended meaning inferable from the situation, without stating a dictionary definition or explicit synonym clue.
@@ -69,20 +81,21 @@ Targets: ${JSON.stringify(targets)}`;
 export async function generateContextExerciseSet(words, options = {}) {
   const selected = (words || []).filter(word => word?.id && word?.word && word?.definition);
   if (selected.length < 3) throw new Error('Add at least 3 vocabulary meanings for Context.');
+  const courseId = options.courseId || selected[0]?.courseId || 'english';
   const storage = options.storage || globalThis.localStorage;
-  const key = cacheKey(selected);
+  const key = cacheKey(selected, courseId);
   const cached = readCache(storage)[key];
   if (!options.force && cached) {
     try { return sanitizeGeneratedSet(cached, selected); } catch { /* replace invalid cache */ }
   }
   const generate = options.generate || generateGeminiContent;
-  const result = await generate(buildContextExercisePrompt(selected), { json: true, maxOutputTokens: 1200, storage });
+  const result = await generate(buildContextExercisePrompt(selected, { courseId }), { json: true, maxOutputTokens: 1200, storage });
   const firstPass = sanitizeGeneratedSet(result, selected, { requireComplete: false });
   let items = firstPass.items;
   const missing = selected.filter(word => !items.some(item => item.wordId === String(word.id)));
   if (missing.length) {
     try {
-      const retry = await generate(`${buildContextExercisePrompt(missing)}\nThis is a repair request. Return only the ${missing.length} missing item${missing.length === 1 ? '' : 's'}, with every supplied wordId exactly.`, { json: true, maxOutputTokens: Math.max(500, missing.length * 150), storage });
+      const retry = await generate(`${buildContextExercisePrompt(missing, { courseId })}\nThis is a repair request. Return only the ${missing.length} missing item${missing.length === 1 ? '' : 's'}, with every supplied wordId exactly.`, { json: true, maxOutputTokens: Math.max(500, missing.length * 150), storage });
       const repaired = sanitizeGeneratedSet(retry, missing, { requireComplete: false });
       items = [...items, ...repaired.items.filter(item => !items.some(existing => existing.wordId === item.wordId))];
     } catch { /* keep valid first-pass items and use local examples below */ }
@@ -111,6 +124,7 @@ export function buildLocalContextSet(words) {
 }
 
 export function clozeContextSentence(sentence, word) {
-  const escaped = normalize(word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return normalize(sentence).replace(new RegExp(`\\b${escaped}\\b`, 'gi'), '_____');
+  const pattern = targetPattern(word, 'giu');
+  if (!pattern) return normalize(sentence);
+  return normalize(sentence).replace(pattern, (_match, prefix) => `${prefix}_____`);
 }

@@ -1,7 +1,7 @@
 import { driveSync } from '../services/driveSync.js?v=93';
-import { getLithuanianSession, getLithuanianUnit } from '../data/lithuanianCurriculum.js?v=111';
-import { startLessonAttempt, recordLessonResponse, advanceLessonAttempt, answerMatches, completionEvidence } from '../services/lessonEngine.js?v=111';
-import { getLastSpeechErrorCode, getSpeechAvailability, speakText } from '../services/speechService.js?v=111';
+import { getLithuanianSession, getLithuanianUnit } from '../data/lithuanianCurriculum.js?v=116';
+import { startLessonAttempt, recordLessonResponse, advanceLessonAttempt, answerMatches, completionEvidence } from '../services/lessonEngine.js?v=116';
+import { describeSpeechError, getSpeechAvailability, speakText } from '../services/speechService.js?v=113';
 import { escapeHtml } from '../utils/html.js';
 
 let lessonSpeechActive = false;
@@ -65,11 +65,11 @@ function lessonScene(exercise, unit) {
 
 function audioControls(exercise) {
   if (!exercise.audioText) return '';
-  return `<div class="listen-controls lesson-listen-controls">
+  return `<div class="lesson-audio-panel"><div class="listen-controls lesson-listen-controls">
       <button class="audio-btn-circle large" type="button" data-play-audio aria-label="Play Lithuanian audio"><i class="fa-solid fa-volume-high"></i></button>
       <button class="status-pill offline" type="button" data-play-audio-slow><i class="fa-solid fa-gauge-simple-low"></i> Slow</button>
     </div>
-    <p class="speech-help lesson-audio-status" role="status" aria-live="polite"><span data-audio-status>Checking Lithuanian audio…</span><button type="button" data-audio-setup hidden>Audio settings</button></p>`;
+    <p class="speech-help lesson-audio-status" role="status" aria-live="polite"><span data-audio-status>Checking Lithuanian audio…</span><button type="button" data-audio-setup hidden>Audio settings</button></p></div>`;
 }
 
 function coachMarkup(exercise) {
@@ -91,8 +91,7 @@ function hintText(exercise) {
 export function lessonVocabularyRecords(session, unit) {
   const phrases = [];
   const seen = new Set();
-  for (const exercise of session.exercises || []) {
-    const phrase = exercise.phrase;
+  for (const phrase of unit.phrases || []) {
     const key = `${phrase?.lt || ''}|${phrase?.en || ''}`.toLocaleLowerCase('lt-LT');
     if (!phrase?.lt || !phrase?.en || seen.has(key)) continue;
     seen.add(key);
@@ -186,7 +185,7 @@ function renderExercise(container, session, attempt, navigate) {
     if (status) status.textContent = rate < 0.8 ? 'Playing slowly in Lithuanian…' : 'Playing in Lithuanian…';
     const ok = await speakText(exercise.audioText, { locale: 'lt-LT', rate });
     lessonSpeechActive = false; button.classList.remove('playing'); controls.forEach(control => { control.disabled = false; });
-    if (status) status.textContent = ok ? 'Played in Lithuanian. Tap again to repeat.' : getLastSpeechErrorCode() === 'invalid-gemini-key' ? 'The saved Gemini key was rejected. Open Audio settings to replace it.' : 'Lithuanian audio could not start on this device.';
+    if (status) status.textContent = ok ? 'Played in Lithuanian. Tap again to repeat.' : describeSpeechError();
     if (setup) setup.hidden = ok;
   };
   container.querySelector('[data-play-audio]')?.addEventListener('click', event => playAudio(event.currentTarget, 0.86));

@@ -3,7 +3,7 @@ import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
 import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=93';
 import { playInteractionSound } from '../services/interactionSound.js?v=93';
 import { mountUseItExercise } from './UseItExercise.js?v=94';
-import { createSpeechRecordingSession } from '../services/speechInput.js?v=94';
+import { createSpeechRecordingSession } from '../services/speechInput.js?v=113';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export { evaluateUseItFallback, evaluateUseItSentence } from '../services/useItEvaluation.js?v=93';

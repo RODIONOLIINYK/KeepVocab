@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>KeepVocab Quick Add</title>
   <link rel="icon" href="icons/keepvocab-mark-v2-192.png" type="image/png">
-  <link rel="stylesheet" href="css/quick-add.css?v=96">
+  <link rel="stylesheet" href="css/quick-add.css?v=113">
 </head>
 <body>
   <main class="quick-add-shell">
     <header class="quick-header">
       <img class="quick-mark" src="icons/keepvocab-mark-v2-192.png" alt="">
-      <div class="quick-heading"><strong>Quick add</strong><span>Catch a word while it’s fresh.</span></div>
+      <div class="quick-heading"><strong>Quick add</strong><span id="quick-course-label">English course</span></div>
       <button id="quick-close" aria-label="Close quick add"><span aria-hidden="true">×</span></button>
     </header>
     <form id="quick-lookup-form" class="quick-lookup">
-      <label for="quick-word">Word or expression</label>
+      <label for="quick-word" id="quick-word-label">English word or expression</label>
       <div class="lookup-field"><span class="search-icon" aria-hidden="true"></span><input id="quick-word" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type a word or expression" required></div>
       <button id="quick-find" class="primary-action" type="submit"><span class="sparkle" aria-hidden="true">✦</span><span>Find meanings</span></button>
     </form>
@@ -31,6 +31,6 @@
     <p class="quick-status" id="quick-status" role="status" aria-live="polite">Press Return to find the intended meaning.</p>
     <button class="save-button" id="quick-save" disabled><span>Save to Library</span><span class="button-arrow" aria-hidden="true">→</span></button>
   </main>
-  <script type="module" src="js/quickAdd.js?v=96"></script>
+  <script type="module" src="js/quickAdd.js?v=113"></script>
 </body>
 </html>

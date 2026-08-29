@@ -1036,7 +1036,7 @@ body {
 
 @media (min-width: 721px) {
   .nav-links { gap: 4px; width: min(100%, 560px); justify-self: center; padding: 4px; border: 1px solid #edf1f5; border-radius: var(--radius-pill); background: #f8fafc; }
-  .nav-link-item { padding: 8px 12px; transition: color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease; }
+  .nav-link-item { min-width:0; flex:1 1 0; justify-content:center; padding: 8px 12px; transition: color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease; }
   .nav-link-item:hover { background: #ffffff; box-shadow: 0 1px 4px rgba(15, 23, 42, .06); }
   .nav-link-item.active { background: #ffffff; box-shadow: 0 2px 8px rgba(15, 23, 42, .08), inset 0 0 0 1px rgba(34, 197, 94, .18); }
   .nav-link-item.active:hover { background: #ffffff; }
@@ -1061,7 +1061,7 @@ body {
   .badge-streak .badge-compact { display: inline; }
 }
 
-@media (min-width: 721px) and (max-width: 1040px) {
+@media (min-width: 721px) and (max-width: 1069px) {
   .header-nav {
     height: auto;
     min-height: calc(64px + env(safe-area-inset-top));
@@ -1708,8 +1708,10 @@ body {
 }
 
 /* Refined guided path: KeepVocab components with a lighter, game-like learning canvas. */
-body[data-course-id="english"] .nav-links{width:min(100%,490px)}
-@media(max-width:720px){body[data-course-id="english"] .nav-links{grid-template-columns:repeat(5,1fr)}}
+body[data-course-id="english"] .nav-links{width:min(100%,560px)}
+@media(min-width:721px) and (max-width:1069px){body[data-course-id="english"] .nav-links{width:100%}}
+@media(max-width:720px){body[data-course-id="english"] .nav-links{grid-template-columns:repeat(5,1fr)}body[data-course-id="english"] .nav-links{width:auto}}
+@media(min-width:1440px){body[data-course-id="lithuanian"] .nav-links{width:min(100%,clamp(640px,44vw,680px))}}
 
 .course-switcher{width:38px;min-height:38px;padding:0;background:#f8fafc;box-shadow:none}
 .course-switcher-trigger{position:relative;width:36px;height:36px;min-width:36px;justify-content:center;gap:0;padding:0;font-size:.7rem;font-weight:750}
@@ -1862,6 +1864,18 @@ body[data-course-id="english"] .nav-links{width:min(100%,490px)}
 .lesson-coach{margin-top:34px}
 .lesson-audio-status{display:flex;align-items:center;justify-content:center;gap:8px;min-height:24px}
 .lesson-audio-status button{border:0;padding:4px 7px;color:#166534;background:transparent;font-size:.68rem;font-weight:800;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.lesson-audio-panel{width:min(100%,680px);display:grid;justify-items:center;gap:7px;margin:18px auto 18px;border:1px solid #dce9e0;border-radius:18px;padding:16px;background:linear-gradient(180deg,#f6fdf8,#fff)}
+.lesson-audio-panel .lesson-listen-controls{margin:0}
+.lesson-audio-panel .lesson-audio-status{max-width:100%;margin:0;color:var(--text-muted);line-height:1.4}
+
+/* Keep provider controls readable without letting long status copy distort the grid. */
+.settings-key-field{min-width:0}
+.settings-service-status{grid-column:1/-1;min-height:42px;display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;color:var(--text-muted);background:#f8fafc;font-size:.74rem;line-height:1.45}
+.settings-service-status:empty{display:none}
+
+.transcript-translation{display:block;max-width:94%;margin:5px 0 0;padding:0 10px;color:#526076;font-size:.68rem;line-height:1.45}
+.transcript-translation::before{content:'EN';display:inline-flex;margin-right:6px;border-radius:5px;padding:1px 4px;color:#166534;background:#dcfce7;font-size:.52rem;font-weight:850;letter-spacing:.05em;vertical-align:1px}
+.transcript-translation.pending{color:var(--text-dim);font-style:italic}
 
 /* Lithuanian speaking reuses the English speaking shell and components. */
 .phrase-learning-preview article button{border:0;border-radius:999px;padding:6px 9px;color:#166534;background:#dcfce7;font:800 .62rem var(--font-body);cursor:pointer}

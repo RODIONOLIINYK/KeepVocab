@@ -1,5 +1,20 @@
-import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=93';
+import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=113';
 import { fetchLithuanianWordDetails } from './lithuanianDictionary.js?v=101';
+
+const coachTranslationCache = new Map();
+
+export async function translateLithuanianCoachText(text, options = {}) {
+  const source = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!source) return '';
+  if (coachTranslationCache.has(source)) return coachTranslationCache.get(source);
+  const translation = String(await generateGeminiContent(`Translate this Lithuanian speaking-coach message into clear, natural English.
+Preserve the meaning, question, tone, names, and numbers. Return only the English translation—no label, quotation marks, notes, or Lithuanian text.
+
+Lithuanian: ${JSON.stringify(source)}`, { ...options, maxOutputTokens: 220 }) || '').trim().replace(/^['“"]|['”"]$/g, '');
+  if (!translation) throw new Error('No English translation was returned.');
+  coachTranslationCache.set(source, translation);
+  return translation;
+}
 
 export async function enrichLithuanianEntry(term, options = {}) {
   const word = String(term || '').trim();

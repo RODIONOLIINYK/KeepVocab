@@ -1,5 +1,6 @@
 import { driveSync } from './services/driveSync.js?v=93';
 import { fetchWordDetails } from './services/dictionaryApi.js?v=96';
+import { fetchLithuanianEntry } from './services/lithuanianEnrichment.js?v=113';
 import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=93';
 import { attachImagesSequentially } from './services/bulkWords.js?v=93';
 import { sanitizeExistingExamples } from './services/exampleSearch.js?v=93';
@@ -7,6 +8,8 @@ import { escapeHtml } from './utils/html.js';
 
 const shell = document.querySelector('.quick-add-shell');
 const form = document.querySelector('#quick-lookup-form');
+const courseLabel = document.querySelector('#quick-course-label');
+const wordLabel = document.querySelector('#quick-word-label');
 const input = document.querySelector('#quick-word');
 const findButton = document.querySelector('#quick-find');
 const results = document.querySelector('#quick-results');
@@ -15,6 +18,8 @@ const definition = document.querySelector('#quick-definition');
 const status = document.querySelector('#quick-status');
 const save = document.querySelector('#quick-save');
 let lookup = null;
+let lookupCourseId = null;
+let activeCourseId = driveSync.getActiveCourseId();
 
 function setShellState(state = '') {
   shell.classList.remove('is-loading', 'has-results', 'has-error', 'is-saving', 'is-success');
@@ -37,6 +42,33 @@ function setSaveLabel(label, saved = false) {
 function setStatus(message, kind = '') {
   status.textContent = message;
   status.className = `quick-status ${kind}`.trim();
+}
+
+function clearComposer() {
+  lookup = null;
+  lookupCourseId = null;
+  results.innerHTML = '';
+  manual.hidden = true;
+  definition.value = '';
+  save.disabled = true;
+  setShellState();
+  setSaveLabel('Save to Library');
+}
+
+function syncCourseMode({ announce = false } = {}) {
+  const nextCourseId = driveSync.getActiveCourseId();
+  const changed = nextCourseId !== activeCourseId;
+  activeCourseId = nextCourseId;
+  const lithuanian = activeCourseId === 'lithuanian';
+  courseLabel.textContent = lithuanian ? 'Lithuanian course' : 'English course';
+  wordLabel.textContent = lithuanian ? 'Lithuanian word or expression' : 'English word or expression';
+  input.placeholder = lithuanian ? 'Type in Lithuanian' : 'Type in English';
+  input.lang = lithuanian ? 'lt' : 'en';
+  if (changed) {
+    input.value = '';
+    clearComposer();
+  }
+  if (announce || changed) setStatus(`${lithuanian ? 'Lithuanian' : 'English'} quick add is active. Press Return to find the intended meaning.`);
 }
 
 function selectedSense() {
@@ -66,8 +98,11 @@ form.addEventListener('submit', async event => {
   form.setAttribute('aria-busy', 'true');
   setFindLabel('Finding meanings…');
   setStatus('Looking up meanings…');
+  const requestedCourseId = activeCourseId;
+  lookupCourseId = requestedCourseId;
   try {
-    lookup = await fetchWordDetails(word);
+    lookup = requestedCourseId === 'lithuanian' ? await fetchLithuanianEntry(word) : await fetchWordDetails(word);
+    if (requestedCourseId !== activeCourseId) return;
     input.value = lookup.word;
     renderSenses(lookup);
   } catch (error) {
@@ -84,13 +119,7 @@ form.addEventListener('submit', async event => {
 });
 
 input.addEventListener('input', () => {
-  lookup = null;
-  results.innerHTML = '';
-  manual.hidden = true;
-  definition.value = '';
-  save.disabled = true;
-  setShellState();
-  setSaveLabel('Save to Library');
+  clearComposer();
   setStatus('Press Return to find the intended meaning.');
 });
 
@@ -100,16 +129,22 @@ save.addEventListener('click', async () => {
   const word = input.value.trim();
   const sense = selectedSense();
   const item = sense ? {
+    courseId: lookupCourseId || activeCourseId,
     word: lookup.word,
+    lemma: lookup.lemma || lookup.word,
     phonetic: lookup.phonetic || '',
     audioUrl: lookup.audioUrl || '',
     partOfSpeech: sense.partOfSpeech || 'unknown',
     definition: sense.definition,
+    translation: sense.translation || sense.definition,
     example: sense.example || '',
+    acceptedForms: sense.acceptedForms || [],
+    grammaticalTags: sense.grammaticalTags || [],
     exampleSourceUrl: sense.exampleSourceUrl || '',
     exampleAttribution: sense.exampleAttribution || '',
     exampleLicense: sense.exampleLicense || '',
   } : {
+    courseId: activeCourseId,
     word,
     partOfSpeech: 'unknown',
     definition: definition.value.trim(),
@@ -142,5 +177,12 @@ save.addEventListener('click', async () => {
 });
 
 document.querySelector('#quick-close').addEventListener('click', () => window.close());
-window.addEventListener('focus', () => window.setTimeout(() => input.focus(), 0));
+window.addEventListener('storage', event => {
+  if (event.key === 'keepvocab_settings') syncCourseMode({ announce: true });
+});
+window.addEventListener('focus', () => window.setTimeout(() => {
+  syncCourseMode();
+  input.focus();
+}, 0));
+syncCourseMode({ announce: true });
 input.focus();

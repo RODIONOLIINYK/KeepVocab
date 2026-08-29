@@ -76,8 +76,9 @@ export function createSpeechRecordingSession(options = {}) {
   let permissionPromise = null;
   let closed = false;
 
-  const requestPermission = options.requestPermission
-    || globalThis.keepVocabDesktop?.requestMicrophoneAccess;
+  // getUserMedia is the single permission authority. Calling Electron's native
+  // preflight as well caused macOS to surface the same consent flow twice.
+  const requestPermission = options.requestPermission;
 
   const ensurePermission = async () => {
     if (!requestPermission) return true;
