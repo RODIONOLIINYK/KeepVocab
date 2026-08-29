@@ -17,6 +17,8 @@ import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSess
 import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=93';
 import { recordModeWordSelections } from '../services/wordSelection.js?v=93';
 import { navigateTo as navigate } from '../utils/navigation.js';
+import { LITHUANIAN_UNITS, PATH_STAGES } from '../data/lithuanianCurriculum.js?v=111';
+import { getLastSpeechErrorCode, speakText } from '../services/speechService.js?v=111';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
 export const COACH_SILENCE_MS = 9000;
@@ -62,6 +64,150 @@ function lessonIcon(lesson) {
 function renderVoiceOrb(status = 'idle', level = 0) {
   const bars = [0.55, 0.82, 1, 0.72, 0.92, 0.62, 0.78];
   return `<div class="speaking-orb ${escapeHtml(status)}" id="speaking-orb" style="--voice-level:${Math.max(.15, level)}" aria-hidden="true"><span class="orb-ripple one"></span><span class="orb-ripple two"></span><div class="orb-core">${bars.map((height, index) => `<i style="--bar:${height};--bar-delay:${index * 70}ms"></i>`).join('')}</div></div>`;
+}
+
+function buildLithuanianInstruction(lesson) {
+  const phrases = lesson.lithuanianPhrases || [];
+  return `You are Sprig, KeepVocab's patient Lithuanian speaking coach. Run a short live conversation entirely in Lithuanian at ${lesson.level} level.
+Scenario: ${lesson.title}. Goal: ${lesson.goal}
+Use short, natural sentences and vocabulary from these authored targets: ${phrases.map(item => `${item.lt} = ${item.en}`).join('; ')}.
+Start slowly in Lithuanian. When the learner is stuck, repeat more slowly, then give a Lithuanian hint. Give a brief English rescue only after the learner remains stuck.
+Verify communicative meaning, phrase use, and important grammar honestly. Never invent phoneme scores, pronunciation percentages, or claim precision the system does not have.
+After each learner turn, respond naturally before correcting at most one important issue. Keep turns under four sentences.`;
+}
+
+function coachInstruction(lesson, reason = 'start', phraseTargets = []) {
+  if (lesson.languageCode !== 'lt') return reason === 'silence'
+    ? buildCoachInitiativeCue(lesson, 'silence', phraseTargets)
+    : buildCoachInitiativeCue(lesson, 'start', phraseTargets);
+  const first = lesson.lithuanianPhrases?.[0]?.lt || 'Labas!';
+  return reason === 'silence'
+    ? `[Internal direction: the learner is quiet. Reassure them in simple Lithuanian, offer two short Lithuanian replies including “${first}”, and ask one easy question. Use English only if the Lithuanian hint still fails.]`
+    : `[Internal direction: begin immediately in Lithuanian, set the scenario in one short sentence, and ask an easy question that invites “${first}”.]`;
+}
+
+function speakingInstruction(lesson, phraseTargets, vocabularyTargets) {
+  if (lesson.languageCode === 'lt') return buildLithuanianInstruction(lesson);
+  return `${buildSpeakingInstruction(lesson, phraseTargets)}${buildVocabularySpeakingInstruction(vocabularyTargets)}${buildPhraseCoachingInstruction(phraseTargets)}`;
+}
+
+function lithuanianSpeakingLesson(unit) {
+  return {
+    id: `lt-speaking-${unit.id}`,
+    title: unit.title,
+    category: 'everyday',
+    level: unit.cefr,
+    duration: 7,
+    goal: unit.outcome,
+    learnerRole: 'a Lithuanian learner in a practical situation',
+    coachRole: 'a patient Lithuanian conversation partner',
+    targetPhrases: unit.phrases.map(item => item.lt),
+    lithuanianPhrases: unit.phrases,
+    languageCode: 'lt',
+    coachQuestions: unit.phrases.slice(0, 3).map(item => `Respond using: ${item.en}`),
+    scenarioTwist: 'Ask one realistic follow-up using only familiar A1–A2 Lithuanian.'
+  };
+}
+
+function lithuanianPhraseTargets(unit) {
+  return unit.phrases.slice(0, 3).map((item, index) => ({
+    text: item.lt,
+    meaning: item.en,
+    example: item.lt,
+    progressId: `${unit.id}:lt-${index}`
+  }));
+}
+
+function renderLithuanianSpeakingPreview(container, unit, onNavigate) {
+  if (!unit) return renderLithuanianSpeakingCatalog(container, onNavigate);
+  const lesson = lithuanianSpeakingLesson(unit);
+  const phraseTargets = lithuanianPhraseTargets(unit);
+  const hasKey = Boolean(getGeminiKey());
+  const plan = [
+    ['Warm up', `Hear and repeat “${phraseTargets[0].text}”.`],
+    ['Guided reply', 'Answer one short question with a visible model nearby.'],
+    ['Recall', 'Hide the model and answer again from memory.'],
+    ['Real turn', 'Handle one realistic follow-up in the same situation.'],
+    ['Repair', 'Ask for repetition or clarification if you need it.']
+  ];
+  container.innerHTML = `<section class="full-view-stack speaking-preview-shell"><button class="speaking-back" id="lesson-back"><i class="fa-solid fa-arrow-left"></i> All lessons</button>
+    <div class="speaking-preview-card">
+      <div class="preview-main"><div class="preview-lesson-icon green"><i class="fa-solid fa-comments"></i></div><span class="eyebrow">Module ${unit.unitNumber} · ${escapeHtml(unit.cefr)}</span><h1>${escapeHtml(unit.title)}</h1><p class="preview-goal">${escapeHtml(unit.outcome)}</p>
+        <div class="role-play-box"><i class="fa-solid fa-masks-theater"></i><div><strong>Your role</strong><span>${escapeHtml(lesson.learnerRole)}</span></div><i class="fa-solid fa-arrow-right"></i><div><strong>Sprig’s role</strong><span>${escapeHtml(lesson.coachRole)}</span></div></div>
+        <div class="target-phrases phrase-learning-preview"><div class="phrase-preview-heading"><span>Expressions you’ll remember</span><small>Meaning first → recall later → reuse near the end</small></div>${phraseTargets.map((target, index) => `<article><div><strong lang="lt">${escapeHtml(target.text)}</strong><button type="button" data-lt-preview-audio="${index}" aria-label="Hear ${escapeHtml(target.text)}"><i class="fa-solid fa-volume-high"></i> Hear</button></div><p>${escapeHtml(target.meaning)}</p><small>Listen now, then recall it during the conversation.</small></article>`).join('')}</div>
+        <p class="lt-preview-audio-status" data-lt-preview-audio-status role="status" aria-live="polite">Use Hear to check each phrase before the live role-play.</p>
+        <div class="preview-actions"><button class="btn-green-solid start-live-lesson" id="start-live-lesson"><i class="fa-solid ${hasKey ? 'fa-microphone' : 'fa-key'}"></i> ${hasKey ? 'Start live lesson' : 'Set up Gemini to start'}</button><button class="status-pill offline" id="cant-speak-now"><i class="fa-solid fa-keyboard"></i> Can’t speak now</button><span><i class="fa-regular fa-clock"></i> About ${lesson.duration} minutes</span></div>
+      </div>
+      <aside class="preview-side lesson-plan-side"><div class="preview-orb-wrap">${renderVoiceOrb('preview')}</div><h2>Your lesson plan</h2><ol class="lesson-plan-list">${plan.map(step => `<li><b>${escapeHtml(step[0])}</b><span>${escapeHtml(step[1])}</span></li>`).join('')}</ol><p class="mic-privacy"><i class="fa-solid fa-lock"></i> Your microphone starts only after you press Start and allow access.</p></aside>
+    </div></section>`;
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  container.querySelector('#lesson-back')?.addEventListener('click', () => renderLithuanianSpeakingCatalog(container, onNavigate));
+  container.querySelector('#start-live-lesson')?.addEventListener('click', () => {
+    if (!getGeminiKey()) return navigate('settings', onNavigate);
+    startLiveLesson(container, lesson, [], phraseTargets, onNavigate);
+  });
+  container.querySelector('#cant-speak-now')?.addEventListener('click', () => navigate('useit', onNavigate));
+  container.querySelectorAll('[data-lt-preview-audio]').forEach(button => button.addEventListener('click', async () => {
+    const target = phraseTargets[Number(button.dataset.ltPreviewAudio)];
+    const status = container.querySelector('[data-lt-preview-audio-status]');
+    button.disabled = true;
+    if (status) status.textContent = 'Playing in Lithuanian…';
+    const played = await speakText(target.text, { locale: 'lt-LT', rate: 0.84 });
+    if (status) status.textContent = played ? `${target.text} · ${target.meaning}` : getLastSpeechErrorCode() === 'invalid-gemini-key' ? 'The saved Gemini key was rejected. Open Audio & Gemini to replace it.' : 'Lithuanian audio needs an lt-LT device voice or Gemini setup.';
+    button.disabled = false;
+  }));
+}
+
+function renderLithuanianSpeakingCatalog(container, onNavigate) {
+  const profile = driveSync.getCourseProfile('lithuanian') || {};
+  const completed = new Set(profile.speakingProgress?.completed || []);
+  const nextUnitIndex = Math.min(35, Math.floor((profile.completedNodeIds || []).length / 6));
+  const recommended = LITHUANIAN_UNITS[nextUnitIndex] || LITHUANIAN_UNITS[0];
+  let stageFilter = String(recommended.sectionNumber);
+  let levelFilter = 'all';
+  const openLesson = unit => renderLithuanianSpeakingPreview(container, unit, onNavigate);
+  const freeUnit = { ...recommended, id: 'lt-free-conversation', title: 'Free Lithuanian conversation', outcome: 'Choose a familiar topic and keep a natural Lithuanian conversation going.' };
+
+  const renderLessons = () => {
+    const filtered = LITHUANIAN_UNITS.filter(unit => (stageFilter === 'all' || String(unit.sectionNumber) === stageFilter) && (levelFilter === 'all' || unit.cefr === levelFilter));
+    const grid = container.querySelector('#speaking-lesson-grid');
+    const count = container.querySelector('#speaking-result-count');
+    if (!grid || !count) return;
+    count.textContent = `${filtered.length} ${filtered.length === 1 ? 'lesson' : 'lessons'}`;
+    grid.innerHTML = filtered.map((unit, index) => {
+      const lesson = lithuanianSpeakingLesson(unit);
+      const done = completed.has(lesson.id);
+      const stage = PATH_STAGES.find(item => unit.unitNumber >= item.unitStart && unit.unitNumber <= item.unitEnd) || PATH_STAGES[0];
+      return `<article class="speaking-lesson-card" style="--lesson-index:${Math.min(index, 8)}" data-lesson-card="${escapeHtml(lesson.id)}">
+        <div class="lesson-icon green"><i class="fa-solid fa-comments"></i>${done ? '<span class="lesson-done"><i class="fa-solid fa-check"></i></span>' : ''}</div>
+        <div class="lesson-card-copy"><div class="lesson-card-heading"><h3>${escapeHtml(unit.title)}</h3><span>${escapeHtml(stage.title)}</span></div>
+        <div class="lesson-meta"><span>${escapeHtml(unit.cefr)}</span><span><i class="fa-regular fa-clock"></i> 7 min</span></div><p>${escapeHtml(unit.outcome)}</p></div>
+        <button class="lesson-start-btn" data-lt-speaking="${unit.id}" aria-label="${done ? 'Practise again' : 'Start'} ${escapeHtml(unit.title)}">${done ? 'Practise again' : 'Start'} <i class="fa-solid fa-arrow-right"></i></button>
+      </article>`;
+    }).join('');
+    grid.querySelectorAll('[data-lt-speaking]').forEach(button => button.addEventListener('click', () => openLesson(LITHUANIAN_UNITS.find(unit => unit.id === button.dataset.ltSpeaking))));
+  };
+
+  container.innerHTML = `<section class="speaking-hub full-view-stack" aria-labelledby="speaking-heading">
+    <div class="speaking-title-row"><div><span class="eyebrow"><i class="fa-solid fa-comments"></i> Lithuanian-first coaching · ${escapeHtml(recommended.cefr)}</span><h1 id="speaking-heading">Speak Lithuanian</h1><p>Preview useful phrases, then practise them in a short guided role-play with Lithuanian hints first.</p></div><button class="speaking-settings-btn" id="speaking-settings"><i class="fa-solid fa-key"></i><span>Audio & Gemini</span></button></div>
+    <section class="speaking-hero"><div class="speaking-hero-copy"><span class="hero-kicker">Recommended · Module ${recommended.unitNumber}</span><h2>${escapeHtml(recommended.title)}</h2><p>${escapeHtml(recommended.outcome)}</p><div class="weekly-progress"><div><span>Path progress</span><strong>${completed.size} completed conversations</strong></div><i><b style="width:${Math.round(Math.min(1, completed.size / Math.max(1, LITHUANIAN_UNITS.length)) * 100)}%"></b></i></div><div class="hero-action-row"><button class="btn-green-solid hero-continue" id="speaking-continue">Continue lesson <i class="fa-solid fa-arrow-right"></i></button><div><strong lang="lt">${escapeHtml(recommended.phrases[0].lt)}</strong><span>${escapeHtml(recommended.phrases[0].en)}</span></div></div></div><div class="speaking-hero-visual">${renderVoiceOrb('preview')}<span class="floating-word one">Labas</span><span class="floating-word two">Ačiū</span><span class="floating-word three">Prašau</span></div></section>
+    <div class="speaking-filter-row" aria-label="Speaking lesson filters"><div class="speaking-category-tabs"><button data-lt-speaking-stage="all"><i class="fa-solid fa-grip"></i> All topics</button>${PATH_STAGES.map(stage => `<button class="${String(stage.number) === stageFilter ? 'active' : ''}" data-lt-speaking-stage="${stage.number}"><i class="fa-solid fa-map-signs"></i> ${escapeHtml(stage.title)}</button>`).join('')}</div><label class="speaking-level-filter">Your level <select id="lt-speaking-level"><option value="all">All levels</option>${['A1', 'A2', 'B1 bridge'].map(level => `<option value="${escapeHtml(level)}">${escapeHtml(level)}</option>`).join('')}</select></label></div>
+    <div class="speaking-curriculum-heading"><div><h2>Choose a Lithuanian lesson</h2><p>Practise useful phrases, short answers, clarification, and natural recall from your learning path.</p></div><span id="speaking-result-count"></span></div>
+    <div class="speaking-lesson-grid" id="speaking-lesson-grid"></div>
+    <section class="free-conversation-card"><div class="free-chat-icon"><i class="fa-solid fa-comment-dots"></i><i class="fa-solid fa-comment"></i></div><div><span>${escapeHtml(recommended.cefr)} open practice</span><h2>Free conversation</h2><p>Choose a familiar topic; Sprig will keep the language level-sensitive and offer Lithuanian hints first.</p><div class="free-topic-pills"><span>Daily life</span><span>Study</span><span>Plans</span><span>Surprise me</span></div></div><button id="start-lt-free-conversation">Start free chat <i class="fa-solid fa-wave-square"></i></button></section>
+    <aside class="speaking-privacy-note"><i class="fa-solid fa-shield-halved"></i><div><strong>Your microphone stays private until Start</strong><p>Gemini connects only when a live role-play begins. Typed replies remain available in every session.</p></div></aside>
+  </section>`;
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  container.querySelector('#speaking-continue')?.addEventListener('click', () => openLesson(recommended));
+  container.querySelector('#speaking-settings')?.addEventListener('click', () => navigate('settings', onNavigate));
+  container.querySelector('#start-lt-free-conversation')?.addEventListener('click', () => openLesson(freeUnit));
+  container.querySelectorAll('[data-lt-speaking-stage]').forEach(button => button.addEventListener('click', () => {
+    stageFilter = button.dataset.ltSpeakingStage;
+    container.querySelectorAll('[data-lt-speaking-stage]').forEach(item => item.classList.toggle('active', item === button));
+    renderLessons();
+  }));
+  container.querySelector('#lt-speaking-level')?.addEventListener('change', event => { levelFilter = event.target.value; renderLessons(); });
+  renderLessons();
 }
 
 function renderCatalog(container, onNavigate) {
@@ -175,6 +321,7 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
   let muted = false;
   let phraseIndex = 0;
   let phraseHidden = false;
+  const coachName = lesson.languageCode === 'lt' ? 'Sprig' : 'Mira';
 
   const clearInitiativeTimer = () => {
     window.clearTimeout(initiativeTimer);
@@ -185,7 +332,7 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
     if (muted || status !== 'listening' || activeSession !== session) return;
     initiativeTimer = window.setTimeout(() => {
       if (muted || status !== 'listening' || activeSession !== session) return;
-      const sent = session.sendText(buildCoachInitiativeCue(lesson, 'silence', phraseTargets));
+      const sent = session.sendText(coachInstruction(lesson, 'silence', phraseTargets));
       if (sent) updateStatus('helping');
     }, COACH_SILENCE_MS);
   };
@@ -196,11 +343,11 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
     const turnCue = container.querySelector('#live-turn-cue');
     const interruptButton = container.querySelector('#interrupt-live-coach');
     const orb = container.querySelector('#speaking-orb');
-    if (label) label.textContent = ({ connecting: 'Connecting securely…', ready: 'Preparing microphone…', listening: 'Your turn — Mira is listening', speaking: 'Mira’s turn — listening is paused', helping: 'Mira is helping you continue…', muted: 'Microphone paused', closed: 'Lesson ended' })[status] || status;
+    if (label) label.textContent = ({ connecting: 'Connecting securely…', ready: 'Preparing microphone…', listening: `Your turn — ${coachName} is listening`, speaking: `${coachName}’s turn — listening is paused`, helping: `${coachName} is helping you continue…`, muted: 'Microphone paused', closed: 'Lesson ended' })[status] || status;
     if (turnCue) turnCue.textContent = status === 'speaking'
-      ? 'Want to answer now? Start speaking to interrupt, or tap Stop Mira.'
+      ? `Want to answer now? Start speaking to interrupt, or tap Stop ${coachName}.`
       : status === 'listening'
-        ? 'Speak now. Mira will wait until your turn is complete.'
+        ? `Speak now. ${coachName} will wait until your turn is complete.`
         : status === 'muted'
           ? 'Unmute when you are ready to take your turn.'
           : 'Setting up clear turn-by-turn audio…';
@@ -212,7 +359,7 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
   const renderTranscript = () => {
     const list = container.querySelector('#live-transcript');
     if (!list) return;
-    list.innerHTML = transcript.length ? transcript.map(entry => `<div class="transcript-turn ${entry.role}"><span>${entry.role === 'coach' ? 'Mira' : 'You'}</span><p>${escapeHtml(entry.text)}</p></div>`).join('') : '<div class="transcript-empty"><i class="fa-solid fa-wave-square"></i><span>Your live transcript will appear here.</span></div>';
+    list.innerHTML = transcript.length ? transcript.map(entry => `<div class="transcript-turn ${entry.role}"><span>${entry.role === 'coach' ? coachName : 'You'}</span><p>${escapeHtml(entry.text)}</p></div>`).join('') : '<div class="transcript-empty"><i class="fa-solid fa-wave-square"></i><span>Your live transcript will appear here.</span></div>';
     list.scrollTop = list.scrollHeight;
     const learnerTurns = transcript.filter(entry => entry.role === 'learner').length;
     if (phraseTargets.length && learnerTurns >= 2 && learnerTurns % 2 === 0) {
@@ -230,9 +377,9 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
   container.innerHTML = `<section class="speaking-live-shell" aria-labelledby="live-lesson-title">
     <header class="live-header"><button id="live-back" class="speaking-back"><i class="fa-solid fa-chevron-left"></i> Leave</button><div><span>Live lesson</span><h1 id="live-lesson-title">${escapeHtml(lesson.title)}</h1></div><time id="live-timer">00:00</time></header>
     <div class="live-stage">
-      <main class="live-coach-panel"><div class="live-status-pill"><i></i><span id="live-status-label">Connecting securely…</span></div>${renderVoiceOrb('connecting')}<div class="coach-identity"><strong>Mira</strong><span>Your AI speaking coach</span></div><p class="live-prompt">${escapeHtml(lesson.goal)}</p><p class="live-turn-cue" id="live-turn-cue" aria-live="polite">Setting up clear turn-by-turn audio…</p>
-        <div class="live-controls"><button id="interrupt-live-coach" class="live-control interrupt" hidden><i class="fa-solid fa-hand"></i><span>Stop Mira</span></button><button id="toggle-live-mic" class="live-control"><i class="fa-solid fa-microphone"></i><span>Mute</span></button><button id="end-live-lesson" class="end-lesson-button"><i class="fa-solid fa-stop"></i><span>End lesson</span></button></div>
-        <form id="live-text-fallback" class="live-text-fallback"><input id="live-text-input" placeholder="Or type a reply" autocomplete="off"><button aria-label="Send typed reply"><i class="fa-solid fa-paper-plane"></i></button></form>
+      <main class="live-coach-panel"><div class="live-status-pill"><i></i><span id="live-status-label">Connecting securely…</span></div>${renderVoiceOrb('connecting')}<div class="coach-identity"><strong>${coachName}</strong><span>${lesson.languageCode === 'lt' ? 'Your Lithuanian speaking coach' : 'Your AI speaking coach'}</span></div><p class="live-prompt">${escapeHtml(lesson.goal)}</p><p class="live-turn-cue" id="live-turn-cue" aria-live="polite">Setting up clear turn-by-turn audio…</p>
+        <div class="live-controls"><button id="interrupt-live-coach" class="live-control interrupt" hidden><i class="fa-solid fa-hand"></i><span>Stop ${coachName}</span></button><button id="toggle-live-mic" class="live-control"><i class="fa-solid fa-microphone"></i><span>Mute</span></button><button id="end-live-lesson" class="end-lesson-button"><i class="fa-solid fa-stop"></i><span>End lesson</span></button></div>
+        <form id="live-text-fallback" class="live-text-fallback"><input id="live-text-input" lang="${lesson.languageCode === 'lt' ? 'lt' : 'en'}" placeholder="${lesson.languageCode === 'lt' ? 'Arba parašykite atsakymą…' : 'Or type a reply'}" autocomplete="off"><button aria-label="Send typed reply"><i class="fa-solid fa-paper-plane"></i></button></form>
       </main>
       <aside class="live-side-panel"><div class="live-goal-card"><span>Lesson goal</span><p>${escapeHtml(lesson.goal)}</p></div>${vocabularyTargets.length ? `<div class="live-vocabulary-card"><span>Scenario-matched words</span><div>${vocabularyTargets.map(word => `<b>${escapeHtml(word.word)}</b>`).join('')}</div></div>` : ''}<div class="live-plan-card"><span>Today’s route</span><ol>${getLessonPlan(lesson).map(step => `<li>${escapeHtml(step.phase)}</li>`).join('')}</ol></div><div class="live-phrase-card"><div><span id="live-phrase-stage">Meet it in context</span><small>${phraseIndex + 1} of ${phraseTargets.length}</small></div><strong id="live-target-phrase">${escapeHtml(phraseTargets[0]?.text || '')}</strong><p id="live-target-meaning">${escapeHtml(phraseTargets[0]?.meaning || '')}</p><div><button id="hide-live-phrase">Hide & recall <i class="fa-solid fa-eye-slash"></i></button><button id="next-live-phrase">Next expression <i class="fa-solid fa-rotate"></i></button></div></div><div class="live-transcript-card"><div><span>Live transcript</span><small>Generated by Gemini</small></div><div id="live-transcript" class="live-transcript" aria-live="polite"></div></div></aside>
     </div>
@@ -304,9 +451,9 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
 
   try {
     await session.prepareAudioOutput();
-    await session.connect({ apiKey: getGeminiKey(), model: getGeminiSettings().liveModel, instruction: `${buildSpeakingInstruction(lesson, phraseTargets)}${buildVocabularySpeakingInstruction(vocabularyTargets)}${buildPhraseCoachingInstruction(phraseTargets)}` });
+    await session.connect({ apiKey: getGeminiKey(), model: getGeminiSettings().liveModel, instruction: speakingInstruction(lesson, phraseTargets, vocabularyTargets) });
     await session.startMicrophone();
-    session.sendText(buildCoachInitiativeCue(lesson, 'start', phraseTargets));
+    session.sendText(coachInstruction(lesson, 'start', phraseTargets));
     scheduleInitiative();
   } catch (error) {
     clearInitiativeTimer();
@@ -325,6 +472,7 @@ function showLiveError(container, message, onSetup) {
 }
 
 function completeSpeakingLesson(container, lesson, vocabularyTargets, phraseTargets, transcript, minutes, onNavigate) {
+  const coachName = lesson.languageCode === 'lt' ? 'Sprig' : 'Mira';
   const progress = readProgress();
   progress.completed = [...new Set([...(progress.completed || []), lesson.id])];
   progress.lastLessonId = lesson.id;
@@ -337,11 +485,13 @@ function completeSpeakingLesson(container, lesson, vocabularyTargets, phraseTarg
   const usedPhrases = detectUsedPhrases(phraseTargets, transcript);
   const activations = storeSpeakingActivations(vocabularyTargets, transcript, driveSync);
   const highlights = speakingSessionHighlights(transcript, activations);
-  const allLessonPhrases = lessonPhraseLibraryEntries(lesson);
+  const allLessonPhrases = lesson.languageCode === 'lt' ? lesson.lithuanianPhrases.map(item => ({ word: item.lt, definition: item.en })) : lessonPhraseLibraryEntries(lesson);
   let savedPhraseCount = 0;
   let phraseSaveError = '';
   try {
-    savedPhraseCount = saveLessonPhrasesToLibrary(lesson, driveSync).saved.length;
+    savedPhraseCount = lesson.languageCode === 'lt'
+      ? driveSync.addWords(lesson.lithuanianPhrases.map(item => ({ word: item.lt, lemma: item.lt, translation: item.en, definition: item.en, acceptedForms: item.acceptedForms, partOfSpeech: 'phrase', languageCode: 'lt', source: 'KeepVocab Lithuanian lesson' }))).length
+      : saveLessonPhrasesToLibrary(lesson, driveSync).saved.length;
   } catch (error) {
     phraseSaveError = error instanceof Error ? error.message : String(error);
   }
@@ -351,10 +501,16 @@ function completeSpeakingLesson(container, lesson, vocabularyTargets, phraseTarg
     <div class="speaking-library-save ${phraseSaveError ? 'error' : ''}"><i class="fa-solid ${phraseSaveError ? 'fa-circle-exclamation' : 'fa-book-bookmark'}"></i><div><strong>${phraseSaveError ? 'The lesson phrases could not be saved' : `${allLessonPhrases.length} lesson expressions are in your Library`}</strong><p>${phraseSaveError ? escapeHtml(phraseSaveError) : savedPhraseCount ? `${savedPhraseCount} new expression${savedPhraseCount === 1 ? '' : 's'} added with ${savedPhraseCount === 1 ? 'its' : 'their'} idiomatic ${savedPhraseCount === 1 ? 'meaning' : 'meanings'}.` : 'They were already saved, so no duplicates were created.'}</p></div></div>
     <div class="summary-takeaway"><i class="fa-solid fa-lightbulb"></i><div><strong>${usedPhrases.length ? `Next recall in ${phrasePractice.results.find(item => item.target.progressId === usedPhrases[0].progressId)?.intervalDays || 1} day${(phrasePractice.results.find(item => item.target.progressId === usedPhrases[0].progressId)?.intervalDays || 1) === 1 ? '' : 's'}` : 'This expression returns tomorrow'}</strong><p>${escapeHtml((usedPhrases[0] || phraseTargets[0])?.text || '')}</p></div></div>
     <div class="summary-actions"><button class="btn-green-solid" id="summary-again">Practice again</button><button class="status-pill offline" id="summary-lessons">All lessons</button></div></div>
-    <div class="summary-transcript spec-card"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-align-left"></i> Session transcript</div><span>${transcript.length} turns</span></div>${transcript.length ? transcript.map(entry => `<div class="transcript-turn ${entry.role}"><span>${entry.role === 'coach' ? 'Mira' : 'You'}</span><p>${escapeHtml(entry.text)}</p></div>`).join('') : '<p class="summary-empty">No transcript was received. You still completed the practice session.</p>'}</div></section>`;
+    <div class="summary-transcript spec-card"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-align-left"></i> Session transcript</div><span>${transcript.length} turns</span></div>${transcript.length ? transcript.map(entry => `<div class="transcript-turn ${entry.role}"><span>${entry.role === 'coach' ? coachName : 'You'}</span><p>${escapeHtml(entry.text)}</p></div>`).join('') : '<p class="summary-empty">No transcript was received. You still completed the practice session.</p>'}</div></section>`;
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  container.querySelector('#summary-again').addEventListener('click', () => renderLessonPreview(container, lesson.id, onNavigate));
-  container.querySelector('#summary-lessons').addEventListener('click', () => renderCatalog(container, onNavigate));
+  container.querySelector('#summary-again').addEventListener('click', () => {
+    if (lesson.languageCode === 'lt') renderLithuanianSpeakingCatalog(container, onNavigate);
+    else renderLessonPreview(container, lesson.id, onNavigate);
+  });
+  container.querySelector('#summary-lessons').addEventListener('click', () => {
+    if (lesson.languageCode === 'lt') renderLithuanianSpeakingCatalog(container, onNavigate);
+    else renderCatalog(container, onNavigate);
+  });
 }
 
 export async function teardownSpeakingMode() {
@@ -367,7 +523,8 @@ export async function teardownSpeakingMode() {
 }
 
 export function renderSpeakingMode(container, onNavigate) {
-  renderCatalog(container, onNavigate);
+  if (driveSync.getActiveCourseId() === 'lithuanian') renderLithuanianSpeakingCatalog(container, onNavigate);
+  else renderCatalog(container, onNavigate);
 }
 
 export { mergeTranscript, readProgress };

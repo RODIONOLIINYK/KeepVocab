@@ -250,6 +250,7 @@ export function renderLibraryView(container) {
   }
 
   function render() {
+    const courseLabel = driveSync.getActiveCourseId() === 'lithuanian' ? 'Lithuanian vocabulary' : 'English vocabulary';
     duplicateImages = reusedImageUrls(driveSync.getWords());
     const archives = driveSync.getMonthlyArchives();
     const words = selectedWords();
@@ -261,7 +262,7 @@ export function renderLibraryView(container) {
     const pexelsActive = Boolean(imageProviderSettings.provider === 'pexels' && imageProviderSettings.pexelsApiKey);
     container.innerHTML = `
       <section class="full-view-stack library-view" aria-labelledby="library-heading">
-        <div class="content-title-row"><div><span class="eyebrow">Your vocabulary</span><h1 id="library-heading">Library</h1><p>Manage exact meanings, visual cues, and review-ready vocabulary.</p></div><button class="btn-green-solid" id="library-add-word"><i class="fa-solid fa-plus"></i> Add word</button></div>
+        <div class="content-title-row"><div><span class="eyebrow">${courseLabel}</span><h1 id="library-heading">Library</h1><p>Manage exact meanings, visual cues, and review-ready vocabulary for this course.</p></div><button class="btn-green-solid" id="library-add-word"><i class="fa-solid fa-plus"></i> Add word</button></div>
         <div class="spec-card">
           <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-calendar-days"></i> Monthly vocabulary</div><span class="muted-label">Choose the notebook you want to manage</span></div>
           <div class="archive-tabs">

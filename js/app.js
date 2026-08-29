@@ -8,24 +8,28 @@ import { recordExerciseResult } from './services/exerciseResult.js?v=93';
 import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=93';
 import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=93';
 import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=93';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=93';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=102';
 import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=93';
 import { appendStudyMoment, buildSmartReminderPlan, buildStreakMaintenancePlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=93';
 import { localDateKey } from './utils/dates.js';
 
 import { renderReviewView } from './components/ReviewView.js?v=93';
-import { renderLibraryView } from './components/LibraryView.js?v=93';
+import { renderLibraryView } from './components/LibraryView.js?v=111';
 import { renderStatsView } from './components/StatsView.js?v=93';
 import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=93';
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=93';
 import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=93';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=93';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=111';
 import { renderDashboardView } from './components/DashboardView.js?v=93';
 import { renderDailySessionMode } from './components/DailySessionMode.js?v=93';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=93';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=93';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=100';
 import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=94';
-import { renderSettingsView } from './components/SettingsView.js?v=93';
+import { renderSettingsView } from './components/SettingsView.js?v=111';
+import { renderLearningPathView } from './components/LearningPathView.js?v=111';
+import { renderLessonMode, teardownLessonMode } from './components/LessonMode.js?v=111';
+import { getCourseDefinition } from './data/courses.js?v=111';
+import { fetchLithuanianEntry } from './services/lithuanianEnrichment.js?v=101';
 
 function buildStudyQueue() {
   const activeNotebook = driveSync.getActiveNotebook();
@@ -89,6 +93,7 @@ function initApp() {
   setInteractionSoundEnabledProvider(() => driveSync.getSettings().soundEnabled !== false);
   setupButtonSounds();
   setupNavigation();
+  setupCourseSwitcher();
   setupDriveBackupModal();
   setupQuickAddModal();
   setupEngagementSystem();
@@ -413,13 +418,20 @@ function setupEngagementSystem() {
 
 function navigateTo(viewName) {
   if (viewName === 'challenge') viewName = 'choose';
-  if (!['dashboard', 'daily', 'weak', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'speaking', 'settings'].includes(viewName)) viewName = 'dashboard';
+  if (!['dashboard', 'learn', 'lesson', 'daily', 'weak', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'speaking', 'settings'].includes(viewName)) viewName = 'dashboard';
+  if (viewName === 'learn' && !getCourseDefinition(driveSync.getActiveCourseId()).hasLearningPath) {
+    viewName = 'dashboard';
+    if (window.location.hash === '#learn') window.history.replaceState(null, '', '#dashboard');
+  }
   if (currentView === 'speaking' && viewName !== 'speaking') teardownSpeakingMode();
   if (currentView === 'useit' && viewName !== 'useit') teardownUseItMode();
+  if (currentView === 'lesson' && viewName !== 'lesson') teardownLessonMode();
   currentView = viewName;
   document.body.classList.toggle('speaking-view', viewName === 'speaking');
+  document.body.classList.toggle('learning-view', viewName === 'learn');
+  document.body.classList.toggle('lesson-view', viewName === 'lesson');
   document.body.classList.toggle('dashboard-view', viewName === 'dashboard');
-  document.body.classList.toggle('immersive-view', ['daily', 'weak', 'review', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'library', 'stats', 'settings'].includes(viewName));
+  document.body.classList.toggle('immersive-view', ['learn', 'lesson', 'daily', 'weak', 'review', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'library', 'stats', 'settings'].includes(viewName));
   const activeMonthLabel = document.getElementById('active-month-label');
   if (activeMonthLabel) activeMonthLabel.textContent = driveSync.getActiveNotebook().replace(/ Vocabulary$/, '');
 
@@ -439,6 +451,10 @@ function navigateTo(viewName) {
     renderDailySessionMode(container, navigateTo, { kind: 'weak' });
   } else if (viewName === 'review') {
     renderReviewView(container, navigateTo);
+  } else if (viewName === 'learn') {
+    renderLearningPathView(container, navigateTo);
+  } else if (viewName === 'lesson') {
+    renderLessonMode(container, navigateTo);
   } else if (viewName === 'library') {
     renderLibraryView(container, navigateTo);
   } else if (viewName === 'stats') {
@@ -471,6 +487,109 @@ function navigateTo(viewName) {
   requestAnimationFrame(() => {
     container.classList.add('view-enter');
     viewEnterTimer = window.setTimeout(() => container.classList.remove('view-enter'), 380);
+  });
+}
+
+function setupCourseSwitcher() {
+  const root = document.getElementById('course-switcher');
+  const trigger = document.getElementById('course-switcher-trigger');
+  const menu = document.getElementById('course-switcher-menu');
+  const label = document.getElementById('course-switcher-label');
+  const options = [...document.querySelectorAll('.course-switcher-option')];
+  if (!root || !trigger || !menu || !label || !options.length) return;
+
+  const sync = () => {
+    const activeCourseId = driveSync.getActiveCourseId();
+    const course = getCourseDefinition(activeCourseId);
+    const learnLink = document.querySelector('.nav-link-item[data-view="learn"]');
+    label.textContent = course.shortLabel || course.name;
+    trigger.setAttribute('aria-label', `Switch language course. Current: ${course.shortLabel || course.name}`);
+    trigger.title = `Switch course · ${course.shortLabel || course.name}`;
+    document.body.classList.toggle('has-learning-path', Boolean(course.hasLearningPath));
+    document.body.dataset.courseId = course.id;
+    if (learnLink) learnLink.hidden = !course.hasLearningPath;
+    options.forEach(option => {
+      option.setAttribute('aria-selected', String(option.dataset.courseId === activeCourseId));
+    });
+  };
+
+  const closeMenu = ({ restoreFocus = false } = {}) => {
+    root.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+    menu.hidden = true;
+    if (restoreFocus) trigger.focus();
+  };
+
+  const openMenu = () => {
+    root.classList.add('open');
+    trigger.setAttribute('aria-expanded', 'true');
+    menu.hidden = false;
+    const selected = options.find(option => option.getAttribute('aria-selected') === 'true') || options[0];
+    requestAnimationFrame(() => selected.focus());
+  };
+
+  const selectCourse = courseId => {
+    if (!courseId || courseId === driveSync.getActiveCourseId()) {
+      closeMenu({ restoreFocus: true });
+      return;
+    }
+    driveSync.setActiveCourseId(courseId);
+    wordsQueue = buildStudyQueue();
+    currentIndex = 0;
+    goalCount = Number(driveSync.getSettings().reviewsToday || 0);
+    const course = getCourseDefinition(courseId);
+    sync();
+    closeMenu({ restoreFocus: true });
+    updateGoalDisplay();
+    updateDashboardDerivedState();
+    window.dispatchEvent(new CustomEvent('keepvocab:course-changed', { detail: { courseId: course.id } }));
+    const courseAwareRoute = ['library', 'review', 'speaking', 'stats'].includes(currentView) ? currentView : null;
+    const nextView = courseAwareRoute || (course.hasLearningPath ? 'learn' : 'dashboard');
+    if (window.location.hash === `#${nextView}`) navigateTo(nextView);
+    else window.location.hash = nextView;
+    showToast(`${course.name} course selected.`);
+  };
+
+  sync();
+  trigger.addEventListener('click', () => {
+    if (menu.hidden) openMenu();
+    else closeMenu();
+  });
+  options.forEach(option => option.addEventListener('click', () => selectCourse(option.dataset.courseId)));
+  root.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeMenu({ restoreFocus: true });
+      return;
+    }
+    if (menu.hidden && ['ArrowDown', 'ArrowUp'].includes(event.key)) {
+      event.preventDefault();
+      openMenu();
+      return;
+    }
+    if (menu.hidden) return;
+    const focusedIndex = Math.max(0, options.indexOf(document.activeElement));
+    let nextIndex = focusedIndex;
+    if (event.key === 'ArrowDown') nextIndex = (focusedIndex + 1) % options.length;
+    else if (event.key === 'ArrowUp') nextIndex = (focusedIndex - 1 + options.length) % options.length;
+    else if (event.key === 'Home') nextIndex = 0;
+    else if (event.key === 'End') nextIndex = options.length - 1;
+    else if (event.key === 'Tab') {
+      closeMenu();
+      return;
+    } else return;
+    event.preventDefault();
+    options[nextIndex].focus();
+  });
+  document.addEventListener('pointerdown', event => {
+    if (!root.contains(event.target)) closeMenu();
+  });
+  window.addEventListener('keepvocab:course-changed', () => {
+    sync();
+    closeMenu();
+    wordsQueue = buildStudyQueue();
+    goalCount = Number(driveSync.getSettings().reviewsToday || 0);
+    updateGoalDisplay();
   });
 }
 
@@ -534,6 +653,9 @@ function setupQuickAddModal() {
   let bulkResults = [];
 
   if (!btnOpen) return;
+  const lookupForActiveCourse = term => driveSync.getActiveCourseId() === 'lithuanian'
+    ? fetchLithuanianEntry(term)
+    : fetchWordDetails(term);
 
   const updateBulkProgress = ({ completed, total, phase, startedAt, finished = false }) => {
     const safeTotal = Math.max(1, Number(total) || 1);
@@ -581,6 +703,11 @@ function setupQuickAddModal() {
 
   const openModal = () => {
     resetAsyncControls();
+    const lithuanian = driveSync.getActiveCourseId() === 'lithuanian';
+    bulkTab.hidden = false;
+    input.placeholder = lithuanian ? 'Lithuanian word or phrase' : 'Enter a word';
+    btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
+    editorSubtitle.textContent = 'Type a custom meaning or find dictionary meanings above';
     modal.classList.add('active');
     window.setTimeout(() => input.focus(), 0);
   };
@@ -745,7 +872,7 @@ function setupQuickAddModal() {
       body.className = 'sense-option-body';
       const meta = document.createElement('span');
       meta.className = 'sense-option-meta';
-      meta.textContent = `${index + 1}. ${sense.partOfSpeech || 'unknown'}`;
+      meta.textContent = `${index + 1}. ${sense.partOfSpeech || 'unknown'}${sense.source ? ` · ${sense.source}` : ''}`;
       const definition = document.createElement('strong');
       definition.textContent = sense.definition;
       body.append(meta, definition);
@@ -810,7 +937,7 @@ function setupQuickAddModal() {
     const lookupStartedAt = Date.now();
     updateBulkProgress({ completed: 0, total: allTerms.length, phase: 'Finding meanings', startedAt: lookupStartedAt });
     try {
-      const lookedUp = await lookupBulkWords(allTerms, fetchWordDetails, {
+      const lookedUp = await lookupBulkWords(allTerms, lookupForActiveCourse, {
         delayMs: BULK_LOOKUP_DELAY_MS,
         retries: 2,
         retryDelayMs: 750,
@@ -844,7 +971,7 @@ function setupQuickAddModal() {
     updateBulkProgress({ completed: 0, total: missingCount, phase: 'Retrying missing meanings', startedAt: retryStartedAt });
     bulkStatus.textContent = `Retrying only ${missingCount} missing word${missingCount === 1 ? '' : 's'}…`;
     try {
-      bulkResults = await retryMissingBulkWords(bulkResults, fetchWordDetails, {
+      bulkResults = await retryMissingBulkWords(bulkResults, lookupForActiveCourse, {
         delayMs: BULK_LOOKUP_DELAY_MS,
         retries: 2,
         retryDelayMs: 1000,
@@ -880,7 +1007,8 @@ function setupQuickAddModal() {
     const imageStartedAt = Date.now();
     updateBulkProgress({ completed: 0, total: items.length, phase: 'Choosing images', startedAt: imageStartedAt });
     try {
-      const checkedItems = items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
+      const lithuanian = driveSync.getActiveCourseId() === 'lithuanian';
+      const checkedItems = lithuanian ? items : items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
       const existingImageUrls = imageUrlsForWords(driveSync.getWords());
       const enrichedItems = await attachImagesSequentially(checkedItems, findRelevantImages, {
         excludeUrls: existingImageUrls,
@@ -925,11 +1053,17 @@ function setupQuickAddModal() {
     btnFetch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finding meanings & examples…';
 
     try {
-      currentFetchedData = await fetchWordDetails(w);
+      const lithuanian = driveSync.getActiveCourseId() === 'lithuanian';
+      currentFetchedData = await lookupForActiveCourse(w);
       input.value = currentFetchedData.word;
       document.getElementById('prev-w-title').textContent = currentFetchedData.word;
       document.getElementById('prev-w-phonetic').textContent = currentFetchedData.phonetic;
       renderSenses(currentFetchedData);
+      if (lithuanian) formStatus.textContent = currentFetchedData.aiGenerated
+        ? 'No dictionary entry was available. Review this AI suggestion before saving.'
+        : currentFetchedData.aiEnriched
+          ? 'Definition from Wiktionary; example and forms are AI-enriched. Review before saving.'
+          : 'Definition from Wiktionary. Review the meaning and add an example if you want.';
       if (currentFetchedData.correctedFrom) {
         formStatus.textContent = `Spelling corrected from “${currentFetchedData.correctedFrom}” to “${currentFetchedData.word}”. Review the meaning before saving.`;
       }
@@ -961,12 +1095,20 @@ function setupQuickAddModal() {
       exampleSourceUrl: sense.exampleSourceUrl || '',
       exampleAttribution: sense.exampleAttribution || '',
       exampleLicense: sense.exampleLicense || ''
+      ,lemma: currentFetchedData.lemma || currentFetchedData.word || wordText
+      ,translation: sense.translation || sense.definition
+      ,acceptedForms: sense.acceptedForms || [currentFetchedData.word || wordText]
+      ,grammaticalTags: sense.grammaticalTags || []
     })) : [{
       word: wordText,
       phonetic: phoneticInput.value.trim(),
       partOfSpeech: posInput.value.trim() || 'unknown',
       definition: definitionInput.value.trim(),
       example: exampleInput.value.trim()
+      ,lemma: wordText
+      ,translation: definitionInput.value.trim()
+      ,acceptedForms: [wordText]
+      ,grammaticalTags: []
     }];
 
     if (items.some(item => !item.definition)) {
@@ -978,7 +1120,8 @@ function setupQuickAddModal() {
     const originalButton = btnSave.innerHTML;
     btnSave.disabled = true;
     try {
-      const senseCheckedItems = items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
+      const lithuanian = driveSync.getActiveCourseId() === 'lithuanian';
+      const senseCheckedItems = lithuanian ? items : items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
       const existingImageUrls = imageUrlsForWords(driveSync.getWords());
       const enrichedItems = await attachImagesSequentially(senseCheckedItems, findRelevantImages, {
         excludeUrls: existingImageUrls,

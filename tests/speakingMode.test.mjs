@@ -175,11 +175,25 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'start', phraseTargets\)/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'silence', phraseTargets\)/);
   assert.match(component, /id="interrupt-live-coach"/);
-  assert.match(component, /Your turn — Mira is listening/);
+  assert.match(component, /lesson\.languageCode === 'lt' \? 'Sprig' : 'Mira'/);
+  assert.match(component, /renderLithuanianSpeakingPreview/);
+  assert.match(component, /Module \$\{recommended\.unitNumber\}/);
   assert.match(serviceWorker, /SpeakingMode\.js\?v=\d+/);
   assert.match(serviceWorker, /speakingLessons\.js\?v=\d+/);
   assert.match(serviceWorker, /geminiLive\.js\?v=\d+/);
   assert.match(serviceWorker, /speechService\.js\?v=\d+/);
+});
+
+test('Lithuanian speaking reuses the English catalog and preview design system', () => {
+  const component = readFileSync(resolve(projectRoot, 'js/components/SpeakingMode.js'), 'utf8');
+  const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
+  assert.ok((component.match(/<section class="speaking-hero">/g) || []).length >= 2);
+  assert.ok((component.match(/class="speaking-filter-row"/g) || []).length >= 2);
+  assert.ok((component.match(/class="speaking-lesson-grid"/g) || []).length >= 2);
+  assert.ok((component.match(/class="full-view-stack speaking-preview-shell"/g) || []).length >= 2);
+  assert.ok((component.match(/class="preview-side lesson-plan-side"/g) || []).length >= 2);
+  assert.doesNotMatch(component, /lithuanian-speaking(?:-preview)?/);
+  assert.doesNotMatch(styles, /\.lithuanian-speaking/);
 });
 
 test('live speaking interruption stops every queued audio source and suppresses stale chunks', () => {

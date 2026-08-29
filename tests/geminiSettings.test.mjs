@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MemoryStorage } from '../js/services/driveSync.js';
-import { DEFAULT_GEMINI_TEXT_MODEL, GEMINI_KEY_STORAGE, GEMINI_SETTINGS_STORAGE, getGeminiSettings, saveGeminiSettings } from '../js/services/geminiSettings.js';
+import { DEFAULT_GEMINI_TEXT_MODEL, DEFAULT_GEMINI_TTS_MODEL, DEFAULT_GEMINI_TTS_VOICE, GEMINI_KEY_STORAGE, GEMINI_SETTINGS_STORAGE, getGeminiSettings, saveGeminiSettings } from '../js/services/geminiSettings.js';
 
 test('one device-local Gemini key is shared by every AI feature', () => {
   const storage = new MemoryStorage();
@@ -16,4 +16,6 @@ test('Gemini settings use a lightweight stable default without requiring a key',
   const settings = getGeminiSettings(new MemoryStorage());
   assert.equal(settings.enabled, false);
   assert.equal(settings.textModel, DEFAULT_GEMINI_TEXT_MODEL);
+  assert.equal(settings.ttsModel, DEFAULT_GEMINI_TTS_MODEL);
+  assert.equal(settings.ttsVoice, DEFAULT_GEMINI_TTS_VOICE);
 });

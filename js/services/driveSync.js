@@ -3,6 +3,8 @@
 import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=93';
 import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=93';
 import { localDateKey } from '../utils/dates.js';
+import { getCourseDefinition } from '../data/courses.js';
+import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles } from './courseProfiles.js';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
@@ -19,7 +21,7 @@ const DRIVE_UPLOAD_BASE = 'https://www.googleapis.com/upload/drive/v3';
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 const BACKUP_FOLDER_NAME = 'KeepVocab Dictionary Backup';
 const BACKUP_APP_PROPERTY = 'keepVocabBackup';
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const TOKEN_RESTORE_BUFFER_MS = 30_000;
 
 function getNativeDriveAuthPlugin() {
@@ -67,7 +69,7 @@ function normalizeSenseText(value) {
 }
 
 function senseIdentity(word) {
-  return [word.monthYear, word.word, word.partOfSpeech || 'unknown', normalizeSenseText(word.definition)].join('|').toLowerCase();
+  return [word.courseId || 'english', word.monthYear, word.word, word.partOfSpeech || 'unknown', normalizeSenseText(word.definition)].join('|').toLowerCase();
 }
 
 function makeSenseId(word, partOfSpeech, definition) {
@@ -148,7 +150,7 @@ export function mergeDriveSettings(localSettings = {}, remoteSettings = {}, { fr
   const exerciseActivityByDevice = mergeActivityByDevice(localSettings, remoteSettings);
   const reviewActivity = aggregateActivity(exerciseActivityByDevice);
   const reviewsDate = Object.keys(reviewActivity).sort((a, b) => b.localeCompare(a))[0] || null;
-  return {
+  const mergedActivity = {
     ...base,
     exerciseActivityByDevice,
     reviewActivity,
@@ -157,6 +159,18 @@ export function mergeDriveSettings(localSettings = {}, remoteSettings = {}, { fr
     lastReviewDate: reviewsDate || base.lastReviewDate || null,
     dailyStreak: streakFromActivity(reviewActivity)
   };
+  const mergedCourses = mergeCourseProfiles(freshInstall ? {} : localSettings, remoteSettings);
+  const activeCourseId = mergedCourses.activeCourseId || 'english';
+  mergedCourses.courseProfiles[activeCourseId] = {
+    ...mergedCourses.courseProfiles[activeCourseId],
+    exerciseActivityByDevice,
+    reviewActivity,
+    reviewsDate,
+    reviewsToday: reviewsDate ? reviewActivity[reviewsDate] : 0,
+    lastReviewDate: reviewsDate || base.lastReviewDate || null,
+    dailyStreak: streakFromActivity(reviewActivity)
+  };
+  return migrateCourseSettings({ ...mergedActivity, ...mergedCourses });
 }
 
 function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource = 'drive') {
@@ -167,11 +181,19 @@ function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource
   const partOfSpeech = String(candidate.partOfSpeech || 'unknown').trim().toLowerCase();
   const definition = String(candidate.definition || '').trim();
   const id = String(candidate.id || makeWordId(word, monthYear, partOfSpeech, definition));
+  const courseId = String(candidate.courseId || 'english');
+  const course = getCourseDefinition(courseId);
 
   return {
     ...candidate,
     id,
     senseId: String(candidate.senseId || makeSenseId(word, partOfSpeech, definition)),
+    courseId: course.id,
+    languageCode: String(candidate.languageCode || course.languageCode),
+    lemma: String(candidate.lemma || word).trim().toLowerCase(),
+    translation: String(candidate.translation || (course.id === 'lithuanian' ? definition : '')).trim(),
+    acceptedForms: [...new Set((Array.isArray(candidate.acceptedForms) ? candidate.acceptedForms : [word]).map(value => String(value || '').trim().toLowerCase()).filter(Boolean))],
+    grammaticalTags: [...new Set((Array.isArray(candidate.grammaticalTags) ? candidate.grammaticalTags : []).map(value => String(value || '').trim()).filter(Boolean))],
     word,
     phonetic: String(candidate.phonetic || '').trim(),
     partOfSpeech,
@@ -281,6 +303,9 @@ export class DriveSyncService {
         updatedAt: new Date().toISOString()
       });
     }
+    this.write(STORAGE_KEY_SETTINGS, migrateCourseSettings(this.read(STORAGE_KEY_SETTINGS, {})));
+    const migratedWords = this.getAllWords().map(word => normalizeStoredWord(word, word.monthYear, word.source || 'local')).filter(Boolean);
+    this.saveWords(migratedWords, { silent: true });
     if (!this.storage.getItem(STORAGE_KEY_DRIVE_AUTH)) {
       this.write(STORAGE_KEY_DRIVE_AUTH, { isConnected: false, remembered: false, email: null, lastSynced: null, lastError: null, folderId: null });
     } else {
@@ -608,6 +633,10 @@ export class DriveSyncService {
   }
 
   getWords() {
+    return this.getAllWords().filter(word => (word.courseId || 'english') === this.getActiveCourseId());
+  }
+
+  getAllWords() {
     const words = this.read(STORAGE_KEY_WORDS, []);
     return Array.isArray(words) ? words : [];
   }
@@ -618,6 +647,9 @@ export class DriveSyncService {
 
   getMonthlyArchives() {
     const map = new Map();
+    // Library notebooks are course-scoped. Drive backup still serializes all
+    // courses, but English archive tabs must never leak into Lithuanian and
+    // vice versa.
     for (const word of this.getWords()) {
       const monthYear = word.monthYear || String(word.notebook || '').replace(/ Vocabulary$/, '');
       if (!map.has(monthYear)) map.set(monthYear, { monthYear, words: [], count: 0, wordCount: 0, mastered: 0 });
@@ -659,11 +691,11 @@ export class DriveSyncService {
     const monthYear = notebook.replace(/ Vocabulary$/, '');
     const now = new Date().toISOString();
     const candidates = (Array.isArray(wordObjects) ? wordObjects : [])
-      .map(wordObj => normalizeStoredWord({ ...wordObj, createdAt: wordObj.createdAt || now, updatedAt: now }, monthYear, 'manual'));
+      .map(wordObj => normalizeStoredWord({ ...wordObj, courseId: wordObj.courseId || this.getActiveCourseId(), createdAt: wordObj.createdAt || now, updatedAt: now }, monthYear, 'manual'));
     if (!candidates.length || candidates.some(word => !word)) throw new Error('Enter at least one valid meaning.');
     const identities = candidates.map(senseIdentity);
     if (new Set(identities).size !== identities.length) throw new Error('The selected meanings contain a duplicate definition.');
-    const existing = this.getWords();
+    const existing = this.getAllWords();
     const duplicate = candidates.find(candidate => existing.some(word => senseIdentity(word) === senseIdentity(candidate)));
     if (duplicate) {
       throw new Error(`That meaning of “${duplicate.word}” is already in ${notebook}. Choose a different meaning or edit the definition.`);
@@ -676,10 +708,10 @@ export class DriveSyncService {
   }
 
   updateWord(wordId, patch = {}) {
-    const words = this.getWords();
+    const words = this.getAllWords();
     const index = words.findIndex(word => word.id === wordId);
     if (index === -1) throw new Error('That vocabulary entry no longer exists.');
-    const allowed = ['word', 'phonetic', 'partOfSpeech', 'definition', 'example', 'exampleSourceUrl', 'exampleAttribution', 'exampleLicense', 'audioUrl', 'imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery', 'imageCustomConcept', 'imageKind', 'imageGeneratedModel', 'imageGeneratedAt', 'imageGeneratedPrompt'];
+    const allowed = ['word', 'phonetic', 'partOfSpeech', 'definition', 'example', 'lemma', 'translation', 'exampleSourceUrl', 'exampleAttribution', 'exampleLicense', 'audioUrl', 'imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery', 'imageCustomConcept', 'imageKind', 'imageGeneratedModel', 'imageGeneratedAt', 'imageGeneratedPrompt'];
     const cleanPatch = Object.fromEntries(allowed.filter(key => Object.prototype.hasOwnProperty.call(patch, key)).map(key => [key, String(patch[key] ?? '').trim()]));
     if (patch.imageFeedback && typeof patch.imageFeedback === 'object') cleanPatch.imageFeedback = {
       rejectedUrls: [...new Set((patch.imageFeedback.rejectedUrls || []).map(String).filter(Boolean))].slice(0, 80),
@@ -703,7 +735,7 @@ export class DriveSyncService {
   }
 
   deleteWord(wordId) {
-    const words = this.getWords();
+    const words = this.getAllWords();
     const deleted = words.find(word => word.id === wordId);
     if (!deleted) return false;
     const tombstones = this.getTombstones().filter(item => item.id !== deleted.id);
@@ -718,14 +750,45 @@ export class DriveSyncService {
   }
 
   getSettings() {
-    return this.read(STORAGE_KEY_SETTINGS, {});
+    return migrateCourseSettings(this.read(STORAGE_KEY_SETTINGS, {}));
   }
 
   updateSettings(patch, { silent = false } = {}) {
-    const settings = { ...this.getSettings(), ...patch, updatedAt: new Date().toISOString() };
+    const settings = updateActiveCourseSettings(this.getSettings(), { ...patch, updatedAt: new Date().toISOString() });
     this.write(STORAGE_KEY_SETTINGS, settings);
+    this.isFreshInstall = false;
     if (!silent) this.emitChange('settings');
     return settings;
+  }
+
+  getActiveCourseId() {
+    return this.getSettings().activeCourseId || 'english';
+  }
+
+  getCourseProfile(courseId = this.getActiveCourseId()) {
+    const settings = this.getSettings();
+    return settings.courseProfiles?.[courseId] || null;
+  }
+
+  updateCourseProfile(courseId, patch = {}, { silent = false } = {}) {
+    const settings = this.getSettings();
+    const profile = { ...(settings.courseProfiles?.[courseId] || {}), ...patch, courseId, updatedAt: new Date().toISOString() };
+    const next = { ...settings, courseProfiles: { ...settings.courseProfiles, [courseId]: profile }, updatedAt: new Date().toISOString() };
+    const normalized = courseId === settings.activeCourseId ? migrateCourseSettings({ ...next, ...profile }) : next;
+    this.write(STORAGE_KEY_SETTINGS, normalized);
+    this.isFreshInstall = false;
+    if (!silent) this.emitChange('settings');
+    return profile;
+  }
+
+  setActiveCourseId(courseId) {
+    const settings = switchActiveCourse(this.getSettings(), courseId);
+    settings.updatedAt = new Date().toISOString();
+    this.write(STORAGE_KEY_SETTINGS, settings);
+    this.isFreshInstall = false;
+    this.refreshNotebooks();
+    this.emitChange('course');
+    return courseId;
   }
 
   recordReview(date = new Date()) {
@@ -790,7 +853,7 @@ export class DriveSyncService {
       remoteByMonth.set(monthYear, payloads);
     }
 
-    const localWordsForSync = this.getWords();
+    const localWordsForSync = this.getAllWords();
     const allMonths = new Set([
       ...localWordsForSync.map(word => word.monthYear),
       ...this.getTombstones().map(item => item.monthYear),
@@ -815,7 +878,7 @@ export class DriveSyncService {
 
       const remotePayloads = remoteByMonth.get(monthYear) || [];
       for (const { payload } of remotePayloads) {
-        if (Number(payload?.schemaVersion) !== SCHEMA_VERSION || payload?.monthYear !== monthYear) continue;
+        if (![1, SCHEMA_VERSION].includes(Number(payload?.schemaVersion)) || payload?.monthYear !== monthYear) continue;
         for (const candidate of Array.isArray(payload.words) ? payload.words : []) {
           const word = normalizeStoredWord(candidate, monthYear, 'drive');
           if (!word) continue;

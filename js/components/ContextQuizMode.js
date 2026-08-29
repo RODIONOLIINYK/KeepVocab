@@ -1,7 +1,7 @@
 import { driveSync } from '../services/driveSync.js?v=93';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
 import { getGeminiSettings } from '../services/geminiSettings.js?v=93';
-import { clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=93';
+import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=100';
 import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=93';
 import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=93';
@@ -26,6 +26,7 @@ export function renderContextQuizMode(container, onNavigate) {
   }
 
   let contextSet = null;
+  let quizWords = contextWords;
   let current = 0;
   let score = 0;
   let answered = false;
@@ -54,6 +55,7 @@ export function renderContextQuizMode(container, onNavigate) {
     renderLoading();
     try {
       contextSet = await generateContextExerciseSet(contextWords, { force });
+      quizWords = contextWords.filter(word => contextSet.items.some(item => item.wordId === String(word.id)));
       if (!selectionRecorded) {
         recordModeWordSelections(driveSync, contextWords, { mode: 'context' });
         selectionRecorded = true;
@@ -64,25 +66,36 @@ export function renderContextQuizMode(container, onNavigate) {
       selectedId = '';
       render();
     } catch (error) {
-      renderError(error);
+      try {
+        contextSet = buildLocalContextSet(contextWords);
+        quizWords = contextWords.filter(word => contextSet.items.some(item => item.wordId === String(word.id)));
+        current = 0;
+        score = 0;
+        answered = false;
+        selectedId = '';
+        render();
+      } catch {
+        renderError(error);
+      }
     }
   }
 
   function render() {
     if (!contextSet) return renderLoading();
-    if (current >= contextWords.length) {
-      container.innerHTML = `<section class="mode-completion-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Context complete</span><h1>${score} of ${contextWords.length}</h1><p>You inferred meaning from AI-generated sentences without definition clues.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="context-again">New AI sentences</button><button class="status-pill offline" id="context-home">Today</button></div></section>`;
+    if (current >= quizWords.length) {
+      container.innerHTML = `<section class="mode-completion-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Context complete</span><h1>${score} of ${quizWords.length}</h1><p>You inferred meaning from ${contextSet.kind === 'ai' ? 'AI-generated sentences' : contextSet.kind === 'mixed' ? 'generated and saved example sentences' : 'your saved example sentences'} without definition clues.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="context-again">New AI sentences</button><button class="status-pill offline" id="context-home">Today</button></div></section>`;
       container.querySelector('#context-again').addEventListener('click', () => renderContextQuizMode(container, onNavigate));
       container.querySelector('#context-home').addEventListener('click', () => go('dashboard', onNavigate));
       return;
     }
 
-    const target = contextWords[current];
+    const target = quizWords[current];
     const generatedItem = contextSet.items.find(item => item.wordId === String(target.id));
     const options = shuffle([target, ...shuffle(allWords.filter(word => word.id !== target.id && word.word !== target.word)).slice(0, 3)]);
     const cloze = clozeContextSentence(generatedItem.sentence, target.word);
-    container.innerHTML = `<section class="context-mode context-sentence-mode" aria-labelledby="context-heading"><header class="exercise-topbar"><button class="status-pill offline" id="context-exit"><i class="fa-solid fa-arrow-left"></i> Exit</button><div class="exercise-progress"><span>${current + 1} of ${contextWords.length}</span><i><b style="width:${Math.round((current + 1) / contextWords.length * 100)}%"></b></i></div><strong>${score} correct</strong></header>
-      <article class="daily-exercise-card context-question-card"><span class="eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> AI-generated sentence</span><h1 id="context-heading">Choose the word that fits</h1><h2>“${escapeHtml(cloze)}”</h2><div class="choice-grid">${options.map(option => { const state = answered ? option.id === target.id ? ' correct' : option.id === selectedId ? ' incorrect' : '' : ''; return `<button class="choice-button${state}" data-context-word="${escapeHtml(option.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(option.word)}${answered && option.id === target.id ? '<i class="fa-solid fa-check" aria-hidden="true"></i>' : answered && option.id === selectedId ? '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' : ''}</button>`; }).join('')}</div>${answered ? `<div class="practice-feedback ${selectedId === target.id ? 'correct' : 'incorrect'}" role="status"><strong>${selectedId === target.id ? 'That fits the situation.' : `Answer: ${escapeHtml(target.word)}`}</strong><span>${escapeHtml(generatedItem.sentence)}</span></div><button class="btn-green-solid" id="context-next">${current + 1 === contextWords.length ? 'See results' : 'Next sentence'}</button>` : ''}</article></section>`;
+    const sourceLabel = generatedItem.source === 'saved-example' ? 'Saved example fallback' : contextSet.kind === 'mixed' ? 'Resilient context set' : 'AI-generated sentence';
+    container.innerHTML = `<section class="context-mode context-sentence-mode" aria-labelledby="context-heading"><header class="exercise-topbar"><button class="status-pill offline" id="context-exit"><i class="fa-solid fa-arrow-left"></i> Exit</button><div class="exercise-progress"><span>${current + 1} of ${quizWords.length}</span><i><b style="width:${Math.round((current + 1) / quizWords.length * 100)}%"></b></i></div><strong>${score} correct</strong></header>
+      <article class="daily-exercise-card context-question-card"><span class="eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> ${sourceLabel}</span><h1 id="context-heading">Choose the word that fits</h1><h2>“${escapeHtml(cloze)}”</h2><div class="choice-grid">${options.map(option => { const state = answered ? option.id === target.id ? ' correct' : option.id === selectedId ? ' incorrect' : '' : ''; return `<button class="choice-button${state}" data-context-word="${escapeHtml(option.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(option.word)}${answered && option.id === target.id ? '<i class="fa-solid fa-check" aria-hidden="true"></i>' : answered && option.id === selectedId ? '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' : ''}</button>`; }).join('')}</div>${answered ? `<div class="practice-feedback ${selectedId === target.id ? 'correct' : 'incorrect'}" role="status"><strong>${selectedId === target.id ? 'That fits the situation.' : `Answer: ${escapeHtml(target.word)}`}</strong><span>${escapeHtml(generatedItem.sentence)}</span></div><button class="btn-green-solid" id="context-next">${current + 1 === quizWords.length ? 'See results' : 'Next sentence'}</button>` : ''}</article></section>`;
     container.querySelector('#context-exit').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelectorAll('[data-context-word]').forEach(button => button.addEventListener('click', () => {
       if (answered) return;

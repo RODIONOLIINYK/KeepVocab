@@ -19,7 +19,7 @@ function readCache(storage) {
   try { return JSON.parse(storage?.getItem(CONTEXT_EXERCISE_CACHE) || '{}') || {}; } catch { return {}; }
 }
 
-function sanitizeGeneratedSet(result, words) {
+function sanitizeGeneratedSet(result, words, { requireComplete = true } = {}) {
   const byId = new Map((words || []).map(word => [String(word.id), word]));
   const items = (Array.isArray(result?.items) ? result.items : []).map(item => {
     const word = byId.get(String(item?.wordId || ''));
@@ -28,11 +28,19 @@ function sanitizeGeneratedSet(result, words) {
     return { wordId: String(word.id), sentence };
   }).filter(Boolean);
   const uniqueItems = [...new Map(items.map(item => [item.wordId, item])).values()];
-  if (uniqueItems.length !== byId.size) throw new Error('Gemini did not create a complete context set. Please try again.');
+  if (requireComplete && uniqueItems.length !== byId.size) throw new Error('Gemini did not create a complete context set. Please try again.');
   return {
     kind: 'ai',
-    items: uniqueItems
+    items: uniqueItems,
+    skippedWordIds: [...byId.keys()].filter(id => !uniqueItems.some(item => item.wordId === id))
   };
+}
+
+function localContextItems(words) {
+  return (words || []).map(word => {
+    const sentence = normalize(word.example);
+    return sentence && containsTarget(sentence, word.word) ? { wordId: String(word.id), sentence, source: 'saved-example' } : null;
+  }).filter(Boolean);
 }
 
 export function buildContextExercisePrompt(words) {
@@ -69,7 +77,24 @@ export async function generateContextExerciseSet(words, options = {}) {
   }
   const generate = options.generate || generateGeminiContent;
   const result = await generate(buildContextExercisePrompt(selected), { json: true, maxOutputTokens: 1200, storage });
-  const clean = sanitizeGeneratedSet(result, selected);
+  const firstPass = sanitizeGeneratedSet(result, selected, { requireComplete: false });
+  let items = firstPass.items;
+  const missing = selected.filter(word => !items.some(item => item.wordId === String(word.id)));
+  if (missing.length) {
+    try {
+      const retry = await generate(`${buildContextExercisePrompt(missing)}\nThis is a repair request. Return only the ${missing.length} missing item${missing.length === 1 ? '' : 's'}, with every supplied wordId exactly.`, { json: true, maxOutputTokens: Math.max(500, missing.length * 150), storage });
+      const repaired = sanitizeGeneratedSet(retry, missing, { requireComplete: false });
+      items = [...items, ...repaired.items.filter(item => !items.some(existing => existing.wordId === item.wordId))];
+    } catch { /* keep valid first-pass items and use local examples below */ }
+  }
+  const localItems = localContextItems(selected).filter(item => !items.some(existing => existing.wordId === item.wordId));
+  items = [...items, ...localItems];
+  if (items.length < 3) throw new Error('Gemini and the saved examples did not provide enough valid context sentences. Try again or add examples to these words.');
+  const clean = {
+    kind: localItems.length ? (firstPass.items.length ? 'mixed' : 'local') : 'ai',
+    items,
+    skippedWordIds: selected.map(word => String(word.id)).filter(id => !items.some(item => item.wordId === id))
+  };
   if (storage) {
     const cache = readCache(storage);
     cache[key] = clean;
@@ -77,6 +102,12 @@ export async function generateContextExerciseSet(words, options = {}) {
     storage.setItem(CONTEXT_EXERCISE_CACHE, JSON.stringify(recent));
   }
   return clean;
+}
+
+export function buildLocalContextSet(words) {
+  const items = localContextItems(words);
+  if (items.length < 3) throw new Error('Add saved examples to at least 3 words to practise Context without Gemini.');
+  return { kind: 'local', items, skippedWordIds: (words || []).map(word => String(word.id)).filter(id => !items.some(item => item.wordId === id)) };
 }
 
 export function clozeContextSentence(sentence, word) {

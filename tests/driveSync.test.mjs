@@ -167,10 +167,13 @@ test('first sync creates one dedicated folder, monthly files, and a settings fil
     'KeepVocab Settings.json'
   ]);
   assert.equal(drive.payloadByName('Dictionary May 2026.json').words[0].definition, 'The land beside a river.');
+  assert.equal(drive.payloadByName('Dictionary May 2026.json').schemaVersion, 2);
   assert.equal(drive.payloadByName('Dictionary July 2026.json').monthYear, 'July 2026');
   assert.equal(drive.payloadByName('KeepVocab Settings.json').settings.dailyGoal, 27);
   assert.equal(drive.payloadByName('KeepVocab Settings.json').settings.learningStats.sessionsCompleted, 4);
   assert.deepEqual(drive.payloadByName('KeepVocab Settings.json').settings.speakingProgress.completed, ['rent-apartment']);
+  assert.equal(drive.payloadByName('KeepVocab Settings.json').schemaVersion, 2);
+  assert.equal(drive.payloadByName('KeepVocab Settings.json').settings.courseProfiles.english.dailyGoal, 27);
   assert.equal(result.months, 2);
   assert.equal(result.createdFiles, 3);
   assert.ok(drive.calls.some(call => new URL(call.url).searchParams.get('q')?.includes("appProperties has { key='keepVocabBackup' and value='folder' }")));
@@ -217,6 +220,31 @@ test('fresh reinstall restores exact meanings, original months, settings, and pr
   assert.equal(reinstalled.getSettings().learningStats.sessionsCompleted, 7);
   assert.deepEqual(reinstalled.getSettings().speakingProgress.completed, ['rent-apartment', 'present-idea']);
   assert.deepEqual(reinstalled.getMonthlyArchives().map(archive => archive.monthYear), ['July 2026', 'May 2026']);
+});
+
+test('Drive schema v2 restores resumable Lithuanian lesson progress and stable completion evidence', async () => {
+  const drive = new MockDrive();
+  const original = new DriveSyncService(new MemoryStorage(), drive.fetch);
+  original.setActiveCourseId('lithuanian');
+  original.updateCourseProfile('lithuanian', {
+    activeLessonId: 'sep-02-s3',
+    completedNodeIds: ['sep-01-s1', 'sep-01-s2'],
+    lessonAttempts: {
+      'sep-02-s3': { id: 'attempt-stable', sessionId: 'sep-02-s3', exerciseIndex: 4, status: 'in-progress', updatedAt: '2026-09-12T12:00:00.000Z' }
+    },
+    canDoEvidence: [{ id: 'evidence-sep-01-s1', nodeId: 'sep-01-s1', demonstrated: true, completedAt: '2026-09-10T12:00:00.000Z' }]
+  });
+  authorize(original);
+  await original.syncGoogleDrive();
+
+  const restored = new DriveSyncService(new MemoryStorage(), drive.fetch);
+  authorize(restored);
+  await restored.syncGoogleDrive();
+  const profile = restored.getCourseProfile('lithuanian');
+  assert.equal(profile.activeLessonId, 'sep-02-s3');
+  assert.equal(profile.lessonAttempts['sep-02-s3'].exerciseIndex, 4);
+  assert.deepEqual(profile.completedNodeIds, ['sep-01-s1', 'sep-01-s2']);
+  assert.equal(profile.canDoEvidence[0].nodeId, 'sep-01-s1');
 });
 
 test('Drive combines exercise activity from multiple devices without double counting repeated syncs', async () => {

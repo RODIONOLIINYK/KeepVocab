@@ -113,10 +113,14 @@ export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '') 
     const sense = senses[Math.max(0, Math.min(Number(senseIndex) || 0, senses.length - 1))] || {};
     return {
       word: data.word || result.term,
+      lemma: sense.lemma || data.lemma || data.word || result.term,
       phonetic: sense.phonetic || data.phonetic || '',
       audioUrl: sense.audioUrl || data.audioUrl || '',
       partOfSpeech: sense.partOfSpeech || 'unknown',
       definition: sense.definition || '',
+      translation: sense.translation || sense.definition || '',
+      acceptedForms: sense.acceptedForms || data.acceptedForms || [data.word || result.term],
+      grammaticalTags: sense.grammaticalTags || data.grammaticalTags || [],
       example: sense.example || '',
       exampleSourceUrl: sense.exampleSourceUrl || '',
       exampleAttribution: sense.exampleAttribution || '',
@@ -125,10 +129,14 @@ export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '') 
   }
   return {
     word: result?.term || '',
+    lemma: result?.term || '',
     phonetic: '',
     audioUrl: '',
     partOfSpeech: 'unknown',
     definition: String(manualDefinition || '').trim(),
+    translation: String(manualDefinition || '').trim(),
+    acceptedForms: result?.term ? [result.term] : [],
+    grammaticalTags: [],
     example: ''
   };
 }

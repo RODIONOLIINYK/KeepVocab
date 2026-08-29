@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { selectEnglishVoice, speakWord } from '../js/services/speechService.js';
+import { selectEnglishVoice, selectLocaleVoice, speakWord } from '../js/services/speechService.js';
 
 test('speech synthesis selects the exact English locale before a generic English voice', () => {
   const voices = [
@@ -9,6 +9,37 @@ test('speech synthesis selects the exact English locale before a generic English
   ];
   assert.equal(selectEnglishVoice(voices, 'en-US').name, 'US Natural');
   assert.equal(selectEnglishVoice(voices, 'en-AU').name, 'US Natural');
+});
+
+test('Lithuanian voice selection never falls through to an English voice', () => {
+  const voices = [{ name: 'US Natural', lang: 'en-US' }, { name: 'Lithuanian', lang: 'lt-LT' }];
+  assert.equal(selectLocaleVoice(voices, 'lt-LT').name, 'Lithuanian');
+  assert.equal(selectLocaleVoice(voices.slice(0, 1), 'lt-LT'), null);
+});
+
+test('Lithuanian speech can use an lt-LT language tag when voice enumeration is unavailable', async () => {
+  const originalWindow = globalThis.window;
+  let spoken = null;
+  class FakeUtterance {
+    constructor(text) { this.text = text; }
+  }
+  globalThis.window = {
+    SpeechSynthesisUtterance: FakeUtterance,
+    speechSynthesis: {
+      cancel() {},
+      getVoices: () => [],
+      addEventListener() {},
+      removeEventListener() {},
+      speak(utterance) { spoken = utterance; queueMicrotask(() => utterance.onend()); }
+    }
+  };
+  try {
+    assert.equal(await speakWord('Laba diena!', 'lt-LT', 0.84), true);
+    assert.equal(spoken.lang, 'lt-LT');
+    assert.equal(spoken.voice, undefined);
+  } finally {
+    globalThis.window = originalWindow;
+  }
 });
 
 test('speech requests fail safely when no synthesizer exists', async () => {

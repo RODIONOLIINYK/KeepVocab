@@ -3,6 +3,8 @@ export const GEMINI_SETTINGS_STORAGE = 'keepvocab_google_ai_settings_v1';
 export const DEFAULT_GEMINI_TEXT_MODEL = 'gemini-3.1-flash-lite';
 export const DEFAULT_GEMINI_LIVE_MODEL = 'gemini-3.1-flash-live-preview';
 export const DEFAULT_GEMINI_IMAGE_MODEL = 'gemini-3.1-flash-lite-image-preview';
+export const DEFAULT_GEMINI_TTS_MODEL = 'gemini-2.5-flash-preview-tts';
+export const DEFAULT_GEMINI_TTS_VOICE = 'Achird';
 
 function parse(raw, fallback) {
   try { return JSON.parse(raw) || fallback; } catch { return fallback; }
@@ -20,6 +22,8 @@ export function getGeminiSettings(storage = globalThis.localStorage) {
     textModel: String(saved.textModel || DEFAULT_GEMINI_TEXT_MODEL),
     liveModel: String(saved.liveModel || DEFAULT_GEMINI_LIVE_MODEL),
     imageModel: String(saved.imageModel || DEFAULT_GEMINI_IMAGE_MODEL),
+    ttsModel: String(saved.ttsModel || DEFAULT_GEMINI_TTS_MODEL),
+    ttsVoice: String(saved.ttsVoice || DEFAULT_GEMINI_TTS_VOICE),
     updatedAt: saved.updatedAt || null,
     enabled: Boolean(storage?.getItem(GEMINI_KEY_STORAGE))
   };
@@ -35,6 +39,8 @@ export function saveGeminiSettings(input, storage = globalThis.localStorage, opt
     textModel: String(input.textModel || current.textModel || DEFAULT_GEMINI_TEXT_MODEL).trim(),
     liveModel: String(input.liveModel || current.liveModel || DEFAULT_GEMINI_LIVE_MODEL).trim(),
     imageModel: String(input.imageModel || current.imageModel || DEFAULT_GEMINI_IMAGE_MODEL).trim(),
+    ttsModel: String(input.ttsModel || current.ttsModel || DEFAULT_GEMINI_TTS_MODEL).trim(),
+    ttsVoice: String(input.ttsVoice || current.ttsVoice || DEFAULT_GEMINI_TTS_VOICE).trim(),
     updatedAt: input.updatedAt || new Date().toISOString()
   };
   storage.setItem(GEMINI_SETTINGS_STORAGE, JSON.stringify(models));
@@ -48,6 +54,8 @@ export function clearGeminiSettings(storage = globalThis.localStorage, options =
     textModel: DEFAULT_GEMINI_TEXT_MODEL,
     liveModel: DEFAULT_GEMINI_LIVE_MODEL,
     imageModel: DEFAULT_GEMINI_IMAGE_MODEL,
+    ttsModel: DEFAULT_GEMINI_TTS_MODEL,
+    ttsVoice: DEFAULT_GEMINI_TTS_VOICE,
     updatedAt: new Date().toISOString()
   }));
   if (!options.silent) emitChange();
@@ -61,6 +69,8 @@ export function getGeminiBackupRecord(storage = globalThis.localStorage) {
     textModel: settings.textModel,
     liveModel: settings.liveModel,
     imageModel: settings.imageModel,
+    ttsModel: settings.ttsModel,
+    ttsVoice: settings.ttsVoice,
     updatedAt: settings.updatedAt || new Date(0).toISOString()
   };
 }
@@ -72,6 +82,8 @@ export function restoreGeminiBackupRecord(record, storage = globalThis.localStor
     textModel: record.textModel,
     liveModel: record.liveModel,
     imageModel: record.imageModel,
+    ttsModel: record.ttsModel,
+    ttsVoice: record.ttsVoice,
     updatedAt: record.updatedAt || new Date(0).toISOString()
   }, storage, { silent: true });
 }
@@ -89,6 +101,7 @@ export async function generateGeminiParts(parts, options = {}) {
     body: JSON.stringify({
       contents: [{ role: 'user', parts: Array.isArray(parts) ? parts : [{ text: String(parts || '') }] }],
       generationConfig: {
+        ...(options.generationConfig || {}),
         ...(options.json ? { responseMimeType: 'application/json' } : {}),
         ...(options.responseModalities ? { responseModalities: options.responseModalities } : {}),
         maxOutputTokens: options.maxOutputTokens || 800
