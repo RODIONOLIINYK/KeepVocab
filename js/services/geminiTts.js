@@ -8,6 +8,10 @@ import {
 import { base64ToBytes } from '../utils/base64.js?v=117';
 
 export { DEFAULT_GEMINI_TTS_MODEL, DEFAULT_GEMINI_TTS_VOICE };
+export const DEFAULT_DIALOGUE_VOICES = Object.freeze([
+  { speaker: 'Rasa', voice: 'Achird' },
+  { speaker: 'Mantas', voice: 'Puck' }
+]);
 const DB_NAME = 'keepvocab_disposable_audio_v1';
 const STORE_NAME = 'tts';
 const AUDIO_CACHE_LIMIT = 160;
@@ -80,6 +84,67 @@ function inlineAudioBlob(part) {
   if (/wav|mpeg|mp3|ogg|webm/i.test(mimeType)) return new Blob([bytes], { type: mimeType });
   const rate = Number(mimeType.match(/rate=(\d+)/i)?.[1] || 24000);
   return new Blob([pcm16ToWavBytes(bytes, rate)], { type: 'audio/wav' });
+}
+
+function interactionAudioBlob(payload) {
+  const direct = payload?.output_audio || payload?.outputAudio;
+  const content = direct?.data ? direct : (payload?.steps || []).flatMap(step => step?.content || []).find(item => item?.type === 'audio' && item?.data);
+  if (!content?.data) return null;
+  const mimeType = String(content.mime_type || content.mimeType || 'audio/wav');
+  const bytes = base64ToBytes(content.data);
+  if (/wav|mpeg|mp3|ogg|webm|aac|flac/i.test(mimeType)) return new Blob([bytes], { type: mimeType });
+  const rate = Number(content.sample_rate || content.sampleRate || mimeType.match(/rate=(\d+)/i)?.[1] || 24000);
+  return new Blob([pcm16ToWavBytes(bytes, rate)], { type: 'audio/wav' });
+}
+
+export function buildMultiSpeakerTtsRequest(transcript, voices = DEFAULT_DIALOGUE_VOICES, model = DEFAULT_GEMINI_TTS_MODEL) {
+  const lines = (transcript || []).map(turn => `${String(turn?.speaker || '').trim()}: ${String(turn?.text || '').trim()}`).filter(line => !/^:\s*$/.test(line));
+  const speakers = uniqueSpeakerVoices(transcript, voices);
+  return {
+    model,
+    input: `Perform this Lithuanian learner dialogue at a clear, natural pace. Read only the named transcript lines. Keep each character's assigned voice consistent.\n\n${lines.join('\n')}`,
+    response_format: { type: 'audio' },
+    generation_config: { speech_config: speakers.map(item => ({ speaker: item.speaker, voice: item.voice })) }
+  };
+}
+
+function uniqueSpeakerVoices(transcript, voices) {
+  const supplied = new Map((voices || []).map(item => [String(item?.speaker || '').trim(), String(item?.voice || '').trim()]));
+  const defaults = DEFAULT_DIALOGUE_VOICES.map(item => item.voice);
+  const speakers = [...new Set((transcript || []).map(turn => String(turn?.speaker || '').trim()).filter(Boolean))].slice(0, 2);
+  return speakers.map((speaker, index) => ({ speaker, voice: supplied.get(speaker) || defaults[index % defaults.length] }));
+}
+
+export async function getCachedOrGenerateDialogueAudio(transcript, { voices = DEFAULT_DIALOGUE_VOICES, storage = globalThis.localStorage, indexedDb = globalThis.indexedDB, fetchImpl = globalThis.fetch } = {}) {
+  const cleanTranscript = (transcript || []).map(turn => ({ speaker: String(turn?.speaker || '').trim(), text: String(turn?.text || '').trim() })).filter(turn => turn.speaker && turn.text);
+  if (cleanTranscript.length < 2 || new Set(cleanTranscript.map(turn => turn.speaker)).size < 2) return null;
+  const settings = getGeminiSettings(storage);
+  const selectedVoices = uniqueSpeakerVoices(cleanTranscript, voices);
+  const key = `dialogue-v1|${settings.ttsModel}|${selectedVoices.map(item => `${item.speaker}:${item.voice}`).join('|')}|${cleanTranscript.map(turn => `${turn.speaker}:${turn.text}`).join('|')}`.toLocaleLowerCase('lt-LT');
+  const cached = await readCachedBlob(key, indexedDb).catch(() => null);
+  if (cached) return URL.createObjectURL(cached);
+  if (!settings.apiKey || !fetchImpl || globalThis.navigator?.onLine === false) return null;
+  const request = buildMultiSpeakerTtsRequest(cleanTranscript, selectedVoices, settings.ttsModel || DEFAULT_GEMINI_TTS_MODEL);
+  let response;
+  try {
+    response = await fetchImpl('https://generativelanguage.googleapis.com/v1beta/interactions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': settings.apiKey },
+      signal: AbortSignal.timeout(30_000),
+      body: JSON.stringify(request)
+    });
+  } catch (error) {
+    throw error instanceof Error ? error : new Error('Gemini dialogue audio request failed.');
+  }
+  if (!response.ok) {
+    let detail = '';
+    try { detail = (await response.json())?.error?.message || ''; } catch {}
+    throw new Error(`Gemini dialogue audio failed (${response.status}).${detail ? ` ${detail}` : ''}`);
+  }
+  const blob = interactionAudioBlob(await response.json());
+  if (!blob) return null;
+  await writeCachedBlob(key, blob, indexedDb).catch(() => false);
+  return URL.createObjectURL(blob);
 }
 
 export async function getCachedOrGenerateTtsAudio(text, { locale = 'lt-LT', voice = '', storage = globalThis.localStorage, indexedDb = globalThis.indexedDB, generate = generateGeminiParts } = {}) {

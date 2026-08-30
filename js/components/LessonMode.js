@@ -1,13 +1,15 @@
 import { driveSync } from '../services/driveSync.js?v=93';
-import { getLithuanianSession, getLithuanianUnit } from '../data/lithuanianCurriculum.js?v=116';
-import { startLessonAttempt, recordLessonResponse, advanceLessonAttempt, answerMatches, completionEvidence } from '../services/lessonEngine.js?v=116';
-import { describeSpeechError, getSpeechAvailability, speakText } from '../services/speechService.js?v=113';
+import { getLithuanianSession, getLithuanianUnit } from '../data/lithuanianCurriculum.js?v=119';
+import { startLessonAttempt, recordLessonResponse, advanceLessonAttempt, answerMatches, completionEvidence } from '../services/lessonEngine.js?v=119';
+import { describeSpeechError, getSpeechAvailability, playAudioUrl, speakText } from '../services/speechService.js?v=119';
+import { getCachedOrGenerateDialogueAudio } from '../services/geminiTts.js?v=119';
+import { buildAdaptiveContext, evaluateListeningResponse, evaluateTranslationResponse, generateDialogueActivity, generateListeningActivity, generateTranslationActivity, processDialogueTurn } from '../services/adaptiveLessons.js?v=120';
 import { escapeHtml } from '../utils/html.js';
 
 let lessonSpeechActive = false;
 
 function exerciseLabel(type) {
-  return ({ pattern: 'Guidebook', cloze: 'Missing word', dictation: 'Dictation', matching: 'Matching', 'meaning-choice': 'Meaning choice', 'listening-choice': 'Listening', 'read-repeat': 'Speaking practice', 'role-play': 'Speaking practice', 'typed-recall': 'Typed recall', 'word-order': 'Word order' })[type] || type.replaceAll('-', ' ');
+  return ({ pattern: 'Guidebook', cloze: 'Missing word', dictation: 'Dictation', matching: 'Matching', 'meaning-choice': 'Meaning choice', 'listening-choice': 'Listening', 'ai-listening': 'AI listening', 'ai-dialogue': 'AI dialogue', 'adaptive-translation': 'Adaptive translation', 'read-repeat': 'Speaking practice', 'role-play': 'Speaking practice', 'typed-recall': 'Typed recall', 'word-order': 'Word order' })[type] || type.replaceAll('-', ' ');
 }
 
 function matchingControls(exercise) {
@@ -20,7 +22,26 @@ function matchingControls(exercise) {
     <p class="lesson-match-status" data-match-status role="status" aria-live="polite">0 of ${pairs.length} pairs matched</p>`;
 }
 
+function grammarGuideMarkup(exercise) {
+  const guide = exercise.guide || {};
+  const alphabet = (guide.alphabet || []).length
+    ? `<section class="grammar-alphabet" aria-label="Lithuanian alphabet"><span>THE 32 LETTERS</span><div>${guide.alphabet.map(group => `<strong lang="lt">${escapeHtml(group)}</strong>`).join('')}</div></section>`
+    : '';
+  return `<article class="grammar-guide">
+    ${alphabet}
+    <section class="grammar-rule"><span>HOW IT WORKS</span><p>${escapeHtml(guide.rule)}</p></section>
+    <div class="grammar-form-table" role="table" aria-label="Forms and examples">
+      ${(guide.forms || []).map(([label, form, meaning]) => `<div class="grammar-form-row" role="row"><span role="cell">${escapeHtml(label)}</span><strong role="cell" lang="lt">${escapeHtml(form)}</strong><small role="cell">${escapeHtml(meaning)}</small></div>`).join('')}
+    </div>
+    <aside class="grammar-memory-tip"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i><p><strong>Remember:</strong> ${escapeHtml(guide.tip)}</p></aside>
+    <section class="grammar-example"><span>SEE IT IN A SENTENCE</span><strong lang="lt">${escapeHtml(exercise.phrase.lt)}</strong><p>${escapeHtml(exercise.phrase.en)}</p></section>
+  </article>`;
+}
+
 function answerControls(exercise) {
+  if (exercise.type === 'ai-listening') return '<div class="adaptive-ai-host" data-ai-listening><div class="adaptive-loading"><i class="fa-solid fa-wave-square"></i><strong>Preparing a listening at your level…</strong><span>Using your course progress and Lithuanian Library.</span></div></div>';
+  if (exercise.type === 'ai-dialogue') return '<div class="adaptive-ai-host" data-ai-dialogue><div class="adaptive-loading"><i class="fa-solid fa-comments"></i><strong>Preparing your conversation partner…</strong><span>Gemini will respond to the meaning of your Lithuanian.</span></div></div>';
+  if (exercise.type === 'adaptive-translation') return '<div class="adaptive-ai-host" data-adaptive-translation><div class="adaptive-loading"><i class="fa-solid fa-arrow-right-arrow-left"></i><strong>Building an adaptive sentence…</strong><span>Length and vocabulary grow with your progress.</span></div></div>';
   if (['meaning-choice', 'listening-choice'].includes(exercise.type)) {
     return `<div class="lesson-choice-grid">${exercise.choices.map(choice => `<button type="button" class="lesson-choice" data-choice-answer="${escapeHtml(choice)}">${escapeHtml(choice)}</button>`).join('')}</div>`;
   }
@@ -35,7 +56,7 @@ function answerControls(exercise) {
       <div class="lesson-speaking-actions"><button type="button" class="status-pill offline" data-skip-speaking>Skip for now</button><button type="button" class="btn-green-solid" data-spoke>Done</button></div>`;
   }
   if (exercise.type === 'pattern') {
-    return `<div class="pattern-discovery"><span>USEFUL FORM</span><strong lang="lt">${escapeHtml(exercise.phrase.lt)}</strong><p>${escapeHtml(exercise.phrase.en)}</p><div class="pattern-parts">${exercise.phrase.lt.split(/\s+/).map((word, index) => `<span class="part-${index % 3}">${escapeHtml(word)}</span>`).join('')}</div></div><button type="button" class="btn-green-solid lesson-understood" data-practice-done>Continue</button>`;
+    return `${grammarGuideMarkup(exercise)}<button type="button" class="btn-green-solid lesson-understood" data-practice-done>I understand — practise it</button>`;
   }
   if (['dialogue', 'mission'].includes(exercise.type)) {
     return `<div class="dialogue-answer-row"><label for="lesson-answer">Your reply in Lithuanian</label><textarea id="lesson-answer" rows="2" lang="lt" autocomplete="off" spellcheck="false" placeholder="Type the requested reply…"></textarea></div><button type="submit" class="btn-green-solid">Check reply</button>`;
@@ -73,6 +94,7 @@ function audioControls(exercise) {
 }
 
 function coachMarkup(exercise) {
+  if (['pattern', 'ai-listening', 'ai-dialogue', 'adaptive-translation'].includes(exercise.type)) return '';
   const guidance = exercise.type === 'matching' ? 'Choose a Lithuanian card first, then its English match.'
     : ['read-repeat', 'role-play'].includes(exercise.type) ? 'Listen once at normal speed, then use Slow if needed.'
       : exercise.type === 'listening-choice' ? 'Listen more than once before using the English rescue.'
@@ -86,6 +108,14 @@ function hintText(exercise) {
   if (exercise.type === 'word-order') return `<strong>Start here:</strong> ${escapeHtml(exercise.answer.split(/\s+/)[0])}<br><span>English rescue: ${escapeHtml(exercise.phrase.en)}</span>`;
   if (['read-repeat', 'role-play'].includes(exercise.type)) return '<strong>Say it in chunks:</strong> Listen on Slow, pause, then repeat the complete phrase.';
   return `<strong>Lietuviškai:</strong> ${escapeHtml(exercise.phrase.lt)}<br><span>English rescue: ${escapeHtml(exercise.phrase.en)}</span>`;
+}
+
+function adaptiveSourceLabel(activity) {
+  return activity?.aiGenerated ? 'Adapted by Gemini' : 'Authored offline fallback';
+}
+
+function transcriptMarkup(activity, hidden = true) {
+  return `<div class="adaptive-transcript" data-adaptive-transcript ${hidden ? 'hidden' : ''}>${(activity.transcript || []).map(turn => `<p><strong>${escapeHtml(turn.speaker)}</strong><span lang="lt">${escapeHtml(turn.text)}</span></p>`).join('')}</div>`;
 }
 
 export function lessonVocabularyRecords(session, unit) {
@@ -121,6 +151,11 @@ function addLessonVocabularyToLibrary(session, unit) {
 function renderExercise(container, session, attempt, navigate) {
   const exercise = session.exercises[attempt.exerciseIndex];
   const unit = getLithuanianUnit(session.unitId);
+  const profileSnapshot = driveSync.getCourseProfile('lithuanian') || {};
+  const adaptiveContext = {
+    ...buildAdaptiveContext({ session, unit, profile: profileSnapshot, words: driveSync.getWords() }),
+    unitPhrases: unit.phrases
+  };
   const percent = Math.round((attempt.exerciseIndex / session.exercises.length) * 100);
   container.innerHTML = `
     <main class="lesson-shell">
@@ -139,16 +174,16 @@ function renderExercise(container, session, attempt, navigate) {
     const profile = driveSync.getCourseProfile('lithuanian') || {};
     driveSync.updateCourseProfile('lithuanian', { lessonAttempts: { ...(profile.lessonAttempts || {}), [session.id]: nextAttempt } });
   };
-  const finishResponse = ({ response, correct, skipped = false, unscored = false, hintUsed = false }) => {
+  const finishResponse = ({ response, correct, skipped = false, unscored = false, hintUsed = false, feedbackDetail = '', modelAnswer = '' }) => {
     let next = recordLessonResponse(attempt, exercise, { response, correct, skipped, unscored, hintUsed });
     const feedback = container.querySelector('.lesson-feedback');
     feedback.className = `lesson-feedback show ${unscored || skipped ? 'skipped' : correct ? 'correct' : 'incorrect'}`;
-    if (unscored) feedback.innerHTML = `<i class="fa-solid fa-circle-check"></i><div><strong>Practice recorded.</strong><p>${escapeHtml(exercise.phrase.lt)} · This activity is not scored.</p></div>`;
-    else if (correct) feedback.innerHTML = `<i class="fa-solid fa-circle-check"></i><div><strong>Taip — that works.</strong><p>${escapeHtml(exercise.phrase.lt)} · ${escapeHtml(exercise.phrase.en)}</p></div>`;
+    if (unscored) feedback.innerHTML = `<i class="fa-solid fa-circle-check"></i><div><strong>Guide complete.</strong><p>The rule stays available at the start of every lesson in this module.</p></div>`;
+    else if (correct) feedback.innerHTML = `<i class="fa-solid fa-circle-check"></i><div><strong>Taip — that works.</strong><p>${escapeHtml(feedbackDetail || `${exercise.phrase.lt} · ${exercise.phrase.en}`)}</p></div>`;
     else if (skipped) feedback.innerHTML = '<i class="fa-solid fa-forward"></i><div><strong>Speaking skipped.</strong><p>You can repeat this in a later review.</p></div>';
     else {
-      const model = exercise.type === 'cloze' ? `${exercise.clozeAnswer} · ${exercise.answer}` : exercise.answer;
-      feedback.innerHTML = `<i class="fa-solid fa-seedling"></i><div><strong>Almost. Check the model.</strong><p>${escapeHtml(model)} · ${escapeHtml(exercise.rescue)}</p></div>`;
+      const model = modelAnswer || (exercise.type === 'cloze' ? `${exercise.clozeAnswer} · ${exercise.answer}` : exercise.answer);
+      feedback.innerHTML = `<i class="fa-solid fa-seedling"></i><div><strong>Almost. Check the model.</strong><p>${escapeHtml(feedbackDetail || `${model} · ${exercise.rescue}`)}</p></div>`;
     }
     container.querySelectorAll('button, input, textarea').forEach(control => { if (!control.matches('.lesson-close')) control.disabled = true; });
     const nextButton = document.createElement('button');
@@ -190,6 +225,138 @@ function renderExercise(container, session, attempt, navigate) {
   };
   container.querySelector('[data-play-audio]')?.addEventListener('click', event => playAudio(event.currentTarget, 0.86));
   container.querySelector('[data-play-audio-slow]')?.addEventListener('click', event => playAudio(event.currentTarget, 0.68));
+
+  const playAdaptiveListening = async (activity, button, status) => {
+    button.disabled = true;
+    button.classList.add('playing');
+    status.textContent = activity.kind === 'dialogue' ? 'Generating and playing two-speaker Lithuanian…' : 'Playing the Lithuanian passage…';
+    let played = false;
+    try {
+      if (activity.kind === 'dialogue' && activity.aiGenerated) {
+        const url = await getCachedOrGenerateDialogueAudio(activity.transcript);
+        if (url) played = await playAudioUrl(url, { rate: adaptiveContext.difficulty.speechRate, revoke: true });
+      }
+      if (!played) {
+        for (const turn of activity.transcript || []) {
+          played = await speakText(turn.text, { locale: 'lt-LT', rate: adaptiveContext.difficulty.speechRate }) || played;
+        }
+      }
+      status.textContent = played ? 'Finished. Replay it or answer the main-idea question.' : describeSpeechError();
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : 'The listening audio could not play.';
+    }
+    button.disabled = false;
+    button.classList.remove('playing');
+  };
+
+  const setupAiListening = async () => {
+    const host = container.querySelector('[data-ai-listening]');
+    if (!host) return;
+    const kind = unit.unitNumber % 3 === 0 ? 'passage' : 'dialogue';
+    const activity = await generateListeningActivity(adaptiveContext, { kind, unitPhrases: unit.phrases });
+    if (!host.isConnected) return;
+    host.innerHTML = `<section class="adaptive-listening-card">
+      <div class="adaptive-meta"><span>${escapeHtml(adaptiveSourceLabel(activity))}</span><small>Level ${adaptiveContext.difficulty.band}/7 · ${activity.kind === 'dialogue' ? '2 voices' : '1 voice'} · about ${adaptiveContext.difficulty.listeningWords} words</small></div>
+      <div class="adaptive-audio-hero"><i class="fa-solid ${activity.kind === 'dialogue' ? 'fa-people-arrows' : 'fa-podcast'}"></i><div><strong>${escapeHtml(activity.title || unit.title)}</strong><p>Listen without reading first. You only need the main idea.</p></div><button type="button" class="btn-green-solid" data-play-adaptive-listening><i class="fa-solid fa-play"></i> Listen</button></div>
+      <p class="adaptive-audio-status" data-adaptive-audio-status role="status">Ready to play in Lithuanian.</p>
+      <label for="adaptive-listening-answer">${escapeHtml(activity.gistQuestion || 'What is this mainly about?')}</label>
+      <textarea id="adaptive-listening-answer" data-listening-answer rows="3" placeholder="Answer briefly in English…"></textarea>
+      <div class="adaptive-actions"><button type="button" class="status-pill offline" data-reveal-adaptive-transcript>Use transcript</button><button type="button" class="btn-green-solid" data-check-listening>Check main idea</button></div>
+      ${transcriptMarkup(activity)}
+    </section>`;
+    const playButton = host.querySelector('[data-play-adaptive-listening]');
+    const status = host.querySelector('[data-adaptive-audio-status]');
+    playButton.addEventListener('click', () => playAdaptiveListening(activity, playButton, status));
+    host.querySelector('[data-reveal-adaptive-transcript]').addEventListener('click', event => {
+      event.currentTarget.disabled = true;
+      host.querySelector('[data-adaptive-transcript]').hidden = false;
+      attempt = { ...attempt, hintsUsed: Number(attempt.hintsUsed || 0) + 1 };
+      persist(attempt);
+    });
+    host.querySelector('[data-check-listening]').addEventListener('click', async event => {
+      const response = host.querySelector('[data-listening-answer]').value.trim();
+      if (!response) return;
+      event.currentTarget.disabled = true;
+      event.currentTarget.textContent = 'Checking answer…';
+      const result = await evaluateListeningResponse(activity, response, adaptiveContext);
+      event.currentTarget.textContent = 'Answer checked';
+      finishResponse({ response, correct: result.correct, feedbackDetail: result.feedback, modelAnswer: activity.modelSummary });
+    });
+  };
+
+  const setupAiDialogue = async () => {
+    const host = container.querySelector('[data-ai-dialogue]');
+    if (!host) return;
+    const activity = await generateDialogueActivity(adaptiveContext, { unitPhrases: unit.phrases });
+    if (!host.isConnected) return;
+    const history = [{ role: 'partner', text: activity.opening }];
+    host.innerHTML = `<section class="adaptive-dialogue-card">
+      <div class="adaptive-meta"><span>${escapeHtml(adaptiveSourceLabel(activity))}</span><small>Level ${adaptiveContext.difficulty.band}/7 · ${adaptiveContext.difficulty.learnerTurns} learner turn${adaptiveContext.difficulty.learnerTurns === 1 ? '' : 's'}</small></div>
+      <div class="adaptive-goal"><i class="fa-solid fa-bullseye"></i><div><span>SITUATION</span><strong>${escapeHtml(activity.scenario)}</strong><p>${escapeHtml(activity.goal)}</p></div></div>
+      <div class="adaptive-turns" data-dialogue-turns><div class="adaptive-turn partner"><span>${escapeHtml(activity.partnerName || 'Rasa')}</span><p lang="lt">${escapeHtml(activity.opening)}</p><button type="button" data-speak-dialogue-line aria-label="Hear partner"><i class="fa-solid fa-volume-high"></i></button></div></div>
+      <label for="adaptive-dialogue-answer">Your reply in Lithuanian</label>
+      <textarea id="adaptive-dialogue-answer" data-dialogue-answer rows="2" lang="lt" placeholder="${escapeHtml(activity.supportPhrase || 'Type a natural reply…')}"></textarea>
+      <button type="button" class="btn-green-solid adaptive-send" data-send-dialogue>Send to ${escapeHtml(activity.partnerName || 'Rasa')}</button>
+      <p class="adaptive-turn-feedback" data-dialogue-feedback role="status">${activity.aiGenerated ? 'Gemini checks meaning and grammar after every turn.' : 'Your reply is checked against the lesson goal.'}</p>
+    </section>`;
+    host.querySelector('[data-speak-dialogue-line]').addEventListener('click', () => speakText(activity.opening, { locale: 'lt-LT', rate: adaptiveContext.difficulty.speechRate }));
+    host.querySelector('[data-send-dialogue]').addEventListener('click', async event => {
+      const input = host.querySelector('[data-dialogue-answer]');
+      const reply = input.value.trim();
+      if (!reply) return;
+      event.currentTarget.disabled = true;
+      event.currentTarget.textContent = 'Processing reply…';
+      input.disabled = true;
+      const turns = host.querySelector('[data-dialogue-turns]');
+      turns.insertAdjacentHTML('beforeend', `<div class="adaptive-turn learner"><span>You</span><p lang="lt">${escapeHtml(reply)}</p></div>`);
+      history.push({ role: 'learner', text: reply });
+      const result = await processDialogueTurn(activity, history, reply, adaptiveContext);
+      history.push({ role: 'partner', text: result.partnerReply });
+      turns.insertAdjacentHTML('beforeend', `<div class="adaptive-turn partner"><span>${escapeHtml(activity.partnerName || 'Rasa')}</span><p lang="lt">${escapeHtml(result.partnerReply)}</p><small>${escapeHtml(result.englishMeaning)}</small></div>`);
+      const feedback = host.querySelector('[data-dialogue-feedback]');
+      feedback.innerHTML = `${result.correctedReply ? `<strong>Try:</strong> <span lang="lt">${escapeHtml(result.correctedReply)}</span> · ` : ''}${escapeHtml(result.feedback)}`;
+      await speakText(result.partnerReply, { locale: 'lt-LT', rate: adaptiveContext.difficulty.speechRate });
+      const learnerTurns = history.filter(turn => turn.role === 'learner').length;
+      if (result.goalComplete || learnerTurns >= adaptiveContext.difficulty.learnerTurns) {
+        finishResponse({ response: history.filter(turn => turn.role === 'learner').map(turn => turn.text).join(' / '), correct: result.goalComplete || result.accepted, feedbackDetail: result.feedback, modelAnswer: result.correctedReply || activity.supportPhrase || activity.opening });
+        return;
+      }
+      input.value = '';
+      input.disabled = false;
+      input.focus();
+      event.currentTarget.disabled = false;
+      event.currentTarget.textContent = 'Continue dialogue';
+    });
+  };
+
+  const setupAdaptiveTranslation = async () => {
+    const host = container.querySelector('[data-adaptive-translation]');
+    if (!host) return;
+    const activity = await generateTranslationActivity(adaptiveContext, { unitPhrases: unit.phrases });
+    if (!host.isConnected) return;
+    host.innerHTML = `<section class="adaptive-translation-card">
+      <div class="adaptive-meta"><span>${escapeHtml(adaptiveSourceLabel(activity))}</span><small>Level ${adaptiveContext.difficulty.band}/7 · target ${adaptiveContext.difficulty.translationWordTarget} words · ${adaptiveContext.vocabularyCount} Library entries</small></div>
+      <div class="adaptive-translation-prompt"><span>TRANSLATE INTO LITHUANIAN</span><strong>${escapeHtml(activity.englishPrompt)}</strong></div>
+      ${activity.focusWords?.length ? `<p class="adaptive-focus-words"><span>Active vocabulary</span>${activity.focusWords.map(word => `<b lang="lt">${escapeHtml(word)}</b>`).join('')}</p>` : ''}
+      <label for="adaptive-translation-answer">Your Lithuanian sentence</label>
+      <textarea id="adaptive-translation-answer" data-translation-answer rows="3" lang="lt" placeholder="Write the complete sentence…"></textarea>
+      <button type="button" class="btn-green-solid" data-check-translation>Check translation</button>
+    </section>`;
+    host.querySelector('[data-check-translation]').addEventListener('click', async event => {
+      const response = host.querySelector('[data-translation-answer]').value.trim();
+      if (!response) return;
+      event.currentTarget.disabled = true;
+      event.currentTarget.textContent = 'Checking meaning and forms…';
+      const result = await evaluateTranslationResponse(activity, response, adaptiveContext);
+      event.currentTarget.textContent = 'Translation checked';
+      finishResponse({ response, correct: result.correct, feedbackDetail: result.feedback, modelAnswer: result.correctedAnswer || activity.lithuanianModel });
+    });
+  };
+
+  if (exercise.type === 'ai-listening') setupAiListening();
+  if (exercise.type === 'ai-dialogue') setupAiDialogue();
+  if (exercise.type === 'adaptive-translation') setupAdaptiveTranslation();
+
   container.querySelector('[data-hint]')?.addEventListener('click', event => {
     event.currentTarget.disabled = true; container.querySelector('.lesson-coach p').innerHTML = hintText(exercise);
     attempt = { ...attempt, hintsUsed: Number(attempt.hintsUsed || 0) + 1 }; persist(attempt);

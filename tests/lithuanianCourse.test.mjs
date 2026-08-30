@@ -73,6 +73,23 @@ test('the complete authored course has valid self-paced modules, lessons, answer
   assert.ok(LITHUANIAN_SESSIONS.every(session => new Set(session.exercises.map(exercise => exercise.phrase.lt)).size >= 3));
 });
 
+test('every lesson teaches authored grammar before practice and the course covers foundations and tenses', () => {
+  assert.ok(LITHUANIAN_UNITS.every(unit => unit.guide.summary && unit.guide.rule && unit.guide.forms.length >= 3 && unit.guide.tip));
+  assert.ok(LITHUANIAN_SESSIONS.every(session => session.exercises[0].type === 'pattern' && session.exercises[0].guide === LITHUANIAN_UNITS.find(unit => unit.id === session.unitId).guide));
+  assert.equal(LITHUANIAN_UNITS[0].guide.alphabet.flatMap(group => group.split(/\s+/)).length, 32);
+  assert.match(LITHUANIAN_UNITS[0].title, /alphabet/i);
+  assert.match(LITHUANIAN_UNITS[1].grammar, /aš esu.*tu esi.*yra/i);
+  assert.ok(LITHUANIAN_UNITS.some(unit => /noun.*ending|ending.*noun/i.test(`${unit.title} ${unit.guide.summary}`)));
+  assert.ok(LITHUANIAN_UNITS.some(unit => /past frequentative/i.test(`${unit.guide.summary} ${unit.guide.rule}`)));
+  assert.ok(LITHUANIAN_UNITS.some(unit => /future/i.test(`${unit.guide.summary} ${unit.guide.rule}`)));
+});
+
+test('every unit includes AI listening, an interactive dialogue, and adaptive translation', () => {
+  assert.ok(LITHUANIAN_UNITS.every(unit => unit.sessions[2].exercises.some(exercise => exercise.type === 'ai-listening')));
+  assert.ok(LITHUANIAN_UNITS.every(unit => unit.sessions[3].exercises.some(exercise => exercise.type === 'ai-dialogue')));
+  assert.ok(LITHUANIAN_UNITS.every(unit => unit.sessions.slice(4).some(session => session.exercises.some(exercise => exercise.type === 'adaptive-translation'))));
+});
+
 test('lesson attempts resume deterministically and unlock only the next stable node', () => {
   const first = LITHUANIAN_SESSIONS[0];
   const second = LITHUANIAN_SESSIONS[1];

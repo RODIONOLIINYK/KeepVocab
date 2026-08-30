@@ -89,6 +89,12 @@ async function playRecordedAudio(url, rate) {
   });
 }
 
+export async function playAudioUrl(url, { rate = 1, revoke = false } = {}) {
+  const played = await playRecordedAudio(url, rate);
+  if (revoke && url) URL.revokeObjectURL?.(url);
+  return played;
+}
+
 async function speakNatively(text, lang, rate) {
   const plugin = nativeSpeechPlugin(browserWindow());
   if (!plugin?.speak) return false;
@@ -195,7 +201,7 @@ export async function speakText(text, { locale = 'en-US', rate = 0.9, audioUrl =
   if (audioUrl && await playRecordedAudio(audioUrl, rate)) return true;
   if (String(locale).toLowerCase().startsWith('lt')) {
     try {
-      const { getCachedOrGenerateTtsAudio } = await import('./geminiTts.js?v=113');
+      const { getCachedOrGenerateTtsAudio } = await import('./geminiTts.js?v=119');
       const generatedUrl = await getCachedOrGenerateTtsAudio(cleanText, { locale });
       if (generatedUrl && await playRecordedAudio(generatedUrl, rate)) {
         URL.revokeObjectURL?.(generatedUrl);

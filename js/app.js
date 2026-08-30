@@ -2,7 +2,7 @@
 
 import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=93';
 import { fetchWordDetails } from './services/dictionaryApi.js?v=96';
-import { speakWord } from './services/speechService.js?v=93';
+import { speakWord } from './services/speechService.js?v=119';
 import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=93';
 import { recordExerciseResult } from './services/exerciseResult.js?v=93';
 import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=93';
@@ -19,15 +19,15 @@ import { renderStatsView } from './components/StatsView.js?v=93';
 import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=93';
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=93';
 import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=93';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=114';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=119';
 import { renderDashboardView } from './components/DashboardView.js?v=93';
 import { renderDailySessionMode } from './components/DailySessionMode.js?v=93';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=93';
 import { renderContextQuizMode } from './components/ContextQuizMode.js?v=116';
 import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=113';
 import { renderSettingsView } from './components/SettingsView.js?v=113';
-import { renderLearningPathView } from './components/LearningPathView.js?v=111';
-import { renderLessonMode, teardownLessonMode } from './components/LessonMode.js?v=116';
+import { renderLearningPathView } from './components/LearningPathView.js?v=119';
+import { renderLessonMode, teardownLessonMode } from './components/LessonMode.js?v=120';
 import { getCourseDefinition } from './data/courses.js?v=111';
 import { fetchLithuanianEntry } from './services/lithuanianEnrichment.js?v=113';
 

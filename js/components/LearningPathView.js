@@ -1,6 +1,6 @@
 import { driveSync } from '../services/driveSync.js?v=93';
-import { PATH_STAGES, LITHUANIAN_UNITS, LITHUANIAN_SESSIONS } from '../data/lithuanianCurriculum.js?v=111';
-import { currentSessionId, isSessionUnlocked, selfPacedPathStatus } from '../services/lessonEngine.js?v=111';
+import { PATH_STAGES, LITHUANIAN_UNITS, LITHUANIAN_SESSIONS } from '../data/lithuanianCurriculum.js?v=119';
+import { currentSessionId, isSessionUnlocked, selfPacedPathStatus } from '../services/lessonEngine.js?v=119';
 import { escapeHtml } from '../utils/html.js';
 
 const nodeOffsets = [-48, 34, 72, 20, -42, -76];
@@ -66,7 +66,7 @@ export function renderLearningPathView(container, navigate) {
         <img src="assets/keepvocab-sprout-mascot.webp" alt="Sprig holding an open book">
         <span class="learning-kicker">GUIDED COURSE</span>
         <h1>Your Lithuanian path is ready</h1>
-        <p>Switch to Lithuanian to begin 36 self-paced modules from first hellos to strong A2, with an optional B1 bridge.</p>
+        <p>Switch to Lithuanian to begin with the 32-letter alphabet, then build grammar, word forms and tenses through strong A2.</p>
         <button class="btn-green-solid" id="learn-switch-lithuanian"><i class="fa-solid fa-language"></i> Switch to Lithuanian</button>
       </section>`;
     container.querySelector('#learn-switch-lithuanian')?.addEventListener('click', () => {
@@ -92,7 +92,7 @@ export function renderLearningPathView(container, navigate) {
     <main class="learning-path-shell">
       <div class="learning-path-main">
         <header class="learning-path-heading">
-          <div><span class="learning-kicker">LITHUANIAN · A1 → A2</span><h1>Your Lithuanian path</h1><p>Six varied lessons per module. Follow the path at your own pace.</p></div>
+          <div><span class="learning-kicker">LITHUANIAN · A1 → A2</span><h1>Your Lithuanian path</h1><p>Learn the rule, retrieve it, understand adaptive listening, and use it in an AI conversation. Tasks grow with your progress and Library.</p></div>
           <div class="path-overall-progress status-pill connected" aria-label="${totalComplete} of ${LITHUANIAN_SESSIONS.length} lessons complete"><strong>${totalComplete}</strong><span>of ${LITHUANIAN_SESSIONS.length}<br>lessons</span></div>
         </header>
         <nav class="path-section-tabs" aria-label="Course sections">

@@ -1868,6 +1868,60 @@ body[data-course-id="english"] .nav-links{width:min(100%,560px)}
 .lesson-audio-panel .lesson-listen-controls{margin:0}
 .lesson-audio-panel .lesson-audio-status{max-width:100%;margin:0;color:var(--text-muted);line-height:1.4}
 
+/* Authored grammar guide: every Lithuanian lesson teaches before it tests. */
+.lesson-card.pattern .lesson-prompt{margin-bottom:16px}
+.grammar-guide{width:min(100%,720px);display:grid;gap:14px;margin:0 auto 14px}
+.grammar-alphabet{display:grid;gap:10px;border:1px solid #bbf7d0;border-radius:18px;padding:16px 18px;background:#f0fdf4}
+.grammar-alphabet>span,.grammar-rule>span,.grammar-example>span{color:#15803d;font-size:.58rem;font-weight:900;letter-spacing:.11em}
+.grammar-alphabet>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.grammar-alphabet strong{display:flex;align-items:center;justify-content:center;min-height:38px;border:1px solid #d7eadc;border-radius:10px;color:#173f26;background:#fff;font:800 .8rem/1.2 var(--font-heading);letter-spacing:.025em;text-align:center}
+.grammar-rule{display:grid;gap:6px;border-left:4px solid #22c55e;padding:3px 0 3px 14px}
+.grammar-rule p{color:#334155;font-size:.82rem;line-height:1.55}
+.grammar-form-table{overflow:hidden;border:1px solid #dce4ed;border-radius:16px;background:#fff}
+.grammar-form-row{display:grid;grid-template-columns:112px minmax(180px,1.2fr) minmax(170px,1fr);align-items:center;gap:12px;min-height:57px;padding:10px 14px}
+.grammar-form-row+ .grammar-form-row{border-top:1px solid #e8edf2}
+.grammar-form-row>span{color:#15803d;font-size:.65rem;font-weight:850;text-transform:uppercase;letter-spacing:.045em}
+.grammar-form-row>strong{color:#0f172a;font:800 .9rem/1.35 var(--font-heading)}
+.grammar-form-row>small{color:#64748b;font-size:.68rem;line-height:1.4}
+.grammar-memory-tip{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:10px;border-radius:14px;padding:12px 14px;color:#713f12;background:#fefce8}
+.grammar-memory-tip i{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;color:#ca8a04;background:#fef9c3}
+.grammar-memory-tip p{font-size:.72rem;line-height:1.45}
+.grammar-example{display:grid;gap:5px;border:1px solid #dce9e0;border-radius:16px;padding:14px 16px;background:linear-gradient(180deg,#f7fdf9,#fff)}
+.grammar-example>strong{color:#0f172a;font:850 1.12rem/1.3 var(--font-heading)}
+.grammar-example>p{color:#64748b;font-size:.72rem}
+.lesson-card.pattern .lesson-answer-form{width:min(100%,720px)}
+
+/* Adaptive Gemini listening, dialogue, and translation lessons. */
+.adaptive-ai-host{width:100%;min-height:210px}
+.adaptive-loading{min-height:210px;display:grid;place-items:center;align-content:center;gap:8px;border:1px dashed #bbd9c4;border-radius:18px;color:#166534;background:#f7fdf9;text-align:center}
+.adaptive-loading i{font-size:1.5rem}.adaptive-loading strong{font:800 1rem var(--font-heading)}.adaptive-loading span{color:#64748b;font-size:.72rem}
+.adaptive-listening-card,.adaptive-dialogue-card,.adaptive-translation-card{display:grid;gap:13px}
+.adaptive-meta{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.adaptive-meta span{color:#166534;font-size:.61rem;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
+.adaptive-meta small{color:#64748b;font-size:.65rem;text-align:right}
+.adaptive-audio-hero{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:14px;border:1px solid #bbf7d0;border-radius:18px;padding:16px;background:linear-gradient(140deg,#ecfdf3,#f8fafc)}
+.adaptive-audio-hero>i{width:52px;height:52px;display:grid;place-items:center;border-radius:15px;color:#fff;background:#22a447;font-size:1.2rem}
+.adaptive-audio-hero strong{font:820 1rem var(--font-heading)}.adaptive-audio-hero p{margin-top:3px;color:#64748b;font-size:.7rem;line-height:1.4}
+.adaptive-audio-hero button{min-height:43px;padding-inline:16px}.adaptive-audio-hero button.playing i{animation:audio-glow 1s ease-in-out infinite alternate}
+.adaptive-audio-status{min-height:20px;color:#64748b;font-size:.7rem;text-align:center}
+.adaptive-listening-card>label,.adaptive-dialogue-card>label,.adaptive-translation-card>label{color:#334155;font-size:.76rem;font-weight:800}
+.adaptive-listening-card textarea,.adaptive-dialogue-card textarea,.adaptive-translation-card textarea{width:100%;border:1px solid #cbd5e1;border-radius:14px;padding:13px 14px;color:#0f172a;background:#fff;font:inherit;resize:vertical}
+.adaptive-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:9px}.adaptive-actions button{min-height:46px;justify-content:center}
+.adaptive-transcript{display:grid;gap:8px;border:1px solid #dce4ed;border-radius:15px;padding:13px;background:#f8fafc}
+.adaptive-transcript[hidden]{display:none}.adaptive-transcript p{display:grid;grid-template-columns:70px minmax(0,1fr);gap:9px;font-size:.72rem;line-height:1.45}.adaptive-transcript strong{color:#15803d}.adaptive-transcript span{color:#334155}
+.adaptive-goal{display:grid;grid-template-columns:42px minmax(0,1fr);gap:12px;border-radius:17px;padding:15px;color:#713f12;background:#fffbeb}
+.adaptive-goal>i{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;color:#fff;background:#f59e0b}.adaptive-goal span{font-size:.57rem;font-weight:900;letter-spacing:.1em}.adaptive-goal strong{display:block;margin:2px 0;font:800 .94rem var(--font-heading)}.adaptive-goal p{font-size:.7rem;line-height:1.4}
+.adaptive-turns{max-height:260px;display:grid;gap:9px;overflow:auto;border:1px solid #e2e8f0;border-radius:17px;padding:13px;background:#f8fafc}
+.adaptive-turn{max-width:86%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;border-radius:14px;padding:11px 13px;background:#fff;box-shadow:0 2px 6px rgba(15,23,42,.05)}
+.adaptive-turn.partner{justify-self:start;border-bottom-left-radius:4px}.adaptive-turn.learner{justify-self:end;border:1px solid #bbf7d0;border-bottom-right-radius:4px;background:#ecfdf3}
+.adaptive-turn>span{grid-column:1/-1;color:#64748b;font-size:.57rem;font-weight:850;text-transform:uppercase;letter-spacing:.06em}.adaptive-turn p{font-size:.82rem;line-height:1.4}.adaptive-turn small{grid-column:1/-1;color:#64748b;font-size:.63rem}
+.adaptive-turn button{width:30px;height:30px;display:grid;place-items:center;border:0;border-radius:50%;color:#166534;background:#dcfce7;cursor:pointer}
+.adaptive-send,.adaptive-translation-card>[data-check-translation]{min-height:47px;justify-content:center}
+.adaptive-turn-feedback{min-height:21px;color:#64748b;font-size:.7rem;line-height:1.45}.adaptive-turn-feedback strong{color:#166534}
+.adaptive-translation-prompt{display:grid;gap:8px;border:1px solid #bfdbfe;border-radius:18px;padding:18px;background:#eff6ff}
+.adaptive-translation-prompt span{color:#1d4ed8;font-size:.58rem;font-weight:900;letter-spacing:.1em}.adaptive-translation-prompt strong{font:820 clamp(1.1rem,3vw,1.4rem)/1.35 var(--font-heading)}
+.adaptive-focus-words{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.adaptive-focus-words span{margin-right:3px;color:#64748b;font-size:.62rem;font-weight:850}.adaptive-focus-words b{border-radius:999px;padding:5px 8px;color:#166534;background:#dcfce7;font-size:.66rem}
+
 /* Keep provider controls readable without letting long status copy distort the grid. */
 .settings-key-field{min-width:0}
 .settings-service-status{grid-column:1/-1;min-height:42px;display:flex;align-items:center;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;color:var(--text-muted);background:#f8fafc;font-size:.74rem;line-height:1.45}
@@ -1894,4 +1948,16 @@ body[data-course-id="english"] .nav-links{width:min(100%,560px)}
   .lesson-cloze-context p{text-align:left}
   .lesson-cloze-context>strong{padding:15px 10px;font-size:1.5rem}
   .lesson-coach{margin-top:24px}
+  .grammar-guide{gap:10px}
+  .grammar-alphabet{padding:13px}
+  .grammar-alphabet>div{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .grammar-alphabet strong{font-size:.7rem}
+  .grammar-form-row{grid-template-columns:1fr;gap:3px;padding:11px 13px}
+  .grammar-form-row>span{font-size:.57rem}
+  .grammar-form-row>strong{font-size:.84rem}
+  .grammar-form-row>small{font-size:.64rem}
+  .adaptive-meta{align-items:start}.adaptive-meta small{max-width:55%}
+  .adaptive-audio-hero{grid-template-columns:44px minmax(0,1fr);gap:10px;padding:13px}.adaptive-audio-hero>i{width:44px;height:44px}.adaptive-audio-hero button{grid-column:1/-1;width:100%;justify-content:center}
+  .adaptive-actions{grid-template-columns:1fr}.adaptive-transcript p{grid-template-columns:1fr;gap:2px}
+  .adaptive-turn{max-width:94%}
 }

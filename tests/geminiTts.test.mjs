@@ -4,7 +4,15 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { DEFAULT_GEMINI_TTS_MODEL, DEFAULT_GEMINI_TTS_VOICE, getCachedOrGenerateTtsAudio, pcm16ToWavBytes } from '../js/services/geminiTts.js';
+import {
+  DEFAULT_DIALOGUE_VOICES,
+  DEFAULT_GEMINI_TTS_MODEL,
+  DEFAULT_GEMINI_TTS_VOICE,
+  buildMultiSpeakerTtsRequest,
+  getCachedOrGenerateDialogueAudio,
+  getCachedOrGenerateTtsAudio,
+  pcm16ToWavBytes
+} from '../js/services/geminiTts.js';
 import { MemoryStorage } from '../js/services/driveSync.js';
 import { GeminiRequestError, saveGeminiSettings } from '../js/services/geminiSettings.js';
 
@@ -54,6 +62,44 @@ test('Lithuanian TTS retries transient failures once but never repeats a rejecte
     }
   });
   assert.equal(transientCalls, 2);
+  assert.match(url, /^blob:/);
+  URL.revokeObjectURL(url);
+});
+
+test('dialogue TTS assigns two distinct named Gemini voices', () => {
+  const transcript = [
+    { speaker: 'Rasa', text: 'Labas!' },
+    { speaker: 'Mantas', text: 'Sveika!' }
+  ];
+  const request = buildMultiSpeakerTtsRequest(transcript);
+  assert.match(request.model, /tts/i);
+  assert.match(request.input, /Rasa: Labas!/);
+  assert.match(request.input, /Mantas: Sveika!/);
+  assert.deepEqual(request.generation_config.speech_config, DEFAULT_DIALOGUE_VOICES);
+  assert.equal(new Set(request.generation_config.speech_config.map(item => item.voice)).size, 2);
+});
+
+test('dialogue TTS consumes inline audio from the Gemini Interactions response', async () => {
+  const storage = new MemoryStorage();
+  saveGeminiSettings({ apiKey: 'AIza-example-device-key-123456789' }, storage, { silent: true });
+  let captured;
+  const url = await getCachedOrGenerateDialogueAudio([
+    { speaker: 'Rasa', text: 'Labas!' },
+    { speaker: 'Mantas', text: 'Sveika!' }
+  ], {
+    storage,
+    indexedDb: null,
+    fetchImpl: async (endpoint, options) => {
+      captured = { endpoint, options };
+      return {
+        ok: true,
+        json: async () => ({ steps: [{ content: [{ type: 'audio', data: 'AAAAAA==', mime_type: 'audio/wav' }] }] })
+      };
+    }
+  });
+  assert.match(captured.endpoint, /\/v1beta\/interactions$/);
+  assert.equal(captured.options.headers['x-goog-api-key'], 'AIza-example-device-key-123456789');
+  assert.equal(JSON.parse(captured.options.body).generation_config.speech_config.length, 2);
   assert.match(url, /^blob:/);
   URL.revokeObjectURL(url);
 });

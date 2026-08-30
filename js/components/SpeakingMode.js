@@ -17,7 +17,7 @@ import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSess
 import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=93';
 import { recordModeWordSelections } from '../services/wordSelection.js?v=93';
 import { navigateTo as navigate } from '../utils/navigation.js';
-import { LITHUANIAN_UNITS, PATH_STAGES } from '../data/lithuanianCurriculum.js?v=111';
+import { LITHUANIAN_UNITS, PATH_STAGES } from '../data/lithuanianCurriculum.js?v=119';
 import { LITHUANIAN_A2_SPEAKING_SCENARIOS } from '../data/lithuanianSpeakingScenarios.js?v=114';
 import { getLastSpeechErrorCode, speakText } from '../services/speechService.js?v=113';
 import { translateLithuanianCoachText } from '../services/lithuanianEnrichment.js?v=113';
