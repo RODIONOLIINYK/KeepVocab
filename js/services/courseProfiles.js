@@ -1,3 +1,4 @@
+import { mergeActivityByDevice, aggregateActivity, currentStudyStats } from './studyActivity.js';
 import { COURSE_DEFINITIONS, COURSE_IDS, getCourseDefinition, isCourseId } from '../data/courses.js';
 
 export const COURSE_SCOPED_SETTING_KEYS = Object.freeze([
@@ -17,6 +18,7 @@ export function defaultCourseProfile(courseId, seed = {}) {
   const course = getCourseDefinition(courseId);
   return {
     courseId: course.id,
+    updatedAt: seed.updatedAt || null,
     dailyGoal: course.dailyGoal,
     dailyStreak: 0,
     lastReviewDate: null,
@@ -32,6 +34,11 @@ export function defaultCourseProfile(courseId, seed = {}) {
     canDoEvidence: [],
     phraseProgress: {},
     activeLessonId: null,
+    reminderEnabled: false,
+    smartReminderEnabled: true,
+    streakReminderEnabled: true,
+    reminderTime: '19:00',
+    reviewStartMoments: [],
     ...copyScopedSettings(seed)
   };
 }
@@ -122,8 +129,15 @@ export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
       const id = evidence.id || `${evidence.nodeId}-${evidence.completedAt}`;
       canDoById.set(id, newestRecord(canDoById.get(id), evidence));
     }
+    const exerciseActivityByDevice = mergeActivityByDevice(localProfile, remoteProfile);
+    const reviewActivity = aggregateActivity(exerciseActivityByDevice);
+    const lastReviewDate = Object.keys(reviewActivity).sort().at(-1) || baseProfile.lastReviewDate;
     courseProfiles[courseId] = {
       ...baseProfile,
+      exerciseActivityByDevice,
+      reviewActivity,
+      lastReviewDate,
+      ...currentStudyStats({ ...baseProfile, reviewActivity, lastReviewDate }),
       completedNodeIds: [...new Set([...(localProfile.completedNodeIds || []), ...(remoteProfile.completedNodeIds || [])])],
       lessonAttempts,
       lessonProgress: { ...(localProfile.lessonProgress || {}), ...(remoteProfile.lessonProgress || {}) },
@@ -132,7 +146,7 @@ export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
       courseId
     };
   }
-  const activeCourseId = isCourseId(local.activeCourseId) ? local.activeCourseId : remote.activeCourseId;
+  const activeCourseId = isCourseId(localSettings.activeCourseId) ? localSettings.activeCourseId : isCourseId(remoteSettings.activeCourseId) ? remoteSettings.activeCourseId : 'english';
   return migrateCourseSettings({ ...local, courseProfiles, activeCourseId });
 }
 

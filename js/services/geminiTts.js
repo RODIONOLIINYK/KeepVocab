@@ -4,8 +4,8 @@ import {
   generateGeminiParts,
   getGeminiSettings,
   isRetryableGeminiError
-} from './geminiSettings.js?v=117';
-import { base64ToBytes } from '../utils/base64.js?v=117';
+} from './geminiSettings.js?v=1602';
+import { base64ToBytes } from '../utils/base64.js?v=1602';
 
 export { DEFAULT_GEMINI_TTS_MODEL, DEFAULT_GEMINI_TTS_VOICE };
 export const DEFAULT_DIALOGUE_VOICES = Object.freeze([

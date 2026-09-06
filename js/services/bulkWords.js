@@ -1,4 +1,4 @@
-import { imageSelectionPatch } from './imageSearch.js?v=93';
+import { imageSelectionPatch } from './imageSearch.js?v=1602';
 
 export const MAX_BULK_WORDS = 100;
 export const BULK_LOOKUP_DELAY_MS = 1000;

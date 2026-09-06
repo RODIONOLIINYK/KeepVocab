@@ -1,8 +1,8 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=93';
-import { speakWord } from '../services/speechService.js?v=93';
-import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, generateVisualScenesWithGemini, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=93';
-import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=93';
-import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=93';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=1602';
+import { speakWord } from '../services/speechService.js?v=1602';
+import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, generateVisualScenesWithGemini, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=1602';
+import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=1602';
+import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=1602';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
 
 function readFileAsDataUrl(file) {

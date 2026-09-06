@@ -1,12 +1,12 @@
-import { driveSync } from '../services/driveSync.js?v=93';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
-import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=93';
-import { playInteractionSound } from '../services/interactionSound.js?v=93';
-import { mountUseItExercise } from './UseItExercise.js?v=94';
-import { createSpeechRecordingSession } from '../services/speechInput.js?v=113';
+import { driveSync } from '../services/driveSync.js?v=1602';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
+import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
+import { playInteractionSound } from '../services/interactionSound.js?v=1602';
+import { mountUseItExercise } from './UseItExercise.js?v=1602';
+import { createSpeechRecordingSession } from '../services/speechInput.js?v=1602';
 import { navigateTo as go } from '../utils/navigation.js';
 
-export { evaluateUseItFallback, evaluateUseItSentence } from '../services/useItEvaluation.js?v=93';
+export { evaluateUseItFallback, evaluateUseItSentence } from '../services/useItEvaluation.js?v=1602';
 
 let activeSpeechSession = null;
 

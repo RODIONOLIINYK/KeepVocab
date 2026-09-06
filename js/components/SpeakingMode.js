@@ -8,19 +8,19 @@ import {
   getLessonPlan,
   buildCoachInitiativeCue,
   buildSpeakingInstruction
-} from '../data/speakingLessons.js?v=93';
-import { GeminiLiveSession } from '../services/geminiLive.js?v=113';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=113';
-import { driveSync } from '../services/driveSync.js?v=93';
-import { recordSpeakingStats } from '../services/learningStats.js?v=93';
-import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=93';
-import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=93';
-import { recordModeWordSelections } from '../services/wordSelection.js?v=93';
+} from '../data/speakingLessons.js?v=1602';
+import { GeminiLiveSession } from '../services/geminiLive.js?v=1602';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=1602';
+import { driveSync } from '../services/driveSync.js?v=1602';
+import { recordSpeakingStats } from '../services/learningStats.js?v=1602';
+import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=1602';
+import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=1602';
+import { recordModeWordSelections } from '../services/wordSelection.js?v=1602';
 import { navigateTo as navigate } from '../utils/navigation.js';
-import { LITHUANIAN_UNITS, PATH_STAGES } from '../data/lithuanianCurriculum.js?v=119';
-import { LITHUANIAN_A2_SPEAKING_SCENARIOS } from '../data/lithuanianSpeakingScenarios.js?v=114';
-import { getLastSpeechErrorCode, speakText } from '../services/speechService.js?v=113';
-import { translateLithuanianCoachText } from '../services/lithuanianEnrichment.js?v=113';
+import { LITHUANIAN_UNITS, PATH_STAGES } from '../data/lithuanianCurriculum.js?v=1602';
+import { LITHUANIAN_A2_SPEAKING_SCENARIOS } from '../data/lithuanianSpeakingScenarios.js?v=1602';
+import { getLastSpeechErrorCode, speakText } from '../services/speechService.js?v=1602';
+import { translateLithuanianCoachText } from '../services/lithuanianEnrichment.js?v=1602';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
 export const COACH_SILENCE_MS = 9000;
@@ -397,7 +397,7 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
     if (!list) return;
     list.innerHTML = transcript.length ? transcript.map(entry => `<div class="transcript-turn ${entry.role}"><span>${entry.role === 'coach' ? coachName : 'You'}</span><p>${escapeHtml(entry.text)}</p>${lesson.languageCode === 'lt' && entry.role === 'coach' ? `<small class="transcript-translation${entry.translationPending ? ' pending' : ''}">${escapeHtml(entry.translation || (entry.translationPending ? 'Translating…' : 'English translation unavailable'))}</small>` : ''}</div>`).join('') : '<div class="transcript-empty"><i class="fa-solid fa-wave-square"></i><span>Your live transcript will appear here.</span></div>';
     list.scrollTop = list.scrollHeight;
-    const learnerTurns = transcript.filter(entry => entry.role === 'learner').length;
+    const learnerTurns = transcript.filter(entry => entry.role === 'learner' && entry.text?.trim()).length;
     if (phraseTargets.length && learnerTurns >= 2 && learnerTurns % 2 === 0) {
       phraseIndex = Math.min(phraseTargets.length - 1, Math.floor(learnerTurns / 2));
     }
@@ -509,7 +509,10 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
     clearInitiativeTimer();
     mergeTranscript(transcript, 'learner', text); renderTranscript(); input.value = '';
   });
+  let finishing = false;
   const finish = async () => {
+    if (finishing) return;
+    finishing = true;
     clearInitiativeTimer();
     window.clearTimeout(translationTimer);
     window.clearInterval(sessionTimer);
@@ -556,16 +559,22 @@ function completeSpeakingLesson(container, lesson, vocabularyTargets, phraseTarg
   progress.phraseProgress = phrasePractice.phraseProgress;
   writeProgress(progress);
   recordSpeakingStats({ minutes });
-  const learnerTurns = transcript.filter(entry => entry.role === 'learner').length;
+  const learnerTurns = transcript.filter(entry => entry.role === 'learner' && entry.text?.trim()).length;
+  if (learnerTurns > 0) driveSync.recordReview();
   const usedPhrases = detectUsedPhrases(phraseTargets, transcript);
   const activations = storeSpeakingActivations(vocabularyTargets, transcript, driveSync);
   const highlights = speakingSessionHighlights(transcript, activations);
-  const allLessonPhrases = lesson.languageCode === 'lt' ? lesson.lithuanianPhrases.map(item => ({ word: item.lt, definition: item.en })) : lessonPhraseLibraryEntries(lesson);
+  const phraseKey = value => String(value || '').normalize('NFC').toLocaleLowerCase('lt-LT').replace(/[\p{P}]/gu, '').trim();
+  const practisedPhrases = lesson.languageCode === 'lt' ? (lesson.lithuanianPhrases || []).filter(item => usedPhrases.some(target => phraseKey(target.text) === phraseKey(item.lt))) : [];
+  const allLessonPhrases = lesson.languageCode === 'lt' ? practisedPhrases.map(item => ({ word: item.lt, definition: item.en })) : lessonPhraseLibraryEntries(lesson);
+  const existing = driveSync.getAllWords();
+  const newLithuanianPhrases = practisedPhrases.filter(item => !existing.some(word => word.courseId === 'lithuanian' && phraseKey(word.word) === phraseKey(item.lt) && phraseKey(word.definition) === phraseKey(item.en)));
+
   let savedPhraseCount = 0;
   let phraseSaveError = '';
   try {
     savedPhraseCount = lesson.languageCode === 'lt'
-      ? driveSync.addWords(lesson.lithuanianPhrases.map(item => ({ word: item.lt, lemma: item.lt, translation: item.en, definition: item.en, acceptedForms: item.acceptedForms, partOfSpeech: 'phrase', languageCode: 'lt', source: 'KeepVocab Lithuanian lesson' }))).length
+      ? (newLithuanianPhrases.length ? driveSync.addWords(newLithuanianPhrases.map(item => ({ word: item.lt.replace(/[.!?]+$/, ''), lemma: item.lt.replace(/[.!?]+$/, ''), example: item.lt, courseId: 'lithuanian', translation: item.en, definition: item.en, acceptedForms: item.acceptedForms, partOfSpeech: 'phrase', languageCode: 'lt', source: 'KeepVocab Lithuanian lesson' }))).length : 0)
       : saveLessonPhrasesToLibrary(lesson, driveSync).saved.length;
   } catch (error) {
     phraseSaveError = error instanceof Error ? error.message : String(error);
@@ -573,7 +582,7 @@ function completeSpeakingLesson(container, lesson, vocabularyTargets, phraseTarg
   container.innerHTML = `<section class="speaking-summary-shell"><div class="speaking-summary-card"><div class="summary-celebration" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><span><i class="fa-solid fa-check"></i></span></div><span class="eyebrow">Lesson complete</span><h1>Nice work — you showed up and spoke.</h1><p>${escapeHtml(lesson.title)} is now part of your speaking progress.</p><div class="summary-metrics"><div><strong>${minutes}</strong><span>minutes</span></div><div><strong>${learnerTurns}</strong><span>your turns</span></div><div><strong>${usedPhrases.length}/${phraseTargets.length}</strong><span>expressions recalled</span></div></div>
     ${vocabularyTargets.length ? `<div class="speaking-activation-summary"><div><span>Activated</span><strong>${highlights.used.length ? highlights.used.map(word => escapeHtml(word.word)).join(' · ') : 'None yet'}</strong></div><div><span>Try next time</span><strong>${highlights.unused.length ? highlights.unused.map(word => escapeHtml(word.word)).join(' · ') : 'All target words used'}</strong></div></div>` : ''}
     ${highlights.strongest.length ? `<div class="summary-strong-responses"><span>Your strongest response${highlights.strongest.length > 1 ? 's' : ''}</span>${highlights.strongest.map(text => `<blockquote>“${escapeHtml(text)}”</blockquote>`).join('')}</div>` : ''}
-    <div class="speaking-library-save ${phraseSaveError ? 'error' : ''}"><i class="fa-solid ${phraseSaveError ? 'fa-circle-exclamation' : 'fa-book-bookmark'}"></i><div><strong>${phraseSaveError ? 'The lesson phrases could not be saved' : `${allLessonPhrases.length} lesson expressions are in your Library`}</strong><p>${phraseSaveError ? escapeHtml(phraseSaveError) : savedPhraseCount ? `${savedPhraseCount} new expression${savedPhraseCount === 1 ? '' : 's'} added with ${savedPhraseCount === 1 ? 'its' : 'their'} idiomatic ${savedPhraseCount === 1 ? 'meaning' : 'meanings'}.` : 'They were already saved, so no duplicates were created.'}</p></div></div>
+    <div class="speaking-library-save ${phraseSaveError ? 'error' : ''}"><i class="fa-solid ${phraseSaveError ? 'fa-circle-exclamation' : 'fa-book-bookmark'}"></i><div><strong>${phraseSaveError ? 'The lesson phrases could not be saved' : `${allLessonPhrases.length} lesson expressions are in your Library`}</strong><p>${phraseSaveError ? escapeHtml(phraseSaveError) : savedPhraseCount ? `${savedPhraseCount} new expression${savedPhraseCount === 1 ? '' : 's'} added with ${savedPhraseCount === 1 ? 'its' : 'their'} idiomatic ${savedPhraseCount === 1 ? 'meaning' : 'meanings'}.` : allLessonPhrases.length ? 'They were already saved, so no duplicates were created.' : 'No target phrases were detected in your replies. Practise them again to add them to your Library.'}</p></div></div>
     <div class="summary-takeaway"><i class="fa-solid fa-lightbulb"></i><div><strong>${usedPhrases.length ? `Next recall in ${phrasePractice.results.find(item => item.target.progressId === usedPhrases[0].progressId)?.intervalDays || 1} day${(phrasePractice.results.find(item => item.target.progressId === usedPhrases[0].progressId)?.intervalDays || 1) === 1 ? '' : 's'}` : 'This expression returns tomorrow'}</strong><p>${escapeHtml((usedPhrases[0] || phraseTargets[0])?.text || '')}</p></div></div>
     <div class="summary-actions"><button class="btn-green-solid" id="summary-again">Practice again</button><button class="status-pill offline" id="summary-lessons">All lessons</button></div></div>
     <div class="summary-transcript spec-card"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-align-left"></i> Session transcript</div><span>${transcript.length} turns</span></div>${transcript.length ? transcript.map(entry => `<div class="transcript-turn ${entry.role}"><span>${entry.role === 'coach' ? coachName : 'You'}</span><p>${escapeHtml(entry.text)}</p>${lesson.languageCode === 'lt' && entry.role === 'coach' ? `<small class="transcript-translation">${escapeHtml(entry.translation || 'English translation is temporarily unavailable.')}</small>` : ''}</div>`).join('') : '<p class="summary-empty">No transcript was received. You still completed the practice session.</p>'}</div></section>`;

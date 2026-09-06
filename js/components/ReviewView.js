@@ -1,11 +1,11 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=93';
-import { speakWord } from '../services/speechService.js?v=93';
-import { getDueWords } from '../services/srsEngine.js?v=93';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
-import { playInteractionSound } from '../services/interactionSound.js?v=93';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=1602';
+import { speakWord } from '../services/speechService.js?v=1602';
+import { getDueWords } from '../services/srsEngine.js?v=1602';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
+import { playInteractionSound } from '../services/interactionSound.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
-import { selectPracticeWords } from '../services/dailySession.js?v=93';
-import { evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=93';
+import { selectPracticeWords } from '../services/dailySession.js?v=1602';
+import { evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=1602';
 import { navigateTo } from '../utils/navigation.js';
 
 export function renderReviewView(container, onNavigate) {

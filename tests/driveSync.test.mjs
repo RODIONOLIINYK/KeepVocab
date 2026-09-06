@@ -273,8 +273,8 @@ test('Drive combines exercise activity from multiple devices without double coun
   for (const service of [first, second]) {
     const settings = service.getSettings();
     assert.equal(settings.reviewActivity['2026-08-21'], 5);
-    assert.equal(settings.reviewsDate, '2026-08-21');
-    assert.equal(settings.reviewsToday, 5);
+    assert.equal(settings.lastReviewDate, '2026-08-21');
+    assert.equal(settings.reviewsToday, 0);
     assert.equal(settings.exerciseActivityByDevice['device-a']['2026-08-21'], 2);
     assert.equal(settings.exerciseActivityByDevice['device-b']['2026-08-21'], 3);
   }
@@ -289,7 +289,7 @@ test('legacy review activity migrates into the mergeable Drive activity format',
 
   assert.deepEqual(merged.exerciseActivityByDevice.legacy, { '2026-08-20': 3, '2026-08-19': 1 });
   assert.deepEqual(merged.reviewActivity, { '2026-08-20': 3, '2026-08-19': 1 });
-  assert.equal(merged.dailyStreak, 2);
+  assert.equal(merged.dailyStreak, 0);
 });
 
 test('Google Drive backs up and restores the centralized Google AI Studio key', async () => {

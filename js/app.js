@@ -1,35 +1,36 @@
+import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=1602';
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=93';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=96';
-import { speakWord } from './services/speechService.js?v=119';
-import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=93';
-import { recordExerciseResult } from './services/exerciseResult.js?v=93';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=93';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=93';
-import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=93';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=102';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=93';
-import { appendStudyMoment, buildSmartReminderPlan, buildStreakMaintenancePlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=93';
+import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=1602';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=1602';
+import { speakWord } from './services/speechService.js?v=1602';
+import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=1602';
+import { recordExerciseResult } from './services/exerciseResult.js?v=1602';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=1602';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=1602';
+import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=1602';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=1602';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=1602';
+import { appendStudyMoment, buildSmartReminderPlan, buildStreakMaintenancePlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=1602';
 import { localDateKey } from './utils/dates.js';
 
-import { renderReviewView } from './components/ReviewView.js?v=93';
-import { renderLibraryView } from './components/LibraryView.js?v=111';
-import { renderStatsView } from './components/StatsView.js?v=93';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=93';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=93';
-import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=93';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=119';
-import { renderDashboardView } from './components/DashboardView.js?v=93';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=93';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=93';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=116';
-import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=113';
-import { renderSettingsView } from './components/SettingsView.js?v=113';
-import { renderLearningPathView } from './components/LearningPathView.js?v=119';
-import { renderLessonMode, teardownLessonMode } from './components/LessonMode.js?v=120';
-import { getCourseDefinition } from './data/courses.js?v=111';
-import { fetchLithuanianEntry } from './services/lithuanianEnrichment.js?v=113';
+import { renderReviewView } from './components/ReviewView.js?v=1602';
+import { renderLibraryView } from './components/LibraryView.js?v=1602';
+import { renderStatsView } from './components/StatsView.js?v=1602';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=1602';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=1602';
+import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=1602';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=1602';
+import { renderDashboardView } from './components/DashboardView.js?v=1602';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=1602';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=1602';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=1602';
+import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=1602';
+import { renderSettingsView } from './components/SettingsView.js?v=1602';
+import { renderLearningPathView } from './components/LearningPathView.js?v=1602';
+import { renderLessonMode, teardownLessonMode } from './components/LessonMode.js?v=1602';
+import { getCourseDefinition } from './data/courses.js?v=1602';
+import { fetchLithuanianEntry } from './services/lithuanianEnrichment.js?v=1602';
 
 function buildStudyQueue() {
   const activeNotebook = driveSync.getActiveNotebook();
@@ -90,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
+  startAutomaticUpdateChecks();
   setInteractionSoundEnabledProvider(() => driveSync.getSettings().soundEnabled !== false);
   setupButtonSounds();
   setupNavigation();
@@ -157,6 +159,7 @@ function updateGoalDisplay() {
 }
 
 function updateDashboardDerivedState() {
+  goalCount = Number(driveSync.getSettings().reviewsToday || 0);
   updateGoalDisplay();
   const settings = driveSync.getSettings();
   const allWords = driveSync.getWords();
@@ -197,8 +200,10 @@ function updateDashboardDerivedState() {
 function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
   const settings = { ...driveSync.getSettings(), ...settingsOverride };
   const reviewsToday = settings.reviewsDate === localDateKey(now) ? Number(settings.reviewsToday || 0) : 0;
-  const dueCount = getDueWords().filter(word => word.notebook === driveSync.getActiveNotebook()).length;
+  const dueCount = getDueWords().length;
   return buildSmartReminderPlan({
+    courseName: driveSync.getActiveCourseId() === 'lithuanian' ? 'Lithuanian' : 'Vocabulary',
+    hasLesson: driveSync.getActiveCourseId() === 'lithuanian',
     preferredTime: settings.reminderTime || '19:00',
     smartTiming: settings.smartReminderEnabled !== false,
     reviewMoments: settings.reviewStartMoments || [],
@@ -213,7 +218,7 @@ function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
 function currentStreakMaintenancePlan(settingsOverride = {}, now = new Date()) {
   const settings = { ...driveSync.getSettings(), ...settingsOverride };
   const reviewsToday = settings.reviewsDate === localDateKey(now) ? Number(settings.reviewsToday || 0) : 0;
-  const dueCount = getDueWords().filter(word => word.notebook === driveSync.getActiveNotebook()).length;
+  const dueCount = getDueWords().length;
   const primaryPlan = currentSmartReminderPlan(settingsOverride, now);
   return buildStreakMaintenancePlan({
     enabled: settings.streakReminderEnabled !== false,
@@ -246,7 +251,6 @@ async function refreshSmartReminder({ requestPermission = false, settingsOverrid
 
 function queueSmartReminderRefresh() {
   globalThis.clearTimeout(reminderRefreshTimer);
-  if (!driveSync.getSettings().reminderEnabled) return;
   reminderRefreshTimer = globalThis.setTimeout(() => {
     refreshSmartReminder().catch(error => console.warn('Smart reminder refresh failed.', error));
   }, 400);
@@ -263,7 +267,7 @@ function updateEngagementCard() {
   const settings = driveSync.getSettings();
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
   const reviewsToday = settings.reviewsDate === localDateKey() ? Number(settings.reviewsToday || 0) : 0;
-  const dueCount = getDueWords().filter(word => word.notebook === driveSync.getActiveNotebook()).length;
+  const dueCount = getDueWords().length;
   const streak = Number(settings.dailyStreak || 0);
   const activity = settings.reviewActivity || {};
   const today = new Date();
@@ -427,6 +431,7 @@ function navigateTo(viewName) {
   if (currentView === 'useit' && viewName !== 'useit') teardownUseItMode();
   if (currentView === 'lesson' && viewName !== 'lesson') teardownLessonMode();
   currentView = viewName;
+  if (location.hash !== `#${viewName}`) history.pushState(null, '', `#${viewName}`);
   document.body.classList.toggle('speaking-view', viewName === 'speaking');
   document.body.classList.toggle('learning-view', viewName === 'learn');
   document.body.classList.toggle('lesson-view', viewName === 'lesson');
@@ -436,7 +441,7 @@ function navigateTo(viewName) {
   if (activeMonthLabel) activeMonthLabel.textContent = driveSync.getActiveNotebook().replace(/ Vocabulary$/, '');
 
   document.querySelectorAll('.nav-link-item').forEach(link => {
-    const isActive = link.getAttribute('data-view') === viewName;
+    const isActive = link.getAttribute('data-view') === (viewName === 'lesson' ? 'learn' : viewName);
     link.classList.toggle('active', isActive);
     if (isActive) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
@@ -1265,6 +1270,8 @@ async function flushAutomaticDriveSync() {
 
 function setupAutomaticDriveBackup() {
   window.addEventListener('keepvocab:data-changed', () => {
+    updateDashboardDerivedState();
+    queueSmartReminderRefresh();
     driveChangeRevision += 1;
     scheduleAutomaticDriveSync();
   });
@@ -1516,3 +1523,12 @@ function setupKeyboardShortcuts() {
     }
   });
 }
+
+// Recompute date-sensitive UI and alarms after midnight or returning to the app.
+let lastStudyDate = localDateKey();
+setInterval(() => {
+  if (localDateKey() === lastStudyDate) return;
+  lastStudyDate = localDateKey();
+  updateDashboardDerivedState();
+  queueSmartReminderRefresh();
+}, 30_000);

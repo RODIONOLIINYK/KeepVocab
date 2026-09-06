@@ -1,5 +1,5 @@
-import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=93';
-import { bytesToBase64 } from '../utils/base64.js?v=117';
+import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=1602';
+import { bytesToBase64 } from '../utils/base64.js?v=1602';
 
 const OPENVERSE_API = 'https://api.openverse.org/v1/images/';
 const WIKIMEDIA_COMMONS_API = 'https://commons.wikimedia.org/w/api.php';

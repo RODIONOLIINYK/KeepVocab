@@ -97,7 +97,7 @@ test('lesson attempts resume deterministically and unlock only the next stable n
   attempt = advanceLessonAttempt(attempt, first, new Date('2026-09-01T10:01:00Z'));
   const resumed = startLessonAttempt(first.id, attempt);
   assert.equal(resumed.id, attempt.id);
-  assert.equal(resumed.exerciseIndex, 1);
+  assert.equal(resumed.exerciseIndex, 2);
   assert.equal(currentSessionId({ completedNodeIds: [] }), first.id);
   assert.equal(isSessionUnlocked(second.id, { completedNodeIds: [] }), false);
   assert.equal(isSessionUnlocked(second.id, { completedNodeIds: [first.id] }), true);

@@ -1,5 +1,5 @@
-import { DEFAULT_GEMINI_LIVE_MODEL, GEMINI_KEY_STORAGE } from './geminiSettings.js?v=113';
-import { base64ToBytes, bytesToBase64 } from '../utils/base64.js?v=117';
+import { DEFAULT_GEMINI_LIVE_MODEL, GEMINI_KEY_STORAGE } from './geminiSettings.js?v=1602';
+import { base64ToBytes, bytesToBase64 } from '../utils/base64.js?v=1602';
 
 export const GEMINI_LIVE_MODEL = DEFAULT_GEMINI_LIVE_MODEL;
 export { GEMINI_KEY_STORAGE };

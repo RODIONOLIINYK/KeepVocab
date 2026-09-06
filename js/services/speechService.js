@@ -144,7 +144,7 @@ export async function getSpeechAvailability(locale = 'en-US') {
   let geminiConfigured = false;
   if (String(locale).toLowerCase().startsWith('lt')) {
     try {
-      const { getGeminiSettings } = await import('./geminiSettings.js?v=111');
+      const { getGeminiSettings } = await import('./geminiSettings.js?v=1602');
       geminiConfigured = Boolean(getGeminiSettings().apiKey);
     } catch { /* settings are optional */ }
   }
@@ -201,7 +201,7 @@ export async function speakText(text, { locale = 'en-US', rate = 0.9, audioUrl =
   if (audioUrl && await playRecordedAudio(audioUrl, rate)) return true;
   if (String(locale).toLowerCase().startsWith('lt')) {
     try {
-      const { getCachedOrGenerateTtsAudio } = await import('./geminiTts.js?v=119');
+      const { getCachedOrGenerateTtsAudio } = await import('./geminiTts.js?v=1602');
       const generatedUrl = await getCachedOrGenerateTtsAudio(cleanText, { locale });
       if (generatedUrl && await playRecordedAudio(generatedUrl, rate)) {
         URL.revokeObjectURL?.(generatedUrl);

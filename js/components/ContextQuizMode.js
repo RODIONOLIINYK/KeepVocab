@@ -1,11 +1,11 @@
-import { driveSync } from '../services/driveSync.js?v=93';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=93';
-import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=116';
+import { driveSync } from '../services/driveSync.js?v=1602';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=1602';
+import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=93';
-import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=93';
-import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=93';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=1602';
+import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=1602';
+import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function shuffle(values) {

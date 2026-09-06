@@ -1,7 +1,7 @@
 // Fast dictionary lookup with a maintained Wiktionary source, a short fallback, and offline cache.
 
-import { sanitizeExistingExamples } from './exampleSearch.js?v=93';
-import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=117';
+import { sanitizeExistingExamples } from './exampleSearch.js?v=1602';
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=1602';
 
 const PRIMARY_API_BASE = 'https://freedictionaryapi.com/api/v1/entries/en/';
 const FALLBACK_API_BASE = 'https://api.datamuse.com/words';

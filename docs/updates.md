@@ -1,0 +1,70 @@
+# App updates
+
+Version 1.6.0 introduces automatic update checks on startup, periodically while open,
+and when returning to the app. Settings also offers a manual check. Checks run silently, with update status and installation controls only in Settings.
+The user chooses when to install or reload. No update overlay is displayed.
+Existing installations must install 1.6.0 once to gain this feature.
+
+## Release contract
+
+Publish a stable GitHub release in `RODIONOLIINYK/KeepVocab`, tagged `vX.Y.Z`.
+Drafts, prereleases, and older versions are ignored. Keep `package.json`,
+`js/services/appUpdates.js`, Android `versionName`, and the web cache version in
+sync; increment Android `versionCode` for every release.
+
+Required asset names:
+
+- `KeepVocab-X.Y.Z-Android-debug.apk` or `KeepVocab-X.Y.Z-Android-release.apk`
+- `KeepVocab-X.Y.Z-macOS-universal.dmg`
+
+GitHub's release API must provide a SHA-256 digest and size for these assets.
+The updater accepts only matching files from this repository and verifies the
+download before opening the installer. Publishing code alone does not publish an
+installer or make an update available.
+
+## Android
+
+Run `npm run android:apk` with Java 21 and the Android SDK configured. Rename the
+generated APK to the release asset name above. Sign each update with the same key
+as the installed application. Existing debug releases require their original debug
+key; changing to a release key is not a transparent update. Preserve that key
+securely outside the repository.
+
+The native updater verifies package ID, newer version code, signing certificate,
+size, and SHA-256 before invoking Android's installer. Android may ask the user to
+allow installs from KeepVocab, and always controls installation confirmation.
+No uninstall or app-data reset is part of this flow.
+
+## macOS
+
+Run `npm run mac:build`. This produces a universal DMG, ZIP, blockmaps, and
+`latest-mac.yml` in `dist/macos`. The repository defaults to an unsigned personal
+build. Such builds automatically check for updates and download a verified DMG
+when requested; the user replaces the app in Applications and reopens it.
+
+For automatic replacement and restart, use a valid Developer ID Application
+identity when building (override `build.mac.identity` through electron-builder's
+configuration), configure notarization in the release environment, and publish
+the ZIP, its blockmap, and `latest-mac.yml` alongside the DMG. Preserve artifact
+names referenced by the metadata. The signed build enables `electron-updater`;
+downloaded updates install only when the user chooses to update.
+
+[Electron's macOS updater requires a signed application](https://www.electronjs.org/docs/latest/api/auto-updater/).
+See [electron-builder update documentation](https://www.electron.build/docs/features/auto-update/)
+for signing, metadata, and publishing configuration. Distribution credentials and
+signing keys are not stored in this repository.
+
+## Web
+
+The service worker prepares new assets in the background. The App updates card in Settings lets
+the learner choose when to reload. It does not activate a new worker in the middle
+of an exercise. Saved progress remains in the existing local storage.
+
+## Reminders
+
+Android reminders are local scheduled notifications. Repeating copy avoids frozen
+counts; exact goal and due counts are shown from current data inside the app.
+Streak warnings are dated one-shot notifications, prepared for today if no study
+has been recorded or tomorrow after studying today. Activity, course switches,
+settings changes, and day rollover replace stale alarms. Delivery still follows
+Android notification permission and battery-management settings.

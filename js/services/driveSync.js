@@ -1,7 +1,8 @@
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=93';
-import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=93';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=1602';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=1602';
+import { activityByDevice, aggregateActivity, normalizedActivity, streakFromActivity, currentStudyStats } from './studyActivity.js';
 import { localDateKey } from '../utils/dates.js';
 import { getCourseDefinition } from '../data/courses.js';
 import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles } from './courseProfiles.js';
@@ -91,86 +92,14 @@ function recordTimestamp(record) {
   return Date.parse(record?.updatedAt || record?.lastReviewedAt || record?.createdAt || 0) || 0;
 }
 
-function normalizedActivity(activity) {
-  return Object.fromEntries(Object.entries(activity && typeof activity === 'object' ? activity : {})
-    .filter(([date, count]) => /^\d{4}-\d{2}-\d{2}$/.test(date) && Number(count) > 0)
-    .sort(([a], [b]) => b.localeCompare(a))
-    .slice(0, 90)
-    .map(([date, count]) => [date, Math.max(0, Math.round(Number(count) || 0))]));
-}
-
-function activityByDevice(settings) {
-  const saved = settings?.exerciseActivityByDevice;
-  if (saved && typeof saved === 'object' && Object.keys(saved).length) {
-    return Object.fromEntries(Object.entries(saved)
-      .map(([deviceId, activity]) => [String(deviceId), normalizedActivity(activity)])
-      .filter(([, activity]) => Object.keys(activity).length));
-  }
-  const legacy = normalizedActivity(settings?.reviewActivity);
-  return Object.keys(legacy).length ? { legacy: legacy } : {};
-}
-
-function mergeActivityByDevice(localSettings, remoteSettings) {
-  const merged = activityByDevice(localSettings);
-  for (const [deviceId, remoteActivity] of Object.entries(activityByDevice(remoteSettings))) {
-    const localActivity = merged[deviceId] || {};
-    const dates = [...new Set([...Object.keys(localActivity), ...Object.keys(remoteActivity)])];
-    merged[deviceId] = normalizedActivity(Object.fromEntries(dates
-      .map(date => [date, Math.max(Number(localActivity[date] || 0), Number(remoteActivity[date] || 0))])));
-  }
-  return merged;
-}
-
-function aggregateActivity(shards) {
-  const totals = {};
-  for (const activity of Object.values(shards || {})) {
-    for (const [date, count] of Object.entries(activity || {})) totals[date] = Number(totals[date] || 0) + Number(count || 0);
-  }
-  return normalizedActivity(totals);
-}
-
-function streakFromActivity(activity) {
-  const dates = Object.keys(activity || {}).sort((a, b) => b.localeCompare(a));
-  if (!dates.length) return 0;
-  let streak = 1;
-  let cursor = new Date(`${dates[0]}T12:00:00`);
-  for (const date of dates.slice(1)) {
-    cursor.setDate(cursor.getDate() - 1);
-    if (localDateKey(cursor) !== date) break;
-    streak += 1;
-  }
-  return streak;
-}
 
 export function mergeDriveSettings(localSettings = {}, remoteSettings = {}, { freshInstall = false } = {}) {
   const base = remoteSettings && Object.keys(remoteSettings).length
     && (freshInstall || recordTimestamp(remoteSettings) > recordTimestamp(localSettings))
     ? remoteSettings
     : localSettings;
-  const exerciseActivityByDevice = mergeActivityByDevice(localSettings, remoteSettings);
-  const reviewActivity = aggregateActivity(exerciseActivityByDevice);
-  const reviewsDate = Object.keys(reviewActivity).sort((a, b) => b.localeCompare(a))[0] || null;
-  const mergedActivity = {
-    ...base,
-    exerciseActivityByDevice,
-    reviewActivity,
-    reviewsDate,
-    reviewsToday: reviewsDate ? reviewActivity[reviewsDate] : 0,
-    lastReviewDate: reviewsDate || base.lastReviewDate || null,
-    dailyStreak: streakFromActivity(reviewActivity)
-  };
   const mergedCourses = mergeCourseProfiles(freshInstall ? {} : localSettings, remoteSettings);
-  const activeCourseId = mergedCourses.activeCourseId || 'english';
-  mergedCourses.courseProfiles[activeCourseId] = {
-    ...mergedCourses.courseProfiles[activeCourseId],
-    exerciseActivityByDevice,
-    reviewActivity,
-    reviewsDate,
-    reviewsToday: reviewsDate ? reviewActivity[reviewsDate] : 0,
-    lastReviewDate: reviewsDate || base.lastReviewDate || null,
-    dailyStreak: streakFromActivity(reviewActivity)
-  };
-  return migrateCourseSettings({ ...mergedActivity, ...mergedCourses });
+  return migrateCourseSettings({ ...base, activeCourseId: mergedCourses.activeCourseId, courseProfiles: mergedCourses.courseProfiles });
 }
 
 function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource = 'drive') {
@@ -750,7 +679,14 @@ export class DriveSyncService {
   }
 
   getSettings() {
-    return migrateCourseSettings(this.read(STORAGE_KEY_SETTINGS, {}));
+    const settings = migrateCourseSettings(this.read(STORAGE_KEY_SETTINGS, {}));
+    for (const profile of Object.values(settings.courseProfiles)) {
+      const shards = activityByDevice(profile);
+      profile.exerciseActivityByDevice = shards;
+      profile.reviewActivity = aggregateActivity(shards);
+      Object.assign(profile, currentStudyStats(profile));
+    }
+    return migrateCourseSettings(settings);
   }
 
   updateSettings(patch, { silent = false } = {}) {
@@ -803,7 +739,9 @@ export class DriveSyncService {
       exerciseActivityByDevice,
       reviewActivity,
       reviewsDate: key,
-      reviewsToday: Number(reviewActivity[key] || 0)
+      reviewsToday: Number(reviewActivity[key] || 0),
+      lastReviewDate: key,
+      dailyStreak: streakFromActivity(reviewActivity, date)
     });
     return Number(reviewActivity[key] || 0);
   }

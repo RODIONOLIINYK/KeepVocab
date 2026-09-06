@@ -1,7 +1,7 @@
 const p = (lt, en, acceptedForms = []) => ({ lt, en, acceptedForms: [...new Set([lt, ...acceptedForms])] });
 
 // The course is authored data. The engine below only combines and schedules it;
-// it never asks an AI to invent lesson text or accepted answers at runtime.
+// core lessons work offline; optional AI activities have authored fallbacks.
 const UNIT_BLUEPRINTS = [
   ['sep-01', 'September', 'A1', 'Lithuanian alphabet & sounds', 'Read all 32 letters and pronounce the special Lithuanian characters.', '32 letters; ą č ę ė į š ų ū ž', [p('Ačiū.', 'Thank you.'), p('Šeima.', 'Family.'), p('Žodis.', 'A word.'), p('Lietuvių kalba.', 'The Lithuanian language.')]],
   ['sep-02', 'September', 'A1', 'Pronouns & būti (“to be”)', 'Use every present-tense form of “to be” in a basic introduction.', 'aš esu, tu esi, jis / ji yra, mes esame, jūs esate, jie / jos yra', [p('Aš esu studentas.', 'I am a male student.', ['Esu studentas.']), p('Tu esi studentė.', 'You are a female student.', ['Esi studentė.']), p('Mes esame iš Lenkijos.', 'We are from Poland.', ['Esame iš Lenkijos.']), p('Jie yra Vilniuje.', 'They are in Vilnius.')]],
@@ -145,7 +145,7 @@ const GRAMMAR_GUIDES = [
   g('Negation uses ne- directly on the verb. The object of a negated transitive verb normally changes from accusative to genitive.', 'Modal verbs keep the negative prefix too: galiu → negaliu; galėjau → negalėjau.', [
     ['Present', 'galiu · negaliu', 'I can · I cannot'],
     ['Past', 'galėjau · negalėjau', 'I could · I could not'],
-    ['Object shift', 'turiu laiką · neturiu laiko', 'I have time · I do not have time']
+    ['Object shift', 'turiu laiko · neturiu laiko', 'I have time · I do not have time']
   ], 'When you add ne-, inspect the object ending as well as the verb.'),
   g('The simple past describes a completed or bounded past event. Its endings attach to a past stem.', 'A common pattern is aš -au, tu -ai, third person -o or -ė, mes -ome/-ėme and jūs -ote/-ėte.', [
     ['būti', 'buvau · buvai · buvo', 'was / were'],
@@ -177,7 +177,7 @@ const GRAMMAR_GUIDES = [
     ['Adverb', 'greitai → greičiau', 'quickly → more quickly'],
     ['Comparison', 'didesnis už Kauną', 'bigger than Kaunas']
   ], 'Match -esnis or -esnė to the noun; use -iau when describing how an action happens.'),
-  g('Connectors join clauses and show the relationship between ideas.', 'Nes gives a reason, todėl gives a result, but contrasts ideas, and kad introduces many reported or desired clauses.', [
+  g('Connectors join clauses and show the relationship between ideas.', 'Nes gives a reason, todėl gives a result, bet contrasts ideas, and kad introduces many reported or desired clauses.', [
     ['Reason', 'nes', 'because'],
     ['Result', 'todėl', 'therefore / so'],
     ['Contrast', 'bet', 'but']
@@ -229,13 +229,39 @@ const GRAMMAR_GUIDES = [
   ], 'Build a four-part response: position, reason, contrast and hypothetical example.')
 ];
 
+
+// CEFR action-oriented outcomes and VDU A1 topic progression inform this sequence.
+// See docs/lithuanian-curriculum.md for scope, assessment and source references.
+const COURSE_ORDER = [0, 1, 2, 12, 3, 7, 4, 5, 6, 14, 8, 9, 10, 13, 11, 15,
+  20, 21, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35];
+const FOUNDATION_PHRASES = {
+  'sep-01': [p('Labas.', 'Hello.'), p('Ačiū.', 'Thank you.'), p('Prašau.', 'Please. / You are welcome.'), p('Iki.', 'See you.'), p('Taip.', 'Yes.'), p('Ne.', 'No.'), p('Laba diena.', 'Good afternoon.'), p('Viso gero.', 'Goodbye.')],
+  'sep-02': [p('Aš esu studentas.', 'I am a male student.', ['Esu studentas.']), p('Tu esi studentė.', 'You are a female student.', ['Esi studentė.']), p('Ji yra mokytoja.', 'She is a teacher.'), p('Jis yra studentas.', 'He is a student.'), p('Mes esame studentai.', 'We are students.'), p('Jūs esate mokytoja.', 'You are a female teacher. (polite)'), p('Jie yra studentai.', 'They are male students.'), p('Mano vardas Jonas.', 'My name is Jonas.')],
+  'sep-03': [p('Tai yra stalas.', 'This is a table.'), p('Tai yra knyga.', 'This is a book.'), p('Čia yra kambarys.', 'Here is a room.'), p('Čia yra gatvė.', 'Here is a street.'), p('Tai yra brolis.', 'This is a brother.'), p('Tai yra sesuo.', 'This is a sister.'), p('Vienas stalas.', 'One table.'), p('Dvi knygos.', 'Two books.')],
+  'dec-13': [p('Čia yra mano sesuo.', 'This is my sister.'), p('Čia yra mano brolis.', 'This is my brother.'), p('Mano mama yra mokytoja.', 'My mother is a teacher.'), p('Mano tėtis yra gydytojas.', 'My father is a doctor.'), p('Tai yra tavo šeima.', 'This is your family.'), p('Tai yra mano draugas.', 'This is my male friend.'), p('Mano sesers vardas Rasa.', 'My sister’s name is Rasa.'), p('Ar tai tavo brolis?', 'Is this your brother?')],
+  'sep-04': [p('Aš dirbu.', 'I work.'), p('Tu dirbi.', 'You work.'), p('Ji dirba.', 'She works.'), p('Mes dirbame.', 'We work.'), p('Jūs dirbate.', 'You work. (plural or polite)'), p('Jie dirba.', 'They work.'), p('Aš gyvenu Vilniuje.', 'I live in Vilnius.'), p('Kur tu gyveni?', 'Where do you live?')],
+  'oct-08': [p('Kas čia?', 'What is this?'), p('Kur yra knyga?', 'Where is the book?'), p('Kaip sekasi?', 'How are you?'), p('Ar tu dirbi?', 'Do you work?'), p('Kada tu dirbi?', 'When do you work?'), p('Kiek kainuoja?', 'How much does it cost?'), p('Kodėl?', 'Why?'), p('Ar supranti?', 'Do you understand?')],
+  'oct-05': [p('Aš turiu laiko.', 'I have time.'), p('Aš studijuoju.', 'I study.'), p('Ryte dirbu.', 'I work in the morning.'), p('Vakare skaitau.', 'I read in the evening.'), p('Dabar yra septynios.', 'It is seven o’clock now.'), p('Dirbu nuo devynių.', 'I work from nine.'), p('Šiandien yra pirmadienis.', 'Today is Monday.'), p('Rytoj yra antradienis.', 'Tomorrow is Tuesday.')],
+  'oct-06': [p('Aš valgau sriubą.', 'I eat soup.'), p('Aš geriu vandenį.', 'I drink water.'), p('Aš nevalgau mėsos.', 'I do not eat meat.'), p('Noriu kavos.', 'I want coffee.'), p('Arbatos, prašau.', 'Tea, please.'), p('Man patinka duona.', 'I like bread.'), p('Sąskaitą, prašau.', 'The bill, please.'), p('Ačiū, labai skanu.', 'Thank you, it is very tasty.')],
+  'oct-07': [p('Perku šiltą megztinį.', 'I am buying a warm sweater.'), p('Perku šiltą striukę.', 'I am buying a warm jacket.'), p('Ieškau šilto megztinio.', 'I am looking for a warm sweater.'), p('Kiek kainuoja?', 'How much does it cost?'), p('Tai kainuoja dešimt eurų.', 'It costs ten euros.'), p('Du obuoliai, prašau.', 'Two apples, please.'), p('Ar galima mokėti kortele?', 'Can I pay by card?'), p('Aš tik žiūriu.', 'I am just looking.')]
+};
+// Match the tense guide to the actual module: future precedes deadlines;
+// repeated past habits belong with experiences, not health.
+const frequentativeGuide = GRAMMAR_GUIDES[21];
+GRAMMAR_GUIDES[21] = GRAMMAR_GUIDES[22];
+GRAMMAR_GUIDES[22] = g('Use man with a symptom to explain how you feel.', 'Skauda describes pain; the painful body part stays in the nominative. Use nuo + genitive to say when it started.', [['Pain', 'Man skauda gerklę.', 'My throat hurts.'], ['Since', 'nuo vakar', 'since yesterday'], ['Advice', 'Vartokite vaistus.', 'Take the medicine. (polite)']], 'Learn the whole pattern man skauda + body part.');
+GRAMMAR_GUIDES[24] = frequentativeGuide;
+UNIT_BLUEPRINTS[24][3] = 'Experiences & past habits';
+UNIT_BLUEPRINTS[24][5] = 'Simple past and past frequentative';
+UNIT_BLUEPRINTS[24][6] = [p('Jau lankiausi Klaipėdoje.', 'I have already visited Klaipėda.'), p('Anksčiau gyvenau Kaune.', 'I used to live in Kaunas.'), p('Kasdien eidavau į parką.', 'I used to go to the park every day.'), p('Vakar nuėjau į parką.', 'Yesterday I went to the park.')];
+
 export const PATH_STAGES = Object.freeze([
-  { id: 'stage-1', number: 1, unitStart: 1, unitEnd: 4, title: 'Build the foundations', subtitle: 'Alphabet, “to be”, noun endings and present verbs', color: 'green' },
-  { id: 'stage-2', number: 2, unitStart: 5, unitEnd: 8, title: 'Build correct sentences', subtitle: 'Verb classes, object endings, agreement and questions', color: 'orange' },
-  { id: 'stage-3', number: 3, unitStart: 9, unitEnd: 12, title: 'Move around with confidence', subtitle: 'City, transport, directions and campus', color: 'blue' },
-  { id: 'stage-4', number: 4, unitStart: 13, unitEnd: 16, title: 'Your A1 checkpoint', subtitle: 'People, home and familiar transactions', color: 'purple' },
-  { id: 'stage-5', number: 5, unitStart: 17, unitEnd: 20, title: 'University life', subtitle: 'Classes, schedules, administration and problems', color: 'green' },
-  { id: 'stage-6', number: 6, unitStart: 21, unitEnd: 24, title: 'Talk across time', subtitle: 'Simple past, past habits, future and tense contrast', color: 'orange' },
+  { id: 'stage-1', number: 1, unitStart: 1, unitEnd: 4, title: 'Build the foundations', subtitle: 'Sounds, greetings, introductions and family', color: 'green' },
+  { id: 'stage-2', number: 2, unitStart: 5, unitEnd: 8, title: 'Build correct sentences', subtitle: 'Present verbs, questions, daily routines and food', color: 'orange' },
+  { id: 'stage-3', number: 3, unitStart: 9, unitEnd: 12, title: 'Everyday essentials', subtitle: 'Shopping, home, city and transport', color: 'blue' },
+  { id: 'stage-4', number: 4, unitStart: 13, unitEnd: 16, title: 'Your A1 checkpoint', subtitle: 'Directions, descriptions, requests and review', color: 'purple' },
+  { id: 'stage-5', number: 5, unitStart: 17, unitEnd: 20, title: 'Talk across time', subtitle: 'Past events, future plans, classes and schedules', color: 'green' },
+  { id: 'stage-6', number: 6, unitStart: 21, unitEnd: 24, title: 'Handle everyday problems', subtitle: 'Administration, permission, health and repairs', color: 'orange' },
   { id: 'stage-7', number: 7, unitStart: 25, unitEnd: 28, title: 'Connect your ideas', subtitle: 'Experience, comparisons, reasons and stories', color: 'blue' },
   { id: 'stage-8', number: 8, unitStart: 29, unitEnd: 32, title: 'Longer real conversations', subtitle: 'Dialogue, messages, listening and problem-solving', color: 'purple' },
   { id: 'stage-9', number: 9, unitStart: 33, unitEnd: 36, title: 'Real-life missions', subtitle: 'A2 evidence and an optional B1 bridge', color: 'green' }
@@ -272,8 +298,12 @@ function makeCloze(phrase) {
 }
 
 function makeExercises(unit, sessionIndex) {
+  const taughtPhrases = sessionIndex < 2 ? unit.phrases.slice(sessionIndex * 4, sessionIndex * 4 + 4) : unit.phrases;
+  const currentPhrases = taughtPhrases.length ? taughtPhrases : unit.phrases;
+  const isCumulative = sessionIndex === 5 || /checkpoint/i.test(unit.title);
+  const practicePhrases = isCumulative && unit.reviewPhrases.length ? [...currentPhrases.slice(0, 2), ...unit.reviewPhrases.filter((_, i) => i % 4 === 0)] : currentPhrases;
   const types = sessionIndex === 0
-    ? ['pattern', 'meaning-choice', 'word-order', 'cloze', 'listening-choice', 'read-repeat']
+    ? ['pattern', 'meaning-choice', 'matching', 'cloze', 'listening-choice', 'read-repeat']
     : sessionIndex === 1
       ? ['pattern', 'typed-recall', 'dictation', 'cloze', 'word-order', 'listening-choice']
       : sessionIndex === 2
@@ -282,28 +312,29 @@ function makeExercises(unit, sessionIndex) {
           ? ['pattern', 'ai-dialogue', 'listening-choice', 'matching', 'word-order', 'typed-recall', 'read-repeat']
           : sessionIndex === 4
             ? ['pattern', 'matching', 'cloze', 'word-order', 'dictation', 'adaptive-translation', 'role-play']
-            : ['pattern', 'mission', 'adaptive-translation', 'cloze', 'ai-listening', 'matching', 'role-play'];
+            : ['pattern', 'typed-recall', 'word-order', 'cloze', 'meaning-choice', 'matching', 'typed-recall'];
   const lessonFocus = [
     'Learn the rule and notice it in a complete sentence.',
     'Review the forms before retrieving them from memory.',
-    'Connect the written endings with the sounds you hear.',
-    'Use the same grammar while responding in context.',
-    'Contrast the forms and correct the ending, not only the vocabulary.',
-    'Choose the form independently in a practical mission.'
+    'Connect familiar written phrases with the sounds you hear.',
+    'Use the phrases and patterns in a short conversation.',
+    'Retrieve familiar phrases and check their spelling and meaning.',
+    'Show what you remember from this module and earlier learning.'
   ][sessionIndex];
   return types.map((type, exerciseIndex) => {
-    const focusIndex = (sessionIndex + exerciseIndex) % unit.phrases.length;
-    const focus = type === 'cloze' ? clozePhrase(unit.phrases, focusIndex) : unit.phrases[focusIndex];
-    const second = unit.phrases[(focusIndex + 1) % unit.phrases.length];
+    if (type === 'cloze' && !practicePhrases.some(phrase => phraseTokens(phrase.lt).length > 1)) type = 'meaning-choice';
+    const focusIndex = exerciseIndex % practicePhrases.length;
+    const focus = type === 'cloze' ? clozePhrase(practicePhrases, focusIndex) : practicePhrases[focusIndex];
+    const second = practicePhrases[(focusIndex + 1) % practicePhrases.length];
     const words = phraseTokens(focus.lt).map(token => token[0]);
     const cloze = makeCloze(focus);
     const clozeAnswer = cloze.answer;
     const clozePrompt = cloze.prompt;
-    const distractors = unit.phrases.filter(item => item.lt !== focus.lt).map(item => item.en);
+    const distractors = practicePhrases.filter(item => item.lt !== focus.lt).map(item => item.en);
     return {
       id: `${unit.id}-s${sessionIndex + 1}-e${exerciseIndex + 1}`,
       type,
-      prompt: type === 'pattern' ? unit.guide.summary
+      prompt: type === 'pattern' ? unit.title
         : type === 'meaning-choice' ? `What does “${focus.lt}” mean?`
           : type === 'word-order' ? `Build: ${focus.en}`
             : type === 'cloze' ? 'Complete the Lithuanian phrase.'
@@ -339,15 +370,19 @@ function makeExercises(unit, sessionIndex) {
       answer: focus.lt,
       outcomeTag: unit.outcome,
       rescue: focus.en,
-      guide: type === 'pattern' ? unit.guide : null
+      guide: type === 'pattern' ? unit.guide : null,
+      teachingPhrases: type === 'pattern' ? currentPhrases : []
     };
   });
 }
 
-export const LITHUANIAN_UNITS = Object.freeze(UNIT_BLUEPRINTS.map((row, unitIndex) => {
-  const [id, , cefr, title, outcome, grammar, phrases] = row;
-  const guide = GRAMMAR_GUIDES[unitIndex];
-  const unit = { id, unitNumber: unitIndex + 1, sectionNumber: Math.floor(unitIndex / 4) + 1, cefr, title, outcome, grammar, phrases, guide };
+export const LITHUANIAN_UNITS = Object.freeze(COURSE_ORDER.map((sourceIndex, unitIndex) => {
+  const [id, , cefr, title, outcome, grammar, originalPhrases] = UNIT_BLUEPRINTS[sourceIndex];
+  const phrases = FOUNDATION_PHRASES[id] || originalPhrases;
+  const guide = GRAMMAR_GUIDES[sourceIndex];
+  const previousSources = COURSE_ORDER.slice(Math.max(0, unitIndex - 3), unitIndex);
+  const reviewPhrases = previousSources.flatMap(index => FOUNDATION_PHRASES[UNIT_BLUEPRINTS[index][0]] || UNIT_BLUEPRINTS[index][6]);
+  const unit = { id, unitNumber: unitIndex + 1, sectionNumber: Math.floor(unitIndex / 4) + 1, cefr, title, outcome, grammar, phrases, guide, reviewPhrases, prerequisiteUnitId: unitIndex ? UNIT_BLUEPRINTS[COURSE_ORDER[unitIndex - 1]][0] : null };
   return Object.freeze({
     ...unit,
     sessions: Object.freeze(SESSION_KINDS.map((kind, sessionIndex) => Object.freeze({
@@ -359,10 +394,12 @@ export const LITHUANIAN_UNITS = Object.freeze(UNIT_BLUEPRINTS.map((row, unitInde
       icon: SESSION_ICONS[sessionIndex],
       title: sessionIndex === 0 ? `Learn: ${title}`
         : sessionIndex === 1 ? 'Forms in context'
-          : sessionIndex === 2 ? 'AI listening: gist & detail'
-            : sessionIndex === 3 ? 'Interactive AI dialogue'
-              : sessionIndex === 4 ? 'Adaptive forms & tenses'
-                : 'Grammar mission',
+          : sessionIndex === 2 ? 'Listen & understand'
+            : sessionIndex === 3 ? 'Use it in conversation'
+              : sessionIndex === 4 ? 'Review & retrieve'
+                : 'Can-do checkpoint',
+      isCheckpoint: sessionIndex === 5,
+      vocabulary: sessionIndex < 2 ? phrases.slice(sessionIndex * 4, sessionIndex * 4 + 4) : [],
       durationMinutes: sessionIndex >= 3 ? 9 : 7,
       exercises: Object.freeze(makeExercises(unit, sessionIndex))
     })))

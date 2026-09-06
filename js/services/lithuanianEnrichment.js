@@ -1,6 +1,6 @@
-import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=113';
-import { fetchLithuanianWordDetails } from './lithuanianDictionary.js?v=101';
-import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=117';
+import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=1602';
+import { fetchLithuanianWordDetails } from './lithuanianDictionary.js?v=1602';
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=1602';
 
 const coachTranslationCache = new Map();
 const COACH_TRANSLATION_CACHE_LIMIT = 120;

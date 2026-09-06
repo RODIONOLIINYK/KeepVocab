@@ -1,7 +1,8 @@
-import { driveSync } from '../services/driveSync.js?v=93';
-import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=113';
-import { describeSpeechError, getSpeechAvailability, speakText } from '../services/speechService.js?v=113';
-import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=93';
+import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=1602';
+import { driveSync } from '../services/driveSync.js?v=1602';
+import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=1602';
+import { describeSpeechError, getSpeechAvailability, speakText } from '../services/speechService.js?v=1602';
+import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -11,7 +12,7 @@ export function renderSettingsView(container, onNavigate) {
   const pexelsReady = imageProvider.provider === 'pexels' && Boolean(imageProvider.pexelsApiKey);
   const drive = driveSync.getDriveStatus();
   container.innerHTML = `<section class="settings-view" aria-labelledby="settings-heading"><div class="settings-title-row"><button class="status-pill offline" id="settings-back"><i class="fa-solid fa-arrow-left"></i> Today</button><div><span class="eyebrow">KeepVocab settings</span><h1 id="settings-heading">Learning, AI, and backup</h1><p>Configure services once. Your learning remains available without them.</p></div></div>
-    <div class="settings-grid"><section class="settings-card"><div class="settings-card-heading"><span class="settings-icon ai"><i class="fa-solid fa-wand-magic-sparkles"></i></span><div><h2>Google AI Studio</h2><p>An optional key powers Lithuanian audio, Use It feedback, richer Context sentences, and AI Speaking.</p></div><span class="settings-state ${gemini.enabled ? 'connected' : ''}">${gemini.enabled ? 'Configured' : 'Optional'}</span></div>
+    <div class="settings-grid"><section class="settings-card compact"><div class="settings-card-heading"><span class="settings-icon routine"><i class="fa-solid fa-arrow-rotate-right"></i></span><div><h2>App updates</h2><p>KeepVocab ${APP_VERSION} · Checks automatically when you open the app and every six hours.</p></div></div><p data-update-status role="status" aria-live="polite">Updates keep your Library and learning progress.</p><div class="settings-actions"><button class="status-pill offline" data-check-update>Check for updates</button><button class="btn-green-solid" data-install-update hidden>Update app</button></div></section><section class="settings-card"><div class="settings-card-heading"><span class="settings-icon ai"><i class="fa-solid fa-wand-magic-sparkles"></i></span><div><h2>Google AI Studio</h2><p>An optional key powers Lithuanian audio, Use It feedback, richer Context sentences, and AI Speaking.</p></div><span class="settings-state ${gemini.enabled ? 'connected' : ''}">${gemini.enabled ? 'Configured' : 'Optional'}</span></div>
       <form id="gemini-settings-form" class="settings-form"><label class="settings-key-field">API key<div class="key-input-row"><input type="password" id="settings-gemini-key" value="${escapeHtml(gemini.apiKey)}" placeholder="AIza…" autocomplete="off"><button type="button" id="settings-toggle-key" aria-label="Show or hide API key"><i class="fa-solid fa-eye"></i></button></div></label><label>Everyday AI model<select id="settings-text-model"><option value="gemini-3.1-flash-lite" ${gemini.textModel === 'gemini-3.1-flash-lite' ? 'selected' : ''}>Gemini 3.1 Flash-Lite</option><option value="gemini-3.5-flash-lite" ${gemini.textModel === 'gemini-3.5-flash-lite' ? 'selected' : ''}>Gemini 3.5 Flash-Lite</option><option value="gemini-2.5-flash-lite" ${gemini.textModel === 'gemini-2.5-flash-lite' ? 'selected' : ''}>Gemini 2.5 Flash-Lite</option></select></label><label>Lithuanian voice<select id="settings-tts-voice"><option value="Achird" ${gemini.ttsVoice === 'Achird' ? 'selected' : ''}>Achird · friendly</option><option value="Sulafat" ${gemini.ttsVoice === 'Sulafat' ? 'selected' : ''}>Sulafat · warm</option><option value="Kore" ${gemini.ttsVoice === 'Kore' ? 'selected' : ''}>Kore · firm</option><option value="Iapetus" ${gemini.ttsVoice === 'Iapetus' ? 'selected' : ''}>Iapetus · clear</option></select></label><p class="settings-privacy"><i class="fa-solid fa-cloud-arrow-up"></i> Saved on this device and included in your private KeepVocab Google Drive backup when Drive is connected.</p><p class="settings-service-status" id="gemini-settings-status" role="status" aria-live="polite">Checking Lithuanian audio…</p><div class="settings-actions"><button class="btn-green-solid" id="save-gemini-settings">Save and test</button><button type="button" class="status-pill offline" id="test-lithuanian-audio"><i class="fa-solid fa-volume-high"></i> Test Lithuanian audio</button>${gemini.enabled ? '<button type="button" class="status-pill offline" id="remove-gemini-settings">Remove key</button>' : ''}</div></form>
     </section>
     <section class="settings-card"><div class="settings-card-heading"><span class="settings-icon images"><i class="fa-solid fa-images"></i></span><div><h2>Vocabulary images</h2><p>Use Pexels for stronger stock-photo matches or keep the public catalogs that require no key.</p></div><span class="settings-state ${pexelsReady ? 'connected' : ''}">${pexelsReady ? 'Pexels ready' : imageProvider.provider === 'openverse' ? 'Keyless' : 'Setup'}</span></div>
@@ -21,6 +22,27 @@ export function renderSettingsView(container, onNavigate) {
     <section class="settings-card compact"><div class="settings-card-heading"><span class="settings-icon routine"><i class="fa-solid fa-bell"></i></span><div><h2>Routine & sound</h2><p>Daily goal, Android system reminders, streak protection, and interaction sounds.</p></div></div><button class="status-pill offline" id="settings-routine">Open routine settings</button></section></div>
   </section>`;
 
+  let availableUpdate = null;
+  const updateStatus = container.querySelector('[data-update-status]');
+  const checkButton = container.querySelector('[data-check-update]');
+  const installButton = container.querySelector('[data-install-update]');
+  checkButton.onclick = async () => {
+    checkButton.disabled = true; updateStatus.textContent = 'Checking for updates…';
+    try {
+      const result = await checkAppUpdate(); availableUpdate = result.update;
+      installButton.hidden = !['available', 'downloaded', 'web-ready'].includes(result.status);
+      installButton.textContent = result.status === 'web-ready' ? 'Reload to update' : 'Update app';
+      updateStatus.textContent = availableUpdate ? `Version ${availableUpdate.version} is ready to install.` : result.status === 'web-ready' ? 'A web update is ready. Reload when you have finished your lesson.' : result.status === 'development' ? 'This is a development build. Installed builds check GitHub Releases automatically.' : `You are up to date (${result.currentVersion}).`;
+    } catch (error) { updateStatus.textContent = error.message; }
+    finally { checkButton.disabled = false; }
+  };
+  installButton.onclick = async () => {
+    installButton.disabled = true; updateStatus.textContent = 'Downloading and verifying the update…';
+    try { const result = await installAppUpdate(availableUpdate); updateStatus.textContent = result.message || 'Reloading the updated app…'; }
+    catch (error) { updateStatus.textContent = error.message; }
+    finally { installButton.disabled = false; }
+  };
+  void checkButton.onclick();
   container.querySelector('#settings-back').addEventListener('click', () => go('dashboard', onNavigate));
   container.querySelector('#settings-toggle-key').addEventListener('click', () => { const input = container.querySelector('#settings-gemini-key'); input.type = input.type === 'password' ? 'text' : 'password'; });
   getSpeechAvailability('lt-LT').then(availability => {

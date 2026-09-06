@@ -45,11 +45,11 @@ test('the macOS package is universal, sandboxed, and keeps the authorized local 
   const desktopMain = readFileSync(resolve(projectRoot, 'desktop/main.cjs'), 'utf8');
   const macTarget = packageJson.build.mac.target.find(target => target.target === 'dmg');
 
-  assert.equal(packageJson.version, '1.5.2');
+  assert.equal(packageJson.version, '1.6.0');
   assert.equal(packageJson.main, 'desktop/main.cjs');
   assert.deepEqual(macTarget.arch, ['universal']);
   assert.equal(packageJson.build.mac.identity, null);
-  assert.ok(packageJson.build.files.includes('!node_modules/**/*'));
+  assert.ok(packageJson.dependencies['electron-updater']);
   assert.match(packageJson.scripts['mac:build'], /build:web/);
   assert.match(packageJson.scripts['mac:build'], /--universal/);
   assert.match(desktopMain, /APP_HOST = '127\.0\.0\.1'/);

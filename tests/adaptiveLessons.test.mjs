@@ -129,7 +129,7 @@ test('semantic lesson checks accept equivalents and keep offline dialogue produc
   };
   assert.equal((await evaluateTranslationResponse(translation, 'aš mokausi lietuvių kalbos!', context, { storage })).correct, true);
 
-  const turn = await processDialogueTurn({ aiGenerated: false }, [], 'Aš noriu kavos', context, { storage });
+  const turn = await processDialogueTurn({ aiGenerated: false, successCriteria: ['Aš noriu kavos'] }, [], 'Aš noriu kavos', context, { storage });
   assert.equal(turn.accepted, true);
   assert.ok(turn.partnerReply);
 });

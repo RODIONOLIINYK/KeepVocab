@@ -1,11 +1,11 @@
-import { driveSync } from '../services/driveSync.js?v=93';
-import { findRelevantImages, imageSelectionPatch, imageUrlsForWords } from '../services/imageSearch.js?v=93';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
-import { playInteractionSound } from '../services/interactionSound.js?v=93';
+import { driveSync } from '../services/driveSync.js?v=1602';
+import { findRelevantImages, imageSelectionPatch, imageUrlsForWords } from '../services/imageSearch.js?v=1602';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
+import { playInteractionSound } from '../services/interactionSound.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=93';
-import { stableWordChoices } from './PracticeModes.js?v=93';
-import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=93';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=1602';
+import { stableWordChoices } from './PracticeModes.js?v=1602';
+import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 

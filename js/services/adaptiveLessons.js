@@ -1,7 +1,7 @@
-import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=117';
-import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=117';
+import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=1602';
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=1602';
 
-const CACHE_KEY = 'keepvocab_adaptive_lesson_cache_v1';
+const CACHE_KEY = 'keepvocab_adaptive_lesson_cache_v2';
 const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 const CACHE_LIMIT = 80;
 
@@ -186,7 +186,7 @@ function fallbackDialogue(context) {
     goal: `Reply with the Lithuanian for “${reply.en.replace(/[.?!]+$/, '')}”.`,
     opening: phrase.lt,
     supportPhrase: reply.lt,
-    successCriteria: [reply.lt],
+    successCriteria: reply.acceptedForms || [reply.lt],
     aiGenerated: false
   };
 }
@@ -278,13 +278,13 @@ export async function processDialogueTurn(activity, history, learnerReply, conte
     const response = normalized(learnerReply);
     const meetsTarget = (activity.successCriteria || []).some(criterion => {
       const target = normalized(criterion);
-      return target && (response === target || response.includes(target));
+      return target && response === target;
     });
-    const enough = meetsTarget || clean(learnerReply).split(' ').length >= Math.min(3, context.difficulty.band + 1);
+    const enough = meetsTarget;
     return {
       accepted: enough,
       goalComplete: enough,
-      feedback: enough ? 'You produced a relevant Lithuanian reply.' : 'Add one more detail to complete the goal.',
+      feedback: enough ? 'You produced a relevant Lithuanian reply.' : 'Use the model phrase to answer this guided exchange.',
       correctedReply: '',
       partnerReply: enough ? 'Puiku, ačiū!' : 'Gal galite pasakyti daugiau?',
       englishMeaning: enough ? 'Great, thank you!' : 'Could you say more?'

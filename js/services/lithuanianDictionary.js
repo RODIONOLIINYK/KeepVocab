@@ -1,4 +1,4 @@
-import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=117';
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=1602';
 
 const API_BASE = 'https://en.wiktionary.org/w/rest.php/v1/page/';
 const CACHE_KEY = 'keepvocab_lithuanian_dictionary_cache_v1';

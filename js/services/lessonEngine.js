@@ -1,11 +1,12 @@
-import { getLithuanianSession, LITHUANIAN_SESSIONS, LITHUANIAN_UNITS } from '../data/lithuanianCurriculum.js?v=119';
+import { getLithuanianSession, LITHUANIAN_SESSIONS, LITHUANIAN_UNITS } from '../data/lithuanianCurriculum.js?v=1602';
 
 export function normalizeAnswer(value) {
   return String(value || '')
     .trim()
     .toLocaleLowerCase('lt-LT')
-    .replace(/[?!.,;:“”„'’]/g, '')
-    .replace(/\s+/g, ' ');
+    .normalize('NFC')
+    .replace(/[\p{P}\p{S}]/gu, ' ')
+    .replace(/\s+/g, ' ').trim();
 }
 
 export function answerMatches(exercise, response) {
@@ -28,11 +29,15 @@ export function isSessionUnlocked(sessionId, profile = {}) {
 export function startLessonAttempt(sessionId, previous = null, now = new Date()) {
   const session = getLithuanianSession(sessionId);
   if (!session) throw new Error('This lesson is not available.');
-  if (previous && previous.status === 'in-progress') return previous;
+  const firstExercise = session.sessionNumber <= 2 ? 1 : 0;
+  if (previous && previous.curriculumVersion === 2 && previous.sessionId === sessionId && previous.status === 'in-progress' && Number(previous.exerciseIndex) < session.exercises.length) {
+    return { ...previous, exerciseIndex: Math.max(firstExercise, Number(previous.exerciseIndex) || 0) };
+  }
   return {
     id: `${sessionId}-${now.getTime()}`,
     sessionId,
-    exerciseIndex: 0,
+    curriculumVersion: 2,
+    exerciseIndex: firstExercise,
     responses: [],
     hintsUsed: 0,
     retries: 0,
@@ -95,15 +100,17 @@ export function selfPacedPathStatus(profile = {}) {
 }
 
 export function completionEvidence(session, attempt, now = new Date()) {
-  const scored = (attempt.responses || []).filter(item => !item.skipped && !item.unscored);
+  const scoredIds = new Set(session.exercises.filter(item => !['pattern', 'read-repeat', 'role-play'].includes(item.type)).map(item => item.id));
+  const responses = new Map((attempt.responses || []).map(item => [item.exerciseId, item]));
+  const scored = [...scoredIds].map(id => responses.get(id) || { correct: false });
   const correct = scored.filter(item => item.correct).length;
-  const total = Math.max(1, scored.length);
+  const total = scored.length;
   return {
     id: `evidence-${session.id}`,
     nodeId: session.id,
     outcome: session.exercises[0]?.outcomeTag || '',
-    level: session.unitNumber >= 36 ? 'B1 bridge' : session.unitNumber >= 17 ? 'A2' : 'A1',
-    demonstrated: correct / total >= 0.67,
+    level: LITHUANIAN_UNITS.find(unit => unit.id === session.unitId)?.cefr || 'A1',
+    demonstrated: total > 0 && correct / total >= 2 / 3,
     correct,
     total,
     completedAt: now.toISOString(),

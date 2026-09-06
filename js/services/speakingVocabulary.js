@@ -1,6 +1,6 @@
 import { recordExerciseResult } from './exerciseResult.js';
-import { selectModeWords } from './wordSelection.js?v=93';
-import { getSpeakingContextProfile } from './speakingPhrases.js?v=93';
+import { selectModeWords } from './wordSelection.js?v=1602';
+import { getSpeakingContextProfile } from './speakingPhrases.js?v=1602';
 
 const STOP_WORDS = new Set('a an and are as at be been being by can could did do does for from had has have he her hers him his how i if in into is it its may me might my of on or our ours she should so than that the their theirs them they this those to too us was we were what when where which who why will with would you your yours'.split(' '));
 

@@ -304,6 +304,7 @@ if (!app.requestSingleInstanceLock()) {
       await configureAppProtocol();
       configurePermissions();
       configureDesktopBridge();
+      require('./updater.cjs').configureUpdater(isAppUrl);
       createMainWindow();
       configureMenuBarQuickAdd();
     } catch (error) {

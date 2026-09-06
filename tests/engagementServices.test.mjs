@@ -49,8 +49,8 @@ test('smart reminder plan uses due work, goal progress, and streak context', () 
   assert.equal(plan.time, '19:00');
   assert.equal(plan.route, 'review');
   assert.equal(plan.summary, '3 due');
-  assert.match(plan.title, /3 words/);
-  assert.match(plan.body, /4-day streak/);
+  assert.doesNotMatch(plan.title, /\d/);
+  assert.doesNotMatch(plan.body, /\d/);
 });
 
 test('smart reminder stops asking for work after the daily goal is complete', () => {
@@ -59,12 +59,12 @@ test('smart reminder stops asking for work after the daily goal is complete', ()
   assert.equal(plan.reason, 'goal-complete');
   assert.equal(plan.route, 'dashboard');
   assert.equal(plan.repeat, false);
-  assert.match(plan.title, /fresh goal/i);
+  assert.match(plan.title, /fresh practice/i);
   assert.equal(plan.nextAt.getDate(), 15);
   assert.equal(plan.nextAt.getHours(), 19);
 });
 
-test('streak protection schedules one later safeguard only before any activity', () => {
+test('streak protection moves the safeguard to tomorrow after activity', () => {
   const now = new Date(2026, 7, 14, 12, 0);
   const plan = buildStreakMaintenancePlan({ primaryTime: '19:00', reviewsToday: 0, streak: 12, dueCount: 3, now });
   assert.equal(getStreakReminderTime('19:00'), '20:30');
@@ -72,7 +72,7 @@ test('streak protection schedules one later safeguard only before any activity',
   assert.equal(plan.route, 'review');
   assert.equal(plan.repeat, false);
   assert.match(plan.title, /12-day streak/);
-  assert.equal(buildStreakMaintenancePlan({ primaryTime: '19:00', reviewsToday: 1, streak: 12, now }), null);
+  assert.equal(buildStreakMaintenancePlan({ primaryTime: '19:00', reviewsToday: 1, streak: 12, now }).nextAt.getDate(), 15);
   assert.equal(buildStreakMaintenancePlan({ enabled: false, primaryTime: '19:00', reviewsToday: 0, streak: 12, now }), null);
 });
 

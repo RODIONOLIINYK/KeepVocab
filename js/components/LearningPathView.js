@@ -1,146 +1,57 @@
-import { driveSync } from '../services/driveSync.js?v=93';
-import { PATH_STAGES, LITHUANIAN_UNITS, LITHUANIAN_SESSIONS } from '../data/lithuanianCurriculum.js?v=119';
-import { currentSessionId, isSessionUnlocked, selfPacedPathStatus } from '../services/lessonEngine.js?v=119';
+import { driveSync } from '../services/driveSync.js?v=1602';
+import { PATH_STAGES, LITHUANIAN_UNITS, LITHUANIAN_SESSIONS } from '../data/lithuanianCurriculum.js?v=1602';
+import { currentSessionId, isSessionUnlocked } from '../services/lessonEngine.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
 
-const nodeOffsets = [-48, 34, 72, 20, -42, -76];
-const routePointY = 35;
-const routeRowStep = 96;
-
-function routeLine(count) {
-  const points = nodeOffsets.slice(0, count).map((offset, index) => ({ x: 160 + offset, y: routePointY + index * routeRowStep }));
-  const path = points.slice(1).reduce((value, point, index) => {
-    const previous = points[index];
-    const middle = (previous.y + point.y) / 2;
-    return `${value} C ${previous.x} ${middle}, ${point.x} ${middle}, ${point.x} ${point.y}`;
-  }, `M ${points[0].x} ${points[0].y}`);
-  const height = routePointY * 2 + Math.max(0, count - 1) * routeRowStep;
-  return `<svg class="path-route-line" style="height:${height}px" viewBox="0 0 320 ${height}" aria-hidden="true" preserveAspectRatio="xMidYMid meet"><path d="${path}" /></svg>`;
-}
-
-function renderUnit(unit, profile, activeId) {
-  const completed = new Set(profile.completedNodeIds || []);
-  const nodes = unit.sessions.map((session, index) => {
-    const unlocked = isSessionUnlocked(session.id, profile);
-    const isCurrent = session.id === activeId;
-    const isComplete = completed.has(session.id);
-    const shortLabel = session.kind === 'dialogue' ? 'Dialogue' : session.kind === 'mission' ? 'Mission' : session.sessionNumber === 1 ? 'Lesson' : session.title;
-    return `
-      <div class="path-node-wrap ${isCurrent ? 'current' : ''} ${nodeOffsets[index] > 0 ? 'path-right' : 'path-left'}" style="--path-x:${nodeOffsets[index]}px;--node-order:${index}" data-module="${unit.unitNumber}">
-        <button class="path-node ${isComplete ? 'complete' : unlocked ? 'unlocked' : 'locked'} ${session.kind}" data-session-id="${session.id}" ${unlocked ? '' : 'disabled'} aria-label="${escapeHtml(session.title)} · Module ${unit.unitNumber}${isComplete ? ' · complete' : isCurrent ? ' · current lesson' : ''}">
-          <span class="path-node-face"><i class="fa-solid ${isComplete ? 'fa-check' : unlocked ? session.icon : 'fa-lock'}" aria-hidden="true"></i></span>
-        </button>
-        <span class="path-node-label">${escapeHtml(shortLabel)}</span>
-        ${isCurrent ? `<img class="path-mascot-guide" src="assets/keepvocab-sprout-mascot.webp" alt="" aria-hidden="true"><div class="current-lesson-popover"><small>UP NEXT · MODULE ${unit.unitNumber}</small><strong>${escapeHtml(session.title)}</strong><span>Start · ${session.durationMinutes} min</span></div>` : ''}
-      </div>`;
-  }).join('');
-  const unitCompleted = unit.sessions.filter(session => completed.has(session.id)).length;
-  return `
-    <section class="path-unit-block" id="${unit.id}">
-      <header class="path-unit-banner">
-        <div class="path-unit-number">${unit.unitNumber}</div>
-        <div><span>MODULE ${unit.unitNumber} · ${unit.cefr}</span><h2>${escapeHtml(unit.title)}</h2><p>${escapeHtml(unit.outcome)}</p></div>
-        <div class="path-unit-score" aria-label="${unitCompleted} of ${unit.sessions.length} lessons complete"><strong>${unitCompleted}</strong><span>/ ${unit.sessions.length}</span></div>
-      </header>
-      <div class="path-route" aria-label="Module ${unit.unitNumber} lesson path">${routeLine(unit.sessions.length)}${nodes}</div>
-    </section>`;
-}
-
-function renderStage(stage, profile, activeId) {
-  const units = LITHUANIAN_UNITS.filter(unit => unit.unitNumber >= stage.unitStart && unit.unitNumber <= stage.unitEnd);
-  return `
-    <section class="path-stage path-stage-${stage.color}" id="${stage.id}" data-section="${stage.number}">
-      <header class="path-month-banner">
-        <div><span>SECTION ${stage.number} · 4 MODULES</span><h2>${escapeHtml(stage.title)}</h2><p>${escapeHtml(stage.subtitle)}</p></div>
-        <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
-      </header>
-      <div class="path-unit-stack">${units.map(unit => renderUnit(unit, profile, activeId)).join('')}</div>
-    </section>`;
-}
+const lessonPurposes = ['Learn each phrase while answering with help.', 'Build useful phrases with the new forms.', 'Connect familiar words to their sounds.', 'Use what you know in a short exchange.', 'Retrieve and apply the language again.', 'Check this module and revisit earlier learning.'];
 
 export function renderLearningPathView(container, navigate) {
-  const courseId = driveSync.getActiveCourseId();
-  if (courseId !== 'lithuanian') {
-    container.innerHTML = `
-      <section class="learn-empty-course">
-        <img src="assets/keepvocab-sprout-mascot.webp" alt="Sprig holding an open book">
-        <span class="learning-kicker">GUIDED COURSE</span>
-        <h1>Your Lithuanian path is ready</h1>
-        <p>Switch to Lithuanian to begin with the 32-letter alphabet, then build grammar, word forms and tenses through strong A2.</p>
-        <button class="btn-green-solid" id="learn-switch-lithuanian"><i class="fa-solid fa-language"></i> Switch to Lithuanian</button>
-      </section>`;
-    container.querySelector('#learn-switch-lithuanian')?.addEventListener('click', () => {
+  if (driveSync.getActiveCourseId() !== 'lithuanian') {
+    container.innerHTML = `<section class="learn-empty-course"><img src="assets/keepvocab-sprout-mascot.webp" alt="Sprig with a book"><h1>Your Lithuanian course</h1><p>Start with greetings and sounds. Build up to everyday conversations, one short lesson at a time.</p><button class="btn-green-solid" data-switch-course>Start Lithuanian</button></section>`;
+    container.querySelector('[data-switch-course]').onclick = () => {
       driveSync.setActiveCourseId('lithuanian');
       window.dispatchEvent(new CustomEvent('keepvocab:course-changed'));
       renderLearningPathView(container, navigate);
-    });
+    };
     return;
   }
-
-  const profile = driveSync.getCourseProfile('lithuanian') || {};
-  const activeId = currentSessionId(profile);
-  const status = selfPacedPathStatus(profile);
-  const currentSession = LITHUANIAN_SESSIONS.find(item => item.id === activeId);
-  const currentUnit = LITHUANIAN_UNITS.find(unit => unit.id === currentSession?.unitId) || LITHUANIAN_UNITS[0];
-  const currentStage = PATH_STAGES.find(stage => currentUnit.unitNumber >= stage.unitStart && currentUnit.unitNumber <= stage.unitEnd) || PATH_STAGES[0];
-  const totalComplete = (profile.completedNodeIds || []).length;
-  const progressMessage = status.remainingUnits
-    ? `${status.remainingUnits} module${status.remainingUnits === 1 ? '' : 's'} remain. Your pace is entirely self-directed.`
-    : 'Course path complete. Revisit any lesson whenever you want.';
-
-  container.innerHTML = `
-    <main class="learning-path-shell">
-      <div class="learning-path-main">
-        <header class="learning-path-heading">
-          <div><span class="learning-kicker">LITHUANIAN · A1 → A2</span><h1>Your Lithuanian path</h1><p>Learn the rule, retrieve it, understand adaptive listening, and use it in an AI conversation. Tasks grow with your progress and Library.</p></div>
-          <div class="path-overall-progress status-pill connected" aria-label="${totalComplete} of ${LITHUANIAN_SESSIONS.length} lessons complete"><strong>${totalComplete}</strong><span>of ${LITHUANIAN_SESSIONS.length}<br>lessons</span></div>
-        </header>
-        <nav class="path-section-tabs" aria-label="Course sections">
-          ${PATH_STAGES.map(stage => `<a href="#${stage.id}" data-stage-link="${stage.id}" aria-label="Section ${stage.number}" ${stage.id === currentStage.id ? 'aria-current="step"' : ''}><span>${stage.number}</span><small>${escapeHtml(stage.title)}</small></a>`).join('')}
-        </nav>
-        <div class="learning-stage-stack">${PATH_STAGES.map(stage => renderStage(stage, profile, activeId)).join('')}</div>
-        <section class="b1-bridge-note"><i class="fa-solid fa-bridge"></i><div><strong>B1 bridge stays optional</strong><p>Finish the A2 checkpoint first, then unlock the final module of connected storytelling and opinions.</p></div></section>
-      </div>
-      <aside class="path-week-rail content-card">
-        <span>CURRENT MODULE</span>
-        <strong>Module ${currentUnit.unitNumber}</strong>
-        <p>${escapeHtml(currentUnit.title)}</p>
-        <div class="exercise-progress path-module-progress"><i><b style="width:${Math.round((currentUnit.sessions.filter(session => (profile.completedNodeIds || []).includes(session.id)).length / currentUnit.sessions.length) * 100)}%"></b></i><span>${currentUnit.sessions.filter(session => (profile.completedNodeIds || []).includes(session.id)).length} of ${currentUnit.sessions.length} lessons</span></div>
-        <small>${escapeHtml(progressMessage)}</small>
-        <button class="btn-green-solid" data-start-current><i class="fa-solid fa-play"></i> Continue</button>
-      </aside>
-    </main>`;
-
-  const start = sessionId => {
-    driveSync.updateCourseProfile('lithuanian', { activeLessonId: sessionId });
+  const profile = driveSync.getCourseProfile('lithuanian');
+  const complete = new Set(profile.completedNodeIds || []);
+  const totalComplete = LITHUANIAN_SESSIONS.filter(item => complete.has(item.id)).length;
+  const finished = totalComplete === LITHUANIAN_SESSIONS.length;
+  const next = LITHUANIAN_SESSIONS.find(item => item.id === currentSessionId(profile));
+  const currentUnit = LITHUANIAN_UNITS.find(unit => unit.id === next.unitId);
+  const currentStage = PATH_STAGES.find(stage => currentUnit.unitNumber >= stage.unitStart && currentUnit.unitNumber <= stage.unitEnd);
+  const resume = profile.lessonAttempts?.[next.id]?.status === 'in-progress';
+  const percent = Math.round(totalComplete / LITHUANIAN_SESSIONS.length * 100);
+  container.innerHTML = `<main class="curriculum-shell">
+    <header class="curriculum-heading"><div><span class="learning-kicker">YOUR LANGUAGE, ONE DAY AT A TIME</span><h1>Learn Lithuanian</h1><p>A clear route from first words to everyday conversations.</p></div><span class="status-pill connected">A1 foundations → A2 practice</span></header>
+    <section class="curriculum-next content-card"><div><span class="learning-kicker">${finished ? 'COURSE COMPLETE' : resume ? 'PICK UP WHERE YOU LEFT OFF' : 'YOUR NEXT STEP'} · MODULE ${currentUnit.unitNumber}</span><h2>${escapeHtml(currentUnit.title)}</h2><p>${escapeHtml(currentUnit.outcome)}</p><div class="curriculum-next-meta"><span><i class="fa-regular fa-clock"></i> ${next.durationMinutes} min</span><span>Lesson ${next.sessionNumber} of 6</span><span>${escapeHtml(currentUnit.cefr)}</span></div><button class="btn-green-solid" data-session-id="${next.id}"><i class="fa-solid fa-play"></i> ${finished ? 'Revisit the course' : resume ? 'Resume lesson' : totalComplete ? 'Continue learning' : 'Start your first lesson'}</button></div><img src="assets/keepvocab-sprout-mascot.webp" alt="Sprig reading a book"></section>
+    <div class="curriculum-progress"><span>${totalComplete} of ${LITHUANIAN_SESSIONS.length} lessons completed</span><progress max="100" value="${percent}" aria-label="Course progress">${percent}%</progress><strong>${percent}%</strong></div>
+    <div class="curriculum-body"><section><div class="curriculum-section-title"><h2>Your course</h2><label>Section<select data-course-section>${PATH_STAGES.map(stage => `<option value="${stage.number}" ${stage.id === currentStage.id ? 'selected' : ''}>${stage.number}. ${escapeHtml(stage.title)}</option>`).join('')}</select></label></div><div data-course-units></div></section>
+    <aside class="curriculum-guide content-card"><span class="learning-kicker">A ROUTINE THAT WORKS</span><h2>Small steps. Lasting progress.</h2><ol><li><strong>Understand</strong><span>Meet each phrase as you answer, with help beside the question.</span></li><li><strong>Practise</strong><span>Recognise, listen, speak, and build your own answers.</span></li><li><strong>Remember</strong><span>Revisit earlier material in each checkpoint and your Library reviews.</span></li></ol><button class="status-pill offline" data-review-library>Review my vocabulary</button><p>One completed exercise keeps your streak alive. Aim for your daily goal when you have time.</p><details><summary>About this curriculum</summary><p>Inspired by CEFR can-do outcomes and Lithuanian university beginner syllabuses. Checkpoints need at least two thirds correct. This is guided practice, not a CEFR qualification.</p><a href="https://www.vdu.lt/erasmus-studies/lithuanian-as-a-foreign-language-a1-2/" target="_blank" rel="noopener noreferrer">VDU beginner syllabus ↗</a></details></aside></div>
+  </main>`;
+  const start = id => {
+    if (!isSessionUnlocked(id, profile)) return;
+    driveSync.updateCourseProfile('lithuanian', { activeLessonId: id });
     navigate('lesson');
   };
-  container.querySelectorAll('.path-node.unlocked, .path-node.complete').forEach(button => button.addEventListener('click', () => start(button.dataset.sessionId)));
-  container.querySelector('[data-start-current]')?.addEventListener('click', () => start(activeId));
-  container.querySelectorAll('[data-stage-link]').forEach(link => link.addEventListener('click', event => {
-    event.preventDefault();
-    document.getElementById(link.dataset.stageLink)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }));
-  container.classList.add('path-motion-ready');
-  const unitObserver = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add('path-unit-visible');
-      unitObserver.unobserve(entry.target);
-    });
-  }, { rootMargin: '80px 0px', threshold: 0.08 }) : null;
-  container.querySelectorAll('.path-unit-block').forEach(unit => {
-    if (unitObserver) unitObserver.observe(unit);
-    else unit.classList.add('path-unit-visible');
-  });
-  const sectionObserver = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
-    const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-    if (!visible) return;
-    container.querySelectorAll('[data-stage-link]').forEach(link => {
-      if (link.dataset.stageLink === visible.target.id) link.setAttribute('aria-current', 'step');
-      else link.removeAttribute('aria-current');
-    });
-  }, { rootMargin: '-18% 0px -62%', threshold: [0.05, 0.25, 0.5] }) : null;
-  if (sectionObserver) container.querySelectorAll('.path-stage').forEach(stage => sectionObserver.observe(stage));
-  if (totalComplete > 8) requestAnimationFrame(() => container.querySelector('.path-node-wrap.current')?.scrollIntoView({ block: 'center', behavior: 'auto' }));
+  const renderSection = number => {
+    const stage = PATH_STAGES.find(item => item.number === Number(number));
+    const units = LITHUANIAN_UNITS.filter(unit => unit.unitNumber >= stage.unitStart && unit.unitNumber <= stage.unitEnd);
+    container.querySelector('[data-course-units]').innerHTML = `<p class="curriculum-section-description">${escapeHtml(stage.subtitle)}</p>${units.map(unit => {
+      const count = unit.sessions.filter(item => complete.has(item.id)).length;
+      return `<details class="curriculum-unit" ${unit.id === currentUnit.id ? 'open' : ''}><summary><span class="curriculum-unit-index">${count === 6 ? '<i class="fa-solid fa-check"></i>' : unit.unitNumber}</span><span><small>${escapeHtml(unit.cefr)} · MODULE ${unit.unitNumber}</small><strong>${escapeHtml(unit.title)}</strong></span><span class="curriculum-unit-count">${count}/6<i class="fa-solid fa-chevron-down"></i></span></summary><div class="curriculum-unit-content"><p>${escapeHtml(unit.outcome)}</p><ol class="curriculum-lessons">${unit.sessions.map((session, index) => {
+        const unlocked = isSessionUnlocked(session.id, profile);
+        const done = complete.has(session.id);
+        const current = session.id === next.id && !finished;
+        return `<li><button class="curriculum-lesson ${current ? 'current' : ''}" data-session-id="${session.id}" ${unlocked ? '' : 'disabled'} ${current ? 'aria-current="step"' : ''}><span class="curriculum-lesson-icon"><i class="fa-solid ${done ? 'fa-check' : unlocked ? session.icon : 'fa-lock'}"></i></span><span><strong>${escapeHtml(session.title)}</strong><small>${lessonPurposes[index]}</small></span><span class="curriculum-lesson-time">${done ? 'Review' : `${session.durationMinutes} min`}</span></button></li>`;
+      }).join('')}</ol></div></details>`;
+    }).join('')}`;
+    container.querySelectorAll('[data-course-units] [data-session-id]').forEach(button => button.onclick = () => start(button.dataset.sessionId));
+  };
+  renderSection(currentStage.number);
+  container.querySelector('[data-course-section]').onchange = event => renderSection(event.target.value);
+  container.querySelector('.curriculum-next [data-session-id]').onclick = () => start(next.id);
+  container.querySelector('[data-review-library]').onclick = () => navigate('review');
 }

@@ -1,9 +1,9 @@
-import { driveSync } from '../services/driveSync.js?v=93';
-import { speakWord } from '../services/speechService.js?v=93';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=93';
-import { getRatingPreviews } from '../services/srsEngine.js?v=93';
+import { driveSync } from '../services/driveSync.js?v=1602';
+import { speakWord } from '../services/speechService.js?v=1602';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
+import { getRatingPreviews } from '../services/srsEngine.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
-import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=93';
+import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function renderFlashcardsMode(container, onNavigate) {

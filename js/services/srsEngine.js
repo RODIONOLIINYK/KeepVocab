@@ -1,6 +1,7 @@
+import { streakFromActivity } from './studyActivity.js';
 // Adaptive spaced-repetition scheduler with backward-compatible Leitner fields.
 
-import { driveSync } from './driveSync.js?v=93';
+import { driveSync } from './driveSync.js?v=1602';
 
 export const SRS_VERSION = 2;
 export const MINUTE_MS = 60 * 1000;
@@ -148,26 +149,7 @@ export function updateWordRepetition(wordId, recallRating, options = {}) {
 }
 
 export function updateStreak(now = new Date()) {
+  // Activity recording owns streak increments; reading it cannot add a second day.
   const settings = driveSync.getSettings();
-  const todayStr = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
-  const legacyUtcToday = now.toISOString().slice(0, 10);
-  if (settings.lastReviewDate === todayStr || settings.lastReviewDate === legacyUtcToday) {
-    driveSync.updateSettings({ lastReviewDate: todayStr });
-    return settings.dailyStreak || 1;
-  }
-  const parseLocalDate = value => {
-    if (!value) return null;
-    const [year, month, day] = value.split('-').map(Number);
-    return new Date(year, month - 1, day);
-  };
-  const lastDate = parseLocalDate(settings.lastReviewDate);
-  const today = parseLocalDate(todayStr);
-  let streak = settings.dailyStreak || 0;
-  if (lastDate) {
-    const diffDays = Math.round((today - lastDate) / DAY_MS);
-    if (diffDays === 1) streak += 1;
-    else if (diffDays > 1) streak = 1;
-  } else streak = 1;
-  driveSync.updateSettings({ dailyStreak: streak, lastReviewDate: todayStr });
-  return streak;
+  return streakFromActivity(settings.reviewActivity, now);
 }

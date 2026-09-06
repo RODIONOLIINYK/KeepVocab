@@ -1,9 +1,9 @@
-import { driveSync } from './services/driveSync.js?v=93';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=96';
-import { fetchLithuanianEntry } from './services/lithuanianEnrichment.js?v=113';
-import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=93';
-import { attachImagesSequentially } from './services/bulkWords.js?v=93';
-import { sanitizeExistingExamples } from './services/exampleSearch.js?v=93';
+import { driveSync } from './services/driveSync.js?v=1602';
+import { fetchWordDetails } from './services/dictionaryApi.js?v=1602';
+import { fetchLithuanianEntry } from './services/lithuanianEnrichment.js?v=1602';
+import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=1602';
+import { attachImagesSequentially } from './services/bulkWords.js?v=1602';
+import { sanitizeExistingExamples } from './services/exampleSearch.js?v=1602';
 import { escapeHtml } from './utils/html.js';
 
 const shell = document.querySelector('.quick-add-shell');

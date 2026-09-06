@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v118';
+const CACHE_NAME = 'keepvocab-v1602';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -29,6 +29,8 @@ const ASSETS_TO_CACHE = [
   './js/services/useItEvaluation.js',
   './js/services/dailySession.js',
   './js/services/learningStats.js',
+  './js/services/studyActivity.js',
+  './js/services/appUpdates.js',
   './js/services/speakingVocabulary.js',
   './js/services/speakingPhrases.js',
   './js/services/geminiSettings.js',
@@ -87,7 +89,7 @@ self.addEventListener('install', (event) => {
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
-  self.skipWaiting();
+
 });
 
 self.addEventListener('activate', (event) => {
@@ -119,4 +121,8 @@ self.addEventListener('fetch', (event) => {
       // by path keeps one offline copy instead of downloading every old alias.
       .catch(() => caches.match(event.request, { ignoreSearch: true }).then((cached) => cached || caches.match('./index.html')))
   );
+});
+
+self.addEventListener('message', event => {
+  if (event.data?.type === 'ACTIVATE_UPDATE') self.skipWaiting();
 });
