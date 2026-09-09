@@ -6,7 +6,7 @@ import { describeSpeechError, getSpeechAvailability, playAudioUrl, speakText } f
 import { getCachedOrGenerateDialogueAudio } from '../services/geminiTts.js?v=1602';
 import { buildAdaptiveContext, evaluateListeningResponse, evaluateTranslationResponse, generateDialogueActivity, generateListeningActivity, generateTranslationActivity, processDialogueTurn } from '../services/adaptiveLessons.js?v=1602';
 import { lessonWordCandidates, lessonVocabularyRecords, missingLessonWords, recordVocabularySelection } from '../services/lessonVocabulary.js?v=1602';
-import { fetchLithuanianWordDetails } from '../services/lithuanianDictionary.js?v=1602';
+import { fetchLithuanianEntry } from '../services/lithuanianEnrichment.js?v=1602';
 export { lessonVocabularyRecords } from '../services/lessonVocabulary.js?v=1602';
 import { CASE_LABELS, NOUN_FORM_TABLES } from '../data/lithuanianForms.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
@@ -448,15 +448,15 @@ function renderComplete(container, session, attempt, navigate) {
     <p>${passed ? escapeHtml(unit.outcome) : 'Review the phrases, then try this checkpoint again. Answer at least two thirds correctly to unlock the next module.'}</p>
     <section class="lesson-word-review" aria-labelledby="unknown-words-title">
       <h2 id="unknown-words-title">Which words didn’t you understand?</h2>
-      <p>Select only the words you want to learn. Check each English meaning before saving. Leave words you know unchecked.</p>
+      <p>Select the words you want to learn. Their English meanings fill in automatically; you can edit them before saving.</p>
       <div class="lesson-word-options">${candidates.map((item, index) => `<div class="lesson-word-option">
-        <label class="lesson-word-toggle"><input type="checkbox" data-unknown-word="${index}" ${selections.has(item.word) ? 'checked' : ''}><strong lang="lt">${escapeHtml(item.word)}</strong></label>
-        <div data-word-details="${index}" ${selections.has(item.word) ? '' : 'hidden'}>
+        <label class="lesson-word-toggle"><input type="checkbox" class="app-checkbox" data-unknown-word="${index}" aria-controls="word-details-${index}" ${selections.has(item.word) ? 'checked' : ''}><strong lang="lt">${escapeHtml(item.word)}</strong></label>
+        <div id="word-details-${index}" data-word-details="${index}" ${selections.has(item.word) ? '' : 'hidden'}>
           <p lang="lt">${escapeHtml(item.example)}</p>
           <label for="word-meaning-${index}">English meaning of “${escapeHtml(item.word)}”</label>
-          <input id="word-meaning-${index}" data-word-meaning="${index}" value="${escapeHtml(selections.get(item.word)?.definition ?? item.definition)}" placeholder="Enter this word’s meaning">
+          <input id="word-meaning-${index}" data-word-meaning="${index}" aria-describedby="word-status-${index}" value="${escapeHtml(selections.get(item.word)?.definition ?? item.definition)}" placeholder="English meaning appears here">
           <button type="button" class="status-pill offline" data-lookup-word="${index}">Look up meaning</button>
-          <small data-word-status="${index}" role="status"></small>
+          <small id="word-status-${index}" data-word-status="${index}" role="status"></small>
         </div>
       </div>`).join('')}</div>
     </section>
@@ -467,6 +467,15 @@ function renderComplete(container, session, attempt, navigate) {
     <small>Course practice records your progress; it does not certify a CEFR level.</small>
   </section></main>`;
   const continueButton = container.querySelector('[data-back-path]');
+  const pendingLookups = new Set();
+  const editVersions = new Map();
+  const refreshContinue = () => {
+    const waiting = candidates.some((item, index) => pendingLookups.has(index)
+      && selections.has(item.word) && !selections.get(item.word).definition);
+    continueButton.disabled = waiting;
+    continueButton.textContent = waiting ? 'Finding meanings…'
+      : selections.size ? 'Save words and continue' : 'Continue without adding words';
+  };
   const updateSelection = index => {
     const item = candidates[index];
     const checked = container.querySelector(`[data-unknown-word="${index}"]`).checked;
@@ -475,33 +484,63 @@ function renderComplete(container, session, attempt, navigate) {
     else selections.delete(item.word);
     container.querySelector(`[data-word-details="${index}"]`).hidden = !checked;
     container.querySelector('[data-selected-count]').textContent = selections.size;
-    continueButton.textContent = selections.size ? 'Save words and continue' : 'Continue without adding words';
+    refreshContinue();
     persistSelections();
   };
-  container.querySelectorAll('[data-unknown-word]').forEach(input => input.addEventListener('change', () => updateSelection(Number(input.dataset.unknownWord))));
-  container.querySelectorAll('[data-word-meaning]').forEach(input => input.addEventListener('input', () => updateSelection(Number(input.dataset.wordMeaning))));
-  container.querySelectorAll('[data-lookup-word]').forEach(button => button.addEventListener('click', async () => {
-    const index = Number(button.dataset.lookupWord);
+  const lookupMeaning = async index => {
+    if (pendingLookups.has(index)) return;
     const item = candidates[index];
+    const button = container.querySelector(`[data-lookup-word="${index}"]`);
     const input = container.querySelector(`[data-word-meaning="${index}"]`);
     const status = container.querySelector(`[data-word-status="${index}"]`);
     const originalValue = input.value;
+    const editVersion = editVersions.get(index) || 0;
+    pendingLookups.add(index);
     button.disabled = true;
+    input.setAttribute('aria-busy', 'true');
     status.textContent = 'Looking up this word…';
+    refreshContinue();
     try {
-      const entry = await fetchLithuanianWordDetails(item.word);
+      const entry = await fetchLithuanianEntry(item.word);
       if (!button.isConnected) return;
-      const sense = entry.senses[0];
-      if (input.value === originalValue) {
+      const sense = entry.senses?.find(item => item.definition?.trim());
+      if (!sense) throw new Error('No meaning found.');
+      if (!selections.has(item.word)) return;
+      if (input.value === originalValue && (editVersions.get(index) || 0) === editVersion) {
         input.value = sense.definition;
-        if (selections.has(item.word)) selections.set(item.word, { ...selections.get(item.word), sourceUrl: sense.sourceUrl, attribution: sense.attribution });
+        selections.set(item.word, { ...selections.get(item.word), sourceUrl: sense.sourceUrl, attribution: sense.attribution });
         updateSelection(index);
+        status.textContent = entry.aiGenerated
+          ? 'AI suggestion. Check that it fits the example, or edit it.'
+          : 'Wiktionary suggestion. Check that it fits the example, or edit it.';
+      } else {
+        status.textContent = 'Your edited meaning has been kept.';
       }
-      status.textContent = 'Wiktionary suggestion. Check that it fits the example, or edit it.';
     } catch {
       if (status.isConnected) status.textContent = 'Lookup unavailable. Enter the word’s English meaning, or retry.';
-    } finally { button.disabled = false; }
+    } finally {
+      pendingLookups.delete(index);
+      if (button.isConnected) {
+        button.disabled = false;
+        input.removeAttribute('aria-busy');
+        refreshContinue();
+      }
+    }
+  };
+  container.querySelectorAll('[data-unknown-word]').forEach(input => input.addEventListener('change', () => {
+    const index = Number(input.dataset.unknownWord);
+    updateSelection(index);
+    if (input.checked && !selections.get(candidates[index].word).definition) void lookupMeaning(index);
   }));
+  container.querySelectorAll('[data-word-meaning]').forEach(input => input.addEventListener('input', () => {
+    const index = Number(input.dataset.wordMeaning);
+    editVersions.set(index, (editVersions.get(index) || 0) + 1);
+    updateSelection(index);
+  }));
+  container.querySelectorAll('[data-lookup-word]').forEach(button => button.addEventListener('click', () => void lookupMeaning(Number(button.dataset.lookupWord))));
+  candidates.forEach((item, index) => {
+    if (selections.has(item.word) && !selections.get(item.word).definition) void lookupMeaning(index);
+  });
   continueButton.addEventListener('click', () => {
     try {
       const records = missingLessonWords(lessonVocabularyRecords(session, unit, attempt), driveSync.getAllWords());
