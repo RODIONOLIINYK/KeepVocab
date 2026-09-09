@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v1710';
+const CACHE_NAME = 'keepvocab-v1720';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const ASSETS_TO_CACHE = [
   './js/services/adaptiveLessons.js',
   './js/services/lessonEngine.js',
   './js/services/lessonVocabulary.js',
+  './js/services/wordEntry.js',
   './js/services/lithuanianEnrichment.js',
   './js/services/lithuanianDictionary.js',
   './js/data/lithuanianSpeakingScenarios.js',

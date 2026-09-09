@@ -39,8 +39,18 @@ No uninstall or app-data reset is part of this flow.
 
 Run `npm run mac:build`. This produces a universal DMG, ZIP, blockmaps, and
 `latest-mac.yml` in `dist/macos`. The repository defaults to an unsigned personal
-build. Such builds automatically check for updates and download a verified DMG
-when requested; the user replaces the app in Applications and reopens it.
+build. Such builds check for updates and, when requested, download a verified DMG,
+show download progress, and retry interrupted transfers. The app checks the staged
+bundle ID and version, quits, replaces its bundle, and reopens. Its installation
+folder must be writable and it must run from Applications rather than a mounted
+DMG or App Translocation. The previous bundle is retained in a private
+`.KeepVocab-update-*` directory beside the app for recovery; failed moves or an
+unsuccessful launch command restore the old bundle. The Library and settings in
+Application Support are never moved. Installer logs are in the app's
+`updates/install.log` directory under Application Support.
+
+Versions through 1.7.1 only open the downloaded DMG for manual replacement. Those
+installations need one manual upgrade to receive the new replacement helper.
 
 For automatic replacement and restart, use a valid Developer ID Application
 identity when building (override `build.mac.identity` through electron-builder's

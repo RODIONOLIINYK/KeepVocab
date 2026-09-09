@@ -31,13 +31,15 @@ export function lessonVocabularyRecords(session, unit, attempt = {}) {
   return lessonWordCandidates(session, attempt).filter(item => selected.has(item.word)).map(item => {
     const choice = selected.get(item.word);
     const definition = String(choice.definition || item.definition || '').trim();
-    if (!definition) throw new Error(`Add an English meaning for “${item.word}”, or unselect it.`);
+    if (!definition) throw new Error(`Choose an English meaning for “${item.word}”, retry the lookup, or unselect it.`);
     return {
       id: `lt-course-word-${encodeURIComponent(item.word)}-${encodeURIComponent(vocabularyKey(definition))}`,
-      courseId: 'lithuanian', languageCode: 'lt', word: item.word, lemma: item.word,
-      definition, translation: definition, example: item.example, lessonId: session.id,
-      acceptedForms: [item.word], partOfSpeech: 'word',
-      grammaticalTags: [`Module ${unit.unitNumber}`, unit.grammar], source: 'lesson',
+      courseId: 'lithuanian', languageCode: 'lt', word: item.word, lemma: choice.lemma || item.word,
+      definition, translation: definition, example: choice.example || item.example, lessonId: session.id,
+      phonetic: choice.phonetic || '', audioUrl: choice.audioUrl || '',
+      acceptedForms: [...new Set([item.word, ...(choice.acceptedForms || [])])], partOfSpeech: choice.partOfSpeech || 'word',
+      grammaticalTags: [...new Set([`Module ${unit.unitNumber}`, unit.grammar, ...(choice.grammaticalTags || [])])], source: 'lesson',
+      exampleSourceUrl: choice.exampleSourceUrl || '', exampleAttribution: choice.exampleAttribution || '', exampleLicense: choice.exampleLicense || '',
       ...(choice.sourceUrl ? { sourceUrl: choice.sourceUrl, attribution: choice.attribution } : {})
     };
   });
@@ -49,4 +51,10 @@ export function missingLessonWords(records, existing) {
     && vocabularyKey(word.word) === candidate.word
     && vocabularyKey(word.definition) === vocabularyKey(candidate.definition)
   ));
+}
+import { wordEntryToWord } from './wordEntry.js?v=1602';
+
+// Use the same dictionary-to-Library conversion as Add Words.
+export function lessonWordSelection(word, entry, senseIndex = 0) {
+  return { ...wordEntryToWord(entry, senseIndex, 'lithuanian'), word, entry, senseIndex };
 }

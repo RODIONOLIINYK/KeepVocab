@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { lessonWordCandidates, lessonVocabularyRecords, missingLessonWords, recordVocabularySelection } from '../js/services/lessonVocabulary.js';
+import { lessonWordCandidates, lessonWordSelection, lessonVocabularyRecords, missingLessonWords, recordVocabularySelection } from '../js/services/lessonVocabulary.js';
 import { mergeCourseProfiles } from '../js/services/courseProfiles.js';
 import { startLessonAttempt } from '../js/services/lessonEngine.js';
 import { LITHUANIAN_SESSIONS } from '../js/data/lithuanianCurriculum.js';
@@ -10,6 +10,24 @@ const session = {
   exercises: [{ phrase: { lt: 'Aš esu studentas!' } }]
 };
 const unit = { unitNumber: 2, grammar: 'Present tense' };
+
+test('selected dictionary sense retains Add Words details through lesson saving and resumption', () => {
+  const entry = { word: 'studentas', phonetic: '/test/', audioUrl: 'https://example.test/word.mp3', senses: [
+    { definition: 'student', partOfSpeech: 'noun' },
+    { definition: 'university student', partOfSpeech: 'noun', lemma: 'studentas', example: 'Jis yra studentas.', acceptedForms: ['studentas', 'studento'], grammaticalTags: ['masculine'], sourceUrl: 'https://example.test/entry' }
+  ] };
+  const selection = lessonWordSelection('studentas', entry, 1);
+  const resumed = JSON.parse(JSON.stringify(recordVocabularySelection({}, [selection])));
+  const [record] = lessonVocabularyRecords(session, unit, resumed);
+  assert.equal(record.definition, 'university student');
+  assert.equal(record.partOfSpeech, 'noun');
+  assert.equal(record.example, 'Jis yra studentas.');
+  assert.equal(record.audioUrl, entry.audioUrl);
+  assert.deepEqual(record.acceptedForms, ['studentas', 'studento']);
+  assert.ok(record.grammaticalTags.includes('masculine'));
+  assert.equal(resumed.unknownWords[0].senseIndex, 1);
+  assert.throws(() => lessonWordSelection('studentas', { senses: [] }), /No meaning/);
+});
 
 test('backup merges keep newer selections, cleared selections and finished reviews in either direction', () => {
   const now = new Date('2026-09-09T10:00:00Z');

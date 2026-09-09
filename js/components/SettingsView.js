@@ -38,9 +38,16 @@ export function renderSettingsView(container, onNavigate) {
   };
   installButton.onclick = async () => {
     installButton.disabled = true; updateStatus.textContent = 'Downloading and verifying the update…';
+    checkButton.disabled = true;
+    const unsubscribe = globalThis.keepVocabDesktop?.onUpdateProgress?.(progress => {
+      if (!updateStatus.isConnected) return;
+      updateStatus.textContent = progress.status === 'downloading' && progress.total > 0
+        ? `Downloading update… ${Math.min(100, Math.round(progress.received / progress.total * 100))}% (${Math.round(progress.received / 1048576)} of ${Math.round(progress.total / 1048576)} MB)`
+        : progress.message || 'Preparing the update…';
+    });
     try { const result = await installAppUpdate(availableUpdate); updateStatus.textContent = result.message || 'Reloading the updated app…'; }
     catch (error) { updateStatus.textContent = error.message; }
-    finally { installButton.disabled = false; }
+    finally { unsubscribe?.(); installButton.disabled = false; checkButton.disabled = false; }
   };
   void checkButton.onclick();
   container.querySelector('#settings-back').addEventListener('click', () => go('dashboard', onNavigate));

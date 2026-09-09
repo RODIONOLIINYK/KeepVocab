@@ -1,9 +1,5 @@
 import { driveSync } from './services/driveSync.js?v=1602';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=1602';
-import { fetchLithuanianEntry } from './services/lithuanianEnrichment.js?v=1602';
-import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=1602';
-import { attachImagesSequentially } from './services/bulkWords.js?v=1602';
-import { sanitizeExistingExamples } from './services/exampleSearch.js?v=1602';
+import { fetchWordEntry, wordEntryToWord, prepareWordsForLibrary } from './services/wordEntry.js?v=1602';
 import { escapeHtml } from './utils/html.js';
 
 const shell = document.querySelector('.quick-add-shell');
@@ -101,7 +97,7 @@ form.addEventListener('submit', async event => {
   const requestedCourseId = activeCourseId;
   lookupCourseId = requestedCourseId;
   try {
-    lookup = requestedCourseId === 'lithuanian' ? await fetchLithuanianEntry(word) : await fetchWordDetails(word);
+    lookup = await fetchWordEntry(word, requestedCourseId);
     if (requestedCourseId !== activeCourseId) return;
     input.value = lookup.word;
     renderSenses(lookup);
@@ -128,22 +124,7 @@ definition.addEventListener('input', () => { save.disabled = !definition.value.t
 save.addEventListener('click', async () => {
   const word = input.value.trim();
   const sense = selectedSense();
-  const item = sense ? {
-    courseId: lookupCourseId || activeCourseId,
-    word: lookup.word,
-    lemma: lookup.lemma || lookup.word,
-    phonetic: lookup.phonetic || '',
-    audioUrl: lookup.audioUrl || '',
-    partOfSpeech: sense.partOfSpeech || 'unknown',
-    definition: sense.definition,
-    translation: sense.translation || sense.definition,
-    example: sense.example || '',
-    acceptedForms: sense.acceptedForms || [],
-    grammaticalTags: sense.grammaticalTags || [],
-    exampleSourceUrl: sense.exampleSourceUrl || '',
-    exampleAttribution: sense.exampleAttribution || '',
-    exampleLicense: sense.exampleLicense || '',
-  } : {
+  const item = sense ? wordEntryToWord(lookup, lookup.senses.indexOf(sense), lookupCourseId || activeCourseId) : {
     courseId: activeCourseId,
     word,
     partOfSpeech: 'unknown',
@@ -156,9 +137,8 @@ save.addEventListener('click', async () => {
   setSaveLabel('Choosing image…');
   setStatus('Choosing a relevant memory image…');
   try {
-    const senseChecked = sanitizeExistingExamples(item.word, [item])[0];
-    const [enriched] = await attachImagesSequentially([senseChecked], findRelevantImages, {
-      excludeUrls: imageUrlsForWords(driveSync.getWords()),
+    const [enriched] = await prepareWordsForLibrary([item], {
+      courseId: item.courseId, existingWords: driveSync.getWords(),
       onProgress: ({ found }) => setStatus(found
         ? 'Relevant image found. Saving…'
         : 'No suitable image was available. Saving the word…'),

@@ -2005,8 +2005,9 @@ body[data-course-id="english"] .nav-links{width:min(100%,560px)}
 .lesson-word-option:has(input:checked) .lesson-word-toggle strong{color:var(--primary-green-hover)}
 .lesson-word-option [data-word-details]{padding:0 14px 14px;overflow-wrap:anywhere}
 .lesson-word-option [data-word-details] p{color:var(--text-muted);margin-bottom:10px}
-.lesson-word-option [data-word-details] label{display:block;font-size:.85rem;margin-bottom:6px}
-.lesson-word-option [data-word-meaning]{box-sizing:border-box;width:100%;min-height:44px;padding:10px;border:1px solid var(--border-card);border-radius:8px;margin-bottom:8px;font-size:1rem}
+.lesson-sense-options{display:grid;gap:8px}
+.lesson-sense-options .sense-option{box-shadow:none;background:var(--bg-card)}
+.lesson-sense-options .sense-option.selected{background:var(--primary-green-light)}
 .lesson-word-option [data-word-status]{display:block;margin-top:6px}
 
 .lesson-form-focus{width:min(100%,680px);margin:0 auto 18px;padding:18px;border:1px solid #bbf7d0;border-radius:16px;background:#f0fdf4;box-sizing:border-box}

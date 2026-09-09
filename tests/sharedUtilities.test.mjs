@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { clearImageSelectionPatch, imageSelectionPatch, imageUrlsForWords } from '../js/services/imageSearch.js';
-import { shuffleItems } from '../js/utils/collections.js';
+import { shuffleItems, shuffleSentenceTokens } from '../js/utils/collections.js';
 import { localDateKey } from '../js/utils/dates.js';
 import { navigateTo } from '../js/utils/navigation.js';
 
@@ -25,6 +25,17 @@ test('shared shuffle preserves the input and uses the existing Fisher-Yates orde
   const shuffled = shuffleItems(values, () => randomValues.shift());
   assert.deepEqual(values, [1, 2, 3, 4]);
   assert.deepEqual(shuffled, [2, 4, 3, 1]);
+});
+
+test('sentence tiles never start solved even when random shuffle returns their original order', () => {
+  const tokens = ['Aš', 'esu', 'studentas'];
+  const shuffled = shuffleSentenceTokens(tokens, 'Aš esu studentas.', () => .999);
+  assert.notDeepEqual(shuffled, tokens);
+  assert.deepEqual([...shuffled].sort(), [...tokens].sort());
+  assert.deepEqual(tokens, ['Aš', 'esu', 'studentas']);
+  assert.deepEqual(shuffleSentenceTokens(['aš'], 'Aš.', () => 0), ['aš']);
+  const repeated = shuffleSentenceTokens(['labai', 'labai', 'gerai'], 'Labai labai gerai.', () => .999);
+  assert.notEqual(repeated.join(' '), 'labai labai gerai');
 });
 
 test('shared local date keys preserve the existing calendar format', () => {

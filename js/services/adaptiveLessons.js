@@ -1,7 +1,7 @@
 import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=1602';
 import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=1602';
 
-const CACHE_KEY = 'keepvocab_adaptive_lesson_cache_v2';
+const CACHE_KEY = 'keepvocab_adaptive_lesson_cache_v3';
 const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 const CACHE_LIMIT = 80;
 
@@ -32,7 +32,7 @@ export function adaptiveLessonDifficulty({ completedLessons = 0, vocabularyCount
     translationWordTarget: clamp(4 + Math.floor(completedLessons / 18) + Math.floor(vocabularyCount / 55), 4, 18),
     listeningWords: clamp(24 + band * 10 + Math.floor(vocabularyCount / 15), 30, 125),
     dialogueTurns: clamp(3 + Math.floor(band / 2), 3, 7),
-    learnerTurns: clamp(1 + Math.floor(band / 2), 1, 4),
+    learnerTurns: clamp(3 + Math.floor(band / 2), 3, 6),
     newWordBudget: clamp(Math.floor((band + 1) / 2), 1, 4),
     knownCoverageTarget: clamp(0.985 - band * 0.006, 0.94, 0.98),
     speechRate: clamp(0.76 + band * 0.025, 0.78, 0.94)
@@ -121,6 +121,7 @@ Scenario: ${activity.scenario}. Learner goal: ${activity.goal}. Success criteria
 Conversation so far: ${history.map(turn => `${turn.role}: ${turn.text}`).join('\n')}
 Learner's newest reply: ${JSON.stringify(clean(learnerReply))}
 Understand reasonable Lithuanian despite minor spelling or ending errors. Give one concise correction only when it helps, then continue naturally. Never pretend an unrelated reply completed the goal.
+Plan for at least ${context.difficulty.learnerTurns} learner turns. The learner has sent ${history.filter(turn => turn.role === 'learner').length} replies, including the newest reply. Before that minimum, keep goalComplete false and ask a natural follow-up question in Lithuanian, even when the first request has already been answered. At or after the minimum, continue responding until the learner chooses Finish conversation.
 Return JSON only: {"accepted":true,"goalComplete":false,"feedback":"brief English feedback","correctedReply":"correct Lithuanian version or empty","partnerReply":"next natural Lithuanian line","englishMeaning":"English meaning of partnerReply"}`;
 }
 
@@ -187,6 +188,7 @@ function fallbackDialogue(context) {
     opening: phrase.lt,
     supportPhrase: reply.lt,
     successCriteria: reply.acceptedForms || [reply.lt],
+    guidedReplies: Array.from({ length: context.difficulty.learnerTurns }, (_, index) => (context.unitPhrases || [phrase, reply])[(index + 1) % (context.unitPhrases?.length || 2)]),
     aiGenerated: false
   };
 }
@@ -274,20 +276,28 @@ export async function evaluateTranslationResponse(activity, response, context, o
 
 export async function processDialogueTurn(activity, history, learnerReply, context, options = {}) {
   const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
+  // Callers include the newest learner reply in history.
+  const learnerTurns = Math.max(1, history.filter(turn => turn.role === 'learner').length);
+  const enoughTurns = learnerTurns >= context.difficulty.learnerTurns;
   if (!getGeminiSettings(storage).apiKey || !activity.aiGenerated) {
     const response = normalized(learnerReply);
-    const meetsTarget = (activity.successCriteria || []).some(criterion => {
+    const guided = activity.guidedReplies || [];
+    const current = guided[(learnerTurns - 1) % guided.length];
+    const next = guided[learnerTurns % guided.length];
+    const meetsTarget = (current ? [current.lt, ...(current.acceptedForms || [])] : activity.successCriteria || []).some(criterion => {
       const target = normalized(criterion);
       return target && response === target;
     });
     const enough = meetsTarget;
     return {
       accepted: enough,
-      goalComplete: enough,
-      feedback: enough ? 'You produced a relevant Lithuanian reply.' : 'Use the model phrase to answer this guided exchange.',
+      goalComplete: enough && enoughTurns,
+      feedback: `${enough ? 'You produced a relevant Lithuanian reply.' : 'Compare your reply with the model.'}${next ? ` Next, reply with the Lithuanian for “${next.en}”.` : ''}`,
       correctedReply: '',
-      partnerReply: enough ? 'Puiku, ačiū!' : 'Gal galite pasakyti daugiau?',
-      englishMeaning: enough ? 'Great, thank you!' : 'Could you say more?'
+      partnerReply: 'Gerai. Tęskime pokalbį.',
+      englishMeaning: 'All right. Let’s continue the conversation.',
+      supportPhrase: next?.lt || activity.supportPhrase,
+      nextGoal: next ? `Reply with the Lithuanian for “${next.en}”.` : ''
     };
   }
   try {
@@ -295,13 +305,13 @@ export async function processDialogueTurn(activity, history, learnerReply, conte
     const result = await generate(buildDialogueTurnPrompt(activity, history, learnerReply, context), { storage, json: true, maxOutputTokens: 420, dedupe: false });
     return {
       accepted: Boolean(result?.accepted),
-      goalComplete: Boolean(result?.goalComplete),
+      goalComplete: enoughTurns && Boolean(result?.goalComplete),
       feedback: clean(result?.feedback),
       correctedReply: clean(result?.correctedReply),
       partnerReply: clean(result?.partnerReply) || 'Gerai.',
       englishMeaning: clean(result?.englishMeaning)
     };
   } catch {
-    return { accepted: true, goalComplete: history.filter(turn => turn.role === 'learner').length >= context.difficulty.learnerTurns - 1, feedback: 'Your reply was recorded; AI feedback is temporarily unavailable.', correctedReply: '', partnerReply: 'Supratau. Tęskite, prašau.', englishMeaning: 'I understand. Please continue.' };
+    return { accepted: false, goalComplete: false, unscored: true, feedback: 'Your reply was recorded; AI feedback is temporarily unavailable.', correctedReply: '', partnerReply: 'Supratau. Tęskite, prašau.', englishMeaning: 'I understand. Please continue.' };
   }
 }

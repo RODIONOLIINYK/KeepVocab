@@ -117,7 +117,7 @@ test('the header uses a custom accessible course listbox instead of a native sel
 test('Lithuanian Add Word retains the same bulk workflow and image enrichment as English', () => {
   const app = fs.readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
   assert.match(app, /bulkTab\.hidden = false/);
-  assert.match(app, /const lookupForActiveCourse = term => driveSync\.getActiveCourseId\(\) === 'lithuanian'/);
+  assert.match(app, /fetchWordEntry\(term, driveSync\.getActiveCourseId\(\)\)/);
   assert.doesNotMatch(app, /bulkTab\.hidden = lithuanian/);
-  assert.match(app, /const enrichedItems = await attachImagesSequentially\(senseCheckedItems/);
+  assert.match(app, /const enrichedItems = await prepareWordsForLibrary\(items/);
 });

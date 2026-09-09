@@ -82,19 +82,20 @@ test('the macOS package is universal, sandboxed, and keeps the authorized local 
 
 test('menu-bar quick add enriches a saved meaning with the same image pipeline as the full app', () => {
   const quickAdd = readFileSync(resolve(projectRoot, 'js/quickAdd.js'), 'utf8');
-  assert.match(quickAdd, /sanitizeExistingExamples\(item\.word, \[item\]\)/);
-  assert.match(quickAdd, /attachImagesSequentially\(\[senseChecked\], findRelevantImages/);
-  assert.match(quickAdd, /excludeUrls: imageUrlsForWords\(driveSync\.getWords\(\)\)/);
+  assert.match(quickAdd, /prepareWordsForLibrary\(\[item\]/);
+  assert.match(quickAdd, /existingWords: driveSync\.getWords\(\)/);
+  const lesson = readFileSync(resolve(projectRoot, 'js/components/LessonMode.js'), 'utf8');
+  assert.match(lesson, /prepareWordsForLibrary\(records/);
   assert.match(quickAdd, /driveSync\.addWord\(enriched\)/);
 });
 
 test('menu-bar quick add follows the active course and uses the matching dictionary', () => {
   const quickAdd = readFileSync(resolve(projectRoot, 'js/quickAdd.js'), 'utf8');
   const quickAddHtml = readFileSync(resolve(projectRoot, 'quick-add.html'), 'utf8');
-  assert.match(quickAdd, /fetchLithuanianEntry/);
+  assert.match(quickAdd, /fetchWordEntry\(word, requestedCourseId\)/);
   assert.match(quickAdd, /driveSync\.getActiveCourseId\(\)/);
   assert.match(quickAdd, /event\.key === 'keepvocab_settings'/);
-  assert.match(quickAdd, /requestedCourseId === 'lithuanian'/);
+  assert.match(quickAdd, /requestedCourseId !== activeCourseId/);
   assert.match(quickAddHtml, /id="quick-course-label"/);
   assert.match(quickAddHtml, /id="quick-word-label"/);
 });

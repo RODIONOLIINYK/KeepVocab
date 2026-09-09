@@ -2,14 +2,13 @@ import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=1602';
 // Native application controller with monthly Google Drive backup.
 
 import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=1602';
-import { fetchWordDetails } from './services/dictionaryApi.js?v=1602';
+import { fetchWordEntry, wordEntryToWord, prepareWordsForLibrary } from './services/wordEntry.js?v=1602';
 import { speakWord } from './services/speechService.js?v=1602';
 import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=1602';
 import { recordExerciseResult } from './services/exerciseResult.js?v=1602';
 import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=1602';
 import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=1602';
-import { findRelevantImages, imageUrlsForWords } from './services/imageSearch.js?v=1602';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults, attachImagesSequentially } from './services/bulkWords.js?v=1602';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from './services/bulkWords.js?v=1602';
 import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=1602';
 import { appendStudyMoment, buildSmartReminderPlan, buildStreakMaintenancePlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=1602';
 import { localDateKey } from './utils/dates.js';
@@ -30,7 +29,6 @@ import { renderSettingsView } from './components/SettingsView.js?v=1602';
 import { renderLearningPathView } from './components/LearningPathView.js?v=1602';
 import { renderLessonMode, teardownLessonMode } from './components/LessonMode.js?v=1602';
 import { getCourseDefinition } from './data/courses.js?v=1602';
-import { fetchLithuanianEntry } from './services/lithuanianEnrichment.js?v=1602';
 
 function buildStudyQueue() {
   const activeNotebook = driveSync.getActiveNotebook();
@@ -658,9 +656,7 @@ function setupQuickAddModal() {
   let bulkResults = [];
 
   if (!btnOpen) return;
-  const lookupForActiveCourse = term => driveSync.getActiveCourseId() === 'lithuanian'
-    ? fetchLithuanianEntry(term)
-    : fetchWordDetails(term);
+  const lookupForActiveCourse = term => fetchWordEntry(term, driveSync.getActiveCourseId());
 
   const updateBulkProgress = ({ completed, total, phase, startedAt, finished = false }) => {
     const safeTotal = Math.max(1, Number(total) || 1);
@@ -1012,11 +1008,8 @@ function setupQuickAddModal() {
     const imageStartedAt = Date.now();
     updateBulkProgress({ completed: 0, total: items.length, phase: 'Choosing images', startedAt: imageStartedAt });
     try {
-      const lithuanian = driveSync.getActiveCourseId() === 'lithuanian';
-      const checkedItems = lithuanian ? items : items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
-      const existingImageUrls = imageUrlsForWords(driveSync.getWords());
-      const enrichedItems = await attachImagesSequentially(checkedItems, findRelevantImages, {
-        excludeUrls: existingImageUrls,
+      const enrichedItems = await prepareWordsForLibrary(items, {
+        courseId: driveSync.getActiveCourseId(), existingWords: driveSync.getWords(),
         onProgress: ({ completed, total, word }) => {
           bulkStatus.textContent = `Choosing image ${completed} of ${total}: ${word}`;
           bulkSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Choosing images ${completed}/${total}`;
@@ -1090,21 +1083,7 @@ function setupQuickAddModal() {
 
     persistFocusedDraft();
     const selectedDrafts = [...selectedSenseIds].map(id => senseDrafts.get(id)).filter(Boolean);
-    const items = currentFetchedData && selectedDrafts.length ? selectedDrafts.map(sense => ({
-      word: currentFetchedData.word || wordText,
-      phonetic: sense.phonetic || currentFetchedData.phonetic || '',
-      audioUrl: sense.audioUrl || currentFetchedData.audioUrl || '',
-      partOfSpeech: sense.partOfSpeech || 'unknown',
-      definition: sense.definition,
-      example: sense.example || '',
-      exampleSourceUrl: sense.exampleSourceUrl || '',
-      exampleAttribution: sense.exampleAttribution || '',
-      exampleLicense: sense.exampleLicense || ''
-      ,lemma: currentFetchedData.lemma || currentFetchedData.word || wordText
-      ,translation: sense.translation || sense.definition
-      ,acceptedForms: sense.acceptedForms || [currentFetchedData.word || wordText]
-      ,grammaticalTags: sense.grammaticalTags || []
-    })) : [{
+    const items = currentFetchedData && selectedDrafts.length ? selectedDrafts.map(sense => wordEntryToWord({ ...currentFetchedData, senses: [sense] }, 0, driveSync.getActiveCourseId())) : [{
       word: wordText,
       phonetic: phoneticInput.value.trim(),
       partOfSpeech: posInput.value.trim() || 'unknown',
@@ -1125,11 +1104,8 @@ function setupQuickAddModal() {
     const originalButton = btnSave.innerHTML;
     btnSave.disabled = true;
     try {
-      const lithuanian = driveSync.getActiveCourseId() === 'lithuanian';
-      const senseCheckedItems = lithuanian ? items : items.map(item => sanitizeExistingExamples(item.word, [item])[0]);
-      const existingImageUrls = imageUrlsForWords(driveSync.getWords());
-      const enrichedItems = await attachImagesSequentially(senseCheckedItems, findRelevantImages, {
-        excludeUrls: existingImageUrls,
+      const enrichedItems = await prepareWordsForLibrary(items, {
+        courseId: driveSync.getActiveCourseId(), existingWords: driveSync.getWords(),
         onProgress: ({ completed, total }) => {
           formStatus.textContent = `Choosing image ${completed} of ${total}…`;
           btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Choosing images ${completed}/${total}`;

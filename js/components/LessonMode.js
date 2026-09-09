@@ -5,11 +5,12 @@ import { startLessonAttempt, recordLessonResponse, advanceLessonAttempt, answerM
 import { describeSpeechError, getSpeechAvailability, playAudioUrl, speakText } from '../services/speechService.js?v=1602';
 import { getCachedOrGenerateDialogueAudio } from '../services/geminiTts.js?v=1602';
 import { buildAdaptiveContext, evaluateListeningResponse, evaluateTranslationResponse, generateDialogueActivity, generateListeningActivity, generateTranslationActivity, processDialogueTurn } from '../services/adaptiveLessons.js?v=1602';
-import { lessonWordCandidates, lessonVocabularyRecords, missingLessonWords, recordVocabularySelection } from '../services/lessonVocabulary.js?v=1602';
-import { fetchLithuanianEntry } from '../services/lithuanianEnrichment.js?v=1602';
+import { lessonWordCandidates, lessonWordSelection, lessonVocabularyRecords, missingLessonWords, recordVocabularySelection } from '../services/lessonVocabulary.js?v=1602';
+import { fetchWordEntry, prepareWordsForLibrary } from '../services/wordEntry.js?v=1602';
 export { lessonVocabularyRecords } from '../services/lessonVocabulary.js?v=1602';
 import { CASE_LABELS, NOUN_FORM_TABLES } from '../data/lithuanianForms.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
+import { shuffleSentenceTokens } from '../utils/collections.js';
 
 let lessonSpeechActive = false;
 
@@ -140,7 +141,10 @@ function transcriptMarkup(activity, hidden = true) {
 }
 
 function renderExercise(container, session, attempt, navigate) {
-  const exercise = session.exercises[attempt.exerciseIndex];
+  const sourceExercise = session.exercises[attempt.exerciseIndex];
+  const exercise = sourceExercise?.type === 'word-order'
+    ? { ...sourceExercise, tokens: shuffleSentenceTokens(sourceExercise.tokens, sourceExercise.answer) }
+    : sourceExercise;
   const unit = getLithuanianUnit(session.unitId);
   const profileSnapshot = driveSync.getCourseProfile('lithuanian') || {};
   const adaptiveContext = {
@@ -305,15 +309,22 @@ function renderExercise(container, session, attempt, navigate) {
     const activity = await generateDialogueActivity(adaptiveContext, { unitPhrases: unit.phrases });
     if (!host.isConnected) return;
     const history = [{ role: 'partner', text: activity.opening }];
+    let lastResult = null;
     host.innerHTML = `<section class="adaptive-dialogue-card">
-      <div class="adaptive-meta"><span>${escapeHtml(adaptiveSourceLabel(activity))}</span><small>Level ${adaptiveContext.difficulty.band}/7 · ${adaptiveContext.difficulty.learnerTurns} learner turn${adaptiveContext.difficulty.learnerTurns === 1 ? '' : 's'}</small></div>
-      <div class="adaptive-goal"><i class="fa-solid fa-bullseye"></i><div><span>SITUATION</span><strong>${escapeHtml(activity.scenario)}</strong><p>${escapeHtml(activity.goal)}</p></div></div>
+      <div class="adaptive-meta"><span>${escapeHtml(adaptiveSourceLabel(activity))}</span><small data-dialogue-progress>0 of ${adaptiveContext.difficulty.learnerTurns} replies · Keep going as long as you like</small></div>
+      <div class="adaptive-goal"><i class="fa-solid fa-bullseye"></i><div><span>SITUATION</span><strong>${escapeHtml(activity.scenario)}</strong><p data-dialogue-goal>${escapeHtml(activity.goal)}</p></div></div>
       <div class="adaptive-turns" data-dialogue-turns><div class="adaptive-turn partner"><span>${escapeHtml(activity.partnerName || 'Rasa')}</span><p lang="lt">${escapeHtml(activity.opening)}</p><button type="button" data-speak-dialogue-line aria-label="Hear partner"><i class="fa-solid fa-volume-high"></i></button></div></div>
       <label for="adaptive-dialogue-answer">Your reply in Lithuanian</label>
       <textarea id="adaptive-dialogue-answer" data-dialogue-answer rows="2" lang="lt" placeholder="${escapeHtml(activity.supportPhrase || 'Type a natural reply…')}"></textarea>
       <button type="button" class="btn-green-solid adaptive-send" data-send-dialogue>Send to ${escapeHtml(activity.partnerName || 'Rasa')}</button>
+      <button type="button" class="status-pill offline" data-finish-dialogue hidden>Finish conversation</button>
       <p class="adaptive-turn-feedback" data-dialogue-feedback role="status">${activity.aiGenerated ? 'Gemini checks meaning and grammar after every turn.' : 'Your reply is checked against the lesson goal.'}</p>
     </section>`;
+    const finishButton = host.querySelector('[data-finish-dialogue]');
+    finishButton.addEventListener('click', () => {
+      if (!lastResult || history.filter(turn => turn.role === 'learner').length < adaptiveContext.difficulty.learnerTurns) return;
+      finishResponse({ response: history.filter(turn => turn.role === 'learner').map(turn => turn.text).join(' / '), correct: lastResult.goalComplete || lastResult.accepted, unscored: Boolean(lastResult.unscored), feedbackDetail: lastResult.feedback, modelAnswer: lastResult.correctedReply || activity.supportPhrase || activity.opening, vocabularyPhrases: history.filter(turn => turn.role === 'partner').map(turn => ({ lt: turn.text })) });
+    });
     host.querySelector('[data-speak-dialogue-line]').addEventListener('click', () => speakText(activity.opening, { locale: 'lt-LT', rate: adaptiveContext.difficulty.speechRate }));
     host.querySelector('[data-send-dialogue]').addEventListener('click', async event => {
       const sendButton = event.currentTarget;
@@ -321,24 +332,32 @@ function renderExercise(container, session, attempt, navigate) {
       const reply = input.value.trim();
       if (!reply) return;
       sendButton.disabled = true;
+      finishButton.disabled = true;
       sendButton.textContent = 'Processing reply…';
       input.disabled = true;
       const turns = host.querySelector('[data-dialogue-turns]');
       turns.insertAdjacentHTML('beforeend', `<div class="adaptive-turn learner"><span>You</span><p lang="lt">${escapeHtml(reply)}</p></div>`);
+      turns.scrollTop = turns.scrollHeight;
       history.push({ role: 'learner', text: reply });
       const result = await processDialogueTurn(activity, history, reply, adaptiveContext);
+      if (!host.isConnected) return;
+      lastResult = result;
       history.push({ role: 'partner', text: result.partnerReply });
       turns.insertAdjacentHTML('beforeend', `<div class="adaptive-turn partner"><span>${escapeHtml(activity.partnerName || 'Rasa')}</span><p lang="lt">${escapeHtml(result.partnerReply)}</p><small>${escapeHtml(result.englishMeaning)}</small></div>`);
+      turns.scrollTop = turns.scrollHeight;
       const feedback = host.querySelector('[data-dialogue-feedback]');
       feedback.innerHTML = `${result.correctedReply ? `<strong>Try:</strong> <span lang="lt">${escapeHtml(result.correctedReply)}</span> · ` : ''}${escapeHtml(result.feedback)}`;
       // Audio is optional: playback failure must never block answer feedback.
       void speakText(result.partnerReply, { locale: 'lt-LT', rate: adaptiveContext.difficulty.speechRate }).catch(() => {});
       const learnerTurns = history.filter(turn => turn.role === 'learner').length;
-      if (result.goalComplete || learnerTurns >= adaptiveContext.difficulty.learnerTurns) {
-        finishResponse({ response: history.filter(turn => turn.role === 'learner').map(turn => turn.text).join(' / '), correct: result.goalComplete || result.accepted, feedbackDetail: result.feedback, modelAnswer: result.correctedReply || activity.supportPhrase || activity.opening, vocabularyPhrases: history.filter(turn => turn.role === 'partner').map(turn => ({ lt: turn.text })) });
-        return;
-      }
+      host.querySelector('[data-dialogue-progress]').textContent = learnerTurns >= adaptiveContext.difficulty.learnerTurns
+        ? `${learnerTurns} replies · Continue chatting or finish when you’re ready`
+        : `${learnerTurns} of ${adaptiveContext.difficulty.learnerTurns} replies`;
+      if (result.nextGoal) host.querySelector('[data-dialogue-goal]').textContent = result.nextGoal;
+      finishButton.hidden = learnerTurns < adaptiveContext.difficulty.learnerTurns;
+      finishButton.disabled = false;
       input.value = '';
+      input.placeholder = result.supportPhrase || 'Type a natural reply…';
       input.disabled = false;
       input.focus();
       sendButton.disabled = false;
@@ -448,14 +467,13 @@ function renderComplete(container, session, attempt, navigate) {
     <p>${passed ? escapeHtml(unit.outcome) : 'Review the phrases, then try this checkpoint again. Answer at least two thirds correctly to unlock the next module.'}</p>
     <section class="lesson-word-review" aria-labelledby="unknown-words-title">
       <h2 id="unknown-words-title">Which words didn’t you understand?</h2>
-      <p>Select the words you want to learn. Their English meanings fill in automatically; you can edit them before saving.</p>
+      <p>Select the words you want to learn, then choose the meaning you heard. Word details and memory images are added automatically.</p>
       <div class="lesson-word-options">${candidates.map((item, index) => `<div class="lesson-word-option">
         <label class="lesson-word-toggle"><input type="checkbox" class="app-checkbox" data-unknown-word="${index}" aria-controls="word-details-${index}" ${selections.has(item.word) ? 'checked' : ''}><strong lang="lt">${escapeHtml(item.word)}</strong></label>
         <div id="word-details-${index}" data-word-details="${index}" ${selections.has(item.word) ? '' : 'hidden'}>
           <p lang="lt">${escapeHtml(item.example)}</p>
-          <label for="word-meaning-${index}">English meaning of “${escapeHtml(item.word)}”</label>
-          <input id="word-meaning-${index}" data-word-meaning="${index}" aria-describedby="word-status-${index}" value="${escapeHtml(selections.get(item.word)?.definition ?? item.definition)}" placeholder="English meaning appears here">
-          <button type="button" class="status-pill offline" data-lookup-word="${index}">Look up meaning</button>
+          <div class="lesson-sense-options" data-word-senses="${index}" role="group" aria-label="Meanings of ${escapeHtml(item.word)}"></div>
+          <button type="button" class="status-pill offline" data-lookup-word="${index}" hidden>Retry lookup</button>
           <small id="word-status-${index}" data-word-status="${index}" role="status"></small>
         </div>
       </div>`).join('')}</div>
@@ -467,62 +485,70 @@ function renderComplete(container, session, attempt, navigate) {
     <small>Course practice records your progress; it does not certify a CEFR level.</small>
   </section></main>`;
   const continueButton = container.querySelector('[data-back-path]');
+  const vocabularyStatus = container.querySelector('[data-vocabulary-status]');
   const pendingLookups = new Set();
-  const editVersions = new Map();
+  let saving = false;
   const refreshContinue = () => {
     const waiting = candidates.some((item, index) => pendingLookups.has(index)
-      && selections.has(item.word) && !selections.get(item.word).definition);
-    continueButton.disabled = waiting;
+      && selections.has(item.word));
+    continueButton.disabled = saving || waiting || [...selections.values()].some(item => !item.definition);
+    if (saving) return;
     continueButton.textContent = waiting ? 'Finding meanings…'
       : selections.size ? 'Save words and continue' : 'Continue without adding words';
+  };
+  const renderSenses = index => {
+    const choice = selections.get(candidates[index].word);
+    const host = container.querySelector(`[data-word-senses="${index}"]`);
+    const senses = choice?.entry?.senses || (choice?.definition ? [choice] : []);
+    host.innerHTML = senses.map((sense, senseIndex) => `<button type="button" class="sense-option${senseIndex === (choice.senseIndex || 0) ? ' selected' : ''}" data-lesson-sense="${senseIndex}" aria-pressed="${senseIndex === (choice.senseIndex || 0)}"><span class="sense-option-check" aria-hidden="true">${senseIndex === (choice.senseIndex || 0) ? '<i class="fa-solid fa-check"></i>' : ''}</span><span class="sense-option-body"><span class="sense-option-meta">${escapeHtml(sense.partOfSpeech || 'word')}</span><strong>${escapeHtml(sense.definition)}</strong>${sense.example ? `<small lang="lt">${escapeHtml(sense.example)}</small>` : ''}</span></button>`).join('');
+    host.querySelectorAll('[data-lesson-sense]').forEach(button => button.addEventListener('click', () => {
+      if (saving || !choice.entry) return;
+      selections.set(candidates[index].word, lessonWordSelection(candidates[index].word, choice.entry, Number(button.dataset.lessonSense)));
+      persistSelections(); renderSenses(index); refreshContinue();
+    }));
   };
   const updateSelection = index => {
     const item = candidates[index];
     const checked = container.querySelector(`[data-unknown-word="${index}"]`).checked;
-    const definition = container.querySelector(`[data-word-meaning="${index}"]`).value.trim();
-    if (checked) selections.set(item.word, { ...selections.get(item.word), word: item.word, definition });
-    else selections.delete(item.word);
+    if (checked) {
+      if (!selections.has(item.word)) selections.set(item.word, { word: item.word });
+    } else selections.delete(item.word);
     container.querySelector(`[data-word-details="${index}"]`).hidden = !checked;
     container.querySelector('[data-selected-count]').textContent = selections.size;
     refreshContinue();
     persistSelections();
+    renderSenses(index);
   };
   const lookupMeaning = async index => {
     if (pendingLookups.has(index)) return;
     const item = candidates[index];
     const button = container.querySelector(`[data-lookup-word="${index}"]`);
-    const input = container.querySelector(`[data-word-meaning="${index}"]`);
+    const host = container.querySelector(`[data-word-senses="${index}"]`);
     const status = container.querySelector(`[data-word-status="${index}"]`);
-    const originalValue = input.value;
-    const editVersion = editVersions.get(index) || 0;
     pendingLookups.add(index);
     button.disabled = true;
-    input.setAttribute('aria-busy', 'true');
-    status.textContent = 'Looking up this word…';
+    button.hidden = true;
+    host.setAttribute('aria-busy', 'true');
+    status.textContent = 'Finding meanings…';
     refreshContinue();
     try {
-      const entry = await fetchLithuanianEntry(item.word);
+      const entry = await fetchWordEntry(item.word, 'lithuanian');
       if (!button.isConnected) return;
-      const sense = entry.senses?.find(item => item.definition?.trim());
-      if (!sense) throw new Error('No meaning found.');
       if (!selections.has(item.word)) return;
-      if (input.value === originalValue && (editVersions.get(index) || 0) === editVersion) {
-        input.value = sense.definition;
-        selections.set(item.word, { ...selections.get(item.word), sourceUrl: sense.sourceUrl, attribution: sense.attribution });
-        updateSelection(index);
-        status.textContent = entry.aiGenerated
-          ? 'AI suggestion. Check that it fits the example, or edit it.'
-          : 'Wiktionary suggestion. Check that it fits the example, or edit it.';
-      } else {
-        status.textContent = 'Your edited meaning has been kept.';
-      }
+      const usableEntry = { ...entry, senses: (entry.senses || []).filter(sense => sense.definition?.trim()) };
+      selections.set(item.word, lessonWordSelection(item.word, usableEntry));
+      persistSelections(); renderSenses(index);
+      status.textContent = entry.aiGenerated ? 'AI suggestions. Choose the meaning you heard.' : 'Choose the meaning you heard.';
     } catch {
-      if (status.isConnected) status.textContent = 'Lookup unavailable. Enter the word’s English meaning, or retry.';
+      if (status.isConnected) {
+        status.textContent = 'Could not find meanings. Retry or unselect this word to continue.';
+        button.hidden = false;
+      }
     } finally {
       pendingLookups.delete(index);
       if (button.isConnected) {
         button.disabled = false;
-        input.removeAttribute('aria-busy');
+        host.removeAttribute('aria-busy');
         refreshContinue();
       }
     }
@@ -530,26 +556,36 @@ function renderComplete(container, session, attempt, navigate) {
   container.querySelectorAll('[data-unknown-word]').forEach(input => input.addEventListener('change', () => {
     const index = Number(input.dataset.unknownWord);
     updateSelection(index);
-    if (input.checked && !selections.get(candidates[index].word).definition) void lookupMeaning(index);
-  }));
-  container.querySelectorAll('[data-word-meaning]').forEach(input => input.addEventListener('input', () => {
-    const index = Number(input.dataset.wordMeaning);
-    editVersions.set(index, (editVersions.get(index) || 0) + 1);
-    updateSelection(index);
+    if (input.checked && !selections.get(candidates[index].word).entry) void lookupMeaning(index);
   }));
   container.querySelectorAll('[data-lookup-word]').forEach(button => button.addEventListener('click', () => void lookupMeaning(Number(button.dataset.lookupWord))));
   candidates.forEach((item, index) => {
+    renderSenses(index);
     if (selections.has(item.word) && !selections.get(item.word).definition) void lookupMeaning(index);
   });
-  continueButton.addEventListener('click', () => {
+  refreshContinue();
+  continueButton.addEventListener('click', async () => {
+    if (saving || continueButton.disabled) return;
     try {
       const records = missingLessonWords(lessonVocabularyRecords(session, unit, attempt), driveSync.getAllWords());
-      if (records.length) driveSync.addWords(records);
+      saving = true;
+      container.querySelectorAll('button,input').forEach(control => { control.disabled = true; });
+      const enriched = await prepareWordsForLibrary(records, {
+        courseId: 'lithuanian', existingWords: driveSync.getAllWords(),
+        onProgress: ({ completed, total }) => {
+          continueButton.textContent = `Choosing images ${completed}/${total}…`;
+        }
+      });
+      if (enriched.length) driveSync.addWords(enriched);
       const latest = driveSync.getCourseProfile('lithuanian') || {};
       driveSync.updateCourseProfile('lithuanian', { activeLessonId: null, lessonAttempts: { ...latest.lessonAttempts, [session.id]: recordVocabularySelection(attempt, selections.values(), false) } });
-      navigate('learn');
+      if (continueButton.isConnected) navigate('learn');
     } catch (error) {
-      container.querySelector('[data-vocabulary-status]').textContent = error.message || 'Your progress is saved. Vocabulary could not be saved; please retry.';
+      if (!continueButton.isConnected) return;
+      vocabularyStatus.textContent = error.message || 'Your progress is saved. Vocabulary could not be saved; please retry.';
+      saving = false;
+      container.querySelectorAll('button,input').forEach(control => { control.disabled = false; });
+      refreshContinue();
     }
   });
   container.querySelector('[data-retry-lesson]')?.addEventListener('click', () => {

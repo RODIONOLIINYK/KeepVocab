@@ -5,6 +5,7 @@ import {
   adaptiveLessonDifficulty,
   buildAdaptiveContext,
   buildDialogueOpeningPrompt,
+  buildDialogueTurnPrompt,
   buildListeningGenerationPrompt,
   buildTranslationGenerationPrompt,
   evaluateListeningResponse,
@@ -40,8 +41,43 @@ test('lesson length and interaction demands rise with progress and vocabulary', 
   assert.ok(experienced.listeningWords > starter.listeningWords);
   assert.ok(experienced.dialogueTurns > starter.dialogueTurns);
   assert.ok(experienced.learnerTurns > starter.learnerTurns);
+  assert.ok(starter.learnerTurns >= 3);
   assert.ok(experienced.speechRate > starter.speechRate);
   assert.ok(experienced.knownCoverageTarget < starter.knownCoverageTarget);
+});
+
+test('dialogue keeps going when Gemini reports completion after the first reply', async () => {
+  const context = contextFor();
+  const storage = new MemoryStorage();
+  saveGeminiSettings({ apiKey: 'AIza-example-device-key-123456789' }, storage, { silent: true });
+  const activity = { aiGenerated: true, scenario: 'Coffee', goal: 'Order coffee', successCriteria: ['Ask for coffee'] };
+  const generate = async () => ({ accepted: true, goalComplete: true, partnerReply: 'Ko dar norėtumėte?' });
+  const history = [{ role: 'partner', text: 'Labas!' }, { role: 'learner', text: 'Kavos, prašau.' }];
+  const first = await processDialogueTurn(activity, history, 'Kavos, prašau.', context, { storage, generate });
+  assert.equal(first.goalComplete, false);
+  assert.equal(first.accepted, true);
+  assert.match(buildDialogueTurnPrompt(activity, history, 'Kavos, prašau.', context), /at least 3 learner turns/);
+  history.push({ role: 'learner', text: 'Arbatos.' }, { role: 'learner', text: 'Ačiū.' });
+  const third = await processDialogueTurn(activity, history, 'Ačiū.', context, { storage, generate });
+  assert.equal(third.goalComplete, true);
+  const unavailable = await processDialogueTurn(activity, history, 'Ačiū.', context, { storage, generate: async () => { throw new Error('offline'); } });
+  assert.equal(unavailable.goalComplete, false);
+  assert.equal(unavailable.unscored, true);
+});
+
+test('authored conversation progresses through multiple distinct replies', async () => {
+  const context = contextFor();
+  const storage = new MemoryStorage();
+  const activity = await generateDialogueActivity(context, { storage });
+  const history = [];
+  for (let index = 0; index < context.difficulty.learnerTurns; index++) {
+    const reply = activity.guidedReplies[index].lt;
+    history.push({ role: 'learner', text: reply });
+    const result = await processDialogueTurn(activity, history, reply, context, { storage });
+    assert.equal(result.accepted, true);
+    assert.equal(result.goalComplete, index === context.difficulty.learnerTurns - 1);
+    assert.equal(result.supportPhrase, activity.guidedReplies[(index + 1) % activity.guidedReplies.length].lt);
+  }
 });
 
 test('adaptive vocabulary is Lithuanian-only, unique, and prioritises learning needs', () => {
