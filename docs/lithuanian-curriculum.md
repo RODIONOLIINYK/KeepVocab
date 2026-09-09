@@ -33,13 +33,59 @@ Audio playback depends on configured Lithuanian speech support.
 
 Completed lesson IDs remain valid. In-progress attempts from the previous exercise
 format restart safely; current-format attempts restore both answers and feedback.
-Only phrases introduced by a lesson enter the Lithuanian Library. Records include
-the translation, sentence example, language, and lesson source. Replays and review
-lessons do not add duplicates. New phrase-based IDs cannot overwrite an unrelated
-word saved under the old position-based identifiers.
+Only individual words explicitly selected as not understood enter the Lithuanian
+Library. The learner checks or supplies each word’s own meaning; full sentences
+are examples only. Empty selections add nothing. Existing matching entries retain
+their review progress. Pending word selection resumes after reload.
 
 Answered exercises count towards the active course's daily goal and local-calendar
 streak; reading a guide or skipping an exercise does not. Historical lesson answers
 are recovered once when possible. Course activity stays separate during backup
 merges, and streaks are derived from recorded study days rather than an incrementing
 counter. Practice records demonstrate activity, not an official language level.
+
+## September 2026 declension audit and additions
+
+Previously, gender, plurals, agreement and several cases appeared in guide text,
+but the general cloze generator usually removed the second word of a sentence.
+That did not systematically test noun/adjective endings. Dative and vocative had
+no dedicated teaching sequence. The health guide also described the accusative
+example `man skauda gerklę` as nominative; the explanation now matches its example.
+
+The course now includes 54 authored form contrasts across nine topics:
+
+| First module | Focus |
+| --- | --- |
+| 3 | Masculine/feminine, singular/plural adjective agreement; ambiguous -is nouns |
+| 4 | Genitive possession, plural owners, sesuo/sesers and moteris/moters |
+| 8 | Accusative singular/plural and genitive after negation |
+| 9 | Adjective + noun agreement in case and number |
+| 10 | Nominative plurals in -as, -is, -ys, -us, -a and -ė classes |
+| 11 | Locative singular/plural contrasted with destination accusative |
+| 12 | Instrumental singular/plural, companions and transport |
+| 13 | Vocative singular/plural, both genders and personal names |
+| 15 | Dative singular/plural recipients |
+
+Each lesson from module 3 includes an ending-production exercise. Introduction
+modules teach six contrasts; the Forms lesson previews the sixth before it returns
+in the checkpoint. Later modules rotate previously introduced topics and forms.
+These are scheduled cumulative revisits, not an adaptive grammar mastery model.
+
+The learner sees a base form, a sentence gap and the requested gender, number and
+case. Answers accept the missing form or the completed sentence. Answers are
+hidden until checking or opening help. Feedback explains the ending. Four compact
+reference tables compare all seven cases in singular/plural for stalas, knyga,
+brolis and gatvė. These cover common patterns, not every exception, stress pattern
+or adjective declension in Lithuanian.
+
+Completed lesson IDs remain unchanged. In-progress lessons whose exercise list
+changed restart with the new revision; their completed nodes and Library survive.
+Unfinished vocabulary reviews remain resumable.
+
+Grammar validation references:
+
+- [Dabašinkienė & Čubajevaitė, Acquisition of case in Lithuanian as L2](https://portalcris.vdu.lt/server/api/core/bitstreams/6605c64b-2d18-4902-9279-d50ac9e14517/content): case inventory and common noun paradigms, pp. 49–50.
+- [Dubasava, Acquisition of Noun Inflection in Lithuanian as a Foreign Language](https://www.zurnalai.vu.lt/respectus-philologicus/en/article/download/17057/16187/28357): learner paradigms, stem changes and case-choice errors.
+
+Exercises and example sentences are authored for this app; the papers did not
+review this curriculum.

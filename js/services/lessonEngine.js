@@ -30,13 +30,15 @@ export function startLessonAttempt(sessionId, previous = null, now = new Date())
   const session = getLithuanianSession(sessionId);
   if (!session) throw new Error('This lesson is not available.');
   const firstExercise = session.sessionNumber <= 2 ? 1 : 0;
-  if (previous && previous.curriculumVersion === 2 && previous.sessionId === sessionId && previous.status === 'in-progress' && Number(previous.exerciseIndex) < session.exercises.length) {
+  if (previous?.curriculumVersion === 2 && previous.sessionId === sessionId && previous.status === 'completed' && previous.vocabularyReviewPending) return previous;
+  if (previous && previous.curriculumVersion === 2 && previous.sessionId === sessionId && previous.status === 'in-progress' && (previous.exerciseRevision || 2) === (session.exerciseRevision || 2) && Number(previous.exerciseIndex) < session.exercises.length) {
     return { ...previous, exerciseIndex: Math.max(firstExercise, Number(previous.exerciseIndex) || 0) };
   }
   return {
     id: `${sessionId}-${now.getTime()}`,
     sessionId,
     curriculumVersion: 2,
+    exerciseRevision: session.exerciseRevision || 2,
     exerciseIndex: firstExercise,
     responses: [],
     hintsUsed: 0,

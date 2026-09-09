@@ -1,3 +1,4 @@
+import { buildFormExercise, FORM_TOPICS } from './lithuanianForms.js?v=1602';
 const p = (lt, en, acceptedForms = []) => ({ lt, en, acceptedForms: [...new Set([lt, ...acceptedForms])] });
 
 // The course is authored data. The engine below only combines and schedules it;
@@ -249,7 +250,7 @@ const FOUNDATION_PHRASES = {
 // repeated past habits belong with experiences, not health.
 const frequentativeGuide = GRAMMAR_GUIDES[21];
 GRAMMAR_GUIDES[21] = GRAMMAR_GUIDES[22];
-GRAMMAR_GUIDES[22] = g('Use man with a symptom to explain how you feel.', 'Skauda describes pain; the painful body part stays in the nominative. Use nuo + genitive to say when it started.', [['Pain', 'Man skauda gerklę.', 'My throat hurts.'], ['Since', 'nuo vakar', 'since yesterday'], ['Advice', 'Vartokite vaistus.', 'Take the medicine. (polite)']], 'Learn the whole pattern man skauda + body part.');
+GRAMMAR_GUIDES[22] = g('Use man with a symptom to explain how you feel.', 'Skauda describes pain; the body part uses the accusative in the pattern man skauda gerklę. Use nuo + genitive to say when it started.', [['Pain', 'Man skauda gerklę.', 'My throat hurts.'], ['Since', 'nuo vakar', 'since yesterday'], ['Advice', 'Vartokite vaistus.', 'Take the medicine. (polite)']], 'Learn the whole pattern man skauda + body part.');
 GRAMMAR_GUIDES[24] = frequentativeGuide;
 UNIT_BLUEPRINTS[24][3] = 'Experiences & past habits';
 UNIT_BLUEPRINTS[24][5] = 'Simple past and past frequentative';
@@ -321,7 +322,7 @@ function makeExercises(unit, sessionIndex) {
     'Retrieve familiar phrases and check their spelling and meaning.',
     'Show what you remember from this module and earlier learning.'
   ][sessionIndex];
-  return types.map((type, exerciseIndex) => {
+  const exercises = types.map((type, exerciseIndex) => {
     if (type === 'cloze' && !practicePhrases.some(phrase => phraseTokens(phrase.lt).length > 1)) type = 'meaning-choice';
     const focusIndex = exerciseIndex % practicePhrases.length;
     const focus = type === 'cloze' ? clozePhrase(practicePhrases, focusIndex) : practicePhrases[focusIndex];
@@ -374,6 +375,13 @@ function makeExercises(unit, sessionIndex) {
       teachingPhrases: type === 'pattern' ? currentPhrases : []
     };
   });
+  const forms = buildFormExercise(unit, sessionIndex, COURSE_ORDER.map(index => UNIT_BLUEPRINTS[index][0]));
+  if (!forms) return exercises;
+  if (sessionIndex === 1 && FORM_TOPICS.some(topic => topic.unitId === unit.id)) {
+    const extra = buildFormExercise(unit, sessionIndex, COURSE_ORDER.map(index => UNIT_BLUEPRINTS[index][0]), 5);
+    return [...exercises, forms, { ...extra, id: `${extra.id}-extra` }];
+  }
+  return [...exercises, forms];
 }
 
 export const LITHUANIAN_UNITS = Object.freeze(COURSE_ORDER.map((sourceIndex, unitIndex) => {
@@ -400,7 +408,8 @@ export const LITHUANIAN_UNITS = Object.freeze(COURSE_ORDER.map((sourceIndex, uni
                 : 'Can-do checkpoint',
       isCheckpoint: sessionIndex === 5,
       vocabulary: sessionIndex < 2 ? phrases.slice(sessionIndex * 4, sessionIndex * 4 + 4) : [],
-      durationMinutes: sessionIndex >= 3 ? 9 : 7,
+      exerciseRevision: unitIndex >= 2 ? 3 : 2,
+      durationMinutes: (sessionIndex >= 3 ? 9 : 7) + (unitIndex >= 2 ? 2 : 0),
       exercises: Object.freeze(makeExercises(unit, sessionIndex))
     })))
   });
@@ -426,7 +435,7 @@ export function validateLithuanianCurriculum() {
     for (const session of unit.sessions) {
       if (ids.has(session.id)) errors.push(`Duplicate session ID: ${session.id}`);
       ids.add(session.id);
-      if (session.exercises.length < 5 || session.exercises.length > 7) errors.push(`${session.id} must contain 5–7 exercises.`);
+      if (session.exercises.length < 5 || session.exercises.length > 8) errors.push(`${session.id} must contain 5–8 exercises.`);
       if (session.exercises[0]?.type !== 'pattern' || !session.exercises[0]?.guide) errors.push(`${session.id} must begin with authored teaching.`);
       for (const exercise of session.exercises) {
         if (!exercise.answer || !exercise.phrase?.en || !exercise.outcomeTag) errors.push(`${exercise.id} is incomplete.`);

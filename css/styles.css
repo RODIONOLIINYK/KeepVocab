@@ -1984,3 +1984,25 @@ body[data-course-id="english"] .nav-links{width:min(100%,560px)}
 
 .settings-actions [hidden]{display:none!important}
 .lesson-learning-support{padding:18px 20px;margin:18px 0;border:1px solid var(--border-color,#dce8de);border-radius:16px;background:var(--bg-body,#f7faf8);text-align:left}.lesson-teaching-pair{display:flex;align-items:baseline;justify-content:space-between;gap:20px;padding:10px 0}.lesson-teaching-pair strong{font-size:1.3rem;color:var(--text-main,#19233a)}.lesson-teaching-pair>span{font-size:.95rem;color:var(--text-secondary,#5f6e65)}.lesson-learning-support>p{font-size:.8rem;line-height:1.5;color:var(--text-secondary,#5f6e65);margin:8px 0}.lesson-learning-support summary{cursor:pointer;font-size:.85rem;font-weight:600;padding:10px 0;color:var(--primary-green,#228449)}.lesson-learning-support .grammar-guide{margin-top:12px}.lesson-learning-support .grammar-example{display:none}@media(max-width:600px){.lesson-learning-support{padding:14px}.lesson-teaching-pair{flex-wrap:wrap;gap:4px 16px}.lesson-teaching-pair strong{font-size:1.15rem}}
+
+/* Review individual unknown words before adding them to the Library. */
+.lesson-word-review{width:100%;text-align:left;min-width:0}
+.lesson-word-review h2{font-size:1.2rem;margin-bottom:8px}
+.lesson-word-review>p{color:var(--text-muted);line-height:1.5;margin-bottom:14px}
+.lesson-word-options{display:flex;flex-wrap:wrap;gap:8px}
+.lesson-word-option{max-width:100%;border:1px solid var(--border-card);border-radius:12px;background:#f8fafc}
+.lesson-word-option:has(input:checked){width:100%;border-color:#86efac;background:#f0fdf4}
+.lesson-word-toggle{display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 14px;cursor:pointer}
+.lesson-word-toggle input{width:18px;height:18px;accent-color:#16a34a}
+.lesson-word-option [data-word-details]{padding:0 14px 14px;overflow-wrap:anywhere}
+.lesson-word-option [data-word-details] p{color:var(--text-muted);margin-bottom:10px}
+.lesson-word-option [data-word-details] label{display:block;font-size:.85rem;margin-bottom:6px}
+.lesson-word-option [data-word-meaning]{box-sizing:border-box;width:100%;min-height:44px;padding:10px;border:1px solid var(--border-card);border-radius:8px;margin-bottom:8px;font-size:1rem}
+.lesson-word-option [data-word-status]{display:block;margin-top:6px}
+
+.lesson-form-focus{width:min(100%,680px);margin:0 auto 18px;padding:18px;border:1px solid #bbf7d0;border-radius:16px;background:#f0fdf4;box-sizing:border-box}
+.lesson-form-focus p{line-height:1.6;margin:8px 0}
+.lesson-form-sentence{display:block;font-size:1.25rem;margin:18px 0}
+.lesson-form-focus details{margin-top:12px}.lesson-form-focus summary{cursor:pointer;font-weight:700;min-height:36px}
+.lesson-form-table{overflow-x:auto}.lesson-form-table table{width:100%;border-collapse:collapse;font-size:.85rem;text-align:left}
+.lesson-form-table th,.lesson-form-table td{padding:8px;border-bottom:1px solid #bbf7d0}.lesson-form-table caption{text-align:left;font-weight:700}

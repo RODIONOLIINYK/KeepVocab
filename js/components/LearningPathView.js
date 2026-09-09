@@ -3,7 +3,7 @@ import { PATH_STAGES, LITHUANIAN_UNITS, LITHUANIAN_SESSIONS } from '../data/lith
 import { currentSessionId, isSessionUnlocked } from '../services/lessonEngine.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
 
-const lessonPurposes = ['Learn each phrase while answering with help.', 'Build useful phrases with the new forms.', 'Connect familiar words to their sounds.', 'Use what you know in a short exchange.', 'Retrieve and apply the language again.', 'Check this module and revisit earlier learning.'];
+const lessonPurposes = ['Learn each phrase while answering with help.', 'Practise singular, plural and case endings in context.', 'Connect familiar words to their sounds.', 'Use what you know in a short exchange.', 'Retrieve and apply the language again.', 'Check this module and revisit earlier learning.'];
 
 export function renderLearningPathView(container, navigate) {
   if (driveSync.getActiveCourseId() !== 'lithuanian') {
@@ -25,7 +25,7 @@ export function renderLearningPathView(container, navigate) {
   const resume = profile.lessonAttempts?.[next.id]?.status === 'in-progress';
   const percent = Math.round(totalComplete / LITHUANIAN_SESSIONS.length * 100);
   container.innerHTML = `<main class="curriculum-shell">
-    <header class="curriculum-heading"><div><span class="learning-kicker">YOUR LANGUAGE, ONE DAY AT A TIME</span><h1>Learn Lithuanian</h1><p>A clear route from first words to everyday conversations.</p></div><span class="status-pill connected">A1 foundations → A2 practice</span></header>
+    <header class="curriculum-heading"><div><span class="learning-kicker">YOUR LANGUAGE, ONE DAY AT A TIME</span><h1>Learn Lithuanian</h1><p>Build everyday Lithuanian with practice in gender, plurals and case endings.</p></div><span class="status-pill connected">A1 foundations → A2 practice</span></header>
     <section class="curriculum-next content-card"><div><span class="learning-kicker">${finished ? 'COURSE COMPLETE' : resume ? 'PICK UP WHERE YOU LEFT OFF' : 'YOUR NEXT STEP'} · MODULE ${currentUnit.unitNumber}</span><h2>${escapeHtml(currentUnit.title)}</h2><p>${escapeHtml(currentUnit.outcome)}</p><div class="curriculum-next-meta"><span><i class="fa-regular fa-clock"></i> ${next.durationMinutes} min</span><span>Lesson ${next.sessionNumber} of 6</span><span>${escapeHtml(currentUnit.cefr)}</span></div><button class="btn-green-solid" data-session-id="${next.id}"><i class="fa-solid fa-play"></i> ${finished ? 'Revisit the course' : resume ? 'Resume lesson' : totalComplete ? 'Continue learning' : 'Start your first lesson'}</button></div><img src="assets/keepvocab-sprout-mascot.webp" alt="Sprig reading a book"></section>
     <div class="curriculum-progress"><span>${totalComplete} of ${LITHUANIAN_SESSIONS.length} lessons completed</span><progress max="100" value="${percent}" aria-label="Course progress">${percent}%</progress><strong>${percent}%</strong></div>
     <div class="curriculum-body"><section><div class="curriculum-section-title"><h2>Your course</h2><label>Section<select data-course-section>${PATH_STAGES.map(stage => `<option value="${stage.number}" ${stage.id === currentStage.id ? 'selected' : ''}>${stage.number}. ${escapeHtml(stage.title)}</option>`).join('')}</select></label></div><div data-course-units></div></section>

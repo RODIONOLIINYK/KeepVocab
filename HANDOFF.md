@@ -1,69 +1,110 @@
-# KeepVocab handoff
+# KeepVocab — active-work handoff
 
-KeepVocab is a local-first browser vocabulary trainer with automatic, reinstall-safe Google Drive backup. Dictionary lookup presents distinct senses so the learner saves the exact intended meaning. Vocabulary and Leitner progress are grouped by the real month and year in which each word was added.
+Updated 2026-09-09, Europe/Vilnius. Written at the user's urgent request.
 
-## AI Speaking
+## Start here
 
-The Speak route contains 84 goal-based lessons across everyday life, travel, work, social, academic, and advanced tracks, including 58 B2 lessons plus adaptive free conversation. Every preview shows a five-stage Warm up → Build → Challenge → Resolve → Improve plan, role-specific questions, a realistic complication, and target phrases. Live sessions use Gemini's native-audio WebSocket API only after an explicit Start action, stream microphone audio, play the coach response, display both transcriptions, allow typed replies, and store completion progress locally. Mira opens every lesson herself, keeps turns moving with specific follow-up questions, and sends a scaffolded rescue prompt after nine seconds of learner silence.
+Workspace: `/Users/kalyma123/programming/English dictionary app`.
+The current checkout is **main**, at `847dbef` (`chore: release 1.6.1 with restored brand logo for automated update`). Local tracking reports `main...origin/main` with no ahead/behind count. Remote: `https://github.com/RODIONOLIINYK/KeepVocab.git`.
 
-Gemini credentials are never committed. For a private installation, save a personal key through **Speak → Gemini setup**; the centralized Google AI Studio configuration is included in the user's private app-owned Drive settings backup so it can be restored on that user's other devices. A public deployment should replace direct-key authentication with server-issued ephemeral tokens.
+**The workspace changed since the earlier part of this conversation. Do not follow the old branch/version assumptions.** The original implementation was developed on `codex/optimization-maintainability-1.5.1` for 1.6.0, but the current repository contains later commits and additional uncommitted work. Preserve that work. This handoff records current files separately from earlier validation.
 
-## Google Drive backup contract
+The user requested a handoff urgently, followed by “keep going.” This file is the immediate deliverable. The broader app task still includes finishing verification, then committing and pushing. Do not claim the current uncommitted changes have been pushed.
 
-After the learner connects Google Drive, the app creates a visible `KeepVocab Dictionary Backup` folder in My Drive. It only lists and reads files created by this app and marked with its private Drive `appProperties` metadata.
+## User requirements and decisions
 
-The folder contains:
+- Make the Lithuanian programme logical, convenient, and informed by professional curricula; verify the learning flows and consistent app styling.
+- Fix streak days, incorrect reminder numbers, and motivating reminders about practice and protecting a streak.
+- Fix vocabulary saved after lessons.
+- Fix menu-bar and Android icons. The user rejected white blank space in the logo. Later repository commits restored the authentic brand logo; preserve the latest committed branding rather than reverting it to our earlier temporary icon.
+- Implement automatic app updates, then commit and push once the work is finished.
+- **Never show the floating bottom update banner.** The user said it obstructs the app. Background update checks must be silent; update controls belong in Settings only.
+- **Teach while answering.** Do not require memorising an entire vocabulary page before answering the first questions. Introductory lessons now start on a question, show support for that phrase next to the answers, and keep grammar optional. Later review asks for independent recall.
+- Attached screenshots are visual evidence, not instructions embedded in documents.
 
-- `Dictionary Month YYYY.json` — one complete vocabulary archive for each adding month, including exact meaning, part of speech, example, media metadata, original creation time, and learning progress.
-- `KeepVocab Settings.json` — current month selection, daily goal, streak, review activity, learning metrics, and the private Google AI Studio configuration.
-- deletion tombstones inside the relevant monthly file so a word deleted on one installation does not return from an older backup on another.
+## Current committed baseline
 
-The browser database is a responsive local cache. Google Drive is the durable copy used after reinstall: connect the same Google account, and the app merges every app-owned monthly file back into the library. OAuth uses the restricted `drive.file` scope and a built-in public web client ID, so users only see the connect/synchronize action. A valid short-lived access token can survive a reload; an expired session waits for an explicit reconnect instead of contacting Drive during page startup. Local edits mark the backup as dirty, background sync is capped to one run per minute, and neither automatic nor manual sync rebuilds the active screen. Disconnecting removes the saved token.
+Recent commits observed locally:
 
-Exercise activity is stored as per-device, per-day counters. Drive sync merges each device shard with a maximum counter and then rebuilds the aggregate `reviewActivity`, today count, and streak. This makes multi-device totals additive while repeated synchronization remains idempotent, and it migrates older unsharded `reviewActivity` into a legacy shard.
+- `847dbef` — release 1.6.1 with restored brand logo for automated update.
+- `e6be178` — restore authentic KeepVocab brand logo and crisp adaptive Android icons.
+- `816bee7` — release 1.6.0 with overhauled Lithuanian curriculum, interactive lessons, streak system, and icons.
 
-New words always use the device's current calendar month even if an older month is being viewed. Editing a card preserves its stable record identity, and the next sync updates the same monthly record instead of creating another sense.
+The baseline includes the 36-module / 216-lesson prerequisite order, Learn → Forms → Listen → Conversation → Review → Checkpoint routine, immediate lesson feedback, lesson resumption, and a two-thirds checkpoint threshold. Stable completed lesson IDs are retained. Introductory lessons skip the standalone guide and teach beside questions. Floating update UI was removed, with a regression test preventing background checks from creating an overlay.
 
-When several dictionary meanings are selected, the Library groups them into one word card while each meaning keeps its own definition, example, image, and review schedule. Practice sessions contain at most 10 questions, prioritize weak and overdue meanings, and use at most one meaning for a spelling in a session so answer choices stay unambiguous.
+`studyActivity.js` derives streaks from local-calendar activity (today or yesterday), removes the former 90-day truncation, and recovers historical uncounted lesson answers. Drive sync merges per-device activity independently for each course. Repeating reminder copy avoids frozen numeric counts; dated streak warnings are prepared for today before activity or tomorrow after activity. Native schedules are serialized and stale alarms cancelled. Speaking activity was moved out of transcript rendering and into completion, with a duplicate-finish guard.
 
-Use It and workout sentence checks accept normal grammatical forms of the dictionary headword, including plurals, possessives, verb tense/participles, comparison, and common irregular forms. They do not enforce an arbitrary four-word minimum, so concise sentences such as `He's a lush.` and `I like cuddling.` are accepted. Weak Words uses the same compact answer field as the other workout exercises and gives sentence-specific feedback instead of the generic `Answer: word` response. Successful lookups always display and save the canonical spelling returned by the dictionary API; manual definitions remain an explicit fallback when no dictionary entry is available.
+Updater architecture: `js/services/appUpdates.js`, `desktop/updater.cjs`, and Android `AppUpdatePlugin.java`. Stable GitHub releases are checked automatically; installation is requested in Settings. Signed macOS distribution builds can use electron-updater replacement/restart. Current unsigned personal macOS builds open a verified DMG for manual replacement. Android installation requires OS confirmation and compatible signing keys. Publishing a git commit alone does not publish update assets.
 
-Independent learning modes use exposure-aware rotation instead of taking the same deterministic top-priority words. Flashcards, Visual Match, Match Sprint, Context, Use It, and Speaking balance recent misses with vocabulary that has not appeared recently in that specific mode. Difficult words occupy a bounded focus share rather than taking over a full set, while recent successful answers cool down. Every meaning stores total recalled/missed answers, success/failure streaks, selection timestamps, and per-mode counts in its Drive-backed word record; the Library displays the answer totals. Daily Practice retains its separate due/weak/growth session scheduler.
+## Uncommitted work present on September 9
 
-KeepVocab does not use an in-app notification center. When Android system notifications are enabled, it schedules the adaptive daily reminder plus an optional late streak safeguard only if the learner still has zero exercise activity that day. Completing an exercise refreshes the schedule and removes the unnecessary safeguard. Reminder preferences are ordinary settings and therefore travel through the private Drive settings backup.
+These changes were already present when the urgent handoff resumed. Review and preserve them; their original editing context is not all available in this conversation.
 
-## Run and test
+### Individual lesson-word selection
 
-```bash
-python3 -m http.server 8085 --bind 127.0.0.1
-node --test
-```
+- New `js/services/lessonVocabulary.js` and `tests/lessonVocabulary.test.mjs`.
+- `LessonMode.js` now presents a post-lesson selection of individual unknown words, looks up or accepts each word's own meaning, and saves only selected words. Sentence translations are not reused as individual-word definitions. Example sentences remain attached.
+- Empty selection adds nothing; duplicates preserve existing review progress.
+- Selection state uses `unknownWords` and `vocabularyReviewPending`; `lessonEngine.js` resumes completed attempts whose vocabulary review is pending.
+- This supersedes the earlier automatic addition of all introduced phrases. Do not restore that old behaviour without checking newer user context.
 
-Open `http://127.0.0.1:8085`. Keep this exact origin in the Google OAuth authorized JavaScript origins. The installed PWA keeps the same origin (including port 8085), while the service worker keeps the interface available offline.
+### Authored grammar production exercises
 
-### macOS desktop app
+- New `js/data/lithuanianForms.js` and `tests/lithuanianForms.test.mjs`.
+- 54 authored contrasts across nine topics, covering all seven cases, both genders and singular/plural; four reference declension tables.
+- Modules from the third onward add form-production questions. Explicit base form, sentence gap, requested case/number/gender, accepted inflected form or full sentence, and explanatory feedback.
+- Module revisions use `exerciseRevision: 3` where question lists changed; completed nodes survive and incompatible in-progress attempts restart.
+- Fixed the health explanation: `man skauda gerklę` uses accusative, not nominative.
+- Updated `docs/lithuanian-curriculum.md` explains sources, coverage and limitations.
 
-```bash
-npm run mac:dev
+### Version/build and Android update changes
+
+- `package.json` is **1.7.0**; Android versionCode is **19**.
+- New generated `js/services/version.js`; `scripts/build-web.mjs` writes it from package.json. Android versionName now reads package.json too.
+- Service-worker cache is `keepvocab-v1700`, with new modules precached.
+- Java updater changes parse incoming size flexibly with strict size bounds and SHA-256 digest validation. Package/signature/version checks are preserved.
+
+Modified existing files observed: `android/app/build.gradle`, Android `AppUpdatePlugin.java`, `css/styles.css`, `docs/lithuanian-curriculum.md`, `LearningPathView.js`, `LessonMode.js`, `lithuanianCurriculum.js`, `appUpdates.js`, `lessonEngine.js`, `scripts/build-web.mjs`, `sw.js`, `tests/lithuanianCourse.test.mjs`, and `tests/studyProgram.test.mjs`. New files are listed above. `HANDOFF.md` had been deleted in the working tree; this requested handoff replaces it.
+
+## Verification and honest limits
+
+On September 6, before the later uncommitted additions, the suite passed **240 tests**. Android debug and universal macOS builds succeeded on prior iterations. Browser checks covered introductory lessons, saved-answer resumption without double counting, matching, cloze, word order, dictation help, offline dialogue, adaptive-translation fallback, review completion and checkpoint unlocking. The complete checkpoint UI run was not finished.
+
+The last observed introductory screen was `What does “Ačiū.” mean?`, with “Ačiū. — Thank you.” beside the answers and an optional grammar disclosure. The browser reported width 493, document width 493, and no `.app-update-banner`. Earlier desktop and 390px mobile checks found no horizontal overflow. These results do **not** verify the newer individual-word picker or grammar additions now in the workspace.
+
+A fresh `npm test` was run for this handoff; see `/tmp/keepvocab-handoff-tests.log` and the result appended below. Earlier `/tmp/keepvocab-tests.log` and platform build logs are gone. Do not cite them as current evidence.
+
+Existing local artifacts have September 6 timestamps: `dist/macos/KeepVocab-1.6.0-macOS-universal.dmg`, its ZIP/blockmaps, and `android/app/build/outputs/apk/debug/app-debug.apk`. They predate current uncommitted changes. Rebuild before delivery. Actual Android installation, alarm delivery on a physical device, and signed macOS update replacement have not been verified in this conversation. AI/live audio depends on valid configuration; fallback checks are not proof that external AI or device audio works.
+
+## Next steps
+
+1. Read current git status and diffs; retain the later work and branding. Do not reset files to the earlier 1.6.0 implementation.
+2. Review the Android updater size/digest changes and fix the unconditional download-size bound before shipping. Check installed/release version and signing-key compatibility.
+3. Validate the new unknown-word picker (empty selection, lookup failure, manual meaning, duplicates, reload/resume), form drills and feedback, and Settings-only update controls. Confirm new practice never brings back the obstructing banner or upfront memorisation requirement.
+4. Resolve any failures, run `npm test` and `git diff --check`, and rebuild both platforms after final edits. Update versionCode/version/cache consistently if creating a newer release.
+5. Commit and push the completed changes under the user's existing authorization. Use the current branch context; the old working branch is stale. Do not force push or publish a release without checking applicable user authorization.
+6. Report what was tested and any device/signing limits; link the final installers if rebuilt. Update this handoff if work continues.
+
+## Commands and environment
+
+```sh
+npm test
+npm run android:sync
+JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home android/gradlew -p android assembleDebug
 npm run mac:build
+python3 -m http.server 8085 --bind 127.0.0.1
 ```
 
-The desktop build packages the same `www` assets in a sandboxed Electron window. Electron resolves the app's existing `http://127.0.0.1:8085` OAuth origin internally without opening a network listener or occupying a local port, preserving Drive authorization and offline service-worker behavior. `mac:build` creates a universal Intel/Apple-silicon DMG under `dist/macos/`. The local build is unsigned and unnotarized until it is rebuilt with an Apple Developer signing identity; macOS may therefore require Control-click → Open on first launch.
+Android SDK previously: `/opt/homebrew/share/android-commandlinetools`. Check availability after the environment/date change. Avoid running two `build:web`/sync operations at once; both recreate `www`.
 
-## Main files
+App: vanilla JavaScript, Capacitor Android, Electron macOS, local storage and app-owned Google Drive backup. Preserve local progress and credentials. No secrets belong in commits. The exact `http://127.0.0.1:8085` origin is important for Google OAuth and packaged desktop behaviour.
 
-- `index.html`: app shell, Drive backup controls, and learning-mode launchers.
-- `js/app.js`: routing, study interactions, Google Drive connection, and automatic sync scheduling.
-- `js/services/driveSync.js`: local persistence, dedicated-folder Drive API access, monthly merge/restore, settings backup, and deletion tombstones.
-- `js/services/dictionaryApi.js`: validated dictionary lookup using the maintained FreeDictionaryAPI Wiktionary endpoint, a short exact-definition Datamuse fallback, distinct senses, tightly bounded provider attempts, and an offline cache. The menu-bar flow no longer waits on a spelling-correction chain or reports a misleading timeout when the retired provider is unresponsive.
-- `js/services/exampleSearch.js`: sense-checked Tatoeba example assignment with source and license metadata. Multi-sense words require definition evidence, known cross-sense contradictions are rejected, and the musical `augment` sense repairs the recurring augmented-reality mismatch with a purpose-written example.
-- `js/services/srsEngine.js`: Leitner scheduling and streak persistence.
-- `js/components/LibraryView.js`, `ReviewView.js`, `StatsView.js`: editable monthly library, review, status lists, and box explorer.
-- `js/components/PracticeModes.js`, `VisualMatchMode.js`, `MatchSprintMode.js`: active learning modes.
-- `js/services/imageSearch.js`: Pexels is the primary stock-photo source when a personal key is configured under Settings; the Library editor contains no credential controls. Saved provider settings are read automatically, Pexels results keep the API's relevance order, and three-word queries avoid over-specific searches. Openverse, Wikimedia Commons, Library of Congress, and NASA Images remain concurrent keyless fallbacks, with up to 10 results deduplicated and round-robin mixed by provider. Before a result can be displayed or saved, the browser validates image delivery with two concurrent loads and one delayed retry, preserving provider/ranking order while omitting URLs that still fail. The Pexels provider/key record is included in `KeepVocab Settings.json` and restored through Drive alongside Google AI Studio settings. Concrete physical-object senses use the object name itself (`wrench`, `laptops`) as the query; non-object Gemini scenes remain constrained to 5–7 concrete words showing a visible subject + action + setting, and outputs that repeat an abstract word or paraphrase its definition are discarded. The Library searches only the highlighted concept, so suggested and custom text have identical behavior; the saved image remains in a separate preview and is never injected into fresh query results. That saved image can originate from initial or bulk add, an earlier Library result page, a custom URL or upload, Visual Match's automatic fallback, image generation, or Drive restore. More images cycles the three visible concepts before requesting successive provider pages. The Library's single Edit flow also accepts an HTTPS image link or optimized JPEG/PNG/WebP upload; a per-meaning custom interpretation is saved in `imageCustomConcept` and searched first.
-- `js/services/syncPolicy.js`: one-minute Drive sync throttle used by the background scheduler.
-- `js/data/speakingLessons.js`: the structured 36-lesson speaking curriculum and Gemini coaching instructions.
-- `js/components/SpeakingMode.js`, `js/services/geminiLive.js`: the responsive speaking hub, live lesson lifecycle, transcript/progress UI, and native-audio WebSocket transport.
-- `icons/keepvocab-mark-v2*.png`: the shared generated logo used by the header and installed PWA.
-- `assets/fonts`: local Inter and Outfit webfonts for consistent cross-platform typography.
-- `sw.js`: same-origin offline caching.
+The in-app browser was used through `mcp__node_repl__js` and the Browser plugin while available, with persistent `browser` and `tab` variables. Its viewport override was reset. Tool availability and sessions may have changed; discover current browser tools and read applicable instructions before continuing. Do not wipe the user's browser data. Earlier standalone Playwright scripts were temporary fallbacks, not repository tests.
+
+Research and release contracts: `docs/lithuanian-curriculum.md` and `docs/updates.md`. The previous committed handoff, if needed for older architecture details, remains accessible with `git show HEAD:HANDOFF.md`.
+
+## Fresh handoff verification — September 9
+
+- `npm test` passes **253/253 tests** (zero failures) and `git diff --check` passes.
+- Android debug APK built with versionCode 19, versionName 1.7.0 (`KeepVocab-1.7.0-Android-debug.apk`).
+- macOS universal distribution DMG and ZIP built for 1.7.0 (`KeepVocab-1.7.0-macOS-universal.dmg`, `KeepVocab-1.7.0-universal-mac.zip`).

@@ -1,4 +1,5 @@
-export const APP_VERSION = '1.6.1';
+import { APP_VERSION } from './version.js';
+export { APP_VERSION };
 export const RELEASE_API = 'https://api.github.com/repos/RODIONOLIINYK/KeepVocab/releases/latest';
 const RELEASE_PREFIX = 'https://github.com/RODIONOLIINYK/KeepVocab/releases/download/';
 
@@ -48,7 +49,13 @@ export async function checkAppUpdate() {
 export async function installAppUpdate(update) {
   if (globalThis.keepVocabDesktop?.installUpdate) return globalThis.keepVocabDesktop.installUpdate();
   const android = androidUpdater();
-  if (android) return android.downloadAndInstall(update);
+  if (android) {
+    return android.downloadAndInstall({
+      url: update.url,
+      sha256: update.sha256 || '',
+      size: Number(update.size) || 0
+    });
+  }
   const registration = await globalThis.navigator?.serviceWorker?.getRegistration();
   if (registration?.waiting) {
     navigator.serviceWorker.addEventListener('controllerchange', () => location.reload(), { once: true });

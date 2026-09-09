@@ -5,12 +5,16 @@ import { startLessonAttempt, recordLessonResponse, advanceLessonAttempt, answerM
 import { describeSpeechError, getSpeechAvailability, playAudioUrl, speakText } from '../services/speechService.js?v=1602';
 import { getCachedOrGenerateDialogueAudio } from '../services/geminiTts.js?v=1602';
 import { buildAdaptiveContext, evaluateListeningResponse, evaluateTranslationResponse, generateDialogueActivity, generateListeningActivity, generateTranslationActivity, processDialogueTurn } from '../services/adaptiveLessons.js?v=1602';
+import { lessonWordCandidates, lessonVocabularyRecords, missingLessonWords, recordVocabularySelection } from '../services/lessonVocabulary.js?v=1602';
+import { fetchLithuanianWordDetails } from '../services/lithuanianDictionary.js?v=1602';
+export { lessonVocabularyRecords } from '../services/lessonVocabulary.js?v=1602';
+import { CASE_LABELS, NOUN_FORM_TABLES } from '../data/lithuanianForms.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
 
 let lessonSpeechActive = false;
 
 function exerciseLabel(type) {
-  return ({ pattern: 'Guidebook', cloze: 'Missing word', dictation: 'Dictation', matching: 'Matching', 'meaning-choice': 'Meaning choice', 'listening-choice': 'Listening', 'ai-listening': 'AI listening', 'ai-dialogue': 'AI dialogue', 'adaptive-translation': 'Adaptive translation', 'read-repeat': 'Speaking practice', 'role-play': 'Speaking practice', 'typed-recall': 'Typed recall', 'word-order': 'Word order' })[type] || type.replaceAll('-', ' ');
+  return ({ 'form-recall': 'Endings practice', pattern: 'Guidebook', cloze: 'Missing word', dictation: 'Dictation', matching: 'Matching', 'meaning-choice': 'Meaning choice', 'listening-choice': 'Listening', 'ai-listening': 'AI listening', 'ai-dialogue': 'AI dialogue', 'adaptive-translation': 'Adaptive translation', 'read-repeat': 'Speaking practice', 'role-play': 'Speaking practice', 'typed-recall': 'Typed recall', 'word-order': 'Word order' })[type] || type.replaceAll('-', ' ');
 }
 
 function matchingControls(exercise) {
@@ -63,11 +67,16 @@ function answerControls(exercise) {
   if (['dialogue', 'mission'].includes(exercise.type)) {
     return `<div class="dialogue-answer-row"><label for="lesson-answer">Your reply in Lithuanian</label><textarea id="lesson-answer" rows="2" lang="lt" autocomplete="off" spellcheck="false" placeholder="Type the requested reply…"></textarea></div><button type="submit" class="btn-green-solid">Check reply</button>`;
   }
-  const placeholder = exercise.type === 'cloze' ? 'Missing Lithuanian word' : 'Type in Lithuanian';
+  const placeholder = ['cloze', 'form-recall'].includes(exercise.type) ? 'Missing Lithuanian word' : 'Type in Lithuanian';
   return `<label class="lesson-input-label" for="lesson-answer">Your answer</label><input id="lesson-answer" lang="lt" autocomplete="off" spellcheck="false" placeholder="${placeholder}"><button type="submit" class="btn-green-solid">Check</button>`;
 }
 
 function exerciseContext(exercise) {
+  if (exercise.type === 'form-recall') {
+    const focus = exercise.formFocus;
+    return `<section class="lesson-form-focus"><span class="learning-kicker">CHOOSE THE ENDING</span><p>Base form: <strong lang="lt">${escapeHtml(focus.base)}</strong></p><p>${escapeHtml(focus.meaning)}</p><strong class="lesson-form-sentence" lang="lt">${escapeHtml(focus.context)}</strong><p>${escapeHtml(focus.grammaticalCase)} · ${escapeHtml(focus.number)} · ${escapeHtml(focus.gender)}</p>
+      <details data-form-reference><summary>Help: singular and plural forms</summary><p>First choose the sentence role, then number and noun class. Change an adjective to agree with its noun. These four models are a reference; other classes and exceptions need their own forms.</p>${NOUN_FORM_TABLES.map(table => `<details><summary>${escapeHtml(table.word)} · ${table.gender}</summary><div class="lesson-form-table"><table><caption>${escapeHtml(table.word)}</caption><thead><tr><th>Case</th><th>Singular</th><th>Plural</th></tr></thead><tbody>${CASE_LABELS.map((label, index) => `<tr><th scope="row">${label}</th><td lang="lt">${table.singular[index]}</td><td lang="lt">${table.plural[index]}</td></tr>`).join('')}</tbody></table></div></details>`).join('')}<p>For this exercise: ${escapeHtml(focus.explanation)}</p></details></section>`;
+  }
   if (exercise.type !== 'cloze') return '';
   return `<div class="lesson-cloze-context">
     <div><span>ENGLISH CUE</span><p>${escapeHtml(exercise.phrase.en)}</p></div>
@@ -105,6 +114,7 @@ function coachMarkup(exercise) {
 }
 
 function hintText(exercise) {
+  if (exercise.type === 'form-recall') return `<strong>${escapeHtml(exercise.formFocus.explanation)}</strong><br><span lang="lt">${escapeHtml(exercise.answer)}</span>`;
   if (exercise.type === 'matching') return '<strong>How it works:</strong> Pair one card from each column. Completed pairs disappear from play.';
   if (exercise.type === 'cloze') return `<strong>Small hint:</strong> The missing word starts with “${escapeHtml(exercise.clozeAnswer?.[0] || '')}”.<br><span>English rescue: ${escapeHtml(exercise.phrase.en)}</span>`;
   if (exercise.type === 'word-order') return `<strong>Start here:</strong> ${escapeHtml(exercise.answer.split(/\s+/)[0])}<br><span>English rescue: ${escapeHtml(exercise.phrase.en)}</span>`;
@@ -117,6 +127,7 @@ function adaptiveSourceLabel(activity) {
 }
 
 function learningSupport(exercise, unit) {
+  if (exercise.type === 'form-recall') return '';
   const phrases = exercise.type === 'matching' ? exercise.matchPairs : [exercise.phrase];
   return `<aside class="lesson-learning-support" aria-label="Learn as you answer"><span class="learning-kicker">LEARN AS YOU GO</span>
     ${phrases.map(phrase => `<div class="lesson-teaching-pair"><strong lang="lt">${escapeHtml(phrase.lt)}</strong><span>${escapeHtml(phrase.en)}</span></div>`).join('')}
@@ -126,37 +137,6 @@ function learningSupport(exercise, unit) {
 
 function transcriptMarkup(activity, hidden = true) {
   return `<div class="adaptive-transcript" data-adaptive-transcript ${hidden ? 'hidden' : ''}>${(activity.transcript || []).map(turn => `<p><strong>${escapeHtml(turn.speaker)}</strong><span lang="lt">${escapeHtml(turn.text)}</span></p>`).join('')}</div>`;
-}
-
-export function lessonVocabularyRecords(session, unit) {
-  const phrases = [];
-  const seen = new Set();
-  for (const phrase of session.vocabulary || []) {
-    const key = `${phrase?.lt || ''}|${phrase?.en || ''}`.toLocaleLowerCase('lt-LT');
-    if (!phrase?.lt || !phrase?.en || seen.has(key)) continue;
-    seen.add(key);
-    phrases.push(phrase);
-  }
-  return phrases.map(phrase => ({
-    id: `lt-course-${unit.id}-v2-${encodeURIComponent(phrase.lt.toLocaleLowerCase('lt-LT'))}`,
-    senseId: `lt-course-${unit.id}-sense-v2-${encodeURIComponent(phrase.lt.toLocaleLowerCase('lt-LT'))}`,
-    courseId: 'lithuanian', languageCode: 'lt', word: phrase.lt.replace(/[.!?]+$/u, ''), lemma: phrase.lt.replace(/[.!?]+$/u, ''),
-    example: phrase.lt, lessonId: session.id,
-    definition: phrase.en, translation: phrase.en, acceptedForms: phrase.acceptedForms,
-    partOfSpeech: /\s/.test(phrase.lt.trim()) ? 'phrase' : 'word', grammaticalTags: [`Module ${unit.unitNumber}`, unit.grammar], source: 'lesson'
-  }));
-}
-
-function addLessonVocabularyToLibrary(session, unit) {
-  const existing = driveSync.getAllWords();
-  const vocabularyKey = value => String(value || '').normalize('NFC').trim().toLocaleLowerCase('lt-LT').replace(/[.!?]+$/u, '');
-  const missing = lessonVocabularyRecords(session, unit).filter(candidate => !existing.some(word =>
-    word.id === candidate.id || ((word.courseId || 'english') === 'lithuanian'
-      && vocabularyKey(word.word) === vocabularyKey(candidate.word)
-      && String(word.definition || '').trim().toLowerCase() === candidate.definition.trim().toLowerCase())
-  ));
-  if (!missing.length) return 0;
-  return driveSync.addWords(missing).length;
 }
 
 function renderExercise(container, session, attempt, navigate) {
@@ -189,19 +169,26 @@ function renderExercise(container, session, attempt, navigate) {
     const profile = driveSync.getCourseProfile('lithuanian') || {};
     driveSync.updateCourseProfile('lithuanian', { lessonAttempts: { ...(profile.lessonAttempts || {}), [session.id]: nextAttempt } });
   };
+  container.querySelector('[data-form-reference]')?.addEventListener('toggle', event => {
+    if (event.currentTarget.open && !event.currentTarget.dataset.counted) {
+      event.currentTarget.dataset.counted = 'true';
+      attempt = { ...attempt, hintsUsed: Number(attempt.hintsUsed || 0) + 1 }; persist(attempt);
+    }
+  });
   let responseFinished = false;
-  const finishResponse = ({ response, correct, skipped = false, unscored = false, hintUsed = false, feedbackDetail = '', modelAnswer = '' }) => {
+  const finishResponse = ({ response, correct, skipped = false, unscored = false, hintUsed = false, feedbackDetail = '', modelAnswer = '', vocabularyPhrases = [] }) => {
     if (responseFinished || !container.querySelector('.lesson-feedback')) return;
     responseFinished = true;
     const alreadyRecorded = attempt.responses?.some(item => item.exerciseId === exercise.id);
     let next = alreadyRecorded ? attempt : recordLessonResponse(attempt, exercise, { response, correct, skipped, unscored, hintUsed });
-    if (!alreadyRecorded) next.responses.at(-1).activityRecorded = true;
+    if (!alreadyRecorded) Object.assign(next.responses.at(-1), { activityRecorded: true, vocabularyPhrases });
     // Persist the answer before counting it so reload/Continue cannot count it twice.
     persist(next);
     if (!alreadyRecorded && !skipped && exercise.type !== 'pattern') {
       driveSync.recordReview();
       recordLearningExercise({ correct, recallType: unscored ? 'speaking' : 'productive' });
     }
+    if (exercise.formFocus) feedbackDetail = `${exercise.answer} — ${exercise.formFocus.explanation}`;
     const feedback = container.querySelector('.lesson-feedback');
     feedback.className = `lesson-feedback show ${unscored || skipped ? 'skipped' : correct ? 'correct' : 'incorrect'}`;
     if (unscored && exercise.type !== 'pattern') feedback.innerHTML = '<i class="fa-solid fa-check"></i><div><strong>Speaking practised.</strong><p>This counts toward your daily activity. Pronunciation was not scored.</p></div>';
@@ -308,7 +295,7 @@ function renderExercise(container, session, attempt, navigate) {
       checkButton.textContent = 'Checking answer…';
       const result = await evaluateListeningResponse(activity, response, adaptiveContext);
       checkButton.textContent = 'Answer checked';
-      finishResponse({ response, correct: result.correct, feedbackDetail: result.feedback, modelAnswer: activity.modelSummary });
+      finishResponse({ response, correct: result.correct, feedbackDetail: result.feedback, modelAnswer: activity.modelSummary, vocabularyPhrases: activity.transcript.map(turn => ({ lt: turn.text })) });
     });
   };
 
@@ -348,7 +335,7 @@ function renderExercise(container, session, attempt, navigate) {
       void speakText(result.partnerReply, { locale: 'lt-LT', rate: adaptiveContext.difficulty.speechRate }).catch(() => {});
       const learnerTurns = history.filter(turn => turn.role === 'learner').length;
       if (result.goalComplete || learnerTurns >= adaptiveContext.difficulty.learnerTurns) {
-        finishResponse({ response: history.filter(turn => turn.role === 'learner').map(turn => turn.text).join(' / '), correct: result.goalComplete || result.accepted, feedbackDetail: result.feedback, modelAnswer: result.correctedReply || activity.supportPhrase || activity.opening });
+        finishResponse({ response: history.filter(turn => turn.role === 'learner').map(turn => turn.text).join(' / '), correct: result.goalComplete || result.accepted, feedbackDetail: result.feedback, modelAnswer: result.correctedReply || activity.supportPhrase || activity.opening, vocabularyPhrases: history.filter(turn => turn.role === 'partner').map(turn => ({ lt: turn.text })) });
         return;
       }
       input.value = '';
@@ -380,7 +367,7 @@ function renderExercise(container, session, attempt, navigate) {
       checkButton.textContent = 'Checking meaning and forms…';
       const result = await evaluateTranslationResponse(activity, response, adaptiveContext);
       checkButton.textContent = 'Translation checked';
-      finishResponse({ response, correct: result.correct, feedbackDetail: result.feedback, modelAnswer: result.correctedAnswer || activity.lithuanianModel });
+      finishResponse({ response, correct: result.correct, feedbackDetail: result.feedback, modelAnswer: result.correctedAnswer || activity.lithuanianModel, vocabularyPhrases: [{ lt: activity.lithuanianModel, en: activity.englishPrompt }] });
     });
   };
 
@@ -445,25 +432,87 @@ function renderComplete(container, session, attempt, navigate) {
   const passed = !session.isCheckpoint || evidence.demonstrated;
   const completedNodeIds = [...new Set([...(profile.completedNodeIds || []), ...(passed ? [session.id] : [])])];
   const canDoEvidence = [...(profile.canDoEvidence || []).filter(item => item.nodeId !== session.id), evidence];
-  let vocabularyAdded = 0;
-  let vocabularyError = '';
-  try { vocabularyAdded = addLessonVocabularyToLibrary(session, unit); }
-  catch { vocabularyError = 'Your progress is saved, but the Library could not be updated. Try saving again.'; }
-  driveSync.updateCourseProfile('lithuanian', { completedNodeIds, canDoEvidence, activeLessonId: null });
+  const candidates = lessonWordCandidates(session, attempt);
+  const selections = new Map((attempt.unknownWords || []).map(item => [item.word, item]));
+  const persistSelections = () => {
+    attempt = recordVocabularySelection(attempt, selections.values());
+    const latest = driveSync.getCourseProfile('lithuanian') || {};
+    driveSync.updateCourseProfile('lithuanian', { lessonAttempts: { ...latest.lessonAttempts, [session.id]: attempt } });
+  };
+  if (!attempt.vocabularyReviewPending) persistSelections();
+  driveSync.updateCourseProfile('lithuanian', { completedNodeIds, canDoEvidence, activeLessonId: session.id });
   const history = driveSync.getSettings().learningStats?.sessionHistory || [];
   if (!history.some(item => item.id === attempt.id)) recordSessionCompletion({ ...session, id: attempt.id }, { kind: 'lesson', correct: evidence.correct, exercises: evidence.total });
   container.innerHTML = `<main class="lesson-shell lesson-complete-shell"><section class="lesson-complete-card">
     <img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="learning-kicker">${passed ? 'LESSON COMPLETE' : 'CHECKPOINT REVIEW'}</span><h1>${passed ? 'Puiku! Keep it growing.' : 'A little more practice.'}</h1>
     <p>${passed ? escapeHtml(unit.outcome) : 'Review the phrases, then try this checkpoint again. Answer at least two thirds correctly to unlock the next module.'}</p>
-    <p>${vocabularyError || (vocabularyAdded ? `${vocabularyAdded} new ${vocabularyAdded === 1 ? 'entry' : 'entries'} added to your Lithuanian Library for spaced review.` : session.vocabulary.length ? 'These lesson entries are already in your Library.' : 'You revisited your vocabulary. No duplicate entries were added.')}</p>
-    <div class="lesson-result-grid"><div><strong>${evidence.correct}/${evidence.total}</strong><span>scored answers</span></div><div><strong>${attempt.hintsUsed || 0}</strong><span>hints</span></div><div><strong>+${vocabularyAdded}</strong><span>Library entries</span></div></div>
-    <button class="btn-green-solid" data-back-path>${passed ? 'Continue learning' : 'Back to course'}</button>
+    <section class="lesson-word-review" aria-labelledby="unknown-words-title">
+      <h2 id="unknown-words-title">Which words didn’t you understand?</h2>
+      <p>Select only the words you want to learn. Check each English meaning before saving. Leave words you know unchecked.</p>
+      <div class="lesson-word-options">${candidates.map((item, index) => `<div class="lesson-word-option">
+        <label class="lesson-word-toggle"><input type="checkbox" data-unknown-word="${index}" ${selections.has(item.word) ? 'checked' : ''}><strong lang="lt">${escapeHtml(item.word)}</strong></label>
+        <div data-word-details="${index}" ${selections.has(item.word) ? '' : 'hidden'}>
+          <p lang="lt">${escapeHtml(item.example)}</p>
+          <label for="word-meaning-${index}">English meaning of “${escapeHtml(item.word)}”</label>
+          <input id="word-meaning-${index}" data-word-meaning="${index}" value="${escapeHtml(selections.get(item.word)?.definition ?? item.definition)}" placeholder="Enter this word’s meaning">
+          <button type="button" class="status-pill offline" data-lookup-word="${index}">Look up meaning</button>
+          <small data-word-status="${index}" role="status"></small>
+        </div>
+      </div>`).join('')}</div>
+    </section>
+    <p data-vocabulary-status role="status">Only your selected words will be added to the Library.</p>
+    <div class="lesson-result-grid"><div><strong>${evidence.correct}/${evidence.total}</strong><span>scored answers</span></div><div><strong>${attempt.hintsUsed || 0}</strong><span>hints</span></div><div><strong data-selected-count>${selections.size}</strong><span>selected words</span></div></div>
+    <button class="btn-green-solid" data-back-path>${selections.size ? 'Save words and continue' : 'Continue without adding words'}</button>
     <button class="status-pill offline" data-retry-lesson>Practise this lesson again</button>
-    ${vocabularyError ? '<button class="status-pill offline" data-retry-save>Retry saving vocabulary</button>' : ''}
     <small>Course practice records your progress; it does not certify a CEFR level.</small>
   </section></main>`;
-  container.querySelector('[data-back-path]')?.addEventListener('click', () => navigate('learn'));
-  container.querySelector('[data-retry-save]')?.addEventListener('click', () => renderComplete(container, session, attempt, navigate));
+  const continueButton = container.querySelector('[data-back-path]');
+  const updateSelection = index => {
+    const item = candidates[index];
+    const checked = container.querySelector(`[data-unknown-word="${index}"]`).checked;
+    const definition = container.querySelector(`[data-word-meaning="${index}"]`).value.trim();
+    if (checked) selections.set(item.word, { ...selections.get(item.word), word: item.word, definition });
+    else selections.delete(item.word);
+    container.querySelector(`[data-word-details="${index}"]`).hidden = !checked;
+    container.querySelector('[data-selected-count]').textContent = selections.size;
+    continueButton.textContent = selections.size ? 'Save words and continue' : 'Continue without adding words';
+    persistSelections();
+  };
+  container.querySelectorAll('[data-unknown-word]').forEach(input => input.addEventListener('change', () => updateSelection(Number(input.dataset.unknownWord))));
+  container.querySelectorAll('[data-word-meaning]').forEach(input => input.addEventListener('input', () => updateSelection(Number(input.dataset.wordMeaning))));
+  container.querySelectorAll('[data-lookup-word]').forEach(button => button.addEventListener('click', async () => {
+    const index = Number(button.dataset.lookupWord);
+    const item = candidates[index];
+    const input = container.querySelector(`[data-word-meaning="${index}"]`);
+    const status = container.querySelector(`[data-word-status="${index}"]`);
+    const originalValue = input.value;
+    button.disabled = true;
+    status.textContent = 'Looking up this word…';
+    try {
+      const entry = await fetchLithuanianWordDetails(item.word);
+      if (!button.isConnected) return;
+      const sense = entry.senses[0];
+      if (input.value === originalValue) {
+        input.value = sense.definition;
+        if (selections.has(item.word)) selections.set(item.word, { ...selections.get(item.word), sourceUrl: sense.sourceUrl, attribution: sense.attribution });
+        updateSelection(index);
+      }
+      status.textContent = 'Wiktionary suggestion. Check that it fits the example, or edit it.';
+    } catch {
+      if (status.isConnected) status.textContent = 'Lookup unavailable. Enter the word’s English meaning, or retry.';
+    } finally { button.disabled = false; }
+  }));
+  continueButton.addEventListener('click', () => {
+    try {
+      const records = missingLessonWords(lessonVocabularyRecords(session, unit, attempt), driveSync.getAllWords());
+      if (records.length) driveSync.addWords(records);
+      const latest = driveSync.getCourseProfile('lithuanian') || {};
+      driveSync.updateCourseProfile('lithuanian', { activeLessonId: null, lessonAttempts: { ...latest.lessonAttempts, [session.id]: recordVocabularySelection(attempt, selections.values(), false) } });
+      navigate('learn');
+    } catch (error) {
+      container.querySelector('[data-vocabulary-status]').textContent = error.message || 'Your progress is saved. Vocabulary could not be saved; please retry.';
+    }
+  });
   container.querySelector('[data-retry-lesson]')?.addEventListener('click', () => {
     const latest = driveSync.getCourseProfile('lithuanian');
     driveSync.updateCourseProfile('lithuanian', { activeLessonId: session.id, lessonAttempts: { ...latest.lessonAttempts, [session.id]: null } });

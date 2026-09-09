@@ -9,3 +9,4 @@ android/build/
 dist/*.apk
 dist/release/
 dist/macos/
+work/

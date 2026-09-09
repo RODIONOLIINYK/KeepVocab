@@ -40,11 +40,22 @@ public class AppUpdatePlugin extends Plugin {
     public void downloadAndInstall(PluginCall call) {
         String source = call.getString("url", "");
         String digest = call.getString("sha256", "");
-        long size = call.getLong("size", 0L);
+        final long size;
+        Object rawSize = call.getData().opt("size");
+        if (rawSize instanceof Number) {
+            size = ((Number) rawSize).longValue();
+        } else if (rawSize instanceof String) {
+            long parsed = 0L;
+            try { parsed = Long.parseLong((String) rawSize); } catch (Exception ignored) {}
+            size = parsed;
+        } else {
+            size = 0L;
+        }
         // Only this repository's APKs can enter the installer. Android also
         // verifies the package name, version and signing certificate below.
         if (!source.matches("https://github\\.com/RODIONOLIINYK/KeepVocab/releases/download/v[0-9]+\\.[0-9]+\\.[0-9]+/KeepVocab-[0-9]+\\.[0-9]+\\.[0-9]+-Android-(debug|release)\\.apk")
-                || !digest.matches("[a-fA-F0-9]{64}") || size <= 0 || size > 150000000) {
+                || (digest == null || !digest.matches("[a-fA-F0-9]{64}"))
+                || size <= 0 || size > 150000000) {
             call.reject("Invalid update package."); return;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !getContext().getPackageManager().canRequestPackageInstalls()) {

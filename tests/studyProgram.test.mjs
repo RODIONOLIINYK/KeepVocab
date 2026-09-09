@@ -91,15 +91,10 @@ test('all authored word-order tasks accept their own tokens including dash punct
     assert.equal(answerMatches(exercise, text), true, exercise.id);
   }
 });
-test('only introduced vocabulary is added, with clean headwords and useful examples', () => {
-  const unit = LITHUANIAN_UNITS[0];
-  const first = lessonVocabularyRecords(unit.sessions[0], unit);
-  const second = lessonVocabularyRecords(unit.sessions[1], unit);
-  assert.equal(first.length, 4); assert.equal(second.length, 4);
-  assert.equal(new Set([...first, ...second].map(item => item.id)).size, 8);
-  assert.ok(first.every(item => item.id.includes('-v2-')));
-  assert.ok(first.every(item => !/[.!?]$/.test(item.word) && item.example && item.translation));
-  assert.equal(lessonVocabularyRecords(unit.sessions[5], unit).length, 0);
+test('lesson completion adds no vocabulary without an explicit unknown-word selection', () => {
+  for (const unit of LITHUANIAN_UNITS) {
+    for (const session of unit.sessions) assert.deepEqual(lessonVocabularyRecords(session, unit), []);
+  }
 });
 test('old incompatible attempts restart but current attempts resume', () => {
   const session = LITHUANIAN_SESSIONS[0]; const attempt = startLessonAttempt(session.id);
@@ -138,11 +133,11 @@ test('native reminders preserve a specified fire date and remove a stale streak 
 test('updater accepts only newer stable matching-platform verified repository assets', () => {
   const asset = { name: 'KeepVocab-1.7.0-Android-release.apk', browser_download_url: 'https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.7.0/KeepVocab-1.7.0-Android-release.apk', size: 100, digest: 'sha256:'+'a'.repeat(64) };
   const release = { tag_name: 'v1.7.0', assets: [asset] };
-  assert.equal(selectRelease(release, 'android').version, '1.7.0');
-  assert.equal(selectRelease(release, 'darwin'), null);
-  assert.equal(selectRelease({ ...release, prerelease: true }, 'android'), null);
-  assert.equal(selectRelease({ ...release, assets: [{ ...asset, digest: null }] }, 'android'), null);
-  assert.equal(selectRelease({ ...release, assets: [{ ...asset, browser_download_url: 'https://evil.example/update.apk' }] }, 'android'), null);
+  assert.equal(selectRelease(release, 'android', '1.6.1').version, '1.7.0');
+  assert.equal(selectRelease(release, 'darwin', '1.6.1'), null);
+  assert.equal(selectRelease({ ...release, prerelease: true }, 'android', '1.6.1'), null);
+  assert.equal(selectRelease({ ...release, assets: [{ ...asset, digest: null }] }, 'android', '1.6.1'), null);
+  assert.equal(selectRelease({ ...release, assets: [{ ...asset, browser_download_url: 'https://evil.example/update.apk' }] }, 'android', '1.6.1'), null);
   assert.equal(selectRelease(release, 'android', '1.8.0'), null);
   assert.equal(compareVersions('1.10.0', '1.9.0'), 1);
   assert.equal(compareVersions('v1.7.0-beta', '1.6.0'), 0);

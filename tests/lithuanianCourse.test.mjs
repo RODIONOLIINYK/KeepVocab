@@ -67,7 +67,7 @@ test('the complete authored course has valid self-paced modules, lessons, answer
   assert.equal(LITHUANIAN_SESSIONS.length, 216);
   assert.deepEqual(validateLithuanianCurriculum(), []);
   assert.ok(LITHUANIAN_UNITS.every(unit => unit.sessions.length === 6));
-  assert.ok(LITHUANIAN_SESSIONS.every(session => session.exercises.length >= 5 && session.exercises.length <= 7));
+  assert.ok(LITHUANIAN_SESSIONS.every(session => session.exercises.length >= 5 && session.exercises.length <= 8));
   assert.ok(LITHUANIAN_SESSIONS.every(session => session.exercises.every(exercise => exercise.phrase.en && exercise.acceptedAnswers.length && exercise.outcomeTag)));
   assert.ok(LITHUANIAN_SESSIONS.every(session => new Set(session.exercises.map(exercise => exercise.type)).size >= 5));
   assert.ok(LITHUANIAN_SESSIONS.every(session => new Set(session.exercises.map(exercise => exercise.phrase.lt)).size >= 3));
@@ -138,8 +138,8 @@ test('cloze exercises accept the missing word and matching exercises contain sep
 test('lesson vocabulary creates stable Lithuanian-only Library records', () => {
   const session = LITHUANIAN_SESSIONS[0];
   const unit = LITHUANIAN_UNITS[0];
-  const records = lessonVocabularyRecords(session, unit);
-  assert.equal(records.length, 4);
+  const records = lessonVocabularyRecords(session, unit, { unknownWords: [{ word: 'ačiū', definition: 'thank you' }] });
+  assert.equal(records.length, 1);
   assert.ok(records.every(record => record.courseId === 'lithuanian' && record.languageCode === 'lt'));
-  assert.ok(records.every(record => record.id.startsWith(`lt-course-${unit.id}-`)));
+  assert.ok(records.every(record => record.id.startsWith('lt-course-word-')));
 });
