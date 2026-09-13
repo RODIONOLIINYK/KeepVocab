@@ -237,13 +237,14 @@ function positionQuickAddWindow(trayBounds = menuBarTray?.getBounds()) {
     workArea.x + workArea.width - windowBounds.width - 8,
   ));
   const y = Math.max(workArea.y + 8, anchor.y + anchor.height + 6);
+  quickAddWindow.setSize(Math.min(windowBounds.width, workArea.width - 16), Math.min(windowBounds.height, workArea.y + workArea.height - y - 8));
   quickAddWindow.setPosition(x, y, false);
 }
 
 function createQuickAddWindow() {
   quickAddWindow = new BrowserWindow({
-    width: 430,
-    height: 520,
+    width: 520,
+    height: 680,
     minWidth: 380,
     minHeight: 440,
     show: false,

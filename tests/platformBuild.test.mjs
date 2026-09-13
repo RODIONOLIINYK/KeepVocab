@@ -80,24 +80,24 @@ test('the macOS package is universal, sandboxed, and keeps the authorized local 
   assert.equal(existsSync(resolve(projectRoot, 'icons/keepvocab-menubarTemplate@2x.png')), true);
 });
 
-test('menu-bar quick add enriches a saved meaning with the same image pipeline as the full app', () => {
-  const quickAdd = readFileSync(resolve(projectRoot, 'js/quickAdd.js'), 'utf8');
-  assert.match(quickAdd, /prepareWordsForLibrary\(\[item\]/);
-  assert.match(quickAdd, /existingWords: driveSync\.getWords\(\)/);
+test('both add-word surfaces share the full composer and image pipeline', () => {
+  const composer = readFileSync(resolve(projectRoot, 'js/components/AddWordModal.js'), 'utf8');
+  for (const entry of ['js/app.js', 'js/quickAdd.js']) {
+    assert.match(readFileSync(resolve(projectRoot, entry), 'utf8'), /import \{ setupAddWordModal \} from '.\/components\/AddWordModal\.js/);
+  }
+  assert.match(composer, /prepareWordsForLibrary\(items/);
+  assert.match(composer, /existingWords: driveSync\.getWords\(\)/);
+  assert.match(composer, /driveSync\.addWords\(enrichedItems\)/);
   const lesson = readFileSync(resolve(projectRoot, 'js/components/LessonMode.js'), 'utf8');
   assert.match(lesson, /prepareWordsForLibrary\(records/);
-  assert.match(quickAdd, /driveSync\.addWord\(enriched\)/);
 });
 
-test('menu-bar quick add follows the active course and uses the matching dictionary', () => {
-  const quickAdd = readFileSync(resolve(projectRoot, 'js/quickAdd.js'), 'utf8');
-  const quickAddHtml = readFileSync(resolve(projectRoot, 'quick-add.html'), 'utf8');
-  assert.match(quickAdd, /fetchWordEntry\(word, requestedCourseId\)/);
-  assert.match(quickAdd, /driveSync\.getActiveCourseId\(\)/);
-  assert.match(quickAdd, /event\.key === 'keepvocab_settings'/);
-  assert.match(quickAdd, /requestedCourseId !== activeCourseId/);
-  assert.match(quickAddHtml, /id="quick-course-label"/);
-  assert.match(quickAddHtml, /id="quick-word-label"/);
+test('the shared composer follows the active course and ignores stale work', () => {
+  const composer = readFileSync(resolve(projectRoot, 'js/components/AddWordModal.js'), 'utf8');
+  assert.match(composer, /fetchWordEntry\(term, courseId\)/);
+  assert.match(composer, /driveSync\.getActiveCourseId\(\)/);
+  assert.match(composer, /event\.key === 'keepvocab_settings'/);
+  assert.match(composer, /revision === generation && courseId === driveSync\.getActiveCourseId\(\)/);
 });
 
 test('the resizable app header uses non-wrapping badges, readable controls, and staged desktop breakpoints', () => {
