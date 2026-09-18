@@ -1,6 +1,6 @@
 import { driveSync } from '../services/driveSync.js?v=1602';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
-import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
 import { playInteractionSound } from '../services/interactionSound.js?v=1602';
 import { mountUseItExercise } from './UseItExercise.js?v=1602';
 import { createSpeechRecordingSession } from '../services/speechInput.js?v=1602';
@@ -17,8 +17,7 @@ export function teardownUseItMode() {
 
 export function renderUseItMode(container, onNavigate) {
   teardownUseItMode();
-  const notebook = driveSync.getActiveNotebook();
-  const words = selectModeWords(driveSync.getWords().filter(word => word.notebook === notebook), { mode: 'use-it', limit: 10 });
+  const words = selectModeWords(getActivePracticeWords(driveSync), { mode: 'use-it', limit: 10 });
   if (!words.length) {
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprout-mascot.webp" alt="Sprig"><h2>Add vocabulary first</h2><p>Use It turns saved meanings into active English.</p><button class="btn-green-solid" id="useit-back">Back to Today</button></div></section>`;
     container.querySelector('#useit-back').addEventListener('click', () => go('dashboard', onNavigate));

@@ -1,3 +1,10 @@
+// All saved-vocabulary exercises use the month selected in Library. Keep the
+// course/month lookup here; ranking and session scheduling operate on this pool.
+export function getActivePracticeWords(persistence) {
+  const month = persistence.getActiveNotebook().replace(/ Vocabulary$/, '');
+  return persistence.getWordsByMonthYear(month).filter(word => word?.id && word.word && word.definition);
+}
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_PRIORITY_SHARE = 0.3;
 

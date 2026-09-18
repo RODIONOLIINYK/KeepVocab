@@ -1,5 +1,5 @@
 import { driveSync } from '../services/driveSync.js?v=1602';
-import { fetchWordEntry, wordEntryToWord, prepareWordsForLibrary } from '../services/wordEntry.js?v=1602';
+import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary } from '../services/wordEntry.js?v=1602';
 import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=1602';
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
@@ -23,6 +23,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
           <input type="text" id="add-word-input" placeholder="Type a word, then press Enter" enterkeyhint="search" autocomplete="off" autocapitalize="none" autofocus style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 0.95rem; outline: none;">
           <button type="submit" class="btn-green-solid" id="btn-auto-fetch-word" style="padding: 10px 16px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings</button>
         </form>
+        <button type="button" class="text-action" id="btn-ai-fetch-word" style="align-self: flex-end;"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Ask Gemini</button>
 
         <div id="add-word-preview" class="sense-picker-preview" style="display: none;">
           <div class="sense-picker-heading">
@@ -89,6 +90,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   const btnClose = document.getElementById('btn-close-add-modal');
   const btnCancel = document.getElementById('btn-cancel-add-modal');
   const btnFetch = document.getElementById('btn-auto-fetch-word');
+  const btnAiFetch = document.getElementById('btn-ai-fetch-word');
   const btnSave = document.getElementById('btn-save-new-word');
   const input = document.getElementById('add-word-input');
   const preview = document.getElementById('add-word-preview');
@@ -150,6 +152,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
 
   const resetAsyncControls = () => {
     btnFetch.disabled = false;
+    btnAiFetch.disabled = false;
     btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
     btnSave.disabled = false;
     btnSave.innerHTML = '<i class="fa-solid fa-bookmark"></i> Save meaning';
@@ -547,26 +550,27 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     formStatus.textContent = 'The spelling changed. Fetch meanings again, or enter the intended meaning manually.';
   });
 
-  lookupForm.addEventListener('submit', async event => {
-    event.preventDefault();
+  async function lookupSingleWord(useAi = false) {
+    if (btnFetch.disabled) return;
     const w = input.value.trim();
     if (!w) { input.focus(); return; }
 
-    const { isCurrent, lookup } = beginOperation();
+    const { isCurrent, lookup, courseId } = beginOperation();
     btnFetch.disabled = true;
-    btnFetch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finding meanings & examples…';
+    btnAiFetch.disabled = true;
+    btnFetch.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${useAi ? 'Asking Gemini…' : 'Finding meanings…'}`;
 
     try {
       const lithuanian = driveSync.getActiveCourseId() === 'lithuanian';
-      const data = await lookup(w);
+      const data = await (useAi ? fetchAiWordEntry(w, courseId) : lookup(w));
       if (!isCurrent()) return;
       currentFetchedData = data;
       input.value = currentFetchedData.word;
       document.getElementById('prev-w-title').textContent = currentFetchedData.word;
       document.getElementById('prev-w-phonetic').textContent = currentFetchedData.phonetic;
       renderSenses(currentFetchedData);
-      if (lithuanian) formStatus.textContent = currentFetchedData.aiGenerated
-        ? 'No dictionary entry was available. Review this AI suggestion before saving.'
+      if (lithuanian || currentFetchedData.aiGenerated) formStatus.textContent = currentFetchedData.aiGenerated
+        ? 'AI suggestion — review the meaning before saving.'
         : currentFetchedData.aiEnriched
           ? 'Definition from Wiktionary; example and forms are AI-enriched. Review before saving.'
           : 'Definition from Wiktionary. Review the meaning and add an example if you want.';
@@ -576,16 +580,18 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       preview.style.display = 'block';
     } catch (err) {
       if (!isCurrent()) return;
-      currentFetchedData = null;
-      preview.style.display = 'none';
-      formStatus.textContent = 'Lookup failed. You can still enter the exact meaning manually below.';
+      if (!useAi) { currentFetchedData = null; preview.style.display = 'none'; }
+      formStatus.textContent = err.message || 'Lookup failed. You can still enter the exact meaning manually below.';
       showToast(err.message || 'Could not fetch word details.', 'error');
     } finally {
       if (!isCurrent()) return;
       btnFetch.disabled = false;
+      btnAiFetch.disabled = false;
       btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
     }
-  });
+  }
+  lookupForm.addEventListener('submit', event => { event.preventDefault(); lookupSingleWord(); });
+  btnAiFetch.addEventListener('click', () => lookupSingleWord(true));
 
   btnSave.addEventListener('click', async () => {
     const wordText = input.value.trim();

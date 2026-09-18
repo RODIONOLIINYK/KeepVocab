@@ -20,7 +20,7 @@ export class DictionaryApiError extends Error {
   }
 }
 
-function normalizeQuery(word) {
+export function normalizeQuery(word) {
   const clean = String(word || '').trim().toLowerCase().replace(/\s+/g, ' ');
   if (!clean) throw new DictionaryApiError('Enter a word to look up.', 'INVALID_WORD');
   if (clean.length > 100 || !/^[\p{L}'’\- ]+$/u.test(clean)) {

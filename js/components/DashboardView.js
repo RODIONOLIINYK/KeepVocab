@@ -1,3 +1,4 @@
+import { getActivePracticeWords } from '../services/wordSelection.js?v=1602';
 import { driveSync } from '../services/driveSync.js?v=1602';
 import { getDueWords } from '../services/srsEngine.js?v=1602';
 import { buildDailySession, weaknessScore } from '../services/dailySession.js?v=1602';
@@ -19,14 +20,12 @@ const MODES = [
 ];
 
 export function renderDashboardView(container, onNavigate) {
-  const allWords = driveSync.getWords();
-  const activeNotebook = driveSync.getActiveNotebook();
-  const activeWords = allWords.filter(word => word.notebook === activeNotebook);
+  const activeWords = getActivePracticeWords(driveSync);
   const activeWordCount = new Set(activeWords.map(word => String(word.word || '').trim().toLowerCase())).size;
-  const session = buildDailySession(allWords);
-  const due = getDueWords(allWords).length;
-  const weak = allWords.filter(word => weaknessScore(word) > 0).length;
-  const recent = allWords.filter(word => Date.now() - Date.parse(word.createdAt || 0) <= 14 * 24 * 60 * 60 * 1000).length;
+  const session = buildDailySession(activeWords);
+  const due = getDueWords(activeWords).length;
+  const weak = activeWords.filter(word => weaknessScore(word) > 0).length;
+  const recent = activeWords.filter(word => Date.now() - Date.parse(word.createdAt || 0) <= 14 * 24 * 60 * 60 * 1000).length;
   const settings = driveSync.getSettings();
   const completedToday = completedExercisesToday(settings);
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));

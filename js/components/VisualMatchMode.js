@@ -1,11 +1,12 @@
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=1602';
 import { driveSync } from '../services/driveSync.js?v=1602';
 import { findRelevantImages, imageSelectionPatch, imageUrlsForWords } from '../services/imageSearch.js?v=1602';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
 import { playInteractionSound } from '../services/interactionSound.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=1602';
-import { stableWordChoices } from './PracticeModes.js?v=1602';
-import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
+import { stableWordChoices } from '../services/wordChoices.js?v=1602';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -26,7 +27,7 @@ async function findAutomaticImages(word, excludeUrls) {
 
 export async function renderVisualMatchMode(container, onNavigate) {
   const notebook = driveSync.getActiveNotebook();
-  const allWords = driveSync.getWords().filter(word => word.notebook === notebook);
+  const allWords = getActivePracticeWords(driveSync);
   const words = selectModeWords(allWords, { mode: 'visual-match', limit: 10 });
   if (words.length < 2) {
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images"></i><h2>Add at least two words</h2><p>Visual Match needs multiple choices from the active month.</p><button class="btn-green-solid" id="visual-back">Back to dashboard</button></div></section>`;
@@ -149,17 +150,16 @@ export async function renderVisualMatchMode(container, onNavigate) {
       const answered = selectedId !== null;
       const correct = evaluateChoiceAnswer(target.word.id, selectedId);
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell visual-shell">
-        <div class="practice-topline"><button class="status-pill offline" id="visual-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${index + 1} of ${queue.length}</span><strong>Score ${score}</strong></div>
-        <div class="review-progress"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div>
+        ${renderPracticeHeader({ exitId: 'visual-exit', current: index, total: queue.length, score })}
         <div class="visual-prompt"><p>Which word best matches this image?</p><figure><img src="${escapeHtml(target.image.url)}" alt="Visual clue"><figcaption><a href="${escapeHtml(target.image.sourceUrl)}" target="_blank" rel="noopener noreferrer">Image source</a>${target.image.attribution ? ` · ${escapeHtml(target.image.attribution)}` : ''}${target.image.license ? ` · ${escapeHtml(target.image.license)}` : ''}</figcaption></figure><button class="status-pill offline" id="visual-change-cue"><i class="fa-solid fa-rotate"></i> Change automatic suggestion</button>
-          <div class="choice-grid">${options.map(option => { const state = answered ? option.id === target.word.id ? ' correct' : option.id === selectedId ? ' incorrect' : '' : ''; const icon = answered && option.id === target.word.id ? '<i class="fa-solid fa-check choice-result-icon" aria-hidden="true"></i>' : answered && option.id === selectedId ? '<i class="fa-solid fa-xmark choice-result-icon" aria-hidden="true"></i>' : ''; return `<button class="choice-button${state}" data-visual-choice="${escapeHtml(option.id)}" data-sound="none" ${answered ? 'disabled' : ''}><span>${escapeHtml(option.word)}</span>${icon}</button>`; }).join('')}</div>
-          <div class="answer-feedback-slot" aria-live="polite">${answered ? `${correct ? '<span class="success-burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}"><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${correct ? 'Excellent!' : 'Not quite'}</strong><span>${correct ? escapeHtml(target.word.definition) : `The correct answer is <b>${escapeHtml(target.word.word)}</b>. ${escapeHtml(target.word.definition)}`}</span></div></div>` : ''}</div>
-          <div class="answer-action-slot">${answered ? `<button class="btn-green-solid" id="visual-next">${index + 1 === queue.length ? 'See result' : 'Next image'}</button>` : ''}</div>
+          ${renderChoiceGrid({ options, targetId: target.word.id, selectedId, attribute: 'data-visual-choice' })}
+          ${renderAnswerFeedback({ answered, correct, answer: target.word.word, detail: target.word.definition, nextId: 'visual-next', nextLabel: index + 1 === queue.length ? 'See result' : 'Next image' })}
         </div>
       </div></section>`;
       container.querySelector('#visual-exit').addEventListener('click', () => go('dashboard', onNavigate));
       container.querySelector('#visual-change-cue').addEventListener('click', () => renderImageChooser(0, target.word));
       container.querySelectorAll('[data-visual-choice]').forEach(button => button.addEventListener('click', () => {
+        if (selectedId !== null) return;
         selectedId = button.dataset.visualChoice;
         const isCorrect = evaluateChoiceAnswer(target.word.id, selectedId);
         playInteractionSound(isCorrect ? 'correct' : 'wrong');

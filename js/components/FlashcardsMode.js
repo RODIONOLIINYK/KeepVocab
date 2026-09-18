@@ -3,11 +3,11 @@ import { speakWord } from '../services/speechService.js?v=1602';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
 import { getRatingPreviews } from '../services/srsEngine.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
-import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function renderFlashcardsMode(container, onNavigate) {
-  const words = selectModeWords(driveSync.getWords(), { mode: 'flashcards', limit: 10 });
+  const words = selectModeWords(getActivePracticeWords(driveSync), { mode: 'flashcards', limit: 10 });
   if (!words.length) {
     container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow">Flashcards</span><h1>Your first card is waiting</h1><p>Add a word and KeepVocab will preserve its exact meaning, example, and visual cue.</p><button class="btn-green-solid" id="flashcard-add">Add vocabulary</button></section>`;
     container.querySelector('#flashcard-add').addEventListener('click', () => document.getElementById('quick-add-modal')?.classList.add('active'));

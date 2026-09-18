@@ -1,3 +1,4 @@
+import { getActivePracticeWords } from '../services/wordSelection.js?v=1602';
 import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=1602';
 import { speakWord } from '../services/speechService.js?v=1602';
 import { getDueWords } from '../services/srsEngine.js?v=1602';
@@ -10,7 +11,7 @@ import { navigateTo } from '../utils/navigation.js';
 
 export function renderReviewView(container, onNavigate) {
   const activeNotebook = driveSync.getActiveNotebook() || getCurrentMonthNotebookTitle();
-  const queue = selectPracticeWords(getDueWords().filter(word => word.notebook === activeNotebook));
+  const queue = selectPracticeWords(getDueWords(getActivePracticeWords(driveSync)));
   const originalCount = queue.length;
   let index = 0;
   let score = 0;

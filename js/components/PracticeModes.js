@@ -5,36 +5,10 @@ import { playInteractionSound } from '../services/interactionSound.js?v=1602';
 import { selectPracticeWords } from '../services/dailySession.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=1602';
-import { shuffleItems as shuffle } from '../utils/collections.js';
+import { getActivePracticeWords } from '../services/wordSelection.js?v=1602';
+import { stableWordChoices } from '../services/wordChoices.js?v=1602';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=1602';
 import { navigateTo as go } from '../utils/navigation.js';
-
-function activeLibraryWords() {
-  const notebook = driveSync.getActiveNotebook();
-  return driveSync.getWords().filter(word => word.notebook === notebook && word.word && word.definition);
-}
-
-function activeWords() {
-  return selectPracticeWords(activeLibraryWords());
-}
-
-export function buildWordChoices(target, words, limit = 4) {
-  const seenSpellings = new Set([target.word.toLowerCase()]);
-  const alternatives = shuffle(words.filter(word => word.id !== target.id)).filter(word => {
-    const spelling = word.word.toLowerCase();
-    if (seenSpellings.has(spelling)) return false;
-    seenSpellings.add(spelling);
-    return true;
-  });
-  return shuffle([target, ...alternatives.slice(0, Math.max(1, limit - 1))]);
-}
-
-export function stableWordChoices(state, target, words, limit = 4) {
-  if (state.targetId !== target.id) {
-    state.targetId = target.id;
-    state.options = buildWordChoices(target, words, limit);
-  }
-  return state.options;
-}
 
 function emptyMode(container, icon, title, detail, onNavigate) {
   container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid ${icon}"></i><h2>${escapeHtml(title)}</h2><p>${escapeHtml(detail)}</p><button class="btn-green-solid" id="mode-back-empty">Back to dashboard</button></div></section>`;
@@ -42,7 +16,7 @@ function emptyMode(container, icon, title, detail, onNavigate) {
 }
 
 export function renderSpellingMode(container, onNavigate) {
-  const queue = activeWords();
+  const queue = selectPracticeWords(getActivePracticeWords(driveSync));
   if (!queue.length) return emptyMode(container, 'fa-keyboard', 'Add vocabulary first', 'Listen & Spell uses the words in your active month.', onNavigate);
   const originalCount = queue.length;
   let index = 0;
@@ -61,8 +35,7 @@ export function renderSpellingMode(container, onNavigate) {
     const word = queue[index];
     container.innerHTML = `
       <section class="full-view-stack"><div class="spec-card practice-shell">
-        <div class="practice-topline"><button class="status-pill offline" id="spell-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${index + 1} of ${queue.length}</span><strong>Score ${score}</strong></div>
-        <div class="review-progress"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div>
+        ${renderPracticeHeader({ exitId: 'spell-exit', label: '', current: index, total: queue.length, score })}
         <div class="practice-prompt">
           <div class="practice-icon"><i class="fa-solid fa-headphones"></i></div>
           <p>Listen, then type the word that matches this definition.</p>
@@ -105,7 +78,7 @@ export function renderSpellingMode(container, onNavigate) {
 }
 
 export function renderChooseWordMode(container, onNavigate) {
-  const all = activeLibraryWords();
+  const all = getActivePracticeWords(driveSync);
   const queue = selectPracticeWords(all);
   if (queue.length < 2) return emptyMode(container, 'fa-list-check', 'Add at least two words', 'Choose Word needs another word to create meaningful choices.', onNavigate);
   const originalCount = queue.length;
@@ -128,23 +101,18 @@ export function renderChooseWordMode(container, onNavigate) {
     const isCorrect = evaluateChoiceAnswer(target.id, selectedId);
     container.innerHTML = `
       <section class="full-view-stack"><div class="spec-card practice-shell">
-        <div class="practice-topline"><button class="status-pill offline" id="choose-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>Choose Word · ${index + 1} of ${queue.length}</span><strong>Score ${score}</strong></div>
-        <div class="review-progress"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div>
+        ${renderPracticeHeader({ exitId: 'choose-exit', label: 'Choose Word', current: index, total: queue.length, score })}
         <div class="practice-prompt choose-prompt">
           <img class="practice-mascot" src="assets/keepvocab-sprig-thinking.webp" alt="" aria-hidden="true">
           <p>Which word matches this definition?</p>
           <blockquote>${escapeHtml(target.definition)}</blockquote>
-          <div class="choice-grid">${options.map(option => {
-            const state = answered ? option.id === target.id ? ' correct' : option.id === selectedId ? ' incorrect' : '' : '';
-            const icon = answered && option.id === target.id ? '<i class="fa-solid fa-check choice-result-icon" aria-hidden="true"></i>' : answered && option.id === selectedId ? '<i class="fa-solid fa-xmark choice-result-icon" aria-hidden="true"></i>' : '';
-            return `<button class="choice-button${state}" data-choice="${escapeHtml(option.id)}" data-sound="none" ${answered ? 'disabled' : ''}><span>${escapeHtml(option.word)}</span>${icon}</button>`;
-          }).join('')}</div>
-          <div class="answer-feedback-slot" aria-live="polite">${answered ? `${isCorrect ? '<span class="success-burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}<div class="answer-feedback-card ${isCorrect ? 'correct' : 'incorrect'}"><i class="fa-solid ${isCorrect ? 'fa-check' : 'fa-xmark'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${isCorrect ? 'Excellent!' : 'Not quite'}</strong><span>${isCorrect ? escapeHtml(target.example || 'You matched the meaning.') : `The correct answer is <b>${escapeHtml(target.word)}</b>. ${escapeHtml(target.example || '')}`}</span></div></div>` : ''}</div>
-          <div class="answer-action-slot">${answered ? `<button class="btn-green-solid" id="choose-next">${index + 1 === queue.length ? 'See result' : 'Next question'}</button>` : ''}</div>
+          ${renderChoiceGrid({ options, targetId: target.id, selectedId })}
+          ${renderAnswerFeedback({ answered, correct: isCorrect, answer: target.word, detail: target.example || (isCorrect ? 'You matched the meaning.' : ''), nextId: 'choose-next', nextLabel: index + 1 === queue.length ? 'See result' : 'Next question' })}
         </div>
       </div></section>`;
     container.querySelector('#choose-exit').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelectorAll('[data-choice]').forEach(button => button.addEventListener('click', () => {
+      if (selectedId !== null) return;
       selectedId = button.dataset.choice;
       const correct = evaluateChoiceAnswer(target.id, selectedId);
       playInteractionSound(correct ? 'correct' : 'wrong');

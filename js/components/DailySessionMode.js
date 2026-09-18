@@ -1,10 +1,11 @@
+import { getActivePracticeWords } from '../services/wordSelection.js?v=1602';
 import { driveSync } from '../services/driveSync.js?v=1602';
 import { buildDailySession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=1602';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
 import { recordSessionCompletion } from '../services/learningStats.js?v=1602';
 import { speakWord } from '../services/speechService.js?v=1602';
 import { playInteractionSound } from '../services/interactionSound.js?v=1602';
-import { buildWordChoices } from './PracticeModes.js?v=1602';
+import { buildWordChoices } from '../services/wordChoices.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
 import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=1602';
 import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=1602';
@@ -27,7 +28,7 @@ function exerciseCopy(exercise, word) {
 }
 
 export function renderDailySessionMode(container, onNavigate, options = {}) {
-  const words = driveSync.getWords();
+  const words = getActivePracticeWords(driveSync);
   const session = options.kind === 'weak' ? buildWeakWordsSession(words) : buildDailySession(words);
   if (!session.exercises.length) {
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprout-mascot.webp" alt="Sprig"><h2>${options.kind === 'weak' ? 'No weak words yet' : 'Build your first workout'}</h2><p>${options.kind === 'weak' ? 'Mistakes from any learning mode will appear here automatically.' : 'Add vocabulary and KeepVocab will choose the right first exercises.'}</p><button class="btn-green-solid" id="daily-empty-action">${options.kind === 'weak' ? 'Back to Today' : 'Add a word'}</button></div></section>`;
@@ -100,7 +101,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     if (!word) { index += 1; return render(); }
     const copy = exerciseCopy(exercise, word);
     const choiceMode = ['image-recognition', 'definition-recognition'].includes(exercise.exerciseType);
-    const optionsList = choiceMode ? buildWordChoices(word, driveSync.getWords(), 4) : [];
+    const optionsList = choiceMode ? buildWordChoices(word, words, 4) : [];
     const inputLabel = exercise.exerciseType === 'use-it' ? 'Your sentence' : 'Your answer';
     const sessionLabel = options.kind === 'weak' ? 'Weak Words' : "Today's Workout";
     const mascot = answered ? (correct ? 'assets/keepvocab-sprig-celebrate.webp' : 'assets/keepvocab-sprout-mascot.webp') : 'assets/keepvocab-sprig-thinking.webp';

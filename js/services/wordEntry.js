@@ -1,11 +1,17 @@
-import { fetchWordDetails } from './dictionaryApi.js?v=1602';
-import { fetchLithuanianEntry } from './lithuanianEnrichment.js?v=1602';
+import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=1602';
+import { fetchLithuanianEntry, enrichLithuanianEntry } from './lithuanianEnrichment.js?v=1602';
 import { bulkResultToWord, attachImagesSequentially } from './bulkWords.js?v=1602';
 import { sanitizeExistingExamples } from './exampleSearch.js?v=1602';
 import { findRelevantImages, imageUrlsForWords } from './imageSearch.js?v=1602';
 
 export function fetchWordEntry(word, courseId = 'english', options = {}) {
-  return courseId === 'lithuanian' ? fetchLithuanianEntry(word, options) : fetchWordDetails(word, options);
+  return courseId === 'lithuanian' ? fetchLithuanianEntry(word, options) : fetchEnglishEntry(word, options);
+}
+
+// Explicit requests bypass dictionary results and the AI cache for a fresh suggestion.
+export function fetchAiWordEntry(word, courseId = 'english', options = {}) {
+  const enrich = courseId === 'lithuanian' ? enrichLithuanianEntry : enrichEnglishEntry;
+  return enrich(word, { ...options, force: true });
 }
 
 export function wordEntryToWord(entry, senseIndex = 0, courseId = 'english') {

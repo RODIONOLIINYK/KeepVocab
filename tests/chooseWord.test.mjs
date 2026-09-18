@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildWordChoices, stableWordChoices } from '../js/components/PracticeModes.js';
+import { buildWordChoices, stableWordChoices } from '../js/services/wordChoices.js';
 
 test('Choose Word includes the target and only unique alternative spellings', () => {
   const target = { id: '1', word: 'bank', definition: 'A financial institution.' };

@@ -1,3 +1,4 @@
+import { getActivePracticeWords } from './services/wordSelection.js?v=1602';
 import { setupAddWordModal } from './components/AddWordModal.js?v=1602';
 import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=1602';
 // Native application controller with monthly Google Drive backup.
@@ -30,8 +31,7 @@ import { renderLessonMode, teardownLessonMode } from './components/LessonMode.js
 import { getCourseDefinition } from './data/courses.js?v=1602';
 
 function buildStudyQueue() {
-  const activeNotebook = driveSync.getActiveNotebook();
-  return driveSync.getWords().filter(item => item.notebook === activeNotebook).map(item => {
+  return getActivePracticeWords(driveSync).map(item => {
     const example = item.example || `Use “${item.word}” in a sentence.`;
     return {
       ...item,
@@ -168,14 +168,14 @@ function updateDashboardDerivedState() {
     const element = document.getElementById(`b${index + 1}-count`);
     if (element) element.textContent = String(count);
   });
-  const currentEntries = allWords.filter(word => word.notebook === driveSync.getActiveNotebook());
+  const currentEntries = getActivePracticeWords(driveSync);
   const currentWords = new Set(currentEntries.map(word => String(word.word || '').trim().toLowerCase())).size;
   const added = document.getElementById('stat-words-added');
   if (added) added.textContent = String(currentWords);
   const due = document.getElementById('stat-synced-today');
-  if (due) due.textContent = String(getDueWords().filter(word => word.notebook === driveSync.getActiveNotebook()).length);
+  if (due) due.textContent = String(getDueWords(currentEntries).length);
   const learning = document.getElementById('stat-keep-updates');
-  if (learning) learning.textContent = String(allWords.filter(word => word.notebook === driveSync.getActiveNotebook() && !word.mastered).length);
+  if (learning) learning.textContent = String(currentEntries.filter(word => !word.mastered).length);
   const streak = Number(settings.dailyStreak || 0);
   for (const id of ['hdr-streak-count', 'streak-num']) {
     const element = document.getElementById(id);

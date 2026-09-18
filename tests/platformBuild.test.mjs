@@ -213,9 +213,9 @@ test('exercise routes share an aligned header and content routes use the same ti
   assert.match(app, /'library', 'stats', 'settings'/);
   assert.match(styles, /\.exercise-topbar\s*\{[^}]*display:grid;[^}]*grid-template-columns:auto minmax\(0,1fr\) auto/);
   assert.match(flashcards, /class="exercise-topbar"/);
-  assert.match(context, /class="exercise-topbar"/);
+  assert.match(context, /renderPracticeHeader/);
   assert.match(flashcards, /flashcard-exit'[\s\S]*go\('dashboard', onNavigate\)/);
-  assert.match(context, /context-exit'[\s\S]*go\('dashboard', onNavigate\)/);
+  assert.match(context, /context-exit'\)\.addEventListener\('click', dashboard\)/);
   assert.match(styles, /\.daily-exit-button\s*\{[^}]*width:\s*76px;[^}]*min-height:\s*40px;/);
   assert.match(styles, /\.daily-exit-button\s*\{[^}]*width:42px;[^}]*min-height:42px;[^}]*border-radius:50%/);
   assert.match(daily, /class="daily-exit-button"/);
@@ -274,9 +274,12 @@ test('answer states include icons and status semantics instead of relying on col
   const visual = readFileSync(resolve(projectRoot, 'js/components/VisualMatchMode.js'), 'utf8');
   assert.match(daily, /role="status"/);
   assert.match(daily, /fa-check|fa-xmark/);
-  assert.match(visual, /choice-result-icon/);
-  assert.match(visual, /fa-check/);
-  assert.match(visual, /fa-xmark/);
+  const shared = readFileSync(resolve(projectRoot, 'js/components/PracticeElements.js'), 'utf8');
+  assert.match(visual, /renderChoiceGrid/);
+  assert.match(shared, /choice-result-icon/);
+  assert.match(shared, /fa-check/);
+  assert.match(shared, /fa-xmark/);
+  assert.match(shared, /aria-live="polite"/);
 });
 
 test('all cache-busted JavaScript module imports resolve to real source files', () => {

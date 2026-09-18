@@ -1547,20 +1547,6 @@ body {
 .summary-strong-responses blockquote { margin:0; padding:12px 14px; border-left:3px solid var(--primary); border-radius:0 12px 12px 0; background:#f8fafc; font-size:.82rem; line-height:1.5; }
 @media (max-width:620px) { .speaking-activation-summary { grid-template-columns:1fr; }.preview-actions > span { order:3; } }
 
-.context-mode { max-width:920px; margin:0 auto; display:grid; gap:16px; }
-.context-story-card { display:grid; gap:14px; padding:22px; border-radius:22px; color:#f0fdf4; background:linear-gradient(135deg,#123b2a,#176b43); box-shadow:var(--shadow-card); }
-.context-story-card h1 { font:880 clamp(1.5rem,4vw,2.15rem) var(--font-heading); }
-.context-story-card p { font-size:.91rem; line-height:1.75; }
-.context-story-card ul { display:grid; gap:8px; padding-left:18px; font-size:.82rem; line-height:1.5; }
-.context-story-card .eyebrow { color:#86efac; }
-.context-story-card button { justify-self:start; color:#14532d; background:#fff; }
-.context-story-card small { color:#bbf7d0; }
-.context-question-card { display:grid; gap:15px; }
-.context-question-card h2 { font:780 clamp(1.15rem,3vw,1.45rem) var(--font-heading); line-height:1.5; }
-.context-definition-clue { padding:11px 13px; border-radius:12px; color:#3f536b; background:#f1f5f9; }
-.context-sentence-mode .context-question-card { width:min(100%,760px); margin:auto; padding:clamp(22px,5vw,40px); }
-.context-sentence-mode .context-question-card > h1 { font:850 clamp(1.45rem,4vw,2rem) var(--font-heading); color:var(--ink); }
-.context-sentence-mode .context-question-card > h2 { margin:4px 0 8px; padding:clamp(18px,4vw,28px); border-radius:var(--radius-lg); background:var(--surface-soft); }
 .mode-empty-state,.mode-completion-card { max-width:560px; margin:28px auto; display:grid; justify-items:center; gap:13px; padding:30px; border:1px solid var(--border-card); border-radius:24px; text-align:center; background:#fff; box-shadow:var(--shadow-card); }
 .mode-empty-state img,.mode-completion-card img { width:112px; height:112px; object-fit:contain; }
 .mode-empty-state h1,.mode-completion-card h1 { font:880 1.8rem var(--font-heading); }
@@ -1603,7 +1589,6 @@ body {
 .exercise-progress > i { display:block; width:min(240px,100%); height:7px; overflow:hidden; border-radius:999px; background:#e2e8f0; }
 .exercise-progress > i > b { display:block; height:100%; border-radius:inherit; background:var(--primary-green); transition:width var(--motion-view) ease; }
 .flashcard-mode .exercise-topbar { padding:0 2px; }
-.context-mode .exercise-topbar { padding:0 2px; }
 .flashcard-nav .status-pill { min-height:42px; }
 .progress-view { width:100%; min-width:0; }
 

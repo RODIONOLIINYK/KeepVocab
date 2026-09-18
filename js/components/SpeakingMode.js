@@ -15,7 +15,7 @@ import { driveSync } from '../services/driveSync.js?v=1602';
 import { recordSpeakingStats } from '../services/learningStats.js?v=1602';
 import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=1602';
 import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=1602';
-import { recordModeWordSelections } from '../services/wordSelection.js?v=1602';
+import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=1602';
 import { navigateTo as navigate } from '../utils/navigation.js';
 import { LITHUANIAN_UNITS, PATH_STAGES } from '../data/lithuanianCurriculum.js?v=1602';
 import { LITHUANIAN_A2_SPEAKING_SCENARIOS } from '../data/lithuanianSpeakingScenarios.js?v=1602';
@@ -325,7 +325,7 @@ function renderLessonPreview(container, lessonId, onNavigate) {
   const category = CATEGORY_BY_ID.get(lesson.category);
   const hasKey = Boolean(getGeminiKey());
   const lessonPlan = getLessonPlan(lesson);
-  const vocabularyTargets = selectSpeakingTargets(driveSync.getWords(), { limit: 3, lesson });
+  const vocabularyTargets = selectSpeakingTargets(getActivePracticeWords(driveSync), { limit: 3, lesson });
   const phraseTargets = selectPhrasesForLesson(lesson, readProgress(), { limit: 2 });
   container.innerHTML = `<section class="full-view-stack speaking-preview-shell"><button class="speaking-back" id="lesson-back"><i class="fa-solid fa-arrow-left"></i> All lessons</button>
     <div class="speaking-preview-card">

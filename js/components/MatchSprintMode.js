@@ -2,7 +2,7 @@ import { driveSync } from '../services/driveSync.js?v=1602';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
 import { playInteractionSound } from '../services/interactionSound.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
-import { recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -15,8 +15,7 @@ export function getUnmatchedWords(items, matchedIds) {
 }
 
 export function renderMatchSprintMode(container, onNavigate) {
-  const notebook = driveSync.getActiveNotebook();
-  const allWords = driveSync.getWords().filter(word => word.notebook === notebook && word.word && word.definition);
+  const allWords = getActivePracticeWords(driveSync);
   const round = buildRound(allWords);
   if (round.length < 2) {
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-stopwatch"></i><h2>Add two different words</h2><p>Match Sprint pairs exact meanings with spellings, so a round needs at least two different words in the active month.</p><button class="btn-green-solid" id="match-back">Back to dashboard</button></div></section>`;
