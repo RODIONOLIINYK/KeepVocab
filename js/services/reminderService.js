@@ -2,6 +2,7 @@ import { localDateKey } from '../utils/dates.js';
 
 export const DAILY_REMINDER_ID = 73001;
 export const STREAK_REMINDER_ID = 73002;
+export const REMINDER_HORIZON_DAYS = 7;
 const MIN_SMART_HOUR = 8;
 const MAX_SMART_MINUTES = 21 * 60 + 30;
 const MIN_STREAK_MINUTES = 20 * 60 + 30;
@@ -57,7 +58,14 @@ export function getHabitReminderTime(reviewMoments = [], preferredTime = '19:00'
     const key = localDateKey(moment);
     if (!uniqueDays.has(key)) uniqueDays.set(key, moment.getHours() * 60 + moment.getMinutes());
   }
-  const minutes = [...uniqueDays.values()].sort((a, b) => a - b);
+  // Weekends often have a different rhythm. Use that pattern once it has
+  // enough evidence, otherwise keep the robust median across all study days.
+  const weekend = now.getDay() === 0 || now.getDay() === 6;
+  const matchingDays = [...uniqueDays.entries()].filter(([day]) => {
+    const weekday = new Date(`${day}T12:00:00`).getDay();
+    return (weekday === 0 || weekday === 6) === weekend;
+  }).map(([, minutes]) => minutes);
+  const minutes = (matchingDays.length >= 3 ? matchingDays : [...uniqueDays.values()]).sort((a, b) => a - b);
   if (minutes.length < 3) return normalizeReminderTime(preferredTime);
   const middle = Math.floor(minutes.length / 2);
   const median = minutes.length % 2 ? minutes[middle] : Math.round((minutes[middle - 1] + minutes[middle]) / 2);
@@ -73,6 +81,7 @@ export function buildSmartReminderPlan({
   dueCount = 0,
   courseName = 'Vocabulary',
   hasLesson = false,
+  practiceRoute = hasLesson ? 'learn' : 'daily',
   reviewsToday = 0,
   dailyGoal = 20,
   streak = 0,
@@ -86,14 +95,14 @@ export function buildSmartReminderPlan({
     ? getHabitReminderTime(reviewMoments, preferredTime, now)
     : normalizeReminderTime(preferredTime);
 
-  if (remaining === 0) {
+  if (completed > 0) {
     return {
       time,
       title: `${courseName}: a fresh practice is ready`,
       body: 'Make a little time for learning today. A short practice keeps your habit growing.',
-      route: 'dashboard',
-      reason: 'goal-complete',
-      summary: 'goal complete',
+      route: practiceRoute,
+      reason: remaining === 0 ? 'goal-complete' : 'studied-today',
+      summary: remaining === 0 ? 'goal complete' : 'streak safe today',
       repeat: false,
       nextAt: getTomorrowReminderAt(time, now)
     };
@@ -104,10 +113,10 @@ export function buildSmartReminderPlan({
       time,
       title: `${courseName}: time for a little practice`,
       body: 'Revisit what you have learned and make it stick. Open your practice to see what is ready today.',
-      route: 'review',
+      route: practiceRoute,
       reason: 'due-review',
       summary: `${due} due`,
-      repeat: true,
+      repeat: false,
       nextAt: getNextReminderAt(time, now)
     };
   }
@@ -116,10 +125,10 @@ export function buildSmartReminderPlan({
     time,
     title: hasLesson ? `${courseName}: your next lesson is ready` : `${courseName}: keep your learning growing`,
     body: hasLesson ? 'Pick up where you left off. One short lesson brings you closer to your next real conversation.' : 'A little practice goes a long way. Open KeepVocab and take the next step today.',
-    route: hasLesson ? 'learn' : 'dashboard',
+    route: practiceRoute,
     reason: 'keep-learning',
     summary: `${remaining} goal step${remaining === 1 ? '' : 's'} left`,
-    repeat: true,
+    repeat: false,
     nextAt: getNextReminderAt(time, now)
   };
 }
@@ -144,27 +153,90 @@ export function buildStreakMaintenancePlan({
   const completed = Math.max(0, Number(reviewsToday || 0));
   const time = getStreakReminderTime(primaryTime);
   if (!enabled || !activeStreak || !time) return null;
-  const due = Math.max(0, Number(dueCount || 0));
   const [hour, minute] = time.split(':').map(Number);
   const nextAt = new Date(now);
   nextAt.setHours(hour, minute, 0, 0);
   // Today's study protects today; prepare tomorrow's warning while the app is open.
   // Tomorrow's activity cancels and replaces this one-shot alarm.
   if (completed > 0) nextAt.setDate(nextAt.getDate() + 1);
-  if (nextAt.getTime() <= now.getTime()) {
-    if (now.getHours() < 23) nextAt.setTime(now.getTime() + 5 * 60_000);
-    else return null;
-  }
+  if (nextAt.getTime() <= now.getTime()) return null;
   return {
     time,
     title: `Protect your ${activeStreak}-day streak`,
-    body: 'Your streak will reset if you miss today. Complete one exercise before midnight to keep it going—you can do this.',
-    route: due ? 'review' : 'dashboard',
+    body: `One exercise before midnight keeps your streak alive. ${activeStreak % 7 === 6 ? 'Your next weekly milestone is within reach.' : 'A small step counts—even on a busy day.'}`,
+    route: 'daily',
     reason: 'streak-maintenance',
     summary: `${activeStreak}-day streak safeguard`,
     repeat: false,
     nextAt
   };
+}
+
+// Only the next unprotected day can truthfully threaten the current streak.
+// Later reminders stay encouraging and make no claims about stale streak counts.
+export function buildReminderSchedule(options = {}) {
+  const now = options.now ? new Date(options.now) : new Date();
+  const plan = buildSmartReminderPlan({ ...options, now });
+  if (localDateKey(plan.nextAt) !== localDateKey(now) && options.smartTiming !== false) {
+    plan.time = getHabitReminderTime(options.reviewMoments, options.preferredTime, plan.nextAt);
+    const [hour, minute] = plan.time.split(':').map(Number);
+    plan.nextAt.setHours(hour, minute, 0, 0);
+  }
+  const followUps = [];
+  for (let day = 1; day < REMINDER_HORIZON_DAYS; day += 1) {
+    const date = new Date(plan.nextAt);
+    date.setDate(date.getDate() + day);
+    const time = options.smartTiming === false
+      ? normalizeReminderTime(options.preferredTime || '19:00')
+      : getHabitReminderTime(options.reviewMoments, options.preferredTime, date);
+    const [hour, minute] = time.split(':').map(Number);
+    date.setHours(hour, minute, 0, 0);
+    followUps.push({
+      time, nextAt: date, repeat: false,
+      title: day > 2 ? 'A fresh start is one word away' : 'Your next small win is waiting',
+      body: day > 2 ? 'No catching up required. Come back for a little practice whenever you are ready.' : 'Meet familiar words in a new way. A short workout helps them stick.',
+      route: options.practiceRoute || (options.hasLesson ? 'learn' : 'daily'), reason: 'habit-follow-up'
+    });
+  }
+  const streakPlan = buildStreakMaintenancePlan({
+    enabled: options.streakReminderEnabled !== false,
+    primaryTime: plan.time,
+    reviewsToday: options.reviewsToday,
+    streak: options.streak,
+    now
+  });
+  if (streakPlan) streakPlan.route = options.practiceRoute || (options.hasLesson ? 'learn' : 'daily');
+  return { ...plan, followUps, streakPlan };
+}
+
+export function reminderNotifications(plan, streakPlan = null) {
+  const primary = [plan, ...(plan.followUps || [])].slice(0, REMINDER_HORIZON_DAYS).map((item, index) => {
+    const [hour, minute] = normalizeReminderTime(item.time).split(':').map(Number);
+    return {
+      id: DAILY_REMINDER_ID + index * 10,
+      title: item.title, body: item.body,
+      schedule: item.repeat ? { on: { hour, minute }, allowWhileIdle: true }
+        : { at: item.nextAt || getNextReminderAt(item.time), allowWhileIdle: true },
+      autoCancel: true,
+      extra: { route: item.route, reason: item.reason }
+    };
+  });
+  if (streakPlan) primary.push({
+    id: STREAK_REMINDER_ID, title: streakPlan.title, body: streakPlan.body,
+    schedule: { at: streakPlan.nextAt || getNextReminderAt(streakPlan.time), allowWhileIdle: true },
+    autoCancel: true, extra: { route: streakPlan.route, reason: streakPlan.reason }
+  });
+  return primary;
+}
+
+function reminderIds() {
+  return [DAILY_REMINDER_ID, STREAK_REMINDER_ID,
+    ...Array.from({ length: REMINDER_HORIZON_DAYS - 1 }, (_, index) => DAILY_REMINDER_ID + (index + 1) * 10)]
+    .map(id => ({ id }));
+}
+
+export function supportsReminders(target = globalThis) {
+  return target.Capacitor?.getPlatform?.() === 'android';
 }
 
 function getNativeNotifications(target = globalThis) {
@@ -188,29 +260,10 @@ async function scheduleNative(plugin, plan, streakPlan, requestPermission) {
   if (permission.display !== 'granted' && requestPermission) permission = await plugin.requestPermissions();
   if (permission.display !== 'granted') return { status: 'permission-required', platform: 'native' };
 
-  const [hour, minute] = plan.time.split(':').map(Number);
-  const notifications = [{
-    id: DAILY_REMINDER_ID,
-    title: plan.title,
-    body: plan.body,
-    schedule: plan.repeat
-      ? { on: { hour, minute }, allowWhileIdle: true }
-      : { at: plan.nextAt || getNextReminderAt(plan.time), allowWhileIdle: true },
-    autoCancel: true,
-    extra: { route: plan.route, reason: plan.reason }
-  }];
-  if (streakPlan) notifications.push({
-    id: STREAK_REMINDER_ID,
-    title: streakPlan.title,
-    body: streakPlan.body,
-    schedule: { at: streakPlan.nextAt || getNextReminderAt(streakPlan.time), allowWhileIdle: true },
-    autoCancel: true,
-    extra: { route: streakPlan.route, reason: streakPlan.reason }
-  });
-  await plugin.cancel({ notifications: [{ id: DAILY_REMINDER_ID }, { id: STREAK_REMINDER_ID }] });
-  await plugin.schedule({
-    notifications
-  });
+  const notifications = reminderNotifications(plan, streakPlan);
+  await plugin.cancel({ notifications: reminderIds() });
+  await plugin.removeDeliveredNotifications?.({ notifications: reminderIds() });
+  await plugin.schedule({ notifications });
   return { status: 'scheduled', platform: 'native', nextAt: plan.nextAt || getNextReminderAt(plan.time), streakNextAt: streakPlan?.nextAt || null };
 }
 
@@ -223,10 +276,11 @@ export async function scheduleDailyReminder({
   nextAt = null,
   reason = 'daily-reminder',
   streakPlan = null,
+  followUps = [],
   requestPermission = false
 } = {}) {
   const normalizedTime = normalizeReminderTime(time);
-  const plan = { time: normalizedTime, title, body, route, repeat, reason, nextAt };
+  const plan = { time: normalizedTime, title, body, route, repeat, reason, nextAt, followUps };
   const nativePlugin = getNativeNotifications();
   if (nativePlugin) return serializeNotifications(() => scheduleNative(nativePlugin, plan, streakPlan, requestPermission));
   return { status: 'android-only', platform: 'web', nextAt: null, streakNextAt: null };
@@ -246,5 +300,8 @@ export async function setupReminderNavigation(target = globalThis) {
 
 export async function cancelDailyReminder() {
   const nativePlugin = getNativeNotifications();
-  if (nativePlugin) await serializeNotifications(() => nativePlugin.cancel({ notifications: [{ id: DAILY_REMINDER_ID }, { id: STREAK_REMINDER_ID }] }));
+  if (nativePlugin) await serializeNotifications(async () => {
+    await nativePlugin.cancel({ notifications: reminderIds() });
+    await nativePlugin.removeDeliveredNotifications?.({ notifications: reminderIds() });
+  });
 }

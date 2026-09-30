@@ -392,18 +392,20 @@
   <div class="modal-backdrop" id="engagement-settings-modal">
     <div class="modal-box engagement-modal-box">
       <div class="engagement-modal-heading">
-        <img src="assets/keepvocab-sprig-reminder.webp" alt="Sprig holding a reminder bell">
+        <img id="routine-mascot" src="assets/keepvocab-sprig-thinking.webp" alt="Sprig">
         <div>
           <h2>Build your learning routine</h2>
-          <p>Let Sprig schedule Android system notifications around your study rhythm, due words, and daily goal.</p>
+          <p id="routine-description">Choose your daily goal and the sounds you hear during practice.</p>
         </div>
         <button type="button" class="status-pill offline" id="btn-close-engagement-settings" aria-label="Close routine settings"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <div class="engagement-setting-list">
+        <label class="engagement-time-row" for="routine-daily-goal"><span>Daily exercise goal</span><input type="number" id="routine-daily-goal" min="1" max="200" step="1" value="20" required></label>
+        <div id="android-reminder-settings" class="engagement-setting-list" hidden>
         <label class="engagement-setting-row" for="reminder-enabled">
           <span class="setting-icon bell"><i class="fa-solid fa-bell"></i></span>
-          <span><strong>Daily reminder</strong><small>Get an Android system notification before your streak slips.</small></span>
+          <span><strong>Daily reminder</strong><small>A gentle daily nudge from the installed Android app.</small></span>
           <input type="checkbox" id="reminder-enabled" class="setting-toggle">
         </label>
         <label class="engagement-setting-row" for="smart-reminder-enabled">
@@ -413,13 +415,14 @@
         </label>
         <label class="engagement-setting-row" for="streak-reminder-enabled">
           <span class="setting-icon streak"><i class="fa-solid fa-fire"></i></span>
-          <span><strong>Streak protection</strong><small>If you have no activity, send one later Android notification before the day ends.</small></span>
+          <span><strong>Streak protection</strong><small>One evening rescue if your streak is at risk. Tap it and complete one exercise before midnight.</small></span>
           <input type="checkbox" id="streak-reminder-enabled" class="setting-toggle" checked>
         </label>
         <label class="engagement-time-row" for="reminder-time">
           <span>Preferred reminder time</span>
           <input type="time" id="reminder-time" value="19:00">
         </label>
+        </div>
         <label class="engagement-setting-row" for="sound-enabled">
           <span class="setting-icon sound"><i class="fa-solid fa-music"></i></span>
           <span><strong>App sounds</strong><small>Short taps and success cues during learning.</small></span>
@@ -427,6 +430,7 @@
         </label>
       </div>
 
+      <p id="android-reminder-note" class="reminder-helper" hidden>Android schedules reminders even with the app closed. At most two reminders a day.</p>
       <p id="reminder-helper" class="reminder-helper" role="status" aria-live="polite"></p>
       <div class="engagement-modal-actions">
         <button type="button" class="status-pill offline" id="btn-cancel-engagement-settings">Cancel</button>

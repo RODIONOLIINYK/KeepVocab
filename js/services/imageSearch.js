@@ -655,7 +655,10 @@ export async function findRelevantImages(word, options = {}) {
     ...(provider === 'pexels' && pexelsApiKey ? [{ id: 'pexels', trustedOrder: true, search: concept => findPexelsImages(concept, pexelsApiKey, fetchImpl, { page }) }] : []),
     { id: 'openverse', search: concept => findOpenverseImages(concept, fetchImpl, { page }) },
     { id: 'wikimedia', search: concept => findWikimediaImages(concept, fetchImpl, { page }) },
-    { id: 'loc', search: concept => findLibraryOfCongressImages(concept, fetchImpl, { page }) },
+    // This catalog denies cross-origin renderer requests. Keep it available to
+    // explicit transports and server-side callers, without doomed app requests.
+    ...(options.fetchImpl || typeof globalThis.document === 'undefined'
+      ? [{ id: 'loc', search: concept => findLibraryOfCongressImages(concept, fetchImpl, { page }) }] : []),
     { id: 'nasa', search: concept => findNasaImages(concept, fetchImpl, { page }) }
   ];
   const searchConcepts = concepts.slice(0, 3);

@@ -3,6 +3,17 @@ import assert from 'node:assert/strict';
 
 import { buildWordChoices, stableWordChoices } from '../js/services/wordChoices.js';
 
+test('meaning choices remove duplicate labels and keep the target identity', () => {
+  const target = { id: 'target', word: 'gentle', definition: 'Kind and careful.' };
+  const choices = buildWordChoices(target, [target,
+    { id: 'duplicate', word: 'tender', definition: 'Kind and careful.' },
+    { id: 'different', word: 'vivid', definition: 'Bright and clear.' }
+  ], 4, 'definition');
+  assert.equal(choices.length, 2);
+  assert.ok(choices.some(choice => choice.id === target.id));
+  assert.equal(new Set(choices.map(choice => choice.definition)).size, 2);
+});
+
 test('Choose Word includes the target and only unique alternative spellings', () => {
   const target = { id: '1', word: 'bank', definition: 'A financial institution.' };
   const choices = buildWordChoices(target, [

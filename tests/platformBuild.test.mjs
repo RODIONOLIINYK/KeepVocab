@@ -137,7 +137,7 @@ test('the Library has one Edit action with Pexels-first search, public fallbacks
   assert.match(settings, /id="settings-pexels-key"/);
   assert.match(settings, /Pexels · recommended/);
   assert.match(settings, /included in your private KeepVocab Google Drive backup/);
-  assert.match(library, /Openverse, Wikimedia Commons, Library of Congress, and NASA Images/);
+  assert.match(library, /Openverse, Wikimedia Commons, and NASA Images/);
   assert.match(library, /searched in parallel/);
   assert.match(library, /id="custom-image-url"/);
   assert.match(library, /id="custom-image-file"/);
@@ -236,11 +236,14 @@ test('streak protection uses device notifications without an internal notificati
   assert.doesNotMatch(html, /id="btn-notification-center"/);
   assert.doesNotMatch(html, /id="notification-popover"/);
   assert.match(html, /id="streak-reminder-enabled"/);
-  assert.match(app, /buildStreakMaintenancePlan/);
+  assert.match(app, /buildReminderSchedule/);
   assert.doesNotMatch(app, /setupNotificationCenter/);
   assert.match(reminder, /STREAK_REMINDER_ID = 73002/);
   assert.doesNotMatch(reminder, /Notification\.requestPermission|scheduleWebTimer/);
   assert.match(reminder, /status: 'android-only'/);
+  assert.doesNotMatch(reminder, /keepVocabDesktop/);
+  const desktop = readFileSync(resolve(projectRoot, 'desktop/main.cjs'), 'utf8');
+  assert.doesNotMatch(desktop, /configureReminders|schedule-reminders|new Notification/);
   assert.match(capacitor, /"smallIcon": "ic_stat_keepvocab"/);
   assert.match(notificationIcon, /android:fillColor="#FFFFFFFF"/);
 });

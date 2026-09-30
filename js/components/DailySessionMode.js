@@ -15,14 +15,15 @@ import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {
   if (!word.example || !sentenceUsesTargetForm(word.example, word)) return `Complete with the word meaning “${word.definition}”.`;
-  return replaceTargetWordForm(word.example, word);
+  return `${replaceTargetWordForm(word.example, word)} · Type the saved base word.`;
 }
 
 function exerciseCopy(exercise, word) {
   if (exercise.exerciseType === 'image-recognition') return { title: 'Choose the word', prompt: 'Which word matches this visual idea?' };
+  if (exercise.exerciseType === 'meaning-recognition') return { title: 'Choose the meaning', prompt: `What does “${word.word}” mean?` };
   if (exercise.exerciseType === 'definition-recognition') return { title: 'Recognize it', prompt: word.definition };
   if (exercise.exerciseType === 'listening-recall') return { title: 'Listen & recall', prompt: 'Listen, then type the word.' };
-  if (exercise.exerciseType === 'context-cloze') return { title: 'Complete the context', prompt: cloze(word) };
+  if (exercise.exerciseType === 'context-cloze') return { title: 'Fill the gap (base word)', prompt: cloze(word) };
   if (exercise.exerciseType === 'use-it') return { title: 'Use it', prompt: `Use “${word.word}” in your own sentence.` };
   return { title: 'Recall it', prompt: word.definition };
 }
@@ -62,19 +63,22 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
   const startedAt = performance.now();
 
   async function submit(answer, selectedId = '') {
+    if (answered) return;
     const exercise = queue[index];
     const word = currentWord();
+    if (!word) return;
+    answered = true;
     learnerResponse = String(answer || '').trim();
     confusedWithWordId = selectedId && selectedId !== word.id ? selectedId : '';
     if (exercise.exerciseType === 'use-it') {
       useItResult = await evaluateUseItSentence(word, learnerResponse);
       correct = useItResult.correct;
-    } else if (['image-recognition', 'definition-recognition'].includes(exercise.exerciseType)) correct = evaluateChoiceAnswer(word.id, selectedId);
+    } else if (['image-recognition', 'definition-recognition', 'meaning-recognition'].includes(exercise.exerciseType)) correct = evaluateChoiceAnswer(word.id, selectedId);
     else correct = evaluateRecallAnswer(word.word, learnerResponse);
     const recallType = exercise.exerciseType === 'use-it' ? 'productive'
       : exercise.exerciseType === 'context-cloze' ? 'context'
         : exercise.exerciseType === 'listening-recall' ? 'listening-recall'
-          : ['image-recognition', 'definition-recognition'].includes(exercise.exerciseType) ? 'recognition' : 'free-recall';
+          : ['image-recognition', 'definition-recognition', 'meaning-recognition'].includes(exercise.exerciseType) ? 'recognition' : 'free-recall';
     recordExerciseResult({
       wordId: word.id,
       exerciseType: `daily-${exercise.exerciseType}`,
@@ -82,13 +86,13 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       responseTimeMs: performance.now() - questionStartedAt,
       hintsUsed,
       recallType,
-      producedUnaided: correct && !hintsUsed && !['image-recognition', 'definition-recognition'].includes(exercise.exerciseType),
+      producedUnaided: correct && !hintsUsed && !['image-recognition', 'definition-recognition', 'meaning-recognition'].includes(exercise.exerciseType),
       confusedWithWordId,
       learnerResponse: recallType === 'productive' ? learnerResponse : ''
     });
     playInteractionSound(correct ? 'correct' : 'wrong');
     if (correct) score += 1;
-    answered = true;
+    window.dispatchEvent(new CustomEvent('keepvocab:progress'));
     render();
   }
 
@@ -100,8 +104,8 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     const word = currentWord();
     if (!word) { index += 1; return render(); }
     const copy = exerciseCopy(exercise, word);
-    const choiceMode = ['image-recognition', 'definition-recognition'].includes(exercise.exerciseType);
-    const optionsList = choiceMode ? buildWordChoices(word, words, 4) : [];
+    const choiceMode = ['image-recognition', 'definition-recognition', 'meaning-recognition'].includes(exercise.exerciseType);
+    const optionsList = choiceMode ? buildWordChoices(word, words, 4, exercise.exerciseType === 'meaning-recognition' ? 'definition' : 'word') : [];
     const inputLabel = exercise.exerciseType === 'use-it' ? 'Your sentence' : 'Your answer';
     const sessionLabel = options.kind === 'weak' ? 'Weak Words' : "Today's Workout";
     const mascot = answered ? (correct ? 'assets/keepvocab-sprig-celebrate.webp' : 'assets/keepvocab-sprout-mascot.webp') : 'assets/keepvocab-sprig-thinking.webp';
@@ -145,17 +149,23 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       return;
     }
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-session-shell ${options.kind === 'weak' ? 'is-weak-session' : ''}">
-      <div class="daily-session-top"><button class="daily-exit-button" id="daily-exit" aria-label="Exit ${sessionLabel}"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="daily-exit-label">Exit</span></button><div><span>${sessionLabel}</span><strong>${index + 1} of ${queue.length}</strong></div><span class="daily-score">${score} correct</span></div>
+      <div class="daily-session-top"><button class="daily-exit-button" id="daily-exit" aria-label="Exit ${sessionLabel}"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="daily-exit-label">Exit</span></button><div><span>${sessionLabel}</span><strong>${index + 1} of ${queue.length} · Round ${exercise.round || 1} of ${session.rounds || 2}</strong></div><span class="daily-score">${score} correct</span></div>
       <div class="review-progress" role="progressbar" aria-label="Workout progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${index}"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div>
       <div class="daily-exercise-stage ${answered ? (correct ? 'is-correct' : 'is-incorrect') : ''}"><img class="daily-sprig" src="${mascot}" alt="" aria-hidden="true"><span class="eyebrow">${escapeHtml(copy.title)}</span><h1>${escapeHtml(copy.prompt)}</h1>
         ${exercise.exerciseType === 'image-recognition' && word.imageUrl ? `<figure class="daily-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>` : ''}
         ${exercise.exerciseType === 'listening-recall' ? `<button class="audio-btn-circle large" id="daily-listen" aria-label="Play the word"><i class="fa-solid fa-volume-high"></i></button>` : ''}
-        ${answered ? `<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><i class="fa-solid ${correct ? 'fa-check' : 'fa-arrow-rotate-left'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${correct ? 'Strong answer' : 'Let’s strengthen this one'}</strong><span>${exercise.exerciseType === 'use-it' ? escapeHtml(useItResult?.feedback || '') : (correct ? escapeHtml(word.example || word.definition) : `Answer: <b>${escapeHtml(word.word)}</b>. It will be prioritized next time.`)}</span></div></div><button class="btn-green-solid" id="daily-next">Continue</button>`
-          : choiceMode ? `<div class="choice-grid">${optionsList.map(option => `<button class="choice-button" data-daily-choice="${escapeHtml(option.id)}"><span>${escapeHtml(option.word)}</span></button>`).join('')}</div>`
+        ${answered ? `<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><i class="fa-solid ${correct ? 'fa-check' : 'fa-arrow-rotate-left'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${correct ? 'Strong answer' : 'Let’s strengthen this one'}</strong><span>${exercise.exerciseType === 'use-it' ? escapeHtml(useItResult?.feedback || '') : (correct ? escapeHtml(word.example || word.definition) : `Answer: <b>${escapeHtml(word.word)}</b> — ${escapeHtml(word.definition)}. ${exercise.round === 1 ? 'You’ll meet it again in round two.' : 'It will be prioritized next time.'}`)}</span></div></div><button class="btn-green-solid" id="daily-next">Continue</button>`
+          : choiceMode ? `<div class="choice-grid">${optionsList.map(option => `<button class="choice-button" data-daily-choice="${escapeHtml(option.id)}"><span>${escapeHtml(exercise.exerciseType === 'meaning-recognition' ? option.definition : option.word)}</span></button>`).join('')}</div>`
             : `<form class="practice-answer-form daily-answer-form ${exercise.exerciseType === 'use-it' ? 'is-sentence' : 'is-recall'}" id="daily-form">${exercise.exerciseType === 'use-it' ? `<input id="daily-answer" type="text" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Write a natural sentence" aria-label="${inputLabel}">` : `<input id="daily-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type your answer" aria-label="${inputLabel}">`}<button class="btn-green-solid" data-sound="none">Check</button></form><button class="daily-hint-button" id="daily-hint">Need a hint?</button><p class="daily-hint" id="daily-hint-copy" role="status" aria-live="polite"></p>`}
       </div></div></section>`;
     container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
-    container.querySelector('#daily-listen')?.addEventListener('click', () => speakWord(word.word, 'en-US', 0.86, word.audioUrl));
+    container.querySelector('#daily-listen')?.addEventListener('click', async () => {
+      const played = await speakWord(word.word, driveSync.getActiveCourseId() === 'lithuanian' ? 'lt-LT' : 'en-US', 0.86, word.audioUrl);
+      if (!played && queue[index] === exercise && !answered) {
+        exercise.exerciseType = 'typed-recall';
+        render();
+      }
+    });
     container.querySelectorAll('[data-daily-choice]').forEach(button => button.addEventListener('click', () => submit(button.textContent, button.dataset.dailyChoice)));
     container.querySelector('#daily-form')?.addEventListener('submit', async event => {
       event.preventDefault();

@@ -119,7 +119,7 @@ async function configureAppProtocol() {
 }
 
 function configurePermissions() {
-  const allowedPermissions = new Set(['media', 'notifications']);
+  const allowedPermissions = new Set(['media']);
   const isAllowed = (webContents, permission, requestingOrigin) => {
     const origin = requestingOrigin || webContents?.getURL();
     return allowedPermissions.has(permission) && isAppUrl(origin);

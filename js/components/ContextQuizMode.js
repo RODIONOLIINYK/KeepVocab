@@ -4,14 +4,14 @@ import { getGeminiSettings } from '../services/geminiSettings.js?v=1602';
 import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=1602';
-import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=1602';
+import { DEFAULT_SESSION_WORD_COUNT } from '../services/dailySession.js?v=1602';
 import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
 import { stableWordChoices } from '../services/wordChoices.js?v=1602';
 import { playInteractionSound } from '../services/interactionSound.js?v=1602';
 import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice } from './PracticeElements.js?v=1602';
 import { navigateTo as go } from '../utils/navigation.js';
 
-export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE, now = new Date()) {
+export function selectContextWords(words, limit = DEFAULT_SESSION_WORD_COUNT, now = new Date()) {
   return selectModeWords(words, { mode: 'context', limit, now });
 }
 

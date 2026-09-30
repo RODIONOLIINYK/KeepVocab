@@ -10,7 +10,7 @@ export function renderFlashcardsMode(container, onNavigate) {
   const words = selectModeWords(getActivePracticeWords(driveSync), { mode: 'flashcards', limit: 10 });
   if (!words.length) {
     container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow">Flashcards</span><h1>Your first card is waiting</h1><p>Add a word and KeepVocab will preserve its exact meaning, example, and visual cue.</p><button class="btn-green-solid" id="flashcard-add">Add vocabulary</button></section>`;
-    container.querySelector('#flashcard-add').addEventListener('click', () => document.getElementById('quick-add-modal')?.classList.add('active'));
+    container.querySelector('#flashcard-add').addEventListener('click', () => document.getElementById('btn-header-quick-add')?.click());
     return;
   }
   recordModeWordSelections(driveSync, words, { mode: 'flashcards' });

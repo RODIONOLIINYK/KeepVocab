@@ -93,6 +93,7 @@ export function renderLibraryView(container) {
   let filter = 'all';
   let sort = 'recent';
   let editId = null;
+  let editDraft = {};
   let deleteId = null;
   let imageCandidates = [];
   let imageLoading = false;
@@ -109,7 +110,8 @@ export function renderLibraryView(container) {
   const imageProviderSettings = getImageProviderSettings();
 
   async function loadImageCandidates(wordId, refresh = false) {
-    const word = driveSync.getWords().find(item => item.id === wordId);
+    const saved = driveSync.getWords().find(item => item.id === wordId);
+    const word = saved ? { ...saved, ...editDraft } : null;
     if (!word) return;
     const requestId = ++imageRequestId;
     imageLoading = true;
@@ -168,6 +170,7 @@ export function renderLibraryView(container) {
   function beginEditing(wordId) {
     imageRequestId += 1;
     editId = wordId;
+    editDraft = {};
     deleteId = null;
     imageCandidates = [];
     imageLoading = false;
@@ -255,7 +258,8 @@ export function renderLibraryView(container) {
     const archives = driveSync.getMonthlyArchives();
     const words = selectedWords();
     const groups = groupWordCards(words);
-    const editing = editId ? driveSync.getWords().find(word => word.id === editId) : null;
+    const savedEditing = editId ? driveSync.getWords().find(word => word.id === editId) : null;
+    const editing = savedEditing ? { ...savedEditing, ...editDraft } : null;
     const imageConcepts = [...new Set([customImageConcept, ...suggestedImageScenes].filter(Boolean))];
     if (editing && !activeImageConcept) activeImageConcept = imageConcepts[0] || '';
     const currentImageUrl = removeImage ? '' : (selectedImage?.url || editing?.imageUrl || '');
@@ -284,7 +288,7 @@ export function renderLibraryView(container) {
               <div><strong id="library-image-heading">Visual cue</strong><span>Search automatically, paste an image link, or upload a file.</span></div>
               <button type="button" class="status-pill offline" id="refresh-library-images"><i class="fa-solid fa-images"></i> More images</button>
             </div>
-            <div class="keyless-image-note"><i class="fa-solid fa-images"></i><span><strong>${pexelsActive ? 'Pexels search is active' : 'Public image search is active'}</strong>${pexelsActive ? 'Pexels is searched first; Openverse, Wikimedia Commons, Library of Congress, and NASA Images remain parallel fallbacks.' : 'Openverse, Wikimedia Commons, Library of Congress, and NASA Images are searched in parallel. Configure Pexels under Settings for the larger stock-photo library.'}</span></div>
+            <div class="keyless-image-note"><i class="fa-solid fa-images"></i><span><strong>${pexelsActive ? 'Pexels search is active' : 'Public image search is active'}</strong>${pexelsActive ? 'Pexels is searched first; Openverse, Wikimedia Commons, and NASA Images remain parallel fallbacks.' : 'Openverse, Wikimedia Commons, and NASA Images are searched in parallel. Configure Pexels under Settings for the larger stock-photo library.'}</span></div>
             <div class="custom-image-source">
               <label for="custom-image-url">Custom image link</label>
               <div><input id="custom-image-url" type="url" inputmode="url" placeholder="https://example.com/image.jpg"><button type="button" class="status-pill connected" id="use-custom-image-url">Use link</button></div>
@@ -432,6 +436,11 @@ export function renderLibraryView(container) {
       activeImageConcept = image.searchQuery || activeImageConcept;
       driveSync.updateWord(editId, { imageFeedback: updateImageFeedback(editing, 'more-like-this', image, activeImageConcept) });
       loadImageCandidates(editId, true);
+    });
+    container.querySelector('#library-edit-form')?.addEventListener('input', event => {
+      if (['word', 'phonetic', 'partOfSpeech', 'definition', 'example'].includes(event.target.name)) {
+        editDraft[event.target.name] = event.target.value;
+      }
     });
     container.querySelector('#library-edit-form')?.addEventListener('submit', event => {
       event.preventDefault();

@@ -6,6 +6,13 @@ import { getActivePracticeWords, recordModeWordSelections, selectModeWords } fro
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
+let activeSprintCleanup = null;
+
+export function teardownMatchSprintMode() {
+  activeSprintCleanup?.();
+  activeSprintCleanup = null;
+}
+
 function buildRound(words) {
   return shuffle(selectModeWords(words, { mode: 'match-sprint', limit: 6 }));
 }
@@ -15,6 +22,7 @@ export function getUnmatchedWords(items, matchedIds) {
 }
 
 export function renderMatchSprintMode(container, onNavigate) {
+  teardownMatchSprintMode();
   const allWords = getActivePracticeWords(driveSync);
   const round = buildRound(allWords);
   if (round.length < 2) {
@@ -36,6 +44,8 @@ export function renderMatchSprintMode(container, onNavigate) {
   let animateBoard = true;
   let progressCelebration = false;
   let mistakes = 0;
+  let disposed = false;
+  let feedbackTimer = null;
   const startedAt = performance.now();
   let elapsedSeconds = 0;
   const timer = window.setInterval(() => {
@@ -43,7 +53,11 @@ export function renderMatchSprintMode(container, onNavigate) {
     const display = container.querySelector('#match-timer');
     if (display) display.textContent = `${elapsedSeconds}s`;
   }, 250);
-  window.addEventListener('hashchange', () => window.clearInterval(timer), { once: true });
+  activeSprintCleanup = () => {
+    disposed = true;
+    window.clearInterval(timer);
+    window.clearTimeout(feedbackTimer);
+  };
 
   function complete() {
     window.clearInterval(timer);
@@ -55,7 +69,7 @@ export function renderMatchSprintMode(container, onNavigate) {
   }
 
   function evaluate() {
-    if (!selectedTerm || !selectedDefinition) return;
+    if (disposed || !selectedTerm || !selectedDefinition) return;
     if (selectedTerm === selectedDefinition) {
       const id = selectedTerm;
       correctPair = id;
@@ -64,7 +78,8 @@ export function renderMatchSprintMode(container, onNavigate) {
       render();
       recordExerciseResult({ wordId: id, exerciseType: 'match-sprint', correct: true, responseTimeMs: performance.now() - startedAt, hintsUsed: missed.has(id) ? 1 : 0, recallType: 'recognition', producedUnaided: false });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
-      window.setTimeout(() => {
+      feedbackTimer = window.setTimeout(() => {
+        if (disposed) return;
         matched.add(id);
         correctPair = null;
         selectedTerm = null;
@@ -84,7 +99,8 @@ export function renderMatchSprintMode(container, onNavigate) {
     wrongPair = { term: selectedTerm, definition: selectedDefinition };
     resolvingPair = true;
     render();
-    window.setTimeout(() => {
+    feedbackTimer = window.setTimeout(() => {
+      if (disposed) return;
       wrongPair = null;
       selectedTerm = null;
       selectedDefinition = null;
@@ -94,6 +110,7 @@ export function renderMatchSprintMode(container, onNavigate) {
   }
 
   function render() {
+    if (disposed) return;
     const progress = Math.round(matched.size / round.length * 100);
     const tile = (word, kind, index) => {
       const selected = kind === 'term' ? selectedTerm === word.id : selectedDefinition === word.id;

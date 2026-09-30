@@ -715,7 +715,7 @@ body {
 .engagement-modal-heading > img { width: 72px; height: 72px; object-fit: contain; }
 .engagement-modal-heading h2 { font: 800 1.35rem/1.1 var(--font-heading); }
 .engagement-modal-heading p { margin-top: 5px; color: var(--text-muted); font-size: .78rem; line-height: 1.4; }
-.engagement-modal-heading > button { align-self: start; width: 34px; height: 34px; justify-content: center; padding: 0; }
+.engagement-modal-heading > button { align-self: start; width: 44px; min-height: 44px; height: 44px; justify-content: center; padding: 0; }
 .engagement-setting-list { display: flex; flex-direction: column; gap: 9px; }
 .engagement-setting-row { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: 11px; padding: 12px; border: 1px solid var(--border-card); border-radius: 13px; cursor: pointer; }
 .engagement-setting-row > span:nth-child(2) { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -2001,3 +2001,17 @@ body[data-course-id="english"] .nav-links{width:min(100%,560px)}
 .lesson-form-focus details{margin-top:12px}.lesson-form-focus summary{cursor:pointer;font-weight:700;min-height:36px}
 .lesson-form-table{overflow-x:auto}.lesson-form-table table{width:100%;border-collapse:collapse;font-size:.85rem;text-align:left}
 .lesson-form-table th,.lesson-form-table td{padding:8px;border-bottom:1px solid #bbf7d0}.lesson-form-table caption{text-align:left;font-weight:700}
+
+.today-streak-card { display:flex; align-items:center; gap:16px; padding:18px 22px; border:1px solid var(--border-card); border-radius:20px; background:#fff; }
+.today-streak-card > div { flex:1; min-width:0; }
+.today-streak-card strong { font:750 1rem var(--font-heading); }
+.today-streak-card p { margin-top:4px; color:var(--text-muted); font-size:.8rem; line-height:1.5; }
+.today-streak-card.is-at-risk { background:#fffbeb; border-color:#fde68a; }
+.today-streak-card .settings-icon { flex-shrink:0; color:#b45309; background:#fef3c7; }
+.daily-session-top > div { min-width:0; }
+.daily-session-top strong { line-height:1.4; }
+.daily-session-shell .choice-button span { overflow-wrap:anywhere; }
+@media (max-width:720px) {
+  .today-streak-card { flex-wrap:wrap; padding:16px; gap:12px; }
+  .today-streak-card > button { margin-left:60px; }
+}

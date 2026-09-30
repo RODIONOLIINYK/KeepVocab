@@ -522,3 +522,25 @@ test('wrong image feedback persists exclusions and more-like-this prioritizes th
   assert.equal(results.some(image => image.url === rejectedUrl), false);
   assert.equal(results.some(image => image.url.includes('good.jpg')), true);
 });
+
+test('renderer image search skips catalogs that reject cross-origin requests', async () => {
+  const originalFetch = globalThis.fetch;
+  const originalDocument = globalThis.document;
+  const hosts = [];
+  globalThis.document = {};
+  globalThis.fetch = async url => {
+    hosts.push(new URL(url).hostname);
+    return { ok: true, json: async () => ({ results: [], query: { pages: {} }, collection: { items: [] } }) };
+  };
+  try {
+    await findRelevantImages({ word: 'renderer-transport-check', definition: 'A test object.' }, {
+      aiScenes: false, validateImages: false, extraQueries: ['unusual transport check'], onlyExtraQueries: true
+    });
+    assert.ok(hosts.length > 0);
+    assert.ok(!hosts.includes('www.loc.gov'));
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalDocument === undefined) delete globalThis.document;
+    else globalThis.document = originalDocument;
+  }
+});

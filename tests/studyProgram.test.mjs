@@ -126,7 +126,7 @@ test('native reminders preserve a specified fire date and remove a stale streak 
     const nextAt = new Date(2026, 8, 6, 19);
     await scheduleDailyReminder({ repeat: false, nextAt });
     assert.equal(calls[1][1].notifications[0].schedule.at, nextAt);
-    assert.equal(calls[0][1].notifications.length, 2);
+    assert.equal(calls[0][1].notifications.length, 8);
     await cancelDailyReminder(); assert.equal(calls.at(-1)[0], 'cancel');
   } finally { delete globalThis.Capacitor; }
 });

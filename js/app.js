@@ -10,7 +10,7 @@ import { recordExerciseResult } from './services/exerciseResult.js?v=1602';
 import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=1602';
 import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=1602';
 import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=1602';
-import { appendStudyMoment, buildSmartReminderPlan, buildStreakMaintenancePlan, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation } from './services/reminderService.js?v=1602';
+import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=1602';
 import { localDateKey } from './utils/dates.js';
 
 import { renderReviewView } from './components/ReviewView.js?v=1602';
@@ -18,7 +18,7 @@ import { renderLibraryView } from './components/LibraryView.js?v=1602';
 import { renderStatsView } from './components/StatsView.js?v=1602';
 import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=1602';
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=1602';
-import { renderMatchSprintMode } from './components/MatchSprintMode.js?v=1602';
+import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=1602';
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=1602';
 import { renderDashboardView } from './components/DashboardView.js?v=1602';
 import { renderDailySessionMode } from './components/DailySessionMode.js?v=1602';
@@ -201,11 +201,14 @@ function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
   const settings = { ...driveSync.getSettings(), ...settingsOverride };
   const reviewsToday = settings.reviewsDate === localDateKey(now) ? Number(settings.reviewsToday || 0) : 0;
   const dueCount = getDueWords().length;
-  return buildSmartReminderPlan({
+  return buildReminderSchedule({
     courseName: driveSync.getActiveCourseId() === 'lithuanian' ? 'Lithuanian' : 'Vocabulary',
     hasLesson: driveSync.getActiveCourseId() === 'lithuanian',
+    practiceRoute: driveSync.getActiveCourseId() === 'lithuanian' ? 'learn'
+      : getActivePracticeWords(driveSync).length ? 'daily' : dueCount ? 'review' : 'dashboard',
     preferredTime: settings.reminderTime || '19:00',
     smartTiming: settings.smartReminderEnabled !== false,
+    streakReminderEnabled: settings.streakReminderEnabled !== false,
     reviewMoments: settings.reviewStartMoments || [],
     dueCount,
     reviewsToday,
@@ -216,40 +219,32 @@ function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
 }
 
 function currentStreakMaintenancePlan(settingsOverride = {}, now = new Date()) {
-  const settings = { ...driveSync.getSettings(), ...settingsOverride };
-  const reviewsToday = settings.reviewsDate === localDateKey(now) ? Number(settings.reviewsToday || 0) : 0;
-  const dueCount = getDueWords().length;
-  const primaryPlan = currentSmartReminderPlan(settingsOverride, now);
-  return buildStreakMaintenancePlan({
-    enabled: settings.streakReminderEnabled !== false,
-    primaryTime: primaryPlan.time,
-    reviewsToday,
-    streak: settings.dailyStreak || 0,
-    dueCount,
-    now
-  });
+  return currentSmartReminderPlan(settingsOverride, now).streakPlan;
 }
 
 function rememberStudyStart(now = new Date()) {
   const settings = driveSync.getSettings();
+  if (settings.reviewsDate !== localDateKey(now) || !(Number(settings.reviewsToday) > 0)) return;
   const previous = Array.isArray(settings.reviewStartMoments) ? settings.reviewStartMoments : [];
   const next = appendStudyMoment(previous, now);
   if (next.join('|') !== previous.join('|')) driveSync.updateSettings({ reviewStartMoments: next }, { silent: true });
 }
 
 async function refreshSmartReminder({ requestPermission = false, settingsOverride = {} } = {}) {
+  if (!supportsReminders()) return { status: 'android-only', plan: null };
   const settings = { ...driveSync.getSettings(), ...settingsOverride };
   if (!settings.reminderEnabled) {
     await cancelDailyReminder();
     return { status: 'disabled', plan: null };
   }
   const plan = currentSmartReminderPlan(settingsOverride);
-  const streakPlan = currentStreakMaintenancePlan(settingsOverride);
+  const streakPlan = plan.streakPlan;
   const result = await scheduleDailyReminder({ ...plan, streakPlan, requestPermission });
   return { ...result, plan, streakPlan };
 }
 
 function queueSmartReminderRefresh() {
+  if (!supportsReminders()) return;
   globalThis.clearTimeout(reminderRefreshTimer);
   reminderRefreshTimer = globalThis.setTimeout(() => {
     refreshSmartReminder().catch(error => console.warn('Smart reminder refresh failed.', error));
@@ -313,11 +308,20 @@ function setupEngagementSystem() {
   const streakReminderEnabled = document.getElementById('streak-reminder-enabled');
   const reminderTime = document.getElementById('reminder-time');
   const soundEnabled = document.getElementById('sound-enabled');
+  const routineGoal = document.getElementById('routine-daily-goal');
   const helper = document.getElementById('reminder-helper');
   const save = document.getElementById('btn-save-engagement-settings');
-  if (!modal || !reminderEnabled || !smartReminderEnabled || !streakReminderEnabled || !reminderTime || !soundEnabled || !helper || !save) return;
+  if (!modal || !reminderEnabled || !smartReminderEnabled || !streakReminderEnabled || !reminderTime || !soundEnabled || !routineGoal || !helper || !save) return;
 
+  const remindersAvailable = supportsReminders();
+  document.getElementById('android-reminder-settings').hidden = !remindersAvailable;
+  document.getElementById('android-reminder-note').hidden = !remindersAvailable;
+  if (remindersAvailable) {
+    document.getElementById('routine-description').textContent = 'Let Sprig learn your weekday and weekend rhythm. One exercise keeps your streak safe and silences today’s reminders.';
+    document.getElementById('routine-mascot').src = 'assets/keepvocab-sprig-reminder.webp';
+  }
   const updateHelper = () => {
+    if (!remindersAvailable) { helper.textContent = 'Your goal and sound preferences are saved on this device.'; return; }
     if (!reminderEnabled.checked) {
       helper.textContent = 'Reminders are off. Your progress and app sounds still work normally.';
       return;
@@ -327,20 +331,14 @@ function setupEngagementSystem() {
       smartReminderEnabled: smartReminderEnabled.checked,
       streakReminderEnabled: streakReminderEnabled.checked
     });
-    const streakPlan = buildStreakMaintenancePlan({
-      enabled: streakReminderEnabled.checked,
-      primaryTime: plan.time,
-      reviewsToday: driveSync.getSettings().reviewsDate === localDateKey() ? Number(driveSync.getSettings().reviewsToday || 0) : 0,
-      streak: driveSync.getSettings().dailyStreak || 0,
-      dueCount: getDueWords().length
-    });
+    const streakPlan = plan.streakPlan;
     const learnedTime = smartReminderEnabled.checked && plan.time !== normalizeReminderTime(reminderTime.value);
     const timingCopy = !smartReminderEnabled.checked
       ? 'Fixed timing is active.'
       : learnedTime
-        ? 'Timing learned from your recent study days.'
+        ? 'Timing learned separately for weekdays and weekends.'
         : 'Smart timing will learn after three study days; your preferred time is used for now.';
-    helper.textContent = `Next plan: ${formatReminderTime(plan.time)} · ${plan.title}. ${timingCopy}${streakPlan ? ` A streak safeguard is planned for ${formatReminderTime(streakPlan.time)} if you still have no activity.` : ''}`;
+    helper.textContent = `Next plan: ${formatReminderTime(plan.time)} · ${plan.title}. ${timingCopy}${streakPlan ? ` A streak safeguard is planned for ${formatReminderTime(streakPlan.time)} if you still have no activity. One exercise cancels today’s reminders.` : ''}`;
   };
 
   const updateTimeState = () => {
@@ -357,6 +355,7 @@ function setupEngagementSystem() {
     streakReminderEnabled.checked = settings.streakReminderEnabled !== false;
     reminderTime.value = normalizeReminderTime(settings.reminderTime || '19:00');
     soundEnabled.checked = settings.soundEnabled !== false;
+    routineGoal.value = Math.max(1, Math.min(200, Math.round(Number(settings.dailyGoal) || 20)));
     updateTimeState();
     modal.classList.add('active');
   };
@@ -371,36 +370,44 @@ function setupEngagementSystem() {
     const control = event.target.closest('button, a');
     if (!control) return;
     if (control.id === 'btn-open-engagement-settings' || control.id === 'settings-routine') openSettings();
+    if (control.id === 'dashboard-routine') openSettings();
     if (control.id === 'btn-coach-review') window.location.hash = 'review';
     if (control.id === 'btn-close-engagement-settings' || control.id === 'btn-cancel-engagement-settings') closeSettings();
   });
 
   save.addEventListener('click', async () => {
-    const enabled = reminderEnabled.checked;
+    if (!routineGoal.reportValidity()) return;
+    const enabled = remindersAvailable && reminderEnabled.checked;
     const time = normalizeReminderTime(reminderTime.value);
     const smartTiming = smartReminderEnabled.checked;
     save.disabled = true;
     save.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
-    helper.textContent = enabled ? 'Requesting notification access and scheduling your reminder…' : 'Turning the daily reminder off…';
+    helper.textContent = enabled ? 'Requesting notification access and scheduling your reminder…' : 'Saving your routine…';
     try {
       driveSync.updateSettings({
-        reminderEnabled: enabled,
-        smartReminderEnabled: smartTiming,
-        streakReminderEnabled: streakReminderEnabled.checked,
-        reminderTime: time,
-        soundEnabled: soundEnabled.checked
+        ...(remindersAvailable ? {
+          reminderEnabled: enabled,
+          smartReminderEnabled: smartTiming,
+          streakReminderEnabled: streakReminderEnabled.checked,
+          reminderTime: time
+        } : {}),
+        soundEnabled: soundEnabled.checked,
+        dailyGoal: Number(routineGoal.value)
       });
-      const result = enabled
+      const result = !remindersAvailable ? { status: 'sound-only' } : enabled
         ? await refreshSmartReminder({ requestPermission: true })
         : (await cancelDailyReminder(), { status: 'disabled' });
       updateEngagementCard();
       closeSettings();
+      if (currentView === 'dashboard') navigateTo('dashboard');
       const message = result.status === 'scheduled'
         ? `${smartTiming ? 'Smart' : 'Daily'} reminder set for ${formatReminderTime(result.plan?.time || time)}.`
         : result.status === 'permission-required'
-          ? 'Reminder saved. Enable Android notification permission to receive it.'
+          ? 'Reminder saved. Enable notification permission in system settings to receive it.'
           : result.status === 'android-only'
-            ? 'Routine saved. Reminders are delivered only by the installed Android app.'
+            ? 'Routine saved. Reminders are available in the installed Android app.'
+          : result.status === 'sound-only'
+            ? 'Routine saved.'
           : enabled
             ? 'Routine saved.'
             : 'Daily reminder turned off.';
@@ -414,8 +421,24 @@ function setupEngagementSystem() {
     }
   });
 
+  // Refresh at local-day boundaries and after the app resumes, so yesterday's
+  // goal and streak never keep today's alarms alive after practice.
+  let reminderDay = localDateKey();
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) { updateEngagementCard(); queueSmartReminderRefresh(); }
+  });
+  window.addEventListener('focus', queueSmartReminderRefresh);
+  globalThis.setInterval(() => {
+    const today = localDateKey();
+    if (today === reminderDay) return;
+    reminderDay = today;
+    updateDashboardDerivedState();
+    if (currentView === 'dashboard') navigateTo('dashboard');
+    updateEngagementCard();
+    queueSmartReminderRefresh();
+  }, 60_000);
   const settings = driveSync.getSettings();
-  if (settings.reminderEnabled) {
+  if (remindersAvailable && settings.reminderEnabled) {
     refreshSmartReminder().catch(error => console.warn('Smart reminder restore failed.', error));
   }
 }
@@ -427,6 +450,7 @@ function navigateTo(viewName) {
     viewName = 'dashboard';
     if (window.location.hash === '#learn') window.history.replaceState(null, '', '#dashboard');
   }
+  if (currentView === 'match' && viewName !== 'match') teardownMatchSprintMode();
   if (currentView === 'speaking' && viewName !== 'speaking') teardownSpeakingMode();
   if (currentView === 'useit' && viewName !== 'useit') teardownUseItMode();
   if (currentView === 'lesson' && viewName !== 'lesson') teardownLessonMode();

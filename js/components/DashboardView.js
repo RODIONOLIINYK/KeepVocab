@@ -4,6 +4,7 @@ import { getDueWords } from '../services/srsEngine.js?v=1602';
 import { buildDailySession, weaknessScore } from '../services/dailySession.js?v=1602';
 import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=1602';
 import { completedExercisesToday } from '../services/learningStats.js?v=1602';
+import { supportsReminders } from '../services/reminderService.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -27,7 +28,10 @@ export function renderDashboardView(container, onNavigate) {
   const weak = activeWords.filter(word => weaknessScore(word) > 0).length;
   const recent = activeWords.filter(word => Date.now() - Date.parse(word.createdAt || 0) <= 14 * 24 * 60 * 60 * 1000).length;
   const settings = driveSync.getSettings();
+  const remindersAvailable = supportsReminders();
   const completedToday = completedExercisesToday(settings);
+  const streak = Math.max(0, Number(settings.dailyStreak || 0));
+  const streakAtRisk = streak > 0 && completedToday === 0;
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
   const progress = Math.min(100, Math.round(completedToday / dailyGoal * 100));
   const stages = activeWords.reduce((counts, word) => {
@@ -40,12 +44,13 @@ export function renderDashboardView(container, onNavigate) {
   container.innerHTML = `<section class="today-view" aria-labelledby="today-heading">
     <div class="today-heading-row"><div><span class="eyebrow">Your learning plan</span><h1 id="today-heading">What should I do now?</h1><p>KeepVocab has chosen the next best mix from your real learning needs.</p></div><button class="today-settings-button" id="today-settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button></div>
     <article class="daily-workout-card ${session.exercises.length ? '' : 'is-empty'}">
-      <div class="daily-workout-copy"><span class="daily-kicker"><i class="fa-solid fa-sparkles"></i> Today’s Workout</span><h2>${session.exercises.length ? 'Continue learning' : 'Add your first vocabulary'}</h2><p class="daily-workout-meta">${session.exercises.length ? `${session.exercises.length} exercises · ~${session.estimatedMinutes} min` : 'KeepVocab will build your first session automatically.'}</p>
-        ${session.exercises.length ? `<div class="workout-composition"><span><i class="fa-solid fa-calendar-check"></i> ${session.composition.due} due</span><span><i class="fa-solid fa-heart-pulse"></i> ${session.composition.weak} weak</span><span><i class="fa-solid fa-seedling"></i> ${session.composition.growth} growth</span></div>` : ''}
+      <div class="daily-workout-copy"><span class="daily-kicker"><i class="fa-solid fa-sparkles"></i> Today’s Workout</span><h2>${session.exercises.length ? 'Continue learning' : 'Add your first vocabulary'}</h2><p class="daily-workout-meta">${session.exercises.length ? `${session.wordCount} words · 2 rounds · ${session.exercises.length} exercises · ~${session.estimatedMinutes} min` : 'KeepVocab will build your first session automatically.'}</p>
+        ${session.exercises.length ? `<div class="workout-composition"><span><i class="fa-solid fa-calendar-check"></i> ${session.composition.due} scheduled</span><span><i class="fa-solid fa-rotate"></i> Each word twice</span><span><i class="fa-solid fa-seedling"></i> ${session.wordCount - session.composition.due} focused practice</span></div>` : ''}
         <button class="today-primary-cta" id="start-daily-session"><span>${session.exercises.length ? 'Start workout' : 'Add a word'}</span><i class="fa-solid fa-arrow-right"></i></button>
       </div><div class="daily-workout-mascot"><div class="mascot-bubble">${due ? `${due} due today` : weak ? 'Let’s strengthen a few words' : 'Ready when you are'}</div><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking about your learning plan"></div>
     </article>
     <div class="today-progress-card"><div class="today-progress-copy"><span>Daily progress</span><strong>${completedToday} of ${dailyGoal} exercises</strong></div><div class="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div><span class="today-streak"><i class="fa-solid fa-fire"></i> ${Number(settings.dailyStreak || 0)} day streak</span></div>
+    <section class="today-streak-card ${streakAtRisk ? 'is-at-risk' : ''}" aria-label="Streak status"><span class="settings-icon streak"><i class="fa-solid ${streakAtRisk ? 'fa-fire' : 'fa-seedling'}" aria-hidden="true"></i></span><div><strong>${streakAtRisk ? `Keep your ${streak}-day streak alive` : completedToday > 0 ? 'Your streak is safe today' : 'Start your next small win'}</strong><p>${streakAtRisk ? 'Complete one exercise before midnight. A little practice counts, even on a busy day.' : completedToday > 0 ? `Come back tomorrow to keep it growing.${remindersAvailable ? ' Today’s reminders are quiet.' : ''}` : 'One exercise today is the first step toward your new streak.'}</p></div><button class="status-pill offline" id="dashboard-routine"><i class="fa-solid ${remindersAvailable ? 'fa-bell' : 'fa-gear'}" aria-hidden="true"></i> ${remindersAvailable ? settings.reminderEnabled ? 'Edit reminders' : 'Set a reminder' : 'Routine & sound'}</button></section>
     <div class="today-grid">
       <section class="practice-launchpad" aria-labelledby="practice-heading"><div class="today-section-heading"><div><span class="eyebrow">Choose a skill</span><h2 id="practice-heading">Manual practice</h2></div><span>Optional</span></div><div class="practice-quick-grid">${MODES.map(([view, icon, title, copy]) => `<button class="practice-quick-card" data-practice-view="${view}"><i class="fa-solid ${icon}"></i><span><strong>${title}</strong><small>${copy}</small></span><i class="fa-solid fa-chevron-right"></i></button>`).join('')}</div></section>
       <aside class="today-insights"><section class="today-insight-card"><div class="today-section-heading"><div><span class="eyebrow">Vocabulary health</span><h2>${activeWordCount} saved this month</h2><small>${activeWords.length} tracked meaning${activeWords.length === 1 ? '' : 's'}</small></div></div><div class="mastery-mini-list"><div><span>Recognized</span><strong>${stages.recognized + stages.recalled + stages.context + stages.productive}</strong></div><div><span>Reliably recalled</span><strong>${stages.recalled + stages.context + stages.productive}</strong></div><div><span>Used in context</span><strong>${stages.context + stages.productive}</strong></div><div><span>Used productively</span><strong>${stages.productive}</strong></div></div><button class="text-action" data-practice-view="stats">See progress <i class="fa-solid fa-arrow-right"></i></button></section>

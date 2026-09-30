@@ -72,9 +72,10 @@ of an exercise. Saved progress remains in the existing local storage.
 
 ## Reminders
 
-Android reminders are local scheduled notifications. Repeating copy avoids frozen
-counts; exact goal and due counts are shown from current data inside the app.
-Streak warnings are dated one-shot notifications, prepared for today if no study
-has been recorded or tomorrow after studying today. Activity, course switches,
-settings changes, and day rollover replace stale alarms. Delivery still follows
-Android notification permission and battery-management settings.
+Reminders are Android-only. macOS has daily-goal and sound settings without
+notification permissions, scheduling, or reminder controls. Android schedules a
+rolling week of dated daily nudges, learns separate weekday/weekend study times,
+and sends at most one evening rescue for the next unprotected streak day. One
+completed exercise removes today’s pending and delivered reminders. Follow-up
+copy avoids stale streak counts. See [workouts and reminders](practice-and-reminders.md).
+Delivery follows Android notification permission and alarm/battery restrictions.

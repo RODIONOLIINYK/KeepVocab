@@ -48,6 +48,5 @@ export function renderStatsView(container, onNavigate) {
     const value = Math.max(1, Math.min(200, Number(container.querySelector('#daily-goal-input').value) || 20));
     driveSync.updateSettings({ dailyGoal: value });
     container.querySelector('#goal-save-message').textContent = `Daily goal saved: ${value} exercises.`;
-    window.dispatchEvent(new CustomEvent('keepvocab:progress'));
   });
 }

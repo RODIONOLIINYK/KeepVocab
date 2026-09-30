@@ -1,9 +1,9 @@
 import { shuffleItems as shuffle } from '../utils/collections.js';
 
-export function buildWordChoices(target, words, limit = 4) {
-  const seenSpellings = new Set([target.word.trim().toLowerCase()]);
+export function buildWordChoices(target, words, limit = 4, label = 'word') {
+  const seenSpellings = new Set([String(target[label]).trim().toLowerCase()]);
   const alternatives = shuffle(words.filter(word => word.id !== target.id)).filter(word => {
-    const spelling = word.word.trim().toLowerCase();
+    const spelling = String(word[label] || '').trim().toLowerCase();
     if (seenSpellings.has(spelling)) return false;
     seenSpellings.add(spelling);
     return true;
