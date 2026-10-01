@@ -1,6 +1,8 @@
 # Practice and reminders
 
-The Practice tab and Today’s Start workout button open the same session. Practice
+The Practice tab and Today’s Start workout button open the same session. The
+compact card design from 1.7.4 is restored, including the keyboard icon, saved
+definition block, plain answer field, progress row, and compact feedback. Practice
 uses the 1.7.4 selection rules and ten-exercise limit, with no mandatory second
 round. The selection prioritizes recent mistakes and due words, then growth.
 It keeps one meaning per spelling. Tiny libraries retain the earlier behavior:
