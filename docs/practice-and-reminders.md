@@ -1,20 +1,25 @@
-# Workouts and reminders
+# Practice and reminders
 
-Today’s Workout selects up to 10 distinct words from the active Library month
-and presents each twice. The first round blends word, meaning, and available
-image recognition. The second asks for typed recall, listening, or a gap in a
-saved example. Gaps only appear when the example contains the target word or
-one of its forms; they request the saved base word. Words without images or
-usable examples fall back to supported exercises. A single-word library has
-two recall exercises rather than a multiple-choice question with one answer.
-Later workouts vary the skill a word used on its last visit.
+The Practice tab and Today’s Start workout button open the same session. Practice
+uses the 1.7.4 selection rules and ten-exercise limit, with no mandatory second
+round. The selection prioritizes recent mistakes and due words, then growth.
+It keeps one meaning per spelling. Tiny libraries retain the earlier behavior:
+one word gets one task, two words get four tasks, and three words get six tasks;
+repeats in these small pools are separated by other words.
 
-Use It and Weak Words remain standalone choices in Manual practice. The workout
-still gives due vocabulary and recent mistakes priority when selecting words.
-Each submitted answer counts as one study activity; rapid repeat clicks cannot
-count it twice. One exercise is enough to protect the calendar-day streak.
+With enough saved images available among the selected words, a ten-task session
+contains seven typed answers from the saved descriptions and three Visual Match
+questions. The exercise mix never changes which words were selected. Missing or
+unloadable images fall back to typing the word from its description. The main
+practice session includes no listening, context gaps, meaning choices, Use It,
+or Weak Words exercises. Specialized modes remain optional manual choices.
 
-Reminders are opt-in in Settings → Routine & sound, or Today → Set a reminder on Android. macOS has goal and sound settings only.
+The streak message and routine controls are in Settings. Today retains its
+compact progress and streak counters. Each submitted answer counts once as
+study activity, and one exercise protects the calendar-day streak.
+
+Reminders are opt-in on Android in Settings → Routine & sound. macOS has goal
+and sound settings only.
 Smart timing uses the median of recent study starts, rounded to 15 minutes and
 limited to 08:00–21:30. With at least three samples in each group, weekdays and
 weekends use their own medians. Fixed timing uses the chosen time instead.
@@ -37,7 +42,7 @@ are Android-only. macOS contains no notification scheduling, permission request,
 or reminder controls; its routine dialog keeps goal and sound preferences.
 The browser version also hides reminder controls.
 
-Validation covers two-pass scheduling, exercise variation, tiny libraries,
-unusable clues, weekday/weekend timing, suppression after activity, native alarm
+Validation covers the restored word selection, description and visual task mix,
+tiny libraries, missing or broken images, weekday/weekend timing, suppression after activity, native alarm
 replacement, Android-only availability and cancellation. Device-level
 notification delivery requires checking an installed build on the target OS.

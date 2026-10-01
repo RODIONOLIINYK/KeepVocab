@@ -74,7 +74,7 @@ test('central results update adaptive scheduling, mastery, and mistakes together
 });
 
 test('learning modes report outcomes through the centralized result API', async () => {
-  const files = ['ReviewView.js', 'PracticeModes.js', 'VisualMatchMode.js', 'MatchSprintMode.js', 'FlashcardsMode.js', 'ContextQuizMode.js', 'DailySessionMode.js', 'UseItMode.js'];
+  const files = ['PracticeModes.js', 'VisualMatchMode.js', 'MatchSprintMode.js', 'FlashcardsMode.js', 'ContextQuizMode.js', 'DailySessionMode.js', 'UseItMode.js'];
   for (const file of files) {
     const source = await readFile(new URL(`../js/components/${file}`, import.meta.url), 'utf8');
     assert.match(source, /recordExerciseResult/);

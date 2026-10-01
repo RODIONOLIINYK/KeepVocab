@@ -2002,16 +2002,10 @@ body[data-course-id="english"] .nav-links{width:min(100%,560px)}
 .lesson-form-table{overflow-x:auto}.lesson-form-table table{width:100%;border-collapse:collapse;font-size:.85rem;text-align:left}
 .lesson-form-table th,.lesson-form-table td{padding:8px;border-bottom:1px solid #bbf7d0}.lesson-form-table caption{text-align:left;font-weight:700}
 
-.today-streak-card { display:flex; align-items:center; gap:16px; padding:18px 22px; border:1px solid var(--border-card); border-radius:20px; background:#fff; }
-.today-streak-card > div { flex:1; min-width:0; }
-.today-streak-card strong { font:750 1rem var(--font-heading); }
-.today-streak-card p { margin-top:4px; color:var(--text-muted); font-size:.8rem; line-height:1.5; }
-.today-streak-card.is-at-risk { background:#fffbeb; border-color:#fde68a; }
-.today-streak-card .settings-icon { flex-shrink:0; color:#b45309; background:#fef3c7; }
+.settings-streak-status { margin:16px 0; padding:14px 16px; border:1px solid var(--border-card); border-radius:14px; background:var(--bg-app); }
+.settings-streak-status strong { font:750 1rem var(--font-heading); }
+.settings-streak-status p { margin-top:4px; color:var(--text-muted); font-size:.8rem; line-height:1.5; }
+.settings-streak-status.is-at-risk { background:#fffbeb; border-color:#fde68a; }
 .daily-session-top > div { min-width:0; }
 .daily-session-top strong { line-height:1.4; }
 .daily-session-shell .choice-button span { overflow-wrap:anywhere; }
-@media (max-width:720px) {
-  .today-streak-card { flex-wrap:wrap; padding:16px; gap:12px; }
-  .today-streak-card > button { margin-left:60px; }
-}

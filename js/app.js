@@ -13,7 +13,6 @@ import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSo
 import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=1602';
 import { localDateKey } from './utils/dates.js';
 
-import { renderReviewView } from './components/ReviewView.js?v=1602';
 import { renderLibraryView } from './components/LibraryView.js?v=1602';
 import { renderStatsView } from './components/StatsView.js?v=1602';
 import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=1602';
@@ -205,7 +204,7 @@ function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
     courseName: driveSync.getActiveCourseId() === 'lithuanian' ? 'Lithuanian' : 'Vocabulary',
     hasLesson: driveSync.getActiveCourseId() === 'lithuanian',
     practiceRoute: driveSync.getActiveCourseId() === 'lithuanian' ? 'learn'
-      : getActivePracticeWords(driveSync).length ? 'daily' : dueCount ? 'review' : 'dashboard',
+      : getActivePracticeWords(driveSync).length ? 'review' : dueCount ? 'review' : 'dashboard',
     preferredTime: settings.reminderTime || '19:00',
     smartTiming: settings.smartReminderEnabled !== false,
     streakReminderEnabled: settings.streakReminderEnabled !== false,
@@ -370,7 +369,6 @@ function setupEngagementSystem() {
     const control = event.target.closest('button, a');
     if (!control) return;
     if (control.id === 'btn-open-engagement-settings' || control.id === 'settings-routine') openSettings();
-    if (control.id === 'dashboard-routine') openSettings();
     if (control.id === 'btn-coach-review') window.location.hash = 'review';
     if (control.id === 'btn-close-engagement-settings' || control.id === 'btn-cancel-engagement-settings') closeSettings();
   });
@@ -444,8 +442,12 @@ function setupEngagementSystem() {
 }
 
 function navigateTo(viewName) {
+  if (viewName === 'daily') {
+    viewName = 'review';
+    if (location.hash === '#daily') history.replaceState(null, '', '#review');
+  }
   if (viewName === 'challenge') viewName = 'choose';
-  if (!['dashboard', 'learn', 'lesson', 'daily', 'weak', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'speaking', 'settings'].includes(viewName)) viewName = 'dashboard';
+  if (!['dashboard', 'learn', 'lesson', 'weak', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'speaking', 'settings'].includes(viewName)) viewName = 'dashboard';
   if (viewName === 'learn' && !getCourseDefinition(driveSync.getActiveCourseId()).hasLearningPath) {
     viewName = 'dashboard';
     if (window.location.hash === '#learn') window.history.replaceState(null, '', '#dashboard');
@@ -460,7 +462,7 @@ function navigateTo(viewName) {
   document.body.classList.toggle('learning-view', viewName === 'learn');
   document.body.classList.toggle('lesson-view', viewName === 'lesson');
   document.body.classList.toggle('dashboard-view', viewName === 'dashboard');
-  document.body.classList.toggle('immersive-view', ['learn', 'lesson', 'daily', 'weak', 'review', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'library', 'stats', 'settings'].includes(viewName));
+  document.body.classList.toggle('immersive-view', ['learn', 'lesson', 'weak', 'review', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'library', 'stats', 'settings'].includes(viewName));
   const activeMonthLabel = document.getElementById('active-month-label');
   if (activeMonthLabel) activeMonthLabel.textContent = driveSync.getActiveNotebook().replace(/ Vocabulary$/, '');
 
@@ -474,12 +476,10 @@ function navigateTo(viewName) {
   const container = document.getElementById('view-container');
   if (!container) return;
 
-  if (viewName === 'daily') {
-    renderDailySessionMode(container, navigateTo);
-  } else if (viewName === 'weak') {
+  if (viewName === 'weak') {
     renderDailySessionMode(container, navigateTo, { kind: 'weak' });
   } else if (viewName === 'review') {
-    renderReviewView(container, navigateTo);
+    renderDailySessionMode(container, navigateTo);
   } else if (viewName === 'learn') {
     renderLearningPathView(container, navigateTo);
   } else if (viewName === 'lesson') {

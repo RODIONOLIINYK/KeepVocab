@@ -118,5 +118,5 @@ test('manual and Weak Words Use It modes share the same exercise component and e
   assert.match(sessionSource, /mountUseItExercise/);
   assert.match(sessionSource, /evaluateUseItSentence/);
   assert.match(sessionSource, /daily-session-shell/);
-  assert.match(sessionSource, /Today's Workout/);
+  assert.match(sessionSource, /sessionLabel = options.kind === 'weak' \? 'Weak Words' : 'Practice'/);
 });

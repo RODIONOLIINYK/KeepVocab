@@ -25,7 +25,7 @@ function exerciseCopy(exercise, word) {
   if (exercise.exerciseType === 'listening-recall') return { title: 'Listen & recall', prompt: 'Listen, then type the word.' };
   if (exercise.exerciseType === 'context-cloze') return { title: 'Fill the gap (base word)', prompt: cloze(word) };
   if (exercise.exerciseType === 'use-it') return { title: 'Use it', prompt: `Use “${word.word}” in your own sentence.` };
-  return { title: 'Recall it', prompt: word.definition };
+  return { title: 'Write the word', prompt: word.definition };
 }
 
 export function renderDailySessionMode(container, onNavigate, options = {}) {
@@ -55,7 +55,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
   function complete() {
     const improved = driveSync.getWords().filter(word => (initialWeak.get(word.id) || 0) > weaknessScore(word)).length;
     recordSessionCompletion(session, { kind: options.kind || 'daily', exercises: queue.length, correct: score, minutes: Math.max(1, Math.round((performance.now() - startedAt) / 60_000)), weakWordsImproved: improved });
-    container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-complete-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Workout complete</span><h1>${options.kind === 'weak' ? 'Your weak words are getting stronger' : 'You moved your vocabulary forward'}</h1><p>${score} of ${queue.length} exercises were correct. ${improved ? `${improved} weak word${improved === 1 ? '' : 's'} improved.` : 'Mistakes are already shaping your next workout.'}</p><div class="daily-complete-metrics"><div><strong>${score}</strong><span>correct</span></div><div><strong>${queue.length}</strong><span>exercises</span></div><div><strong>${improved}</strong><span>recovered</span></div></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></section>`;
+    container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-complete-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Practice complete</span><h1>${options.kind === 'weak' ? 'Your weak words are getting stronger' : 'You moved your vocabulary forward'}</h1><p>${score} of ${queue.length} exercises were correct. ${improved ? `${improved} weak word${improved === 1 ? '' : 's'} improved.` : 'Mistakes are already shaping your next workout.'}</p><div class="daily-complete-metrics"><div><strong>${score}</strong><span>correct</span></div><div><strong>${queue.length}</strong><span>exercises</span></div><div><strong>${improved}</strong><span>recovered</span></div></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></section>`;
     container.querySelector('#daily-finish').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelector('#daily-stats').addEventListener('click', () => go('stats', onNavigate));
   }
@@ -107,7 +107,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     const choiceMode = ['image-recognition', 'definition-recognition', 'meaning-recognition'].includes(exercise.exerciseType);
     const optionsList = choiceMode ? buildWordChoices(word, words, 4, exercise.exerciseType === 'meaning-recognition' ? 'definition' : 'word') : [];
     const inputLabel = exercise.exerciseType === 'use-it' ? 'Your sentence' : 'Your answer';
-    const sessionLabel = options.kind === 'weak' ? 'Weak Words' : "Today's Workout";
+    const sessionLabel = options.kind === 'weak' ? 'Weak Words' : 'Practice';
     const mascot = answered ? (correct ? 'assets/keepvocab-sprig-celebrate.webp' : 'assets/keepvocab-sprout-mascot.webp') : 'assets/keepvocab-sprig-thinking.webp';
     if (options.kind === 'weak' && exercise.exerciseType === 'use-it') {
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell weak-use-it-shell"><div class="practice-topline"><button class="status-pill offline" id="daily-exit"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Today</button><span>Weak Words · ${index + 1} of ${queue.length}</span><strong>${score} correct</strong></div><div class="review-progress" role="progressbar" aria-label="Weak Words progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${index}"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div><div id="weak-useit-exercise-root"></div></div></section>`;
@@ -149,15 +149,20 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       return;
     }
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-session-shell ${options.kind === 'weak' ? 'is-weak-session' : ''}">
-      <div class="daily-session-top"><button class="daily-exit-button" id="daily-exit" aria-label="Exit ${sessionLabel}"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="daily-exit-label">Exit</span></button><div><span>${sessionLabel}</span><strong>${index + 1} of ${queue.length} · Round ${exercise.round || 1} of ${session.rounds || 2}</strong></div><span class="daily-score">${score} correct</span></div>
-      <div class="review-progress" role="progressbar" aria-label="Workout progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${index}"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div>
+      <div class="daily-session-top"><button class="daily-exit-button" id="daily-exit" aria-label="Exit ${sessionLabel}"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="daily-exit-label">Exit</span></button><div><span>${sessionLabel}</span><strong>${index + 1} of ${queue.length}</strong></div><span class="daily-score">${score} correct</span></div>
+      <div class="review-progress" role="progressbar" aria-label="Practice progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${index}"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div>
       <div class="daily-exercise-stage ${answered ? (correct ? 'is-correct' : 'is-incorrect') : ''}"><img class="daily-sprig" src="${mascot}" alt="" aria-hidden="true"><span class="eyebrow">${escapeHtml(copy.title)}</span><h1>${escapeHtml(copy.prompt)}</h1>
         ${exercise.exerciseType === 'image-recognition' && word.imageUrl ? `<figure class="daily-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>` : ''}
         ${exercise.exerciseType === 'listening-recall' ? `<button class="audio-btn-circle large" id="daily-listen" aria-label="Play the word"><i class="fa-solid fa-volume-high"></i></button>` : ''}
-        ${answered ? `<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><i class="fa-solid ${correct ? 'fa-check' : 'fa-arrow-rotate-left'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${correct ? 'Strong answer' : 'Let’s strengthen this one'}</strong><span>${exercise.exerciseType === 'use-it' ? escapeHtml(useItResult?.feedback || '') : (correct ? escapeHtml(word.example || word.definition) : `Answer: <b>${escapeHtml(word.word)}</b> — ${escapeHtml(word.definition)}. ${exercise.round === 1 ? 'You’ll meet it again in round two.' : 'It will be prioritized next time.'}`)}</span></div></div><button class="btn-green-solid" id="daily-next">Continue</button>`
+        ${answered ? `<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><i class="fa-solid ${correct ? 'fa-check' : 'fa-arrow-rotate-left'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${correct ? 'Strong answer' : 'Let’s strengthen this one'}</strong><span>${exercise.exerciseType === 'use-it' ? escapeHtml(useItResult?.feedback || '') : (correct ? escapeHtml(word.example || word.definition) : `Answer: <b>${escapeHtml(word.word)}</b> — ${escapeHtml(word.definition)}. It will be prioritized next time.`)}</span></div></div><button class="btn-green-solid" id="daily-next">Continue</button>`
           : choiceMode ? `<div class="choice-grid">${optionsList.map(option => `<button class="choice-button" data-daily-choice="${escapeHtml(option.id)}"><span>${escapeHtml(exercise.exerciseType === 'meaning-recognition' ? option.definition : option.word)}</span></button>`).join('')}</div>`
             : `<form class="practice-answer-form daily-answer-form ${exercise.exerciseType === 'use-it' ? 'is-sentence' : 'is-recall'}" id="daily-form">${exercise.exerciseType === 'use-it' ? `<input id="daily-answer" type="text" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Write a natural sentence" aria-label="${inputLabel}">` : `<input id="daily-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type your answer" aria-label="${inputLabel}">`}<button class="btn-green-solid" data-sound="none">Check</button></form><button class="daily-hint-button" id="daily-hint">Need a hint?</button><p class="daily-hint" id="daily-hint-copy" role="status" aria-live="polite"></p>`}
       </div></div></section>`;
+    container.querySelector('.daily-image-prompt img')?.addEventListener('error', () => {
+      if (queue[index] !== exercise || answered) return;
+      exercise.exerciseType = 'typed-recall';
+      render();
+    });
     container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelector('#daily-listen')?.addEventListener('click', async () => {
       const played = await speakWord(word.word, driveSync.getActiveCourseId() === 'lithuanian' ? 'lt-LT' : 'en-US', 0.86, word.audioUrl);
