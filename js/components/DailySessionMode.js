@@ -1,4 +1,4 @@
-import { getActivePracticeWords } from '../services/wordSelection.js?v=1602';
+import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=1602';
 import { driveSync } from '../services/driveSync.js?v=1602';
 import { buildDailySession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=1602';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
@@ -33,12 +33,22 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
   const words = getActivePracticeWords(driveSync);
   const session = options.kind === 'weak' ? buildWeakWordsSession(words) : buildDailySession(words);
   if (!session.exercises.length) {
+    if (options.kind !== 'weak' && words.length) {
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell review-recall-shell"><div class="useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>All caught up</h2><p>No words are due in this notebook. Your answers set when each word needs another review.</p><div class="inline-actions"><button class="btn-green-solid" id="daily-empty-action">Back to Today</button><button class="status-pill offline" id="daily-open-library">Open library</button></div></div></div></section>`;
+      container.querySelector('#daily-empty-action').addEventListener('click', () => go('dashboard', onNavigate));
+      container.querySelector('#daily-open-library').addEventListener('click', () => go('library', onNavigate));
+      return;
+    }
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprout-mascot.webp" alt="Sprig"><h2>${options.kind === 'weak' ? 'No weak words yet' : 'Build your first workout'}</h2><p>${options.kind === 'weak' ? 'Mistakes from any learning mode will appear here automatically.' : 'Add vocabulary and KeepVocab will choose the right first exercises.'}</p><button class="btn-green-solid" id="daily-empty-action">${options.kind === 'weak' ? 'Back to Today' : 'Add a word'}</button></div></section>`;
     container.querySelector('#daily-empty-action').addEventListener('click', () => options.kind === 'weak' ? go('dashboard', onNavigate) : document.getElementById('btn-header-quick-add')?.click());
     return;
   }
 
   const queue = [...session.exercises];
+  if (options.kind !== 'weak') {
+    const selectedIds = new Set(queue.map(exercise => exercise.wordId));
+    recordModeWordSelections(driveSync, words.filter(word => selectedIds.has(word.id)), { mode: 'practice' });
+  }
   const initialWeak = new Map(words.map(word => [word.id, weaknessScore(word)]));
   let index = 0;
   let score = 0;
@@ -57,7 +67,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     const improved = driveSync.getWords().filter(word => (initialWeak.get(word.id) || 0) > weaknessScore(word)).length;
     recordSessionCompletion(session, { kind: options.kind || 'daily', exercises: queue.length, correct: score, minutes: Math.max(1, Math.round((performance.now() - startedAt) / 60_000)), weakWordsImproved: improved });
     if (options.kind !== 'weak') {
-      container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-complete-heading"><div class="spec-card practice-shell review-recall-shell"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-dumbbell"></i> Practice</div><span class="muted-label">${escapeHtml(driveSync.getActiveNotebook())}</span></div><div class="useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2 id="practice-complete-heading">Practice complete</h2><p>${score} of ${queue.length} exercises were correct. Missed words will lead your next practice.</p><div class="review-score-orb"><strong>${score}</strong><span>correct</span></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-complete-heading"><div class="spec-card practice-shell review-recall-shell"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-dumbbell"></i> Practice</div><span class="muted-label">${escapeHtml(driveSync.getActiveNotebook())}</span></div><div class="useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2 id="practice-complete-heading">Practice complete</h2><p>${score} of ${queue.length} exercises were correct. Missed words return sooner; correct answers earn a longer break.</p><div class="review-score-orb"><strong>${score}</strong><span>correct</span></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></div></section>`;
     } else {
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-complete-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Practice complete</span><h1>${options.kind === 'weak' ? 'Your weak words are getting stronger' : 'You moved your vocabulary forward'}</h1><p>${score} of ${queue.length} exercises were correct. ${improved ? `${improved} weak word${improved === 1 ? '' : 's'} improved.` : 'Mistakes are already shaping your next workout.'}</p><div class="daily-complete-metrics"><div><strong>${score}</strong><span>correct</span></div><div><strong>${queue.length}</strong><span>exercises</span></div><div><strong>${improved}</strong><span>recovered</span></div></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></section>`;
     }

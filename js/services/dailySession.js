@@ -1,5 +1,6 @@
 import { getDueWords } from './srsEngine.js?v=1602';
 import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=1602';
+import { normalizeWordPracticeStats, selectModeWords, wordRecommendationScore } from './wordSelection.js?v=1602';
 
 export const DEFAULT_SESSION_SIZE = 10;
 export const DEFAULT_SESSION_WORD_COUNT = DEFAULT_SESSION_SIZE;
@@ -17,15 +18,11 @@ export function weaknessScore(word, now = new Date()) {
 }
 
 export function practicePriorityScore(word, now = new Date()) {
-  const weakness = weaknessScore(word, now);
   const dueAt = Date.parse(word?.nextReviewDate || word?.createdAt || 0);
   const overdueDays = Number.isFinite(dueAt) && dueAt <= now.getTime()
     ? Math.min(365, Math.max(0, (now.getTime() - dueAt) / (24 * 60 * 60 * 1000)))
     : 0;
-  const mastery = normalizeMastery(word, now);
-  const recallNeed = 1 - Math.max(mastery.recognition, mastery.recall, mastery.context, mastery.productive, mastery.speaking);
-  const neverPracticed = mastery.lastPracticedAt ? 0 : 1;
-  return weakness * 10_000 + (dueAt <= now.getTime() ? 1_000 : 0) + overdueDays + recallNeed * 100 + neverPracticed * 25;
+  return wordRecommendationScore(word, { now }) + Math.min(30, overdueDays);
 }
 
 export function rankPracticeWords(words, options = {}) {
@@ -43,8 +40,12 @@ export function rankPracticeWords(words, options = {}) {
 }
 
 export function selectPracticeWords(words, options = {}) {
+  const now = options.now ? new Date(options.now) : new Date();
   const limit = Math.max(0, Math.round(options.limit ?? DEFAULT_SESSION_SIZE));
-  return rankPracticeWords(words, options).slice(0, limit);
+  return selectModeWords(words, {
+    mode: 'practice', limit, now, rotateWithinFocus: true,
+    priorityScore: practicePriorityScore
+  });
 }
 
 export function recommendedExerciseType(word, previousTypes = []) {
@@ -93,6 +94,26 @@ function takeUnique(pool, count, selectedIds) {
 export function buildDailySession(words, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
   const targetSize = Math.max(1, Math.round(options.targetSize || DEFAULT_SESSION_SIZE));
+  if (options.kind !== 'weak') {
+    // Only the scheduled Practice session requires due words. Optional manual
+    // modes can still use the full library for extra practice.
+    const selected = selectPracticeWords(getDueWords(words, now), { now, limit: targetSize }).map(word => {
+      const stats = normalizeWordPracticeStats(word);
+      const source = stats.lastAnswerCorrect === false || normalizeMistakes(word).consecutiveFailures > 0
+        ? 'weak' : stats.attempts > 0 || word.lastReviewedAt ? 'due' : 'growth';
+      return { word, source };
+    });
+    const exercises = practiceExercises(selected, words);
+    const composition = exercises.reduce((counts, exercise) => {
+      counts[exercise.source] += 1;
+      return counts;
+    }, { due: 0, weak: 0, growth: 0 });
+    return {
+      id: `daily-${now.toISOString().slice(0, 10)}-${selected.length}`,
+      createdAt: now.toISOString(), exercises, wordCount: selected.length, composition,
+      estimatedMinutes: exercises.length ? Math.max(1, Math.ceil(exercises.length * 32 / 60)) : 0
+    };
+  }
   const mix = { ...DEFAULT_SESSION_MIX, ...(options.mix || {}) };
   const unique = rankPracticeWords(words, { now });
   if (!unique.length) return { id: `daily-${now.toISOString().slice(0, 10)}`, createdAt: now.toISOString(), exercises: [], composition: { due: 0, weak: 0, growth: 0 }, estimatedMinutes: 0 };
@@ -117,7 +138,7 @@ export function buildDailySession(words, options = {}) {
   selected.push(...takeUnique(duePool, sessionSize - selected.length, selectedIds).map(word => ({ word, source: 'due' })));
   selected.push(...takeUnique(weakPool, sessionSize - selected.length, selectedIds).map(word => ({ word, source: 'weak' })));
 
-  // Small libraries can repeat, but are round-robin so a word is not consecutive.
+  // The optional Weak Words mode retains its separate recovery session.
   let cursor = 0;
   while (selected.length < sessionSize && unique.length > 1) {
     const word = growthPool[cursor % growthPool.length];
@@ -127,7 +148,7 @@ export function buildDailySession(words, options = {}) {
   }
 
   const typeHistory = new Map();
-  const exercises = options.kind !== 'weak' ? practiceExercises(selected, unique) : selected.map((item, index) => {
+  const exercises = selected.map((item, index) => {
     const previousTypes = typeHistory.get(item.word.id) || [];
     const exerciseType = recommendedExerciseType(item.word, previousTypes);
     typeHistory.set(item.word.id, [...previousTypes, exerciseType]);

@@ -108,7 +108,7 @@ test('mode selections are persisted separately from answer counts', () => {
   assert.equal(normalizeWordPracticeStats(stored[2]).selections, 0);
 });
 
-test('independent modes use fair rotation while Daily Practice keeps its existing scheduler', async () => {
+test('independent modes and due-word Practice share fair rotation', async () => {
   for (const file of ['FlashcardsMode.js', 'VisualMatchMode.js', 'MatchSprintMode.js', 'ContextQuizMode.js', 'UseItMode.js', 'SpeakingMode.js']) {
     const source = await readFile(new URL(`../js/components/${file}`, import.meta.url), 'utf8');
     assert.match(source, /wordSelection\.js/);
@@ -117,8 +117,26 @@ test('independent modes use fair rotation while Daily Practice keeps its existin
   const daily = await readFile(new URL('../js/services/dailySession.js', import.meta.url), 'utf8');
   const library = await readFile(new URL('../js/components/LibraryView.js', import.meta.url), 'utf8');
   assert.match(practice, /selectPracticeWords/);
-  assert.doesNotMatch(daily, /selectModeWords/);
+  assert.match(daily, /selectModeWords/);
   assert.match(library, /Recalled.*Missed/s);
+});
+
+test('Practice typing and visual results update the same selection mode statistics', () => {
+  let word = makeWord(1);
+  word = applyExerciseResultToWord(word, { wordId: word.id, exerciseType: 'daily-typed-recall', correct: false, recallType: 'free-recall', occurredAt: START.toISOString() }).word;
+  word = applyExerciseResultToWord(word, { wordId: word.id, exerciseType: 'daily-image-recognition', correct: true, recallType: 'recognition', occurredAt: new Date(START.getTime() + DAY_MS).toISOString() }).word;
+  const stats = normalizeWordPracticeStats(word);
+  assert.equal(stats.byMode.practice.attempts, 2);
+  assert.equal(stats.byMode.practice.missed, 1);
+  assert.equal(stats.byMode.practice.recalled, 1);
+});
+
+test('legacy review evidence remains available before the next answer', () => {
+  const stats = normalizeWordPracticeStats(makeWord(1, {
+    lastReviewedAt: START.toISOString(), srs: { repetitions: 4, lastRating: 'good' }
+  }));
+  assert.equal(stats.lastAnsweredAt, START.toISOString());
+  assert.equal(stats.lastAnswerCorrect, true);
 });
 
 test('shared exercise pool follows Library month and course, with no fallback to other months', async () => {

@@ -3,11 +3,22 @@
 The Practice tab and Today’s Start workout button open the same session. The
 compact card design from 1.7.4 is restored, including the keyboard icon, saved
 definition block, plain answer field, progress row, and compact feedback. Practice
-uses the 1.7.4 selection rules and ten-exercise limit, with no mandatory second
-round. The selection prioritizes recent mistakes and due words, then growth.
-It keeps one meaning per spelling. Tiny libraries retain the earlier behavior:
-one word gets one task, two words get four tasks, and three words get six tasks;
-repeats in these small pools are separated by other words.
+restores the previous due-word eligibility rule with a ten-word limit. Each
+word appears once per session; a small due pool makes a shorter session rather
+than being padded with repeats. A correct answer postpones the word according to
+its review statistics and strength of recall. A missed answer schedules an earlier
+review, but it cannot return before that time. The next session reads the latest
+saved results and review dates.
+
+Among due words, recent unresolved mistakes, error rate, recall strength and
+lateness set priority. Earlier mistakes lose influence after successful answers.
+A bounded priority share and persisted selection history rotate the remaining
+due words, including when a session is abandoned. Starting a session records
+selections separately from answer counts; dashboard previews write nothing.
+Typing and visual answers both update the same Practice mode statistics. Legacy
+review results and schedules remain usable. Only one meaning per spelling is
+selected, and the Library course/month still bounds the pool. When no words are
+due, Today and Practice show “All caught up” rather than repeating completed words.
 
 With enough saved images available among the selected words, a ten-task session
 contains seven typed answers from the saved descriptions and three Visual Match

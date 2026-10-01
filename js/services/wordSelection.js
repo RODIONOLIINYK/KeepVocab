@@ -60,6 +60,10 @@ export function normalizeWordPracticeStats(word) {
   const byMode = current.byMode && typeof current.byMode === 'object'
     ? Object.fromEntries(Object.entries(current.byMode).map(([mode, value]) => [String(mode), normalizeModeStats(value)]))
     : {};
+  const lastAnsweredAt = current.lastAnsweredAt || word?.lastExerciseResult?.occurredAt || word?.lastReviewedAt || '';
+  const lastAnswerCorrect = typeof current.lastAnswerCorrect === 'boolean' ? current.lastAnswerCorrect
+    : typeof word?.lastExerciseResult?.correct === 'boolean' ? word.lastExerciseResult.correct
+      : word?.srs?.lastRating ? word.srs.lastRating !== 'again' : null;
   return {
     version: 1,
     attempts,
@@ -69,10 +73,10 @@ export function normalizeWordPracticeStats(word) {
     consecutiveMisses: count(current.consecutiveMisses),
     selections: count(current.selections),
     lastSelectedAt: String(current.lastSelectedAt || ''),
-    lastAnsweredAt: String(current.lastAnsweredAt || ''),
+    lastAnsweredAt: String(lastAnsweredAt),
     lastCorrectAt: String(current.lastCorrectAt || ''),
     lastMissedAt: String(current.lastMissedAt || ''),
-    lastAnswerCorrect: current.lastAnswerCorrect === true ? true : current.lastAnswerCorrect === false ? false : null,
+    lastAnswerCorrect,
     byMode
   };
 }
@@ -80,7 +84,8 @@ export function normalizeWordPracticeStats(word) {
 export function updateWordPracticeStats(word, result) {
   const current = normalizeWordPracticeStats(word);
   const exerciseType = String(result.exerciseType || 'unknown');
-  const mode = ({ 'context-cloze': 'context', 'ai-speaking': 'speaking' })[exerciseType] || exerciseType;
+  const mode = ({ 'context-cloze': 'context', 'ai-speaking': 'speaking',
+    'daily-typed-recall': 'practice', 'daily-image-recognition': 'practice' })[exerciseType] || exerciseType;
   const modeStats = normalizeModeStats(current.byMode[mode]);
   const recalled = Boolean(result.correct);
   return {
@@ -108,8 +113,12 @@ export function updateWordPracticeStats(word, result) {
 }
 
 function recentFailureCount(word, now) {
-  const cutoff = now.getTime() - 14 * DAY_MS;
-  return normalizeSelectionMistakes(word).recentFailures.filter(value => validTimestamp(value) >= cutoff).length;
+  const stats = normalizeWordPracticeStats(word);
+  // A successful answer resolves earlier failures; lifetime misses should not
+  // permanently pin a recovered word to the front of every session.
+  const lastCorrectAt = validTimestamp(stats.lastCorrectAt || (stats.lastAnswerCorrect === true ? stats.lastAnsweredAt : ''));
+  const cutoff = Math.max(now.getTime() - 14 * DAY_MS, lastCorrectAt);
+  return normalizeSelectionMistakes(word).recentFailures.filter(value => validTimestamp(value) > cutoff && validTimestamp(value) <= now.getTime()).length;
 }
 
 export function wordRecommendationScore(word, options = {}) {
@@ -119,7 +128,7 @@ export function wordRecommendationScore(word, options = {}) {
   const mastery = normalizeSelectionMastery(word);
   const dueAt = validTimestamp(word?.nextReviewDate || word?.createdAt);
   const due = dueAt > 0 && dueAt <= now.getTime();
-  const errorRate = stats.attempts ? stats.missed / stats.attempts : 0.35;
+  const errorRate = stats.attempts ? stats.missed / stats.attempts * Math.pow(0.5, stats.consecutiveCorrect) : 0.35;
   const masteryNeed = 1 - Math.max(mastery.recognition, mastery.recall, mastery.context, mastery.productive, mastery.speaking);
   const daysSinceAnswer = stats.lastAnsweredAt
     ? Math.max(0, (now.getTime() - validTimestamp(stats.lastAnsweredAt)) / DAY_MS)
