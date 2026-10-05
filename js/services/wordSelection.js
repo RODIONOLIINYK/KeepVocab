@@ -1,16 +1,14 @@
 import { localDateKey } from '../utils/dates.js';
 
-// Manual exercise modes use the month selected in Library.
+// Every practice mode uses only the month selected in Library.
 export function getActivePracticeWords(persistence) {
   const month = persistence.getActiveNotebook().replace(/ Vocabulary$/, '');
   return persistence.getWordsByMonthYear(month).filter(word => word?.id && word.word && word.definition);
 }
 
 export function getScheduledPracticeWords(persistence) {
-  if (persistence.getSettings().practiceAllMonths === false) return getActivePracticeWords(persistence);
-  // getWords is already course-scoped. A month is an archive boundary,
-  // not a reason to stop maintaining earlier vocabulary.
-  return persistence.getWords().filter(word => word?.id && word.word && word.definition);
+  // Ignore the retired all-months preference, including settings from old backups.
+  return getActivePracticeWords(persistence);
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;

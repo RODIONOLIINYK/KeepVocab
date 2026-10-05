@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { applyExerciseResultToWord } from '../js/services/exerciseResult.js';
+import { applyExerciseResultToWord, recordExerciseResult } from '../js/services/exerciseResult.js';
 import { getScheduledPracticeWords, normalizeWordPracticeStats } from '../js/services/wordSelection.js';
 import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js';
-import { buildDailySession, practiceSessionSize } from '../js/services/dailySession.js';
+import { buildDailySession, buildScheduledPracticeSession, practiceSessionSize } from '../js/services/dailySession.js';
+import { localDateKey } from '../js/utils/dates.js';
 import { DAY_MS, migrateSrsState } from '../js/services/srsEngine.js';
 
 const NOW = new Date('2026-10-05T10:00:00Z');
@@ -120,21 +121,56 @@ test('established legacy review strength survives the first answer after upgradi
   assert.ok(Date.parse(updated.nextReviewDate) - NOW > 14 * DAY_MS);
 });
 
-test('Practice includes previous notebooks by default, stays in the active language, and supports a month-only preference', () => {
+test('Practice strictly uses the selected month and language, even with a retired all-months setting', () => {
   const persistence = new DriveSyncService(new MemoryStorage());
   persistence.saveWords([
     word('old', { courseId: 'english', monthYear: 'September 2026' }),
     word('new', { courseId: 'english', monthYear: 'October 2026' }),
     word('lt', { courseId: 'lithuanian', monthYear: 'September 2026' })
   ]);
-  persistence.updateSettings({ activeNotebook: 'October 2026 Vocabulary', practiceSessionSize: 40 });
-  assert.deepEqual(getScheduledPracticeWords(persistence).map(item => item.id), ['old', 'new']);
-  persistence.updateSettings({ practiceAllMonths: false });
+  persistence.updateSettings({ activeNotebook: 'October 2026 Vocabulary', practiceSessionSize: 40, practiceAllMonths: true });
   assert.deepEqual(getScheduledPracticeWords(persistence).map(item => item.id), ['new']);
+  persistence.refreshNotebooks();
+  persistence.setActiveNotebook('September 2026 Vocabulary');
+  assert.deepEqual(getScheduledPracticeWords(persistence).map(item => item.id), ['old']);
+  persistence.updateSettings({ activeNotebook: 'July 2026 Vocabulary' });
+  assert.deepEqual(getScheduledPracticeWords(persistence), []);
   persistence.setActiveCourseId('lithuanian');
+  persistence.refreshNotebooks();
+  persistence.setActiveNotebook('September 2026 Vocabulary');
   assert.deepEqual(getScheduledPracticeWords(persistence).map(item => item.id), ['lt']);
   assert.equal(persistence.getSettings().practiceSessionSize, 20);
   persistence.setActiveCourseId('english');
-  assert.equal(persistence.getSettings().practiceAllMonths, false);
+  assert.equal(persistence.getActiveNotebook(), 'July 2026 Vocabulary');
   assert.equal(persistence.getSettings().practiceSessionSize, 40);
+  assert.equal(persistence.getWords().length, 2);
+});
+
+test('a 107-word backlog stays within the daily budget and resets on the next local day', () => {
+  const words = Array.from({ length: 107 }, (_, index) => word(String(index)));
+  const settings = { dailyGoal: 20, practiceSessionSize: 50, reviewsToday: 7, reviewsDate: localDateKey(NOW) };
+  const original = structuredClone({ words, settings });
+  assert.equal(buildScheduledPracticeSession(words, {}, { now: NOW }).wordCount, 20);
+  assert.equal(buildScheduledPracticeSession(words, settings, { now: NOW }).wordCount, 13);
+  assert.equal(buildScheduledPracticeSession(words, { ...settings, practiceSessionSize: 5 }, { now: NOW }).wordCount, 5);
+  const done = { ...settings, reviewsToday: 20 };
+  const empty = buildScheduledPracticeSession(words, done, { now: NOW });
+  assert.equal(empty.dailyGoalComplete, true);
+  assert.equal(empty.wordCount, 0);
+  assert.deepEqual(empty.exercises, []);
+  assert.equal(buildScheduledPracticeSession(words, { ...done, reviewsToday: 107 }, { now: NOW }).wordCount, 0);
+  assert.equal(buildScheduledPracticeSession(words, done, { now: new Date(+NOW + DAY_MS) }).wordCount, 20);
+  assert.deepEqual({ words, settings }, original);
+});
+
+test('abandoned sessions count submitted correct and incorrect answers toward the remaining daily budget', () => {
+  const persistence = new DriveSyncService(new MemoryStorage());
+  const words = Array.from({ length: 30 }, (_, index) => word(String(index), { monthYear: 'October 2026', courseId: 'english' }));
+  persistence.saveWords(words);
+  persistence.setActiveNotebook('October 2026 Vocabulary');
+  const initial = buildScheduledPracticeSession(getScheduledPracticeWords(persistence), persistence.getSettings(), { now: NOW });
+  assert.equal(initial.wordCount, 20);
+  // The same persisted study activity used by every exercise mode survives leaving a session.
+  for (let i = 0; i < 7; i++) recordExerciseResult({ wordId: words[i].id, exerciseType: 'daily-typed-recall', recallType: 'free-recall', correct: i % 2 === 0, occurredAt: NOW.toISOString() }, persistence);
+  assert.equal(buildScheduledPracticeSession(getScheduledPracticeWords(persistence), persistence.getSettings(), { now: NOW }).wordCount, 13);
 });

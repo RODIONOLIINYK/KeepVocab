@@ -1,7 +1,6 @@
 import { getActivePracticeWords, getScheduledPracticeWords } from '../services/wordSelection.js?v=1602';
 import { driveSync } from '../services/driveSync.js?v=1602';
-import { getDueWords } from '../services/srsEngine.js?v=1602';
-import { buildDailySession, practiceSessionSize, weaknessScore } from '../services/dailySession.js?v=1602';
+import { buildScheduledPracticeSession, weaknessScore } from '../services/dailySession.js?v=1602';
 import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=1602';
 import { completedExercisesToday } from '../services/learningStats.js?v=1602';
 import { escapeHtml } from '../utils/html.js';
@@ -23,11 +22,11 @@ export function renderDashboardView(container, onNavigate) {
   const activeWords = getActivePracticeWords(driveSync);
   const practiceWords = getScheduledPracticeWords(driveSync);
   const activeWordCount = new Set(activeWords.map(word => String(word.word || '').trim().toLowerCase())).size;
-  const session = buildDailySession(practiceWords, { targetSize: practiceSessionSize(driveSync.getSettings()) });
-  const due = getDueWords(practiceWords).length;
+  const settings = driveSync.getSettings();
+  const session = buildScheduledPracticeSession(practiceWords, settings);
+  const notebookLabel = escapeHtml(driveSync.getActiveNotebook().replace(/ Vocabulary$/, ''));
   const weak = activeWords.filter(word => weaknessScore(word) > 0).length;
   const recent = activeWords.filter(word => Date.now() - Date.parse(word.createdAt || 0) <= 14 * 24 * 60 * 60 * 1000).length;
-  const settings = driveSync.getSettings();
   const completedToday = completedExercisesToday(settings);
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
   const progress = Math.min(100, Math.round(completedToday / dailyGoal * 100));
@@ -41,10 +40,10 @@ export function renderDashboardView(container, onNavigate) {
   container.innerHTML = `<section class="today-view" aria-labelledby="today-heading">
     <div class="today-heading-row"><div><span class="eyebrow">Your learning plan</span><h1 id="today-heading">What should I do now?</h1><p>KeepVocab has chosen the next best mix from your real learning needs.</p></div><button class="today-settings-button" id="today-settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button></div>
     <article class="daily-workout-card ${session.exercises.length ? '' : 'is-empty'}">
-      <div class="daily-workout-copy"><span class="daily-kicker"><i class="fa-solid fa-sparkles"></i> Today’s Workout</span><h2>${session.exercises.length ? 'Continue learning' : practiceWords.length ? 'All caught up' : 'Add your first vocabulary'}</h2><p class="daily-workout-meta">${session.exercises.length ? `${session.exercises.length} exercises · ~${session.estimatedMinutes} min` : practiceWords.length ? 'Your answers set when each word needs another review.' : 'KeepVocab will build your first session automatically.'}</p>
+      <div class="daily-workout-copy"><span class="daily-kicker"><i class="fa-solid fa-sparkles"></i> Today’s Workout</span><h2>${session.dailyGoalComplete ? 'Daily goal complete' : session.exercises.length ? 'Continue learning' : practiceWords.length ? 'All caught up' : 'Add your first vocabulary'}</h2><p class="daily-workout-meta">${session.dailyGoalComplete ? 'You’ve reached today’s goal. Your next workout is ready tomorrow.' : session.exercises.length ? `${session.exercises.length} exercises · ~${session.estimatedMinutes} min` : practiceWords.length ? 'Your answers set when each word needs another review.' : 'KeepVocab will build your first session automatically.'}<br><span>${notebookLabel} · selected month</span></p>
         ${session.exercises.length ? `<div class="workout-composition"><span><i class="fa-solid fa-keyboard"></i> ${session.exercises.filter(exercise => exercise.exerciseType === 'typed-recall').length} write the word</span>${session.exercises.some(exercise => exercise.exerciseType === 'image-recognition') ? `<span><i class="fa-solid fa-images"></i> ${session.exercises.filter(exercise => exercise.exerciseType === 'image-recognition').length} visual match</span>` : ''}</div>` : ''}
-        <button class="today-primary-cta" id="start-daily-session"><span>${session.exercises.length ? 'Start workout' : practiceWords.length ? 'Open library' : 'Add a word'}</span><i class="fa-solid fa-arrow-right"></i></button>
-      </div><div class="daily-workout-mascot"><div class="mascot-bubble">${due ? `${due} due today` : practiceWords.length ? 'Nice work today' : 'Ready when you are'}</div><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking about your learning plan"></div>
+        <button class="today-primary-cta" id="start-daily-session"><span>${session.dailyGoalComplete ? 'View progress' : session.exercises.length ? 'Start workout' : practiceWords.length ? 'Open library' : 'Add a word'}</span><i class="fa-solid fa-arrow-right"></i></button>
+      </div><div class="daily-workout-mascot"><div class="mascot-bubble">${session.exercises.length ? `${session.wordCount} words in this workout` : session.dailyGoalComplete || practiceWords.length ? 'Nice work today' : 'Ready when you are'}</div><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking about your learning plan"></div>
     </article>
     <div class="today-progress-card"><div class="today-progress-copy"><span>Daily progress</span><strong>${completedToday} of ${dailyGoal} exercises</strong></div><div class="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div><span class="today-streak"><i class="fa-solid fa-fire"></i> ${Number(settings.dailyStreak || 0)} day streak</span></div>
     <div class="today-grid">
@@ -56,7 +55,7 @@ export function renderDashboardView(container, onNavigate) {
     </div>
   </section>`;
 
-  container.querySelector('#start-daily-session').addEventListener('click', () => session.exercises.length ? go('review', onNavigate) : practiceWords.length ? go('library', onNavigate) : document.getElementById('btn-header-quick-add')?.click());
+  container.querySelector('#start-daily-session').addEventListener('click', () => session.dailyGoalComplete ? go('stats', onNavigate) : session.exercises.length ? go('review', onNavigate) : practiceWords.length ? go('library', onNavigate) : document.getElementById('btn-header-quick-add')?.click());
   container.querySelectorAll('[data-practice-view]').forEach(button => button.addEventListener('click', () => go(button.dataset.practiceView, onNavigate)));
   container.querySelector('#today-settings').addEventListener('click', () => go('settings', onNavigate));
   container.querySelector('#dashboard-drive-settings').addEventListener('click', () => go('settings', onNavigate));

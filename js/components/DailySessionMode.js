@@ -1,6 +1,6 @@
 import { getActivePracticeWords, getScheduledPracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=1602';
 import { driveSync } from '../services/driveSync.js?v=1602';
-import { buildDailySession, buildWeakWordsSession, practiceSessionSize, weaknessScore } from '../services/dailySession.js?v=1602';
+import { buildScheduledPracticeSession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=1602';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
 import { recordSessionCompletion } from '../services/learningStats.js?v=1602';
 import { speakWord } from '../services/speechService.js?v=1602';
@@ -31,16 +31,16 @@ function exerciseCopy(exercise, word) {
 
 export function renderDailySessionMode(container, onNavigate, options = {}) {
   const words = options.kind === 'weak' ? getActivePracticeWords(driveSync) : getScheduledPracticeWords(driveSync);
-  const practiceNotebookLabel = driveSync.getSettings().practiceAllMonths !== false ? 'All saved notebooks' : driveSync.getActiveNotebook();
-  const session = options.kind === 'weak' ? buildWeakWordsSession(words) : buildDailySession(words, { targetSize: practiceSessionSize(driveSync.getSettings()) });
+  const practiceNotebookLabel = driveSync.getActiveNotebook();
+  const session = options.kind === 'weak' ? buildWeakWordsSession(words) : buildScheduledPracticeSession(words, driveSync.getSettings());
   if (!session.exercises.length) {
-    if (options.kind !== 'weak' && words.length) {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell review-recall-shell"><div class="useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>All caught up</h2><p>Your words are resting after practice. Repeated recall on different days builds longer review intervals.</p><div class="inline-actions"><button class="btn-green-solid" id="daily-empty-action">Back to Today</button><button class="status-pill offline" id="daily-open-library">Open library</button></div></div></div></section>`;
+    if (options.kind !== 'weak' && (words.length || session.dailyGoalComplete)) {
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell review-recall-shell"><div class="useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>${session.dailyGoalComplete ? 'Daily goal complete' : 'All caught up'}</h2><p>${session.dailyGoalComplete ? 'You’ve reached today’s goal. Come back tomorrow, or choose an optional manual mode for extra practice.' : 'Your words in this month are resting after practice. Repeated recall on different days builds longer review intervals.'}</p><div class="inline-actions"><button class="btn-green-solid" id="daily-empty-action">Back to Today</button><button class="status-pill offline" id="daily-open-library">Open library</button></div></div></div></section>`;
       container.querySelector('#daily-empty-action').addEventListener('click', () => go('dashboard', onNavigate));
       container.querySelector('#daily-open-library').addEventListener('click', () => go('library', onNavigate));
       return;
     }
-    container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprout-mascot.webp" alt="Sprig"><h2>${options.kind === 'weak' ? 'No weak words yet' : 'Build your first workout'}</h2><p>${options.kind === 'weak' ? 'Mistakes from any learning mode will appear here automatically.' : 'Add vocabulary and KeepVocab will choose the right first exercises.'}</p><button class="btn-green-solid" id="daily-empty-action">${options.kind === 'weak' ? 'Back to Today' : 'Add a word'}</button></div></section>`;
+    container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprout-mascot.webp" alt="Sprig"><h2>${options.kind === 'weak' ? 'No weak words yet' : 'Build your first workout'}</h2><p>${options.kind === 'weak' ? 'Mistakes from any learning mode will appear here automatically.' : 'Add vocabulary to the selected Library month and KeepVocab will choose the right first exercises.'}</p><button class="btn-green-solid" id="daily-empty-action">${options.kind === 'weak' ? 'Back to Today' : 'Add a word'}</button></div></section>`;
     container.querySelector('#daily-empty-action').addEventListener('click', () => options.kind === 'weak' ? go('dashboard', onNavigate) : document.getElementById('btn-header-quick-add')?.click());
     return;
   }

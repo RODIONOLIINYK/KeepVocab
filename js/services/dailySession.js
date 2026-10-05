@@ -1,3 +1,4 @@
+import { completedExercisesToday } from './learningStats.js?v=1602';
 import { getDueWords } from './srsEngine.js?v=1602';
 import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=1602';
 import { normalizeWordPracticeStats, selectModeWords, wordRecommendationScore } from './wordSelection.js?v=1602';
@@ -9,6 +10,16 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function practiceSessionSize(settings = {}) {
   return Math.max(5, Math.min(50, Math.round(Number(settings.practiceSessionSize) || DEFAULT_SESSION_SIZE)));
+}
+
+// The daily plan respects both the chosen batch size and today's remaining goal.
+export function buildScheduledPracticeSession(words, settings = {}, options = {}) {
+  const now = options.now ? new Date(options.now) : new Date();
+  const dailyGoal = Math.max(1, Math.min(200, Math.round(Number(settings.dailyGoal) || 20)));
+  const remaining = Math.max(0, dailyGoal - completedExercisesToday(settings, now));
+  const targetSize = Math.min(practiceSessionSize(settings), remaining);
+  const session = buildDailySession(targetSize ? words : [], { now, targetSize: targetSize || 1 });
+  return { ...session, dailyGoal, dailyGoalComplete: remaining === 0 };
 }
 
 export function needsLearningTopUp(word, now = new Date()) {

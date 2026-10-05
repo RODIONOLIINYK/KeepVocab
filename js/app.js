@@ -11,6 +11,7 @@ import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/sync
 import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=1602';
 import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=1602';
 import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=1602';
+import { buildScheduledPracticeSession } from './services/dailySession.js?v=1602';
 import { localDateKey } from './utils/dates.js';
 
 import { renderLibraryView } from './components/LibraryView.js?v=1602';
@@ -200,7 +201,7 @@ function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
   const settings = { ...driveSync.getSettings(), ...settingsOverride };
   const reviewsToday = settings.reviewsDate === localDateKey(now) ? Number(settings.reviewsToday || 0) : 0;
   const practiceWords = getScheduledPracticeWords(driveSync);
-  const dueCount = getDueWords(practiceWords, now).length;
+  const dueCount = buildScheduledPracticeSession(practiceWords, settings, { now }).wordCount;
   return buildReminderSchedule({
     courseName: driveSync.getActiveCourseId() === 'lithuanian' ? 'Lithuanian' : 'Vocabulary',
     hasLesson: driveSync.getActiveCourseId() === 'lithuanian',
@@ -262,7 +263,7 @@ function updateEngagementCard() {
   const settings = driveSync.getSettings();
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
   const reviewsToday = settings.reviewsDate === localDateKey() ? Number(settings.reviewsToday || 0) : 0;
-  const dueCount = getDueWords().length;
+  const dueCount = buildScheduledPracticeSession(getScheduledPracticeWords(driveSync), settings).wordCount;
   const streak = Number(settings.dailyStreak || 0);
   const activity = settings.reviewActivity || {};
   const today = new Date();
@@ -282,7 +283,7 @@ function updateEngagementCard() {
     copy.textContent = 'Nice work. Sprig will keep tomorrow’s practice short and focused.';
   } else if (dueCount > 0) {
     title.textContent = `${dueCount} word${dueCount === 1 ? '' : 's'} ready for review`;
-    copy.textContent = `A five-minute session moves you ${Math.min(dueCount, dailyGoal - reviewsToday)} step${Math.min(dueCount, dailyGoal - reviewsToday) === 1 ? '' : 's'} closer to today’s goal.`;
+    copy.textContent = `Practice ${dueCount} word${dueCount === 1 ? '' : 's'} from ${driveSync.getActiveNotebook().replace(/ Vocabulary$/, '')}.`;
   } else {
     title.textContent = 'Your memory garden is growing';
     copy.textContent = 'Add a new word or practice a learning mode to keep your routine alive.';
@@ -310,7 +311,6 @@ function setupEngagementSystem() {
   const soundEnabled = document.getElementById('sound-enabled');
   const routineGoal = document.getElementById('routine-daily-goal');
   const sessionSize = document.getElementById('routine-session-size');
-  const practiceAllMonths = document.getElementById('practice-all-months');
   const deliveryStatus = document.getElementById('reminder-delivery-status');
   const helper = document.getElementById('reminder-helper');
   const save = document.getElementById('btn-save-engagement-settings');
@@ -372,7 +372,6 @@ function setupEngagementSystem() {
     soundEnabled.checked = settings.soundEnabled !== false;
     routineGoal.value = Math.max(1, Math.min(200, Math.round(Number(settings.dailyGoal) || 20)));
     sessionSize.value = Math.max(5, Math.min(50, Math.round(Number(settings.practiceSessionSize) || 20)));
-    practiceAllMonths.checked = settings.practiceAllMonths !== false;
     updateTimeState();
     modal.classList.add('active');
     updateDeliveryStatus();
@@ -431,8 +430,7 @@ function setupEngagementSystem() {
         } : {}),
         soundEnabled: soundEnabled.checked,
         dailyGoal: Number(routineGoal.value),
-        practiceSessionSize: Number(sessionSize.value),
-        practiceAllMonths: practiceAllMonths.checked
+        practiceSessionSize: Number(sessionSize.value)
       });
       const result = !remindersAvailable ? { status: 'sound-only' } : enabled
         ? await refreshSmartReminder({ requestPermission: true })

@@ -2,7 +2,7 @@ import { mergeActivityByDevice, aggregateActivity, currentStudyStats } from './s
 import { COURSE_DEFINITIONS, COURSE_IDS, getCourseDefinition, isCourseId } from '../data/courses.js';
 
 export const COURSE_SCOPED_SETTING_KEYS = Object.freeze([
-  'activeNotebook', 'dailyGoal', 'practiceSessionSize', 'practiceAllMonths', 'dailyStreak', 'lastReviewDate', 'reviewsToday', 'reviewsDate',
+  'activeNotebook', 'dailyGoal', 'practiceSessionSize', 'dailyStreak', 'lastReviewDate', 'reviewsToday', 'reviewsDate',
   'reviewActivity', 'exerciseActivityByDevice', 'learningStats', 'speakingProgress', 'lessonProgress',
   'lessonAttempts', 'completedNodeIds', 'canDoEvidence', 'phraseProgress', 'activeLessonId',
   'reminderEnabled', 'smartReminderEnabled', 'streakReminderEnabled', 'reminderTime', 'reviewStartMoments'
@@ -21,7 +21,6 @@ export function defaultCourseProfile(courseId, seed = {}) {
     updatedAt: seed.updatedAt || null,
     dailyGoal: course.dailyGoal,
     practiceSessionSize: 20,
-    practiceAllMonths: true,
     dailyStreak: 0,
     lastReviewDate: null,
     reviewsToday: 0,

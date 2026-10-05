@@ -1,12 +1,20 @@
 # Practice and reminders
 
-The Practice tab and Today’s Start workout button open the same session. Sessions
-now target **20 distinct words**, configurable from 5 to 50 in Settings → Routine
-& sound. Each word appears once per session; small libraries are never padded
-with repeats. Practice includes all notebooks in the active language by default,
-so a new calendar month does not hide older vocabulary from review. Turn off
-“Review earlier notebooks” to restrict Practice to the Library notebook. Manual
-exercise modes continue to use the selected Library notebook.
+The Practice tab and Today’s Start workout button open the same session, using
+**only the month selected in Library** in the active language. Switching months
+changes the vocabulary pool; an empty month never falls back to another month.
+Old all-months preferences are ignored, including restored backups. Manual
+exercise modes use this same month selection.
+
+The default daily goal is **20 exercises**. Each workout takes the smaller of the
+configured session size (5–50) and today's remaining daily goal. Submitted
+answers count immediately, including mistakes and unfinished sessions. Once the
+goal is reached, Today and Practice show “Daily goal complete”; optional manual
+modes remain available. The daily allowance resets at local midnight and is
+shared across months within each language. Settings → Routine & sound lets users
+adjust their goal. Each word appears once per workout; small libraries are never
+padded with repeats. Today displays the actual workout size and selected month,
+rather than presenting the full overdue backlog as today's assignment.
 
 Due reviews fill the session first. If fewer words are due, still-learning words
 can fill remaining places after at least 24 hours without an answer, provided
@@ -80,10 +88,11 @@ subject to Android permissions and battery/force-stop behavior. The immediate
 test checks visible notification access; actual scheduled/background delivery
 must also be checked on an installed Android device.
 
-Validation covers default and custom session sizes, previous notebooks and
-language isolation, distinct words, early learning cooldowns, legacy history,
-recognition/hints vs independent recall, same-day repetition, mistake retries,
-notification/channel denial, exact-alarm fallback, saved alarm verification,
-notification test actions and Android-only controls. Renderer checks complete a
-40-word session and confirm persistent history and the next session’s remaining
-vocabulary at mobile and desktop widths.
+Validation covers default and custom session sizes, a 107-word backlog, remaining
+daily allowance, local-day reset, selected and empty months, retired preference
+compatibility, language isolation, distinct words, early learning cooldowns,
+legacy history, recognition/hints vs independent recall, same-day repetition,
+mistake retries, notification/channel denial, exact-alarm fallback, saved alarm
+verification, notification test actions and Android-only controls. Renderer
+checks complete a 20-word workout and confirm month selection, persistent recall
+history, and the daily completion state at mobile and desktop widths.
