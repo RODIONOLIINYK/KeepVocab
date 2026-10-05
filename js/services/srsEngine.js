@@ -2,8 +2,10 @@ import { streakFromActivity } from './studyActivity.js';
 // Adaptive spaced-repetition scheduler with backward-compatible Leitner fields.
 
 import { driveSync } from './driveSync.js?v=1602';
+import { normalizeWordPracticeStats } from './wordSelection.js?v=1602';
+import { localDateKey } from '../utils/dates.js';
 
-export const SRS_VERSION = 2;
+export const SRS_VERSION = 3;
 export const MINUTE_MS = 60 * 1000;
 export const DAY_MS = 24 * 60 * MINUTE_MS;
 export const BOX_INTERVALS = Object.freeze({ 1: 1, 2: 3, 3: 7, 4: 14, 5: 30 });
@@ -29,7 +31,7 @@ export function migrateSrsState(word, now = new Date()) {
     ...word,
     box,
     // Mastery is a milestone, never an exclusion flag.
-    mastered: Boolean(word?.mastered || box >= 5),
+    mastered: Boolean(word?.mastered || (box >= 5 && Number(existing.version || 0) < 3)),
     nextReviewDate: reviewDate.toISOString(),
     srs: {
       version: SRS_VERSION,
@@ -72,7 +74,10 @@ export function scheduleWordReview(word, rating, options = {}) {
     difficulty = clamp(difficulty + 0.25, 1, 10);
     intervalMs = Math.max(10 * MINUTE_MS, stabilityDays * DAY_MS);
   } else {
-    const repetitionBoost = Math.min(1.2, previous.repetitions * 0.08);
+    const stats = normalizeWordPracticeStats(word);
+    const successfulReviews = Number(word?.practiceStats?.version) >= 2
+      ? stats.successfulRecallDays + stats.legacySuccessfulReviews : Math.max(0, previous.repetitions - previous.lapses);
+    const repetitionBoost = Math.min(1.2, successfulReviews * 0.08);
     const difficultyFactor = 1.18 - difficulty * 0.045;
     const ratingFactor = rating === 'easy' ? 1.45 : 1;
     const growth = 1 + (0.65 + repetitionBoost) * difficultyFactor * evidenceStrength * ratingFactor;
@@ -81,11 +86,28 @@ export function scheduleWordReview(word, rating, options = {}) {
     intervalMs = stabilityDays * DAY_MS;
   }
 
-  const legacyFloorDays = rating === 'good' || rating === 'easy' ? BOX_INTERVALS[nextBox] : 0;
-  if (legacyFloorDays) intervalMs = Math.max(intervalMs, legacyFloorDays * DAY_MS);
+  // Growing a box used to force 3/7/14/30-day gaps even after a single
+  // successful answer. Require independent recall on separate days instead.
+  if (rating !== 'again' && options.result) {
+    const stats = normalizeWordPracticeStats(word);
+    const result = options.result;
+    const unaided = result.correct && result.producedUnaided && !result.hintsUsed && result.recallType !== 'recognition';
+    if (unaided) {
+      const newDay = !stats.lastUnaidedRecallAt
+        || localDateKey(new Date(stats.lastUnaidedRecallAt)) !== localDateKey(now);
+      const recallDays = stats.successfulRecallDays + Math.min(3, stats.legacySuccessfulReviews) + (newDay ? 1 : 0);
+      if (recallDays <= 3) intervalMs = Math.min(intervalMs, DAY_MS * 2 ** Math.max(0, recallDays - 1));
+      // Extra practice on the same day supplies little evidence of retention.
+      if (!newDay) intervalMs = Math.min(intervalMs, Math.max(DAY_MS, previous.scheduledDays * DAY_MS));
+    } else {
+      intervalMs = Math.min(intervalMs, DAY_MS);
+    }
+    stabilityDays = Math.max(0.15, intervalMs / DAY_MS);
+  }
+  intervalMs = Math.min(intervalMs, 180 * DAY_MS);
 
   const nextReview = new Date(now.getTime() + intervalMs);
-  const mastered = rating === 'again' ? false : Boolean(migrated.mastered || nextBox >= 5);
+  const mastered = rating === 'again' ? false : Boolean(migrated.mastered || (nextBox >= 5 && intervalMs >= 14 * DAY_MS));
   return {
     ...migrated,
     box: nextBox,

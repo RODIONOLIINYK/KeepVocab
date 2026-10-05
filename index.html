@@ -422,7 +422,22 @@
           <span>Preferred reminder time</span>
           <input type="time" id="reminder-time" value="19:00">
         </label>
+        <p id="reminder-delivery-status" class="reminder-helper" role="status" aria-live="polite"></p>
+        <div class="inline-actions">
+          <button type="button" class="status-pill offline" id="btn-test-reminder">Test notification</button>
+          <button type="button" class="status-pill offline" id="btn-reminder-system-settings">Android settings</button>
+          <button type="button" class="status-pill offline" id="btn-reminder-exact-settings">Allow precise timing</button>
         </div>
+        </div>
+        <label class="engagement-time-row" for="routine-session-size">
+          <span>Words per practice session</span>
+          <input type="number" id="routine-session-size" min="5" max="50" step="1" value="20">
+        </label>
+        <label class="engagement-setting-row" for="practice-all-months">
+          <span class="setting-icon sound"><i class="fa-solid fa-layer-group"></i></span>
+          <span><strong>Review earlier notebooks</strong><small>Choose Practice words from every month in the active language. Turn off to use only the selected Library notebook.</small></span>
+          <input type="checkbox" id="practice-all-months" class="setting-toggle" checked>
+        </label>
         <label class="engagement-setting-row" for="sound-enabled">
           <span class="setting-icon sound"><i class="fa-solid fa-music"></i></span>
           <span><strong>App sounds</strong><small>Short taps and success cues during learning.</small></span>
@@ -430,7 +445,7 @@
         </label>
       </div>
 
-      <p id="android-reminder-note" class="reminder-helper" hidden>Android schedules reminders even with the app closed. At most two reminders a day.</p>
+      <p id="android-reminder-note" class="reminder-helper" hidden>Android schedules reminders even with the app closed. At most two reminders a day. Android may delay delivery when precise timing is off.</p>
       <p id="reminder-helper" class="reminder-helper" role="status" aria-live="polite"></p>
       <div class="engagement-modal-actions">
         <button type="button" class="status-pill offline" id="btn-cancel-engagement-settings">Cancel</button>

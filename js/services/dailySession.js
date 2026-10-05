@@ -2,9 +2,25 @@ import { getDueWords } from './srsEngine.js?v=1602';
 import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=1602';
 import { normalizeWordPracticeStats, selectModeWords, wordRecommendationScore } from './wordSelection.js?v=1602';
 
-export const DEFAULT_SESSION_SIZE = 10;
+export const DEFAULT_SESSION_SIZE = 20;
 export const DEFAULT_SESSION_WORD_COUNT = DEFAULT_SESSION_SIZE;
 export const DEFAULT_SESSION_MIX = Object.freeze({ due: 0.35, weak: 0.5, growth: 0.15 });
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function practiceSessionSize(settings = {}) {
+  return Math.max(5, Math.min(50, Math.round(Number(settings.practiceSessionSize) || DEFAULT_SESSION_SIZE)));
+}
+
+export function needsLearningTopUp(word, now = new Date()) {
+  const stats = normalizeWordPracticeStats(word);
+  const answeredAt = Date.parse(stats.lastAnsweredAt);
+  const dueAt = Date.parse(word.nextReviewDate || word.createdAt);
+  if (!Number.isFinite(answeredAt) || now - answeredAt < DAY_MS || stats.lastAnswerCorrect !== true) return false;
+  if (!Number.isFinite(dueAt) || dueAt <= now.getTime()) return false;
+  // Preserve mature legacy schedules while strengthening newer learning words.
+  if (word.mastered || (Number(word.srs?.version || 0) < 3 && Number(word.box) >= 4)) return false;
+  return stats.successfulRecallDays + stats.legacySuccessfulReviews < 3;
+}
 
 function stableSort(items, score) {
   return [...items].sort((a, b) => score(b) - score(a) || String(a.id).localeCompare(String(b.id)));
@@ -44,6 +60,7 @@ export function selectPracticeWords(words, options = {}) {
   const limit = Math.max(0, Math.round(options.limit ?? DEFAULT_SESSION_SIZE));
   return selectModeWords(words, {
     mode: 'practice', limit, now, rotateWithinFocus: true,
+    priorityShare: 0.5,
     priorityScore: practicePriorityScore
   });
 }
@@ -95,11 +112,17 @@ export function buildDailySession(words, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
   const targetSize = Math.max(1, Math.round(options.targetSize || DEFAULT_SESSION_SIZE));
   if (options.kind !== 'weak') {
-    // Only the scheduled Practice session requires due words. Optional manual
-    // modes can still use the full library for extra practice.
-    const selected = selectPracticeWords(getDueWords(words, now), { now, limit: targetSize }).map(word => {
+    const dueWords = getDueWords(words, now);
+    const chosen = selectPracticeWords(dueWords, { now, limit: targetSize });
+    const spellings = new Set(chosen.map(word => String(word.word).trim().toLowerCase()));
+    const topUps = selectPracticeWords((Array.isArray(words) ? words : []).filter(word =>
+      needsLearningTopUp(word, now) && !spellings.has(String(word.word).trim().toLowerCase())), {
+      now, limit: targetSize - chosen.length
+    });
+    const dueIds = new Set(dueWords.map(word => word.id));
+    const selected = [...chosen, ...topUps].map(word => {
       const stats = normalizeWordPracticeStats(word);
-      const source = stats.lastAnswerCorrect === false || normalizeMistakes(word).consecutiveFailures > 0
+      const source = !dueIds.has(word.id) ? 'growth' : stats.lastAnswerCorrect === false || normalizeMistakes(word).consecutiveFailures > 0
         ? 'weak' : stats.attempts > 0 || word.lastReviewedAt ? 'due' : 'growth';
       return { word, source };
     });

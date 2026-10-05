@@ -1,4 +1,4 @@
-import { getActivePracticeWords } from './services/wordSelection.js?v=1602';
+import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=1602';
 import { setupAddWordModal } from './components/AddWordModal.js?v=1602';
 import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=1602';
 // Native application controller with monthly Google Drive backup.
@@ -10,7 +10,7 @@ import { recordExerciseResult } from './services/exerciseResult.js?v=1602';
 import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=1602';
 import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=1602';
 import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=1602';
-import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, normalizeReminderTime, scheduleDailyReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=1602';
+import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=1602';
 import { localDateKey } from './utils/dates.js';
 
 import { renderLibraryView } from './components/LibraryView.js?v=1602';
@@ -199,12 +199,13 @@ function updateDashboardDerivedState() {
 function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
   const settings = { ...driveSync.getSettings(), ...settingsOverride };
   const reviewsToday = settings.reviewsDate === localDateKey(now) ? Number(settings.reviewsToday || 0) : 0;
-  const dueCount = getDueWords().length;
+  const practiceWords = getScheduledPracticeWords(driveSync);
+  const dueCount = getDueWords(practiceWords, now).length;
   return buildReminderSchedule({
     courseName: driveSync.getActiveCourseId() === 'lithuanian' ? 'Lithuanian' : 'Vocabulary',
     hasLesson: driveSync.getActiveCourseId() === 'lithuanian',
     practiceRoute: driveSync.getActiveCourseId() === 'lithuanian' ? 'learn'
-      : getActivePracticeWords(driveSync).length ? 'review' : dueCount ? 'review' : 'dashboard',
+      : practiceWords.length ? 'review' : 'dashboard',
     preferredTime: settings.reminderTime || '19:00',
     smartTiming: settings.smartReminderEnabled !== false,
     streakReminderEnabled: settings.streakReminderEnabled !== false,
@@ -308,11 +309,26 @@ function setupEngagementSystem() {
   const reminderTime = document.getElementById('reminder-time');
   const soundEnabled = document.getElementById('sound-enabled');
   const routineGoal = document.getElementById('routine-daily-goal');
+  const sessionSize = document.getElementById('routine-session-size');
+  const practiceAllMonths = document.getElementById('practice-all-months');
+  const deliveryStatus = document.getElementById('reminder-delivery-status');
   const helper = document.getElementById('reminder-helper');
   const save = document.getElementById('btn-save-engagement-settings');
   if (!modal || !reminderEnabled || !smartReminderEnabled || !streakReminderEnabled || !reminderTime || !soundEnabled || !routineGoal || !helper || !save) return;
 
   const remindersAvailable = supportsReminders();
+  const deliveryMessage = result => {
+    if (result.status === 'permission-required') return 'Notifications are blocked. Allow KeepVocab notifications in Android settings, then save your routine.';
+    if (result.status === 'channel-blocked') return 'Practice reminders are blocked. Enable the Practice reminders category in Android settings.';
+    if (result.status === 'unavailable') return 'The notification service is unavailable. Install the latest Android build.';
+    if (result.status === 'test-sent') return 'Test sent. Check your notification shade for KeepVocab.';
+    return `${result.pendingCount || 0} reminders scheduled. ${result.exactAlarm === 'granted' ? 'Precise timing is allowed.' : 'Android may delay delivery. Allow precise timing for reminders closer to your chosen time.'}`;
+  };
+  const updateDeliveryStatus = async () => {
+    if (!remindersAvailable) return;
+    try { deliveryStatus.textContent = deliveryMessage(await getReminderStatus()); }
+    catch (error) { deliveryStatus.textContent = error.message || 'Cannot check notification delivery.'; }
+  };
   document.getElementById('android-reminder-settings').hidden = !remindersAvailable;
   document.getElementById('android-reminder-note').hidden = !remindersAvailable;
   if (remindersAvailable) {
@@ -355,8 +371,11 @@ function setupEngagementSystem() {
     reminderTime.value = normalizeReminderTime(settings.reminderTime || '19:00');
     soundEnabled.checked = settings.soundEnabled !== false;
     routineGoal.value = Math.max(1, Math.min(200, Math.round(Number(settings.dailyGoal) || 20)));
+    sessionSize.value = Math.max(5, Math.min(50, Math.round(Number(settings.practiceSessionSize) || 20)));
+    practiceAllMonths.checked = settings.practiceAllMonths !== false;
     updateTimeState();
     modal.classList.add('active');
+    updateDeliveryStatus();
   };
 
   const closeSettings = () => modal.classList.remove('active');
@@ -365,6 +384,27 @@ function setupEngagementSystem() {
   smartReminderEnabled.addEventListener('change', updateHelper);
   streakReminderEnabled.addEventListener('change', updateHelper);
   reminderTime.addEventListener('input', updateHelper);
+  document.getElementById('btn-test-reminder').addEventListener('click', async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try { deliveryStatus.textContent = deliveryMessage(await sendTestReminder()); }
+    catch (error) { deliveryStatus.textContent = error.message || 'Could not send a test notification.'; }
+    finally { button.disabled = false; }
+  });
+  document.getElementById('btn-reminder-system-settings').addEventListener('click', async () => {
+    try {
+      await openReminderSettings();
+      await refreshSmartReminder();
+      await updateDeliveryStatus();
+    } catch (error) { deliveryStatus.textContent = error.message; }
+  });
+  document.getElementById('btn-reminder-exact-settings').addEventListener('click', async () => {
+    try {
+      await openReminderSettings({ exactAlarms: true });
+      await refreshSmartReminder();
+      await updateDeliveryStatus();
+    } catch (error) { deliveryStatus.textContent = error.message; }
+  });
   document.addEventListener('click', event => {
     const control = event.target.closest('button, a');
     if (!control) return;
@@ -374,7 +414,7 @@ function setupEngagementSystem() {
   });
 
   save.addEventListener('click', async () => {
-    if (!routineGoal.reportValidity()) return;
+    if (!routineGoal.reportValidity() || !sessionSize.reportValidity()) return;
     const enabled = remindersAvailable && reminderEnabled.checked;
     const time = normalizeReminderTime(reminderTime.value);
     const smartTiming = smartReminderEnabled.checked;
@@ -390,16 +430,23 @@ function setupEngagementSystem() {
           reminderTime: time
         } : {}),
         soundEnabled: soundEnabled.checked,
-        dailyGoal: Number(routineGoal.value)
+        dailyGoal: Number(routineGoal.value),
+        practiceSessionSize: Number(sessionSize.value),
+        practiceAllMonths: practiceAllMonths.checked
       });
       const result = !remindersAvailable ? { status: 'sound-only' } : enabled
         ? await refreshSmartReminder({ requestPermission: true })
         : (await cancelDailyReminder(), { status: 'disabled' });
       updateEngagementCard();
+      if (['permission-required', 'channel-blocked', 'unavailable'].includes(result.status)) {
+        deliveryStatus.textContent = deliveryMessage(result);
+        helper.textContent = 'Your routine is saved. Resolve notification access above to receive reminders.';
+        return;
+      }
       closeSettings();
       if (currentView === 'dashboard') navigateTo('dashboard');
       const message = result.status === 'scheduled'
-        ? `${smartTiming ? 'Smart' : 'Daily'} reminder set for ${formatReminderTime(result.plan?.time || time)}.`
+        ? `${smartTiming ? 'Smart' : 'Daily'} reminder set for ${formatReminderTime(result.plan?.time || time)}.${result.exactAlarm !== 'granted' ? ' Android may delay delivery.' : ''}`
         : result.status === 'permission-required'
           ? 'Reminder saved. Enable notification permission in system settings to receive it.'
           : result.status === 'android-only'
@@ -423,7 +470,7 @@ function setupEngagementSystem() {
   // goal and streak never keep today's alarms alive after practice.
   let reminderDay = localDateKey();
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) { updateEngagementCard(); queueSmartReminderRefresh(); }
+    if (!document.hidden) { updateEngagementCard(); queueSmartReminderRefresh(); if (modal.classList.contains('active')) updateDeliveryStatus(); }
   });
   window.addEventListener('focus', queueSmartReminderRefresh);
   globalThis.setInterval(() => {

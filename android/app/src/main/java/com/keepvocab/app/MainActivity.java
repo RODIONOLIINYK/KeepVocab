@@ -9,6 +9,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(AppUpdatePlugin.class);
         registerPlugin(DriveAuthPlugin.class);
         registerPlugin(NativeSpeechPlugin.class);
+        registerPlugin(ReminderSettingsPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

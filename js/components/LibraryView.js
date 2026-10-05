@@ -217,6 +217,7 @@ export function renderLibraryView(container) {
         ${meaning.example ? `<blockquote>“${escapeHtml(meaning.example)}”</blockquote>` : ''}
         <div class="library-card-footer"><span>Box ${Number(meaning.box || 1)}</span><span>${meaning.mastered ? 'Mastered' : (isDue(meaning) ? 'Due now' : 'Learning')}</span></div>
         <div class="library-recall-stats" aria-label="${practiceStats.recalled} recalled and ${practiceStats.missed} missed answers"><span><i class="fa-solid fa-check"></i> Recalled ${practiceStats.recalled}</span><span><i class="fa-solid fa-xmark"></i> Missed ${practiceStats.missed}</span><span>${practiceStats.attempts} total</span></div>
+        <div class="library-recall-stats"><span>Unaided recall ${practiceStats.unaidedRecalled}</span><span>${practiceStats.successfulRecallDays} recall days</span>${practiceStats.timedRecallCount ? `<span>~${Math.round(practiceStats.recallTimeTotalMs / practiceStats.timedRecallCount / 1000)}s to recall</span>` : ''}</div>
         ${deleteId === meaning.id ? `<div class="delete-confirm"><span>Delete this meaning of “${escapeHtml(meaning.word)}”?</span><button data-cancel-delete>Cancel</button><button data-confirm-delete="${escapeHtml(meaning.id)}">Delete</button></div>` : `<div class="library-card-actions"><button data-edit-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-pen"></i> Edit</button><button data-delete-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-trash"></i> Delete</button></div>`}
       </section>`;
     };

@@ -51,7 +51,7 @@ test('legacy data migrates without destroying box, mastery, or review date', () 
   assert.equal(migrated.box, 4);
   assert.equal(migrated.mastered, true);
   assert.equal(migrated.nextReviewDate, legacy.nextReviewDate);
-  assert.equal(migrated.srs.version, 2);
+  assert.equal(migrated.srs.version, 3);
   assert.equal(migrated.srs.stabilityDays, 14);
 });
 

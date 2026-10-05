@@ -2,6 +2,8 @@ import { localDateKey } from '../utils/dates.js';
 
 export const DAILY_REMINDER_ID = 73001;
 export const STREAK_REMINDER_ID = 73002;
+export const TEST_REMINDER_ID = 73003;
+export const REMINDER_CHANNEL_ID = 'keepvocab-practice';
 export const REMINDER_HORIZON_DAYS = 7;
 const MIN_SMART_HOUR = 8;
 const MAX_SMART_MINUTES = 21 * 60 + 30;
@@ -214,6 +216,7 @@ export function reminderNotifications(plan, streakPlan = null) {
     const [hour, minute] = normalizeReminderTime(item.time).split(':').map(Number);
     return {
       id: DAILY_REMINDER_ID + index * 10,
+      channelId: REMINDER_CHANNEL_ID,
       title: item.title, body: item.body,
       schedule: item.repeat ? { on: { hour, minute }, allowWhileIdle: true }
         : { at: item.nextAt || getNextReminderAt(item.time), allowWhileIdle: true },
@@ -223,6 +226,7 @@ export function reminderNotifications(plan, streakPlan = null) {
   });
   if (streakPlan) primary.push({
     id: STREAK_REMINDER_ID, title: streakPlan.title, body: streakPlan.body,
+    channelId: REMINDER_CHANNEL_ID,
     schedule: { at: streakPlan.nextAt || getNextReminderAt(streakPlan.time), allowWhileIdle: true },
     autoCancel: true, extra: { route: streakPlan.route, reason: streakPlan.reason }
   });
@@ -256,15 +260,69 @@ function serializeNotifications(action) {
 }
 
 async function scheduleNative(plugin, plan, streakPlan, requestPermission) {
-  let permission = await plugin.checkPermissions();
-  if (permission.display !== 'granted' && requestPermission) permission = await plugin.requestPermissions();
-  if (permission.display !== 'granted') return { status: 'permission-required', platform: 'native' };
-
-  const notifications = reminderNotifications(plan, streakPlan);
+  const readiness = await prepareNativeReminders(plugin, requestPermission);
+  if (readiness.status !== 'ready') return readiness;
+  const notifications = reminderNotifications(plan, streakPlan).map(item => ({
+    ...item, isExactNotification: readiness.exactAlarm === 'granted'
+  }));
   await plugin.cancel({ notifications: reminderIds() });
   await plugin.removeDeliveredNotifications?.({ notifications: reminderIds() });
   await plugin.schedule({ notifications });
-  return { status: 'scheduled', platform: 'native', nextAt: plan.nextAt || getNextReminderAt(plan.time), streakNextAt: streakPlan?.nextAt || null };
+  if (plugin.getPending) {
+    const pending = await plugin.getPending();
+    const ids = new Set(pending.notifications.map(item => item.id));
+    if (notifications.some(item => !ids.has(item.id))) throw new Error('Android did not save every reminder. Try saving your routine again.');
+  }
+  return { status: 'scheduled', platform: 'native', exactAlarm: readiness.exactAlarm,
+    nextAt: plan.nextAt || getNextReminderAt(plan.time), streakNextAt: streakPlan?.nextAt || null };
+}
+
+async function prepareNativeReminders(plugin, requestPermission = false) {
+  let permission = await plugin.checkPermissions();
+  if (permission.display !== 'granted' && requestPermission) permission = await plugin.requestPermissions();
+  if (permission.display !== 'granted') return { status: 'permission-required', platform: 'native' };
+  if (plugin.areEnabled && !(await plugin.areEnabled()).value) return { status: 'permission-required', platform: 'native' };
+  await plugin.createChannel?.({ id: REMINDER_CHANNEL_ID, name: 'Practice reminders',
+    description: 'Daily vocabulary practice and streak protection', importance: 4, visibility: 1, vibration: true });
+  const channels = plugin.listChannels ? (await plugin.listChannels()).channels : [];
+  if (channels.some(channel => channel.id === REMINDER_CHANNEL_ID && channel.importance === 0)) {
+    return { status: 'channel-blocked', platform: 'native' };
+  }
+  const exact = plugin.checkExactNotificationSetting ? await plugin.checkExactNotificationSetting() : {};
+  return { status: 'ready', platform: 'native', exactAlarm: exact.exact_alarm || 'denied' };
+}
+
+export async function getReminderStatus() {
+  const plugin = getNativeNotifications();
+  if (!plugin) return { status: supportsReminders() ? 'unavailable' : 'android-only' };
+  return serializeNotifications(async () => {
+    const ready = await prepareNativeReminders(plugin);
+    if (ready.status !== 'ready') return ready;
+    const pending = plugin.getPending ? (await plugin.getPending()).notifications : [];
+    const ids = new Set(reminderIds().map(item => item.id));
+    return { ...ready, pendingCount: pending.filter(item => ids.has(item.id)).length };
+  });
+}
+
+export async function sendTestReminder() {
+  const plugin = getNativeNotifications();
+  if (!plugin) return { status: supportsReminders() ? 'unavailable' : 'android-only' };
+  return serializeNotifications(async () => {
+    const ready = await prepareNativeReminders(plugin, true);
+    if (ready.status !== 'ready') return ready;
+    await plugin.schedule({ notifications: [{ id: TEST_REMINDER_ID, channelId: REMINDER_CHANNEL_ID,
+      title: 'KeepVocab notifications are working', body: 'Your practice reminders will appear here. Tap to open Practice.',
+      isExactNotification: false, autoCancel: true, extra: { route: 'review', reason: 'delivery-test' } }] });
+    return { status: 'test-sent', platform: 'native' };
+  });
+}
+
+export async function openReminderSettings({ exactAlarms = false } = {}) {
+  const plugin = getNativeNotifications();
+  if (exactAlarms) return plugin?.changeExactNotificationSetting?.();
+  const settings = globalThis.Capacitor?.Plugins?.ReminderSettings;
+  if (!settings?.openNotificationSettings) throw new Error('Open Android Settings → Apps → KeepVocab → Notifications.');
+  return settings.openNotificationSettings();
 }
 
 export async function scheduleDailyReminder({
@@ -283,6 +341,7 @@ export async function scheduleDailyReminder({
   const plan = { time: normalizedTime, title, body, route, repeat, reason, nextAt, followUps };
   const nativePlugin = getNativeNotifications();
   if (nativePlugin) return serializeNotifications(() => scheduleNative(nativePlugin, plan, streakPlan, requestPermission));
+  if (supportsReminders()) return { status: 'unavailable', platform: 'native', nextAt: null };
   return { status: 'android-only', platform: 'web', nextAt: null, streakNextAt: null };
 }
 

@@ -129,7 +129,7 @@ export function applyExerciseResultToWord(word, input) {
   const result = scoreExerciseEvidence(input);
   const now = new Date(result.occurredAt);
   const migrated = migrateSrsState(word, now);
-  const scheduled = scheduleWordReview(migrated, result.rating, { now, evidenceStrength: result.evidenceStrength });
+  const scheduled = scheduleWordReview(migrated, result.rating, { now, evidenceStrength: result.evidenceStrength, result });
   const mastery = updateMastery(normalizeMastery(scheduled, now), result);
   const mistakes = updateMistakes(normalizeMistakes(scheduled), result);
   const practiceStats = updateWordPracticeStats(migrated, result);

@@ -1,6 +1,6 @@
-import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=1602';
+import { getActivePracticeWords, getScheduledPracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=1602';
 import { driveSync } from '../services/driveSync.js?v=1602';
-import { buildDailySession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=1602';
+import { buildDailySession, buildWeakWordsSession, practiceSessionSize, weaknessScore } from '../services/dailySession.js?v=1602';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
 import { recordSessionCompletion } from '../services/learningStats.js?v=1602';
 import { speakWord } from '../services/speechService.js?v=1602';
@@ -30,11 +30,12 @@ function exerciseCopy(exercise, word) {
 }
 
 export function renderDailySessionMode(container, onNavigate, options = {}) {
-  const words = getActivePracticeWords(driveSync);
-  const session = options.kind === 'weak' ? buildWeakWordsSession(words) : buildDailySession(words);
+  const words = options.kind === 'weak' ? getActivePracticeWords(driveSync) : getScheduledPracticeWords(driveSync);
+  const practiceNotebookLabel = driveSync.getSettings().practiceAllMonths !== false ? 'All saved notebooks' : driveSync.getActiveNotebook();
+  const session = options.kind === 'weak' ? buildWeakWordsSession(words) : buildDailySession(words, { targetSize: practiceSessionSize(driveSync.getSettings()) });
   if (!session.exercises.length) {
     if (options.kind !== 'weak' && words.length) {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell review-recall-shell"><div class="useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>All caught up</h2><p>No words are due in this notebook. Your answers set when each word needs another review.</p><div class="inline-actions"><button class="btn-green-solid" id="daily-empty-action">Back to Today</button><button class="status-pill offline" id="daily-open-library">Open library</button></div></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell review-recall-shell"><div class="useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>All caught up</h2><p>Your words are resting after practice. Repeated recall on different days builds longer review intervals.</p><div class="inline-actions"><button class="btn-green-solid" id="daily-empty-action">Back to Today</button><button class="status-pill offline" id="daily-open-library">Open library</button></div></div></div></section>`;
       container.querySelector('#daily-empty-action').addEventListener('click', () => go('dashboard', onNavigate));
       container.querySelector('#daily-open-library').addEventListener('click', () => go('library', onNavigate));
       return;
@@ -67,7 +68,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     const improved = driveSync.getWords().filter(word => (initialWeak.get(word.id) || 0) > weaknessScore(word)).length;
     recordSessionCompletion(session, { kind: options.kind || 'daily', exercises: queue.length, correct: score, minutes: Math.max(1, Math.round((performance.now() - startedAt) / 60_000)), weakWordsImproved: improved });
     if (options.kind !== 'weak') {
-      container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-complete-heading"><div class="spec-card practice-shell review-recall-shell"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-dumbbell"></i> Practice</div><span class="muted-label">${escapeHtml(driveSync.getActiveNotebook())}</span></div><div class="useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2 id="practice-complete-heading">Practice complete</h2><p>${score} of ${queue.length} exercises were correct. Missed words return sooner; correct answers earn a longer break.</p><div class="review-score-orb"><strong>${score}</strong><span>correct</span></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-complete-heading"><div class="spec-card practice-shell review-recall-shell"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-dumbbell"></i> Practice</div><span class="muted-label">${escapeHtml(practiceNotebookLabel)}</span></div><div class="useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2 id="practice-complete-heading">Practice complete</h2><p>${score} of ${queue.length} exercises were correct. Missed words return sooner; correct answers earn a longer break.</p><div class="review-score-orb"><strong>${score}</strong><span>correct</span></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></div></section>`;
     } else {
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-complete-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Practice complete</span><h1>${options.kind === 'weak' ? 'Your weak words are getting stronger' : 'You moved your vocabulary forward'}</h1><p>${score} of ${queue.length} exercises were correct. ${improved ? `${improved} weak word${improved === 1 ? '' : 's'} improved.` : 'Mistakes are already shaping your next workout.'}</p><div class="daily-complete-metrics"><div><strong>${score}</strong><span>correct</span></div><div><strong>${queue.length}</strong><span>exercises</span></div><div><strong>${improved}</strong><span>recovered</span></div></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></section>`;
     }
@@ -166,7 +167,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     if (options.kind !== 'weak') {
       const visual = exercise.exerciseType === 'image-recognition';
       container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-heading"><div class="spec-card practice-shell review-recall-shell">
-        <div class="card-header-bar"><div class="card-tag" id="practice-heading"><i class="fa-solid fa-${visual ? 'images' : 'keyboard'}"></i> ${visual ? 'Visual Match' : 'Practice'}</div><span class="muted-label">${escapeHtml(driveSync.getActiveNotebook())}</span></div>
+        <div class="card-header-bar"><div class="card-tag" id="practice-heading"><i class="fa-solid fa-${visual ? 'images' : 'keyboard'}"></i> ${visual ? 'Visual Match' : 'Practice'}</div><span class="muted-label">${escapeHtml(practiceNotebookLabel)}</span></div>
         ${renderPracticeHeader({ exitId: 'daily-exit', current: index, total: queue.length, score })}
         <div class="${visual ? 'visual-prompt' : 'practice-prompt typed-review-prompt'}">
           <div class="practice-icon"><i class="fa-solid fa-${visual ? 'images' : 'keyboard'}" aria-hidden="true"></i></div>

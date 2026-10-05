@@ -1,8 +1,16 @@
-// All saved-vocabulary exercises use the month selected in Library. Keep the
-// course/month lookup here; ranking and session scheduling operate on this pool.
+import { localDateKey } from '../utils/dates.js';
+
+// Manual exercise modes use the month selected in Library.
 export function getActivePracticeWords(persistence) {
   const month = persistence.getActiveNotebook().replace(/ Vocabulary$/, '');
   return persistence.getWordsByMonthYear(month).filter(word => word?.id && word.word && word.definition);
+}
+
+export function getScheduledPracticeWords(persistence) {
+  if (persistence.getSettings().practiceAllMonths === false) return getActivePracticeWords(persistence);
+  // getWords is already course-scoped. A month is an archive boundary,
+  // not a reason to stop maintaining earlier vocabulary.
+  return persistence.getWords().filter(word => word?.id && word.word && word.definition);
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -65,10 +73,13 @@ export function normalizeWordPracticeStats(word) {
     : typeof word?.lastExerciseResult?.correct === 'boolean' ? word.lastExerciseResult.correct
       : word?.srs?.lastRating ? word.srs.lastRating !== 'again' : null;
   return {
-    version: 1,
+    version: 2,
     attempts,
     recalled,
     missed,
+    // Old records did not distinguish recall from recognition. Keep their
+    // successful-review baseline without inventing independent recall days.
+    legacySuccessfulReviews: Number(current.version) >= 2 ? count(current.legacySuccessfulReviews) : recalled,
     consecutiveCorrect: count(current.consecutiveCorrect),
     consecutiveMisses: count(current.consecutiveMisses),
     selections: count(current.selections),
@@ -77,6 +88,16 @@ export function normalizeWordPracticeStats(word) {
     lastCorrectAt: String(current.lastCorrectAt || ''),
     lastMissedAt: String(current.lastMissedAt || ''),
     lastAnswerCorrect,
+    recallAttempts: count(current.recallAttempts),
+    unaidedRecalled: count(current.unaidedRecalled),
+    successfulRecallDays: count(current.successfulRecallDays),
+    lastUnaidedRecallAt: String(current.lastUnaidedRecallAt || ''),
+    recognitionCorrect: count(current.recognitionCorrect),
+    assistedCorrect: count(current.assistedCorrect),
+    hintsUsed: count(current.hintsUsed),
+    timedRecallCount: count(current.timedRecallCount),
+    recallTimeTotalMs: count(current.recallTimeTotalMs),
+    recentResults: Array.isArray(current.recentResults) ? current.recentResults.slice(-20) : [],
     byMode
   };
 }
@@ -88,6 +109,11 @@ export function updateWordPracticeStats(word, result) {
     'daily-typed-recall': 'practice', 'daily-image-recognition': 'practice' })[exerciseType] || exerciseType;
   const modeStats = normalizeModeStats(current.byMode[mode]);
   const recalled = Boolean(result.correct);
+  const recallAttempt = result.recallType !== 'recognition';
+  const unaided = recalled && recallAttempt && result.producedUnaided && !result.hintsUsed;
+  const newRecallDay = unaided && (!validTimestamp(current.lastUnaidedRecallAt)
+    || localDateKey(new Date(current.lastUnaidedRecallAt)) !== localDateKey(new Date(result.occurredAt)));
+  const timedRecall = unaided && Number.isFinite(result.responseTimeMs);
   return {
     ...current,
     attempts: current.attempts + 1,
@@ -99,6 +125,20 @@ export function updateWordPracticeStats(word, result) {
     lastCorrectAt: recalled ? result.occurredAt : current.lastCorrectAt,
     lastMissedAt: recalled ? current.lastMissedAt : result.occurredAt,
     lastAnswerCorrect: recalled,
+    recallAttempts: current.recallAttempts + (recallAttempt ? 1 : 0),
+    unaidedRecalled: current.unaidedRecalled + (unaided ? 1 : 0),
+    successfulRecallDays: current.successfulRecallDays + (newRecallDay ? 1 : 0),
+    lastUnaidedRecallAt: unaided ? result.occurredAt : current.lastUnaidedRecallAt,
+    recognitionCorrect: current.recognitionCorrect + (recalled && !recallAttempt ? 1 : 0),
+    assistedCorrect: current.assistedCorrect + (recalled && recallAttempt && !unaided ? 1 : 0),
+    hintsUsed: current.hintsUsed + count(result.hintsUsed),
+    timedRecallCount: current.timedRecallCount + (timedRecall ? 1 : 0),
+    recallTimeTotalMs: current.recallTimeTotalMs + (timedRecall ? count(result.responseTimeMs) : 0),
+    recentResults: [...current.recentResults, {
+      correct: recalled, unaided: Boolean(unaided), recallType: result.recallType,
+      hintsUsed: count(result.hintsUsed), responseTimeMs: result.responseTimeMs,
+      occurredAt: result.occurredAt
+    }].slice(-20),
     byMode: {
       ...current.byMode,
       [mode]: {
@@ -129,7 +169,11 @@ export function wordRecommendationScore(word, options = {}) {
   const dueAt = validTimestamp(word?.nextReviewDate || word?.createdAt);
   const due = dueAt > 0 && dueAt <= now.getTime();
   const errorRate = stats.attempts ? stats.missed / stats.attempts * Math.pow(0.5, stats.consecutiveCorrect) : 0.35;
-  const masteryNeed = 1 - Math.max(mastery.recognition, mastery.recall, mastery.context, mastery.productive, mastery.speaking);
+  const masteryNeed = 1 - Math.max(mastery.recall, mastery.context, mastery.productive, mastery.speaking);
+  const recallNeed = Math.max(0, 3 - stats.successfulRecallDays - stats.legacySuccessfulReviews) / 3;
+  const recent = stats.recentResults.slice(-8);
+  const recentErrorRate = recent.length ? recent.filter(result => !result.correct).length / recent.length : errorRate;
+  const slowRecall = stats.timedRecallCount ? Math.min(1, stats.recallTimeTotalMs / stats.timedRecallCount / 30000) : 0;
   const daysSinceAnswer = stats.lastAnsweredAt
     ? Math.max(0, (now.getTime() - validTimestamp(stats.lastAnsweredAt)) / DAY_MS)
     : 30;
@@ -141,6 +185,9 @@ export function wordRecommendationScore(word, options = {}) {
     + mistakes.consecutiveFailures * 18
     + stats.consecutiveMisses * 12
     + errorRate * 32
+    + recentErrorRate * 20
+    + recallNeed * 24
+    + slowRecall * 8
     + masteryNeed * 18
     - recentCorrectPenalty;
 }
@@ -221,7 +268,9 @@ export function selectModeWords(words, options = {}) {
   const priorityRanked = [...valid].sort((a, b) => priorityScore(b) - priorityScore(a)
     || stableDailyTie(a, mode, now) - stableDailyTie(b, mode, now));
   const focusPool = priorityRanked.filter(word => needsPriorityPractice(word, now));
-  const priorityPool = focusPool.length ? focusPool : priorityRanked;
+  // A recently answered word may become due before an untouched one. Rank
+  // both here so the due flag alone cannot defeat the selection cooldown.
+  const priorityPool = priorityRanked;
   const priorityCount = target >= uniqueSpellings
     ? target
     : Math.min(target, Math.max(1, Math.round(target * Math.min(0.5, Math.max(0, Number(options.priorityShare ?? DEFAULT_PRIORITY_SHARE))))));

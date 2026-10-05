@@ -21,7 +21,7 @@ function makeWord(index, overrides = {}) {
 test('Daily Session prioritizes scheduled vocabulary', () => {
   const words = Array.from({ length: 20 }, (_, index) => makeWord(index, { nextReviewDate: index < 10 ? new Date(NOW.getTime() - index * 60000).toISOString() : new Date(NOW.getTime() + 86400000).toISOString() }));
   const session = buildDailySession(words, { now: NOW });
-  assert.equal(session.exercises.length, DEFAULT_SESSION_SIZE);
+  assert.equal(session.exercises.length, 10);
   assert.deepEqual(new Set(session.exercises.map(exercise => exercise.wordId)), new Set(words.slice(0, 10).map(word => word.id)));
 });
 
@@ -42,17 +42,17 @@ test('Daily Session avoids immediate unnecessary duplicate words', () => {
   assert.equal(hasImmediateDuplicates(session.exercises), false);
 });
 
-test('practice is seven typed descriptions and three visual matches with images available', () => {
+test('practice is fourteen typed descriptions and six visual matches with images available', () => {
   const words = Array.from({ length: 30 }, (_, index) => makeWord(index, {
     imageUrl: `https://example.com/word${index}.png`, example: `This is word${index}.`,
     mastery: { recognition: 1, recall: 1, context: 1, productive: 1 }
   }));
   const session = buildDailySession(words, { now: NOW });
-  assert.equal(DEFAULT_SESSION_SIZE, 10);
-  assert.equal(session.exercises.length, 10);
-  assert.equal(session.exercises.filter(exercise => exercise.exerciseType === 'typed-recall').length, 7);
-  assert.equal(session.exercises.filter(exercise => exercise.exerciseType === 'image-recognition').length, 3);
-  assert.equal(new Set(session.exercises.map(exercise => exercise.wordId)).size, 10);
+  assert.equal(DEFAULT_SESSION_SIZE, 20);
+  assert.equal(session.exercises.length, 20);
+  assert.equal(session.exercises.filter(exercise => exercise.exerciseType === 'typed-recall').length, 14);
+  assert.equal(session.exercises.filter(exercise => exercise.exerciseType === 'image-recognition').length, 6);
+  assert.equal(new Set(session.exercises.map(exercise => exercise.wordId)).size, 20);
   assert.ok(session.exercises.every(exercise => !exercise.round));
 });
 
@@ -71,7 +71,7 @@ test('only due words are selected, and images never change selected words or ord
 test('missing images fall back to typed descriptions without changing selected words', () => {
   const words = Array.from({ length: 12 }, (_, index) => makeWord(index));
   const session = buildDailySession(words, { now: NOW });
-  assert.equal(session.exercises.length, 10);
+  assert.equal(session.exercises.length, 12);
   assert.ok(session.exercises.every(exercise => exercise.exerciseType === 'typed-recall'));
   const imageWordId = session.exercises[0].wordId;
   const oneImage = buildDailySession(words.map(word => word.id === imageWordId ? { ...word, imageUrl: 'https://example.com/one.png' } : word), { now: NOW });
@@ -80,7 +80,7 @@ test('missing images fall back to typed descriptions without changing selected w
 });
 
 test('small libraries get one task per distinct word without filler repetition', () => {
-  for (const [size, length] of [[0,0],[1,1],[2,2],[3,3],[4,4],[10,10],[30,10]]) {
+  for (const [size, length] of [[0,0],[1,1],[2,2],[3,3],[4,4],[10,10],[20,20],[30,20]]) {
     const session = buildDailySession(Array.from({length:size}, (_,index)=>makeWord(index,{imageUrl:'https://example.com/image.png'})), {now:NOW});
     assert.equal(session.exercises.length,length);
     assert.equal(hasImmediateDuplicates(session.exercises),false);
@@ -124,10 +124,10 @@ function answer(word, correct, now, exerciseType = 'typed-recall') {
   }).word;
 }
 
-test('consecutive successful sessions cover the library instead of repeating the same ten words', () => {
+test('consecutive successful sessions cover the library instead of repeating the same twenty words', () => {
   let words = Array.from({ length: 27 }, (_, index) => makeWord(index, { imageUrl: 'image.png' }));
   const seen = new Set();
-  for (const expectedLength of [10, 10, 7]) {
+  for (const expectedLength of [20, 7]) {
     const session = buildDailySession(words, { now: NOW });
     assert.equal(session.exercises.length, expectedLength);
     for (const exercise of session.exercises) {
@@ -190,10 +190,10 @@ test('past lifetime mistakes do not outrank a fresh unresolved miss after recove
 
 test('starting another session rotates unanswered due words without inventing answers', () => {
   let words = Array.from({ length: 30 }, (_, index) => makeWord(index));
-  const first = buildDailySession(words, { now: NOW });
+  const first = buildDailySession(words, { now: NOW, targetSize: 10 });
   const ids = new Set(first.exercises.map(exercise => exercise.wordId));
   words = words.map(word => ids.has(word.id) ? applyModeSelectionToWord(word, { mode: 'practice', now: NOW }) : word);
-  const second = buildDailySession(words, { now: NOW });
+  const second = buildDailySession(words, { now: NOW, targetSize: 10 });
   assert.equal(second.exercises.length, 10);
   assert.equal(second.exercises.some(exercise => ids.has(exercise.wordId)), false);
   assert.equal(words.every(word => normalizeWordPracticeStats(word).attempts === 0), true);
