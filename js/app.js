@@ -322,6 +322,9 @@ function setupEngagementSystem() {
     if (result.status === 'channel-blocked') return 'Practice reminders are blocked. Enable the Practice reminders category in Android settings.';
     if (result.status === 'unavailable') return 'The notification service is unavailable. Install the latest Android build.';
     if (result.status === 'test-sent') return 'Test sent. Check your notification shade for KeepVocab.';
+    if (result.status === 'test-scheduled') return result.exactAlarm === 'granted'
+      ? 'Test scheduled for one minute from now. Press Home or close the app, then check your notifications.'
+      : 'Background test saved. Press Home or close the app. Android may delay it beyond one minute; allow precise timing for a timed test.';
     return `${result.pendingCount || 0} reminders scheduled. ${result.exactAlarm === 'granted' ? 'Precise timing is allowed.' : 'Android may delay delivery. Allow precise timing for reminders closer to your chosen time.'}`;
   };
   const updateDeliveryStatus = async () => {
@@ -363,9 +366,9 @@ function setupEngagementSystem() {
     updateHelper();
   };
 
-  const openSettings = () => {
+  const openSettings = ({ enableReminders = false } = {}) => {
     const settings = driveSync.getSettings();
-    reminderEnabled.checked = Boolean(settings.reminderEnabled);
+    reminderEnabled.checked = enableReminders || Boolean(settings.reminderEnabled);
     smartReminderEnabled.checked = settings.smartReminderEnabled !== false;
     streakReminderEnabled.checked = settings.streakReminderEnabled !== false;
     reminderTime.value = normalizeReminderTime(settings.reminderTime || '19:00');
@@ -390,6 +393,13 @@ function setupEngagementSystem() {
     catch (error) { deliveryStatus.textContent = error.message || 'Could not send a test notification.'; }
     finally { button.disabled = false; }
   });
+  document.getElementById('btn-test-background-reminder').addEventListener('click', async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try { deliveryStatus.textContent = deliveryMessage(await sendTestReminder({ delaySeconds: 60 })); }
+    catch (error) { deliveryStatus.textContent = error.message || 'Could not schedule a background test.'; }
+    finally { button.disabled = false; }
+  });
   document.getElementById('btn-reminder-system-settings').addEventListener('click', async () => {
     try {
       await openReminderSettings();
@@ -408,6 +418,7 @@ function setupEngagementSystem() {
     const control = event.target.closest('button, a');
     if (!control) return;
     if (control.id === 'btn-open-engagement-settings' || control.id === 'settings-routine') openSettings();
+    if (control.id === 'settings-notifications') openSettings({ enableReminders: true });
     if (control.id === 'btn-coach-review') window.location.hash = 'review';
     if (control.id === 'btn-close-engagement-settings' || control.id === 'btn-cancel-engagement-settings') closeSettings();
   });

@@ -53,11 +53,16 @@ modes remain optional manual choices.
 
 ## Android reminders
 
-Reminders are opt-in in Settings → Routine & sound. The dialog shows notification
+Reminders are opt-in in Settings → Android notifications → Set up notifications
+(also available from Routine & sound). The Settings card shows whether reminders
+are on and whether notification access is blocked. The dialog shows notification
 permission/channel problems, pending reminder count and timing access. “Test
-notification” sends an immediate device notification without cancelling the
-routine. “Android settings” opens the app’s notification settings. “Allow precise
-timing” opens Android’s Alarms & reminders setting and refreshes the schedule
+notification” sends an immediate device notification and verifies that Android
+displays it, without cancelling the routine. “Test with app closed” saves a test
+for one minute later; press Home or swipe KeepVocab away to check native background
+delivery. Without precise timing, Android can delay that test. “Android settings”
+opens the app’s notification settings. “Allow precise timing” opens Android’s
+Alarms & reminders setting and refreshes the schedule
 when the user returns. Blocked setup leaves the dialog open with actionable
 feedback instead of claiming reminders were set successfully.
 
@@ -68,6 +73,8 @@ alarm access, reminders use precise idle-safe alarms. Without it, they explicitl
 use idle-safe inexact alarms; automatic refreshes do not open a permission screen.
 Android may delay these inexact alarms. This uses Capacitor Local Notifications
 8.3’s exactness controls, described in the [official plugin documentation](https://capacitorjs.com/docs/apis/local-notifications).
+On Android 7/7.1, channel APIs are unavailable; those calls are skipped so
+notifications still work on the app’s supported API 24–25 devices.
 
 Smart timing uses the median of recent study starts, rounded to 15 minutes and
 limited to 08:00–21:30. With at least three samples in each group, weekdays and
@@ -96,3 +103,10 @@ mistake retries, notification/channel denial, exact-alarm fallback, saved alarm
 verification, notification test actions and Android-only controls. Renderer
 checks complete a 20-word workout and confirm month selection, persistent recall
 history, and the daily completion state at mobile and desktop widths.
+
+The 1.8.0 native validation also exercises the actual Capacitor plugin on an
+Android 16 emulator, including the OS permission prompt, notification visibility,
+blocked channels, approximate/precise alarms, paused WebView delivery, and
+notification navigation. Separate checks confirm delivery after process death
+and reboot, and background delivery without exact-alarm access. See
+[Android notification validation](android-notifications-1.8.0.md).

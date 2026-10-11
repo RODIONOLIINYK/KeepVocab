@@ -164,13 +164,15 @@ test('a 107-word backlog stays within the daily budget and resets on the next lo
 });
 
 test('abandoned sessions count submitted correct and incorrect answers toward the remaining daily budget', () => {
+  // getSettings normalizes the daily budget to the real local day.
+  const activityDate = new Date();
   const persistence = new DriveSyncService(new MemoryStorage());
   const words = Array.from({ length: 30 }, (_, index) => word(String(index), { monthYear: 'October 2026', courseId: 'english' }));
   persistence.saveWords(words);
   persistence.setActiveNotebook('October 2026 Vocabulary');
-  const initial = buildScheduledPracticeSession(getScheduledPracticeWords(persistence), persistence.getSettings(), { now: NOW });
+  const initial = buildScheduledPracticeSession(getScheduledPracticeWords(persistence), persistence.getSettings(), { now: activityDate });
   assert.equal(initial.wordCount, 20);
   // The same persisted study activity used by every exercise mode survives leaving a session.
-  for (let i = 0; i < 7; i++) recordExerciseResult({ wordId: words[i].id, exerciseType: 'daily-typed-recall', recallType: 'free-recall', correct: i % 2 === 0, occurredAt: NOW.toISOString() }, persistence);
-  assert.equal(buildScheduledPracticeSession(getScheduledPracticeWords(persistence), persistence.getSettings(), { now: NOW }).wordCount, 13);
+  for (let i = 0; i < 7; i++) recordExerciseResult({ wordId: words[i].id, exerciseType: 'daily-typed-recall', recallType: 'free-recall', correct: i % 2 === 0, occurredAt: activityDate.toISOString() }, persistence);
+  assert.equal(buildScheduledPracticeSession(getScheduledPracticeWords(persistence), persistence.getSettings(), { now: activityDate }).wordCount, 13);
 });

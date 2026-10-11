@@ -9,7 +9,7 @@ android {
         applicationId "com.keepvocab.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 28
+        versionCode 29
         versionName packageJson.version
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
@@ -40,6 +40,8 @@ dependencies {
     implementation "com.google.android.gms:play-services-auth:21.6.0"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
+    // Align test-runner transitive Kotlin artifacts with the notification plugin.
+    androidTestImplementation platform('org.jetbrains.kotlin:kotlin-bom:2.0.21')
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')

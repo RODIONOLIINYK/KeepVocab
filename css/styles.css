@@ -2009,3 +2009,5 @@ body[data-course-id="english"] .nav-links{width:min(100%,560px)}
 .daily-session-top > div { min-width:0; }
 .daily-session-top strong { line-height:1.4; }
 .daily-session-shell .choice-button span { overflow-wrap:anywhere; }
+
+.settings-notification-status { margin: 16px 0; color: var(--text-muted); font-size: .8rem; line-height: 1.5; }

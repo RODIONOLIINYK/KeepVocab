@@ -267,13 +267,13 @@ async function scheduleNative(plugin, plan, streakPlan, requestPermission) {
   }));
   await plugin.cancel({ notifications: reminderIds() });
   await plugin.removeDeliveredNotifications?.({ notifications: reminderIds() });
-  await plugin.schedule({ notifications });
+  const scheduled = await plugin.schedule({ notifications });
   if (plugin.getPending) {
     const pending = await plugin.getPending();
     const ids = new Set(pending.notifications.map(item => item.id));
     if (notifications.some(item => !ids.has(item.id))) throw new Error('Android did not save every reminder. Try saving your routine again.');
   }
-  return { status: 'scheduled', platform: 'native', exactAlarm: readiness.exactAlarm,
+  return { status: 'scheduled', platform: 'native', exactAlarm: scheduled?.warning ? 'denied' : readiness.exactAlarm,
     nextAt: plan.nextAt || getNextReminderAt(plan.time), streakNextAt: streakPlan?.nextAt || null };
 }
 
@@ -282,9 +282,16 @@ async function prepareNativeReminders(plugin, requestPermission = false) {
   if (permission.display !== 'granted' && requestPermission) permission = await plugin.requestPermissions();
   if (permission.display !== 'granted') return { status: 'permission-required', platform: 'native' };
   if (plugin.areEnabled && !(await plugin.areEnabled()).value) return { status: 'permission-required', platform: 'native' };
-  await plugin.createChannel?.({ id: REMINDER_CHANNEL_ID, name: 'Practice reminders',
-    description: 'Daily vocabulary practice and streak protection', importance: 4, visibility: 1, vibration: true });
-  const channels = plugin.listChannels ? (await plugin.listChannels()).channels : [];
+  let channels = [];
+  try {
+    await plugin.createChannel?.({ id: REMINDER_CHANNEL_ID, name: 'Practice reminders',
+      description: 'Daily vocabulary practice and streak protection', importance: 4, visibility: 1, vibration: true });
+    channels = plugin.listChannels ? (await plugin.listChannels()).channels : [];
+  } catch (error) {
+    // Android 7/7.1 is supported by the app, but has no notification channels.
+    // Capacitor rejects channel methods as UNAVAILABLE on those versions.
+    if (error.code !== 'UNAVAILABLE') throw error;
+  }
   if (channels.some(channel => channel.id === REMINDER_CHANNEL_ID && channel.importance === 0)) {
     return { status: 'channel-blocked', platform: 'native' };
   }
@@ -304,16 +311,39 @@ export async function getReminderStatus() {
   });
 }
 
-export async function sendTestReminder() {
+export async function sendTestReminder({ delaySeconds = 0 } = {}) {
   const plugin = getNativeNotifications();
   if (!plugin) return { status: supportsReminders() ? 'unavailable' : 'android-only' };
   return serializeNotifications(async () => {
     const ready = await prepareNativeReminders(plugin, true);
     if (ready.status !== 'ready') return ready;
-    await plugin.schedule({ notifications: [{ id: TEST_REMINDER_ID, channelId: REMINDER_CHANNEL_ID,
-      title: 'KeepVocab notifications are working', body: 'Your practice reminders will appear here. Tap to open Practice.',
-      isExactNotification: false, autoCancel: true, extra: { route: 'review', reason: 'delivery-test' } }] });
-    return { status: 'test-sent', platform: 'native' };
+    const delayed = delaySeconds > 0;
+    const scheduled = await plugin.schedule({ notifications: [{ id: TEST_REMINDER_ID, channelId: REMINDER_CHANNEL_ID,
+      title: delayed ? 'KeepVocab background reminder' : 'KeepVocab notification test',
+      body: delayed ? 'Your reminder arrived with KeepVocab in the background. Tap to open Practice.'
+        : 'Notification access is enabled. Tap to open Practice.',
+      ...(delayed ? { schedule: { at: new Date(Date.now() + delaySeconds * 1000), allowWhileIdle: true } } : {}),
+      isExactNotification: delayed && ready.exactAlarm === 'granted', autoCancel: true,
+      extra: { route: 'review', reason: 'delivery-test' } }] });
+    if (delayed && plugin.getPending) {
+      const pending = await plugin.getPending();
+      if (!pending.notifications.some(item => item.id === TEST_REMINDER_ID)) {
+        throw new Error('Android did not save the background test. Try again.');
+      }
+    } else if (!delayed && plugin.getDeliveredNotifications) {
+      let delivered = await plugin.getDeliveredNotifications();
+      // NotificationManager posts through the system service asynchronously.
+      // Give it a brief chance to become visible before reporting a failure.
+      for (let attempt = 0; attempt < 5 && !delivered.notifications.some(item => item.id === TEST_REMINDER_ID); attempt += 1) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        delivered = await plugin.getDeliveredNotifications();
+      }
+      if (!delivered.notifications.some(item => item.id === TEST_REMINDER_ID)) {
+        throw new Error('Android did not display the test notification. Check notification settings.');
+      }
+    }
+    return { status: delayed ? 'test-scheduled' : 'test-sent', platform: 'native',
+      exactAlarm: scheduled?.warning ? 'denied' : ready.exactAlarm };
   });
 }
 
