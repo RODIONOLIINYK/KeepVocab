@@ -1,142 +1,188 @@
-import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=1602';
-import { driveSync } from '../services/driveSync.js?v=1602';
-import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=1602';
-import { describeSpeechError, getSpeechAvailability, speakText } from '../services/speechService.js?v=1602';
-import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=1602';
-import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=1602';
-import { completedExercisesToday } from '../services/learningStats.js?v=1602';
+import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18100';
+import { driveSync } from '../services/driveSync.js?v=18100';
+import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18100';
+import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18100';
+import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18100';
+import { completedExercisesToday } from '../services/learningStats.js?v=18100';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
+
+function heading(icon, title, description, state = '', configured = false, expandable = false, stateId = '') {
+  return `<span class="settings-icon"><i class="${icon}" aria-hidden="true"></i></span><div><h2>${title}</h2><p>${description}</p></div>${state || expandable ? `<span class="settings-heading-meta">${state ? `<span ${stateId ? `id="${stateId}"` : ''} class="settings-state ${configured ? 'connected' : ''}">${state}</span>` : ''}${expandable ? '<i class="fa-solid fa-chevron-down settings-chevron" aria-hidden="true"></i>' : ''}</span>` : ''}`;
+}
+
+function translationDescription(language) {
+  return language === 'uk' ? 'English definitions with Ukrainian translation hints.' : 'English definitions and exercise prompts.';
+}
+
+function modelOptions(current) {
+  const models = ['gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-2.5-flash-lite'];
+  if (!models.includes(current)) models.unshift(current);
+  return models.map(model => `<option value="${escapeHtml(model)}" ${model === current ? 'selected' : ''}>${escapeHtml(model.replace('gemini-', 'Gemini ').replace('flash-lite', 'Flash-Lite'))}</option>`).join('');
+}
 
 export function renderSettingsView(container, onNavigate) {
   const gemini = getGeminiSettings();
   const imageProvider = getImageProviderSettings();
-  const pexelsReady = imageProvider.provider === 'pexels' && Boolean(imageProvider.pexelsApiKey);
   const drive = driveSync.getDriveStatus();
   const settings = driveSync.getSettings();
   const completedToday = completedExercisesToday(settings);
   const streak = Math.max(0, Number(settings.dailyStreak || 0));
   const streakAtRisk = streak > 0 && completedToday === 0;
-  const notificationsCard = supportsReminders() ? `<section class="settings-card"><div class="settings-card-heading"><span class="settings-icon routine"><i class="fa-solid fa-bell"></i></span><div><h2>Android notifications</h2><p>Practice reminders can arrive while KeepVocab is closed.</p></div><span class="settings-state ${settings.reminderEnabled ? 'connected' : ''}">${settings.reminderEnabled ? 'On' : 'Off'}</span></div><p id="settings-notification-status" class="settings-notification-status" role="status" aria-live="polite">Checking notification access…</p><button class="btn-green-solid" id="settings-notifications">${settings.reminderEnabled ? 'Manage notifications' : 'Set up notifications'}</button></section>` : '';
-  container.innerHTML = `<section class="settings-view" aria-labelledby="settings-heading"><div class="settings-title-row"><button class="status-pill offline" id="settings-back"><i class="fa-solid fa-arrow-left"></i> Today</button><div><span class="eyebrow">KeepVocab settings</span><h1 id="settings-heading">Learning, AI, and backup</h1><p>Configure services once. Your learning remains available without them.</p></div></div>
-    <div class="settings-grid"><section class="settings-card compact"><div class="settings-card-heading"><span class="settings-icon routine"><i class="fa-solid fa-arrow-rotate-right"></i></span><div><h2>App updates</h2><p>KeepVocab ${APP_VERSION} · Checks automatically when you open the app and every six hours.</p></div></div><p data-update-status role="status" aria-live="polite">Updates keep your Library and learning progress.</p><div class="settings-actions"><button class="status-pill offline" data-check-update>Check for updates</button><button class="btn-green-solid" data-install-update hidden>Update app</button></div></section>${notificationsCard}<section class="settings-card"><div class="settings-card-heading"><span class="settings-icon ai"><i class="fa-solid fa-wand-magic-sparkles"></i></span><div><h2>Google AI Studio</h2><p>An optional key powers Lithuanian audio, Use It feedback, richer Context sentences, and AI Speaking.</p></div><span class="settings-state ${gemini.enabled ? 'connected' : ''}">${gemini.enabled ? 'Configured' : 'Optional'}</span></div>
-      <form id="gemini-settings-form" class="settings-form"><label class="settings-key-field">API key<div class="key-input-row"><input type="password" id="settings-gemini-key" value="${escapeHtml(gemini.apiKey)}" placeholder="AIza…" autocomplete="off"><button type="button" id="settings-toggle-key" aria-label="Show or hide API key"><i class="fa-solid fa-eye"></i></button></div></label><label>Everyday AI model<select id="settings-text-model"><option value="gemini-3.1-flash-lite" ${gemini.textModel === 'gemini-3.1-flash-lite' ? 'selected' : ''}>Gemini 3.1 Flash-Lite</option><option value="gemini-3.5-flash-lite" ${gemini.textModel === 'gemini-3.5-flash-lite' ? 'selected' : ''}>Gemini 3.5 Flash-Lite</option><option value="gemini-2.5-flash-lite" ${gemini.textModel === 'gemini-2.5-flash-lite' ? 'selected' : ''}>Gemini 2.5 Flash-Lite</option></select></label><label>Lithuanian voice<select id="settings-tts-voice"><option value="Achird" ${gemini.ttsVoice === 'Achird' ? 'selected' : ''}>Achird · friendly</option><option value="Sulafat" ${gemini.ttsVoice === 'Sulafat' ? 'selected' : ''}>Sulafat · warm</option><option value="Kore" ${gemini.ttsVoice === 'Kore' ? 'selected' : ''}>Kore · firm</option><option value="Iapetus" ${gemini.ttsVoice === 'Iapetus' ? 'selected' : ''}>Iapetus · clear</option></select></label><p class="settings-privacy"><i class="fa-solid fa-cloud-arrow-up"></i> Saved on this device and included in your private KeepVocab Google Drive backup when Drive is connected.</p><p class="settings-service-status" id="gemini-settings-status" role="status" aria-live="polite">Checking Lithuanian audio…</p><div class="settings-actions"><button class="btn-green-solid" id="save-gemini-settings">Save and test</button><button type="button" class="status-pill offline" id="test-lithuanian-audio"><i class="fa-solid fa-volume-high"></i> Test Lithuanian audio</button>${gemini.enabled ? '<button type="button" class="status-pill offline" id="remove-gemini-settings">Remove key</button>' : ''}</div></form>
-    </section>
-    <section class="settings-card"><div class="settings-card-heading"><span class="settings-icon images"><i class="fa-solid fa-images"></i></span><div><h2>Vocabulary images</h2><p>Use Pexels for stronger stock-photo matches or keep the public catalogs that require no key.</p></div><span class="settings-state ${pexelsReady ? 'connected' : ''}">${pexelsReady ? 'Pexels ready' : imageProvider.provider === 'openverse' ? 'Keyless' : 'Setup'}</span></div>
-      <form id="image-provider-settings-form" class="settings-form"><label>Photo source<select id="settings-image-provider"><option value="pexels" ${imageProvider.provider === 'pexels' ? 'selected' : ''}>Pexels · recommended</option><option value="openverse" ${imageProvider.provider === 'openverse' ? 'selected' : ''}>Public catalogs · no key</option></select></label><label>Pexels API key<div class="key-input-row"><input type="password" id="settings-pexels-key" value="${escapeHtml(imageProvider.pexelsApiKey)}" placeholder="Personal Pexels API key" autocomplete="off"><button type="button" id="settings-toggle-pexels-key" aria-label="Show or hide Pexels API key"><i class="fa-solid fa-eye"></i></button></div></label><p class="settings-privacy"><i class="fa-solid fa-cloud-arrow-up"></i> Saved on this device and included in your private KeepVocab Google Drive backup. <a href="https://www.pexels.com/api/new/" target="_blank" rel="noopener noreferrer">Get a free Pexels key</a>.</p><p id="image-provider-settings-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid" id="save-image-provider-settings">Save photo source</button>${imageProvider.pexelsApiKey ? '<button type="button" class="status-pill offline" id="remove-pexels-settings">Remove Pexels key</button>' : ''}</div></form>
-    </section>
-    <section class="settings-card"><div class="settings-card-heading"><span class="settings-icon drive"><i class="fa-brands fa-google-drive"></i></span><div><h2>Google Drive backup</h2><p>Library, mastery, mistakes, stats, speaking progress, AI Studio, and image-provider setup sync together.</p></div><span class="settings-state ${drive.isConnected ? 'connected' : drive.lastError ? 'error' : ''}">${drive.isConnected ? 'Connected' : drive.lastError ? 'Attention' : 'Off'}</span></div><div class="settings-detail-list"><div><span>Account</span><strong>${escapeHtml(drive.isConnected ? (drive.email || 'Connected Google account') : 'Not connected')}</strong></div><div><span>Last sync</span><strong>${drive.lastSynced ? new Date(drive.lastSynced).toLocaleString() : 'Not backed up'}</strong></div></div><button class="btn-green-solid" id="settings-drive-action"><i class="fa-brands fa-google-drive"></i> ${drive.isConnected ? 'Manage backup' : 'Connect and synchronize'}</button>${drive.lastError ? `<p class="settings-error" role="alert">${escapeHtml(drive.lastError)}</p>` : ''}</section>
-    <section class="settings-card compact"><div class="settings-card-heading"><span class="settings-icon routine"><i class="fa-solid fa-bell"></i></span><div><h2>Routine & sound</h2><p>${supportsReminders() ? 'Daily goal, Android reminders, streak protection, and interaction sounds.' : 'Daily goal and interaction sounds.'}</p></div></div><div class="settings-streak-status ${streakAtRisk ? 'is-at-risk' : ''}" aria-label="Streak status"><strong>${streakAtRisk ? `Keep your ${streak}-day streak alive` : completedToday > 0 ? 'Your streak is safe today' : 'Start your next small win'}</strong><p>${streakAtRisk ? 'Complete one exercise before midnight. A little practice counts, even on a busy day.' : completedToday > 0 ? `Come back tomorrow to keep it growing.${supportsReminders() ? ' Today’s reminders are quiet.' : ''}` : 'One exercise today is the first step toward your new streak.'}</p></div><button class="status-pill offline" id="settings-routine">Open routine settings</button></section></div>
+  const remindersAvailable = supportsReminders();
+  const pexelsReady = imageProvider.provider === 'pexels' && Boolean(imageProvider.pexelsApiKey);
+  const lastSync = drive.lastSynced ? new Date(drive.lastSynced) : null;
+
+  container.innerHTML = `<section class="settings-view" aria-labelledby="settings-heading">
+    <div class="settings-title-row"><button class="status-pill offline" id="settings-back"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Today</button><div><h1 id="settings-heading">Settings</h1><p>Make KeepVocab work for you.</p></div></div>
+    <div class="settings-grid">
+      <section class="settings-card" data-language-settings><div class="settings-card-heading">${heading('fa-solid fa-language', 'Language', translationDescription(settings.translationLanguage))}</div>
+        <form id="translation-settings-form" class="settings-form"><label>Learning language<input value="English" readonly aria-readonly="true"></label><label>Translation language<select id="settings-translation-language"><option value="en" ${settings.translationLanguage !== 'uk' ? 'selected' : ''}>English (default)</option><option value="uk" ${settings.translationLanguage === 'uk' ? 'selected' : ''}>Ukrainian · Українська</option></select></label><div class="settings-actions"><button class="btn-green-solid">Save language</button></div><p id="translation-settings-status" class="settings-service-status" role="status" aria-live="polite"></p></form>
+      </section>
+      <section class="settings-card"><div class="settings-card-heading">${heading('fa-solid fa-arrow-rotate-right', 'Routine & sound', `${Math.max(1, Number(settings.dailyGoal) || 20)} exercises a day · interaction sounds ${settings.soundEnabled === false ? 'off' : 'on'}`)}</div>
+        <div class="settings-streak-status ${streakAtRisk ? 'is-at-risk' : ''}"><strong>${streakAtRisk ? `Keep your ${streak}-day streak alive` : completedToday > 0 ? 'Your streak is safe today' : 'Build your streak'}</strong><p>${streakAtRisk ? 'Complete one exercise before midnight.' : completedToday > 0 ? 'Come back tomorrow to keep it growing.' : 'One exercise today is a good start.'}</p></div>
+        <div class="settings-actions"><button class="status-pill offline" id="settings-routine">Edit routine</button>${remindersAvailable ? `<button class="status-pill offline" id="settings-notifications"><i class="fa-solid fa-bell" aria-hidden="true"></i> ${settings.reminderEnabled ? 'Manage reminders' : 'Set up reminders'}</button>` : ''}</div>${remindersAvailable ? '<p id="settings-notification-status" class="settings-notification-status" role="status" aria-live="polite">Checking notification access…</p>' : ''}
+      </section>
+      <section class="settings-card"><div class="settings-card-heading">${heading('fa-brands fa-google-drive', 'Google Drive backup', 'Sync your Library, progress, and settings.', drive.isConnected ? 'Connected' : drive.lastError ? 'Attention' : 'Off', drive.isConnected)}</div>
+        <div class="settings-detail-list"><div><span>Account</span><strong>${escapeHtml(drive.isConnected ? (drive.email || 'Connected Google account') : 'Not connected')}</strong></div><div><span>Last sync</span><strong>${lastSync && Number.isFinite(lastSync.getTime()) ? escapeHtml(lastSync.toLocaleString()) : 'Not backed up'}</strong></div></div><button class="btn-green-solid" id="settings-drive-action">${drive.isConnected ? 'Manage backup' : 'Connect Google Drive'}</button>${drive.lastError ? `<p class="settings-error" role="alert">${escapeHtml(drive.lastError)}</p>` : ''}
+      </section>
+      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-wand-magic-sparkles', 'AI features', 'Optional feedback, context sentences, and AI Speaking.', gemini.enabled ? 'Configured' : 'Optional', gemini.enabled, true, 'settings-ai-state')}</summary>
+        <form id="gemini-settings-form" class="settings-form"><label class="settings-full-width">Google AI Studio API key<div class="key-input-row"><input type="password" id="settings-gemini-key" value="${escapeHtml(gemini.apiKey)}" placeholder="AIza…" autocomplete="off" spellcheck="false"><button type="button" id="settings-toggle-key" aria-label="Show API key" aria-pressed="false"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div></label><details class="settings-advanced settings-full-width"><summary>Advanced options</summary><label>Everyday AI model<select id="settings-text-model">${modelOptions(gemini.textModel)}</select></label></details><p class="settings-privacy">Your key is saved on this device and included in your private Drive backup when connected.</p><p class="settings-service-status" id="gemini-settings-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid" id="save-gemini-settings">Save and test</button><button type="button" class="status-pill offline" id="remove-gemini-settings" ${gemini.enabled ? '' : 'hidden'}>Remove key</button></div></form>
+      </details>
+      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-images', 'Vocabulary images', 'Choose where Library photos come from.', pexelsReady ? 'Pexels' : imageProvider.provider === 'openverse' ? 'No key needed' : 'Set up', pexelsReady, true, 'settings-images-state')}</summary>
+        <form id="image-provider-settings-form" class="settings-form"><label class="settings-full-width">Photo source<select id="settings-image-provider"><option value="pexels" ${imageProvider.provider === 'pexels' ? 'selected' : ''}>Pexels</option><option value="openverse" ${imageProvider.provider === 'openverse' ? 'selected' : ''}>Public catalogs · no key</option></select></label><label class="settings-full-width" id="settings-pexels-field" ${imageProvider.provider === 'openverse' ? 'hidden' : ''}>Pexels API key<div class="key-input-row"><input type="password" id="settings-pexels-key" value="${escapeHtml(imageProvider.pexelsApiKey)}" placeholder="Personal Pexels API key" autocomplete="off" spellcheck="false"><button type="button" id="settings-toggle-pexels-key" aria-label="Show Pexels API key" aria-pressed="false"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><span class="settings-privacy"><a href="https://www.pexels.com/api/new/" target="_blank" rel="noopener noreferrer">Get a free Pexels key</a></span></label><p class="settings-privacy">Your image settings are saved on this device and included in your private Drive backup when connected.</p><p id="image-provider-settings-status" class="settings-service-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid">Save photo source</button><button type="button" class="status-pill offline" id="remove-pexels-settings" ${imageProvider.pexelsApiKey ? '' : 'hidden'}>Remove Pexels key</button></div></form>
+      </details>
+      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-download', 'App updates', `KeepVocab ${APP_VERSION}`, '', false, true)}</summary><div class="settings-disclosure-body"><p data-update-status class="settings-service-status" role="status" aria-live="polite">The app checks automatically. Updates keep your Library and progress.</p><div class="settings-actions"><button class="status-pill offline" data-check-update>Check for updates</button><button class="btn-green-solid" data-install-update hidden>Update app</button></div></div></details>
+    </div>
   </section>`;
 
-  let availableUpdate = null;
-  if (supportsReminders()) {
-    const status = container.querySelector('#settings-notification-status');
-    getReminderStatus().then(result => {
-      if (!status?.isConnected) return;
-      status.textContent = result.status === 'permission-required' ? 'Notification access is off. Open setup to allow notifications.'
-        : result.status === 'channel-blocked' ? 'The Practice reminders category is blocked in Android settings.'
-        : result.status === 'unavailable' ? 'Install the latest Android build to enable notifications.'
-        : !settings.reminderEnabled ? 'Reminders are off. Choose your reminder time and allow notifications in setup.'
-        : `${result.pendingCount || 0} reminders scheduled. ${result.exactAlarm === 'granted' ? 'Precise timing is allowed.' : 'Android may delay delivery; precise timing is optional.'}`;
-    }).catch(error => { if (status?.isConnected) status.textContent = error.message || 'Cannot check notification access.'; });
-  }
-  const updateStatus = container.querySelector('[data-update-status]');
-  const checkButton = container.querySelector('[data-check-update]');
-  const installButton = container.querySelector('[data-install-update]');
-  checkButton.onclick = async () => {
-    checkButton.disabled = true; updateStatus.textContent = 'Checking for updates…';
+  const query = selector => container.querySelector(selector);
+  query('#settings-back').addEventListener('click', () => go('dashboard', onNavigate));
+  query('#translation-settings-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const status = query('#translation-settings-status');
     try {
-      const result = await checkAppUpdate(); availableUpdate = result.update;
+      const language = query('#settings-translation-language').value;
+      driveSync.updateSettings({ translationLanguage: language });
+      query('[data-language-settings] .settings-card-heading p').textContent = translationDescription(language);
+      status.textContent = language === 'uk' ? 'Saved. Ukrainian translation hints are on.' : 'Saved. English definitions are selected.';
+    } catch (error) { status.textContent = error.message || 'Cannot save the translation language.'; }
+  });
+
+  if (remindersAvailable) {
+    const status = query('#settings-notification-status');
+    getReminderStatus().then(result => {
+      if (!status.isConnected) return;
+      status.textContent = result.status === 'permission-required' ? 'Allow notifications in reminder setup.'
+        : result.status === 'channel-blocked' ? 'Practice reminders are blocked in Android settings.'
+        : result.status === 'unavailable' ? 'Update the Android app to enable reminders.'
+        : !settings.reminderEnabled ? 'Reminders are off.'
+        : `${result.pendingCount || 0} reminders scheduled.${result.exactAlarm === 'granted' ? '' : ' Android may delay delivery.'}`;
+    }).catch(error => { if (status.isConnected) status.textContent = error.message || 'Cannot check notification access.'; });
+  }
+
+  for (const [buttonId, inputId, label] of [
+    ['#settings-toggle-key', '#settings-gemini-key', 'API key'],
+    ['#settings-toggle-pexels-key', '#settings-pexels-key', 'Pexels API key']
+  ]) {
+    query(buttonId).addEventListener('click', event => {
+      const input = query(inputId);
+      const shown = input.type === 'password';
+      input.type = shown ? 'text' : 'password';
+      event.currentTarget.setAttribute('aria-pressed', String(shown));
+      event.currentTarget.setAttribute('aria-label', `${shown ? 'Hide' : 'Show'} ${label}`);
+    });
+  }
+
+  query('#gemini-settings-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = query('#save-gemini-settings');
+    const status = query('#gemini-settings-status');
+    button.disabled = true;
+    button.textContent = 'Testing…';
+    let saved = false;
+    try {
+      const ai = saveGeminiSettings({ apiKey: query('#settings-gemini-key').value, textModel: query('#settings-text-model').value });
+      saved = true;
+      const state = query('#settings-ai-state');
+      state.textContent = ai.enabled ? 'Configured' : 'Optional';
+      state.classList.toggle('connected', ai.enabled);
+      query('#remove-gemini-settings').hidden = !ai.enabled;
+      status.textContent = !ai.enabled ? 'Saved. AI features are off until you add a key.' : await testGeminiSettings(ai) ? 'Connected. Your AI key is working.' : 'Saved, but the AI test returned an unexpected response.';
+    } catch (error) { status.textContent = `${saved ? 'Saved. Test failed: ' : ''}${error.message || 'Cannot save AI settings.'}`; }
+    finally { button.disabled = false; button.textContent = 'Save and test'; }
+  });
+  query('#remove-gemini-settings').addEventListener('click', () => {
+    try { clearGeminiSettings(); renderSettingsView(container, onNavigate); }
+    catch (error) { query('#gemini-settings-status').textContent = error.message || 'Cannot remove the key.'; }
+  });
+
+  const providerInput = query('#settings-image-provider');
+  const updatePexelsField = () => {
+    const active = providerInput.value === 'pexels';
+    query('#settings-pexels-field').hidden = !active;
+    query('#settings-pexels-key').disabled = !active;
+  };
+  providerInput.addEventListener('change', updatePexelsField);
+  updatePexelsField();
+  query('#image-provider-settings-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const provider = providerInput.value;
+    const pexelsApiKey = query('#settings-pexels-key').value.trim();
+    const status = query('#image-provider-settings-status');
+    if (provider === 'pexels' && pexelsApiKey.length < 10) {
+      status.textContent = 'Paste your complete Pexels API key.';
+      return;
+    }
+    try {
+      saveImageProviderSettings({ provider, pexelsApiKey });
+      const state = query('#settings-images-state');
+      state.textContent = provider === 'pexels' ? 'Pexels' : 'No key needed';
+      state.classList.toggle('connected', provider === 'pexels');
+      query('#remove-pexels-settings').hidden = !pexelsApiKey;
+      status.textContent = provider === 'pexels' ? 'Saved. Library photos will use Pexels.' : 'Saved. Library photos will use public catalogs.';
+    } catch (error) { status.textContent = error.message || 'Cannot save image settings.'; }
+  });
+  query('#remove-pexels-settings').addEventListener('click', () => {
+    try { saveImageProviderSettings({ provider: 'openverse', pexelsApiKey: '' }); renderSettingsView(container, onNavigate); }
+    catch (error) { query('#image-provider-settings-status').textContent = error.message || 'Cannot remove the key.'; }
+  });
+  query('#settings-drive-action').addEventListener('click', () => document.getElementById('btn-open-drive-auth')?.click());
+  // Routine and reminder buttons use the shared app.js handler.
+
+  let availableUpdate = null;
+  const updateStatus = query('[data-update-status]');
+  const checkButton = query('[data-check-update]');
+  const installButton = query('[data-install-update]');
+  checkButton.onclick = async () => {
+    checkButton.disabled = true;
+    installButton.hidden = true;
+    updateStatus.textContent = 'Checking for updates…';
+    try {
+      const result = await checkAppUpdate();
+      availableUpdate = result.update;
       installButton.hidden = !['available', 'downloaded', 'web-ready'].includes(result.status);
       installButton.textContent = result.status === 'web-ready' ? 'Reload to update' : 'Update app';
-      updateStatus.textContent = availableUpdate ? `Version ${availableUpdate.version} is ready to install.` : result.status === 'web-ready' ? 'A web update is ready. Reload when you have finished your lesson.' : result.status === 'development' ? 'This is a development build. Installed builds check GitHub Releases automatically.' : `You are up to date (${result.currentVersion}).`;
-    } catch (error) { updateStatus.textContent = error.message; }
+      updateStatus.textContent = availableUpdate ? `Version ${availableUpdate.version} is ready to install.`
+        : result.status === 'web-ready' ? 'An update is ready. Reload when you finish your lesson.'
+        : result.status === 'development' ? 'Development build. Installed apps check for releases automatically.'
+        : result.status === 'unavailable' ? result.message || 'Updates are unavailable for this installation.'
+        : `You are up to date (${result.currentVersion || APP_VERSION}).`;
+    } catch (error) { updateStatus.textContent = error.message || 'Cannot check for updates.'; }
     finally { checkButton.disabled = false; }
   };
   installButton.onclick = async () => {
-    installButton.disabled = true; updateStatus.textContent = 'Downloading and verifying the update…';
+    installButton.disabled = true;
     checkButton.disabled = true;
+    updateStatus.textContent = 'Downloading and verifying the update…';
     const unsubscribe = globalThis.keepVocabDesktop?.onUpdateProgress?.(progress => {
       if (!updateStatus.isConnected) return;
       updateStatus.textContent = progress.status === 'downloading' && progress.total > 0
-        ? `Downloading update… ${Math.min(100, Math.round(progress.received / progress.total * 100))}% (${Math.round(progress.received / 1048576)} of ${Math.round(progress.total / 1048576)} MB)`
+        ? `Downloading update… ${Math.min(100, Math.round(progress.received / progress.total * 100))}%`
         : progress.message || 'Preparing the update…';
     });
     try { const result = await installAppUpdate(availableUpdate); updateStatus.textContent = result.message || 'Reloading the updated app…'; }
-    catch (error) { updateStatus.textContent = error.message; }
+    catch (error) { updateStatus.textContent = error.message || 'Cannot install the update.'; }
     finally { unsubscribe?.(); installButton.disabled = false; checkButton.disabled = false; }
   };
-  void checkButton.onclick();
-  container.querySelector('#settings-back').addEventListener('click', () => go('dashboard', onNavigate));
-  container.querySelector('#settings-toggle-key').addEventListener('click', () => { const input = container.querySelector('#settings-gemini-key'); input.type = input.type === 'password' ? 'text' : 'password'; });
-  getSpeechAvailability('lt-LT').then(availability => {
-    const status = container.querySelector('#gemini-settings-status');
-    if (!status) return;
-    status.textContent = availability.source === 'device' ? `Lithuanian audio is ready with ${availability.voiceName || 'the installed device voice'}${availability.voiceLocale ? ` (${availability.voiceLocale})` : ''}.`
-      : availability.source === 'android' ? 'Lithuanian audio will use Android text-to-speech.'
-        : availability.source === 'gemini' ? `Gemini ${gemini.ttsVoice} is configured, but audio has not been verified on this device yet.`
-          : availability.source === 'browser' ? 'The device speech engine can try the lt-LT language tag. Use Test Lithuanian audio to verify playback.'
-          : 'Add a Google AI Studio key or install an lt-LT system voice for Lithuanian audio.';
-  }).catch(() => {});
-  container.querySelector('#gemini-settings-form').addEventListener('submit', async event => {
-    event.preventDefault();
-    const button = container.querySelector('#save-gemini-settings');
-    const status = container.querySelector('#gemini-settings-status');
-    button.disabled = true;
-    button.textContent = 'Testing…';
-    try {
-      const settings = saveGeminiSettings({ apiKey: container.querySelector('#settings-gemini-key').value, textModel: container.querySelector('#settings-text-model').value, ttsVoice: container.querySelector('#settings-tts-voice').value });
-      const [textResult, audioResult] = await Promise.allSettled([
-        testGeminiSettings(settings),
-        speakText('Laba diena! Ačiū.', { locale: 'lt-LT', rate: 0.86 })
-      ]);
-      const textReady = textResult.status === 'fulfilled' && textResult.value;
-      const audioReady = audioResult.status === 'fulfilled' && audioResult.value;
-      if (textReady && audioReady) status.textContent = 'Connected. Everyday AI and Lithuanian audio are working.';
-      else if (!textReady) status.textContent = textResult.status === 'rejected' ? textResult.reason.message : 'Saved, but the everyday AI response was unexpected.';
-      else status.textContent = describeSpeechError();
-    } catch (error) {
-      status.textContent = error.message;
-    } finally {
-      button.disabled = false;
-      button.textContent = 'Save and test';
-    }
-  });
-  container.querySelector('#test-lithuanian-audio').addEventListener('click', async event => {
-    const button = event.currentTarget;
-    const status = container.querySelector('#gemini-settings-status');
-    button.disabled = true;
-    try {
-      saveGeminiSettings({ apiKey: container.querySelector('#settings-gemini-key').value, textModel: container.querySelector('#settings-text-model').value, ttsVoice: container.querySelector('#settings-tts-voice').value }, undefined, { silent: true });
-      if (status) status.textContent = 'Playing Lithuanian test phrase…';
-      const played = await speakText('Laba diena! Ačiū.', { locale: 'lt-LT', rate: 0.86 });
-      if (status) status.textContent = played ? 'Lithuanian audio is working.' : describeSpeechError();
-    } catch (error) {
-      if (status) status.textContent = error.message;
-    } finally {
-      button.disabled = false;
-    }
-  });
-  container.querySelector('#remove-gemini-settings')?.addEventListener('click', () => { clearGeminiSettings(); renderSettingsView(container, onNavigate); });
-  container.querySelector('#settings-toggle-pexels-key').addEventListener('click', () => { const input = container.querySelector('#settings-pexels-key'); input.type = input.type === 'password' ? 'text' : 'password'; });
-  container.querySelector('#image-provider-settings-form').addEventListener('submit', event => {
-    event.preventDefault();
-    const provider = container.querySelector('#settings-image-provider').value;
-    const pexelsApiKey = String(container.querySelector('#settings-pexels-key').value || '').trim();
-    const status = container.querySelector('#image-provider-settings-status');
-    if (provider === 'pexels' && pexelsApiKey.length < 10) {
-      status.textContent = 'Paste your complete Pexels API key before enabling Pexels.';
-      return;
-    }
-    saveImageProviderSettings({ provider, pexelsApiKey });
-    status.textContent = provider === 'pexels' ? 'Saved. Pexels will be searched first in Library.' : 'Saved. Public catalogs will be used without a key.';
-  });
-  container.querySelector('#remove-pexels-settings')?.addEventListener('click', () => {
-    saveImageProviderSettings({ provider: 'openverse', pexelsApiKey: '' });
-    renderSettingsView(container, onNavigate);
-  });
-  container.querySelector('#settings-drive-action').addEventListener('click', () => document.getElementById('btn-open-drive-auth')?.click());
-  // The shared document handler in app.js opens the persistent routine modal.
-  // Keeping this as a real button lets the original click bubble from any route.
 }

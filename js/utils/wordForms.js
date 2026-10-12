@@ -45,12 +45,14 @@ const IRREGULAR_VERBS = new Map([
   ['write', ['writes', 'wrote', 'written', 'writing']]
 ]);
 
+const STRESSED_FINAL_VERBS = new Set(['admit', 'commit', 'compel', 'control', 'defer', 'infer', 'occur', 'permit', 'prefer', 'refer', 'regret', 'submit']);
+
 function normalize(value) {
   return String(value || '').trim().toLocaleLowerCase().replace(/[’]/g, "'").replace(/^to\s+/, '').replace(/\s+/g, ' ');
 }
 
 function isCvc(value) {
-  return /^[a-z]*[^aeiou][aeiou][^aeiouwxy]$/.test(value);
+  return /^[a-z]*[^aeiou][aeiou][^aeiouwxy]$/.test(value) && (value.match(/[aeiouy]+/g) || []).length === 1;
 }
 
 function regularThirdPerson(base) {
@@ -63,7 +65,7 @@ function regularPast(base) {
   if (/e$/.test(base)) return `${base}d`;
   if (/[^aeiou]y$/.test(base)) return `${base.slice(0, -1)}ied`;
   if (/c$/.test(base)) return `${base}ked`;
-  if (isCvc(base)) return `${base}${base.at(-1)}ed`;
+  if (isCvc(base) || STRESSED_FINAL_VERBS.has(base)) return `${base}${base.at(-1)}ed`;
   return `${base}ed`;
 }
 
@@ -71,17 +73,19 @@ function regularParticiple(base) {
   if (/ie$/.test(base)) return `${base.slice(0, -2)}ying`;
   if (/c$/.test(base)) return `${base}king`;
   if (/[^e]e$/.test(base) && !/(?:ee|ye|oe)$/.test(base)) return `${base.slice(0, -1)}ing`;
-  if (isCvc(base)) return `${base}${base.at(-1)}ing`;
+  if (isCvc(base) || STRESSED_FINAL_VERBS.has(base)) return `${base}${base.at(-1)}ing`;
   return `${base}ing`;
 }
 
 function nounForms(base) {
   const plural = IRREGULAR_NOUNS.get(base) || [regularThirdPerson(base)];
-  return [base, ...plural, `${base}'s`, ...plural.map(form => `${form}'`)];
+  return [base, ...plural, `${base}'s`, ...plural.map(form => `${form}${form.endsWith('s') ? "'" : "'s"}`)];
 }
 
 function verbForms(base) {
-  return [base, regularThirdPerson(base), regularPast(base), regularParticiple(base), ...(IRREGULAR_VERBS.get(base) || [])];
+  const irregular = IRREGULAR_VERBS.get(base);
+  return irregular ? [base, ...irregular, ...(base === 'read' ? ['reads'] : [])]
+    : [base, regularThirdPerson(base), regularPast(base), regularParticiple(base)];
 }
 
 function adjectiveForms(base) {
@@ -108,14 +112,16 @@ export function targetWordForms(word) {
   const base = normalize(typeof word === 'string' ? word : word?.word);
   if (!base) return [];
   const partOfSpeech = normalize(typeof word === 'string' ? '' : word?.partOfSpeech);
-  return [...new Set(inflectPhrase(base, partOfSpeech))].sort((left, right) => right.length - left.length);
+  const supplied = typeof word === 'object' && word ? [word.lemma, ...(Array.isArray(word.acceptedForms) ? word.acceptedForms : [])] : [];
+  return [...new Set([...inflectPhrase(base, partOfSpeech), ...supplied.map(normalize).filter(Boolean)])].sort((left, right) => right.length - left.length);
 }
 
 function formsPattern(word) {
   const alternatives = targetWordForms(word).map(form => form
     .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    .replace(/'/g, "['’]")
     .replace(/\s+/g, '\\s+'));
-  return alternatives.length ? new RegExp(`(^|[^\\p{L}\\p{M}])(${alternatives.join('|')})(?=$|[^\\p{L}\\p{M}])`, 'iu') : null;
+  return alternatives.length ? new RegExp(`(^|[^\\p{L}\\p{M}\\p{N}])(${alternatives.join('|')})(?=$|[^\\p{L}\\p{M}\\p{N}])`, 'iu') : null;
 }
 
 export function sentenceUsesTargetForm(sentence, word) {

@@ -12,25 +12,6 @@ export function activityByDevice(settings) {
   const shards = saved && typeof saved === 'object' && Object.keys(saved).length
     ? Object.fromEntries(Object.entries(saved).map(([id, activity]) => [String(id), normalizedActivity(activity)]))
     : Object.keys(normalizedActivity(settings?.reviewActivity)).length ? { legacy: normalizedActivity(settings.reviewActivity) } : {};
-  // Earlier versions saved lesson answers but never counted them as study activity.
-  // A stable shard repairs those dates once and merges by max across devices.
-  const recovered = {};
-  for (const attempt of Object.values(settings?.lessonAttempts || {})) {
-    const seen = new Set();
-    for (const response of attempt?.responses || []) {
-      if (response.activityRecorded || response.skipped || response.response === '[guidebook viewed]' || seen.has(response.exerciseId)) continue;
-      const date = new Date(response.answeredAt);
-      if (Number.isNaN(date.getTime())) continue;
-      seen.add(response.exerciseId);
-      const key = localDateKey(date);
-      recovered[key] = (recovered[key] || 0) + 1;
-    }
-  }
-  if (Object.keys(recovered).length) {
-    const previous = shards['lesson-history'] || {};
-    shards['lesson-history'] = { ...previous };
-    for (const [date, count] of Object.entries(recovered)) shards['lesson-history'][date] = Math.max(count, Number(previous[date] || 0));
-  }
   return shards;
 }
 

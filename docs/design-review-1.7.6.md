@@ -44,7 +44,7 @@ permission requests, or native notification scheduling.
   sources match the reviewed code on both platforms, and the old ReviewView
   renderer is absent from both installers.
 - Broken visual clues fall back to a description task in the running app.
-  Speaking keyboard fallback and the first Lithuanian course lesson still work.
+  Speaking keyboard fallback still works.
 
 The release builds use the existing Android debug signing key and unsigned
 universal macOS configuration. Native notification delivery and live AI/Drive

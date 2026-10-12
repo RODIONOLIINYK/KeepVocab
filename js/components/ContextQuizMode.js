@@ -1,14 +1,14 @@
-import { driveSync } from '../services/driveSync.js?v=1602';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=1602';
-import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=1602';
+import { driveSync } from '../services/driveSync.js?v=18100';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18100';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18100';
+import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=18100';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=1602';
-import { DEFAULT_SESSION_WORD_COUNT } from '../services/dailySession.js?v=1602';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
-import { stableWordChoices } from '../services/wordChoices.js?v=1602';
-import { playInteractionSound } from '../services/interactionSound.js?v=1602';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice } from './PracticeElements.js?v=1602';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18100';
+import { DEFAULT_SESSION_WORD_COUNT } from '../services/dailySession.js?v=18100';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18100';
+import { stableWordChoices } from '../services/wordChoices.js?v=18100';
+import { playInteractionSound } from '../services/interactionSound.js?v=18100';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice } from './PracticeElements.js?v=18100';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function selectContextWords(words, limit = DEFAULT_SESSION_WORD_COUNT, now = new Date()) {
@@ -18,7 +18,6 @@ export function selectContextWords(words, limit = DEFAULT_SESSION_WORD_COUNT, no
 export function renderContextQuizMode(container, onNavigate) {
   const allWords = getActivePracticeWords(driveSync);
   const courseId = driveSync.getActiveCourseId();
-  const lithuanian = courseId === 'lithuanian';
   const contextWords = selectContextWords(allWords);
   const dashboard = () => go('dashboard', onNavigate);
   const settings = () => go('settings', onNavigate);
@@ -93,13 +92,13 @@ export function renderContextQuizMode(container, onNavigate) {
     const answered = selectedId !== null;
     const correct = evaluateChoiceAnswer(target.id, selectedId);
     const cloze = clozeContextSentence(generatedItem.sentence, target.word);
-    const sourceLabel = generatedItem.source === 'saved-example' ? 'Saved example' : lithuanian ? 'AI-generated Lithuanian sentence' : 'AI-generated sentence';
+    const sourceLabel = generatedItem.source === 'saved-example' ? 'Saved example' : 'AI-generated sentence';
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell">
       ${renderPracticeHeader({ exitId: 'context-exit', label: 'Context', current, total: quizWords.length, score })}
       <div class="practice-prompt choose-prompt">
         <img class="practice-mascot" src="assets/keepvocab-sprig-thinking.webp" alt="" aria-hidden="true">
-        <p>${lithuanian ? 'Choose the Lithuanian phrase that fits.' : 'Choose the word that fits this sentence.'}</p>
-        <blockquote lang="${lithuanian ? 'lt' : 'en'}">${escapeHtml(cloze)}</blockquote>
+        <p>${'Choose the word that fits this sentence.'}</p>
+        <blockquote lang="${'en'}">${escapeHtml(cloze)}</blockquote>
         <span class="muted-label">${sourceLabel}</span>
         ${renderChoiceGrid({ options, targetId: target.id, selectedId, attribute: 'data-context-word' })}
         ${renderAnswerFeedback({ answered, correct, answer: target.word, detail: generatedItem.sentence, nextId: 'context-next', nextLabel: current + 1 === quizWords.length ? 'See results' : 'Next sentence' })}

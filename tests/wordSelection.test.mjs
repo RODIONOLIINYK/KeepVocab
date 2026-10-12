@@ -139,14 +139,14 @@ test('legacy review evidence remains available before the next answer', () => {
   assert.equal(stats.lastAnswerCorrect, true);
 });
 
-test('shared exercise pool follows Library month and course, with no fallback to other months', async () => {
+test('shared exercise pool follows the English Library month, with no fallback to other months', async () => {
   const { DriveSyncService, MemoryStorage } = await import('../js/services/driveSync.js');
   const { getActivePracticeWords } = await import('../js/services/wordSelection.js');
   const persistence = new DriveSyncService(new MemoryStorage());
   persistence.saveWords([
     makeWord('aug', { notebook: 'August 2026 Vocabulary', monthYear: 'August 2026', courseId: 'english' }),
     makeWord('sep', { notebook: 'September 2026 Vocabulary', monthYear: 'September 2026', courseId: 'english' }),
-    makeWord('lt', { notebook: 'August 2026 Vocabulary', monthYear: 'August 2026', courseId: 'lithuanian' }),
+    makeWord('unsupported', { notebook: 'August 2026 Vocabulary', monthYear: 'August 2026', courseId: 'removed-course' }),
     makeWord('invalid', { notebook: 'August 2026 Vocabulary', monthYear: 'August 2026', definition: '' })
   ]);
   persistence.updateSettings({ activeNotebook: 'August 2026 Vocabulary' });
@@ -155,7 +155,7 @@ test('shared exercise pool follows Library month and course, with no fallback to
   assert.deepEqual(getActivePracticeWords(persistence).map(word => word.id), ['word-sep']);
   persistence.updateSettings({ activeNotebook: 'July 2026 Vocabulary' });
   assert.deepEqual(getActivePracticeWords(persistence), []);
-  persistence.setActiveCourseId('lithuanian');
-  persistence.updateSettings({ activeNotebook: 'August 2026 Vocabulary' });
-  assert.deepEqual(getActivePracticeWords(persistence).map(word => word.id), ['word-lt']);
+  assert.throws(() => persistence.setActiveCourseId('removed-course'), /Unknown course/);
+  assert.equal(persistence.getActiveCourseId(), 'english');
+  assert.deepEqual(getActivePracticeWords(persistence), []);
 });

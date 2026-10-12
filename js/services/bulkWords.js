@@ -1,4 +1,5 @@
-import { imageSelectionPatch } from './imageSearch.js?v=1602';
+import { imageSelectionPatch } from './imageSearch.js?v=18100';
+import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18100';
 
 export const MAX_BULK_WORDS = 100;
 export const BULK_LOOKUP_DELAY_MS = 1000;
@@ -67,7 +68,8 @@ export async function retryMissingBulkWords(results, lookup, options = {}) {
   missing.forEach((item, retryIndex) => {
     merged[item.index] = {
       ...retried[retryIndex],
-      manualDefinition: retried[retryIndex].status === 'ready' ? '' : item.result.manualDefinition || ''
+      manualDefinition: retried[retryIndex].status === 'ready' ? '' : item.result.manualDefinition || '',
+      manualTranslation: retried[retryIndex].status === 'ready' ? '' : item.result.manualTranslation || ''
     };
   });
   return merged;
@@ -106,11 +108,11 @@ export async function attachImagesSequentially(words, findImages, options = {}) 
   return enriched;
 }
 
-export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '') {
+export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '', manualTranslation = result?.manualTranslation || '') {
   if (result?.status === 'ready') {
     const data = result.data || {};
     const senses = Array.isArray(data.senses) && data.senses.length ? data.senses : [data];
-    const sense = senses[Math.max(0, Math.min(Number(senseIndex) || 0, senses.length - 1))] || {};
+    const sense = senses[Math.max(0, Math.min(Math.floor(Number(senseIndex)) || 0, senses.length - 1))] || {};
     return {
       word: data.word || result.term,
       lemma: sense.lemma || data.lemma || data.word || result.term,
@@ -118,7 +120,8 @@ export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '') 
       audioUrl: sense.audioUrl || data.audioUrl || '',
       partOfSpeech: sense.partOfSpeech || 'unknown',
       definition: sense.definition || '',
-      translation: sense.translation || sense.definition || '',
+      translation: hasUkrainianTranslation(sense.translation) ? sense.translation.trim() : sense.definition || '',
+      translationLanguage: hasUkrainianTranslation(sense.translation) ? TRANSLATION_LANGUAGE : 'en',
       acceptedForms: sense.acceptedForms || data.acceptedForms || [data.word || result.term],
       grammaticalTags: sense.grammaticalTags || data.grammaticalTags || [],
       example: sense.example || '',
@@ -134,7 +137,8 @@ export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '') 
     audioUrl: '',
     partOfSpeech: 'unknown',
     definition: String(manualDefinition || '').trim(),
-    translation: String(manualDefinition || '').trim(),
+    translation: hasUkrainianTranslation(manualTranslation) ? manualTranslation.trim() : String(manualDefinition || '').trim(),
+    translationLanguage: hasUkrainianTranslation(manualTranslation) ? TRANSLATION_LANGUAGE : 'en',
     acceptedForms: result?.term ? [result.term] : [],
     grammaticalTags: [],
     example: ''

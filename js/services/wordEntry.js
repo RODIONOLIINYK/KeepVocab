@@ -1,33 +1,33 @@
-import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=1602';
-import { fetchLithuanianEntry, enrichLithuanianEntry } from './lithuanianEnrichment.js?v=1602';
-import { bulkResultToWord, attachImagesSequentially } from './bulkWords.js?v=1602';
-import { sanitizeExistingExamples } from './exampleSearch.js?v=1602';
-import { findRelevantImages, imageUrlsForWords } from './imageSearch.js?v=1602';
+import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18100';
+import { withEntryTranslations } from './dictionaryApi.js?v=18100';
+import { bulkResultToWord, attachImagesSequentially } from './bulkWords.js?v=18100';
+import { sanitizeExistingExamples } from './exampleSearch.js?v=18100';
+import { findRelevantImages, imageUrlsForWords } from './imageSearch.js?v=18100';
 
-export function fetchWordEntry(word, courseId = 'english', options = {}) {
-  return courseId === 'lithuanian' ? fetchLithuanianEntry(word, options) : fetchEnglishEntry(word, options);
+export function fetchWordEntry(word, _courseId = 'english', options = {}) {
+  return fetchEnglishEntry(word, options);
 }
 
 // Explicit requests bypass dictionary results and the AI cache for a fresh suggestion.
-export function fetchAiWordEntry(word, courseId = 'english', options = {}) {
-  const enrich = courseId === 'lithuanian' ? enrichLithuanianEntry : enrichEnglishEntry;
-  return enrich(word, { ...options, force: true });
+export function fetchAiWordEntry(word, _courseId = 'english', options = {}) {
+  return enrichEnglishEntry(word, { ...options, force: true });
 }
 
-export function wordEntryToWord(entry, senseIndex = 0, courseId = 'english') {
+export function wordEntryToWord(entry, senseIndex = 0) {
   const sense = entry.senses?.[senseIndex];
   if (!sense) throw new Error(`No meaning found for “${entry.word}”.`);
   return { ...bulkResultToWord({ term: entry.word, status: 'ready', data: entry }, senseIndex),
-    courseId, sourceUrl: sense.sourceUrl || entry.sourceUrl,
+    courseId: 'english', sourceUrl: sense.sourceUrl || entry.sourceUrl,
     attribution: sense.attribution || entry.attribution };
 }
 
-// Shared by the Add Word pop-up, the main Add Words widget, and lesson vocabulary.
-export async function prepareWordsForLibrary(words, { courseId = 'english', existingWords = [], onProgress, findImages = findRelevantImages } = {}) {
+// Shared by the Add Word pop-up, the main Add Words widget, and quick add.
+export async function prepareWordsForLibrary(words, { existingWords = [], onProgress, findImages = findRelevantImages, ...translationOptions } = {}) {
   const checked = words.map(word => {
-    const item = { ...word, courseId: word.courseId || courseId };
+    const item = { ...word, courseId: 'english' };
     if (!item.word || !String(item.definition || '').trim()) throw new Error('Choose a meaning before saving.');
-    return item.courseId === 'lithuanian' ? item : sanitizeExistingExamples(item.word, [item])[0];
+    return sanitizeExistingExamples(item.word, [item])[0];
   });
-  return attachImagesSequentially(checked, findImages, { excludeUrls: imageUrlsForWords(existingWords), onProgress });
+  const translated = await withEntryTranslations({ senses: checked }, translationOptions);
+  return attachImagesSequentially(translated.senses, findImages, { excludeUrls: imageUrlsForWords(existingWords), onProgress });
 }

@@ -54,8 +54,8 @@ permission handler also rejects notifications.
   Match Sprint during delayed correct-answer feedback.
 - 27 desktop flow checks and 30 simulated Android flow checks passed: empty
   Flashcards action, goal saving, platform controls, complete 20-answer workout,
-  duplicate-submit protection, speaking keyboard fallback, Lithuanian course
-  and first lesson at phone width. Android checks used a notification bridge
+  duplicate-submit protection, speaking keyboard fallback,
+  at phone width. Android checks used a notification bridge
   double to verify permission opt-in, dated schedules, cancellation after the
   first answer, and notification navigation.
 - Android `assembleDebug` and `lintDebug` succeeded. Lint reports zero errors

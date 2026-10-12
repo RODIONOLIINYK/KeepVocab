@@ -82,8 +82,7 @@ export function buildSmartReminderPlan({
   reviewMoments = [],
   dueCount = 0,
   courseName = 'Vocabulary',
-  hasLesson = false,
-  practiceRoute = hasLesson ? 'learn' : 'daily',
+  practiceRoute = 'review',
   reviewsToday = 0,
   dailyGoal = 20,
   streak = 0,
@@ -125,8 +124,8 @@ export function buildSmartReminderPlan({
 
   return {
     time,
-    title: hasLesson ? `${courseName}: your next lesson is ready` : `${courseName}: keep your learning growing`,
-    body: hasLesson ? 'Pick up where you left off. One short lesson brings you closer to your next real conversation.' : 'A little practice goes a long way. Open KeepVocab and take the next step today.',
+    title: `${courseName}: keep your learning growing`,
+    body: 'A little practice goes a long way. Open KeepVocab and take the next step today.',
     route: practiceRoute,
     reason: 'keep-learning',
     summary: `${remaining} goal step${remaining === 1 ? '' : 's'} left`,
@@ -166,7 +165,7 @@ export function buildStreakMaintenancePlan({
     time,
     title: `Protect your ${activeStreak}-day streak`,
     body: `One exercise before midnight keeps your streak alive. ${activeStreak % 7 === 6 ? 'Your next weekly milestone is within reach.' : 'A small step counts—even on a busy day.'}`,
-    route: 'daily',
+    route: 'review',
     reason: 'streak-maintenance',
     summary: `${activeStreak}-day streak safeguard`,
     repeat: false,
@@ -197,7 +196,7 @@ export function buildReminderSchedule(options = {}) {
       time, nextAt: date, repeat: false,
       title: day > 2 ? 'A fresh start is one word away' : 'Your next small win is waiting',
       body: day > 2 ? 'No catching up required. Come back for a little practice whenever you are ready.' : 'Meet familiar words in a new way. A short workout helps them stick.',
-      route: options.practiceRoute || (options.hasLesson ? 'learn' : 'daily'), reason: 'habit-follow-up'
+      route: options.practiceRoute || 'review', reason: 'habit-follow-up'
     });
   }
   const streakPlan = buildStreakMaintenancePlan({
@@ -207,7 +206,7 @@ export function buildReminderSchedule(options = {}) {
     streak: options.streak,
     now
   });
-  if (streakPlan) streakPlan.route = options.practiceRoute || (options.hasLesson ? 'learn' : 'daily');
+  if (streakPlan) streakPlan.route = options.practiceRoute || 'review';
   return { ...plan, followUps, streakPlan };
 }
 

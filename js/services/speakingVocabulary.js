@@ -1,6 +1,7 @@
 import { recordExerciseResult } from './exerciseResult.js';
-import { selectModeWords } from './wordSelection.js?v=1602';
-import { getSpeakingContextProfile } from './speakingPhrases.js?v=1602';
+import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18100';
+import { selectModeWords } from './wordSelection.js?v=18100';
+import { getSpeakingContextProfile } from './speakingPhrases.js?v=18100';
 
 const STOP_WORDS = new Set('a an and are as at be been being by can could did do does for from had has have he her hers him his how i if in into is it its may me might my of on or our ours she should so than that the their theirs them they this those to too us was we were what when where which who why will with would you your yours'.split(' '));
 
@@ -75,14 +76,9 @@ export function selectSpeakingTargets(words, { limit = 3, now = new Date(), less
   });
 }
 
-function usedInText(word, text) {
-  const clean = String(word || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return clean ? new RegExp(`(^|[^\\p{L}])${clean}(?=$|[^\\p{L}])`, 'iu').test(text) : false;
-}
-
 export function detectSpeakingActivations(targets, transcript) {
   const learnerText = (transcript || []).filter(entry => entry.role === 'learner').map(entry => entry.text).join(' ');
-  return (targets || []).map(word => ({ word, used: usedInText(word.word, learnerText) }));
+  return (targets || []).map(word => ({ word, used: sentenceUsesTargetForm(learnerText, word) }));
 }
 
 export function storeSpeakingActivations(targets, transcript, driveSync) {
@@ -96,7 +92,7 @@ export function storeSpeakingActivations(targets, transcript, driveSync) {
       hintsUsed: false,
       recallType: 'speaking',
       producedUnaided: true,
-      learnerResponse: (transcript || []).filter(entry => entry.role === 'learner' && usedInText(activation.word.word, entry.text)).map(entry => entry.text).join(' ')
+      learnerResponse: (transcript || []).filter(entry => entry.role === 'learner' && sentenceUsesTargetForm(entry.text, activation.word)).map(entry => entry.text).join(' ')
     }, driveSync);
   }
   return activations;

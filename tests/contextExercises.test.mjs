@@ -17,6 +17,7 @@ const words = [
 test('Context generation uses exact meanings but never dictionary examples or a story', () => {
   const prompt = buildContextExercisePrompt(words);
   assert.match(prompt, /Capable of being shaped/);
+  assert.match(prompt, /Preferred meaning-hint language: English/);
   assert.doesNotMatch(prompt, /LEAKED DICTIONARY EXAMPLE/);
   assert.match(prompt, /Do not create a story, passage, dialogue/);
   assert.doesNotMatch(prompt, /"title"|"scene"/);
@@ -42,28 +43,29 @@ test('Gemini Context results are complete, cached, and clozed without exposing m
   assert.equal(calls, 1);
 });
 
-test('Lithuanian Context requests Lithuanian-only sentences and hides punctuated phrase targets', async () => {
-  const lithuanianWords = [
-    { id: 'lt-1', courseId: 'lithuanian', word: 'Laba diena!', definition: 'Good afternoon!' },
-    { id: 'lt-2', courseId: 'lithuanian', word: 'Ačiū.', definition: 'Thank you.' },
-    { id: 'lt-3', courseId: 'lithuanian', word: 'Prašau.', definition: 'Please.' }
+test('English Context uses Ukrainian meanings and hides punctuated phrase targets', async () => {
+  const phraseWords = [
+    { id: 'phrase-1', word: 'Hello!', definition: 'A friendly greeting.', translation: 'Привіт!', translationLanguage: 'uk' },
+    { id: 'phrase-2', word: 'Thanks.', definition: 'An expression of gratitude.', translation: 'Дякую.', translationLanguage: 'uk' },
+    { id: 'phrase-3', word: 'Please.', definition: 'A polite request.', translation: 'Будь ласка.', translationLanguage: 'uk' }
   ];
-  const prompt = buildContextExercisePrompt(lithuanianWords, { courseId: 'lithuanian' });
-  assert.match(prompt, /Create Lithuanian context-cloze questions/);
-  assert.match(prompt, /natural Lithuanian only/);
-  assert.match(prompt, /Never place the target inside an English sentence/);
-  const generated = await generateContextExerciseSet(lithuanianWords, {
-    courseId: 'lithuanian',
-    storage: new MemoryStorage(),
+  const storage = new MemoryStorage();
+  storage.setItem('keepvocab_settings', JSON.stringify({ translationLanguage: 'uk' }));
+  const prompt = buildContextExercisePrompt(phraseWords, { storage });
+  assert.match(prompt, /Create English context-cloze questions/);
+  assert.match(prompt, /Preferred meaning-hint language: Ukrainian/);
+  assert.match(prompt, /Привіт!/);
+  const generated = await generateContextExerciseSet(phraseWords, {
+    storage,
     generate: async () => ({ items: [
-      { wordId: 'lt-1', sentence: 'Laba diena! Ar turite laisvą kambarį?' },
-      { wordId: 'lt-2', sentence: 'Ačiū. Jūs man labai padėjote.' },
-      { wordId: 'lt-3', sentence: 'Prašau, sėskitės prie lango.' }
+      { wordId: 'phrase-1', sentence: 'Hello! Are you here for the conference?' },
+      { wordId: 'phrase-2', sentence: 'Thanks. Your directions helped me find the station.' },
+      { wordId: 'phrase-3', sentence: 'Please, take a seat near the window.' }
     ] })
   });
   assert.equal(generated.items.length, 3);
-  assert.equal(clozeContextSentence(generated.items[0].sentence, 'Laba diena!'), '_____! Ar turite laisvą kambarį?');
-  assert.equal(clozeContextSentence(generated.items[1].sentence, 'Ačiū.'), '_____. Jūs man labai padėjote.');
+  assert.equal(clozeContextSentence(generated.items[0].sentence, 'Hello!'), '_____! Are you here for the conference?');
+  assert.equal(clozeContextSentence(generated.items[1].sentence, 'Thanks.'), '_____. Your directions helped me find the station.');
 });
 
 test('Context UI renders only a generated sentence question, not a story or meaning clue', () => {
@@ -105,4 +107,77 @@ test('saved examples provide an offline Context fallback without definition clue
   assert.equal(local.kind, 'local');
   assert.equal(local.items.length, 3);
   assert.ok(local.items.every(item => item.source === 'saved-example'));
+});
+
+
+test('changing a Ukrainian selected meaning invalidates the Context cache', async () => {
+  const storage = new MemoryStorage();
+  let calls = 0;
+  const generate = async () => {
+    calls += 1;
+    return { items: [
+      { wordId: 'w-1', sentence: 'The warm clay remained malleable.' },
+      { wordId: 'w-2', sentence: 'The meager portion left everyone hungry.' },
+      { wordId: 'w-3', sentence: 'She studied her adversary.' }
+    ] };
+  };
+  await generateContextExerciseSet(words, { storage, generate });
+  await generateContextExerciseSet(words.map(word => ({ ...word, translation: 'Змінене значення' })), { storage, generate });
+  assert.equal(calls, 2);
+});
+
+test('a full browser cache does not discard a successfully generated Context set', async () => {
+  const generated = await generateContextExerciseSet(words, {
+    storage: { getItem: () => null, setItem: () => { throw new Error('Quota exceeded'); } },
+    generate: async () => ({ items: [
+      { wordId: 'w-1', sentence: 'The warm clay remained malleable.' },
+      { wordId: 'w-2', sentence: 'The meager portion left everyone hungry.' },
+      { wordId: 'w-3', sentence: 'She studied her adversary.' }
+    ] })
+  });
+  assert.equal(generated.items.length, 3);
+});
+
+test('cached offline Context sets retain their source and valid partial coverage', async () => {
+  const storage = new MemoryStorage();
+  const selected = [
+    ...words.map((word, index) => ({ ...word, example: [
+      'The warm clay remained malleable.',
+      'The meager portion left everyone hungry.',
+      'She studied her adversary.'
+    ][index] })),
+    { id: 'w-4', word: 'vivid', definition: 'Bright and distinct.' }
+  ];
+  let calls = 0;
+  const generate = async () => { calls += 1; return { items: [] }; };
+  const first = await generateContextExerciseSet(selected, { storage, generate });
+  const second = await generateContextExerciseSet(selected, { storage, generate });
+  assert.equal(calls, 2); // First request and its missing-item repair only.
+  assert.equal(first.kind, 'local');
+  assert.equal(second.kind, 'local');
+  assert.ok(second.items.every(item => item.source === 'saved-example'));
+  assert.deepEqual(second.skippedWordIds, ['w-4']);
+});
+
+
+test('switching the translation setting creates Context questions from the selected hint language', async () => {
+  const storage = new MemoryStorage();
+  const translatedWords = words.map(word => ({ ...word, translation: 'Українське значення', translationLanguage: 'uk' }));
+  const prompts = [];
+  const generate = async prompt => {
+    prompts.push(prompt);
+    return { items: [
+      { wordId: 'w-1', sentence: 'The warm clay remained malleable.' },
+      { wordId: 'w-2', sentence: 'The meager portion left everyone hungry.' },
+      { wordId: 'w-3', sentence: 'She studied her adversary.' }
+    ] };
+  };
+  await generateContextExerciseSet(translatedWords, { storage, generate });
+  storage.setItem('keepvocab_settings', JSON.stringify({ translationLanguage: 'uk' }));
+  await generateContextExerciseSet(translatedWords, { storage, generate });
+  assert.equal(prompts.length, 2);
+  assert.match(prompts[0], /Preferred meaning-hint language: English/);
+  assert.doesNotMatch(prompts[0], /Українське значення/);
+  assert.match(prompts[1], /Preferred meaning-hint language: Ukrainian/);
+  assert.match(prompts[1], /Українське значення/);
 });

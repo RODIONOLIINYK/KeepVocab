@@ -121,12 +121,12 @@ test('established legacy review strength survives the first answer after upgradi
   assert.ok(Date.parse(updated.nextReviewDate) - NOW > 14 * DAY_MS);
 });
 
-test('Practice strictly uses the selected month and language, even with a retired all-months setting', () => {
+test('Practice uses the selected English month, even with a retired all-months setting', () => {
   const persistence = new DriveSyncService(new MemoryStorage());
   persistence.saveWords([
     word('old', { courseId: 'english', monthYear: 'September 2026' }),
     word('new', { courseId: 'english', monthYear: 'October 2026' }),
-    word('lt', { courseId: 'lithuanian', monthYear: 'September 2026' })
+    word('unsupported', { courseId: 'removed-course', monthYear: 'September 2026' })
   ]);
   persistence.updateSettings({ activeNotebook: 'October 2026 Vocabulary', practiceSessionSize: 40, practiceAllMonths: true });
   assert.deepEqual(getScheduledPracticeWords(persistence).map(item => item.id), ['new']);
@@ -135,12 +135,7 @@ test('Practice strictly uses the selected month and language, even with a retire
   assert.deepEqual(getScheduledPracticeWords(persistence).map(item => item.id), ['old']);
   persistence.updateSettings({ activeNotebook: 'July 2026 Vocabulary' });
   assert.deepEqual(getScheduledPracticeWords(persistence), []);
-  persistence.setActiveCourseId('lithuanian');
-  persistence.refreshNotebooks();
-  persistence.setActiveNotebook('September 2026 Vocabulary');
-  assert.deepEqual(getScheduledPracticeWords(persistence).map(item => item.id), ['lt']);
-  assert.equal(persistence.getSettings().practiceSessionSize, 20);
-  persistence.setActiveCourseId('english');
+  assert.throws(() => persistence.setActiveCourseId('removed-course'), /Unknown course/);
   assert.equal(persistence.getActiveNotebook(), 'July 2026 Vocabulary');
   assert.equal(persistence.getSettings().practiceSessionSize, 40);
   assert.equal(persistence.getWords().length, 2);

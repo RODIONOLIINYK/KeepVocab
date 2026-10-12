@@ -55,3 +55,13 @@ test('successful speaking activation is stored as strong scheduler evidence', ()
   assert.equal(updated.lastExerciseResult.recallType, 'speaking');
   assert.equal(speakingSessionHighlights(transcript, activations).used[0].id, 'due');
 });
+
+
+test('speaking activation recognizes grammatical variants of a saved English word', () => {
+  const targets = [
+    { id: 'past', word: 'speak', definition: 'To talk.', partOfSpeech: 'verb' },
+    { id: 'plural', word: 'child', definition: 'A young person.', partOfSpeech: 'noun' }
+  ];
+  const activations = detectSpeakingActivations(targets, [{ role: 'learner', text: 'I spoke to the children.' }]);
+  assert.ok(activations.every(item => item.used));
+});

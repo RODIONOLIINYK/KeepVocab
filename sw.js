@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v18000';
+const CACHE_NAME = 'keepvocab-v18100';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -11,14 +11,9 @@ const ASSETS_TO_CACHE = [
   './js/components/AddWordModal.js',
   './js/services/driveSync.js',
   './js/services/courseProfiles.js',
-  './js/services/adaptiveLessons.js',
-  './js/services/lessonEngine.js',
-  './js/services/lessonVocabulary.js',
+  './js/services/translationSettings.js',
+  './js/services/libraryTranslations.js',
   './js/services/wordEntry.js',
-  './js/services/lithuanianEnrichment.js',
-  './js/services/lithuanianDictionary.js',
-  './js/data/lithuanianSpeakingScenarios.js',
-  './js/services/geminiTts.js',
   './js/services/dictionaryApi.js',
   './js/services/englishEnrichment.js',
   './js/services/speechService.js',
@@ -52,8 +47,6 @@ const ASSETS_TO_CACHE = [
   './js/components/VisualMatchMode.js',
   './js/components/MatchSprintMode.js',
   './js/components/SpeakingMode.js',
-  './js/components/LearningPathView.js',
-  './js/components/LessonMode.js',
   './js/components/DashboardView.js',
   './js/components/DailySessionMode.js',
   './js/components/FlashcardsMode.js',
@@ -64,8 +57,6 @@ const ASSETS_TO_CACHE = [
   './js/quickAdd.js',
   './js/data/speakingLessons.js',
   './js/data/courses.js',
-  './js/data/lithuanianCurriculum.js',
-  './js/data/lithuanianForms.js',
   './js/utils/html.js',
   './js/utils/collections.js',
   './js/utils/dates.js',

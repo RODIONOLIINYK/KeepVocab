@@ -4,8 +4,9 @@ import { fetchWordEntry, wordEntryToWord } from '../js/services/wordEntry.js';
 import { MemoryStorage } from '../js/services/driveSync.js';
 import { saveGeminiSettings } from '../js/services/geminiSettings.js';
 
-function fixture(aiResult, { configured = true, dictionaryFound = false } = {}) {
+function fixture(aiResult, { configured = true, dictionaryFound = false, translationLanguage = 'uk' } = {}) {
   const storage = new MemoryStorage();
+  storage.setItem('keepvocab_settings', JSON.stringify({ translationLanguage }));
   if (configured) saveGeminiSettings({ apiKey: 'test-key-for-entry-fallback-123456789' }, storage, { silent: true });
   const calls = [];
   return { storage, calls, fetchImpl: async (url, options) => {
@@ -13,14 +14,20 @@ function fixture(aiResult, { configured = true, dictionaryFound = false } = {}) 
     if (url.includes('generativelanguage.googleapis.com')) {
       const prompt = JSON.parse(options.body).contents[0].parts[0].text;
       assert.match(prompt, /not valid English or you are uncertain/);
+      if (translationLanguage === 'uk') assert.match(prompt, /translations must be in Ukrainian \(uk\)/i);
+      else assert.doesNotMatch(prompt, /Ukrainian/);
       return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(aiResult) }] } }] }) };
+    }
+    if (url.includes('api.mymemory.translated.net')) {
+      assert.equal(new URL(url).searchParams.get('langpair'), 'en|uk');
+      return { ok: true, json: async () => ({ responseStatus: 200, responseData: { translatedText: 'Допомогти людям почуватися невимушено.' } }) };
     }
     if (dictionaryFound) return { ok: true, json: async () => ({ word: 'break the ice', entries: [{ partOfSpeech: 'phrase', senses: [{ definition: 'Make people feel at ease.' }] }] }) };
     return { ok: false, status: 404 };
   } };
 }
 
-const valid = { found: true, word: 'break the ice', senses: [{ definition: 'Make people feel more comfortable together.', partOfSpeech: 'phrase', example: 'We played a game to break the ice.' }] };
+const valid = { found: true, word: 'break the ice', senses: [{ definition: 'Make people feel more comfortable together.', translation: 'Допомогти людям почуватися невимушено.', partOfSpeech: 'phrase', example: 'We played a game to break the ice.' }] };
 
 test('English dictionary misses use Gemini through the shared entry pipeline and cache its suggestion', async () => {
   const options = fixture(valid);
@@ -28,7 +35,8 @@ test('English dictionary misses use Gemini through the shared entry pipeline and
   assert.equal(entry.aiGenerated, true);
   assert.equal(entry.senses[0].definition, valid.senses[0].definition);
   assert.equal(wordEntryToWord(entry).word, 'break the ice');
-  assert.equal(wordEntryToWord(entry).translation, valid.senses[0].definition);
+  assert.equal(wordEntryToWord(entry).translation, valid.senses[0].translation);
+  assert.equal(wordEntryToWord(entry).translationLanguage, 'uk');
   assert.deepEqual(await fetchWordEntry('break the ice', 'english', options), entry);
   assert.equal(options.calls.filter(url => url.includes('generativelanguage')).length, 1);
 });
@@ -37,7 +45,56 @@ test('English dictionary hits never call Gemini', async () => {
   const options = fixture(valid, { dictionaryFound: true });
   const entry = await fetchWordEntry('break the ice', 'english', options);
   assert.equal(entry.aiGenerated, undefined);
+  assert.equal(options.calls.length, 2);
+  assert.equal(options.calls.some(url => url.includes('generativelanguage')), false);
+  assert.equal(entry.senses[0].translation, valid.senses[0].translation);
+});
+
+test('cached English dictionary meanings are backfilled with Ukrainian translations', async () => {
+  const options = fixture(valid);
+  options.storage.setItem('keepvocab_dictionary_cache_v4', JSON.stringify({ 'break the ice': {
+    cachedAt: Date.now(), data: { word: 'break the ice', source: 'dictionary', senses: [
+      { definition: 'Make people feel at ease.', translation: 'Make people feel at ease.', example: 'We played a game to break the ice.' }
+    ] }
+  } }));
+  const result = await fetchWordEntry('break the ice', 'english', options);
+  assert.equal(result.source, 'cache');
+  assert.equal(result.senses[0].definition, 'Make people feel at ease.');
+  assert.equal(result.senses[0].translation, valid.senses[0].translation);
+  assert.equal(result.translationLanguage, 'uk');
   assert.equal(options.calls.length, 1);
+  assert.match(options.calls[0], /api\.mymemory\.translated\.net/);
+});
+
+test('default English dictionary lookup sends no translation requests and keeps the original meaning', async () => {
+  const options = fixture(valid, { dictionaryFound: true, translationLanguage: 'en' });
+  options.storage.removeItem('keepvocab_settings');
+  const result = await fetchWordEntry('break the ice', 'english', options);
+  assert.equal(options.calls.length, 1);
+  assert.equal(result.translation, result.definition);
+  assert.equal(result.translationLanguage, 'en');
+});
+
+test('English and Ukrainian AI suggestions use separate cache entries and mode-specific prompts', async () => {
+  const english = { ...valid, senses: valid.senses.map(({ translation, ...sense }) => sense) };
+  const options = fixture(english, { translationLanguage: 'en' });
+  const first = await fetchWordEntry('break the ice', 'english', options);
+  assert.equal(first.translation, first.definition);
+  assert.equal(first.translationLanguage, 'en');
+  assert.equal(options.calls.some(url => url.includes('api.mymemory')), false);
+  options.storage.setItem('keepvocab_settings', JSON.stringify({ translationLanguage: 'uk' }));
+  // The same model result lacks a translation, so Ukrainian mode must backfill it.
+  const second = await fetchWordEntry('break the ice', 'english', { ...options, translationLanguage: 'uk', fetchImpl: async (url, request) => {
+    if (url.includes('generativelanguage')) {
+      options.calls.push(url);
+      assert.match(JSON.parse(request.body).contents[0].parts[0].text, /Ukrainian \(uk\)/);
+      return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(english) }] } }] }) };
+    }
+    return options.fetchImpl(url, request);
+  } });
+  assert.equal(second.translation, valid.senses[0].translation);
+  assert.equal(second.translationLanguage, 'uk');
+  assert.equal(options.calls.filter(url => url.includes('generativelanguage')).length, 2);
 });
 
 test('invalid input and an unconfigured Gemini never send a fallback request', async () => {
@@ -52,7 +109,7 @@ test('invalid input and an unconfigured Gemini never send a fallback request', a
 test('Gemini can reject an unknown English word without creating or caching a meaning', async () => {
   const options = fixture({ found: false, senses: [] });
   await assert.rejects(fetchWordEntry('nonsensicalwordxyz', 'english', options), { code: 'NOT_FOUND' });
-  assert.equal(options.storage.getItem('keepvocab_english_ai_entry_cache_v1'), null);
+  assert.equal(options.storage.getItem('keepvocab_english_ai_entry_cache_v2'), null);
 });
 
 test('malformed AI responses and silently corrected terms are not accepted as entries', async () => {

@@ -1,8 +1,8 @@
-import { driveSync } from '../services/driveSync.js?v=1602';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
-import { playInteractionSound } from '../services/interactionSound.js?v=1602';
+import { driveSync } from '../services/driveSync.js?v=18100';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18100';
+import { playInteractionSound } from '../services/interactionSound.js?v=18100';
 import { escapeHtml } from '../utils/html.js';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18100';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 

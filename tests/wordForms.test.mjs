@@ -37,6 +37,25 @@ test('daily context replacement removes the inflected form, not only the headwor
   );
 });
 
+test('English form matching avoids invented irregular past forms and incorrect final doubling', () => {
+  const visit = targetWordForms({ word: 'visit', partOfSpeech: 'verb' });
+  assert.ok(visit.includes('visited'));
+  assert.ok(visit.includes('visiting'));
+  assert.equal(visit.includes('visitted'), false);
+  assert.equal(visit.includes('visitting'), false);
+  assert.ok(targetWordForms({ word: 'admit', partOfSpeech: 'verb' }).includes('admitted'));
+  assert.ok(targetWordForms({ word: 'stop', partOfSpeech: 'verb' }).includes('stopped'));
+  assert.equal(targetWordForms({ word: 'go', partOfSpeech: 'verb' }).includes('goed'), false);
+  assert.equal(targetWordForms({ word: 'run', partOfSpeech: 'verb' }).includes('runned'), false);
+});
+
+test('saved forms and irregular plural possessives work with either apostrophe style', () => {
+  const word = { word: 'child', partOfSpeech: 'noun', acceptedForms: ['childhood'] };
+  assert.equal(sentenceUsesTargetForm('Her childhood was happy.', word), true);
+  assert.equal(replaceTargetWordForm('The children’s toys are here.', word), 'The ________ toys are here.');
+  assert.equal(sentenceUsesTargetForm('A child2 account is open.', word), false);
+});
+
 test('Gemini Use It evaluation is explicitly told to accept grammatical inflections', async () => {
   const values = new Map([['keepvocab_gemini_live_key_v1', 'AIza-test-key-for-use-it-forms-123456789']]);
   const storage = { getItem: key => values.get(key) || null };

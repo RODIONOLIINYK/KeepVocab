@@ -1,9 +1,10 @@
-import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=1602';
-import { sentenceUsesTargetForm, targetWordForms } from '../utils/wordForms.js?v=1602';
+import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18100';
+import { sentenceUsesTargetForm, targetWordForms } from '../utils/wordForms.js?v=18100';
+import { getTranslationName, isUkrainianTranslationEnabled } from './translationSettings.js?v=18100';
 
 const WORD_CHECK_FEEDBACK = /(?:include|insert|use|write|contain).{0,35}(?:target|headword|word|\b[a-z][a-z'-]*\b).{0,25}(?:sentence|exact|form)|(?:missing|does not contain).{0,25}(?:target|headword|word)/i;
 
-function safeFeedback(result, correct, fallback) {
+function safeFeedback(result, correct) {
   const feedback = String(result?.feedback || '').trim();
   if (!feedback || WORD_CHECK_FEEDBACK.test(feedback)) {
     return correct
@@ -38,10 +39,13 @@ export async function evaluateUseItSentence(word, sentence, options = {}) {
 
 Dictionary headword: ${word.word}
 Saved meaning: ${word.definition}
+${isUkrainianTranslationEnabled(options.storage) && word.translationLanguage === 'uk' && word.translation ? `Ukrainian translation of this meaning: ${word.translation}` : ''}
 Part of speech on the saved card: ${word.partOfSpeech || 'not specified'}
 Example for the saved meaning: ${word.example || 'not provided'}
 Common related grammatical spellings: ${targetWordForms(word).join(', ')}
 Learner sentence: ${sentence}
+
+Preferred meaning-hint language: ${getTranslationName(options.storage)}. Keep feedback and improvedSentence in English. Use any supplied translation only to understand the saved meaning.
 
 Judge meaning, grammar, and naturalness. Do not perform an exact-word or substring check. A learner may correctly change number, possessive, third-person, past-tense, participle, gerund, comparative, superlative, or part of speech when the resulting sentence still expresses the saved lexical meaning; never require the exact headword spelling when grammar calls for a related form. For example, a noun card "cuddle" may be used as "cuddled", and "pest" may be used as "pests". Do not reject a good sentence merely because its spelling differs from the headword. If the sentence expresses another meaning of the same spelling, mark senseCorrect false. Feedback must discuss meaning, grammar, or naturalness; never instruct the learner to insert the exact headword.
 
@@ -61,7 +65,7 @@ Return JSON only with: used (boolean), senseCorrect (boolean), grammatical (bool
       grammatical,
       natural,
       correct,
-      feedback: safeFeedback(result, correct, fallback.feedback),
+      feedback: safeFeedback(result, correct),
       improvedSentence: String(result.improvedSentence || ''),
       evaluatedBy: 'gemini'
     };

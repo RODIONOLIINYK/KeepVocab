@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Specification Stylesheet -->
-  <link rel="stylesheet" href="css/styles.css?v=1602">
+  <link rel="stylesheet" href="css/styles.css?v=18100">
 </head>
 <body>
 
@@ -42,9 +42,6 @@
       <a href="#dashboard" class="nav-link-item active" data-view="dashboard" aria-current="page">
         <i class="fa-solid fa-house"></i> Today
       </a>
-      <a href="#learn" class="nav-link-item" data-view="learn">
-        <i class="fa-solid fa-route"></i> Learn
-      </a>
       <a href="#review" class="nav-link-item" data-view="review">
         <i class="fa-solid fa-dumbbell"></i> Practice
       </a>
@@ -60,37 +57,17 @@
     </nav>
 
     <div class="nav-user-area">
-      <div class="course-switcher" id="course-switcher">
-        <button class="course-switcher-trigger" id="course-switcher-trigger" type="button"
-          aria-label="Switch language course. Current: English" title="Switch course · English" aria-haspopup="listbox" aria-expanded="false" aria-controls="course-switcher-menu">
-          <i class="fa-solid fa-language course-switcher-language-icon" aria-hidden="true"></i>
-          <span id="course-switcher-label">English</span>
-        </button>
-        <div class="course-switcher-menu" id="course-switcher-menu" role="listbox"
-          aria-label="Active language course" tabindex="-1" hidden>
-          <button type="button" class="course-switcher-option" role="option" data-course-id="english"
-            aria-selected="true">
-            <span class="course-option-icon"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-            <span><strong>English</strong><small>Vocabulary course</small></span>
-          </button>
-          <button type="button" class="course-switcher-option" role="option" data-course-id="lithuanian"
-            aria-selected="false">
-            <span class="course-option-icon"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-            <span><strong>Lithuanian · A1</strong><small>Alphabet-to-A2 grammar path</small></span>
-          </button>
-        </div>
-      </div>
       <button class="btn-green-solid" id="btn-header-quick-add">
         <i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add Word</span>
       </button>
 
       <div class="badge-pill badge-streak">
         <i class="fa-solid fa-fire"></i>
-        <span id="hdr-streak-count">12</span><span class="badge-detail"> day streak</span><span class="badge-compact" aria-hidden="true">d</span>
+        <span id="hdr-streak-count">0</span><span class="badge-detail"> day streak</span><span class="badge-compact" aria-hidden="true">d</span>
       </div>
       <div class="badge-pill badge-goal">
         <i class="fa-solid fa-bullseye"></i>
-        <span class="badge-detail">Daily goal</span><strong id="hdr-goal-count">16 / 20</strong>
+        <span class="badge-detail">Daily goal</span><strong id="hdr-goal-count">0 / 20</strong>
       </div>
     </div>
   </header>
@@ -157,238 +134,10 @@
       </div>
     </div>
 
-    <!-- 12-Column Main Dashboard Grid -->
-    <div class="dashboard-12col-grid" id="view-container">
-      <!-- Main Study Area (8 Columns) -->
-      <div class="main-study-area">
-
-        <!-- Flashcard Component Card -->
-        <div class="spec-card" id="flashcard-spec-card">
-          <div class="card-header-bar">
-            <div class="card-tag">
-              <i class="fa-solid fa-clone" style="color: var(--primary-green);"></i> Flashcard
-            </div>
-            <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
-              <span id="fc-index">1</span> of <span id="fc-total">3</span>
-            </div>
-          </div>
-
-          <div class="flashcard-word-main">
-            <span id="fc-word">abundant</span>
-            <button class="audio-btn-circle" id="fc-audio-btn" title="Listen Audio">
-              <i class="fa-solid fa-volume-high"></i>
-            </button>
-            <button class="status-pill offline" id="btn-toggle-speech-speed" style="font-size: 0.75rem; padding: 4px 8px;">1.0x</button>
-          </div>
-
-          <div class="flashcard-pos" id="fc-pos">adjective</div>
-
-          <p class="flashcard-def-text" id="fc-def">
-            "existing in large quantities; more than enough."
-          </p>
-
-          <div class="flashcard-quote" id="fc-example">
-            "The region is abundant in natural resources."
-          </div>
-
-          <!-- 4 Rating Buttons -->
-          <div class="ratings-grid">
-            <button class="rate-btn again" id="btn-rate-again">
-              <span class="rate-label">Again</span>
-              <span class="rate-time">&lt; 1 min</span>
-            </button>
-
-            <button class="rate-btn hard" id="btn-rate-hard">
-              <span class="rate-label">Hard</span>
-              <span class="rate-time">~ 10 min</span>
-            </button>
-
-            <button class="rate-btn good" id="btn-rate-good">
-              <span class="rate-label">Good</span>
-              <span class="rate-time">~ 3 days</span>
-            </button>
-
-            <button class="rate-btn easy" id="btn-rate-easy">
-              <span class="rate-label">Easy</span>
-              <span class="rate-time">~ 7 days</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="spec-card">
-          <div class="card-header-bar">
-            <div class="card-tag"><i class="fa-solid fa-gamepad" style="color: #7c3aed;"></i> More learning modes</div>
-            <span class="muted-label">Practice the active month in different ways</span>
-          </div>
-          <div class="learning-mode-grid">
-            <button class="learning-mode-card spelling" id="btn-mode-spelling">
-              <i class="fa-solid fa-headphones"></i>
-              <span><strong>Listen &amp; Spell</strong><small>Hear a word and type it from memory</small></span>
-              <i class="fa-solid fa-arrow-right"></i>
-            </button>
-            <button class="learning-mode-card challenge" id="btn-mode-choose">
-              <i class="fa-solid fa-list-check"></i>
-              <span><strong>Choose Word</strong><small>Pick the correct word for each meaning</small></span>
-              <i class="fa-solid fa-arrow-right"></i>
-            </button>
-            <button class="learning-mode-card visual" id="btn-mode-visual">
-              <i class="fa-solid fa-images"></i>
-              <span><strong>Visual Match</strong><small>Connect pictures with the right words</small></span>
-              <i class="fa-solid fa-arrow-right"></i>
-            </button>
-            <button class="learning-mode-card match" id="btn-mode-match">
-              <i class="fa-solid fa-stopwatch"></i>
-              <span><strong>Match Sprint</strong><small>Pair exact meanings with words against the clock</small></span>
-              <i class="fa-solid fa-arrow-right"></i>
-            </button>
-            <button class="learning-mode-card speaking" id="btn-mode-speaking">
-              <i class="fa-solid fa-microphone-lines"></i>
-              <span><strong>AI Speaking</strong><small>84 guided lessons with an active AI coach</small></span>
-              <i class="fa-solid fa-arrow-right"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Utility Rail (4 Columns) -->
-      <div class="right-utility-rail">
-
-        <!-- Leitner 5-Box (SRS) Card -->
-        <div class="spec-card">
-          <div class="card-header-bar">
-            <div class="card-tag">
-              <i class="fa-solid fa-shapes" style="color: var(--primary-green);"></i> Leitner 5-Box (SRS)
-              <i class="fa-solid fa-circle-info" style="font-size: 0.75rem; color: var(--text-dim);"></i>
-            </div>
-            <a href="#stats" style="font-size: 0.82rem; color: var(--primary-green-hover); font-weight: 700; text-decoration: none;">Explore boxes</a>
-          </div>
-
-          <div class="leitner-boxes-row">
-            <div class="leitner-box-card b1">
-              <span class="box-tag">Box 1</span>
-              <span class="box-sub">New</span>
-              <span class="box-num" id="b1-count">24</span>
-            </div>
-
-            <div class="leitner-box-card b2">
-              <span class="box-tag">Box 2</span>
-              <span class="box-sub">Learn</span>
-              <span class="box-num" id="b2-count">18</span>
-            </div>
-
-            <div class="leitner-box-card b3">
-              <span class="box-tag">Box 3</span>
-              <span class="box-sub">Review</span>
-              <span class="box-num" id="b3-count">32</span>
-            </div>
-
-            <div class="leitner-box-card b4">
-              <span class="box-tag">Box 4</span>
-              <span class="box-sub">Reinforce</span>
-              <span class="box-num" id="b4-count">14</span>
-            </div>
-
-            <div class="leitner-box-card b5">
-              <span class="box-tag">Box 5</span>
-              <span class="box-sub">Mastered</span>
-              <span class="box-num" id="b5-count">68</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Live Sync Summary Card -->
-        <div class="spec-card">
-          <div class="card-header-bar">
-            <div class="card-tag">
-              <i class="fa-solid fa-list-check" style="color: var(--primary-green);"></i> Study Summary
-            </div>
-            <span style="font-size: 0.78rem; color: var(--text-muted);"><i class="fa-solid fa-rotate"></i> <span id="sync-time-label">Not connected</span></span>
-          </div>
-
-          <div class="sync-summary-list">
-            <div class="sync-summary-item">
-              <span><i class="fa-solid fa-clock" style="margin-right: 6px;"></i> Due for review</span>
-              <strong id="stat-synced-today">0</strong>
-            </div>
-            <div class="sync-summary-item">
-              <span><i class="fa-solid fa-book" style="margin-right: 6px;"></i> Words this month</span>
-              <strong id="stat-words-added">36</strong>
-            </div>
-            <div class="sync-summary-item">
-              <span><i class="fa-solid fa-seedling" style="margin-right: 6px;"></i> Still learning</span>
-              <strong id="stat-keep-updates">0</strong>
-            </div>
-            <div class="sync-summary-item">
-              <span><i class="fa-solid fa-clock-rotate-left" style="margin-right: 6px;"></i> Last Drive sync</span>
-              <span style="color: var(--primary-green-hover); font-weight: 700;" id="stat-last-sync">Pending Auth</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Streak & Today Widget Card (SVG Radial Progress Ring) -->
-        <div class="spec-card">
-          <div class="streak-widget-wrapper">
-            <div>
-              <div class="card-tag" style="margin-bottom: 6px;">
-                <i class="fa-solid fa-fire" style="color: #ea580c;"></i> Streak & Today
-              </div>
-              <div style="font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--text-main); line-height: 1;" id="streak-num">
-                12
-              </div>
-              <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">day streak</div>
-            </div>
-
-            <!-- Radial SVG Progress Ring (96px Diameter) -->
-            <div class="radial-goal-box">
-              <svg class="radial-svg" width="96" height="96" viewBox="0 0 96 96">
-                <!-- Background Circle -->
-                <circle cx="48" cy="48" r="38" stroke="#e2e8f0" stroke-width="7" fill="none" />
-                <!-- Green Progress Circle (80% = 16/20) -->
-                <circle cx="48" cy="48" r="38" stroke="#22c55e" stroke-width="7" stroke-dasharray="238.76" stroke-dashoffset="47.75" stroke-linecap="round" fill="none" />
-              </svg>
-
-              <!-- Center Text Content -->
-              <div class="radial-center-content">
-                <div class="radial-goal-text" id="goal-number-el">16 / 20</div>
-                <div class="radial-goal-sub">daily goal</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="streak-days-row">
-            <div class="day-circle">Mon</div>
-            <div class="day-circle">Tue</div>
-            <div class="day-circle">Wed</div>
-            <div class="day-circle">Thu</div>
-            <div class="day-circle">Fri</div>
-            <div class="day-circle">Sat</div>
-            <div class="day-circle">Sun</div>
-          </div>
-        </div>
-
-        <div class="spec-card coach-card">
-          <div class="coach-mascot-stage" aria-hidden="true">
-            <img id="coach-mascot-image" src="assets/keepvocab-sprout-mascot.webp" alt="">
-          </div>
-          <div class="coach-card-content">
-            <div class="card-tag"><i class="fa-solid fa-seedling"></i> Sprig, your word coach</div>
-            <strong id="coach-title">Your memory garden is growing</strong>
-            <p id="coach-copy">A short review today keeps new words within reach.</p>
-            <div class="coach-status-row">
-              <span id="coach-weekly-status" class="coach-weekly-status"><i class="fa-solid fa-chart-line"></i> 0 / 5 active days</span>
-              <span id="coach-reminder-status" class="coach-reminder-status"><i class="fa-regular fa-bell"></i> Daily reminder is off</span>
-            </div>
-            <div class="coach-actions">
-              <button type="button" class="btn-green-solid" id="btn-coach-review"><i class="fa-solid fa-play"></i> Start 5-min review</button>
-              <button type="button" class="status-pill offline" id="btn-open-engagement-settings"><i class="fa-solid fa-sliders"></i> Routine</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
+    <main class="dashboard-12col-grid" id="view-container" aria-live="polite"></main>
   </div>
 
+  <!-- Google Drive authorization -->
   <div class="modal-backdrop" id="engagement-settings-modal">
     <div class="modal-box engagement-modal-box">
       <div class="engagement-modal-heading">
@@ -495,6 +244,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=1602"></script>
+  <script type="module" src="js/app.js?v=18100"></script>
 </body>
 </html>

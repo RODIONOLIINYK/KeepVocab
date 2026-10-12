@@ -5,19 +5,10 @@ export const COURSE_DEFINITIONS = Object.freeze({
     shortLabel: 'English',
     languageCode: 'en',
     locale: 'en-US',
+    nativeCode: 'en',
     level: 'Personal vocabulary',
     dailyGoal: 20,
     hasLearningPath: false
-  }),
-  lithuanian: Object.freeze({
-    id: 'lithuanian',
-    name: 'Lithuanian',
-    shortLabel: 'Lithuanian',
-    languageCode: 'lt',
-    locale: 'lt-LT',
-    level: 'A1 → strong A2',
-    dailyGoal: 15,
-    hasLearningPath: true
   })
 });
 

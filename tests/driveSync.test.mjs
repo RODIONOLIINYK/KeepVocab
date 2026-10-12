@@ -11,6 +11,7 @@ import {
 } from '../js/services/driveSync.js';
 import { getGeminiSettings, saveGeminiSettings } from '../js/services/geminiSettings.js';
 import { getImageProviderSettings, saveImageProviderSettings } from '../js/services/imageSearch.js';
+import { getTranslationLanguage, getTranslationName, isUkrainianTranslationEnabled } from '../js/services/translationSettings.js';
 
 function response(payload, status = 200) {
   return {
@@ -104,6 +105,7 @@ test('a fresh install starts with an empty library', () => {
   const service = new DriveSyncService(new MemoryStorage(), async () => { throw new Error('unused'); });
   assert.deepEqual(service.getWords(), []);
   assert.equal(service.getNotebooks().length, 1);
+  assert.equal(service.getSettings().translationLanguage, 'en');
 });
 
 test('library preserves separate intended senses and keeps stable identity when edited', () => {
@@ -222,29 +224,249 @@ test('fresh reinstall restores exact meanings, original months, settings, and pr
   assert.deepEqual(reinstalled.getMonthlyArchives().map(archive => archive.monthYear), ['July 2026', 'May 2026']);
 });
 
-test('Drive schema v2 restores resumable Lithuanian lesson progress and stable completion evidence', async () => {
+test('retired active-course settings migrate to the saved English profile without mixing progress', () => {
+  const storage = new MemoryStorage();
+  storage.setItem('keepvocab_settings', JSON.stringify({
+    activeCourseId: 'removed-course', translationLanguage: 'removed-language', dailyGoal: 99,
+    activeNotebook: 'September 2026 Vocabulary', soundEnabled: false, activeLessonId: 'retired-lesson',
+    courseProfiles: {
+      english: {
+        dailyGoal: 27, activeNotebook: 'July 2026 Vocabulary', practiceSessionSize: 35,
+        exerciseActivityByDevice: { 'english-device': { '2026-07-20': 4 } },
+        learningStats: { sessionsCompleted: 7 },
+        speakingProgress: { 'rent-apartment': { completed: true, updatedAt: '2026-07-20T10:00:00.000Z' } },
+        activeLessonId: 'retired-lesson'
+      },
+      'removed-course': { dailyGoal: 99, reviewActivity: { '2026-07-20': 20 } }
+    }
+  }));
+  const service = new DriveSyncService(storage);
+  const settings = service.getSettings();
+  assert.equal(settings.activeCourseId, 'english');
+  assert.equal(settings.translationLanguage, 'en');
+  assert.equal(settings.dailyGoal, 27);
+  assert.equal(settings.practiceSessionSize, 35);
+  assert.equal(settings.activeNotebook, 'July 2026 Vocabulary');
+  assert.equal(settings.soundEnabled, false);
+  assert.equal(settings.learningStats.sessionsCompleted, 7);
+  assert.equal(settings.speakingProgress['rent-apartment'].completed, true);
+  assert.deepEqual(settings.reviewActivity, { '2026-07-20': 4 });
+  assert.deepEqual(Object.keys(settings.courseProfiles), ['english']);
+  assert.equal('activeLessonId' in settings, false);
+  assert.equal('activeLessonId' in settings.courseProfiles.english, false);
+  assert.deepEqual(Object.keys(JSON.parse(storage.getItem('keepvocab_settings')).courseProfiles), ['english']);
+  assert.throws(() => service.setActiveCourseId('removed-course'), /Unknown course/);
+  assert.throws(() => service.updateCourseProfile('removed-course', { dailyGoal: 50 }), /Unknown course/);
+});
+
+test('startup removes unsupported vocabulary, keeps English learning evidence, and records deletion tombstones', () => {
+  const storage = new MemoryStorage();
+  const base = { monthYear: 'July 2026', definition: 'An intended meaning.', createdAt: '2026-07-01T10:00:00.000Z' };
+  storage.setItem('keepvocab_words_db', JSON.stringify([
+    { ...base, id: 'english', word: 'retain', courseId: 'english', languageCode: 'en-US', box: 4,
+      practiceStats: { attempts: 5, recalled: 4, missed: 1 }, translation: 'зберігати', translationLanguage: 'uk' },
+    { ...base, id: 'untagged', word: 'legacy', translation: 'old translation', translationLanguage: 'removed-language' },
+    { ...base, id: 'removed-course-word', word: 'foreign-one', courseId: 'removed-course', senseId: 'foreign-sense' },
+    { ...base, id: 'removed-language-word', word: 'foreign-two', courseId: 'english', languageCode: 'xx' }
+  ]));
+  const service = new DriveSyncService(storage);
+  assert.deepEqual(service.getAllWords().map(word => word.id), ['english', 'untagged']);
+  const preserved = service.getWords()[0];
+  assert.equal(preserved.box, 4);
+  assert.equal(preserved.practiceStats.recalled, 4);
+  assert.equal(preserved.translation, 'зберігати');
+  assert.equal(preserved.translationLanguage, 'uk');
+  assert.equal(service.getWords()[1].translation, '');
+  assert.equal(service.getWords()[1].translationLanguage, 'en');
+  assert.deepEqual(service.getTombstones().map(item => item.id).sort(), ['removed-course-word', 'removed-language-word']);
+  assert.equal(service.getTombstones().find(item => item.id === 'removed-course-word').senseId, 'foreign-sense');
+  assert.ok(service.getTombstones().every(item => item.monthYear === 'July 2026' && Number.isFinite(Date.parse(item.deletedAt))));
+  const reopened = new DriveSyncService(storage);
+  assert.equal(reopened.getTombstones().length, 2);
+  assert.throws(() => reopened.addWord({ word: 'foreign', definition: 'Meaning.', courseId: 'removed-course' }), /valid meaning/);
+  assert.throws(() => reopened.addWord({ word: 'foreign', definition: 'Meaning.', languageCode: 'xx' }), /valid meaning/);
+});
+
+test('Drive restore rejects unsupported course and language records rather than relabeling them English', async () => {
   const drive = new MockDrive();
   const original = new DriveSyncService(new MemoryStorage(), drive.fetch);
-  original.setActiveCourseId('lithuanian');
-  original.updateCourseProfile('lithuanian', {
-    activeLessonId: 'sep-02-s3',
-    completedNodeIds: ['sep-01-s1', 'sep-01-s2'],
-    lessonAttempts: {
-      'sep-02-s3': { id: 'attempt-stable', sessionId: 'sep-02-s3', exerciseIndex: 4, status: 'in-progress', updatedAt: '2026-09-12T12:00:00.000Z' }
-    },
-    canDoEvidence: [{ id: 'evidence-sep-01-s1', nodeId: 'sep-01-s1', demonstrated: true, completedAt: '2026-09-10T12:00:00.000Z' }]
-  });
+  const english = original.addWord({ word: 'restore', definition: 'To bring back.', translation: 'відновлювати' }, 'July 2026 Vocabulary');
   authorize(original);
   await original.syncGoogleDrive();
-
+  const legacyMonth = drive.payloadByName('Dictionary July 2026.json');
+  legacyMonth.words.push(
+    { ...english, id: 'unsupported-course', word: 'foreign-one', courseId: 'removed-course' },
+    { ...english, id: 'unsupported-language', word: 'foreign-two', languageCode: 'xx' }
+  );
+  const legacySettings = drive.payloadByName('KeepVocab Settings.json').settings;
+  legacySettings.activeCourseId = 'removed-course';
+  legacySettings.translationLanguage = 'removed-language';
+  legacySettings.courseProfiles['removed-course'] = { dailyGoal: 99 };
   const restored = new DriveSyncService(new MemoryStorage(), drive.fetch);
   authorize(restored);
   await restored.syncGoogleDrive();
-  const profile = restored.getCourseProfile('lithuanian');
-  assert.equal(profile.activeLessonId, 'sep-02-s3');
-  assert.equal(profile.lessonAttempts['sep-02-s3'].exerciseIndex, 4);
-  assert.deepEqual(profile.completedNodeIds, ['sep-01-s1', 'sep-01-s2']);
-  assert.equal(profile.canDoEvidence[0].nodeId, 'sep-01-s1');
+  assert.deepEqual(restored.getAllWords().map(word => word.id), [english.id]);
+  assert.equal(restored.getWords()[0].translation, 'відновлювати');
+  assert.equal(restored.getActiveCourseId(), 'english');
+  assert.equal(restored.getSettings().translationLanguage, 'en');
+  assert.deepEqual(Object.keys(restored.getSettings().courseProfiles), ['english']);
+  assert.deepEqual(restored.getTombstones().map(item => item.id).sort(), ['unsupported-course', 'unsupported-language']);
+  const cleaned = drive.payloadByName('Dictionary July 2026.json');
+  assert.deepEqual(cleaned.words.map(word => word.id), [english.id]);
+  assert.deepEqual(cleaned.tombstones.map(item => item.id).sort(), ['unsupported-course', 'unsupported-language']);
+  await restored.syncGoogleDrive();
+  assert.deepEqual(restored.getAllWords().map(word => word.id), [english.id]);
+});
+
+test('English default and optional Ukrainian settings both roundtrip through backup and reinstall', async () => {
+  const drive = new MockDrive();
+  const storage = new MemoryStorage();
+  const original = new DriveSyncService(storage, drive.fetch);
+  assert.equal(original.getSettings().translationLanguage, 'en');
+  assert.equal(getTranslationLanguage(storage), 'en');
+  assert.equal(getTranslationName(storage), 'English');
+  assert.equal(isUkrainianTranslationEnabled(storage), false);
+  const word = original.addWord({ word: 'keep', definition: 'To retain.', translation: 'зберігати', translationLanguage: 'uk' }, 'July 2026 Vocabulary');
+  const edited = original.updateWord(word.id, { translation: 'тримати' });
+  assert.equal(edited.translationLanguage, 'uk');
+  const plain = original.addWord({ word: 'plain', definition: 'Easy to understand.', translation: 'Easy to understand.', translationLanguage: 'en' }, 'July 2026 Vocabulary');
+  assert.equal(original.updateWord(plain.id, { definition: 'Clearly understood.' }).translationLanguage, 'en');
+  authorize(original);
+  for (const language of ['uk', 'en']) {
+    original.updateSettings({ translationLanguage: language, dailyGoal: 25 });
+    assert.equal(JSON.parse(storage.getItem('keepvocab_settings')).translationLanguage, language);
+    assert.equal(getTranslationLanguage(storage), language);
+    assert.equal(getTranslationName(storage), language === 'uk' ? 'Ukrainian' : 'English');
+    assert.equal(isUkrainianTranslationEnabled(storage), language === 'uk');
+    await original.syncGoogleDrive();
+    assert.equal(drive.payloadByName('KeepVocab Settings.json').settings.translationLanguage, language);
+    const restoredStorage = new MemoryStorage();
+    const restored = new DriveSyncService(restoredStorage, drive.fetch);
+    authorize(restored);
+    await restored.syncGoogleDrive();
+    assert.equal(restored.getSettings().translationLanguage, language);
+    assert.equal(getTranslationLanguage(restoredStorage), language);
+    assert.equal(restored.getSettings().dailyGoal, 25);
+    const translated = restored.getWords().find(item => item.id === word.id);
+    assert.equal(translated.translation, 'тримати');
+    assert.equal(translated.translationLanguage, 'uk');
+    const english = restored.getWords().find(item => item.id === plain.id);
+    assert.equal(english.translation, 'Easy to understand.');
+    assert.equal(english.translationLanguage, 'en');
+  }
+});
+
+test('unrelated word edits preserve explicit Ukrainian markers for translations without Cyrillic', () => {
+  const service = new DriveSyncService(new MemoryStorage());
+  const word = service.addWord({ word: 'wifi', definition: 'Wireless internet access.', translation: 'Wi-Fi', translationLanguage: 'uk' });
+  const edited = service.updateWord(word.id, { example: 'The hotel has wifi.' });
+  assert.equal(edited.translation, 'Wi-Fi');
+  assert.equal(edited.translationLanguage, 'uk');
+  const changed = service.updateWord(word.id, { translation: 'USB', translationLanguage: 'uk' });
+  assert.equal(changed.translation, 'USB');
+  assert.equal(changed.translationLanguage, 'uk');
+  assert.equal(service.updateWord(word.id, { translation: '' }).translationLanguage, 'en');
+});
+
+test('invalid or corrupted translation preferences fall back to English', () => {
+  const storage = new MemoryStorage();
+  for (const saved of [null, 'not JSON', '{}', '{"translationLanguage":"removed-language"}']) {
+    if (saved === null) storage.removeItem('keepvocab_settings');
+    else storage.setItem('keepvocab_settings', saved);
+    assert.equal(getTranslationLanguage(storage), 'en');
+    assert.equal(getTranslationName(storage), 'English');
+    assert.equal(isUkrainianTranslationEnabled(storage), false);
+  }
+  const service = new DriveSyncService(storage);
+  service.updateSettings({ translationLanguage: 'removed-language' });
+  assert.equal(service.getSettings().translationLanguage, 'en');
+});
+
+test('English sync keeps all completed speaking lessons and the newest scalar preferences', () => {
+  const local = {
+    activeCourseId: 'english', updatedAt: '2026-08-25T10:00:00.000Z',
+    courseProfiles: { english: {
+      updatedAt: '2026-08-25T10:00:00.000Z', dailyGoal: 27,
+      exerciseActivityByDevice: { 'device-a': { '2026-08-20': 2 } },
+      speakingProgress: { completed: ['rent-apartment', 'support-friend'], level: 'B1', weeklyGoal: 3,
+        lastLessonId: 'support-friend', lastCompletedAt: '2026-08-25T09:00:00.000Z' }
+    } }
+  };
+  const remote = {
+    activeCourseId: 'removed-course', updatedAt: '2026-08-26T10:00:00.000Z', dailyGoal: 99,
+    courseProfiles: {
+      english: {
+        updatedAt: '2026-08-26T10:00:00.000Z', dailyGoal: 25,
+        exerciseActivityByDevice: { 'device-a': { '2026-08-20': 1 }, 'device-b': { '2026-08-20': 3 } },
+        speakingProgress: { completed: ['rent-apartment', 'present-idea'], level: 'B2', weeklyGoal: 5,
+          lastLessonId: 'present-idea', lastCompletedAt: '2026-08-26T09:00:00.000Z' }
+      },
+      'removed-course': { reviewActivity: { '2026-08-20': 50 } }
+    }
+  };
+  const before = structuredClone({ local, remote });
+  const merged = mergeDriveSettings(local, remote);
+  assert.equal(merged.dailyGoal, 25);
+  assert.deepEqual(merged.speakingProgress.completed, ['rent-apartment', 'present-idea', 'support-friend']);
+  assert.equal(merged.speakingProgress.level, 'B2');
+  assert.equal(merged.speakingProgress.weeklyGoal, 5);
+  assert.equal(merged.speakingProgress.lastLessonId, 'present-idea');
+  assert.equal(merged.speakingProgress.lastCompletedAt, '2026-08-26T09:00:00.000Z');
+  assert.deepEqual(merged.reviewActivity, { '2026-08-20': 5 });
+  assert.deepEqual(merged.exerciseActivityByDevice, { 'device-a': { '2026-08-20': 2 }, 'device-b': { '2026-08-20': 3 } });
+  assert.equal(merged.translationLanguage, 'en');
+  assert.deepEqual(Object.keys(merged.courseProfiles), ['english']);
+  assert.deepEqual(mergeDriveSettings(merged, remote).speakingProgress, merged.speakingProgress);
+  assert.deepEqual(mergeDriveSettings(remote, local).speakingProgress, merged.speakingProgress);
+  assert.deepEqual({ local, remote }, before);
+});
+
+test('speaking snapshots use their own timestamps despite unrelated later settings changes', () => {
+  const local = { updatedAt: '2026-08-27T10:00:00.000Z', courseProfiles: { english: {
+    updatedAt: '2026-08-27T10:00:00.000Z',
+    speakingProgress: { updatedAt: '2026-08-24T10:00:00.000Z', completed: ['rent-apartment'],
+      level: 'B1', lastLessonId: 'rent-apartment', lastCompletedAt: '2026-08-24T09:00:00.000Z' }
+  } } };
+  const remote = { updatedAt: '2026-08-26T10:00:00.000Z', courseProfiles: { english: {
+    updatedAt: '2026-08-26T10:00:00.000Z',
+    speakingProgress: { updatedAt: '2026-08-26T10:00:00.000Z', completed: ['present-idea'],
+      level: 'B2', lastLessonId: 'present-idea', lastCompletedAt: '2026-08-26T09:00:00.000Z' }
+  } } };
+  const merged = mergeDriveSettings(local, remote).speakingProgress;
+  assert.equal(merged.level, 'B2');
+  assert.equal(merged.lastLessonId, 'present-idea');
+  assert.equal(merged.updatedAt, '2026-08-26T10:00:00.000Z');
+  assert.deepEqual(merged.completed, ['present-idea', 'rent-apartment']);
+  assert.equal(merged.lastCompletedAt, '2026-08-26T09:00:00.000Z');
+});
+
+test('phrase retention merges actual practice timestamps and cumulative evidence without duplicate sync counts', () => {
+  const local = { courseProfiles: { english: { updatedAt: '2026-08-27T10:00:00.000Z', speakingProgress: {
+    completed: ['rent-apartment'],
+    phraseProgress: {
+      shared: { exposures: 5, successes: 4, streak: 3, lastPracticedAt: '2026-08-25T10:00:00.000Z', nextReviewAt: '2026-09-01T10:00:00.000Z' },
+      localOnly: { exposures: 1, successes: 1, streak: 1, lastPracticedAt: '2026-08-23T10:00:00.000Z', nextReviewAt: '2026-08-24T10:00:00.000Z' }
+    }
+  } } } };
+  const remote = { courseProfiles: { english: { updatedAt: '2026-08-26T10:00:00.000Z', speakingProgress: {
+    completed: ['present-idea'],
+    phraseProgress: {
+      shared: { exposures: 3, successes: 2, streak: 0, lastPracticedAt: '2026-08-26T10:00:00.000Z', nextReviewAt: '2026-08-27T10:00:00.000Z' },
+      remoteOnly: { exposures: 2, successes: 2, streak: 2, lastPracticedAt: '2026-08-22T10:00:00.000Z', nextReviewAt: '2026-08-25T10:00:00.000Z' }
+    }
+  } } } };
+  const merged = mergeDriveSettings(local, remote);
+  const phrases = merged.speakingProgress.phraseProgress;
+  assert.deepEqual(Object.keys(phrases).sort(), ['localOnly', 'remoteOnly', 'shared']);
+  assert.equal(phrases.shared.exposures, 5);
+  assert.equal(phrases.shared.successes, 4);
+  assert.equal(phrases.shared.streak, 0);
+  assert.equal(phrases.shared.lastPracticedAt, '2026-08-26T10:00:00.000Z');
+  assert.equal(phrases.shared.nextReviewAt, '2026-08-27T10:00:00.000Z');
+  assert.deepEqual(phrases.localOnly, local.courseProfiles.english.speakingProgress.phraseProgress.localOnly);
+  assert.deepEqual(phrases.remoteOnly, remote.courseProfiles.english.speakingProgress.phraseProgress.remoteOnly);
+  assert.deepEqual(mergeDriveSettings(merged, remote).speakingProgress, merged.speakingProgress);
+  assert.deepEqual(mergeDriveSettings(remote, local).speakingProgress, merged.speakingProgress);
 });
 
 test('Drive combines exercise activity from multiple devices without double counting repeated syncs', async () => {

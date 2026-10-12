@@ -1,8 +1,9 @@
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=1602';
-import { speakWord } from '../services/speechService.js?v=1602';
-import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, generateVisualScenesWithGemini, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=1602';
-import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=1602';
-import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=1602';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18100';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18100';
+import { speakWord } from '../services/speechService.js?v=18100';
+import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, generateVisualScenesWithGemini, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18100';
+import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18100';
+import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=18100';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
 
 function readFileAsDataUrl(file) {
@@ -188,7 +189,7 @@ export function renderLibraryView(container) {
 
   function selectedWords() {
     let items = driveSync.getWordsByMonthYear(selectedMonthYear).filter(word => {
-      const haystack = `${word.word} ${word.definition} ${word.partOfSpeech}`.toLowerCase();
+      const haystack = `${word.word} ${word.definition} ${word.translation || ''} ${word.partOfSpeech}`.toLowerCase();
       if (query && !haystack.includes(query.toLowerCase())) return false;
       if (filter === 'due') return isDue(word);
       if (filter === 'mastered') return word.mastered;
@@ -213,7 +214,7 @@ export function renderLibraryView(container) {
       return `<section class="library-meaning" data-meaning-id="${escapeHtml(meaning.id)}">
         <div class="library-meaning-heading"><span>Meaning ${meaningIndex + 1}</span><strong>${escapeHtml(meaning.partOfSpeech || 'word')}</strong></div>
         ${meaning.imageUrl && !hasDuplicateImage ? `<img class="library-word-image" src="${escapeHtml(meaning.imageUrl)}" alt="Visual cue for ${escapeHtml(meaning.word)} meaning ${meaningIndex + 1}">` : hasDuplicateImage ? `<div class="duplicate-image-warning"><i class="fa-solid fa-images"></i><span><strong>Reused visual cue</strong>Choose a distinct image for this meaning.</span></div>` : ''}
-        <p>${escapeHtml(meaning.definition)}</p>
+        <p>${escapeHtml(meaning.definition)}</p>${isUkrainianTranslationEnabled() && meaning.translationLanguage === 'uk' && meaning.translation ? `<p class="word-translation" lang="uk">${escapeHtml(meaning.translation)}</p>` : ''}
         ${meaning.example ? `<blockquote>“${escapeHtml(meaning.example)}”</blockquote>` : ''}
         <div class="library-card-footer"><span>Box ${Number(meaning.box || 1)}</span><span>${meaning.mastered ? 'Mastered' : (isDue(meaning) ? 'Due now' : 'Learning')}</span></div>
         <div class="library-recall-stats" aria-label="${practiceStats.recalled} recalled and ${practiceStats.missed} missed answers"><span><i class="fa-solid fa-check"></i> Recalled ${practiceStats.recalled}</span><span><i class="fa-solid fa-xmark"></i> Missed ${practiceStats.missed}</span><span>${practiceStats.attempts} total</span></div>
@@ -245,7 +246,7 @@ export function renderLibraryView(container) {
     const groups = groupWordCards(words);
     const resultCount = container.querySelector('.library-result-count');
     const grid = container.querySelector('.library-grid');
-    if (resultCount) resultCount.textContent = `${groups.length} words · ${words.length} meanings`;
+    if (resultCount) resultCount.textContent = `${groups.length} word${groups.length === 1 ? '' : 's'} · ${words.length} meaning${words.length === 1 ? '' : 's'}`;
     if (!grid) return;
     grid.innerHTML = groups.length
       ? groups.map(wordCard).join('')
@@ -254,7 +255,7 @@ export function renderLibraryView(container) {
   }
 
   function render() {
-    const courseLabel = driveSync.getActiveCourseId() === 'lithuanian' ? 'Lithuanian vocabulary' : 'English vocabulary';
+    const courseLabel = 'English vocabulary';
     duplicateImages = reusedImageUrls(driveSync.getWords());
     const archives = driveSync.getMonthlyArchives();
     const words = selectedWords();
@@ -267,11 +268,11 @@ export function renderLibraryView(container) {
     const pexelsActive = Boolean(imageProviderSettings.provider === 'pexels' && imageProviderSettings.pexelsApiKey);
     container.innerHTML = `
       <section class="full-view-stack library-view" aria-labelledby="library-heading">
-        <div class="content-title-row"><div><span class="eyebrow">${courseLabel}</span><h1 id="library-heading">Library</h1><p>Manage exact meanings, visual cues, and review-ready vocabulary for this course.</p></div><button class="btn-green-solid" id="library-add-word"><i class="fa-solid fa-plus"></i> Add word</button></div>
+        <div class="content-title-row"><div><span class="eyebrow">${courseLabel}</span><h1 id="library-heading">Library</h1><p>Keep your vocabulary, meanings, and memory cues in one place.</p></div><button class="btn-green-solid" id="library-add-word"><i class="fa-solid fa-plus"></i> Add word</button></div>
         <div class="spec-card">
           <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-calendar-days"></i> Monthly vocabulary</div><span class="muted-label">Choose the notebook you want to manage</span></div>
           <div class="archive-tabs">
-            ${archives.map(archive => `<button class="status-pill ${archive.monthYear === selectedMonthYear ? 'connected' : 'offline'}" data-month="${escapeHtml(archive.monthYear)}"><strong>${escapeHtml(archive.monthYear)}</strong><span>${archive.wordCount} words · ${archive.count} meanings</span></button>`).join('')}
+            ${archives.map(archive => `<button class="status-pill ${archive.monthYear === selectedMonthYear ? 'connected' : 'offline'}" data-month="${escapeHtml(archive.monthYear)}"><strong>${escapeHtml(archive.monthYear)}</strong><span>${archive.wordCount} word${archive.wordCount === 1 ? '' : 's'} · ${archive.count} meaning${archive.count === 1 ? '' : 's'}</span></button>`).join('')}
           </div>
         </div>
 
@@ -281,7 +282,8 @@ export function renderLibraryView(container) {
             <label>Word<input name="word" required value="${escapeHtml(editing.word)}"></label>
             <label>Phonetic<input name="phonetic" value="${escapeHtml(editing.phonetic || '')}"></label>
             <label>Part of speech<input name="partOfSpeech" value="${escapeHtml(editing.partOfSpeech || '')}"></label>
-            <label class="wide">Definition<textarea name="definition" required>${escapeHtml(editing.definition)}</textarea></label>
+            <label class="wide">English definition<textarea name="definition" required>${escapeHtml(editing.definition)}</textarea></label>
+            ${isUkrainianTranslationEnabled() ? `<label class="wide">Ukrainian translation<input name="translation" lang="uk" value="${escapeHtml(editing.translation || '')}"></label>` : ''}
             <label class="wide">Example<textarea name="example">${escapeHtml(editing.example || '')}</textarea></label>
           </div>
           <section class="library-image-chooser" aria-labelledby="library-image-heading">
@@ -316,9 +318,9 @@ export function renderLibraryView(container) {
         </form>` : ''}
 
         <div class="spec-card">
-          <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-book-open"></i> ${escapeHtml(selectedMonthYear)} <span class="library-result-count">${groups.length} words · ${words.length} meanings</span></div><button class="btn-green-solid" id="export-library"><i class="fa-solid fa-download"></i> Export</button></div>
+          <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-book-open"></i> ${escapeHtml(selectedMonthYear)} <span class="library-result-count">${groups.length} word${groups.length === 1 ? '' : 's'} · ${words.length} meaning${words.length === 1 ? '' : 's'}</span></div><button class="btn-green-solid" id="export-library"><i class="fa-solid fa-download"></i> Export</button></div>
           <div class="library-toolbar">
-            <label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="library-search" value="${escapeHtml(query)}" placeholder="Search words or definitions"></label>
+            <label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="library-search" value="${escapeHtml(query)}" placeholder="Search words, definitions or translations"></label>
             <select id="library-filter" aria-label="Filter vocabulary"><option value="all">All progress</option><option value="due">Due now</option><option value="learning">Learning</option><option value="mastered">Mastered</option></select>
             <select id="library-sort" aria-label="Sort vocabulary"><option value="recent">Newest first</option><option value="alpha">A to Z</option><option value="due">Next review</option></select>
           </div>
@@ -439,13 +441,14 @@ export function renderLibraryView(container) {
       loadImageCandidates(editId, true);
     });
     container.querySelector('#library-edit-form')?.addEventListener('input', event => {
-      if (['word', 'phonetic', 'partOfSpeech', 'definition', 'example'].includes(event.target.name)) {
+      if (['word', 'phonetic', 'partOfSpeech', 'definition', 'translation', 'example'].includes(event.target.name)) {
         editDraft[event.target.name] = event.target.value;
       }
     });
     container.querySelector('#library-edit-form')?.addEventListener('submit', event => {
       event.preventDefault();
       const data = Object.fromEntries(new FormData(event.currentTarget));
+      if (isUkrainianTranslationEnabled() && Object.hasOwn(data, 'translation')) data.translationLanguage = 'uk';
       const [senseChecked] = sanitizeExistingExamples(data.word || editing.word, [{ ...editing, ...data }]);
       Object.assign(data, {
         example: senseChecked.example,

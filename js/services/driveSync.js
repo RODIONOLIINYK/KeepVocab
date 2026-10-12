@@ -1,10 +1,10 @@
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=1602';
-import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=1602';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18100';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18100';
 import { activityByDevice, aggregateActivity, normalizedActivity, streakFromActivity, currentStudyStats } from './studyActivity.js';
 import { localDateKey } from '../utils/dates.js';
-import { getCourseDefinition } from '../data/courses.js';
+import { getCourseDefinition, isCourseId } from '../data/courses.js';
 import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles } from './courseProfiles.js';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
@@ -103,7 +103,8 @@ export function mergeDriveSettings(localSettings = {}, remoteSettings = {}, { fr
 }
 
 function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource = 'drive') {
-  const word = normalizeWordText(candidate?.word).toLowerCase();
+  if (!candidate || !isCourseId(candidate.courseId || 'english') || !/^en(?:-|$)/i.test(candidate.languageCode || 'en')) return null;
+  const word = normalizeWordText(candidate.word).toLowerCase();
   if (!word || word.length > 100) return null;
   const createdAt = validIso(candidate.createdAt);
   const monthYear = candidate.monthYear || fallbackMonthYear || monthYearFromDate(createdAt);
@@ -112,15 +113,18 @@ function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource
   const id = String(candidate.id || makeWordId(word, monthYear, partOfSpeech, definition));
   const courseId = String(candidate.courseId || 'english');
   const course = getCourseDefinition(courseId);
+  const translation = !candidate.translationLanguage || ['en', 'uk'].includes(candidate.translationLanguage) ? String(candidate.translation || '').trim() : '';
+  const translationLanguage = translation && (candidate.translationLanguage === 'uk' || (!candidate.translationLanguage && /[А-Яа-яІіЇїЄєҐґ]/u.test(translation))) ? 'uk' : 'en';
 
   return {
     ...candidate,
     id,
     senseId: String(candidate.senseId || makeSenseId(word, partOfSpeech, definition)),
     courseId: course.id,
-    languageCode: String(candidate.languageCode || course.languageCode),
+    languageCode: course.languageCode,
+    translationLanguage,
     lemma: String(candidate.lemma || word).trim().toLowerCase(),
-    translation: String(candidate.translation || (course.id === 'lithuanian' ? definition : '')).trim(),
+    translation,
     acceptedForms: [...new Set((Array.isArray(candidate.acceptedForms) ? candidate.acceptedForms : [word]).map(value => String(value || '').trim().toLowerCase()).filter(Boolean))],
     grammaticalTags: [...new Set((Array.isArray(candidate.grammaticalTags) ? candidate.grammaticalTags : []).map(value => String(value || '').trim()).filter(Boolean))],
     word,
@@ -233,7 +237,10 @@ export class DriveSyncService {
       });
     }
     this.write(STORAGE_KEY_SETTINGS, migrateCourseSettings(this.read(STORAGE_KEY_SETTINGS, {})));
-    const migratedWords = this.getAllWords().map(word => normalizeStoredWord(word, word.monthYear, word.source || 'local')).filter(Boolean);
+    const storedWords = this.getAllWords();
+    const migratedWords = storedWords.map(word => normalizeStoredWord(word, word?.monthYear, word?.source || 'local')).filter(Boolean);
+    const removed = storedWords.filter(word => word?.id && !normalizeStoredWord(word)).map(word => normalizeTombstone({ ...word, deletedAt: new Date().toISOString() })).filter(Boolean);
+    if (removed.length) this.saveTombstones([...this.getTombstones(), ...removed], { silent: true });
     this.saveWords(migratedWords, { silent: true });
     if (!this.storage.getItem(STORAGE_KEY_DRIVE_AUTH)) {
       this.write(STORAGE_KEY_DRIVE_AUTH, { isConnected: false, remembered: false, email: null, lastSynced: null, lastError: null, folderId: null });
@@ -576,9 +583,6 @@ export class DriveSyncService {
 
   getMonthlyArchives() {
     const map = new Map();
-    // Library notebooks are course-scoped. Drive backup still serializes all
-    // courses, but English archive tabs must never leak into Lithuanian and
-    // vice versa.
     for (const word of this.getWords()) {
       const monthYear = word.monthYear || String(word.notebook || '').replace(/ Vocabulary$/, '');
       if (!map.has(monthYear)) map.set(monthYear, { monthYear, words: [], count: 0, wordCount: 0, mastered: 0 });
@@ -620,7 +624,7 @@ export class DriveSyncService {
     const monthYear = notebook.replace(/ Vocabulary$/, '');
     const now = new Date().toISOString();
     const candidates = (Array.isArray(wordObjects) ? wordObjects : [])
-      .map(wordObj => normalizeStoredWord({ ...wordObj, courseId: wordObj.courseId || this.getActiveCourseId(), createdAt: wordObj.createdAt || now, updatedAt: now }, monthYear, 'manual'));
+      .map(wordObj => normalizeStoredWord({ ...wordObj, courseId: wordObj?.courseId || this.getActiveCourseId(), createdAt: wordObj?.createdAt || now, updatedAt: now }, monthYear, 'manual'));
     if (!candidates.length || candidates.some(word => !word)) throw new Error('Enter at least one valid meaning.');
     const identities = candidates.map(senseIdentity);
     if (new Set(identities).size !== identities.length) throw new Error('The selected meanings contain a duplicate definition.');
@@ -640,7 +644,7 @@ export class DriveSyncService {
     const words = this.getAllWords();
     const index = words.findIndex(word => word.id === wordId);
     if (index === -1) throw new Error('That vocabulary entry no longer exists.');
-    const allowed = ['word', 'phonetic', 'partOfSpeech', 'definition', 'example', 'lemma', 'translation', 'exampleSourceUrl', 'exampleAttribution', 'exampleLicense', 'audioUrl', 'imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery', 'imageCustomConcept', 'imageKind', 'imageGeneratedModel', 'imageGeneratedAt', 'imageGeneratedPrompt'];
+    const allowed = ['word', 'phonetic', 'partOfSpeech', 'definition', 'example', 'lemma', 'translation', 'translationLanguage', 'exampleSourceUrl', 'exampleAttribution', 'exampleLicense', 'audioUrl', 'imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery', 'imageCustomConcept', 'imageKind', 'imageGeneratedModel', 'imageGeneratedAt', 'imageGeneratedPrompt'];
     const cleanPatch = Object.fromEntries(allowed.filter(key => Object.prototype.hasOwnProperty.call(patch, key)).map(key => [key, String(patch[key] ?? '').trim()]));
     if (patch.imageFeedback && typeof patch.imageFeedback === 'object') cleanPatch.imageFeedback = {
       rejectedUrls: [...new Set((patch.imageFeedback.rejectedUrls || []).map(String).filter(Boolean))].slice(0, 80),
@@ -654,7 +658,11 @@ export class DriveSyncService {
     if (cleanPatch.imageCustomConcept !== undefined) cleanPatch.imageCustomConcept = cleanPatch.imageCustomConcept.slice(0, 160);
     if (cleanPatch.imageUrl && !/^https:\/\//i.test(cleanPatch.imageUrl) && !/^data:image\/(?:png|jpeg|webp);base64,/i.test(cleanPatch.imageUrl)) throw new Error('Image URL must start with https:// or be a generated image.');
     if (cleanPatch.imageSourceUrl && !/^https:\/\//i.test(cleanPatch.imageSourceUrl)) throw new Error('Image source URL must start with https://.');
-    const updated = { ...words[index], ...cleanPatch, updatedAt: new Date().toISOString() };
+    const translation = cleanPatch.translation ?? words[index].translation;
+    const translationLanguage = !translation ? 'en' : ['en', 'uk'].includes(cleanPatch.translationLanguage) ? cleanPatch.translationLanguage
+      : cleanPatch.translation === undefined ? words[index].translationLanguage || 'en'
+        : /[А-Яа-яІіЇїЄєҐґ]/u.test(translation) ? 'uk' : 'en';
+    const updated = { ...words[index], ...cleanPatch, translationLanguage, updatedAt: new Date().toISOString() };
     if (words.some((word, candidateIndex) => candidateIndex !== index && senseIdentity(word) === senseIdentity(updated))) {
       throw new Error(`That meaning of “${updated.word}” is already in ${updated.notebook}.`);
     }
@@ -708,6 +716,7 @@ export class DriveSyncService {
 
   updateCourseProfile(courseId, patch = {}, { silent = false } = {}) {
     const settings = this.getSettings();
+    if (!isCourseId(courseId)) throw new Error(`Unknown course: ${courseId}`);
     const profile = { ...(settings.courseProfiles?.[courseId] || {}), ...patch, courseId, updatedAt: new Date().toISOString() };
     const next = { ...settings, courseProfiles: { ...settings.courseProfiles, [courseId]: profile }, updatedAt: new Date().toISOString() };
     const normalized = courseId === settings.activeCourseId ? migrateCourseSettings({ ...next, ...profile }) : next;
@@ -819,7 +828,11 @@ export class DriveSyncService {
         if (![1, SCHEMA_VERSION].includes(Number(payload?.schemaVersion)) || payload?.monthYear !== monthYear) continue;
         for (const candidate of Array.isArray(payload.words) ? payload.words : []) {
           const word = normalizeStoredWord(candidate, monthYear, 'drive');
-          if (!word) continue;
+          if (!word) {
+            const removed = normalizeTombstone({ ...candidate, deletedAt: new Date().toISOString() }, monthYear);
+            if (removed) tombstoneMap.set(removed.id, removed);
+            continue;
+          }
           const existing = wordMap.get(word.id);
           if (!existing || recordTimestamp(word) > recordTimestamp(existing)) {
             if (!existing) restoredWords += 1;

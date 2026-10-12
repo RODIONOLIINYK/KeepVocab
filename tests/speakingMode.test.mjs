@@ -22,10 +22,7 @@ import {
   float32ToPcm16,
   microphoneAccessError
 } from '../js/services/geminiLive.js';
-import { getLessonPhrases, lessonPhraseLibraryEntries, lessonPhrasesMissingFromLibrary, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson, SPEAKING_CONTEXT_PROFILES } from '../js/services/speakingPhrases.js';
-import { LITHUANIAN_UNITS } from '../js/data/lithuanianCurriculum.js';
-import { getLithuanianSpeakingLessons, LITHUANIAN_SPEAKING_TOPICS, LITHUANIAN_SPEAKING_VARIANTS } from '../js/components/SpeakingMode.js';
-import { LITHUANIAN_A2_SPEAKING_SCENARIOS } from '../js/data/lithuanianSpeakingScenarios.js';
+import { detectUsedPhrases, getLessonPhrases, lessonPhraseLibraryEntries, lessonPhrasesMissingFromLibrary, phraseMeaningHint, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson, SPEAKING_CONTEXT_PROFILES } from '../js/services/speakingPhrases.js';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -170,7 +167,6 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   const component = readFileSync(resolve(projectRoot, 'js/components/SpeakingMode.js'), 'utf8');
   const serviceWorker = readFileSync(resolve(projectRoot, 'sw.js'), 'utf8');
   assert.match(html, /data-view="speaking"/);
-  assert.match(html, /id="btn-mode-speaking"/);
   assert.match(app, /renderSpeakingMode/);
   assert.match(component, /Gemini connects only after you press Start/);
   assert.match(component, /key stays in KeepVocab storage and joins your private Drive backup/);
@@ -178,51 +174,19 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'start', phraseTargets\)/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'silence', phraseTargets\)/);
   assert.match(component, /id="interrupt-live-coach"/);
-  assert.match(component, /lesson\.languageCode === 'lt' \? 'Sprig' : 'Mira'/);
-  assert.match(component, /renderLithuanianSpeakingPreview/);
-  assert.match(component, /Module \$\{recommended\.unitNumber\}/);
   assert.match(serviceWorker, /\.\/js\/components\/SpeakingMode\.js/);
   assert.match(serviceWorker, /\.\/js\/data\/speakingLessons\.js/);
   assert.match(serviceWorker, /\.\/js\/services\/geminiLive\.js/);
   assert.match(serviceWorker, /\.\/js\/services\/speechService\.js/);
 });
 
-test('Lithuanian speaking reuses the English catalog and preview design system', () => {
-  const component = readFileSync(resolve(projectRoot, 'js/components/SpeakingMode.js'), 'utf8');
-  const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
-  assert.ok((component.match(/<section class="speaking-hero">/g) || []).length >= 2);
-  assert.ok((component.match(/class="speaking-filter-row"/g) || []).length >= 2);
-  assert.ok((component.match(/class="speaking-lesson-grid"/g) || []).length >= 2);
-  assert.ok((component.match(/class="full-view-stack speaking-preview-shell"/g) || []).length >= 2);
-  assert.ok((component.match(/class="preview-side lesson-plan-side"/g) || []).length >= 2);
-  assert.doesNotMatch(component, /lithuanian-speaking(?:-preview)?/);
-  assert.doesNotMatch(styles, /\.lithuanian-speaking/);
-});
 
-test('every Lithuanian curriculum topic provides guided, challenge, and recall conversations', () => {
-  assert.equal(LITHUANIAN_SPEAKING_VARIANTS.length, 3);
-  const lessons = LITHUANIAN_UNITS.flatMap(getLithuanianSpeakingLessons);
-  assert.equal(lessons.length, 108);
-  assert.equal(new Set(lessons.map(lesson => lesson.id)).size, 108);
-  assert.deepEqual(new Set(lessons.map(lesson => lesson.variantId)), new Set(['guided', 'challenge', 'fluency']));
-});
 
-test('the Lithuanian speaking catalog adds an authored A2 conversation lab', () => {
-  assert.equal(LITHUANIAN_A2_SPEAKING_SCENARIOS.length, 12);
-  assert.ok(LITHUANIAN_A2_SPEAKING_SCENARIOS.every(topic => topic.cefr === 'A2' && topic.phrases.length === 4));
-  const lessons = LITHUANIAN_SPEAKING_TOPICS.flatMap(getLithuanianSpeakingLessons);
-  assert.equal(lessons.length, 144);
-  assert.equal(new Set(lessons.map(lesson => lesson.id)).size, 144);
-  assert.equal(lessons.filter(lesson => lesson.level === 'A2').length, 93);
-});
 
-test('live Lithuanian turns are translated after transcription and before the summary', () => {
-  const component = readFileSync(resolve(projectRoot, 'js/components/SpeakingMode.js'), 'utf8');
-  assert.match(component, /translateLithuanianCoachText/);
-  assert.match(component, /English shown under every Sprig turn/);
-  assert.match(component, /class="transcript-translation/);
-  assert.ok(component.indexOf('await session.startMicrophone()') < component.indexOf('await session.connect('));
-});
+
+
+
+
 
 test('live speaking interruption stops every queued audio source and suppresses stale chunks', () => {
   const service = readFileSync(resolve(projectRoot, 'js/services/geminiLive.js'), 'utf8');
@@ -253,4 +217,123 @@ test('interrupting Mira immediately stops all scheduled playback and hands the t
   assert.equal(session.nextAudioTime, 12.5);
   assert.equal(session.ignoreCurrentModelAudio, true);
   assert.deepEqual(statuses, ['listening']);
+});
+
+
+test('all speaking expressions include offline Ukrainian translations in saved cards', () => {
+  for (const lesson of [...SPEAKING_LESSONS, FREE_CONVERSATION_LESSON]) {
+    const phrases = getLessonPhrases(lesson);
+    assert.ok(phrases.every(item => /[а-яіїєґ]/iu.test(item.translation)), lesson.id);
+    assert.ok(lessonPhraseLibraryEntries(lesson).every(item => item.translationLanguage === 'uk' && item.translation));
+  }
+});
+
+test('phrase recall accepts inflection while requiring a complete expression in one learner turn', () => {
+  const target = { text: 'meet halfway' };
+  assert.equal(detectUsedPhrases([target], [{ role: 'learner', text: 'We met halfway on the date.' }]).length, 1);
+  assert.equal(detectUsedPhrases([target], [{ role: 'coach', text: 'We met halfway.' }]).length, 0);
+  assert.equal(detectUsedPhrases([target], [{ role: 'learner', text: 'We meet halfwayish.' }]).length, 0);
+});
+
+class TestWebSocket extends EventTarget {
+  static OPEN = 1;
+  static instances = [];
+  readyState = 0;
+  constructor() { super(); TestWebSocket.instances.push(this); }
+  send() {}
+  close(code = 1000, reason = '') {
+    this.readyState = 3;
+    const event = new Event('close');
+    Object.assign(event, { code, reason });
+    this.dispatchEvent(event);
+  }
+}
+
+test('ending a lesson cancels a connecting socket and settles its setup promise', async () => {
+  const originalWindow = globalThis.window;
+  const originalSocket = globalThis.WebSocket;
+  globalThis.window = { setTimeout, clearTimeout };
+  globalThis.WebSocket = TestWebSocket;
+  try {
+    const session = new GeminiLiveSession();
+    const connection = session.connect({ apiKey: 'test-key', instruction: 'Practise English.' });
+    const rejection = assert.rejects(connection, /cancelled/);
+    await session.disconnect();
+    await rejection;
+    assert.equal(TestWebSocket.instances.at(-1).readyState, 3);
+    assert.equal(session.socket, null);
+  } finally {
+    globalThis.window = originalWindow;
+    globalThis.WebSocket = originalSocket;
+  }
+});
+
+test('a normal socket close before setup rejects immediately instead of leaving setup pending', async () => {
+  const originalWindow = globalThis.window;
+  const originalSocket = globalThis.WebSocket;
+  globalThis.window = { setTimeout, clearTimeout };
+  globalThis.WebSocket = TestWebSocket;
+  try {
+    const session = new GeminiLiveSession();
+    const connection = session.connect({ apiKey: 'test-key', instruction: 'Practise English.' });
+    TestWebSocket.instances.at(-1).close(1000);
+    await assert.rejects(connection, /disconnected/);
+    assert.equal(session.socket, null);
+  } finally {
+    globalThis.window = originalWindow;
+    globalThis.WebSocket = originalSocket;
+  }
+});
+
+test('a microphone permission grant arriving after exit immediately stops its stream', async () => {
+  const mediaDescriptor = Object.getOwnPropertyDescriptor(globalThis.navigator, 'mediaDevices');
+  let grant;
+  let stopped = 0;
+  Object.defineProperty(globalThis.navigator, 'mediaDevices', {
+    configurable: true,
+    value: { getUserMedia: () => new Promise(resolve => { grant = resolve; }) }
+  });
+  try {
+    const session = new GeminiLiveSession();
+    const microphone = session.startMicrophone();
+    await session.disconnect();
+    grant({ getTracks: () => [{ stop: () => { stopped += 1; } }] });
+    assert.equal(await microphone, false);
+    assert.equal(stopped, 1);
+    assert.equal(session.stream, null);
+  } finally {
+    if (mediaDescriptor) Object.defineProperty(globalThis.navigator, 'mediaDevices', mediaDescriptor);
+    else delete globalThis.navigator.mediaDevices;
+  }
+});
+
+test('speaking meaning hints remain English by default and switch to Ukrainian only when selected', () => {
+  const target = { meaning: 'reach a compromise', translation: 'піти на взаємний компроміс' };
+  const storage = { getItem: () => null };
+  assert.equal(phraseMeaningHint(target, storage), 'reach a compromise');
+  const ukrainianStorage = { getItem: () => JSON.stringify({ translationLanguage: 'uk' }) };
+  assert.equal(phraseMeaningHint(target, ukrainianStorage), 'піти на взаємний компроміс');
+});
+
+test('disconnecting during queued audio decoding does not leave a negative pending count', async () => {
+  const originalWindow = globalThis.window;
+  let resume;
+  class TestAudioContext {
+    state = 'suspended';
+    currentTime = 0;
+    resume() { return new Promise(resolve => { resume = resolve; }); }
+    async close() { this.state = 'closed'; }
+  }
+  globalThis.window = { AudioContext: TestAudioContext };
+  try {
+    const session = new GeminiLiveSession();
+    const audio = session.playAudio('AAAA', 24000);
+    await session.disconnect();
+    resume();
+    await audio;
+    assert.equal(session.pendingAudioChunks, 0);
+    assert.equal(session.outputSources.size, 0);
+  } finally {
+    globalThis.window = originalWindow;
+  }
 });

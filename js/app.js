@@ -1,46 +1,29 @@
-import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=1602';
-import { setupAddWordModal } from './components/AddWordModal.js?v=1602';
-import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=1602';
+import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=18100';
+import { setupAddWordModal } from './components/AddWordModal.js?v=18100';
+import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18100';
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, getCurrentMonthNotebookTitle, usesNativeGoogleAuthorization } from './services/driveSync.js?v=1602';
-import { speakWord } from './services/speechService.js?v=1602';
-import { getDueWords, getRatingPreviews } from './services/srsEngine.js?v=1602';
-import { recordExerciseResult } from './services/exerciseResult.js?v=1602';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=1602';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=1602';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=1602';
-import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=1602';
-import { buildScheduledPracticeSession } from './services/dailySession.js?v=1602';
+import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18100';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=18100';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=18100';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=18100';
+import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=18100';
+import { buildScheduledPracticeSession } from './services/dailySession.js?v=18100';
 import { localDateKey } from './utils/dates.js';
+import { backfillLibraryTranslations } from './services/libraryTranslations.js?v=18100';
 
-import { renderLibraryView } from './components/LibraryView.js?v=1602';
-import { renderStatsView } from './components/StatsView.js?v=1602';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=1602';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=1602';
-import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=1602';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=1602';
-import { renderDashboardView } from './components/DashboardView.js?v=1602';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=1602';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=1602';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=1602';
-import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=1602';
-import { renderSettingsView } from './components/SettingsView.js?v=1602';
-import { renderLearningPathView } from './components/LearningPathView.js?v=1602';
-import { renderLessonMode, teardownLessonMode } from './components/LessonMode.js?v=1602';
-import { getCourseDefinition } from './data/courses.js?v=1602';
-
-function buildStudyQueue() {
-  return getActivePracticeWords(driveSync).map(item => {
-    const example = item.example || `Use “${item.word}” in a sentence.`;
-    return {
-      ...item,
-      phonetic: item.phonetic || '',
-      partOfSpeech: item.partOfSpeech || 'unknown',
-      example
-    };
-  });
-}
+import { renderLibraryView } from './components/LibraryView.js?v=18100';
+import { renderStatsView } from './components/StatsView.js?v=18100';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18100';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18100';
+import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18100';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18100';
+import { renderDashboardView } from './components/DashboardView.js?v=18100';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=18100';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18100';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18100';
+import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18100';
+import { renderSettingsView } from './components/SettingsView.js?v=18100';
 
 function repairContradictoryExamples() {
   for (const word of driveSync.getWords()) {
@@ -56,9 +39,6 @@ function repairContradictoryExamples() {
 }
 
 repairContradictoryExamples();
-let wordsQueue = buildStudyQueue();
-
-let currentIndex = 0;
 const reminderDefaults = driveSync.getSettings();
 if (typeof reminderDefaults.smartReminderEnabled !== 'boolean' || typeof reminderDefaults.streakReminderEnabled !== 'boolean' || !Array.isArray(reminderDefaults.reviewStartMoments)) {
   driveSync.updateSettings({
@@ -73,37 +53,25 @@ if (initialSettings.reviewsDate !== localDateKey()) {
   driveSync.updateSettings({ reviewsDate: localDateKey(), reviewsToday: 0 });
 }
 let currentView = 'dashboard';
-let speechSpeed = 1.0;
-let dashboardOriginalHTML = '';
 let viewEnterTimer = null;
+let navigationRevision = 0;
 let reminderRefreshTimer = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  const container = document.getElementById('view-container');
-  if (container) {
-    dashboardOriginalHTML = container.innerHTML;
-  }
-  initApp();
-});
+document.addEventListener('DOMContentLoaded', initApp);
 
 function initApp() {
   startAutomaticUpdateChecks();
   setInteractionSoundEnabledProvider(() => driveSync.getSettings().soundEnabled !== false);
   setupButtonSounds();
   setupNavigation();
-  setupCourseSwitcher();
   setupDriveBackupModal();
   setupAddWordModal({ showToast, onSaved: () => {
-    wordsQueue = buildStudyQueue();
-    currentIndex = 0;
     navigateTo(currentView);
   } });
   setupEngagementSystem();
   setupReminderNavigation().catch(error => console.warn('Reminder navigation setup failed.', error));
-  setupFlashcardControls();
   setupMonthDropdown();
   setupKeyboardShortcuts();
-  setupLearningModeButtons();
   setupAutomaticDriveBackup();
   resumeRememberedDriveConnection();
 
@@ -153,46 +121,15 @@ function updateGoalDisplay() {
   const dailyGoal = Math.max(1, Number(driveSync.getSettings().dailyGoal || 20));
   const display = `${Math.min(goalCount, dailyGoal)} / ${dailyGoal}`;
   const hdrGoal = document.getElementById('hdr-goal-count');
-  const goalEl = document.getElementById('goal-number-el');
   if (hdrGoal) hdrGoal.textContent = display;
-  if (goalEl) goalEl.textContent = display;
 }
 
 function updateDashboardDerivedState() {
-  goalCount = Number(driveSync.getSettings().reviewsToday || 0);
-  updateGoalDisplay();
   const settings = driveSync.getSettings();
-  const allWords = driveSync.getWords();
-  const boxCounts = [1, 2, 3, 4, 5].map(box => allWords.filter(word => Number(word.box || 1) === box).length);
-  boxCounts.forEach((count, index) => {
-    const element = document.getElementById(`b${index + 1}-count`);
-    if (element) element.textContent = String(count);
-  });
-  const currentEntries = getActivePracticeWords(driveSync);
-  const currentWords = new Set(currentEntries.map(word => String(word.word || '').trim().toLowerCase())).size;
-  const added = document.getElementById('stat-words-added');
-  if (added) added.textContent = String(currentWords);
-  const due = document.getElementById('stat-synced-today');
-  if (due) due.textContent = String(getDueWords(currentEntries).length);
-  const learning = document.getElementById('stat-keep-updates');
-  if (learning) learning.textContent = String(currentEntries.filter(word => !word.mastered).length);
-  const streak = Number(settings.dailyStreak || 0);
-  for (const id of ['hdr-streak-count', 'streak-num']) {
-    const element = document.getElementById(id);
-    if (element) element.textContent = String(streak);
-  }
-  const ring = document.querySelector('.radial-svg circle:nth-of-type(2)');
-  const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
-  if (ring) ring.setAttribute('stroke-dashoffset', String(238.76 * (1 - Math.min(goalCount, dailyGoal) / dailyGoal)));
-  const activity = settings.reviewActivity || {};
-  const today = new Date();
-  const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - ((today.getDay() + 6) % 7));
-  document.querySelectorAll('.day-circle').forEach((element, index) => {
-    const date = new Date(monday);
-    date.setDate(monday.getDate() + index);
-    const key = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
-    element.classList.toggle('checked', Number(activity[key] || 0) > 0);
-  });
+  goalCount = Number(settings.reviewsToday || 0);
+  updateGoalDisplay();
+  const streak = document.getElementById('hdr-streak-count');
+  if (streak) streak.textContent = String(Number(settings.dailyStreak || 0));
   updateEngagementCard();
   renderConnectionState();
 }
@@ -203,10 +140,8 @@ function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
   const practiceWords = getScheduledPracticeWords(driveSync);
   const dueCount = buildScheduledPracticeSession(practiceWords, settings, { now }).wordCount;
   return buildReminderSchedule({
-    courseName: driveSync.getActiveCourseId() === 'lithuanian' ? 'Lithuanian' : 'Vocabulary',
-    hasLesson: driveSync.getActiveCourseId() === 'lithuanian',
-    practiceRoute: driveSync.getActiveCourseId() === 'lithuanian' ? 'learn'
-      : practiceWords.length ? 'review' : 'dashboard',
+    courseName: 'Vocabulary',
+    practiceRoute: practiceWords.length ? 'review' : 'dashboard',
     preferredTime: settings.reminderTime || '19:00',
     smartTiming: settings.smartReminderEnabled !== false,
     streakReminderEnabled: settings.streakReminderEnabled !== false,
@@ -453,7 +388,7 @@ function setupEngagementSystem() {
         return;
       }
       closeSettings();
-      if (currentView === 'dashboard') navigateTo('dashboard');
+      if (['dashboard', 'settings'].includes(currentView)) navigateTo(currentView);
       const message = result.status === 'scheduled'
         ? `${smartTiming ? 'Smart' : 'Daily'} reminder set for ${formatReminderTime(result.plan?.time || time)}.${result.exactAlarm !== 'granted' ? ' Android may delay delivery.' : ''}`
         : result.status === 'permission-required'
@@ -479,7 +414,17 @@ function setupEngagementSystem() {
   // goal and streak never keep today's alarms alive after practice.
   let reminderDay = localDateKey();
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) { updateEngagementCard(); queueSmartReminderRefresh(); if (modal.classList.contains('active')) updateDeliveryStatus(); }
+    if (!document.hidden) {
+      const today = localDateKey();
+      if (today !== reminderDay) {
+        reminderDay = today;
+        updateDashboardDerivedState();
+        if (['dashboard', 'stats', 'settings'].includes(currentView)) navigateTo(currentView);
+      }
+      updateEngagementCard();
+      queueSmartReminderRefresh();
+      if (modal.classList.contains('active')) updateDeliveryStatus();
+    }
   });
   window.addEventListener('focus', queueSmartReminderRefresh);
   globalThis.setInterval(() => {
@@ -498,32 +443,26 @@ function setupEngagementSystem() {
 }
 
 function navigateTo(viewName) {
+  const navigationId = ++navigationRevision;
   if (viewName === 'daily') {
     viewName = 'review';
     if (location.hash === '#daily') history.replaceState(null, '', '#review');
   }
   if (viewName === 'challenge') viewName = 'choose';
-  if (!['dashboard', 'learn', 'lesson', 'weak', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'speaking', 'settings'].includes(viewName)) viewName = 'dashboard';
-  if (viewName === 'learn' && !getCourseDefinition(driveSync.getActiveCourseId()).hasLearningPath) {
-    viewName = 'dashboard';
-    if (window.location.hash === '#learn') window.history.replaceState(null, '', '#dashboard');
-  }
+  if (!['dashboard', 'weak', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'speaking', 'settings'].includes(viewName)) viewName = 'dashboard';
   if (currentView === 'match' && viewName !== 'match') teardownMatchSprintMode();
   if (currentView === 'speaking' && viewName !== 'speaking') teardownSpeakingMode();
   if (currentView === 'useit' && viewName !== 'useit') teardownUseItMode();
-  if (currentView === 'lesson' && viewName !== 'lesson') teardownLessonMode();
   currentView = viewName;
   if (location.hash !== `#${viewName}`) history.pushState(null, '', `#${viewName}`);
   document.body.classList.toggle('speaking-view', viewName === 'speaking');
-  document.body.classList.toggle('learning-view', viewName === 'learn');
-  document.body.classList.toggle('lesson-view', viewName === 'lesson');
   document.body.classList.toggle('dashboard-view', viewName === 'dashboard');
-  document.body.classList.toggle('immersive-view', ['learn', 'lesson', 'weak', 'review', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'library', 'stats', 'settings'].includes(viewName));
+  document.body.classList.toggle('immersive-view', ['weak', 'review', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'library', 'stats', 'settings'].includes(viewName));
   const activeMonthLabel = document.getElementById('active-month-label');
   if (activeMonthLabel) activeMonthLabel.textContent = driveSync.getActiveNotebook().replace(/ Vocabulary$/, '');
 
   document.querySelectorAll('.nav-link-item').forEach(link => {
-    const isActive = link.getAttribute('data-view') === (viewName === 'lesson' ? 'learn' : viewName);
+    const isActive = link.getAttribute('data-view') === viewName;
     link.classList.toggle('active', isActive);
     if (isActive) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
@@ -536,10 +475,7 @@ function navigateTo(viewName) {
     renderDailySessionMode(container, navigateTo, { kind: 'weak' });
   } else if (viewName === 'review') {
     renderDailySessionMode(container, navigateTo);
-  } else if (viewName === 'learn') {
-    renderLearningPathView(container, navigateTo);
-  } else if (viewName === 'lesson') {
-    renderLessonMode(container, navigateTo);
+
   } else if (viewName === 'library') {
     renderLibraryView(container, navigateTo);
   } else if (viewName === 'stats') {
@@ -573,117 +509,12 @@ function navigateTo(viewName) {
     container.classList.add('view-enter');
     viewEnterTimer = window.setTimeout(() => container.classList.remove('view-enter'), 380);
   });
-}
-
-function setupCourseSwitcher() {
-  const root = document.getElementById('course-switcher');
-  const trigger = document.getElementById('course-switcher-trigger');
-  const menu = document.getElementById('course-switcher-menu');
-  const label = document.getElementById('course-switcher-label');
-  const options = [...document.querySelectorAll('.course-switcher-option')];
-  if (!root || !trigger || !menu || !label || !options.length) return;
-
-  const sync = () => {
-    const activeCourseId = driveSync.getActiveCourseId();
-    const course = getCourseDefinition(activeCourseId);
-    const learnLink = document.querySelector('.nav-link-item[data-view="learn"]');
-    label.textContent = course.shortLabel || course.name;
-    trigger.setAttribute('aria-label', `Switch language course. Current: ${course.shortLabel || course.name}`);
-    trigger.title = `Switch course · ${course.shortLabel || course.name}`;
-    document.body.classList.toggle('has-learning-path', Boolean(course.hasLearningPath));
-    document.body.dataset.courseId = course.id;
-    if (learnLink) learnLink.hidden = !course.hasLearningPath;
-    options.forEach(option => {
-      option.setAttribute('aria-selected', String(option.dataset.courseId === activeCourseId));
-    });
-  };
-
-  const closeMenu = ({ restoreFocus = false } = {}) => {
-    root.classList.remove('open');
-    trigger.setAttribute('aria-expanded', 'false');
-    menu.hidden = true;
-    if (restoreFocus) trigger.focus();
-  };
-
-  const openMenu = () => {
-    root.classList.add('open');
-    trigger.setAttribute('aria-expanded', 'true');
-    menu.hidden = false;
-    const selected = options.find(option => option.getAttribute('aria-selected') === 'true') || options[0];
-    requestAnimationFrame(() => selected.focus());
-  };
-
-  const selectCourse = courseId => {
-    if (!courseId || courseId === driveSync.getActiveCourseId()) {
-      closeMenu({ restoreFocus: true });
-      return;
-    }
-    driveSync.setActiveCourseId(courseId);
-    wordsQueue = buildStudyQueue();
-    currentIndex = 0;
-    goalCount = Number(driveSync.getSettings().reviewsToday || 0);
-    const course = getCourseDefinition(courseId);
-    sync();
-    closeMenu({ restoreFocus: true });
-    updateGoalDisplay();
-    updateDashboardDerivedState();
-    window.dispatchEvent(new CustomEvent('keepvocab:course-changed', { detail: { courseId: course.id } }));
-    const courseAwareRoute = ['library', 'review', 'speaking', 'stats'].includes(currentView) ? currentView : null;
-    const nextView = courseAwareRoute || (course.hasLearningPath ? 'learn' : 'dashboard');
-    if (window.location.hash === `#${nextView}`) navigateTo(nextView);
-    else window.location.hash = nextView;
-    showToast(`${course.name} course selected.`);
-  };
-
-  sync();
-  trigger.addEventListener('click', () => {
-    if (menu.hidden) openMenu();
-    else closeMenu();
-  });
-  options.forEach(option => option.addEventListener('click', () => selectCourse(option.dataset.courseId)));
-  root.addEventListener('keydown', event => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeMenu({ restoreFocus: true });
-      return;
-    }
-    if (menu.hidden && ['ArrowDown', 'ArrowUp'].includes(event.key)) {
-      event.preventDefault();
-      openMenu();
-      return;
-    }
-    if (menu.hidden) return;
-    const focusedIndex = Math.max(0, options.indexOf(document.activeElement));
-    let nextIndex = focusedIndex;
-    if (event.key === 'ArrowDown') nextIndex = (focusedIndex + 1) % options.length;
-    else if (event.key === 'ArrowUp') nextIndex = (focusedIndex - 1 + options.length) % options.length;
-    else if (event.key === 'Home') nextIndex = 0;
-    else if (event.key === 'End') nextIndex = options.length - 1;
-    else if (event.key === 'Tab') {
-      closeMenu();
-      return;
-    } else return;
-    event.preventDefault();
-    options[nextIndex].focus();
-  });
-  document.addEventListener('pointerdown', event => {
-    if (!root.contains(event.target)) closeMenu();
-  });
-  window.addEventListener('keepvocab:course-changed', () => {
-    sync();
-    closeMenu();
-    wordsQueue = buildStudyQueue();
-    goalCount = Number(driveSync.getSettings().reviewsToday || 0);
-    updateGoalDisplay();
-  });
-}
-
-function setupLearningModeButtons() {
-  document.getElementById('btn-mode-spelling')?.addEventListener('click', () => { window.location.hash = 'spelling'; });
-  document.getElementById('btn-mode-choose')?.addEventListener('click', () => { window.location.hash = 'choose'; });
-  document.getElementById('btn-mode-visual')?.addEventListener('click', () => { window.location.hash = 'visual'; });
-  document.getElementById('btn-mode-match')?.addEventListener('click', () => { window.location.hash = 'match'; });
-  document.getElementById('btn-mode-speaking')?.addEventListener('click', () => { window.location.hash = 'speaking'; });
+  if (driveSync.getSettings().translationLanguage === 'uk') {
+    void backfillLibraryTranslations(getActivePracticeWords(driveSync)).then(count => {
+      if (count && navigationId === navigationRevision && currentView === viewName && viewName === 'library'
+        && !container.querySelector('#library-edit-form') && !container.contains(document.activeElement)) navigateTo('library');
+    }).catch(error => console.warn('Translation hints could not be prepared.', error));
+  }
 }
 
 function setupNavigation() {
@@ -913,100 +744,6 @@ function renderConnectionState() {
   if (syncLabel) syncLabel.textContent = auth.isConnected ? 'Drive active' : 'Drive off';
 }
 
-function setupFlashcardControls() {
-  const audioBtn = document.getElementById('fc-audio-btn');
-  const speedBtn = document.getElementById('btn-toggle-speech-speed');
-  const wordEl = document.getElementById('fc-word');
-  const posEl = document.getElementById('fc-pos');
-  const defEl = document.getElementById('fc-def');
-  const exampleEl = document.getElementById('fc-example');
-  const indexEl = document.getElementById('fc-index');
-  const totalEl = document.getElementById('fc-total');
-
-  if (!wordEl) return;
-  wordsQueue = buildStudyQueue();
-  if (wordsQueue.length === 0) {
-    wordEl.textContent = 'No words yet';
-    if (posEl) posEl.textContent = 'Add vocabulary to begin';
-    if (defEl) defEl.textContent = '';
-    if (exampleEl) exampleEl.textContent = '';
-    if (indexEl) indexEl.textContent = '0';
-    if (totalEl) totalEl.textContent = '0';
-    ['btn-rate-again', 'btn-rate-hard', 'btn-rate-good', 'btn-rate-easy', 'fc-audio-btn', 'btn-toggle-speech-speed'].forEach(id => {
-      const button = document.getElementById(id);
-      if (button) button.disabled = true;
-    });
-    return;
-  }
-  currentIndex %= wordsQueue.length;
-  totalEl.textContent = wordsQueue.length;
-
-  function updateCard() {
-    const current = wordsQueue[currentIndex];
-    wordEl.textContent = current.word;
-    posEl.textContent = current.partOfSpeech;
-    defEl.textContent = `"${current.definition}"`;
-    exampleEl.textContent = `"${current.example}"`;
-    indexEl.textContent = currentIndex + 1;
-    const previews = getRatingPreviews(current);
-    for (const rating of ['again', 'hard', 'good', 'easy']) {
-      const label = document.querySelector(`#btn-rate-${rating} .rate-time`);
-      if (label) label.textContent = previews[rating].label;
-    }
-    const card = document.getElementById('flashcard-spec-card');
-    if (card) {
-      card.classList.remove('flashcard-pop');
-      requestAnimationFrame(() => card.classList.add('flashcard-pop'));
-    }
-  }
-
-  if (audioBtn) {
-    audioBtn.addEventListener('click', () => {
-      const word = wordsQueue[currentIndex];
-      speakWord(word.word, 'en-US', speechSpeed, word.audioUrl);
-    });
-  }
-
-  if (speedBtn) {
-    speedBtn.addEventListener('click', () => {
-      speechSpeed = speechSpeed === 1.0 ? 0.75 : 1.0;
-      speedBtn.textContent = `${speechSpeed}x`;
-      showToast(`Speech rate set to ${speechSpeed}x`);
-    });
-  }
-
-  const rateAction = (type) => {
-    if (!wordsQueue.length) return;
-    const current = wordsQueue[currentIndex];
-    if (current.id) recordExerciseResult({
-      wordId: current.id,
-      exerciseType: 'flashcard-self-rating',
-      correct: type !== 'Again',
-      hintsUsed: 1,
-      recallType: 'recognition',
-      producedUnaided: false,
-      learnerRating: type.toLowerCase()
-    });
-    rememberStudyStart();
-    goalCount = Number(driveSync.getSettings().reviewsToday || 0);
-    updateGoalDisplay();
-    queueSmartReminderRefresh();
-
-    showToast(`Rated “${current.word}” as ${type}. Review schedule updated.`);
-    currentIndex = (currentIndex + 1) % wordsQueue.length;
-    wordsQueue = buildStudyQueue();
-    updateCard();
-    updateDashboardDerivedState();
-  };
-
-  if (document.getElementById('btn-rate-again')) document.getElementById('btn-rate-again').addEventListener('click', () => rateAction('Again'));
-  if (document.getElementById('btn-rate-hard')) document.getElementById('btn-rate-hard').addEventListener('click', () => rateAction('Hard'));
-  if (document.getElementById('btn-rate-good')) document.getElementById('btn-rate-good').addEventListener('click', () => rateAction('Good'));
-  if (document.getElementById('btn-rate-easy')) document.getElementById('btn-rate-easy').addEventListener('click', () => rateAction('Easy'));
-
-  updateCard();
-}
-
 function setupMonthDropdown() {
   const btn = document.getElementById('month-dropdown-btn');
   const menu = document.getElementById('month-menu');
@@ -1037,9 +774,7 @@ function setupMonthDropdown() {
       driveSync.setActiveNotebook(notebook);
       label.textContent = notebook.replace(/ Vocabulary$/, '');
       menu.classList.remove('active');
-      wordsQueue = buildStudyQueue();
-      currentIndex = 0;
-      if (currentView === 'dashboard') navigateTo('dashboard');
+      if (['dashboard', 'library', 'stats'].includes(currentView)) navigateTo(currentView);
       showToast(`Active vocabulary month changed to “${notebook}”.`);
     });
   });
@@ -1049,34 +784,8 @@ function setupKeyboardShortcuts() {
   document.addEventListener('keydown', (e) => {
     if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) return;
 
-    if (e.key === ' ') {
-      if (!wordsQueue.length || currentView !== 'dashboard') return;
-      e.preventDefault();
-      const word = wordsQueue[currentIndex];
-      speakWord(word.word, 'en-US', speechSpeed, word.audioUrl);
-    } else if (e.key === '1') {
-      const btn = document.getElementById('btn-rate-again');
-      if (btn) btn.click();
-    } else if (e.key === '2') {
-      const btn = document.getElementById('btn-rate-hard');
-      if (btn) btn.click();
-    } else if (e.key === '3') {
-      const btn = document.getElementById('btn-rate-good');
-      if (btn) btn.click();
-    } else if (e.key === '4') {
-      const btn = document.getElementById('btn-rate-easy');
-      if (btn) btn.click();
-    } else if (e.key === 'Escape') {
+    if (e.key === 'Escape') {
       document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
     }
   });
 }
-
-// Recompute date-sensitive UI and alarms after midnight or returning to the app.
-let lastStudyDate = localDateKey();
-setInterval(() => {
-  if (localDateKey() === lastStudyDate) return;
-  lastStudyDate = localDateKey();
-  updateDashboardDerivedState();
-  queueSmartReminderRefresh();
-}, 30_000);

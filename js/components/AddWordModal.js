@@ -1,6 +1,7 @@
-import { driveSync } from '../services/driveSync.js?v=1602';
-import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary } from '../services/wordEntry.js?v=1602';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=1602';
+import { driveSync } from '../services/driveSync.js?v=18100';
+import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary } from '../services/wordEntry.js?v=18100';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18100';
+import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18100';
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
   <div class="modal-backdrop" id="add-word-modal">
@@ -32,6 +33,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
           </div>
           <p class="sense-helper">Select every meaning you want. KeepVocab groups them under one word card and tracks each meaning separately.</p>
           <div id="add-word-sense-list" class="sense-option-list" role="group" aria-label="Dictionary meanings"></div>
+          <button type="button" id="add-word-toggle-senses" class="text-action" aria-expanded="false" aria-controls="add-word-sense-list" hidden>Show all meanings</button>
         </div>
 
         <div id="add-word-editor" class="sense-editor">
@@ -39,8 +41,9 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
           <div class="sense-editor-grid">
             <label>Part of speech<input id="add-word-pos" type="text" placeholder="noun, verb, adjective…" autocomplete="off"></label>
             <label>Phonetic<input id="add-word-phonetic" type="text" placeholder="Optional pronunciation" autocomplete="off"></label>
-            <label class="wide">Definition<textarea id="add-word-definition" placeholder="Describe the exact intended meaning" required></textarea></label>
-            <label class="wide">Example sentence<textarea id="add-word-example" placeholder="A sentence that makes this meaning clear"></textarea></label>
+            <label class="wide">English definition<textarea id="add-word-definition" lang="en" placeholder="Describe the exact intended meaning" required></textarea></label>
+            <label class="wide" id="add-word-translation-field" hidden>Ukrainian translation<textarea id="add-word-translation" lang="uk" placeholder="Added automatically when available; you can also enter it manually"></textarea></label>
+            <label class="wide">English example<textarea id="add-word-example" lang="en" placeholder="A sentence that makes this meaning clear"></textarea></label>
           </div>
           <p id="add-word-form-status" class="form-message" role="status" aria-live="polite"></p>
         </div>
@@ -74,14 +77,16 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   document.body.insertAdjacentHTML('beforeend', ADD_WORD_MARKUP);
   let currentFetchedData = null;
   let activeCourseId = driveSync.getActiveCourseId();
+  let activeTranslationLanguage = getTranslationLanguage();
   let generation = 0;
   const beginOperation = () => {
     const revision = generation;
     const courseId = activeCourseId;
+    const translationLanguage = activeTranslationLanguage;
     return {
-      courseId,
-      isCurrent: () => revision === generation && courseId === driveSync.getActiveCourseId(),
-      lookup: term => fetchWordEntry(term, courseId),
+      courseId, translationLanguage,
+      isCurrent: () => revision === generation && courseId === driveSync.getActiveCourseId() && translationLanguage === getTranslationLanguage(),
+      lookup: term => fetchWordEntry(term, courseId, { translationLanguage }),
     };
   };
   const modal = document.getElementById('add-word-modal');
@@ -95,9 +100,12 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   const input = document.getElementById('add-word-input');
   const preview = document.getElementById('add-word-preview');
   const senseList = document.getElementById('add-word-sense-list');
+  const toggleSenses = document.getElementById('add-word-toggle-senses');
   const posInput = document.getElementById('add-word-pos');
   const phoneticInput = document.getElementById('add-word-phonetic');
   const definitionInput = document.getElementById('add-word-definition');
+  const translationInput = document.getElementById('add-word-translation');
+  const translationField = document.getElementById('add-word-translation-field');
   const exampleInput = document.getElementById('add-word-example');
   const formStatus = document.getElementById('add-word-form-status');
   const editorTitle = document.getElementById('meaning-editor-title');
@@ -122,6 +130,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   let senseDrafts = new Map();
   let selectedSenseIds = new Set();
   let focusedSenseId = null;
+  let showAllSenses = false;
   let bulkResults = [];
 
   showToast ||= message => { (bulkPanel.hidden ? formStatus : bulkStatus).textContent = message; };
@@ -174,10 +183,10 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   const openModal = () => {
     if (modal.classList.contains('active')) return;
     resetAsyncControls();
-    const lithuanian = driveSync.getActiveCourseId() === 'lithuanian';
     bulkTab.hidden = false;
-    input.placeholder = lithuanian ? 'Lithuanian word or phrase' : 'Enter a word';
-    input.lang = bulkInput.lang = lithuanian ? 'lt' : 'en';
+    input.placeholder = 'Enter an English word or phrase';
+    input.lang = bulkInput.lang = 'en';
+    translationField.hidden = !isUkrainianTranslationEnabled();
     btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
     editorSubtitle.textContent = 'Type a custom meaning or find dictionary meanings above';
     modal.classList.add('active');
@@ -196,7 +205,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   };
 
   const updateBulkSaveState = () => {
-    const complete = bulkResults.length > 0 && bulkResults.every((result, index) => {
+    const complete = bulkResults.length > 0 && bulkResults.every(result => {
       if (result.status === 'ready') return true;
       return Boolean(result.manualDefinition?.trim());
     });
@@ -245,13 +254,29 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         senses.forEach((sense, senseIndex) => {
           const option = document.createElement('option');
           option.value = String(senseIndex);
-          option.textContent = `${sense.partOfSpeech || 'word'} — ${sense.definition || 'Definition unavailable'}`;
+          option.textContent = `${sense.partOfSpeech || 'word'} — ${sense.definition || 'Definition unavailable'}${isUkrainianTranslationEnabled() && sense.translationLanguage === 'uk' && sense.translation ? ` · ${sense.translation}` : ''}`;
           select.appendChild(option);
         });
         select.value = String(result.selectedSenseIndex || 0);
         select.addEventListener('change', () => { result.selectedSenseIndex = Number(select.value); });
         label.appendChild(select);
-        row.appendChild(label);
+        const translationLabel = document.createElement('label');
+        translationLabel.textContent = 'Ukrainian translation';
+        translationLabel.hidden = !isUkrainianTranslationEnabled();
+        const translation = document.createElement('input');
+        translation.lang = 'uk';
+        const updateTranslation = () => {
+          const sense = senses[Number(select.value) || 0];
+          translation.value = sense.translationLanguage === 'uk' ? sense.translation || '' : '';
+        };
+        updateTranslation();
+        select.addEventListener('change', updateTranslation);
+        translation.addEventListener('input', () => {
+          senses[Number(select.value) || 0].translation = translation.value.trim();
+          senses[Number(select.value) || 0].translationLanguage = 'uk';
+        });
+        translationLabel.appendChild(translation);
+        row.append(label, translationLabel);
       } else {
         const note = document.createElement('p');
         note.textContent = result.error || 'No dictionary meaning was found.';
@@ -264,7 +289,15 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         definition.value = result.manualDefinition || '';
         definition.addEventListener('input', () => { result.manualDefinition = definition.value; updateBulkSaveState(); });
         label.appendChild(definition);
-        row.append(note, label);
+        const translationLabel = document.createElement('label');
+        translationLabel.textContent = 'Ukrainian translation (optional)';
+        translationLabel.hidden = !isUkrainianTranslationEnabled();
+        const translation = document.createElement('input');
+        translation.lang = 'uk';
+        translation.value = result.manualTranslation || '';
+        translation.addEventListener('input', () => { result.manualTranslation = translation.value.trim(); });
+        translationLabel.appendChild(translation);
+        row.append(note, label, translationLabel);
       }
       bulkResultsList.appendChild(row);
     });
@@ -275,6 +308,9 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     senseDrafts = new Map();
     selectedSenseIds = new Set();
     focusedSenseId = null;
+    showAllSenses = false;
+    toggleSenses.hidden = true;
+    toggleSenses.setAttribute('aria-expanded', 'false');
     senseList.innerHTML = '';
     editorTitle.textContent = 'Meaning to save';
     editorSubtitle.textContent = 'Type a custom meaning or find dictionary meanings above';
@@ -290,6 +326,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     posInput.value = '';
     phoneticInput.value = '';
     definitionInput.value = '';
+    translationInput.value = '';
     exampleInput.value = '';
     formStatus.textContent = '';
     bulkInput.value = '';
@@ -306,8 +343,10 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   const closeModal = () => { resetModal(); onClose(); };
   const syncCourse = () => {
     const nextCourseId = driveSync.getActiveCourseId();
-    if (nextCourseId === activeCourseId) return;
+    const nextTranslationLanguage = getTranslationLanguage();
+    if (nextCourseId === activeCourseId && nextTranslationLanguage === activeTranslationLanguage) return;
     activeCourseId = nextCourseId;
+    activeTranslationLanguage = nextTranslationLanguage;
     const wasOpen = modal.classList.contains('active');
     resetModal();
     if (wasOpen) openModal();
@@ -316,6 +355,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     if (event.key === 'keepvocab_settings') syncCourse();
   });
   window.addEventListener('keepvocab:course-changed', syncCourse);
+  window.addEventListener('keepvocab:data-changed', syncCourse);
   window.addEventListener('focus', syncCourse);
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && modal.classList.contains('active')) {
@@ -331,6 +371,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       phonetic: phoneticInput.value.trim(),
       partOfSpeech: posInput.value.trim() || 'unknown',
       definition: definitionInput.value.trim(),
+      translation: translationInput.value.trim(),
       example: exampleInput.value.trim()
     });
   };
@@ -341,6 +382,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     posInput.value = draft.partOfSpeech || 'unknown';
     phoneticInput.value = draft.phonetic || currentFetchedData?.phonetic || '';
     definitionInput.value = draft.definition || '';
+    translationInput.value = draft.translation || '';
     exampleInput.value = draft.example || '';
     const position = [...senseDrafts.keys()].indexOf(focusedSenseId) + 1;
     editorTitle.textContent = `Edit meaning ${position}`;
@@ -352,8 +394,12 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     const senses = [...senseDrafts.values()];
     document.getElementById('sense-count-label').textContent = `${selectedSenseIds.size} of ${senses.length} selected`;
     btnSave.innerHTML = `<i class="fa-solid fa-bookmark"></i> Save ${selectedSenseIds.size} meaning${selectedSenseIds.size === 1 ? '' : 's'}`;
+    toggleSenses.hidden = senses.length <= 5;
+    toggleSenses.setAttribute('aria-expanded', String(showAllSenses));
+    toggleSenses.textContent = showAllSenses ? 'Show fewer meanings' : `Show all ${senses.length} meanings`;
     senses.forEach((sense, index) => {
       const selected = selectedSenseIds.has(sense.id);
+      if (!showAllSenses && index >= 5 && !selected) return;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = `sense-option${selected ? ' selected' : ''}${focusedSenseId === sense.id ? ' focused' : ''}`;
@@ -370,6 +416,12 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       const definition = document.createElement('strong');
       definition.textContent = sense.definition;
       body.append(meta, definition);
+      if (isUkrainianTranslationEnabled() && sense.translationLanguage === 'uk' && sense.translation) {
+        const translation = document.createElement('small');
+        translation.lang = 'uk';
+        translation.textContent = sense.translation;
+        body.appendChild(translation);
+      }
       if (sense.example) {
         const example = document.createElement('small');
         example.textContent = `“${sense.example}”`;
@@ -390,6 +442,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   };
 
   const renderSenses = data => {
+    showAllSenses = false;
     const senses = Array.isArray(data.senses) && data.senses.length ? data.senses : [data];
     senseDrafts = new Map(senses.map((sense, index) => {
       const id = String(sense.id || index);
@@ -403,6 +456,11 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   };
 
   btnOpen?.addEventListener('click', openModal);
+  toggleSenses.addEventListener('click', () => {
+    persistFocusedDraft();
+    showAllSenses = !showAllSenses;
+    renderSenseOptions();
+  });
   singleTab.addEventListener('click', () => setAddMode('single'));
   bulkTab.addEventListener('click', () => setAddMode('bulk'));
   btnClose.addEventListener('click', closeModal);
@@ -498,7 +556,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     }
   });
   bulkSave.addEventListener('click', async () => {
-    const items = bulkResults.map((result, index) => {
+    const items = bulkResults.map(result => {
       const senseIndex = result.selectedSenseIndex || 0;
       const manualDefinition = result.manualDefinition || '';
       return bulkResultToWord(result, senseIndex, manualDefinition);
@@ -507,14 +565,14 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       bulkStatus.textContent = 'Every word needs an intended meaning before the list can be saved.';
       return;
     }
-    const { isCurrent, courseId } = beginOperation();
+    const { isCurrent, courseId, translationLanguage } = beginOperation();
     const originalButton = bulkSave.innerHTML;
     bulkSave.disabled = true;
     const imageStartedAt = Date.now();
     updateBulkProgress({ completed: 0, total: items.length, phase: 'Choosing images', startedAt: imageStartedAt });
     try {
       const enrichedItems = await prepareWordsForLibrary(items, {
-        courseId, existingWords: driveSync.getWords(),
+        courseId, translationLanguage, existingWords: driveSync.getWords(),
         onProgress: ({ completed, total, word }) => {
           if (!isCurrent()) return;
           bulkStatus.textContent = `Choosing image ${completed} of ${total}: ${word}`;
@@ -546,6 +604,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     posInput.value = '';
     phoneticInput.value = '';
     definitionInput.value = '';
+    translationInput.value = '';
     exampleInput.value = '';
     formStatus.textContent = 'The spelling changed. Fetch meanings again, or enter the intended meaning manually.';
   });
@@ -555,25 +614,21 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     const w = input.value.trim();
     if (!w) { input.focus(); return; }
 
-    const { isCurrent, lookup, courseId } = beginOperation();
+    const { isCurrent, lookup, courseId, translationLanguage } = beginOperation();
     btnFetch.disabled = true;
     btnAiFetch.disabled = true;
     btnFetch.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${useAi ? 'Asking Gemini…' : 'Finding meanings…'}`;
 
     try {
-      const lithuanian = driveSync.getActiveCourseId() === 'lithuanian';
-      const data = await (useAi ? fetchAiWordEntry(w, courseId) : lookup(w));
+      const data = await (useAi ? fetchAiWordEntry(w, courseId, { translationLanguage }) : lookup(w));
       if (!isCurrent()) return;
       currentFetchedData = data;
       input.value = currentFetchedData.word;
       document.getElementById('prev-w-title').textContent = currentFetchedData.word;
       document.getElementById('prev-w-phonetic').textContent = currentFetchedData.phonetic;
       renderSenses(currentFetchedData);
-      if (lithuanian || currentFetchedData.aiGenerated) formStatus.textContent = currentFetchedData.aiGenerated
-        ? 'AI suggestion — review the meaning before saving.'
-        : currentFetchedData.aiEnriched
-          ? 'Definition from Wiktionary; example and forms are AI-enriched. Review before saving.'
-          : 'Definition from Wiktionary. Review the meaning and add an example if you want.';
+      if (currentFetchedData.aiGenerated) formStatus.textContent = isUkrainianTranslationEnabled() ? 'AI suggestion — review the English meaning and Ukrainian translation before saving.' : 'AI suggestion — review the meaning before saving.';
+      if (isUkrainianTranslationEnabled() && currentFetchedData.senses.some(sense => sense.translationLanguage !== 'uk')) formStatus.textContent = 'Some Ukrainian translations are unavailable. Enter them manually or save the English meaning and add a translation later.';
       if (currentFetchedData.correctedFrom) {
         formStatus.textContent = `Spelling corrected from “${currentFetchedData.correctedFrom}” to “${currentFetchedData.word}”. Review the meaning before saving.`;
       }
@@ -604,11 +659,12 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       phonetic: phoneticInput.value.trim(),
       partOfSpeech: posInput.value.trim() || 'unknown',
       definition: definitionInput.value.trim(),
-      example: exampleInput.value.trim()
-      ,lemma: wordText
-      ,translation: definitionInput.value.trim()
-      ,acceptedForms: [wordText]
-      ,grammaticalTags: []
+      translation: translationInput.value.trim(),
+      translationLanguage: getTranslationLanguage(),
+      example: exampleInput.value.trim(),
+      lemma: wordText,
+      acceptedForms: [wordText],
+      grammaticalTags: []
     }];
 
     if (items.some(item => !item.definition)) {
@@ -617,12 +673,12 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       return;
     }
 
-    const { isCurrent, courseId } = beginOperation();
+    const { isCurrent, courseId, translationLanguage } = beginOperation();
     const originalButton = btnSave.innerHTML;
     btnSave.disabled = true;
     try {
       const enrichedItems = await prepareWordsForLibrary(items, {
-        courseId, existingWords: driveSync.getWords(),
+        courseId, translationLanguage, existingWords: driveSync.getWords(),
         onProgress: ({ completed, total }) => {
           if (!isCurrent()) return;
           formStatus.textContent = `Choosing image ${completed} of ${total}…`;

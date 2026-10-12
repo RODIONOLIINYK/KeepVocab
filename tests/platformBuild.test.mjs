@@ -88,13 +88,11 @@ test('both add-word surfaces share the full composer and image pipeline', () => 
   assert.match(composer, /prepareWordsForLibrary\(items/);
   assert.match(composer, /existingWords: driveSync\.getWords\(\)/);
   assert.match(composer, /driveSync\.addWords\(enrichedItems\)/);
-  const lesson = readFileSync(resolve(projectRoot, 'js/components/LessonMode.js'), 'utf8');
-  assert.match(lesson, /prepareWordsForLibrary\(records/);
 });
 
 test('the shared composer follows the active course and ignores stale work', () => {
   const composer = readFileSync(resolve(projectRoot, 'js/components/AddWordModal.js'), 'utf8');
-  assert.match(composer, /fetchWordEntry\(term, courseId\)/);
+  assert.match(composer, /fetchWordEntry\(term, courseId/);
   assert.match(composer, /driveSync\.getActiveCourseId\(\)/);
   assert.match(composer, /event\.key === 'keepvocab_settings'/);
   assert.match(composer, /revision === generation && courseId === driveSync\.getActiveCourseId\(\)/);
@@ -108,17 +106,10 @@ test('the resizable app header uses non-wrapping badges, readable controls, and 
   assert.match(styles, /\.header-nav\s*\{[^}]*grid-template-columns:\s*auto minmax\(0, 1fr\) auto/);
   assert.match(styles, /@media \(min-width:\s*721px\) and \(max-width:\s*1069px\)[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\)/);
   assert.match(styles, /\.nav-link-item \{ min-width:0; flex:1 1 0; justify-content:center/);
-  assert.match(styles, /@media\(min-width:1440px\)\{body\[data-course-id="lithuanian"\] \.nav-links\{width:min\(100%,clamp\(640px,44vw,680px\)\)\}\}/);
-  assert.match(styles, /body\[data-course-id="english"\] \.nav-links\{width:min\(100%,560px\)\}/);
   assert.match(styles, /@media \(max-width:\s*720px\)[\s\S]*\.nav-link-item\s*\{[^}]*font-size:\s*\.62rem/);
   assert.match(html, /class="badge-detail"> day streak/);
   assert.match(html, /class="badge-detail">Daily goal/);
   assert.match(html, /aria-label="Primary navigation"/);
-});
-
-test('Lithuanian listening lessons keep the audio panel clear of the exercise badge', () => {
-  const styles = readFileSync(resolve(projectRoot, 'css/styles.css'), 'utf8');
-  assert.match(styles, /\.lesson-audio-panel\{[^}]*margin:18px auto 18px/);
 });
 
 test('Drive uses the built-in web client and the UI never asks users for OAuth configuration', () => {
@@ -135,8 +126,8 @@ test('the Library has one Edit action with Pexels-first search, public fallbacks
   const settings = readFileSync(resolve(projectRoot, 'js/components/SettingsView.js'), 'utf8');
   assert.doesNotMatch(library, /data-change-image|generate-memory-image|id="pexels-api-key"|id="settings-pexels-key"/);
   assert.match(settings, /id="settings-pexels-key"/);
-  assert.match(settings, /Pexels · recommended/);
-  assert.match(settings, /included in your private KeepVocab Google Drive backup/);
+  assert.match(settings, /option value="pexels"/);
+  assert.match(settings, /saveImageProviderSettings\(\{ provider, pexelsApiKey \}\)/);
   assert.match(library, /Openverse, Wikimedia Commons, and NASA Images/);
   assert.match(library, /searched in parallel/);
   assert.match(library, /id="custom-image-url"/);
@@ -184,10 +175,11 @@ test('mobile system chrome and the app header use one white top surface', () => 
 });
 
 test('the dashboard omits redundant Cloze and exposes Choose Word', () => {
-  const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
-  assert.doesNotMatch(html, /Cloze Quiz/);
-  assert.match(html, /id="btn-mode-choose"/);
-  assert.match(html, />Choose Word</);
+  const dashboard = readFileSync(resolve(projectRoot, 'js/components/DashboardView.js'), 'utf8');
+  assert.doesNotMatch(dashboard, /Cloze Quiz/);
+  assert.match(dashboard, /\['choose', 'fa-list-check', 'Choose Word'/);
+  assert.match(dashboard, /data-practice-view="\$\{view\}"/);
+  assert.match(dashboard, /go\(button\.dataset\.practiceView, onNavigate\)/);
 });
 
 test('the Speak route keeps the same responsive top navigation layout as every other route', () => {
@@ -224,7 +216,7 @@ test('exercise routes share an aligned header and content routes use the same ti
   assert.match(styles, /\.daily-answer-form\.is-recall:focus-within,[^}]*border-color:#4ade80;/);
   assert.match(daily, /exercise\.exerciseType === 'use-it' \? `<input id="daily-answer" type="text"/);
   assert.match(library, /class="content-title-row"/);
-  assert.match(styles, /\.settings-icon\.ai,[\s\S]*\.settings-icon\.routine\s*\{[^}]*primary-green/);
+  assert.match(styles, /\.settings-icon\s*\{[^}]*primary-green/);
 });
 
 test('streak protection uses device notifications without an internal notification center', () => {

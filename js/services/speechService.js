@@ -3,7 +3,7 @@
 
 let activeAudio = null;
 let activeBrowserSpeech = null;
-let lastSpeechErrorCode = '';
+let speechRequest = 0;
 
 function browserWindow() {
   return typeof window === 'undefined' ? null : window;
@@ -19,27 +19,6 @@ export function selectLocaleVoice(voices = [], lang = 'en-US') {
     || null;
 }
 
-export const selectEnglishVoice = selectLocaleVoice;
-export function getLastSpeechErrorCode() { return lastSpeechErrorCode; }
-
-export function describeSpeechError(code = lastSpeechErrorCode) {
-  if (code === 'invalid-gemini-key') return 'The saved Gemini key was rejected. Replace it in Audio settings.';
-  if (code === 'gemini-quota') return 'Gemini audio has reached its current quota. Check AI Studio billing or try again later.';
-  if (code === 'gemini-model-unavailable') return 'Gemini speech is not available for this key. Open Audio settings and test the connection.';
-  if (code === 'gemini-network') return 'Gemini audio could not be reached. Check the internet connection and try again.';
-  if (code === 'audio-playback-failed') return 'The audio was generated, but this device could not play it.';
-  return 'No compatible Lithuanian voice could start on this device. Open Audio settings to test the available options.';
-}
-
-function classifyGeminiSpeechError(error) {
-  const message = String(error?.message || '');
-  if (/api key not valid|unauthenticated|permission denied|\b40[13]\b/i.test(message)) return 'invalid-gemini-key';
-  if (/resource exhausted|quota|\b429\b/i.test(message)) return 'gemini-quota';
-  if (/model.+(?:not found|unsupported|unavailable)|\b404\b/i.test(message)) return 'gemini-model-unavailable';
-  if (/failed to fetch|network|timeout|timed out/i.test(message)) return 'gemini-network';
-  return 'gemini-unavailable';
-}
-
 function nativeSpeechPlugin(targetWindow) {
   const capacitor = targetWindow?.Capacitor;
   if (!capacitor || capacitor.getPlatform?.() !== 'android') return null;
@@ -49,6 +28,7 @@ function nativeSpeechPlugin(targetWindow) {
 }
 
 export function stopSpeech() {
+  speechRequest += 1;
   const targetWindow = browserWindow();
   if (activeAudio) {
     const current = activeAudio;
@@ -85,14 +65,9 @@ async function playRecordedAudio(url, rate) {
     activeAudio = { element: audio, finish };
     audio.onended = () => finish(true);
     audio.onerror = () => finish(false);
-    Promise.resolve(audio.play()).catch(() => finish(false));
+    try { Promise.resolve(audio.play()).catch(() => finish(false)); }
+    catch { finish(false); }
   });
-}
-
-export async function playAudioUrl(url, { rate = 1, revoke = false } = {}) {
-  const played = await playRecordedAudio(url, rate);
-  if (revoke && url) URL.revokeObjectURL?.(url);
-  return played;
 }
 
 async function speakNatively(text, lang, rate) {
@@ -114,6 +89,7 @@ function waitForVoices(synthesizer, timeoutMs = 2400) {
     let settled = false;
     const startedAt = Date.now();
     let pollTimer = null;
+    let timeoutTimer = null;
     const finish = () => {
       if (settled) return;
       const current = synthesizer.getVoices?.() || [];
@@ -121,11 +97,12 @@ function waitForVoices(synthesizer, timeoutMs = 2400) {
       settled = true;
       synthesizer.removeEventListener?.('voiceschanged', finish);
       if (pollTimer) clearInterval(pollTimer);
+      if (timeoutTimer) clearTimeout(timeoutTimer);
       resolve(current);
     };
     synthesizer.addEventListener?.('voiceschanged', finish, { once: true });
     pollTimer = setInterval(finish, 120);
-    setTimeout(() => {
+    timeoutTimer = setTimeout(() => {
       if (settled) return;
       settled = true;
       synthesizer.removeEventListener?.('voiceschanged', finish);
@@ -135,37 +112,13 @@ function waitForVoices(synthesizer, timeoutMs = 2400) {
   });
 }
 
-export async function getSpeechAvailability(locale = 'en-US') {
-  const targetWindow = browserWindow();
-  const nativeAvailable = Boolean(nativeSpeechPlugin(targetWindow)?.speak);
-  const voices = targetWindow?.speechSynthesis ? await waitForVoices(targetWindow.speechSynthesis) : [];
-  const voice = selectLocaleVoice(voices, locale);
-  const languageTagFallback = Boolean(targetWindow?.speechSynthesis && typeof targetWindow.SpeechSynthesisUtterance === 'function' && voices.length === 0);
-  let geminiConfigured = false;
-  if (String(locale).toLowerCase().startsWith('lt')) {
-    try {
-      const { getGeminiSettings } = await import('./geminiSettings.js?v=1602');
-      geminiConfigured = Boolean(getGeminiSettings().apiKey);
-    } catch { /* settings are optional */ }
-  }
-  return {
-    available: Boolean(voice || nativeAvailable || geminiConfigured || languageTagFallback),
-    source: voice ? 'device' : nativeAvailable ? 'android' : geminiConfigured ? 'gemini' : languageTagFallback ? 'browser' : 'none',
-    voiceName: voice?.name || '',
-    voiceLocale: voice?.lang || '',
-    geminiConfigured
-  };
-}
-
-async function speakInBrowser(text, lang, rate) {
+async function speakInBrowser(text, lang, rate, request) {
   const targetWindow = browserWindow();
   if (!targetWindow?.speechSynthesis || typeof targetWindow.SpeechSynthesisUtterance !== 'function') return false;
   const voices = await waitForVoices(targetWindow.speechSynthesis);
+  if (request !== speechRequest) return false;
   const voice = selectLocaleVoice(voices, lang);
-  // If voices are explicitly listed, never fall through to a non-Lithuanian
-  // default. Some embedded browsers cannot enumerate system voices at all,
-  // but still honor the BCP 47 language tag when the utterance is spoken.
-  if (String(lang).toLowerCase().startsWith('lt') && !voice && voices.length) return false;
+  if (!voice && voices.length) return false;
   const utterance = new targetWindow.SpeechSynthesisUtterance(text);
   utterance.lang = lang;
   utterance.rate = rate;
@@ -184,7 +137,8 @@ async function speakInBrowser(text, lang, rate) {
     activeBrowserSpeech = { utterance, finish };
     utterance.onend = () => finish(true);
     utterance.onerror = () => finish(false);
-    targetWindow.speechSynthesis.speak(utterance);
+    try { targetWindow.speechSynthesis.speak(utterance); }
+    catch { finish(false); }
   });
 }
 
@@ -195,31 +149,12 @@ export async function speakWord(text, lang = 'en-US', rate = 0.9, audioUrl = '')
 export async function speakText(text, { locale = 'en-US', rate = 0.9, audioUrl = '' } = {}) {
   const cleanText = String(text || '').trim();
   if (!cleanText) return false;
-  lastSpeechErrorCode = '';
   stopSpeech();
+  const request = speechRequest;
 
-  if (audioUrl && await playRecordedAudio(audioUrl, rate)) return true;
-  if (String(locale).toLowerCase().startsWith('lt')) {
-    try {
-      const { getCachedOrGenerateTtsAudio } = await import('./geminiTts.js?v=1602');
-      const generatedUrl = await getCachedOrGenerateTtsAudio(cleanText, { locale });
-      if (generatedUrl && await playRecordedAudio(generatedUrl, rate)) {
-        URL.revokeObjectURL?.(generatedUrl);
-        return true;
-      }
-      if (generatedUrl) {
-        URL.revokeObjectURL?.(generatedUrl);
-        lastSpeechErrorCode = 'audio-playback-failed';
-      }
-    } catch (error) {
-      lastSpeechErrorCode = classifyGeminiSpeechError(error);
-      console.warn('[SpeechService] Gemini Lithuanian audio was unavailable; using device speech.', error);
-    }
-  }
-  if (await speakNatively(cleanText, locale, rate)) return true;
-  if (await speakInBrowser(cleanText, locale, rate)) return true;
-
-  if (!lastSpeechErrorCode) lastSpeechErrorCode = 'device-unavailable';
-  console.warn('[SpeechService] No speech synthesizer is available on this device.');
-  return false;
+  if (audioUrl && await playRecordedAudio(audioUrl, rate)) return request === speechRequest;
+  if (request !== speechRequest) return false;
+  if (await speakNatively(cleanText, locale, rate)) return request === speechRequest;
+  if (request !== speechRequest) return false;
+  return speakInBrowser(cleanText, locale, rate, request);
 }

@@ -1,8 +1,7 @@
-import { DEFAULT_GEMINI_LIVE_MODEL, GEMINI_KEY_STORAGE } from './geminiSettings.js?v=1602';
-import { base64ToBytes, bytesToBase64 } from '../utils/base64.js?v=1602';
+import { DEFAULT_GEMINI_LIVE_MODEL } from './geminiSettings.js?v=18100';
+import { base64ToBytes, bytesToBase64 } from '../utils/base64.js?v=18100';
 
 export const GEMINI_LIVE_MODEL = DEFAULT_GEMINI_LIVE_MODEL;
-export { GEMINI_KEY_STORAGE };
 export const BARGE_IN_LEVEL = 0.12;
 export const BARGE_IN_FRAMES = 2;
 
@@ -18,7 +17,7 @@ export async function parseGeminiLiveMessage(data) {
   throw new TypeError('Gemini Live returned an unsupported message format.');
 }
 
-export function buildGeminiLiveUrl(apiKey, model = GEMINI_LIVE_MODEL) {
+export function buildGeminiLiveUrl(apiKey) {
   if (!String(apiKey || '').trim()) throw new Error('A Gemini API key is required.');
   const endpoint = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
   return `${endpoint}?key=${encodeURIComponent(String(apiKey).trim())}`;
@@ -113,6 +112,7 @@ export class GeminiLiveSession extends EventTarget {
     this.loudInputFrames = 0;
     this.ignoreCurrentModelAudio = false;
     this.closedByUser = false;
+    this.lifecycleVersion = 0;
   }
 
   updateStatus(status) {
@@ -136,17 +136,24 @@ export class GeminiLiveSession extends EventTarget {
     return new Promise((resolve, reject) => {
       let settled = false;
       const fail = error => {
-        if (!settled) {
-          settled = true;
-          reject(error);
-        }
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timeout);
+        reject(error);
       };
-      const timeout = window.setTimeout(() => fail(new Error('Gemini Live took too long to connect.')), 15000);
+      const timeout = window.setTimeout(() => {
+        fail(new Error('Gemini Live took too long to connect.'));
+        if (socket.readyState < 2) socket.close(1000, 'Connection timed out');
+      }, 15000);
 
-      socket.addEventListener('open', () => socket.send(JSON.stringify(buildGeminiSetupMessage(instruction, model))));
+      socket.addEventListener('open', () => {
+        if (this.closedByUser || this.socket !== socket) return;
+        socket.send(JSON.stringify(buildGeminiSetupMessage(instruction, model)));
+      });
       socket.addEventListener('message', async event => {
         try {
           const message = await parseGeminiLiveMessage(event.data);
+          if (this.closedByUser || this.socket !== socket) return;
           if (message.setupComplete && !settled) {
             settled = true;
             window.clearTimeout(timeout);
@@ -155,34 +162,50 @@ export class GeminiLiveSession extends EventTarget {
           }
           this.handleServerMessage(message);
         } catch (error) {
-          this.dispatchEvent(eventDetail('error', error));
-        }
-      });
-      socket.addEventListener('error', () => fail(new Error('Gemini Live could not connect. Check the key and your network.')));
-      socket.addEventListener('close', event => {
-        window.clearTimeout(timeout);
-        if (!this.closedByUser && event.code !== 1000) {
-          const error = new Error(`Gemini Live disconnected${event.reason ? `: ${event.reason}` : '.'}`);
+          if (this.closedByUser || this.socket !== socket) return;
           fail(error);
           this.dispatchEvent(eventDetail('error', error));
         }
+      });
+      socket.addEventListener('error', () => {
+        const error = new Error('Gemini Live could not connect. Check the key and your network.');
+        fail(error);
+        if (!this.closedByUser && this.socket === socket) this.dispatchEvent(eventDetail('error', error));
+      });
+      socket.addEventListener('close', event => {
+        window.clearTimeout(timeout);
+        const error = new Error(this.closedByUser ? 'The live lesson was cancelled.'
+          : `Gemini Live disconnected${event.reason ? `: ${event.reason}` : '.'}`);
+        fail(error);
+        if (this.socket !== socket) return;
+        if (!this.closedByUser && event.code !== 1000) this.dispatchEvent(eventDetail('error', error));
         this.updateStatus('closed');
+        void this.disconnect().catch(() => {});
       });
     });
   }
 
   async startMicrophone() {
     if (!navigator.mediaDevices?.getUserMedia) throw new Error('This browser does not support microphone access.');
+    const lifecycle = this.lifecycleVersion;
+    let stream;
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
       });
     } catch (error) {
       throw microphoneAccessError(error);
     }
+    if (lifecycle !== this.lifecycleVersion) {
+      for (const track of stream.getTracks()) track.stop();
+      return false;
+    }
+    this.stream = stream;
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) throw new Error('This browser does not support live audio recording.');
     this.inputContext = new AudioContextClass();
     await this.inputContext.resume();
+    if (lifecycle !== this.lifecycleVersion) return false;
     this.inputSource = this.inputContext.createMediaStreamSource(this.stream);
     this.processor = this.inputContext.createScriptProcessor(4096, 1, 1);
     this.processor.onaudioprocess = event => {
@@ -204,6 +227,7 @@ export class GeminiLiveSession extends EventTarget {
     this.inputSource.connect(this.processor);
     this.processor.connect(this.inputContext.destination);
     this.updateStatus('listening');
+    return true;
   }
 
   setMuted(muted) {
@@ -267,7 +291,9 @@ export class GeminiLiveSession extends EventTarget {
       for (const part of content.modelTurn?.parts || []) {
         if (!part.inlineData?.data) continue;
         const rateMatch = String(part.inlineData.mimeType || '').match(/rate=(\d+)/);
-        this.playAudio(part.inlineData.data, Number(rateMatch?.[1] || 24000));
+        void this.playAudio(part.inlineData.data, Number(rateMatch?.[1] || 24000)).catch(error => {
+          if (!this.closedByUser) this.dispatchEvent(eventDetail('error', error));
+        });
       }
     }
     if (content.turnComplete) {
@@ -302,21 +328,24 @@ export class GeminiLiveSession extends EventTarget {
       source.start(startAt);
       this.nextAudioTime = startAt + buffer.duration;
     } finally {
-      this.pendingAudioChunks -= 1;
+      this.pendingAudioChunks = Math.max(0, this.pendingAudioChunks - 1);
       this.finishOutputTurnIfReady();
     }
   }
 
   async disconnect() {
     this.closedByUser = true;
+    this.lifecycleVersion += 1;
+    this.pendingTurnComplete = false;
     this.cancelOutputAudio();
+    const socket = this.socket;
+    this.socket = null;
+    if (socket?.readyState < 2) socket.close(1000, 'Lesson ended');
     this.processor?.disconnect();
     this.inputSource?.disconnect();
     for (const track of this.stream?.getTracks?.() || []) track.stop();
     if (this.inputContext && this.inputContext.state !== 'closed') await this.inputContext.close();
     if (this.outputContext && this.outputContext.state !== 'closed') await this.outputContext.close();
-    if (this.socket?.readyState === WebSocket.OPEN) this.socket.close(1000, 'Lesson ended');
-    this.socket = null;
     this.stream = null;
     this.processor = null;
     this.inputSource = null;
@@ -324,7 +353,6 @@ export class GeminiLiveSession extends EventTarget {
     this.outputContext = null;
     this.sessionStatus = 'closed';
     this.pendingAudioChunks = 0;
-    this.pendingTurnComplete = false;
     this.ignoreCurrentModelAudio = false;
   }
 }

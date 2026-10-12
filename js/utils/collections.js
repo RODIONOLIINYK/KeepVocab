@@ -9,7 +9,7 @@ export function shuffleItems(items, random = Math.random) {
 
 export function shuffleSentenceTokens(tokens, answer, random = Math.random) {
   const result = shuffleItems(tokens, random);
-  const normalize = text => String(text).toLocaleLowerCase('lt-LT').match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu)?.join(' ') || '';
+  const normalize = text => String(text).toLocaleLowerCase('en-US').match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu)?.join(' ') || '';
   // Randomness can return the answer order. Swap two distinct tiles in that case.
   if (normalize(result.join(' ')) === normalize(answer)) {
     const different = result.findIndex(token => normalize(token) !== normalize(result[0]));

@@ -1,7 +1,8 @@
 // Fast dictionary lookup with a maintained Wiktionary source, a short fallback, and offline cache.
 
-import { sanitizeExistingExamples } from './exampleSearch.js?v=1602';
-import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=1602';
+import { sanitizeExistingExamples } from './exampleSearch.js?v=18100';
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18100';
+import { getTranslationLanguage, normalizeTranslationLanguage } from './translationSettings.js?v=18100';
 
 const PRIMARY_API_BASE = 'https://freedictionaryapi.com/api/v1/entries/en/';
 const FALLBACK_API_BASE = 'https://api.datamuse.com/words';
@@ -11,6 +12,103 @@ const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const DEFAULT_TIMEOUT_MS = 3200;
 const PRIMARY_TIMEOUT_MS = 2200;
 const FALLBACK_TIMEOUT_MS = 1600;
+const TRANSLATION_API_BASE = 'https://api.mymemory.translated.net/get';
+const TRANSLATION_CACHE_KEY = 'keepvocab_ukrainian_translation_cache_v1';
+const TRANSLATION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+export const TRANSLATION_LANGUAGE = 'uk';
+
+// Do not relabel an echoed English definition as a Ukrainian translation.
+export function hasUkrainianTranslation(value) {
+  return typeof value === 'string' && /[\u0400-\u04ff]/u.test(value);
+}
+
+export async function translateEnglishText(text, options = {}) {
+  const source = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!source) return '';
+  const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
+  const cache = readObjectCache(storage, TRANSLATION_CACHE_KEY);
+  const cached = cache[source];
+  if (!options.force && cacheEntryIsFresh(cached, TRANSLATION_TTL_MS) && hasUkrainianTranslation(cached.data)) return cached.data;
+  const fetchImpl = options.fetchImpl || globalThis.fetch?.bind(globalThis);
+  try {
+    if (!fetchImpl) throw new Error('Translation is unavailable.');
+    // MyMemory accepts at most 500 UTF-8 bytes per segment. Keep long definitions intact.
+    const chunks = [];
+    let chunk = '';
+    for (const token of source.match(/\S+\s*/g) || []) {
+      if (new TextEncoder().encode(token.trim()).length > 500) throw new Error('Translation segment is too long.');
+      if (chunk && new TextEncoder().encode(chunk + token).length > 500) {
+        chunks.push(chunk.trim());
+        chunk = '';
+      }
+      chunk += token;
+    }
+    if (chunk) chunks.push(chunk.trim());
+    const translations = [];
+    for (const segment of chunks) {
+      const url = new URL(TRANSLATION_API_BASE);
+      url.searchParams.set('q', segment);
+      url.searchParams.set('langpair', 'en|uk');
+      const payload = await requestJson(url.toString(), fetchImpl, options.translationTimeoutMs || options.timeoutMs || DEFAULT_TIMEOUT_MS, options.signal);
+      const translation = String(payload?.responseData?.translatedText || '').trim();
+      if (Number(payload?.responseStatus) !== 200 || !hasUkrainianTranslation(translation)) throw new Error('No Ukrainian translation was returned.');
+      translations.push(translation);
+    }
+    const translated = translations.join(' ');
+    // Other senses may have finished while this request was in flight.
+    const updatedCache = readObjectCache(storage, TRANSLATION_CACHE_KEY);
+    updatedCache[source] = { cachedAt: Date.now(), data: translated };
+    writeRecentObjectCache(storage, TRANSLATION_CACHE_KEY, updatedCache, 500);
+    return translated;
+  } catch (error) {
+    if (hasUkrainianTranslation(cached?.data)) return cached.data;
+    throw error;
+  }
+}
+
+export async function withUkrainianTranslations(entry, options = {}) {
+  const translate = options.translate || translateEnglishText;
+  const senses = (Array.isArray(entry.senses) ? entry.senses : [entry]).map(sense => ({
+    ...sense,
+    translation: hasUkrainianTranslation(sense.translation) ? sense.translation.trim() : '',
+    translationLanguage: hasUkrainianTranslation(sense.translation) ? TRANSLATION_LANGUAGE : 'en'
+  }));
+  let nextIndex = 0;
+  let unavailable = false;
+  const pending = new Map();
+  // Bound concurrent requests and stop starting more when the provider is unavailable.
+  await Promise.all(Array.from({ length: Math.min(3, senses.length) }, async () => {
+    while (!unavailable && nextIndex < senses.length) {
+      const sense = senses[nextIndex++];
+      if (sense.translation) continue;
+      try {
+        if (!pending.has(sense.definition)) pending.set(sense.definition, Promise.resolve().then(() => translate(sense.definition, options)));
+        const translated = await pending.get(sense.definition);
+        if (hasUkrainianTranslation(translated)) {
+          sense.translation = translated.trim();
+          sense.translationLanguage = TRANSLATION_LANGUAGE;
+        }
+      }
+      catch { unavailable = true; }
+    }
+  }));
+  return { ...entry, senses, ...senses[0] };
+}
+
+export function entryTranslationLanguage(options = {}) {
+  return normalizeTranslationLanguage(options.translationLanguage ?? getTranslationLanguage(options.storage));
+}
+
+export async function withEntryTranslations(entry, options = {}) {
+  if (entryTranslationLanguage(options) === TRANSLATION_LANGUAGE) return withUkrainianTranslations(entry, options);
+  const senses = (Array.isArray(entry.senses) ? entry.senses : [entry]).map(sense => ({
+    ...sense,
+    translation: hasUkrainianTranslation(sense.translation) ? sense.translation.trim() : sense.definition || '',
+    translationLanguage: hasUkrainianTranslation(sense.translation) ? TRANSLATION_LANGUAGE : 'en'
+  }));
+  return { ...entry, senses, ...senses[0] };
+}
 
 export class DictionaryApiError extends Error {
   constructor(message, code, cause) {
@@ -129,8 +227,11 @@ function parseDatamuse(payload, cleanWord) {
   return finishResult(cleanWord, '', '', distinctSenses(senses, cleanWord), 'datamuse');
 }
 
-async function requestJson(url, fetchImpl, timeoutMs) {
+async function requestJson(url, fetchImpl, timeoutMs, signal) {
   const controller = new AbortController();
+  const abort = () => controller.abort();
+  if (signal?.aborted) controller.abort();
+  else signal?.addEventListener('abort', abort, { once: true });
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetchImpl(url, {
@@ -142,6 +243,7 @@ async function requestJson(url, fetchImpl, timeoutMs) {
     return await response.json();
   } finally {
     clearTimeout(timeoutId);
+    signal?.removeEventListener('abort', abort);
   }
 }
 

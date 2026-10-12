@@ -1,17 +1,18 @@
-import { getActivePracticeWords, getScheduledPracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=1602';
-import { driveSync } from '../services/driveSync.js?v=1602';
-import { buildScheduledPracticeSession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=1602';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
-import { recordSessionCompletion } from '../services/learningStats.js?v=1602';
-import { speakWord } from '../services/speechService.js?v=1602';
-import { playInteractionSound } from '../services/interactionSound.js?v=1602';
-import { buildWordChoices } from '../services/wordChoices.js?v=1602';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18100';
+import { getActivePracticeWords, getScheduledPracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18100';
+import { driveSync } from '../services/driveSync.js?v=18100';
+import { buildScheduledPracticeSession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=18100';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18100';
+import { recordSessionCompletion } from '../services/learningStats.js?v=18100';
+import { speakWord } from '../services/speechService.js?v=18100';
+import { playInteractionSound } from '../services/interactionSound.js?v=18100';
+import { buildWordChoices } from '../services/wordChoices.js?v=18100';
 import { escapeHtml } from '../utils/html.js';
-import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=1602';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=1602';
-import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=1602';
-import { mountUseItExercise } from './UseItExercise.js?v=1602';
-import { renderPracticeHeader } from './PracticeElements.js?v=1602';
+import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=18100';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18100';
+import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18100';
+import { mountUseItExercise } from './UseItExercise.js?v=18100';
+import { renderPracticeHeader } from './PracticeElements.js?v=18100';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {
@@ -172,7 +173,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
         <div class="${visual ? 'visual-prompt' : 'practice-prompt typed-review-prompt'}">
           <div class="practice-icon"><i class="fa-solid fa-${visual ? 'images' : 'keyboard'}" aria-hidden="true"></i></div>
           <p>${visual ? 'Choose the word that matches this image.' : 'Type the word that matches this definition.'}</p>
-          ${visual ? `<figure class="practice-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>` : `<blockquote>${escapeHtml(word.definition)}</blockquote><span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>`}
+          ${visual ? `<figure class="practice-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>` : `<blockquote>${escapeHtml(word.definition)}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}<span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>`}
           ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><strong><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'}" aria-hidden="true"></i> ${correct ? 'Correct' : 'Answer'}: ${escapeHtml(word.word)}</strong><span>${escapeHtml(word.example || word.definition)}</span></div><div class="inline-actions"><button class="status-pill offline" id="practice-hear-answer"><i class="fa-solid fa-volume-high"></i> Hear answer</button><button class="btn-green-solid" id="daily-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button></div>`
             : visual ? `<div class="choice-grid">${optionsList.map(option => `<button class="choice-button" data-daily-choice="${escapeHtml(option.id)}"><span>${escapeHtml(option.word)}</span></button>`).join('')}</div>`
             : `<form class="practice-answer-form" id="daily-form"><input id="daily-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word" aria-label="Your answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
@@ -196,9 +197,9 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       render();
     });
     container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
-    container.querySelector('#practice-hear-answer')?.addEventListener('click', () => speakWord(word.word, driveSync.getActiveCourseId() === 'lithuanian' ? 'lt-LT' : 'en-US', 0.9, word.audioUrl));
+    container.querySelector('#practice-hear-answer')?.addEventListener('click', () => speakWord(word.word, 'en-US', 0.9, word.audioUrl));
     container.querySelector('#daily-listen')?.addEventListener('click', async () => {
-      const played = await speakWord(word.word, driveSync.getActiveCourseId() === 'lithuanian' ? 'lt-LT' : 'en-US', 0.86, word.audioUrl);
+      const played = await speakWord(word.word, 'en-US', 0.86, word.audioUrl);
       if (!played && queue[index] === exercise && !answered) {
         exercise.exerciseType = 'typed-recall';
         render();

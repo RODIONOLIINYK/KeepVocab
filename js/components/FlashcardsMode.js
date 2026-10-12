@@ -1,9 +1,10 @@
-import { driveSync } from '../services/driveSync.js?v=1602';
-import { speakWord } from '../services/speechService.js?v=1602';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=1602';
-import { getRatingPreviews } from '../services/srsEngine.js?v=1602';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18100';
+import { driveSync } from '../services/driveSync.js?v=18100';
+import { speakWord } from '../services/speechService.js?v=18100';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18100';
+import { getRatingPreviews } from '../services/srsEngine.js?v=18100';
 import { escapeHtml } from '../utils/html.js';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=1602';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18100';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function renderFlashcardsMode(container, onNavigate) {
@@ -27,7 +28,7 @@ export function renderFlashcardsMode(container, onNavigate) {
 
   function render() {
     if (completed) {
-      container.innerHTML = `<section class="mode-completion-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Flashcards complete</span><h1>${words.length} cards reviewed</h1><p>Your ratings were saved after every card, and difficult meanings will appear earlier next time.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="flashcards-again">Review another set</button><button class="status-pill offline" id="flashcards-home">Today</button></div></section>`;
+      container.innerHTML = `<section class="mode-completion-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Flashcards complete</span><h1>${words.length} card${words.length === 1 ? '' : 's'} reviewed</h1><p>Your ratings were saved after every card, and difficult meanings will appear earlier next time.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="flashcards-again">Review another set</button><button class="status-pill offline" id="flashcards-home">Today</button></div></section>`;
       container.querySelector('#flashcards-again').addEventListener('click', () => renderFlashcardsMode(container, onNavigate));
       container.querySelector('#flashcards-home').addEventListener('click', () => go('dashboard', onNavigate));
       return;
@@ -38,8 +39,8 @@ export function renderFlashcardsMode(container, onNavigate) {
     const showImageOnPrompt = Boolean(word.imageUrl && earlyStage);
     container.innerHTML = `<section class="flashcard-mode" aria-labelledby="flashcard-word"><header class="exercise-topbar"><button class="status-pill offline" id="flashcard-exit"><i class="fa-solid fa-arrow-left"></i> Exit</button><div class="exercise-progress"><span>${currentIndex + 1} of ${words.length}</span><i><b style="width:${Math.round((currentIndex + 1) / words.length * 100)}%"></b></i></div><button class="audio-btn-circle" id="flashcard-speak" aria-label="Hear ${escapeHtml(word.word)}"><i class="fa-solid fa-volume-high"></i></button></header>
       <button class="smart-flashcard ${revealed ? 'revealed' : ''}" id="flashcard-reveal" aria-expanded="${revealed}">
-        <div class="smart-flashcard-prompt">${showImageOnPrompt ? `<img src="${escapeHtml(word.imageUrl)}" alt="Visual cue for ${escapeHtml(word.word)}">` : ''}<span class="eyebrow">${showImageOnPrompt ? 'Image-supported review' : 'Recall the meaning'}</span><h1 id="flashcard-word">${escapeHtml(word.word)}</h1><p>${escapeHtml(word.phonetic || '')}</p><small><i class="fa-solid fa-hand-pointer"></i> Tap or press Space to reveal</small></div>
-        <div class="smart-flashcard-answer"><span class="eyebrow">${escapeHtml(word.partOfSpeech || 'word')}</span><h2>${escapeHtml(word.definition)}</h2>${word.example ? `<blockquote>“${escapeHtml(word.example)}”</blockquote>` : ''}${word.imageUrl && !showImageOnPrompt ? `<img src="${escapeHtml(word.imageUrl)}" alt="Memory image for ${escapeHtml(word.word)}">` : ''}</div>
+        <div class="smart-flashcard-prompt" aria-hidden="${revealed}">${showImageOnPrompt ? `<img src="${escapeHtml(word.imageUrl)}" alt="Visual cue for ${escapeHtml(word.word)}">` : ''}<span class="eyebrow">${showImageOnPrompt ? 'Image-supported review' : 'Recall the meaning'}</span><h1 id="flashcard-word">${escapeHtml(word.word)}</h1><p>${escapeHtml(word.phonetic || '')}</p><small><i class="fa-solid fa-hand-pointer"></i> Tap or press Space to reveal</small></div>
+        <div class="smart-flashcard-answer" aria-hidden="${!revealed}"><span class="eyebrow">${escapeHtml(word.partOfSpeech || 'word')}</span><h2>${escapeHtml(word.definition)}</h2>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}${word.example ? `<blockquote>“${escapeHtml(word.example)}”</blockquote>` : ''}${word.imageUrl && !showImageOnPrompt ? `<img src="${escapeHtml(word.imageUrl)}" alt="Memory image for ${escapeHtml(word.word)}">` : ''}</div>
       </button>
       ${revealed ? `<div class="flashcard-rating" aria-label="How well did you remember?"><p>How well did you remember?</p><div>${['again','hard','good','easy'].map(rating => `<button class="flashcard-grade ${rating}" data-flashcard-rating="${rating}"><strong>${rating[0].toUpperCase() + rating.slice(1)}</strong><span>${escapeHtml(previews[rating].label)}</span></button>`).join('')}</div></div>` : '<p class="flashcard-guidance">Think of the exact meaning before revealing the card.</p>'}
       <div class="flashcard-nav"><button class="status-pill offline" id="flashcard-prev" ${currentIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i> Previous</button><button class="status-pill offline" id="flashcard-next" ${currentIndex === words.length - 1 ? 'disabled' : ''}>Next <i class="fa-solid fa-chevron-right"></i></button></div></section>`;

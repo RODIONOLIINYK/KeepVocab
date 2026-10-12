@@ -66,7 +66,7 @@ test('retry missing meanings processes only failed rows and preserves manual tex
   const original = [
     { term: 'ready', status: 'ready', data: { word: 'ready', definition: 'Already present.' } },
     { term: 'recover', status: 'manual', error: 'Temporary failure' },
-    { term: 'still-missing', status: 'manual', error: 'Not found', manualDefinition: 'My draft.' }
+    { term: 'still-missing', status: 'manual', error: 'Not found', manualDefinition: 'My draft.', manualTranslation: 'Моя чернетка.' }
   ];
   const calls = [];
   const retried = await retryMissingBulkWords(original, async term => {
@@ -80,6 +80,7 @@ test('retry missing meanings processes only failed rows and preserves manual tex
   assert.equal(retried[1].status, 'ready');
   assert.equal(retried[2].status, 'manual');
   assert.equal(retried[2].manualDefinition, 'My draft.');
+  assert.equal(retried[2].manualTranslation, 'Моя чернетка.');
 });
 
 test('corrected spellings that resolve to the same word are merged', () => {
@@ -128,7 +129,7 @@ test('bulk sense conversion saves the explicitly selected meaning and pronunciat
       audioUrl: 'https://audio.example/bank.mp3',
       senses: [
         { partOfSpeech: 'noun', definition: 'A financial institution.' },
-        { partOfSpeech: 'noun', definition: 'Land beside a river.', example: 'They sat on the bank.' }
+        { partOfSpeech: 'noun', definition: 'Land beside a river.', translation: 'Берег річки.', example: 'They sat on the bank.' }
       ]
     }
   };
@@ -136,4 +137,16 @@ test('bulk sense conversion saves the explicitly selected meaning and pronunciat
   assert.equal(word.definition, 'Land beside a river.');
   assert.equal(word.audioUrl, 'https://audio.example/bank.mp3');
   assert.equal(word.example, 'They sat on the bank.');
+  assert.equal(word.translation, 'Берег річки.');
+  assert.equal(word.translationLanguage, 'uk');
+});
+
+test('manual bulk rows preserve a Ukrainian translation instead of copying the English definition', () => {
+  const word = bulkResultToWord({ term: 'bank', status: 'manual', manualTranslation: 'Берег річки.' }, 0, 'Land beside a river.');
+  assert.equal(word.definition, 'Land beside a river.');
+  assert.equal(word.translation, 'Берег річки.');
+  assert.equal(word.translationLanguage, 'uk');
+  const untranslated = bulkResultToWord({ term: 'bank', status: 'manual' }, 0, 'Land beside a river.');
+  assert.equal(untranslated.translation, 'Land beside a river.');
+  assert.equal(untranslated.translationLanguage, 'en');
 });
