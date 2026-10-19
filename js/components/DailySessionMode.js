@@ -1,18 +1,18 @@
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18100';
-import { getActivePracticeWords, getScheduledPracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18100';
-import { driveSync } from '../services/driveSync.js?v=18100';
-import { buildScheduledPracticeSession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=18100';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18100';
-import { recordSessionCompletion } from '../services/learningStats.js?v=18100';
-import { speakWord } from '../services/speechService.js?v=18100';
-import { playInteractionSound } from '../services/interactionSound.js?v=18100';
-import { buildWordChoices } from '../services/wordChoices.js?v=18100';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18200';
+import { getActivePracticeWords, getScheduledPracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18200';
+import { driveSync } from '../services/driveSync.js?v=18200';
+import { buildScheduledPracticeSession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=18200';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18200';
+import { recordSessionCompletion } from '../services/learningStats.js?v=18200';
+import { speakWord } from '../services/speechService.js?v=18200';
+import { playInteractionSound } from '../services/interactionSound.js?v=18200';
+import { buildWordChoices } from '../services/wordChoices.js?v=18200';
 import { escapeHtml } from '../utils/html.js';
-import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=18100';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18100';
-import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18100';
-import { mountUseItExercise } from './UseItExercise.js?v=18100';
-import { renderPracticeHeader } from './PracticeElements.js?v=18100';
+import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=18200';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18200';
+import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18200';
+import { mountUseItExercise } from './UseItExercise.js?v=18200';
+import { renderPracticeHeader } from './PracticeElements.js?v=18200';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {

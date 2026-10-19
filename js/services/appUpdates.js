@@ -1,4 +1,4 @@
-import { APP_VERSION } from './version.js?v=18100';
+import { APP_VERSION } from './version.js?v=18200';
 export { APP_VERSION };
 export const RELEASE_API = 'https://api.github.com/repos/RODIONOLIINYK/KeepVocab/releases/latest';
 const RELEASE_PREFIX = 'https://github.com/RODIONOLIINYK/KeepVocab/releases/download/';

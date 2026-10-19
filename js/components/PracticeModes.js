@@ -1,14 +1,14 @@
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18100';
-import { driveSync } from '../services/driveSync.js?v=18100';
-import { speakWord } from '../services/speechService.js?v=18100';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18100';
-import { playInteractionSound } from '../services/interactionSound.js?v=18100';
-import { selectPracticeWords } from '../services/dailySession.js?v=18100';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18200';
+import { driveSync } from '../services/driveSync.js?v=18200';
+import { speakWord } from '../services/speechService.js?v=18200';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18200';
+import { playInteractionSound } from '../services/interactionSound.js?v=18200';
+import { selectPracticeWords } from '../services/dailySession.js?v=18200';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18100';
-import { getActivePracticeWords } from '../services/wordSelection.js?v=18100';
-import { stableWordChoices } from '../services/wordChoices.js?v=18100';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18100';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18200';
+import { getActivePracticeWords } from '../services/wordSelection.js?v=18200';
+import { stableWordChoices } from '../services/wordChoices.js?v=18200';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18200';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function emptyMode(container, icon, title, detail, onNavigate) {

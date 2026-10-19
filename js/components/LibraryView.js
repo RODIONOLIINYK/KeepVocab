@@ -1,9 +1,9 @@
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18100';
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18100';
-import { speakWord } from '../services/speechService.js?v=18100';
-import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, generateVisualScenesWithGemini, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18100';
-import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18100';
-import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=18100';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18200';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18200';
+import { speakWord } from '../services/speechService.js?v=18200';
+import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, generateVisualScenesWithGemini, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18200';
+import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18200';
+import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=18200';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
 
 function readFileAsDataUrl(file) {

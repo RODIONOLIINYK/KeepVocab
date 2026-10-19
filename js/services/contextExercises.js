@@ -1,5 +1,5 @@
-import { generateGeminiContent } from './geminiSettings.js?v=18100';
-import { getTranslationLanguage, getTranslationName } from './translationSettings.js?v=18100';
+import { generateGeminiContent } from './geminiSettings.js?v=18200';
+import { getTranslationLanguage, getTranslationName } from './translationSettings.js?v=18200';
 
 export const CONTEXT_EXERCISE_CACHE = 'keepvocab_ai_context_cache_v3';
 

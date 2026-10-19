@@ -1,8 +1,8 @@
-import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18100';
-import { withEntryTranslations } from './dictionaryApi.js?v=18100';
-import { bulkResultToWord, attachImagesSequentially } from './bulkWords.js?v=18100';
-import { sanitizeExistingExamples } from './exampleSearch.js?v=18100';
-import { findRelevantImages, imageUrlsForWords } from './imageSearch.js?v=18100';
+import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18200';
+import { withEntryTranslations } from './dictionaryApi.js?v=18200';
+import { bulkResultToWord, attachImagesSequentially } from './bulkWords.js?v=18200';
+import { sanitizeExistingExamples } from './exampleSearch.js?v=18200';
+import { findRelevantImages, imageUrlsForWords } from './imageSearch.js?v=18200';
 
 export function fetchWordEntry(word, _courseId = 'english', options = {}) {
   return fetchEnglishEntry(word, options);

@@ -1,8 +1,8 @@
 import { streakFromActivity } from './studyActivity.js';
 // Adaptive spaced-repetition scheduler with backward-compatible Leitner fields.
 
-import { driveSync } from './driveSync.js?v=18100';
-import { normalizeWordPracticeStats } from './wordSelection.js?v=18100';
+import { driveSync } from './driveSync.js?v=18200';
+import { normalizeWordPracticeStats } from './wordSelection.js?v=18200';
 import { localDateKey } from '../utils/dates.js';
 
 export const SRS_VERSION = 3;

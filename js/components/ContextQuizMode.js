@@ -1,14 +1,14 @@
-import { driveSync } from '../services/driveSync.js?v=18100';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18100';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=18100';
-import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=18100';
+import { driveSync } from '../services/driveSync.js?v=18200';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18200';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18200';
+import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=18200';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18100';
-import { DEFAULT_SESSION_WORD_COUNT } from '../services/dailySession.js?v=18100';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18100';
-import { stableWordChoices } from '../services/wordChoices.js?v=18100';
-import { playInteractionSound } from '../services/interactionSound.js?v=18100';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice } from './PracticeElements.js?v=18100';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18200';
+import { DEFAULT_SESSION_WORD_COUNT } from '../services/dailySession.js?v=18200';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18200';
+import { stableWordChoices } from '../services/wordChoices.js?v=18200';
+import { playInteractionSound } from '../services/interactionSound.js?v=18200';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice } from './PracticeElements.js?v=18200';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function selectContextWords(words, limit = DEFAULT_SESSION_WORD_COUNT, now = new Date()) {
