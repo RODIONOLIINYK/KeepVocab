@@ -11,5 +11,6 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NativeSpeechPlugin.class);
         registerPlugin(ReminderSettingsPlugin.class);
         super.onCreate(savedInstanceState);
+        KeepVocabReminderReceiver.ensureReminderChannel(this);
     }
 }

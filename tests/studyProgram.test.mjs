@@ -78,3 +78,39 @@ test('automatic updates check silently without inserting an overlay, even when a
     assert.equal(checked, 1);
   } finally { delete globalThis.keepVocabDesktop; }
 });
+test('reminders default to enabled and survive desktop Drive syncs unless explicitly disabled', () => {
+  const service = new DriveSyncService(new MemoryStorage());
+  assert.equal(service.getSettings().reminderEnabled, true);
+  assert.equal(service.getSettings().reminderExplicitlyDisabled, false);
+
+  const androidSettings = {
+    updatedAt: '2026-09-04T10:00:00.000Z',
+    courseProfiles: {
+      english: {
+        updatedAt: '2026-09-04T10:00:00.000Z',
+        dailyGoal: 20,
+        reminderEnabled: true,
+        reviewStartMoments: ['2026-09-01T18:30:00.000Z']
+      }
+    }
+  };
+  const desktopSettings = {
+    updatedAt: '2026-09-05T12:00:00.000Z',
+    courseProfiles: {
+      english: {
+        updatedAt: '2026-09-05T12:00:00.000Z',
+        dailyGoal: 25,
+        reminderEnabled: false,
+        reviewStartMoments: ['2026-09-02T19:00:00.000Z']
+      }
+    }
+  };
+  const merged = mergeDriveSettings(androidSettings, desktopSettings);
+  assert.equal(merged.reminderEnabled, true);
+  assert.equal(merged.dailyGoal, 25);
+  assert.equal(merged.reviewStartMoments.length, 2);
+
+  const explicitlyOff = service.updateSettings({ reminderEnabled: false });
+  assert.equal(explicitlyOff.reminderEnabled, false);
+  assert.equal(explicitlyOff.reminderExplicitlyDisabled, true);
+});

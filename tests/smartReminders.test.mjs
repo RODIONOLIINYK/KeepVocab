@@ -69,3 +69,80 @@ test('macOS never calls a desktop notification bridge', async () => {
     await cancelDailyReminder();
   } finally { delete globalThis.keepVocabDesktop; }
 });
+
+test('practice mode readiness schedules a reminder when SRS or 24h top-up exercises become ready', () => {
+  const studyTime = new Date(2026, 8, 30, 12, 0);
+  const srsReadyAt = new Date(2026, 8, 30, 15, 0).toISOString();
+  const practiceWords = [
+    {
+      id: 'w-1',
+      word: 'resilient',
+      definition: 'Able to recover quickly.',
+      nextReviewDate: srsReadyAt,
+      practiceStats: { lastAnswerCorrect: false, attempts: 2 },
+      mistakes: { consecutiveFailures: 1 }
+    },
+    {
+      id: 'w-2',
+      word: 'eloquent',
+      definition: 'Fluent or persuasive in speaking.',
+      nextReviewDate: new Date(2026, 9, 3, 12, 0).toISOString(),
+      practiceStats: {
+        lastAnsweredAt: new Date(2026, 8, 29, 15, 20).toISOString(),
+        lastAnswerCorrect: true,
+        successfulRecallDays: ['2026-09-29'],
+        attempts: 1
+      }
+    }
+  ];
+  const plan = buildReminderSchedule({
+    now: studyTime,
+    reviewsToday: 2,
+    dailyGoal: 20,
+    streak: 5,
+    preferredTime: '19:00',
+    smartTiming: false,
+    practiceWords
+  });
+  assert.ok(plan.practiceReadyPlan);
+  assert.equal(plan.practiceReadyPlan.reason, 'practice-ready');
+  assert.equal(plan.practiceReadyPlan.readyCount, 2);
+  assert.equal(plan.practiceReadyPlan.time, '15:00');
+  assert.match(plan.practiceReadyPlan.title, /2 review exercises ready in Practice Mode/);
+  assert.match(plan.practiceReadyPlan.body, /18 more exercises completes today’s goal/);
+
+  const alarms = reminderNotifications(plan, plan.streakPlan);
+  assert.equal(alarms[0].extra.reason, 'practice-ready');
+  assert.equal(alarms[0].schedule.at.getDate(), studyTime.getDate());
+  assert.equal(alarms[0].schedule.at.getHours(), 15);
+});
+
+test('late-evening refresh after 20:30 escalates to a final-call streak rescue before midnight', () => {
+  const lateEvening = new Date(2026, 8, 30, 21, 8);
+  const plan = buildReminderSchedule({
+    now: lateEvening,
+    reviewsToday: 0,
+    streak: 14,
+    preferredTime: '19:00',
+    smartTiming: false
+  });
+  assert.ok(plan.streakPlan);
+  assert.equal(plan.streakPlan.finalCall, true);
+  assert.equal(plan.streakPlan.time, '22:00');
+  assert.equal(plan.streakPlan.nextAt.getDate(), lateEvening.getDate());
+  assert.match(plan.streakPlan.title, /Final call: protect your 14-day streak/);
+  assert.match(plan.streakPlan.body, /Midnight is close/);
+
+  const afterTen = new Date(2026, 8, 30, 22, 20);
+  const latePlan = buildReminderSchedule({
+    now: afterTen,
+    reviewsToday: 0,
+    streak: 29,
+    preferredTime: '19:00',
+    smartTiming: false
+  });
+  assert.ok(latePlan.streakPlan);
+  assert.equal(latePlan.streakPlan.finalCall, true);
+  assert.equal(latePlan.streakPlan.time, '22:45');
+  assert.match(latePlan.streakPlan.body, /30-day milestone/);
+});

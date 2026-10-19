@@ -227,7 +227,8 @@ export class DriveSyncService {
         reviewsDate: null,
         reviewActivity: {},
         exerciseActivityByDevice: {},
-        reminderEnabled: false,
+        reminderEnabled: true,
+        reminderExplicitlyDisabled: false,
         smartReminderEnabled: true,
         streakReminderEnabled: true,
         reminderTime: '19:00',
@@ -259,7 +260,7 @@ export class DriveSyncService {
     const settings = this.getSettings();
     if (!Number.isFinite(Number(settings.dailyGoal)) || Number(settings.dailyGoal) < 1) this.updateSettings({ dailyGoal: 20 }, { silent: true });
     const engagementDefaults = {};
-    if (typeof settings.reminderEnabled !== 'boolean') engagementDefaults.reminderEnabled = false;
+    if (typeof settings.reminderEnabled !== 'boolean') engagementDefaults.reminderEnabled = settings.reminderExplicitlyDisabled !== true;
     if (typeof settings.smartReminderEnabled !== 'boolean') engagementDefaults.smartReminderEnabled = true;
     if (typeof settings.streakReminderEnabled !== 'boolean') engagementDefaults.streakReminderEnabled = true;
     if (!/^\d{2}:\d{2}$/.test(String(settings.reminderTime || ''))) engagementDefaults.reminderTime = '19:00';

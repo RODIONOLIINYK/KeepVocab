@@ -56,6 +56,7 @@ let currentView = 'dashboard';
 let viewEnterTimer = null;
 let navigationRevision = 0;
 let reminderRefreshTimer = null;
+let pendingReminderPermissionRequest = false;
 
 document.addEventListener('DOMContentLoaded', initApp);
 
@@ -67,6 +68,7 @@ function initApp() {
   setupDriveBackupModal();
   setupAddWordModal({ showToast, onSaved: () => {
     navigateTo(currentView);
+    queueSmartReminderRefresh({ requestPermission: true });
   } });
   setupEngagementSystem();
   setupReminderNavigation().catch(error => console.warn('Reminder navigation setup failed.', error));
@@ -81,7 +83,7 @@ function initApp() {
     goalCount = settings.reviewsDate === localDateKey() ? Number(settings.reviewsToday || 0) : 0;
     updateGoalDisplay();
     updateEngagementCard();
-    queueSmartReminderRefresh();
+    queueSmartReminderRefresh({ requestPermission: true });
   });
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
@@ -146,6 +148,7 @@ function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
     smartTiming: settings.smartReminderEnabled !== false,
     streakReminderEnabled: settings.streakReminderEnabled !== false,
     reviewMoments: settings.reviewStartMoments || [],
+    practiceWords,
     dueCount,
     reviewsToday,
     dailyGoal: settings.dailyGoal || 20,
@@ -175,15 +178,19 @@ async function refreshSmartReminder({ requestPermission = false, settingsOverrid
   }
   const plan = currentSmartReminderPlan(settingsOverride);
   const streakPlan = plan.streakPlan;
-  const result = await scheduleDailyReminder({ ...plan, streakPlan, requestPermission });
-  return { ...result, plan, streakPlan };
+  const practiceReadyPlan = plan.practiceReadyPlan;
+  const result = await scheduleDailyReminder({ ...plan, streakPlan, practiceReadyPlan, requestPermission });
+  return { ...result, plan, streakPlan, practiceReadyPlan };
 }
 
-function queueSmartReminderRefresh() {
+function queueSmartReminderRefresh({ requestPermission = false } = {}) {
   if (!supportsReminders()) return;
+  if (requestPermission) pendingReminderPermissionRequest = true;
   globalThis.clearTimeout(reminderRefreshTimer);
   reminderRefreshTimer = globalThis.setTimeout(() => {
-    refreshSmartReminder().catch(error => console.warn('Smart reminder refresh failed.', error));
+    const shouldRequest = pendingReminderPermissionRequest;
+    pendingReminderPermissionRequest = false;
+    refreshSmartReminder({ requestPermission: shouldRequest }).catch(error => console.warn('Smart reminder refresh failed.', error));
   }, 400);
 }
 
@@ -232,8 +239,9 @@ function updateEngagementCard() {
   weeklyStatus.innerHTML = `<i class="fa-solid fa-chart-line"></i> ${activeDays} / 5 active days`;
 
   const reminderPlan = currentSmartReminderPlan();
+  const practiceReady = reminderPlan.practiceReadyPlan;
   status.innerHTML = settings.reminderEnabled
-    ? `<i class="fa-solid fa-bell"></i> ${settings.smartReminderEnabled !== false ? 'Smart reminder' : 'Daily reminder'} at ${formatReminderTime(reminderPlan.time)} · ${reminderPlan.summary}${currentStreakMaintenancePlan() ? ' · streak safeguard on' : ''}`
+    ? `<i class="fa-solid fa-bell"></i> ${settings.smartReminderEnabled !== false ? 'Smart reminder' : 'Daily reminder'} at ${formatReminderTime(reminderPlan.time)} · ${reminderPlan.summary}${practiceReady ? ` · practice ready at ${formatReminderTime(practiceReady.time)}` : ''}${currentStreakMaintenancePlan() ? ' · streak safeguard on' : ''}`
     : '<i class="fa-regular fa-bell"></i> Daily reminder is off';
 }
 
@@ -285,13 +293,14 @@ function setupEngagementSystem() {
       streakReminderEnabled: streakReminderEnabled.checked
     });
     const streakPlan = plan.streakPlan;
+    const practiceReadyPlan = plan.practiceReadyPlan;
     const learnedTime = smartReminderEnabled.checked && plan.time !== normalizeReminderTime(reminderTime.value);
     const timingCopy = !smartReminderEnabled.checked
       ? 'Fixed timing is active.'
       : learnedTime
         ? 'Timing learned separately for weekdays and weekends.'
         : 'Smart timing will learn after three study days; your preferred time is used for now.';
-    helper.textContent = `Next plan: ${formatReminderTime(plan.time)} · ${plan.title}. ${timingCopy}${streakPlan ? ` A streak safeguard is planned for ${formatReminderTime(streakPlan.time)} if you still have no activity. One exercise cancels today’s reminders.` : ''}`;
+    helper.textContent = `Next plan: ${formatReminderTime(plan.time)} · ${plan.title}. ${timingCopy}${practiceReadyPlan ? ` Practice-ready alert at ${formatReminderTime(practiceReadyPlan.time)} (${practiceReadyPlan.summary}).` : ''}${streakPlan ? ` A streak safeguard is planned for ${formatReminderTime(streakPlan.time)} if you still have no activity. One exercise cancels today’s reminders.` : ''}`;
   };
 
   const updateTimeState = () => {
@@ -312,7 +321,13 @@ function setupEngagementSystem() {
     sessionSize.value = Math.max(5, Math.min(50, Math.round(Number(settings.practiceSessionSize) || 20)));
     updateTimeState();
     modal.classList.add('active');
-    updateDeliveryStatus();
+    if (remindersAvailable && reminderEnabled.checked) {
+      refreshSmartReminder({ requestPermission: true })
+        .catch(() => {})
+        .finally(() => updateDeliveryStatus());
+    } else {
+      updateDeliveryStatus();
+    }
   };
 
   const closeSettings = () => modal.classList.remove('active');
@@ -555,7 +570,8 @@ function setupDriveBackupModal() {
     document.getElementById('pill-syncing').style.display = 'inline-flex';
     try {
       const result = await driveSync.connectGoogleDrive();
-      renderConnectionState();
+      updateDashboardDerivedState();
+      queueSmartReminderRefresh();
       syncedDriveRevision = driveChangeRevision;
       lastAutomaticDriveSyncAt = Date.now();
       status.textContent = `Backed up ${result.totalWords} words across ${result.months} monthly files in “${result.folderName}”.`;
@@ -609,7 +625,8 @@ async function runDriveSync() {
   document.getElementById('pill-syncing').style.display = 'inline-flex';
   try {
     const result = await driveSync.syncGoogleDrive();
-    renderConnectionState();
+    updateDashboardDerivedState();
+    queueSmartReminderRefresh();
     return result;
   } catch (error) {
     driveSync.setDriveStatus({ isConnected: driveSync.getDriveStatus().isConnected, lastError: error.message });
@@ -685,6 +702,8 @@ async function resumeRememberedDriveConnection() {
   try {
     if (!(await waitForGoogleIdentity())) return;
     await driveSync.resumeGoogleDrive();
+    updateDashboardDerivedState();
+    queueSmartReminderRefresh();
     syncedDriveRevision = driveChangeRevision;
     lastAutomaticDriveSyncAt = Date.now();
   } catch (error) {

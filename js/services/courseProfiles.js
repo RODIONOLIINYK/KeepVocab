@@ -5,7 +5,7 @@ import { normalizeTranslationLanguage } from './translationSettings.js';
 export const COURSE_SCOPED_SETTING_KEYS = Object.freeze([
   'activeNotebook', 'dailyGoal', 'practiceSessionSize', 'dailyStreak', 'lastReviewDate', 'reviewsToday', 'reviewsDate',
   'reviewActivity', 'exerciseActivityByDevice', 'learningStats', 'speakingProgress',
-  'reminderEnabled', 'smartReminderEnabled', 'streakReminderEnabled', 'reminderTime', 'reviewStartMoments'
+  'reminderEnabled', 'reminderExplicitlyDisabled', 'smartReminderEnabled', 'streakReminderEnabled', 'reminderTime', 'reviewStartMoments'
 ]);
 
 function copyScopedSettings(source = {}) {
@@ -16,6 +16,13 @@ function copyScopedSettings(source = {}) {
 
 export function defaultCourseProfile(courseId, seed = {}) {
   const course = getCourseDefinition(courseId);
+  const copied = copyScopedSettings(seed);
+  const explicitlyDisabled = copied.reminderExplicitlyDisabled === true;
+  const reminderEnabled = explicitlyDisabled
+    ? false
+    : typeof copied.reminderEnabled === 'boolean' && copied.reminderEnabled
+      ? true
+      : !explicitlyDisabled;
   return {
     courseId: course.id,
     updatedAt: seed.updatedAt || null,
@@ -29,12 +36,15 @@ export function defaultCourseProfile(courseId, seed = {}) {
     exerciseActivityByDevice: {},
     learningStats: {},
     speakingProgress: {},
-    reminderEnabled: false,
+    reminderEnabled: true,
+    reminderExplicitlyDisabled: false,
     smartReminderEnabled: true,
     streakReminderEnabled: true,
     reminderTime: '19:00',
     reviewStartMoments: [],
-    ...copyScopedSettings(seed)
+    ...copied,
+    reminderEnabled,
+    reminderExplicitlyDisabled: explicitlyDisabled
   };
 }
 
@@ -56,13 +66,19 @@ export function migrateCourseSettings(settings = {}) {
 
 export function updateActiveCourseSettings(settings = {}, patch = {}) {
   const migrated = migrateCourseSettings(settings);
+  const normalizedPatch = {
+    ...patch,
+    ...(Object.prototype.hasOwnProperty.call(patch, 'reminderEnabled')
+      ? { reminderExplicitlyDisabled: patch.reminderEnabled === false }
+      : {})
+  };
   return migrateCourseSettings({
     ...migrated,
-    ...patch,
+    ...normalizedPatch,
     courseProfiles: { english: {
       ...migrated.courseProfiles.english,
-      ...copyScopedSettings(patch),
-      updatedAt: patch.updatedAt || new Date().toISOString()
+      ...copyScopedSettings(normalizedPatch),
+      updatedAt: normalizedPatch.updatedAt || new Date().toISOString()
     } }
   });
 }
@@ -115,6 +131,21 @@ function mergeSpeakingProgress(localProfile, remoteProfile) {
   return merged;
 }
 
+import { localDateKey } from '../utils/dates.js';
+
+function mergeReviewStartMoments(localProfile = {}, remoteProfile = {}) {
+  const byDay = new Map();
+  for (const raw of [...(Array.isArray(localProfile.reviewStartMoments) ? localProfile.reviewStartMoments : []),
+    ...(Array.isArray(remoteProfile.reviewStartMoments) ? remoteProfile.reviewStartMoments : [])]) {
+    const parsed = new Date(raw);
+    if (Number.isNaN(parsed.getTime())) continue;
+    const key = localDateKey(parsed);
+    const existing = byDay.get(key);
+    if (!existing || parsed < existing) byDay.set(key, parsed);
+  }
+  return [...byDay.values()].sort((a, b) => b - a).slice(0, 45).map(date => date.toISOString());
+}
+
 export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
   const local = migrateCourseSettings(localSettings);
   const remote = migrateCourseSettings(remoteSettings);
@@ -127,8 +158,14 @@ export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
   const exerciseActivityByDevice = mergeActivityByDevice(localProfile, remoteProfile);
   const reviewActivity = aggregateActivity(exerciseActivityByDevice);
   const lastReviewDate = Object.keys(reviewActivity).sort().at(-1) || baseProfile.lastReviewDate;
+  const reviewStartMoments = mergeReviewStartMoments(localProfile, remoteProfile);
+  const explicitlyDisabled = baseProfile.reminderExplicitlyDisabled === true;
+  const reminderEnabled = explicitlyDisabled ? false : Boolean(localProfile.reminderEnabled || remoteProfile.reminderEnabled || baseProfile.reminderEnabled);
   return migrateCourseSettings({ ...local, courseProfiles: { english: {
     ...baseProfile,
+    reminderEnabled,
+    reminderExplicitlyDisabled: explicitlyDisabled,
+    reviewStartMoments,
     speakingProgress,
     exerciseActivityByDevice,
     reviewActivity,

@@ -73,10 +73,14 @@ export function renderSettingsView(container, onNavigate) {
     const status = query('#settings-notification-status');
     getReminderStatus().then(result => {
       if (!status.isConnected) return;
+      const latestSettings = driveSync.getSettings();
+      if (latestSettings.reminderEnabled && result.status === 'ready' && !result.pendingCount) {
+        globalThis.dispatchEvent?.(new CustomEvent('keepvocab:data-changed', { detail: { kind: 'reminders' } }));
+      }
       status.textContent = result.status === 'permission-required' ? 'Allow notifications in reminder setup.'
         : result.status === 'channel-blocked' ? 'Practice reminders are blocked in Android settings.'
         : result.status === 'unavailable' ? 'Update the Android app to enable reminders.'
-        : !settings.reminderEnabled ? 'Reminders are off.'
+        : !latestSettings.reminderEnabled ? 'Reminders are off.'
         : `${result.pendingCount || 0} reminders scheduled.${result.exactAlarm === 'granted' ? '' : ' Android may delay delivery.'}`;
     }).catch(error => { if (status.isConnected) status.textContent = error.message || 'Cannot check notification access.'; });
   }

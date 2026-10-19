@@ -3,12 +3,21 @@ import { localDateKey } from '../utils/dates.js';
 export const DAILY_REMINDER_ID = 73001;
 export const STREAK_REMINDER_ID = 73002;
 export const TEST_REMINDER_ID = 73003;
+export const PRACTICE_READY_REMINDER_ID = 73004;
 export const REMINDER_CHANNEL_ID = 'keepvocab-practice';
 export const REMINDER_HORIZON_DAYS = 7;
+const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_SMART_HOUR = 8;
 const MAX_SMART_MINUTES = 21 * 60 + 30;
 const MIN_STREAK_MINUTES = 20 * 60 + 30;
 const MAX_STREAK_MINUTES = 22 * 60;
+const FINAL_STREAK_RESCUE_MINUTES = 23 * 60 + 15;
+const STREAK_MILESTONES = new Set([3, 7, 14, 21, 30, 50, 75, 100, 365]);
+
+function formatMinutesAsTime(totalMinutes) {
+  const clamped = Math.max(0, Math.min(23 * 60 + 59, Math.round(totalMinutes)));
+  return `${String(Math.floor(clamped / 60)).padStart(2, '0')}:${String(clamped % 60).padStart(2, '0')}`;
+}
 
 export function normalizeReminderTime(value, fallback = '19:00') {
   const match = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
@@ -73,7 +82,185 @@ export function getHabitReminderTime(reviewMoments = [], preferredTime = '19:00'
   const median = minutes.length % 2 ? minutes[middle] : Math.round((minutes[middle - 1] + minutes[middle]) / 2);
   const rounded = Math.round(median / 15) * 15;
   const safeMinutes = Math.min(MAX_SMART_MINUTES, Math.max(MIN_SMART_HOUR * 60, rounded));
-  return `${String(Math.floor(safeMinutes / 60)).padStart(2, '0')}:${String(safeMinutes % 60).padStart(2, '0')}`;
+  return formatMinutesAsTime(safeMinutes);
+}
+
+function wordPracticeReadyTimestamp(word, fallbackMs) {
+  const dueAt = Date.parse(word?.nextReviewDate || word?.createdAt || '');
+  const dueMs = Number.isFinite(dueAt) ? dueAt : fallbackMs;
+  const stats = word?.practiceStats && typeof word.practiceStats === 'object' ? word.practiceStats : {};
+  const answeredAt = Date.parse(stats.lastAnsweredAt || '');
+  const successfulDays = Array.isArray(stats.successfulRecallDays)
+    ? stats.successfulRecallDays.length
+    : Number(stats.successfulRecallDays || 0);
+  const legacySuccess = Number(stats.legacySuccessfulReviews || (!stats.attempts && Number(word?.box) > 1 ? Number(word.box) - 1 : 0));
+  const eligibleForTopUp = Number.isFinite(answeredAt)
+    && stats.lastAnswerCorrect === true
+    && !word?.mastered
+    && !(Number(word?.srs?.version || 0) < 3 && Number(word?.box) >= 4)
+    && (successfulDays + legacySuccess < 3);
+  const topUpMs = eligibleForTopUp ? answeredAt + DAY_MS : Infinity;
+  return Math.min(dueMs, topUpMs);
+}
+
+export function getPracticeReadiness(words = [], now = new Date()) {
+  const nowMs = now.getTime();
+  const bySpelling = new Map();
+  for (const word of Array.isArray(words) ? words : []) {
+    if (!word?.id || !word.word || !word.definition) continue;
+    const spelling = String(word.word).trim().toLowerCase();
+    if (!spelling) continue;
+    const readyAt = wordPracticeReadyTimestamp(word, nowMs);
+    const isWeak = word.practiceStats?.lastAnswerCorrect === false || Number(word.mistakes?.consecutiveFailures || 0) > 0;
+    const previous = bySpelling.get(spelling);
+    if (!previous || readyAt < previous.readyAt) {
+      bySpelling.set(spelling, { readyAt, isWeak: Boolean(previous?.isWeak || isWeak) });
+    } else if (isWeak) {
+      previous.isWeak = true;
+    }
+  }
+  let readyNowCount = 0;
+  let weakReadyCount = 0;
+  const upcoming = [];
+  for (const item of bySpelling.values()) {
+    if (item.readyAt <= nowMs) {
+      readyNowCount += 1;
+      if (item.isWeak) weakReadyCount += 1;
+    } else {
+      upcoming.push(item);
+    }
+  }
+  upcoming.sort((a, b) => a.readyAt - b.readyAt);
+  const nextReadyAt = upcoming.length ? new Date(upcoming[0].readyAt) : null;
+  const batchWindowMs = nextReadyAt ? nextReadyAt.getTime() + 60 * 60 * 1000 : 0;
+  const upcomingBatch = nextReadyAt ? upcoming.filter(item => item.readyAt <= batchWindowMs) : [];
+  return {
+    readyNowCount,
+    weakReadyCount,
+    nextReadyAt,
+    nextReadyCount: upcomingBatch.length ? readyNowCount + upcomingBatch.length : readyNowCount,
+    nextWeakCount: weakReadyCount + upcomingBatch.filter(item => item.isWeak).length,
+    totalWords: bySpelling.size
+  };
+}
+
+function clampToWakingReminderWindow(targetDate, now = new Date()) {
+  const minFuture = new Date(now.getTime() + 15 * 60 * 1000);
+  const next = new Date(Math.max(targetDate.getTime(), minFuture.getTime()));
+  const roundedMinutes = Math.ceil((next.getHours() * 60 + next.getMinutes()) / 5) * 5;
+  next.setHours(0, 0, 0, 0);
+  next.setMinutes(roundedMinutes);
+  const totalMinutes = next.getHours() * 60 + next.getMinutes();
+  if (totalMinutes < MIN_SMART_HOUR * 60) {
+    next.setHours(MIN_SMART_HOUR, 0, 0, 0);
+  } else if (totalMinutes > MAX_SMART_MINUTES) {
+    next.setDate(next.getDate() + 1);
+    next.setHours(MIN_SMART_HOUR, 30, 0, 0);
+  }
+  return {
+    nextAt: next,
+    time: formatMinutesAsTime(next.getHours() * 60 + next.getMinutes())
+  };
+}
+
+export function buildPracticeReadyPlan({
+  enabled = true,
+  practiceWords = [],
+  nextPracticeReadyAt = null,
+  dueCount = 0,
+  reviewsToday = 0,
+  dailyGoal = 20,
+  courseName = 'Vocabulary',
+  practiceRoute = 'review',
+  primaryNextAt = null,
+  streakNextAt = null,
+  preferredTime = '19:00',
+  smartTiming = true,
+  reviewMoments = [],
+  now = new Date()
+} = {}) {
+  const hasWordPool = Array.isArray(practiceWords) && practiceWords.length > 0;
+  if (!enabled || (!hasWordPool && !nextPracticeReadyAt)) return null;
+  const readiness = getPracticeReadiness(practiceWords, now);
+  const completed = Math.max(0, Number(reviewsToday || 0));
+  const normalizedGoal = Math.max(1, Number(dailyGoal || 20));
+  const remaining = Math.max(0, normalizedGoal - completed);
+  const readyNow = Math.max(0, Number(dueCount || 0), readiness.readyNowCount);
+  const explicitUpcoming = nextPracticeReadyAt ? new Date(nextPracticeReadyAt) : readiness.nextReadyAt;
+  const hasUpcoming = Boolean(explicitUpcoming && !Number.isNaN(explicitUpcoming.getTime()) && explicitUpcoming.getTime() > now.getTime());
+  const primaryIsToday = Boolean(primaryNextAt && localDateKey(primaryNextAt) === localDateKey(now) && primaryNextAt.getTime() > now.getTime());
+
+  let targetDate = null;
+  let isUpcomingUnlock = false;
+
+  if (readyNow > 0 && remaining > 0 && !primaryIsToday) {
+    const habitTime = smartTiming
+      ? getHabitReminderTime(reviewMoments, preferredTime, now)
+      : normalizeReminderTime(preferredTime);
+    const [hour, minute] = habitTime.split(':').map(Number);
+    const habitToday = new Date(now);
+    habitToday.setHours(hour, minute, 0, 0);
+    targetDate = habitToday.getTime() >= now.getTime() + 15 * 60 * 1000
+      ? habitToday
+      : new Date(now.getTime() + 90 * 60 * 1000);
+    const clampedToday = clampToWakingReminderWindow(targetDate, now);
+    if (localDateKey(clampedToday.nextAt) !== localDateKey(now)) {
+      targetDate = hasUpcoming ? explicitUpcoming : null;
+      isUpcomingUnlock = hasUpcoming;
+    }
+  } else if (hasUpcoming) {
+    targetDate = new Date(explicitUpcoming);
+    isUpcomingUnlock = true;
+    if (remaining === 0 && localDateKey(targetDate) === localDateKey(now)) {
+      targetDate.setDate(targetDate.getDate() + 1);
+      targetDate.setHours(MIN_SMART_HOUR, 30, 0, 0);
+    }
+  }
+
+  if (!targetDate || targetDate.getTime() - now.getTime() > REMINDER_HORIZON_DAYS * DAY_MS) return null;
+  let scheduled = clampToWakingReminderWindow(targetDate, now);
+
+  if (primaryNextAt && Math.abs(scheduled.nextAt.getTime() - primaryNextAt.getTime()) < 45 * 60 * 1000) {
+    const shifted = new Date(primaryNextAt.getTime() + 60 * 60 * 1000);
+    const shiftedMinutes = shifted.getHours() * 60 + shifted.getMinutes();
+    if (localDateKey(shifted) === localDateKey(primaryNextAt) && shiftedMinutes <= MAX_SMART_MINUTES) {
+      scheduled = clampToWakingReminderWindow(shifted, now);
+    } else {
+      return null;
+    }
+  }
+
+  if (streakNextAt && Math.abs(scheduled.nextAt.getTime() - streakNextAt.getTime()) < 45 * 60 * 1000) {
+    const earlier = new Date(streakNextAt.getTime() - 60 * 60 * 1000);
+    if (earlier.getTime() >= now.getTime() + 15 * 60 * 1000 && earlier.getHours() >= MIN_SMART_HOUR) {
+      scheduled = clampToWakingReminderWindow(earlier, now);
+    } else {
+      return null;
+    }
+  }
+
+  const readyCount = Math.max(1, isUpcomingUnlock ? (readiness.nextReadyCount || readyNow || 1) : readyNow);
+  const weakCount = isUpcomingUnlock ? readiness.nextWeakCount : readiness.weakReadyCount;
+  const title = weakCount > 0
+    ? `${courseName}: ${readyCount} review exercise${readyCount === 1 ? '' : 's'} ready in Practice Mode`
+    : `${courseName}: ${readyCount} exercise${readyCount === 1 ? ' is' : 's are'} ready in Practice Mode`;
+  const body = completed > 0 && remaining > 0 && localDateKey(scheduled.nextAt) === localDateKey(now)
+    ? `Your practice set is ready. ${remaining} more exercise${remaining === 1 ? '' : 's'} completes today’s goal.`
+    : weakCount > 0
+      ? 'Words you missed earlier are ready for a quick recovery round in Practice Mode.'
+      : 'Your spaced-repetition review is ready. Jump into Practice Mode while these words are fresh.';
+
+  return {
+    time: scheduled.time,
+    title,
+    body,
+    route: practiceRoute || 'review',
+    reason: 'practice-ready',
+    summary: `${readyCount} ready in practice`,
+    repeat: false,
+    nextAt: scheduled.nextAt,
+    readyCount
+  };
 }
 
 export function buildSmartReminderPlan({
@@ -139,7 +326,7 @@ export function getStreakReminderTime(primaryTime = '19:00') {
   const primaryMinutes = hour * 60 + minute;
   if (primaryMinutes >= MAX_STREAK_MINUTES) return '';
   const lateMinutes = Math.min(MAX_STREAK_MINUTES, Math.max(MIN_STREAK_MINUTES, primaryMinutes + 90));
-  return `${String(Math.floor(lateMinutes / 60)).padStart(2, '0')}:${String(lateMinutes % 60).padStart(2, '0')}`;
+  return formatMinutesAsTime(lateMinutes);
 }
 
 export function buildStreakMaintenancePlan({
@@ -152,32 +339,105 @@ export function buildStreakMaintenancePlan({
 } = {}) {
   const activeStreak = Math.max(0, Number(streak || 0));
   const completed = Math.max(0, Number(reviewsToday || 0));
-  const time = getStreakReminderTime(primaryTime);
-  if (!enabled || !activeStreak || !time) return null;
-  const [hour, minute] = time.split(':').map(Number);
-  const nextAt = new Date(now);
-  nextAt.setHours(hour, minute, 0, 0);
-  // Today's study protects today; prepare tomorrow's warning while the app is open.
-  // Tomorrow's activity cancels and replaces this one-shot alarm.
-  if (completed > 0) nextAt.setDate(nextAt.getDate() + 1);
-  if (nextAt.getTime() <= now.getTime()) return null;
+  const due = Math.max(0, Number(dueCount || 0));
+  if (!enabled || !activeStreak) return null;
+
+  const baseTime = getStreakReminderTime(primaryTime);
+  let time = baseTime;
+  let nextAt = null;
+  let finalCall = false;
+
+  if (completed > 0) {
+    if (!baseTime) return null;
+    const [hour, minute] = baseTime.split(':').map(Number);
+    nextAt = new Date(now);
+    nextAt.setDate(nextAt.getDate() + 1);
+    nextAt.setHours(hour, minute, 0, 0);
+  } else {
+    if (baseTime) {
+      const [hour, minute] = baseTime.split(':').map(Number);
+      const candidate = new Date(now);
+      candidate.setHours(hour, minute, 0, 0);
+      if (candidate.getTime() > now.getTime()) {
+        nextAt = candidate;
+      }
+    }
+    if (!nextAt) {
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      if (nowMinutes + 15 > FINAL_STREAK_RESCUE_MINUTES) return null;
+      const rescueMinutes = Math.min(
+        FINAL_STREAK_RESCUE_MINUTES,
+        Math.max(MAX_STREAK_MINUTES, Math.ceil((nowMinutes + 15) / 15) * 15)
+      );
+      time = formatMinutesAsTime(rescueMinutes);
+      const [hour, minute] = time.split(':').map(Number);
+      nextAt = new Date(now);
+      nextAt.setHours(hour, minute, 0, 0);
+      if (nextAt.getTime() <= now.getTime()) return null;
+      finalCall = true;
+    }
+  }
+
+  const nextMilestone = activeStreak % 7 === 6
+    ? 'Your next weekly milestone is within reach.'
+    : STREAK_MILESTONES.has(activeStreak + 1)
+      ? `One quick session unlocks your ${activeStreak + 1}-day milestone.`
+      : due > 0
+        ? `${due} practice exercise${due === 1 ? ' is' : 's are'} ready right now.`
+        : 'A small step counts—even on a busy day.';
+
   return {
     time,
-    title: `Protect your ${activeStreak}-day streak`,
-    body: `One exercise before midnight keeps your streak alive. ${activeStreak % 7 === 6 ? 'Your next weekly milestone is within reach.' : 'A small step counts—even on a busy day.'}`,
+    title: finalCall
+      ? `Final call: protect your ${activeStreak}-day streak`
+      : `Protect your ${activeStreak}-day streak`,
+    body: finalCall
+      ? `Midnight is close! One quick exercise keeps your ${activeStreak}-day streak alive. ${nextMilestone}`
+      : `One exercise before midnight keeps your streak alive. ${nextMilestone}`,
     route: 'review',
     reason: 'streak-maintenance',
-    summary: `${activeStreak}-day streak safeguard`,
+    summary: finalCall ? `${activeStreak}-day final call` : `${activeStreak}-day streak safeguard`,
     repeat: false,
+    finalCall,
     nextAt
   };
 }
+
+const FOLLOW_UP_COPY = [
+  {
+    title: 'Your next small win is waiting',
+    body: 'Meet familiar words in a new way. A short workout helps them stick.'
+  },
+  {
+    title: 'Your memory garden is ready to grow',
+    body: 'Reviewing words right as they fade locks them into long-term memory.'
+  },
+  {
+    title: 'A fresh start is one word away',
+    body: 'Even a two-minute practice session wakes up your vocabulary recall.'
+  },
+  {
+    title: 'Keep your favorite words close',
+    body: 'Pick up right where you left off with a light, focused practice.'
+  },
+  {
+    title: 'A quick vocabulary check-in',
+    body: 'No pressure—try a few quick flashcards or a listening prompt today.'
+  },
+  {
+    title: 'A fresh start is one word away',
+    body: 'No catching up required. Come back for a little practice whenever you are ready.'
+  }
+];
 
 // Only the next unprotected day can truthfully threaten the current streak.
 // Later reminders stay encouraging and make no claims about stale streak counts.
 export function buildReminderSchedule(options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
-  const plan = buildSmartReminderPlan({ ...options, now });
+  const readiness = getPracticeReadiness(options.practiceWords, now);
+  const effectiveDueCount = Math.max(Number(options.dueCount || 0), readiness.readyNowCount);
+  const plan = buildSmartReminderPlan({ ...options, dueCount: effectiveDueCount, now });
+  const todayPrimaryTime = plan.time;
   if (localDateKey(plan.nextAt) !== localDateKey(now) && options.smartTiming !== false) {
     plan.time = getHabitReminderTime(options.reviewMoments, options.preferredTime, plan.nextAt);
     const [hour, minute] = plan.time.split(':').map(Number);
@@ -192,26 +452,57 @@ export function buildReminderSchedule(options = {}) {
       : getHabitReminderTime(options.reviewMoments, options.preferredTime, date);
     const [hour, minute] = time.split(':').map(Number);
     date.setHours(hour, minute, 0, 0);
+    const copy = FOLLOW_UP_COPY[Math.min(day - 1, FOLLOW_UP_COPY.length - 1)];
     followUps.push({
-      time, nextAt: date, repeat: false,
-      title: day > 2 ? 'A fresh start is one word away' : 'Your next small win is waiting',
-      body: day > 2 ? 'No catching up required. Come back for a little practice whenever you are ready.' : 'Meet familiar words in a new way. A short workout helps them stick.',
-      route: options.practiceRoute || 'review', reason: 'habit-follow-up'
+      time,
+      nextAt: date,
+      repeat: false,
+      title: copy.title,
+      body: copy.body,
+      route: options.practiceRoute || 'review',
+      reason: 'habit-follow-up'
     });
   }
+  const streakPrimaryTime = Number(options.reviewsToday || 0) > 0 ? plan.time : todayPrimaryTime;
   const streakPlan = buildStreakMaintenancePlan({
     enabled: options.streakReminderEnabled !== false,
-    primaryTime: plan.time,
+    primaryTime: streakPrimaryTime,
     reviewsToday: options.reviewsToday,
     streak: options.streak,
+    dueCount: effectiveDueCount,
     now
   });
   if (streakPlan) streakPlan.route = options.practiceRoute || 'review';
-  return { ...plan, followUps, streakPlan };
+  const practiceReadyPlan = buildPracticeReadyPlan({
+    enabled: options.practiceReadyReminderEnabled !== false,
+    practiceWords: options.practiceWords,
+    nextPracticeReadyAt: options.nextPracticeReadyAt,
+    dueCount: effectiveDueCount,
+    reviewsToday: options.reviewsToday,
+    dailyGoal: options.dailyGoal,
+    courseName: options.courseName || 'Vocabulary',
+    practiceRoute: options.practiceRoute || 'review',
+    primaryNextAt: plan.nextAt,
+    streakNextAt: streakPlan?.nextAt || null,
+    preferredTime: options.preferredTime,
+    smartTiming: options.smartTiming !== false,
+    reviewMoments: options.reviewMoments,
+    now
+  });
+  return { ...plan, followUps, streakPlan, practiceReadyPlan };
 }
 
-export function reminderNotifications(plan, streakPlan = null) {
-  const primary = [plan, ...(plan.followUps || [])].slice(0, REMINDER_HORIZON_DAYS).map((item, index) => {
+export function reminderNotifications(plan, streakPlan = plan?.streakPlan ?? null, practiceReadyPlan = plan?.practiceReadyPlan ?? null) {
+  const candidates = [
+    ...(practiceReadyPlan ? [practiceReadyPlan] : []),
+    plan,
+    ...(plan.followUps || [])
+  ].sort((a, b) => {
+    const aTime = (a.nextAt || getNextReminderAt(a.time)).getTime();
+    const bTime = (b.nextAt || getNextReminderAt(b.time)).getTime();
+    return aTime - bTime;
+  });
+  const primary = candidates.slice(0, REMINDER_HORIZON_DAYS).map((item, index) => {
     const [hour, minute] = normalizeReminderTime(item.time).split(':').map(Number);
     return {
       id: DAILY_REMINDER_ID + index * 10,
@@ -258,10 +549,10 @@ function serializeNotifications(action) {
   return result;
 }
 
-async function scheduleNative(plugin, plan, streakPlan, requestPermission) {
+async function scheduleNative(plugin, plan, streakPlan, practiceReadyPlan, requestPermission) {
   const readiness = await prepareNativeReminders(plugin, requestPermission);
   if (readiness.status !== 'ready') return readiness;
-  const notifications = reminderNotifications(plan, streakPlan).map(item => ({
+  const notifications = reminderNotifications(plan, streakPlan, practiceReadyPlan).map(item => ({
     ...item, isExactNotification: readiness.exactAlarm === 'granted'
   }));
   await plugin.cancel({ notifications: reminderIds() });
@@ -272,8 +563,14 @@ async function scheduleNative(plugin, plan, streakPlan, requestPermission) {
     const ids = new Set(pending.notifications.map(item => item.id));
     if (notifications.some(item => !ids.has(item.id))) throw new Error('Android did not save every reminder. Try saving your routine again.');
   }
-  return { status: 'scheduled', platform: 'native', exactAlarm: scheduled?.warning ? 'denied' : readiness.exactAlarm,
-    nextAt: plan.nextAt || getNextReminderAt(plan.time), streakNextAt: streakPlan?.nextAt || null };
+  return {
+    status: 'scheduled',
+    platform: 'native',
+    exactAlarm: scheduled?.warning ? 'denied' : readiness.exactAlarm,
+    nextAt: plan.nextAt || getNextReminderAt(plan.time),
+    streakNextAt: streakPlan?.nextAt || null,
+    practiceReadyNextAt: practiceReadyPlan?.nextAt || null
+  };
 }
 
 async function prepareNativeReminders(plugin, requestPermission = false) {
@@ -363,15 +660,16 @@ export async function scheduleDailyReminder({
   nextAt = null,
   reason = 'daily-reminder',
   streakPlan = null,
+  practiceReadyPlan = null,
   followUps = [],
   requestPermission = false
 } = {}) {
   const normalizedTime = normalizeReminderTime(time);
-  const plan = { time: normalizedTime, title, body, route, repeat, reason, nextAt, followUps };
+  const plan = { time: normalizedTime, title, body, route, repeat, reason, nextAt, followUps, streakPlan, practiceReadyPlan };
   const nativePlugin = getNativeNotifications();
-  if (nativePlugin) return serializeNotifications(() => scheduleNative(nativePlugin, plan, streakPlan, requestPermission));
+  if (nativePlugin) return serializeNotifications(() => scheduleNative(nativePlugin, plan, streakPlan, practiceReadyPlan, requestPermission));
   if (supportsReminders()) return { status: 'unavailable', platform: 'native', nextAt: null };
-  return { status: 'android-only', platform: 'web', nextAt: null, streakNextAt: null };
+  return { status: 'android-only', platform: 'web', nextAt: null, streakNextAt: null, practiceReadyNextAt: null };
 }
 
 export async function setupReminderNavigation(target = globalThis) {
