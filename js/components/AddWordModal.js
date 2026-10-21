@@ -1,7 +1,9 @@
-import { driveSync } from '../services/driveSync.js?v=18300';
-import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary } from '../services/wordEntry.js?v=18300';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18300';
-import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18300';
+import { driveSync } from '../services/driveSync.js?v=18600';
+import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary } from '../services/wordEntry.js?v=18600';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18600';
+import { mountImageReview } from './ImageReview.js?v=18600';
+import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18600';
+import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18600';
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
   <div class="modal-backdrop" id="add-word-modal">
@@ -41,7 +43,8 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
           <div class="sense-editor-grid">
             <label>Part of speech<input id="add-word-pos" type="text" placeholder="noun, verb, adjective…" autocomplete="off"></label>
             <label>Phonetic<input id="add-word-phonetic" type="text" placeholder="Optional pronunciation" autocomplete="off"></label>
-            <label class="wide">English definition<textarea id="add-word-definition" lang="en" placeholder="Describe the exact intended meaning" required></textarea></label>
+            <label class="wide">Meaning in plain English<textarea id="add-word-definition" lang="en" placeholder="Describe the exact intended meaning" required></textarea></label>
+            <label class="wide">When to use it (optional)<input id="add-word-usage-note" type="text" lang="en" placeholder="A useful situation, grammar pattern, or usage note"></label>
             <label class="wide" id="add-word-translation-field" hidden>Ukrainian translation<textarea id="add-word-translation" lang="uk" placeholder="Added automatically when available; you can also enter it manually"></textarea></label>
             <label class="wide">English example<textarea id="add-word-example" lang="en" placeholder="A sentence that makes this meaning clear"></textarea></label>
           </div>
@@ -79,6 +82,8 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   let activeCourseId = driveSync.getActiveCourseId();
   let activeTranslationLanguage = getTranslationLanguage();
   let generation = 0;
+  let imageReviewController = null;
+  let cancelImageReview = null;
   const beginOperation = () => {
     const revision = generation;
     const courseId = activeCourseId;
@@ -90,6 +95,9 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     };
   };
   const modal = document.getElementById('add-word-modal');
+  const imageReviewRoot = document.createElement('div');
+  imageReviewRoot.hidden = true;
+  modal.querySelector('.modal-box').appendChild(imageReviewRoot);
   const lookupForm = document.getElementById('add-word-lookup-form');
   const btnOpen = document.getElementById('btn-header-quick-add');
   const btnClose = document.getElementById('btn-close-add-modal');
@@ -104,6 +112,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   const posInput = document.getElementById('add-word-pos');
   const phoneticInput = document.getElementById('add-word-phonetic');
   const definitionInput = document.getElementById('add-word-definition');
+  const usageNoteInput = document.getElementById('add-word-usage-note');
   const translationInput = document.getElementById('add-word-translation');
   const translationField = document.getElementById('add-word-translation-field');
   const exampleInput = document.getElementById('add-word-example');
@@ -254,11 +263,11 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         senses.forEach((sense, senseIndex) => {
           const option = document.createElement('option');
           option.value = String(senseIndex);
-          option.textContent = `${sense.partOfSpeech || 'word'} — ${sense.definition || 'Definition unavailable'}${isUkrainianTranslationEnabled() && sense.translationLanguage === 'uk' && sense.translation ? ` · ${sense.translation}` : ''}`;
+          option.textContent = `${sense.partOfSpeech || 'word'} — ${definitionForLearning({ ...sense, word: result.data?.word || result.term }) || 'Definition unavailable'}${isUkrainianTranslationEnabled() && sense.translationLanguage === 'uk' && sense.translation ? ` · ${sense.translation}` : ''}`;
           select.appendChild(option);
         });
         select.value = String(result.selectedSenseIndex || 0);
-        select.addEventListener('change', () => { result.selectedSenseIndex = Number(select.value); });
+        select.addEventListener('change', () => { result.selectedSenseIndex = Number(select.value); renderBulkResults(); });
         label.appendChild(select);
         const translationLabel = document.createElement('label');
         translationLabel.textContent = 'Ukrainian translation';
@@ -299,6 +308,21 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         translationLabel.appendChild(translation);
         row.append(note, label, translationLabel);
       }
+
+      const exampleLabel = document.createElement('label');
+      exampleLabel.textContent = 'Modern example using this meaning';
+      const exampleInput = document.createElement('textarea');
+      exampleInput.rows = 2;
+      const selectedSense = () => result.data?.senses?.[result.selectedSenseIndex || 0] || result.data;
+      exampleInput.value = result.status === 'ready' ? exampleForLearning({ ...selectedSense(), word: result.data?.word || result.term }) : result.manualExample || '';
+      exampleInput.placeholder = `Write a natural sentence using ${result.data?.word || result.term}`;
+      exampleInput.addEventListener('input', () => {
+        if (result.status === 'ready' && selectedSense()) selectedSense().example = exampleInput.value;
+        else result.manualExample = exampleInput.value;
+      });
+      exampleLabel.appendChild(exampleInput);
+      row.appendChild(exampleLabel);
+
       bulkResultsList.appendChild(row);
     });
     updateBulkSaveState();
@@ -319,6 +343,11 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
 
   const resetModal = () => {
     generation += 1;
+    imageReviewController?.destroy();
+    imageReviewController = null;
+    cancelImageReview?.();
+    cancelImageReview = null;
+    imageReviewRoot.hidden = true;
     modal.classList.remove('active');
     preview.style.display = 'none';
     input.value = '';
@@ -326,6 +355,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     posInput.value = '';
     phoneticInput.value = '';
     definitionInput.value = '';
+    usageNoteInput.value = '';
     translationInput.value = '';
     exampleInput.value = '';
     formStatus.textContent = '';
@@ -341,6 +371,32 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   };
 
   const closeModal = () => { resetModal(); onClose(); };
+
+  const reviewPreparedImages = words => new Promise(resolve => {
+    const wasBulk = !bulkPanel.hidden;
+    const tabs = modal.querySelector('.add-mode-tabs');
+    singlePanel.hidden = true;
+    bulkPanel.hidden = true;
+    tabs.hidden = true;
+    imageReviewRoot.hidden = false;
+    const finish = result => {
+      imageReviewController?.destroy();
+      imageReviewController = null;
+      cancelImageReview = null;
+      imageReviewRoot.hidden = true;
+      tabs.hidden = false;
+      singlePanel.hidden = wasBulk;
+      bulkPanel.hidden = !wasBulk;
+      resolve(result);
+    };
+    cancelImageReview = () => finish(null);
+    imageReviewController = mountImageReview(imageReviewRoot, words, {
+      onApply: finish, onCancel: () => finish(null),
+      originalWords: words.map(word => ({ ...word, imageUrl: '', imageSourceUrl: '', imageAttribution: '', imageLicense: '', imageSearchQuery: '' })),
+      excludeUrls: driveSync.getWords().flatMap(word => [word.imageUrl, word.imageSourceUrl]).filter(Boolean)
+    });
+  });
+
   const syncCourse = () => {
     const nextCourseId = driveSync.getActiveCourseId();
     const nextTranslationLanguage = getTranslationLanguage();
@@ -366,11 +422,18 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
 
   const persistFocusedDraft = () => {
     if (!focusedSenseId || !senseDrafts.has(focusedSenseId)) return;
+    const previous = senseDrafts.get(focusedSenseId);
     senseDrafts.set(focusedSenseId, {
-      ...senseDrafts.get(focusedSenseId),
+      ...previous,
+      sourceDefinition: previous.definition === definitionInput.value.trim() ? previous.sourceDefinition || previous.definition : definitionInput.value.trim(),
+      sourceFingerprint: previous.definition === definitionInput.value.trim() ? previous.sourceFingerprint || '' : '',
+      explanationSource: previous.definition === definitionInput.value.trim() ? previous.explanationSource || '' : 'manual',
+      usageNote: usageNoteInput.value.trim(),
       phonetic: phoneticInput.value.trim(),
       partOfSpeech: posInput.value.trim() || 'unknown',
       definition: definitionInput.value.trim(),
+      usageNote: usageNoteInput.value.trim(),
+      explanationSource: 'manual',
       translation: translationInput.value.trim(),
       example: exampleInput.value.trim()
     });
@@ -382,6 +445,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     posInput.value = draft.partOfSpeech || 'unknown';
     phoneticInput.value = draft.phonetic || currentFetchedData?.phonetic || '';
     definitionInput.value = draft.definition || '';
+    usageNoteInput.value = draft.usageNote || '';
     translationInput.value = draft.translation || '';
     exampleInput.value = draft.example || '';
     const position = [...senseDrafts.keys()].indexOf(focusedSenseId) + 1;
@@ -414,17 +478,19 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       meta.className = 'sense-option-meta';
       meta.textContent = `${index + 1}. ${sense.partOfSpeech || 'unknown'}${sense.source ? ` · ${sense.source}` : ''}`;
       const definition = document.createElement('strong');
-      definition.textContent = sense.definition;
+      definition.textContent = definitionForLearning({ ...sense, word: currentFetchedData?.word || input.value.trim() });
       body.append(meta, definition);
+      if (sense.usageNote) { const usage = document.createElement('small'); usage.textContent = `When to use it: ${sense.usageNote}`; body.appendChild(usage); }
       if (isUkrainianTranslationEnabled() && sense.translationLanguage === 'uk' && sense.translation) {
         const translation = document.createElement('small');
         translation.lang = 'uk';
         translation.textContent = sense.translation;
         body.appendChild(translation);
       }
-      if (sense.example) {
+      const modernExample = exampleForLearning({ ...sense, word: currentFetchedData?.word || input.value.trim() });
+      if (modernExample) {
         const example = document.createElement('small');
-        example.textContent = `“${sense.example}”`;
+        example.textContent = `“${modernExample}”`;
         body.appendChild(example);
       }
       button.append(check, body);
@@ -452,7 +518,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     selectedSenseIds = new Set(focusedSenseId ? [focusedSenseId] : []);
     renderSenseOptions();
     loadFocusedDraft();
-    formStatus.textContent = 'Select one or several meanings. Missing examples are filled from Tatoeba when available.';
+    formStatus.textContent = senses.some(sense => sense.needsExample) ? 'Some meanings still need a modern example. Add one below before saving.' : 'Choose the meanings you use. Overlapping dictionary entries are grouped, and each meaning has its own example.';
   };
 
   btnOpen?.addEventListener('click', openModal);
@@ -572,7 +638,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     updateBulkProgress({ completed: 0, total: items.length, phase: 'Choosing images', startedAt: imageStartedAt });
     try {
       const enrichedItems = await prepareWordsForLibrary(items, {
-        courseId, translationLanguage, existingWords: driveSync.getWords(),
+        courseId, translationLanguage, requireExamples: true, existingWords: driveSync.getWords(),
         onProgress: ({ completed, total, word }) => {
           if (!isCurrent()) return;
           bulkStatus.textContent = `Choosing image ${completed} of ${total}: ${word}`;
@@ -581,7 +647,13 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         }
       });
       if (!isCurrent()) return;
-      const saved = driveSync.addWords(enrichedItems);
+      const reviewedItems = await reviewPreparedImages(enrichedItems);
+      if (!isCurrent()) return;
+      if (!reviewedItems) {
+        bulkSave.disabled = false; bulkSave.innerHTML = originalButton;
+        return;
+      }
+      const saved = driveSync.addWords(reviewedItems);
       driveSync.setActiveNotebook(saved[0].notebook);
       closeModal();
       showToast(`Saved ${saved.length} words to ${saved[0].notebook}.`);
@@ -604,6 +676,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     posInput.value = '';
     phoneticInput.value = '';
     definitionInput.value = '';
+    usageNoteInput.value = '';
     translationInput.value = '';
     exampleInput.value = '';
     formStatus.textContent = 'The spelling changed. Fetch meanings again, or enter the intended meaning manually.';
@@ -659,6 +732,8 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       phonetic: phoneticInput.value.trim(),
       partOfSpeech: posInput.value.trim() || 'unknown',
       definition: definitionInput.value.trim(),
+      usageNote: usageNoteInput.value.trim(),
+      explanationSource: 'manual',
       translation: translationInput.value.trim(),
       translationLanguage: getTranslationLanguage(),
       example: exampleInput.value.trim(),
@@ -666,6 +741,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       acceptedForms: [wordText],
       grammaticalTags: []
     }];
+
 
     if (items.some(item => !item.definition)) {
       formStatus.textContent = 'Choose a dictionary meaning or write the intended definition before saving.';
@@ -678,7 +754,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     btnSave.disabled = true;
     try {
       const enrichedItems = await prepareWordsForLibrary(items, {
-        courseId, translationLanguage, existingWords: driveSync.getWords(),
+        courseId, translationLanguage, requireExamples: true, existingWords: driveSync.getWords(),
         onProgress: ({ completed, total }) => {
           if (!isCurrent()) return;
           formStatus.textContent = `Choosing image ${completed} of ${total}…`;
@@ -686,7 +762,13 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         }
       });
       if (!isCurrent()) return;
-      const saved = driveSync.addWords(enrichedItems);
+      const reviewedItems = await reviewPreparedImages(enrichedItems);
+      if (!isCurrent()) return;
+      if (!reviewedItems) {
+        btnSave.disabled = false; btnSave.innerHTML = originalButton;
+        return;
+      }
+      const saved = driveSync.addWords(reviewedItems);
       driveSync.setActiveNotebook(saved[0].notebook);
       closeModal();
       showToast(`Saved ${saved.length} meaning${saved.length === 1 ? '' : 's'} of “${saved[0].word}” to ${saved[0].notebook}.`);

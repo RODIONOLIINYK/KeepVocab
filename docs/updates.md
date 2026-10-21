@@ -15,7 +15,7 @@ sync; increment Android `versionCode` for every release.
 Required asset names:
 
 - `KeepVocab-X.Y.Z-Android-debug.apk` or `KeepVocab-X.Y.Z-Android-release.apk`
-- `KeepVocab-X.Y.Z-macOS-universal.dmg`
+- `KeepVocab-X.Y.Z-macOS-arm64.dmg` for Apple Silicon Macs
 
 GitHub's release API must provide a SHA-256 digest and size for these assets.
 The updater accepts only matching files from this repository and verifies the
@@ -37,8 +37,22 @@ No uninstall or app-data reset is part of this flow.
 
 ## macOS
 
-Run `npm run mac:build`. This produces a universal DMG, ZIP, blockmaps, and
-`latest-mac.yml` in `dist/macos`. The repository defaults to an unsigned personal
+Run `npm run mac:build`. This produces the Apple Silicon (`arm64`) DMG and ZIP,
+blockmaps, and `latest-mac.yml` in `dist/macos`. The installed app contains only
+Apple Silicon code and the English/Ukrainian Electron locales. The user's standing
+preference is Apple Silicon only: never compile Intel or universal builds, even
+for verification. The packaging hook rejects non-arm64 macOS targets before
+dependencies or Electron binaries are prepared. Use synthetic hook contexts for
+negative architecture tests.
+
+The updater prefers the matching native DMG, recognizes Apple Silicon when running
+under Rosetta, and can still consume historical universal assets. Installed
+versions through 1.8.3 recognize only the universal DMG name and need one manual
+installation of the Apple Silicon app to switch to native updates. Do not build
+another universal installer for migration. The build command explicitly disables
+publishing; publishing a release is a separate step.
+
+The repository defaults to an unsigned personal
 build. Such builds check for updates and, when requested, download a verified DMG,
 show download progress, and retry interrupted transfers. The app checks the staged
 bundle ID and version, quits, replaces its bundle, and reopens. Its installation
@@ -46,7 +60,9 @@ folder must be writable and it must run from Applications rather than a mounted
 DMG or App Translocation. The previous bundle is retained in a private
 `.KeepVocab-update-*` directory beside the app for recovery; failed moves or an
 unsuccessful launch command restore the old bundle. The Library and settings in
-Application Support are never moved. Installer logs are in the app's
+Application Support are never moved. Once the replacement is staged and its
+installer helper starts, the downloaded DMG is removed to avoid retaining a second
+copy of the installer. Installer logs are in the app's
 `updates/install.log` directory under Application Support.
 
 Versions through 1.7.1 only open the downloaded DMG for manual replacement. Those

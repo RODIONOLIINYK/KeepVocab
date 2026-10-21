@@ -126,9 +126,9 @@ test('Gemini turns the exact word sense into concise public-catalog search scene
   assert.match(prompt, /Target word: bank/);
   assert.match(prompt, /Exact selected definition: The land beside a river/);
   assert.match(prompt, /Exactly 5-7 concrete words/);
-  assert.match(prompt, /If it is a physical object, do not invent a scene/);
+  assert.match(prompt, /concrete physical object directly named by an unambiguous target/);
   assert.match(prompt, /such as wrench/);
-  assert.match(prompt, /such as laptops/);
+  assert.match(prompt, /wrench or laptops/);
   assert.match(prompt, /worker cutting a metal sheet/);
   assert.deepEqual(scenes, ['family relaxing beside grassy river at sunset', 'children walking along shallow river shoreline', 'fisherman standing beside muddy river under trees']);
 });
@@ -417,7 +417,7 @@ test('all keyless catalogs run concurrently and ten results are mixed by source'
 
   assert.equal(started, 4);
   assert.equal(results.length, 10);
-  assert.deepEqual(results.slice(0, 4).map(result => result.source), ['Openverse', 'Wikimedia Commons', 'Library of Congress', 'NASA Images']);
+  assert.deepEqual(new Set(results.slice(0, 4).map(result => result.source)), new Set(['Openverse', 'Wikimedia Commons', 'Library of Congress', 'NASA Images']));
 });
 
 test('result-page changes are forwarded to every image provider', async () => {
@@ -462,7 +462,7 @@ test('image provider preference and key can be backed up and restored', () => {
   assert.deepEqual(getImageProviderSettings(restoredStorage), backup);
 });
 
-test('saved Pexels settings are read automatically and Pexels results are returned first', async () => {
+test('saved Pexels settings are read automatically while exact-scene relevance can outrank provider order', async () => {
   const values = new Map();
   const storage = {
     getItem: key => values.get(key) || null,
@@ -486,7 +486,7 @@ test('saved Pexels settings are read automatically and Pexels results are return
 
   assert.equal(requested.find(item => item.host === 'api.pexels.com')?.authorization, 'saved-device-key');
   assert.equal(requested.find(item => item.host === 'api.pexels.com')?.query, 'soldier flag hilltop');
-  assert.equal(results[0].source, 'Pexels');
+  assert.ok(results.some(image => image.source === 'Pexels'));
 });
 
 test('visual scenes are sense-specific for identical spellings without a curated exception list', () => {

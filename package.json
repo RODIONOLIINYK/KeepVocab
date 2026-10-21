@@ -1,6 +1,6 @@
 {
   "name": "keepvocab",
-  "version": "1.8.3",
+  "version": "1.8.6",
   "private": true,
   "type": "module",
   "description": "A local-first vocabulary gym with Google Drive backup.",
@@ -12,7 +12,7 @@
     "android:sync": "npm run build:web && cap sync android",
     "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug",
     "mac:dev": "npm run build:web && electron .",
-    "mac:build": "npm run build:web && electron-builder --mac dmg zip --universal"
+    "mac:build": "npm run build:web && electron-builder --mac dmg zip --arm64 --publish never"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.2",
@@ -28,6 +28,7 @@
   "build": {
     "appId": "com.keepvocab.app",
     "productName": "KeepVocab",
+    "beforePack": "scripts/assert-mac-architecture.cjs",
     "asar": {
       "smartUnpack": false
     },
@@ -45,17 +46,23 @@
       "category": "public.app-category.education",
       "icon": "resources/icon.png",
       "identity": null,
+      "artifactName": "KeepVocab-${version}-macOS-${arch}.${ext}",
+      "electronLanguages": [
+        "en",
+        "en_GB",
+        "uk"
+      ],
       "target": [
         {
           "target": "dmg",
           "arch": [
-            "universal"
+            "arm64"
           ]
         },
         {
           "target": "zip",
           "arch": [
-            "universal"
+            "arm64"
           ]
         }
       ],
@@ -65,7 +72,6 @@
       }
     },
     "dmg": {
-      "artifactName": "KeepVocab-${version}-macOS-${arch}.${ext}",
       "title": "KeepVocab ${version}",
       "contents": [
         {

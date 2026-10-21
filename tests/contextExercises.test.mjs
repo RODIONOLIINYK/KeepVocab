@@ -58,14 +58,14 @@ test('English Context uses Ukrainian meanings and hides punctuated phrase target
   const generated = await generateContextExerciseSet(phraseWords, {
     storage,
     generate: async () => ({ items: [
-      { wordId: 'phrase-1', sentence: 'Hello! Are you here for the conference?' },
-      { wordId: 'phrase-2', sentence: 'Thanks. Your directions helped me find the station.' },
+      { wordId: 'phrase-1', sentence: 'She said, "Hello!" with a welcoming smile.' },
+      { wordId: 'phrase-2', sentence: 'He said, "Thanks." before leaving the station.' },
       { wordId: 'phrase-3', sentence: 'Please, take a seat near the window.' }
     ] })
   });
   assert.equal(generated.items.length, 3);
-  assert.equal(clozeContextSentence(generated.items[0].sentence, 'Hello!'), '_____! Are you here for the conference?');
-  assert.equal(clozeContextSentence(generated.items[1].sentence, 'Thanks.'), '_____. Your directions helped me find the station.');
+  assert.equal(clozeContextSentence(generated.items[0].sentence, 'Hello!'), 'She said, "_____!" with a welcoming smile.');
+  assert.equal(clozeContextSentence(generated.items[1].sentence, 'Thanks.'), 'He said, "_____." before leaving the station.');
 });
 
 test('Context UI renders only a generated sentence question, not a story or meaning clue', () => {
@@ -107,6 +107,26 @@ test('saved examples provide an offline Context fallback without definition clue
   assert.equal(local.kind, 'local');
   assert.equal(local.items.length, 3);
   assert.ok(local.items.every(item => item.source === 'saved-example'));
+});
+
+test('historical quotations cannot return through saved or generated Context sentences', async () => {
+  const historical = 'I believe, Lady, your Ladyſhip obſerved the malleable material which vvas dreſt in outlandiſh Garments.';
+  const selected = words.map((word, index) => ({ ...word, example: index ? [
+    '', 'The meager meal left the hikers hungry.', 'She faced her adversary in the final match.'
+  ][index] : historical }));
+  assert.throws(() => buildLocalContextSet(selected), /at least 3/);
+  let calls = 0;
+  const result = await generateContextExerciseSet(selected, { storage: new MemoryStorage(), generate: async () => {
+    calls += 1;
+    return { items: calls === 1 ? [
+      { wordId: 'w-1', sentence: historical },
+      { wordId: 'w-2', sentence: selected[1].example },
+      { wordId: 'w-3', sentence: selected[2].example }
+    ] : [{ wordId: 'w-1', sentence: 'The warm clay stayed malleable in her hands.' }] };
+  } });
+  assert.equal(calls, 2);
+  assert.equal(result.items.find(item => item.wordId === 'w-1').sentence, 'The warm clay stayed malleable in her hands.');
+  assert.ok(result.items.every(item => !item.sentence.includes('ſ')));
 });
 
 

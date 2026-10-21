@@ -14,6 +14,11 @@ public class NativeSpeechPlugin extends Plugin {
     private TextToSpeech synthesizer;
     private boolean ready = false;
     private PluginCall pendingCall;
+    private int initializationGeneration = 0;
+
+    protected TextToSpeech createSynthesizer(TextToSpeech.OnInitListener listener) {
+        return new TextToSpeech(getContext(), listener);
+    }
 
     @PluginMethod
     public synchronized void speak(PluginCall call) {
@@ -29,16 +34,31 @@ public class NativeSpeechPlugin extends Plugin {
         pendingCall = call;
 
         if (synthesizer == null) {
-            synthesizer = new TextToSpeech(getContext(), status -> {
-                synchronized (NativeSpeechPlugin.this) {
-                    ready = status == TextToSpeech.SUCCESS;
-                    if (!ready) {
-                        rejectPending("Android text-to-speech could not start.", "TTS_INIT_FAILED");
-                        return;
+            final int generation = ++initializationGeneration;
+            try {
+                TextToSpeech created = createSynthesizer(status -> {
+                    synchronized (NativeSpeechPlugin.this) {
+                        if (generation != initializationGeneration) return;
+                        ready = status == TextToSpeech.SUCCESS;
+                        if (!ready) {
+                            releaseSynthesizer();
+                            rejectPending("Android text-to-speech could not start.", "TTS_INIT_FAILED");
+                            return;
+                        }
+                        speakPending();
                     }
-                    speakPending();
+                });
+                // Initialization can finish before the constructor returns.
+                if (generation != initializationGeneration) {
+                    created.shutdown();
+                    return;
                 }
-            });
+                synthesizer = created;
+                if (ready) speakPending();
+            } catch (RuntimeException error) {
+                releaseSynthesizer();
+                rejectPending("Android text-to-speech could not start.", "TTS_INIT_FAILED");
+            }
             return;
         }
 
@@ -85,15 +105,20 @@ public class NativeSpeechPlugin extends Plugin {
         pendingCall = null;
     }
 
+    private void releaseSynthesizer() {
+        initializationGeneration += 1;
+        ready = false;
+        TextToSpeech previous = synthesizer;
+        synthesizer = null;
+        if (previous != null) {
+            try { previous.shutdown(); } catch (RuntimeException ignored) {}
+        }
+    }
+
     @Override
     protected synchronized void handleOnDestroy() {
         rejectPending("Speech stopped because KeepVocab closed.", "SPEECH_STOPPED");
-        if (synthesizer != null) {
-            synthesizer.stop();
-            synthesizer.shutdown();
-            synthesizer = null;
-        }
-        ready = false;
+        releaseSynthesizer();
         super.handleOnDestroy();
     }
 }

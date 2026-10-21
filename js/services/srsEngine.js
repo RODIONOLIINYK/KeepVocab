@@ -1,8 +1,6 @@
-import { streakFromActivity } from './studyActivity.js';
 // Adaptive spaced-repetition scheduler with backward-compatible Leitner fields.
 
-import { driveSync } from './driveSync.js?v=18300';
-import { normalizeWordPracticeStats } from './wordSelection.js?v=18300';
+import { normalizeWordPracticeStats } from './wordSelection.js?v=18600';
 import { localDateKey } from '../utils/dates.js';
 
 export const SRS_VERSION = 3;
@@ -94,7 +92,7 @@ export function scheduleWordReview(word, rating, options = {}) {
     const unaided = result.correct && result.producedUnaided && !result.hintsUsed && result.recallType !== 'recognition';
     if (unaided) {
       const newDay = !stats.lastUnaidedRecallAt
-        || localDateKey(new Date(stats.lastUnaidedRecallAt)) !== localDateKey(now);
+        || localDateKey(new Date(stats.lastUnaidedRecallAt)) < localDateKey(now);
       const recallDays = stats.successfulRecallDays + Math.min(3, stats.legacySuccessfulReviews) + (newDay ? 1 : 0);
       if (recallDays <= 3) intervalMs = Math.min(intervalMs, DAY_MS * 2 ** Math.max(0, recallDays - 1));
       // Extra practice on the same day supplies little evidence of retention.
@@ -129,7 +127,7 @@ export function scheduleWordReview(word, rating, options = {}) {
   };
 }
 
-export function getDueWords(words = driveSync.getWords(), now = new Date()) {
+export function getDueWords(words = [], now = new Date()) {
   const timestamp = validDate(now, new Date()).getTime();
   return (Array.isArray(words) ? words : []).filter(word => {
     const reviewDate = validDate(word?.nextReviewDate || word?.createdAt, new Date(0));
@@ -156,22 +154,4 @@ export function getRatingPreviews(word, now = new Date()) {
     const intervalMs = new Date(scheduled.nextReviewDate).getTime() - reference.getTime();
     return [rating, { rating, nextReviewDate: scheduled.nextReviewDate, intervalMs, label: formatInterval(intervalMs) }];
   }));
-}
-
-export function updateWordRepetition(wordId, recallRating, options = {}) {
-  const words = driveSync.getWords();
-  const wordIndex = words.findIndex(word => word.id === wordId);
-  if (wordIndex === -1) return undefined;
-  words[wordIndex] = scheduleWordReview(words[wordIndex], recallRating, options);
-  driveSync.saveWords(words);
-  const now = validDate(options.now, new Date());
-  driveSync.recordReview(now);
-  updateStreak(now);
-  return words[wordIndex];
-}
-
-export function updateStreak(now = new Date()) {
-  // Activity recording owns streak increments; reading it cannot add a second day.
-  const settings = driveSync.getSettings();
-  return streakFromActivity(settings.reviewActivity, now);
 }

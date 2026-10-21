@@ -1,3 +1,4 @@
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18600';
 import { escapeHtml } from '../utils/html.js';
 import {
   SPEAKING_CATEGORIES,
@@ -8,16 +9,16 @@ import {
   getLessonPlan,
   buildCoachInitiativeCue,
   buildSpeakingInstruction
-} from '../data/speakingLessons.js?v=18300';
-import { GeminiLiveSession } from '../services/geminiLive.js?v=18300';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=18300';
-import { driveSync } from '../services/driveSync.js?v=18300';
-import { recordSpeakingStats } from '../services/learningStats.js?v=18300';
-import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=18300';
-import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, phraseMeaningHint, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=18300';
-import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18300';
+} from '../data/speakingLessons.js?v=18600';
+import { GeminiLiveSession } from '../services/geminiLive.js?v=18600';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18600';
+import { driveSync } from '../services/driveSync.js?v=18600';
+import { recordSpeakingStats } from '../services/learningStats.js?v=18600';
+import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=18600';
+import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, phraseMeaningHint, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=18600';
+import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18600';
 import { navigateTo as navigate } from '../utils/navigation.js';
-import { getTranslationLanguage, getTranslationName } from '../services/translationSettings.js?v=18300';
+import { getTranslationLanguage, getTranslationName } from '../services/translationSettings.js?v=18600';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
 export const COACH_SILENCE_MS = 9000;
@@ -159,7 +160,7 @@ function renderLessonPreview(container, lessonId, onNavigate) {
     <div class="speaking-preview-card">
       <div class="preview-main"><div class="preview-lesson-icon ${category?.tone || 'green'}"><i class="fa-solid ${lessonIcon(lesson)}"></i></div><span class="eyebrow">${escapeHtml(category?.label || 'Open practice')} · ${escapeHtml(lesson.level)}</span><h1>${escapeHtml(lesson.title)}</h1><p class="preview-goal">${escapeHtml(lesson.goal)}</p>
         <div class="role-play-box"><i class="fa-solid fa-masks-theater"></i><div><strong>Your role</strong><span>${escapeHtml(lesson.learnerRole)}</span></div><i class="fa-solid fa-arrow-right"></i><div><strong>Mira’s role</strong><span>${escapeHtml(lesson.coachRole)}</span></div></div>
-        ${vocabularyTargets.length ? `<div class="speaking-vocabulary-targets"><span>Words to activate</span><div>${vocabularyTargets.map(word => `<button type="button" title="${escapeHtml(word.definition)}">${escapeHtml(word.word)}</button>`).join('')}</div><small>Mira will create natural openings for these words without giving them away.</small></div>` : ''}
+        ${vocabularyTargets.length ? `<div class="speaking-vocabulary-targets"><span>Words to activate</span><div>${vocabularyTargets.map(word => `<button type="button" title="${escapeHtml(definitionForLearning(word))}">${escapeHtml(word.word)}</button>`).join('')}</div><small>Mira will create natural openings for these words without giving them away.</small></div>` : ''}
         <div class="target-phrases phrase-learning-preview"><div class="phrase-preview-heading"><span>Expressions you’ll remember</span><small>Meaning first → recall later → reuse near the end</small></div>${phraseTargets.map(target => { const learning = phraseLearningStatus(target, readProgress()); return `<article><div><strong>${escapeHtml(target.text)}</strong><em>${escapeHtml(learning.label)}</em></div><p lang="${getTranslationLanguage()}">${escapeHtml(phraseMeaningHint(target))}</p><small>“${escapeHtml(target.example)}”</small></article>`; }).join('')}</div>
         <div class="preview-actions"><button class="btn-green-solid start-live-lesson" id="start-live-lesson"><i class="fa-solid fa-microphone"></i> ${hasKey ? 'Start live lesson' : 'Set up Gemini to start'}</button><button class="status-pill offline" id="cant-speak-now"><i class="fa-solid fa-keyboard"></i> Can’t speak now</button><span><i class="fa-regular fa-clock"></i> About ${lesson.duration} minutes</span></div>
       </div>

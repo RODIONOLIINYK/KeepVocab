@@ -19,8 +19,20 @@ overlay over practice. Android alone supports scheduled notifications.
 
 The installed desktop app uses `http://127.0.0.1:8085` for Google OAuth; preserve that origin.
 
+Learner wording lives in `definition`; the original dictionary sense remains in
+`sourceDefinition` with stable source identity. Do not restore the retired extra
+short-clue UI. Modern examples are validated centrally in `learningDefinitions.js`
+and `exampleSearch.js`. Library previews explanation repairs and duplicate merges
+preserve practice history and deletion tombstones. Image scenes are typed,
+exact-sense records, persisted/synced and prepared in batches. Image review applies
+only image fields to fresh records. See `docs/release-1.8.6.md` and
+`docs/image-picking-review.md` for the implemented limits and exclusions.
+
 Validate with `npm test`, `git diff --check`, and `npm run build:web`. Release instructions
 and artifact naming are in `docs/updates.md`. Use Java 21 and the configured Android SDK
-for Android builds. `npm run mac:build` builds the universal macOS DMG and ZIP.
+for Android builds. `npm run mac:build` builds Apple Silicon (`arm64`) macOS DMGs
+and ZIPs with only English and Ukrainian Electron locales. The user's standing
+preference prohibits Intel and universal builds, including validation runs and
+command-line overrides; `AGENTS.md` and the packaging hook enforce this rule.
 Builds are personal unsigned/debug distribution artifacts unless signing is configured;
 updates must retain the installed Android signing key. Do not publish credentials.

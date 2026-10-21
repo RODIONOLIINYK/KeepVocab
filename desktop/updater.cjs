@@ -1,5 +1,5 @@
 const { app, ipcMain, net, BrowserWindow } = require('electron');
-const { mkdir } = require('node:fs/promises');
+const { mkdir, rm } = require('node:fs/promises');
 const { downloadVerifiedUpdate } = require('./updateDownload.cjs');
 const { prepareMacUpdate, launchMacUpdate } = require('./macUpdate.cjs');
 const { pathToFileURL } = require('node:url');
@@ -36,7 +36,8 @@ function configureUpdater(isAppUrl, beforeQuit = () => {}) {
       const { RELEASE_API, selectRelease } = await import(pathToFileURL(path.join(__dirname, '../www/js/services/appUpdates.js')).href);
       const response = await net.fetch(RELEASE_API, { headers: { Accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(15000) });
       if (!response.ok) throw new Error('Cannot check for updates right now. Please try again later.');
-      offered = selectRelease(await response.json(), process.platform, app.getVersion());
+      const architecture = app.runningUnderARM64Translation ? 'arm64' : process.arch;
+      offered = selectRelease(await response.json(), process.platform, app.getVersion(), architecture);
       if (offered && autoUpdater) await autoUpdater.checkForUpdates();
       return { status: offered ? downloaded ? 'downloaded' : 'available' : 'current', currentVersion: app.getVersion(), update: offered };
     })().finally(() => { inFlight = null; });
@@ -59,6 +60,8 @@ function configureUpdater(isAppUrl, beforeQuit = () => {}) {
       await downloadVerifiedUpdate(update, destination, (...args) => net.fetch(...args), notify);
       const prepared = await prepareMacUpdate({ dmg: destination, executable: app.getPath('exe'), version: update.version, updatesDirectory: directory, onProgress: notify });
       await launchMacUpdate(prepared, process.pid, directory);
+      // The staged app is independent of its DMG; keep the recovery bundle, not a duplicate installer.
+      await rm(destination, { force: true }).catch(() => {});
       // Give the renderer time to display the final status before quitting.
       setTimeout(() => { beforeQuit(); app.quit(); }, 500);
       return { status: 'installing', message: 'Restarting KeepVocab to install the update. Your Library and progress stay saved.' };

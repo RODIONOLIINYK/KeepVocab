@@ -23,6 +23,11 @@ function validTimestamp(value) {
   return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
+function latestTimestamp(...values) {
+  const timestamp = Math.max(0, ...values.map(validTimestamp));
+  return timestamp ? new Date(timestamp).toISOString() : '';
+}
+
 function normalizeModeStats(value) {
   const current = value && typeof value === 'object' ? value : {};
   return {
@@ -58,7 +63,7 @@ function normalizeSelectionMistakes(word) {
 export function normalizeWordPracticeStats(word) {
   const hasCurrentStats = word?.practiceStats && typeof word.practiceStats === 'object';
   const current = hasCurrentStats ? word.practiceStats : {};
-  const legacyAttempts = count(word?.srs?.repetitions);
+  const legacyAttempts = count(word?.srs?.repetitions || (word?.lastReviewedAt ? Math.max(1, count(word.box) - 1) : 0));
   const legacyMissed = count(word?.mistakes?.incorrectAttempts);
   const attempts = hasCurrentStats ? count(current.attempts) : Math.max(legacyAttempts, legacyMissed);
   const missed = hasCurrentStats ? count(current.missed) : Math.min(attempts, legacyMissed);
@@ -66,7 +71,16 @@ export function normalizeWordPracticeStats(word) {
   const byMode = current.byMode && typeof current.byMode === 'object'
     ? Object.fromEntries(Object.entries(current.byMode).map(([mode, value]) => [String(mode), normalizeModeStats(value)]))
     : {};
-  const lastAnsweredAt = current.lastAnsweredAt || word?.lastExerciseResult?.occurredAt || word?.lastReviewedAt || '';
+  const lastResult = word?.lastExerciseResult;
+  const recentResults = Array.isArray(current.recentResults) ? current.recentResults.slice(-20) : [];
+  const lastAnsweredAt = latestTimestamp(current.lastAnsweredAt, lastResult?.occurredAt, word?.lastReviewedAt);
+  // Recognition and hinted answers cannot stand in for successful retrieval.
+  // Recover timestamps only from records which explicitly stored that evidence.
+  const lastResultUnaided = lastResult?.correct && lastResult.producedUnaided && !lastResult.hintsUsed
+    && lastResult.recallType && lastResult.recallType !== 'recognition';
+  const lastUnaidedRecallAt = latestTimestamp(current.lastUnaidedRecallAt,
+    lastResultUnaided ? lastResult.occurredAt : '',
+    ...recentResults.filter(result => result.correct && result.unaided && result.recallType !== 'recognition').map(result => result.occurredAt));
   const lastAnswerCorrect = typeof current.lastAnswerCorrect === 'boolean' ? current.lastAnswerCorrect
     : typeof word?.lastExerciseResult?.correct === 'boolean' ? word.lastExerciseResult.correct
       : word?.srs?.lastRating ? word.srs.lastRating !== 'again' : null;
@@ -83,19 +97,19 @@ export function normalizeWordPracticeStats(word) {
     selections: count(current.selections),
     lastSelectedAt: String(current.lastSelectedAt || ''),
     lastAnsweredAt: String(lastAnsweredAt),
-    lastCorrectAt: String(current.lastCorrectAt || ''),
-    lastMissedAt: String(current.lastMissedAt || ''),
+    lastCorrectAt: latestTimestamp(current.lastCorrectAt, lastResult?.correct ? lastResult.occurredAt : ''),
+    lastMissedAt: latestTimestamp(current.lastMissedAt, lastResult?.correct === false ? lastResult.occurredAt : ''),
     lastAnswerCorrect,
     recallAttempts: count(current.recallAttempts),
     unaidedRecalled: count(current.unaidedRecalled),
     successfulRecallDays: count(current.successfulRecallDays),
-    lastUnaidedRecallAt: String(current.lastUnaidedRecallAt || ''),
+    lastUnaidedRecallAt,
     recognitionCorrect: count(current.recognitionCorrect),
     assistedCorrect: count(current.assistedCorrect),
     hintsUsed: count(current.hintsUsed),
     timedRecallCount: count(current.timedRecallCount),
     recallTimeTotalMs: count(current.recallTimeTotalMs),
-    recentResults: Array.isArray(current.recentResults) ? current.recentResults.slice(-20) : [],
+    recentResults,
     byMode
   };
 }
@@ -109,24 +123,25 @@ export function updateWordPracticeStats(word, result) {
   const recalled = Boolean(result.correct);
   const recallAttempt = result.recallType !== 'recognition';
   const unaided = recalled && recallAttempt && result.producedUnaided && !result.hintsUsed;
+  const latestAnswer = validTimestamp(result.occurredAt) >= validTimestamp(current.lastAnsweredAt);
   const newRecallDay = unaided && (!validTimestamp(current.lastUnaidedRecallAt)
-    || localDateKey(new Date(current.lastUnaidedRecallAt)) !== localDateKey(new Date(result.occurredAt)));
+    || localDateKey(new Date(current.lastUnaidedRecallAt)) < localDateKey(new Date(result.occurredAt)));
   const timedRecall = unaided && Number.isFinite(result.responseTimeMs);
   return {
     ...current,
     attempts: current.attempts + 1,
     recalled: current.recalled + (recalled ? 1 : 0),
     missed: current.missed + (recalled ? 0 : 1),
-    consecutiveCorrect: recalled ? current.consecutiveCorrect + 1 : 0,
-    consecutiveMisses: recalled ? 0 : current.consecutiveMisses + 1,
-    lastAnsweredAt: result.occurredAt,
-    lastCorrectAt: recalled ? result.occurredAt : current.lastCorrectAt,
-    lastMissedAt: recalled ? current.lastMissedAt : result.occurredAt,
-    lastAnswerCorrect: recalled,
+    consecutiveCorrect: latestAnswer ? (recalled ? current.consecutiveCorrect + 1 : 0) : current.consecutiveCorrect,
+    consecutiveMisses: latestAnswer ? (recalled ? 0 : current.consecutiveMisses + 1) : current.consecutiveMisses,
+    lastAnsweredAt: latestTimestamp(current.lastAnsweredAt, result.occurredAt),
+    lastCorrectAt: recalled ? latestTimestamp(current.lastCorrectAt, result.occurredAt) : current.lastCorrectAt,
+    lastMissedAt: recalled ? current.lastMissedAt : latestTimestamp(current.lastMissedAt, result.occurredAt),
+    lastAnswerCorrect: latestAnswer ? recalled : current.lastAnswerCorrect,
     recallAttempts: current.recallAttempts + (recallAttempt ? 1 : 0),
     unaidedRecalled: current.unaidedRecalled + (unaided ? 1 : 0),
     successfulRecallDays: current.successfulRecallDays + (newRecallDay ? 1 : 0),
-    lastUnaidedRecallAt: unaided ? result.occurredAt : current.lastUnaidedRecallAt,
+    lastUnaidedRecallAt: unaided ? latestTimestamp(current.lastUnaidedRecallAt, result.occurredAt) : current.lastUnaidedRecallAt,
     recognitionCorrect: current.recognitionCorrect + (recalled && !recallAttempt ? 1 : 0),
     assistedCorrect: current.assistedCorrect + (recalled && recallAttempt && !unaided ? 1 : 0),
     hintsUsed: current.hintsUsed + count(result.hintsUsed),
@@ -136,7 +151,7 @@ export function updateWordPracticeStats(word, result) {
       correct: recalled, unaided: Boolean(unaided), recallType: result.recallType,
       hintsUsed: count(result.hintsUsed), responseTimeMs: result.responseTimeMs,
       occurredAt: result.occurredAt
-    }].slice(-20),
+    }].sort((left, right) => validTimestamp(left.occurredAt) - validTimestamp(right.occurredAt)).slice(-20),
     byMode: {
       ...current.byMode,
       [mode]: {
@@ -144,10 +159,31 @@ export function updateWordPracticeStats(word, result) {
         attempts: modeStats.attempts + 1,
         recalled: modeStats.recalled + (recalled ? 1 : 0),
         missed: modeStats.missed + (recalled ? 0 : 1),
-        lastAnsweredAt: result.occurredAt
+        lastAnsweredAt: latestTimestamp(modeStats.lastAnsweredAt, result.occurredAt)
       }
     }
   };
+}
+
+// Automatic modes share review cooldowns. Explicitly chosen words may opt out
+// through includeResting, without changing their saved review dates.
+export function isWordReadyForPractice(word, now = new Date()) {
+  const stats = normalizeWordPracticeStats(word);
+  const timestamp = now.getTime();
+  const answeredAt = validTimestamp(stats.lastAnsweredAt);
+  const dueAt = validTimestamp(word?.nextReviewDate || word?.createdAt);
+  const recallAt = validTimestamp(stats.lastUnaidedRecallAt);
+  const recallDays = stats.successfulRecallDays + stats.legacySuccessfulReviews;
+  const reliable = recallDays >= 3 && stats.lastAnswerCorrect !== false
+    && !stats.consecutiveMisses && !normalizeSelectionMistakes(word).consecutiveFailures;
+  if (dueAt && dueAt <= timestamp) {
+    return !(reliable && recallAt && timestamp - recallAt < DAY_MS);
+  }
+  if (!answeredAt && !stats.attempts) return !dueAt;
+  if (stats.lastAnswerCorrect !== true || !answeredAt || timestamp - answeredAt < DAY_MS) return false;
+  // Mature legacy schedules are retained until their actual review date.
+  if (word.mastered || (Number(word.srs?.version || 0) < 3 && Number(word.box) >= 4)) return false;
+  return recallDays < 3;
 }
 
 function recentFailureCount(word, now) {
@@ -256,7 +292,8 @@ export function selectModeWords(words, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
   const mode = String(options.mode || 'independent');
   const limit = Math.max(0, Math.round(options.limit ?? 10));
-  const valid = (Array.isArray(words) ? words : []).filter(word => word?.id && word.word && word.definition);
+  const valid = (Array.isArray(words) ? words : []).filter(word => word?.id && word.word && word.definition
+    && (options.includeResting === true || isWordReadyForPractice(word, now)));
   if (!valid.length || !limit) return [];
   const uniqueSpellings = new Set(valid.map(word => String(word.word).trim().toLowerCase())).size;
   const target = Math.min(limit, uniqueSpellings);

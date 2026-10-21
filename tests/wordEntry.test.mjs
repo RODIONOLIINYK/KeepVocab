@@ -73,3 +73,12 @@ test('an empty save batch does not create an empty vocabulary record', async () 
     findImages: async () => assert.fail('Should not search')
   }), []);
 });
+
+test('new vocabulary cannot bypass a missing or historical usage example in the composer save pipeline', async () => {
+  for (const example of ['', 'I think I have ſeen your Ladyſhip in ſuch an outlandiſh one.']) {
+    await assert.rejects(prepareWordsForLibrary([{ word: 'outlandish', definition: 'Strange or unfamiliar.', example }], {
+      requireExamples: true, settings: { enabled: false },
+      findImages: async () => assert.fail('Missing examples must be resolved before image preparation')
+    }), /modern example/);
+  }
+});

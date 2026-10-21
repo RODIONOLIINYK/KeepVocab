@@ -39,13 +39,14 @@ function emitChange() {
 
 export function getGeminiSettings(storage = globalThis.localStorage) {
   const saved = storage ? parse(storage.getItem(GEMINI_SETTINGS_STORAGE), {}) : {};
+  const apiKey = String(storage?.getItem(GEMINI_KEY_STORAGE) || '').trim();
   return {
-    apiKey: String(storage?.getItem(GEMINI_KEY_STORAGE) || '').trim(),
+    apiKey,
     textModel: String(saved.textModel || DEFAULT_GEMINI_TEXT_MODEL),
     liveModel: String(saved.liveModel || DEFAULT_GEMINI_LIVE_MODEL),
     imageModel: String(saved.imageModel || DEFAULT_GEMINI_IMAGE_MODEL),
     updatedAt: saved.updatedAt || null,
-    enabled: Boolean(storage?.getItem(GEMINI_KEY_STORAGE))
+    enabled: Boolean(apiKey)
   };
 }
 
@@ -102,6 +103,7 @@ export function restoreGeminiBackupRecord(record, storage = globalThis.localStor
 
 export async function generateGeminiParts(parts, options = {}) {
   const settings = { ...getGeminiSettings(options.storage), ...(options.settings || {}) };
+  if (options.settings?.enabled === false) throw new Error('AI is disabled in Settings.');
   if (!settings.apiKey) throw new Error('Add a Google AI Studio key in Settings to use AI feedback.');
   const model = options.model || settings.textModel;
   const defaultFetch = !options.fetchImpl;
@@ -143,12 +145,23 @@ export async function generateGeminiParts(parts, options = {}) {
       throw new GeminiRequestError(`Gemini request failed (${response.status}).${detail ? ` ${detail}` : ''}`, response.status);
     }
     const payload = await response.json();
-    const responseParts = payload?.candidates?.[0]?.content?.parts || [];
+    const candidate = payload?.candidates?.[0];
+    const responseParts = Array.isArray(candidate?.content?.parts) ? candidate.content.parts : [];
+    if (options.json && candidate?.finishReason === 'MAX_TOKENS') {
+      const error = new GeminiRequestError('Gemini reached its response limit before completing its response. Try again.');
+      error.code = 'MAX_TOKENS';
+      throw error;
+    }
     if (options.returnParts) return responseParts;
-    const text = responseParts.map(part => part.text || '').join('').trim();
-    if (!text) throw new Error('Gemini returned no usable response.');
+    // Thought summaries are separate from the answer and may precede valid JSON.
+    const text = responseParts.filter(part => !part.thought && typeof part.text === 'string').map(part => part.text).join('').trim();
+    if (!text) {
+      const blocked = payload?.promptFeedback?.blockReason || (candidate?.finishReason && candidate.finishReason !== 'STOP' ? candidate.finishReason : '');
+      throw new Error(blocked ? `Gemini could not return this response (${blocked}). Try another term or enter its meaning manually.` : 'Gemini returned no usable response.');
+    }
     if (!options.json) return text;
-    try { return JSON.parse(text.replace(/^```json\s*|\s*```$/g, '')); } catch { throw new Error('Gemini returned an invalid structured response.'); }
+    const fenced = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+    try { return JSON.parse(fenced ? fenced[1] : text); } catch { throw new Error('Gemini returned an invalid structured response.'); }
   };
   if (options.dedupe === false) return execute();
   if (inFlightRequests.has(key)) return inFlightRequests.get(key);

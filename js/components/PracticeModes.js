@@ -1,14 +1,15 @@
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18300';
-import { driveSync } from '../services/driveSync.js?v=18300';
-import { speakWord } from '../services/speechService.js?v=18300';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18300';
-import { playInteractionSound } from '../services/interactionSound.js?v=18300';
-import { selectPracticeWords } from '../services/dailySession.js?v=18300';
+import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18600';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18600';
+import { driveSync } from '../services/driveSync.js?v=18600';
+import { speakWord } from '../services/speechService.js?v=18600';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18600';
+import { playInteractionSound } from '../services/interactionSound.js?v=18600';
+import { selectPracticeWords } from '../services/dailySession.js?v=18600';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18300';
-import { getActivePracticeWords } from '../services/wordSelection.js?v=18300';
-import { stableWordChoices } from '../services/wordChoices.js?v=18300';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18300';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18600';
+import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18600';
+import { stableWordChoices } from '../services/wordChoices.js?v=18600';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18600';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function emptyMode(container, icon, title, detail, onNavigate) {
@@ -17,8 +18,10 @@ function emptyMode(container, icon, title, detail, onNavigate) {
 }
 
 export function renderSpellingMode(container, onNavigate) {
-  const queue = selectPracticeWords(getActivePracticeWords(driveSync));
-  if (!queue.length) return emptyMode(container, 'fa-keyboard', 'Add vocabulary first', 'Listen & Spell uses the words in your active month.', onNavigate);
+  const all = getActivePracticeWords(driveSync);
+  const queue = selectPracticeWords(all, { mode: 'listen-and-spell' });
+  if (!queue.length) return emptyMode(container, 'fa-keyboard', all.length ? 'All caught up' : 'Add vocabulary first', all.length ? 'Your words are resting until their next review. Recent recall and mistakes determine when they return.' : 'Listen & Spell uses the words in your active month.', onNavigate);
+  recordModeWordSelections(driveSync, queue, { mode: 'listen-and-spell' });
   const originalCount = queue.length;
   let index = 0;
   let score = 0;
@@ -40,7 +43,7 @@ export function renderSpellingMode(container, onNavigate) {
         <div class="practice-prompt">
           <div class="practice-icon"><i class="fa-solid fa-headphones"></i></div>
           <p>Listen, then type the word that matches this definition.</p>
-          <blockquote>${escapeHtml(word.definition)}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}
+          <blockquote>${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}
           <div class="listen-controls"><button class="audio-btn-circle large" id="spell-listen" aria-label="Play word"><i class="fa-solid fa-volume-high"></i></button><button class="status-pill offline" id="spell-listen-slow"><i class="fa-solid fa-gauge-simple-low"></i> Slow</button></div>
           <p class="speech-help" id="spell-audio-status" role="status" aria-live="polite">Tap the speaker to hear the word. Use Slow to repeat it clearly.</p>
           ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word returns to Box 1 for another review.'}</span></div><button class="btn-green-solid" id="spell-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
@@ -80,8 +83,10 @@ export function renderSpellingMode(container, onNavigate) {
 
 export function renderChooseWordMode(container, onNavigate) {
   const all = getActivePracticeWords(driveSync);
-  const queue = selectPracticeWords(all);
-  if (queue.length < 2) return emptyMode(container, 'fa-list-check', 'Add at least two words', 'Choose Word needs another word to create meaningful choices.', onNavigate);
+  const queue = selectPracticeWords(all, { mode: 'choose-word' });
+  if (new Set(all.map(word => word.word.toLowerCase())).size < 2) return emptyMode(container, 'fa-list-check', 'Add at least two words', 'Choose Word needs another word to create meaningful choices.', onNavigate);
+  if (!queue.length) return emptyMode(container, 'fa-list-check', 'All caught up', 'Your words are resting until their next review. Recently recalled meanings stay out of the next set.', onNavigate);
+  recordModeWordSelections(driveSync, queue, { mode: 'choose-word' });
   const originalCount = queue.length;
   let index = 0;
   let score = 0;
@@ -106,9 +111,9 @@ export function renderChooseWordMode(container, onNavigate) {
         <div class="practice-prompt choose-prompt">
           <img class="practice-mascot" src="assets/keepvocab-sprig-thinking.webp" alt="" aria-hidden="true">
           <p>Which word matches this definition?</p>
-          <blockquote>${escapeHtml(target.definition)}</blockquote>${isUkrainianTranslationEnabled() && target.translationLanguage === 'uk' && target.translation ? `<p class="word-translation" lang="uk">${escapeHtml(target.translation)}</p>` : ''}
+          <blockquote>${escapeHtml(definitionForLearning(target))}</blockquote>${isUkrainianTranslationEnabled() && target.translationLanguage === 'uk' && target.translation ? `<p class="word-translation" lang="uk">${escapeHtml(target.translation)}</p>` : ''}
           ${renderChoiceGrid({ options, targetId: target.id, selectedId })}
-          ${renderAnswerFeedback({ answered, correct: isCorrect, answer: target.word, detail: target.example || (isCorrect ? 'You matched the meaning.' : ''), nextId: 'choose-next', nextLabel: index + 1 === queue.length ? 'See result' : 'Next question' })}
+          ${renderAnswerFeedback({ answered, correct: isCorrect, answer: target.word, detail: exampleForLearning(target) || (isCorrect ? 'You matched the meaning.' : ''), nextId: 'choose-next', nextLabel: index + 1 === queue.length ? 'See result' : 'Next question' })}
         </div>
       </div></section>`;
     container.querySelector('#choose-exit').addEventListener('click', () => go('dashboard', onNavigate));
@@ -126,5 +131,3 @@ export function renderChooseWordMode(container, onNavigate) {
   }
   render();
 }
-
-export const renderDefinitionChallenge = renderChooseWordMode;

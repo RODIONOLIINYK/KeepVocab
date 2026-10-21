@@ -217,6 +217,65 @@ test('the maintained Wiktionary response shape returns pronunciations, quotes, a
   assert.deepEqual(result.synonyms, ['strong']);
 });
 
+test('historical attestation quotes never become modern learner examples, including cached lookups', async () => {
+  const historical = 'I believe, Lady, your Ladyſhip obſerved a young VVoman at Church yeſterday at Even-ſong, vvho vvas dreſt in one of your outlandiſh Garments; I think I have ſeen your Ladyſhip in ſuch a one. Hovvever, in the Country, ſuch Dreſſes are / Rara avis in Terris, nigroq; ſimillima Cycno, / That is, Madam, as much to ſay, / A rare Bird upon the Earth, and very like a black Svvan.';
+  const storage = new MemoryStorage();
+  const fetchImpl = async () => ({ ok: true, json: async () => ({ word: 'outlandish', entries: [{ partOfSpeech: 'adjective', senses: [
+    { definition: 'Appearing to be foreign; strange, unfamiliar.', quotes: [{ text: historical }] }
+  ] }] }) });
+  const result = await fetchWordDetails('outlandish', { storage, fetchImpl });
+  assert.equal(result.definition, 'Appearing to be foreign; strange, unfamiliar.');
+  assert.equal(result.example, '');
+  assert.equal(result.needsExample, true);
+  storage.setItem('keepvocab_dictionary_cache_v4', JSON.stringify({ outlandish: { cachedAt: Date.now(), data: {
+    word: 'outlandish', senses: [{ definition: result.definition, example: historical }]
+  } } }));
+  const cached = await fetchWordDetails('outlandish', { storage, fetchImpl: async () => assert.fail('Use cache') });
+  assert.equal(cached.example, '');
+  assert.equal(cached.needsExample, true);
+});
+
+test('a good modern example is preferred to earlier archival evidence and source license is retained', async () => {
+  const result = await fetchWordDetails('outlandish', { storage: null, fetchImpl: async () => ({ ok: true, json: async () => ({
+    word: 'outlandish', source: { url: 'https://en.wiktionary.org/wiki/outlandish', license: { name: 'CC BY-SA 4.0' } },
+    entries: [{ partOfSpeech: 'adjective', senses: [{ definition: 'Appearing to be foreign; strange, unfamiliar.',
+      quotes: [{ text: 'Theſe outlandiſh Garments are moſt ſtrange.' }, { text: 'The unfamiliar clothes looked outlandish to the visitors.' }] }] }]
+  }) }) });
+  assert.equal(result.example, 'The unfamiliar clothes looked outlandish to the visitors.');
+  assert.equal(result.needsExample, false);
+  assert.equal(result.senses[0].sourceUrl, 'https://en.wiktionary.org/wiki/outlandish');
+  assert.equal(result.senses[0].attribution, 'CC BY-SA 4.0');
+});
+
+test('current common senses precede technical senses and suppress obsolete or form-only duplicates', async () => {
+  const result = await fetchWordDetails('bank', { storage: null, fetchImpl: async () => ({ ok: true, json: async () => ({ word: 'bank', entries: [{ partOfSpeech: 'noun', senses: [
+    { definition: 'A shelf for storing something.', tags: ['obsolete'] },
+    { definition: 'A raised mass of material in a laboratory.', tags: ['technical', 'chemistry'] },
+    { definition: 'Alternative spelling of banc.', tags: ['archaic'] },
+    { definition: 'A place that keeps and lends money.', examples: ['The bank lent her money.'] },
+    { definition: 'Land beside a river.', examples: ['They sat on the river bank.'] }
+  ] }] }) }) });
+  assert.equal(result.senses.length, 3);
+  assert.equal(result.senses[0].definition, 'A place that keeps and lends money.');
+  assert.equal(result.senses[1].definition, 'Land beside a river.');
+  assert.deepEqual(result.senses[2].labels, ['technical', 'chemistry']);
+  const archaicOnly = await fetchWordDetails('thee', { storage: null, fetchImpl: async () => ({ ok: true, json: async () => ({ word: 'thee', entries: [{ partOfSpeech: 'pronoun', senses: [{ definition: 'The person being spoken to.', tags: ['archaic'] }] }] }) }) });
+  assert.equal(archaicOnly.senses.length, 1);
+  assert.deepEqual(archaicOnly.senses[0].labels, ['archaic']);
+});
+
+test('near-identical dictionary senses merge their evidence while current and historical scopes remain distinct', async () => {
+  const result = await fetchWordDetails('outlandish', { storage: null, fetchImpl: async () => ({ ok: true, json: async () => ({ word: 'outlandish', entries: [{ partOfSpeech: 'adjective', senses: [
+    { definition: 'Appearing to be foreign; strange, unfamiliar.' },
+    { definition: 'Foreign-looking; strange or unfamiliar.', examples: ['Their unfamiliar dress looked outlandish to the villagers.'] },
+    { definition: 'Very unusual or strange.', examples: ['She proposed an outlandish plan.' ] }
+  ] }] }) }) });
+  assert.equal(result.senses.length, 2);
+  assert.deepEqual(result.senses[0].sourceDefinitions, ['Appearing to be foreign; strange, unfamiliar.', 'Foreign-looking; strange or unfamiliar.']);
+  assert.equal(result.senses[0].example, 'Their unfamiliar dress looked outlandish to the villagers.');
+  assert.equal(result.senses[1].definition, 'Very unusual or strange.');
+});
+
 test('unreachable providers produce a network error instead of a misleading long timeout error', async () => {
   const startedAt = Date.now();
   await assert.rejects(

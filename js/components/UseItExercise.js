@@ -1,6 +1,7 @@
-import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18300';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=18300';
-import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=18300';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18600';
+import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18600';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18600';
+import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=18600';
 import { escapeHtml } from '../utils/html.js';
 
 export function mountUseItExercise(root, options) {
@@ -47,7 +48,7 @@ export function mountUseItExercise(root, options) {
     if (destroyed) return;
     const word = options.word;
     const canSpeak = canRecordForGemini() || Boolean(globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition);
-    root.innerHTML = `<div class="use-it-stage"><img src="${result ? (result.correct ? 'assets/keepvocab-sprig-celebrate.webp' : 'assets/keepvocab-sprout-mascot.webp') : 'assets/keepvocab-sprig-thinking.webp'}" alt="" aria-hidden="true"><span class="eyebrow">Make it yours</span><h1>Use <strong>${escapeHtml(word.word)}</strong> in your own sentence.</h1><p class="use-it-definition">${escapeHtml(word.definition)}</p>
+    root.innerHTML = `<div class="use-it-stage"><img src="${result ? (result.correct ? 'assets/keepvocab-sprig-celebrate.webp' : 'assets/keepvocab-sprout-mascot.webp') : 'assets/keepvocab-sprig-thinking.webp'}" alt="" aria-hidden="true"><span class="eyebrow">Make it yours</span><h1>Use <strong>${escapeHtml(word.word)}</strong> in your own sentence.</h1><p class="use-it-definition">${escapeHtml(definitionForLearning(word))}</p>${word.usageNote ? `<p class="meaning-usage"><strong>When to use it:</strong> ${escapeHtml(word.usageNote)}</p>` : ''}
       ${result ? `<div class="answer-feedback-card ${result.correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><i class="fa-solid ${result.correct ? 'fa-check' : 'fa-pen'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${result.correct ? 'Good use of the meaning' : 'One more adjustment'}</strong><span>${escapeHtml(result.feedback)}${result.improvedSentence ? `<br>More natural: “${escapeHtml(result.improvedSentence)}”` : ''}</span></div></div><div class="inline-actions"><button class="btn-green-solid" data-useit-next>${escapeHtml(options.nextLabel || 'Next word')}</button><button class="status-pill offline" data-useit-retry>Edit sentence</button></div>` : `<form data-useit-form><textarea data-useit-sentence rows="4" placeholder="Write a natural sentence…" aria-label="Your sentence">${escapeHtml(sentence)}</textarea><div class="use-it-actions">${canSpeak ? '<button type="button" class="status-pill offline" data-useit-speak><i class="fa-solid fa-microphone"></i> Speak instead</button>' : ''}<button class="btn-green-solid" data-useit-check>Check sentence</button></div><p data-useit-status role="status" aria-live="polite">${getGeminiSettings().enabled ? 'Gemini will check meaning, grammar, and naturalness.' : 'Your sentence will be saved locally. Connect Gemini for detailed feedback.'}</p></form>`}</div>`;
 
     root.querySelector('[data-useit-form]')?.addEventListener('submit', async event => {

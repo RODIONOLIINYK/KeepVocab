@@ -1,5 +1,5 @@
-import { imageSelectionPatch } from './imageSearch.js?v=18300';
-import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18300';
+import { imageSelectionPatch } from './imageSearch.js?v=18600';
+import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18600';
 
 export const MAX_BULK_WORDS = 100;
 export const BULK_LOOKUP_DELAY_MS = 1000;
@@ -93,7 +93,7 @@ export async function attachImagesSequentially(words, findImages, options = {}) 
   for (let index = 0; index < words.length; index += 1) {
     const word = { ...words[index] };
     try {
-      const [image] = await findImages(word, { excludeUrls: [...excluded], limit: 1 });
+      const [image] = await findImages(word, { ...options, excludeUrls: [...excluded], limit: 1 });
       if (image?.url) {
         Object.assign(word, imageSelectionPatch(image));
         excluded.add(image.url);
@@ -120,10 +120,19 @@ export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '', 
       audioUrl: sense.audioUrl || data.audioUrl || '',
       partOfSpeech: sense.partOfSpeech || 'unknown',
       definition: sense.definition || '',
+      sourceDefinition: sense.sourceDefinition || sense.definition || '',
+      sourceDefinitions: sense.sourceDefinitions || [],
+      sourceFingerprint: sense.sourceFingerprint || '',
+      explanationSource: sense.explanationSource || '',
+      explanationModel: sense.explanationModel || '',
+      explanationVersion: sense.explanationVersion || 0,
+      usageNote: sense.usageNote || '',
+      needsExample: Boolean(sense.needsExample),
       translation: hasUkrainianTranslation(sense.translation) ? sense.translation.trim() : sense.definition || '',
       translationLanguage: hasUkrainianTranslation(sense.translation) ? TRANSLATION_LANGUAGE : 'en',
       acceptedForms: sense.acceptedForms || data.acceptedForms || [data.word || result.term],
       grammaticalTags: sense.grammaticalTags || data.grammaticalTags || [],
+      labels: sense.labels || [],
       example: sense.example || '',
       exampleSourceUrl: sense.exampleSourceUrl || '',
       exampleAttribution: sense.exampleAttribution || '',
@@ -141,6 +150,7 @@ export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '', 
     translationLanguage: hasUkrainianTranslation(manualTranslation) ? TRANSLATION_LANGUAGE : 'en',
     acceptedForms: result?.term ? [result.term] : [],
     grammaticalTags: [],
-    example: ''
+    example: String(result?.manualExample || '').trim(),
+    explanationSource: 'manual'
   };
 }

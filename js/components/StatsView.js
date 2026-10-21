@@ -1,8 +1,9 @@
-import { driveSync } from '../services/driveSync.js?v=18300';
-import { getDueWords } from '../services/srsEngine.js?v=18300';
-import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18300';
-import { normalizeLearningStats } from '../services/learningStats.js?v=18300';
-import { weaknessScore } from '../services/dailySession.js?v=18300';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18600';
+import { driveSync } from '../services/driveSync.js?v=18600';
+import { getDueWords } from '../services/srsEngine.js?v=18600';
+import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18600';
+import { normalizeLearningStats } from '../services/learningStats.js?v=18600';
+import { weaknessScore } from '../services/dailySession.js?v=18600';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -39,8 +40,8 @@ export function renderStatsView(container, onNavigate) {
     <div class="progress-detail-grid"><article class="spec-card"><div class="today-section-heading"><div><span class="eyebrow">Last 7 days</span><h2>${weekly.reduce((sum, day) => sum + day.count, 0)} exercises</h2></div><span id="stats-today-count">${reviewsToday}/${dailyGoal} today</span></div><div class="activity-chart">${weekly.map(day => `<div title="${day.count} exercises"><span>${day.count || ''}</span><i style="height:${day.count ? Math.max(18, Math.round(day.count / maxActivity * 120)) : 8}px"></i><small>${day.label}</small></div>`).join('')}</div></article>
       <article class="spec-card progress-outcomes"><span class="eyebrow">Learning outcomes</span><div><span>Sessions completed</span><strong>${stats.sessionsCompleted}</strong></div><div><span>Weak words improved</span><strong>${stats.weakWordsImproved}</strong></div><div><span>Speaking minutes</span><strong>${Math.round(stats.speakingMinutes)}</strong></div><div><span>Weak words now</span><strong>${weak}</strong></div><p><i class="fa-solid fa-cloud"></i> ${auth.isConnected ? 'These stats are included in your Drive backup.' : 'Connect Drive in Settings to restore these stats on another installation.'}</p></article></div>
     <article class="spec-card algorithm-details"><div class="today-section-heading"><div><span class="eyebrow">Scheduling detail</span><h2>Adaptive review by legacy box</h2></div><span>Mastered words still return</span></div><div class="box-distribution">${boxCounts.map((count, index) => `<div><span>Box ${index + 1}</span><i><b style="width:${Math.round(count / Math.max(1,...boxCounts) * 100)}%"></b></i><strong>${count}</strong></div>`).join('')}</div><p class="section-helper">Boxes remain for backward compatibility. Actual intervals adapt to difficulty, failures, and the strength of each answer.</p></article>
-    <article class="spec-card goal-settings"><div><span class="eyebrow">Daily goal</span><h2>Keep it realistic</h2><p>Choose how many exercises you want to complete on a typical day.</p></div><form id="daily-goal-form"><input type="number" id="daily-goal-input" min="1" max="200" value="${dailyGoal}" aria-label="Daily exercise goal"><button class="btn-green-solid">Save goal</button></form><p id="goal-save-message" role="status" aria-live="polite"></p></article>
-    ${dueWords.length ? `<article class="spec-card due-preview"><div class="today-section-heading"><div><span class="eyebrow">Due now</span><h2>${dueWords.length} word${dueWords.length === 1 ? '' : 's'} ready</h2></div></div><div class="status-word-list">${dueWords.slice(0,6).map(word => `<article class="status-word-row"><div><strong>${escapeHtml(word.word)}</strong><p>${escapeHtml(word.definition)}</p><span>${word.mastered ? 'Long-term review' : `Box ${word.box || 1}`}</span></div></article>`).join('')}</div></article>` : ''}</section>`;
+    <article class="spec-card goal-settings"><div><span class="eyebrow">Daily goal</span><h2>Keep it realistic</h2><p>Choose a daily target. You can keep practicing after it whenever more words need review.</p></div><form id="daily-goal-form"><input type="number" id="daily-goal-input" min="1" max="200" value="${dailyGoal}" aria-label="Daily exercise goal"><button class="btn-green-solid">Save goal</button></form><p id="goal-save-message" role="status" aria-live="polite"></p></article>
+    ${dueWords.length ? `<article class="spec-card due-preview"><div class="today-section-heading"><div><span class="eyebrow">Due now</span><h2>${dueWords.length} word${dueWords.length === 1 ? '' : 's'} ready</h2></div></div><div class="status-word-list">${dueWords.slice(0,6).map(word => `<article class="status-word-row"><div><strong>${escapeHtml(word.word)}</strong><p>${escapeHtml(definitionForLearning(word))}</p><span>${word.mastered ? 'Long-term review' : `Box ${word.box || 1}`}</span></div></article>`).join('')}</div></article>` : ''}</section>`;
 
   container.querySelector('#progress-workout').addEventListener('click', () => go('daily', onNavigate));
   container.querySelector('#daily-goal-form').addEventListener('submit', event => {

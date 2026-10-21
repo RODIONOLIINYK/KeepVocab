@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { applyExerciseResultToWord, recordExerciseResult } from '../js/services/exerciseResult.js';
-import { getScheduledPracticeWords, normalizeWordPracticeStats } from '../js/services/wordSelection.js';
+import { getScheduledPracticeWords, normalizeWordPracticeStats, selectModeWords } from '../js/services/wordSelection.js';
 import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js';
 import { buildDailySession, buildScheduledPracticeSession, practiceSessionSize } from '../js/services/dailySession.js';
 import { localDateKey } from '../js/utils/dates.js';
 import { DAY_MS, migrateSrsState } from '../js/services/srsEngine.js';
+import { getPracticeReadiness } from '../js/services/reminderService.js';
 
 const NOW = new Date('2026-10-05T10:00:00Z');
 const word = (id, overrides = {}) => ({ id, word: `term-${id}`, definition: `meaning-${id}`,
@@ -34,6 +35,48 @@ test('recall evidence separates recognition, assistance, and independent retriev
   item = answer(item, new Date(+NOW + DAY_MS));
   stats = normalizeWordPracticeStats(item);
   assert.equal(stats.successfulRecallDays, 2);
+});
+
+test('last unaided recall survives failures, recognition, hints, and older incoming answers', () => {
+  let item = answer(word('a'), NOW);
+  const recalledAt = item.practiceStats.lastUnaidedRecallAt;
+  for (const [offset, overrides] of [[1, { correct: false }], [2, { recallType: 'recognition' }], [3, { hintsUsed: 1 }]]) {
+    item = answer(item, new Date(+NOW + offset * 60000), overrides);
+    assert.equal(item.practiceStats.lastUnaidedRecallAt, recalledAt);
+  }
+  const latest = structuredClone(item);
+  item = answer(item, new Date(+NOW - DAY_MS));
+  assert.equal(item.practiceStats.lastUnaidedRecallAt, recalledAt);
+  assert.equal(item.practiceStats.lastAnsweredAt, latest.practiceStats.lastAnsweredAt);
+  assert.equal(item.practiceStats.successfulRecallDays, 1);
+  assert.equal(item.practiceStats.attempts, latest.practiceStats.attempts + 1);
+  assert.equal(item.nextReviewDate, latest.nextReviewDate);
+  assert.deepEqual(item.lastExerciseResult, latest.lastExerciseResult);
+  item = answer(item, new Date(+NOW + DAY_MS));
+  assert.equal(item.practiceStats.lastUnaidedRecallAt, new Date(+NOW + DAY_MS).toISOString());
+  assert.equal(item.practiceStats.successfulRecallDays, 2);
+});
+
+test('old records recover recall dates only from explicit unaided evidence', () => {
+  const occurredAt = NOW.toISOString();
+  const result = { correct: true, producedUnaided: true, hintsUsed: 0, recallType: 'free-recall', occurredAt };
+  assert.equal(normalizeWordPracticeStats(word('old', { lastExerciseResult: result })).lastUnaidedRecallAt, occurredAt);
+  for (const overrides of [{ recallType: 'recognition' }, { correct: false }, { hintsUsed: 1 }, { producedUnaided: false }]) {
+    assert.equal(normalizeWordPracticeStats(word('old', { lastExerciseResult: { ...result, ...overrides } })).lastUnaidedRecallAt, '');
+  }
+  assert.equal(normalizeWordPracticeStats(word('old', { lastReviewedAt: occurredAt, srs: { repetitions: 10, lastRating: 'good' } })).lastUnaidedRecallAt, '');
+  assert.equal(normalizeWordPracticeStats(word('old', { practiceStats: { lastUnaidedRecallAt: 'invalid', recentResults: [
+    { correct: true, unaided: true, recallType: 'productive', occurredAt }
+  ] } })).lastUnaidedRecallAt, occurredAt);
+});
+
+test('unknown response times do not count as instant recall or strengthen evidence', () => {
+  for (const responseTimeMs of [null, undefined, '']) {
+    const item = answer(word('a'), NOW, { responseTimeMs });
+    assert.equal(item.lastExerciseResult.responseTimeMs, null);
+    assert.equal(item.practiceStats.timedRecallCount, 0);
+    assert.equal(item.practiceStats.recallTimeTotalMs, 0);
+  }
 });
 
 test('repeated same-day success never buys a multi-day gap or falsely marks a word mastered', () => {
@@ -121,6 +164,14 @@ test('established legacy review strength survives the first answer after upgradi
   assert.ok(Date.parse(updated.nextReviewDate) - NOW > 14 * DAY_MS);
 });
 
+test('legacy boxes and review dates retain inferred repetition history when SRS statistics are absent', () => {
+  const old = word('legacy', { box: 4, lastReviewedAt: new Date(+NOW - 14 * DAY_MS).toISOString() });
+  const updated = answer(old, NOW);
+  assert.equal(updated.practiceStats.attempts, 4);
+  assert.equal(updated.practiceStats.legacySuccessfulReviews, 3);
+  assert.equal(updated.practiceStats.successfulRecallDays, 1);
+});
+
 test('Practice uses the selected English month, even with a retired all-months setting', () => {
   const persistence = new DriveSyncService(new MemoryStorage());
   persistence.saveWords([
@@ -141,25 +192,27 @@ test('Practice uses the selected English month, even with a retired all-months s
   assert.equal(persistence.getWords().length, 2);
 });
 
-test('a 107-word backlog stays within the daily budget and resets on the next local day', () => {
+test('a 107-word backlog stays within each batch and remains available after the daily goal', () => {
   const words = Array.from({ length: 107 }, (_, index) => word(String(index)));
   const settings = { dailyGoal: 20, practiceSessionSize: 50, reviewsToday: 7, reviewsDate: localDateKey(NOW) };
   const original = structuredClone({ words, settings });
   assert.equal(buildScheduledPracticeSession(words, {}, { now: NOW }).wordCount, 20);
-  assert.equal(buildScheduledPracticeSession(words, settings, { now: NOW }).wordCount, 13);
+  assert.equal(buildScheduledPracticeSession(words, settings, { now: NOW }).wordCount, 50);
   assert.equal(buildScheduledPracticeSession(words, { ...settings, practiceSessionSize: 5 }, { now: NOW }).wordCount, 5);
   const done = { ...settings, reviewsToday: 20 };
-  const empty = buildScheduledPracticeSession(words, done, { now: NOW });
-  assert.equal(empty.dailyGoalComplete, true);
-  assert.equal(empty.wordCount, 0);
-  assert.deepEqual(empty.exercises, []);
-  assert.equal(buildScheduledPracticeSession(words, { ...done, reviewsToday: 107 }, { now: NOW }).wordCount, 0);
-  assert.equal(buildScheduledPracticeSession(words, done, { now: new Date(+NOW + DAY_MS) }).wordCount, 20);
+  const extra = buildScheduledPracticeSession(words, done, { now: NOW });
+  assert.equal(extra.dailyGoalComplete, true);
+  assert.equal(extra.wordCount, 50);
+  assert.equal(extra.exercises.length, 50);
+  assert.equal(buildScheduledPracticeSession(words, { ...done, reviewsToday: 107 }, { now: NOW }).wordCount, 50);
+  const tomorrow = buildScheduledPracticeSession(words, done, { now: new Date(+NOW + DAY_MS) });
+  assert.equal(tomorrow.wordCount, 50);
+  assert.equal(tomorrow.dailyGoalComplete, false);
   assert.deepEqual({ words, settings }, original);
 });
 
-test('abandoned sessions count submitted correct and incorrect answers toward the remaining daily budget', () => {
-  // getSettings normalizes the daily budget to the real local day.
+test('abandoned sessions retain goal progress while offering another useful full batch', () => {
+  // getSettings normalizes daily activity to the real local day.
   const activityDate = new Date();
   const persistence = new DriveSyncService(new MemoryStorage());
   const words = Array.from({ length: 30 }, (_, index) => word(String(index), { monthYear: 'October 2026', courseId: 'english' }));
@@ -169,5 +222,36 @@ test('abandoned sessions count submitted correct and incorrect answers toward th
   assert.equal(initial.wordCount, 20);
   // The same persisted study activity used by every exercise mode survives leaving a session.
   for (let i = 0; i < 7; i++) recordExerciseResult({ wordId: words[i].id, exerciseType: 'daily-typed-recall', recallType: 'free-recall', correct: i % 2 === 0, occurredAt: activityDate.toISOString() }, persistence);
-  assert.equal(buildScheduledPracticeSession(getScheduledPracticeWords(persistence), persistence.getSettings(), { now: activityDate }).wordCount, 13);
+  const settings = persistence.getSettings();
+  assert.equal(settings.reviewsToday, 7);
+  const next = buildScheduledPracticeSession(getScheduledPracticeWords(persistence), settings, { now: activityDate });
+  assert.equal(next.wordCount, 20);
+  assert.equal(next.dailyGoalComplete, false);
+  assert.equal(next.exercises.some(exercise => words.slice(0, 7).some(item => item.id === exercise.wordId)), false);
+});
+
+test('completed goals do not pad sessions with recently recalled words after the backlog is cleared', () => {
+  const settings = { dailyGoal: 5, practiceSessionSize: 20, reviewsToday: 20, reviewsDate: localDateKey(NOW) };
+  const resting = Array.from({ length: 6 }, (_, index) => answer(word(String(index)), NOW));
+  const session = buildScheduledPracticeSession(resting, settings, { now: NOW });
+  assert.equal(session.dailyGoalComplete, true);
+  assert.equal(session.wordCount, 0);
+  assert.equal(session.estimatedMinutes, 0);
+});
+
+test('imported untouched future reviews wait consistently across Practice, manual modes, and reminders', () => {
+  const nextReview = new Date(+NOW + DAY_MS);
+  const imported = word('future', { nextReviewDate: nextReview.toISOString() });
+  assert.equal(buildScheduledPracticeSession([imported], {}, { now: NOW }).wordCount, 0);
+  assert.deepEqual(selectModeWords([imported], { now: NOW }), []);
+  const readiness = getPracticeReadiness([imported], NOW);
+  assert.equal(readiness.readyNowCount, 0);
+  assert.deepEqual(readiness.nextReadyAt, nextReview);
+  assert.equal(buildScheduledPracticeSession([imported], {}, { now: nextReview }).wordCount, 1);
+  assert.equal(selectModeWords([imported], { now: nextReview }).length, 1);
+  assert.equal(getPracticeReadiness([imported], nextReview).readyNowCount, 1);
+  const fresh = word('fresh', { createdAt: NOW.toISOString() });
+  assert.equal(buildScheduledPracticeSession([fresh], {}, { now: NOW }).wordCount, 1);
+  assert.equal(selectModeWords([fresh], { now: NOW }).length, 1);
+  assert.equal(getPracticeReadiness([fresh], NOW).readyNowCount, 1);
 });

@@ -1,10 +1,16 @@
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18300';
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18300';
-import { speakWord } from '../services/speechService.js?v=18300';
-import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, generateVisualScenesWithGemini, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18300';
-import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18300';
-import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=18300';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18600';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18600';
+import { speakWord } from '../services/speechService.js?v=18600';
+import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, prepareImageScenes, imageSenseFingerprint, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18600';
+import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18600';
+import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=18600';
+import { getPracticeReadiness } from '../services/reminderService.js?v=18600';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
+import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, groupSimilarSenses } from '../services/learningDefinitions.js?v=18600';
+import { renderMeaningExplanation, renderExplanationReview, applyReviewedExplanations } from './MeaningExplanation.js?v=18600';
+import { mountImageReview } from './ImageReview.js?v=18600';
+import { attachImagesSequentially } from '../services/bulkWords.js?v=18600';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18600';
 
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -36,7 +42,13 @@ export async function imageFileToDataUrl(file, maxDimension = 1280) {
 }
 
 function isDue(word) {
-  return new Date(word.nextReviewDate || word.createdAt) <= new Date();
+  return getPracticeReadiness([word]).readyNowCount > 0;
+}
+
+function reviewDate(value, fallback) {
+  const date = new Date(value || '');
+  if (!Number.isFinite(date.getTime())) return fallback;
+  return `<time datetime="${date.toISOString()}">${escapeHtml(date.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }))}</time>`;
 }
 
 export function reusedImageUrls(words) {
@@ -95,6 +107,16 @@ export function renderLibraryView(container) {
   let sort = 'recent';
   let editId = null;
   let editDraft = {};
+  let explanationReview = [];
+  let explaining = false;
+  let explanationStatus = '';
+  let explanationAbort = null;
+  let imageReviewWords = null;
+  let imageReviewOriginals = new Map();
+  let imageReviewController = null;
+  let preparingImages = false;
+  const viewOwner = {};
+  container.libraryViewOwner = viewOwner;
   let deleteId = null;
   let imageCandidates = [];
   let imageLoading = false;
@@ -110,7 +132,7 @@ export function renderLibraryView(container) {
   let imageResultPage = 1;
   const imageProviderSettings = getImageProviderSettings();
 
-  async function loadImageCandidates(wordId, refresh = false) {
+  async function loadImageCandidates(wordId, refresh = false, semanticRerank = false) {
     const saved = driveSync.getWords().find(item => item.id === wordId);
     const word = saved ? { ...saved, ...editDraft } : null;
     if (!word) return;
@@ -121,10 +143,13 @@ export function renderLibraryView(container) {
     const excludeUrls = imageUrlsUsedByOtherWords(driveSync.getWords(), wordId);
     const customActive = Boolean(customImageConcept && activeImageConcept === customImageConcept);
     if (!customActive) {
-      const aiScenes = await generateVisualScenesWithGemini(word);
+      const [preparedWord] = await prepareImageScenes([word]);
+      const aiScenes = preparedWord.imageScenes?.scenes || [];
       if (editId !== wordId || requestId !== imageRequestId) return;
       const curatedScenes = buildVisualSceneDescriptions(word);
-      suggestedImageScenes = [...new Set([...curatedScenes, ...aiScenes])].slice(0, 3);
+      suggestedImageScenes = [...new Set(aiScenes.length ? aiScenes : curatedScenes)].slice(0, 3);
+      const latest = driveSync.getWords().find(item => item.id === wordId);
+      if (preparedWord.imageScenes && latest && imageSenseFingerprint(latest) === imageSenseFingerprint(word)) driveSync.updateWord(wordId, { imageScenes: preparedWord.imageScenes });
       if (!activeImageConcept) activeImageConcept = suggestedImageScenes[0] || '';
       if (refresh) {
         const next = nextImageSuggestionState(suggestedImageScenes, activeImageConcept, imageResultPage);
@@ -145,6 +170,8 @@ export function renderLibraryView(container) {
       aiScenes: false,
       provider: imageProviderSettings.provider,
       pexelsApiKey: imageProviderSettings.pexelsApiKey,
+      semanticRerank,
+      otherDefinitions: driveSync.getWords().filter(item => item.id !== wordId && item.word.toLowerCase() === word.word.toLowerCase()).map(item => item.sourceDefinition || item.definition),
       page: imageResultPage,
       limit: 10
     });
@@ -189,7 +216,7 @@ export function renderLibraryView(container) {
 
   function selectedWords() {
     let items = driveSync.getWordsByMonthYear(selectedMonthYear).filter(word => {
-      const haystack = `${word.word} ${word.definition} ${word.translation || ''} ${word.partOfSpeech}`.toLowerCase();
+      const haystack = `${word.word} ${word.definition} ${definitionForLearning(word)} ${word.translation || ''} ${word.partOfSpeech}`.toLowerCase();
       if (query && !haystack.includes(query.toLowerCase())) return false;
       if (filter === 'due') return isDue(word);
       if (filter === 'mastered') return word.mastered;
@@ -208,18 +235,21 @@ export function renderLibraryView(container) {
     const word = group.meanings[0];
     const dueMeanings = group.meanings.filter(isDue).length;
     const masteredMeanings = group.meanings.filter(meaning => meaning.mastered).length;
+    const duplicates = groupSimilarSenses(group.meanings, { word: word.word }).filter(item => item.mergedSenseIds?.length > 1);
     const meaningCard = (meaning, meaningIndex) => {
       const hasDuplicateImage = duplicateImages.has(meaning.imageUrl);
       const practiceStats = normalizeWordPracticeStats(meaning);
+      const readiness = getPracticeReadiness([meaning]);
       return `<section class="library-meaning" data-meaning-id="${escapeHtml(meaning.id)}">
         <div class="library-meaning-heading"><span>Meaning ${meaningIndex + 1}</span><strong>${escapeHtml(meaning.partOfSpeech || 'word')}</strong></div>
         ${meaning.imageUrl && !hasDuplicateImage ? `<img class="library-word-image" src="${escapeHtml(meaning.imageUrl)}" alt="Visual cue for ${escapeHtml(meaning.word)} meaning ${meaningIndex + 1}">` : hasDuplicateImage ? `<div class="duplicate-image-warning"><i class="fa-solid fa-images"></i><span><strong>Reused visual cue</strong>Choose a distinct image for this meaning.</span></div>` : ''}
-        <p>${escapeHtml(meaning.definition)}</p>${isUkrainianTranslationEnabled() && meaning.translationLanguage === 'uk' && meaning.translation ? `<p class="word-translation" lang="uk">${escapeHtml(meaning.translation)}</p>` : ''}
-        ${meaning.example ? `<blockquote>“${escapeHtml(meaning.example)}”</blockquote>` : ''}
-        <div class="library-card-footer"><span>Box ${Number(meaning.box || 1)}</span><span>${meaning.mastered ? 'Mastered' : (isDue(meaning) ? 'Due now' : 'Learning')}</span></div>
+        ${renderMeaningExplanation(meaning)}${isUkrainianTranslationEnabled() && meaning.translationLanguage === 'uk' && meaning.translation ? `<p class="word-translation" lang="uk">${escapeHtml(meaning.translation)}</p>` : ''}
+        ${exampleForLearning(meaning) ? `<blockquote>“${escapeHtml(exampleForLearning(meaning))}”</blockquote>` : '<p class="missing-example">A modern example is needed for this meaning. Use Explain clearly or add one in Edit.</p>'}
+        <div class="library-card-footer"><span>Box ${Number(meaning.box || 1)}</span><span>${meaning.mastered ? 'Mastered' : (readiness.readyNowCount ? 'Due now' : 'Learning')}</span></div>
         <div class="library-recall-stats" aria-label="${practiceStats.recalled} recalled and ${practiceStats.missed} missed answers"><span><i class="fa-solid fa-check"></i> Recalled ${practiceStats.recalled}</span><span><i class="fa-solid fa-xmark"></i> Missed ${practiceStats.missed}</span><span>${practiceStats.attempts} total</span></div>
         <div class="library-recall-stats"><span>Unaided recall ${practiceStats.unaidedRecalled}</span><span>${practiceStats.successfulRecallDays} recall days</span>${practiceStats.timedRecallCount ? `<span>~${Math.round(practiceStats.recallTimeTotalMs / practiceStats.timedRecallCount / 1000)}s to recall</span>` : ''}</div>
-        ${deleteId === meaning.id ? `<div class="delete-confirm"><span>Delete this meaning of “${escapeHtml(meaning.word)}”?</span><button data-cancel-delete>Cancel</button><button data-confirm-delete="${escapeHtml(meaning.id)}">Delete</button></div>` : `<div class="library-card-actions"><button data-edit-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-pen"></i> Edit</button><button data-delete-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-trash"></i> Delete</button></div>`}
+        <div class="library-recall-stats"><span>Last recalled: ${reviewDate(practiceStats.lastUnaidedRecallAt, 'Not yet recorded')}</span><span>Next review: ${readiness.readyNowCount ? 'Ready now' : reviewDate(readiness.nextReadyAt, 'Not scheduled')}</span></div>
+        ${deleteId === meaning.id ? `<div class="delete-confirm"><span>Delete this meaning of “${escapeHtml(meaning.word)}”?</span><button data-cancel-delete>Cancel</button><button data-confirm-delete="${escapeHtml(meaning.id)}">Delete</button></div>` : `<div class="library-card-actions"><button data-edit-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-pen"></i> Edit</button><button data-explain-meaning="${escapeHtml(meaning.id)}" ${explaining ? 'disabled' : ''}><i class="fa-solid fa-lightbulb"></i> Explain clearly</button><button data-delete-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-trash"></i> Delete</button></div>`}
       </section>`;
     };
     return `
@@ -229,14 +259,77 @@ export function renderLibraryView(container) {
           <button class="audio-btn-circle" data-speak="${escapeHtml(word.word)}" data-audio-url="${escapeHtml(word.audioUrl || '')}" aria-label="Hear ${escapeHtml(word.word)}"><i class="fa-solid fa-volume-high"></i></button>
         </div>
         <div class="library-group-status"><span>${dueMeanings} due</span><span>${masteredMeanings} mastered</span></div>
-        <div class="library-meaning-list">${group.meanings.map(meaningCard).join('')}</div>
+        <div class="library-meaning-list">${group.meanings.map(meaningCard).join('')}</div>${duplicates.map(item => `<div class="duplicate-meaning-review"><p>These ${item.mergedSenseIds.length} meanings have nearly identical wording: ${escapeHtml(item.definition)}</p><button class="status-pill offline" data-merge-meanings="${escapeHtml(item.mergedSenseIds.join('|'))}">Merge duplicate meanings and keep review history</button></div>`).join('')}
       </article>`;
+  }
+
+
+  async function requestExplanations(words, force = false) {
+    if (explaining) return;
+    if (!words.length) { explanationStatus = 'These meanings already have clear wording and modern examples. Use Explain clearly on any individual meaning you still find confusing.'; render(); return; }
+    const originals = words.map(word => ({ ...word }));
+    const month = selectedMonthYear;
+    explanationAbort = new AbortController();
+    const controller = explanationAbort;
+    explaining = true;
+    explanationReview = [];
+    imageReviewWords = null;
+    explanationStatus = `Checking ${originals.length} meaning${originals.length === 1 ? '' : 's'} and their examples…`;
+    render();
+    try {
+      const result = await withLearnerExplanations({ senses: originals }, { force, signal: controller.signal });
+      if (controller.signal.aborted || container.libraryViewOwner !== viewOwner || !container.querySelector('#library-heading') || month !== selectedMonthYear) return;
+      explanationReview = originals.map(original => {
+        const candidate = result.senses.find(item => item.id === original.id);
+        const changed = candidate && ['definition', 'example', 'usageNote'].some(key => (candidate[key] || '') !== (original[key] || ''));
+        return changed && exampleForLearning(candidate) ? { original, candidate, selected: true } : { original, selected: false, error: 'No verified improvement was available. Add a modern example in Edit, or check your Gemini settings and try again.' };
+      });
+      explanationStatus = 'Review the proposed meanings and examples before applying them.';
+    } catch (error) { if (!controller.signal.aborted) explanationStatus = error.message; }
+    finally {
+      if (explanationAbort === controller && container.libraryViewOwner === viewOwner && container.querySelector('#library-heading')) { explaining = false; render(); }
+    }
+  }
+
+  async function startImageReview() {
+    if (preparingImages || explaining) return;
+    const originals = selectedWords().map(word => ({ ...word }));
+    if (!originals.length) return;
+    const month = selectedMonthYear;
+    imageReviewOriginals = new Map(originals.map(word => [word.id, word]));
+    preparingImages = true;
+    editId = null;
+    imageRequestId += 1;
+    render();
+    try {
+      const prepared = await prepareImageScenes(originals);
+      for (const word of prepared) {
+        const latest = driveSync.getWords().find(item => item.id === word.id);
+        if (latest && word.imageScenes && imageSenseFingerprint(latest) === imageSenseFingerprint(word)) driveSync.updateWord(word.id, { imageScenes: word.imageScenes });
+      }
+      const filled = await attachImagesSequentially(prepared.filter(word => !word.imageUrl), findRelevantImages, { excludeUrls: imageUrlsForWords(driveSync.getWords()) });
+      if (container.libraryViewOwner !== viewOwner || !container.querySelector('#library-heading') || month !== selectedMonthYear) return;
+      const byId = new Map(filled.map(word => [word.id, word]));
+      imageReviewWords = prepared.map(word => byId.get(word.id) || word);
+    } catch (error) { explanationStatus = error.message || 'Image suggestions are unavailable.'; }
+    finally { if (container.libraryViewOwner === viewOwner && container.querySelector('#library-heading')) { preparingImages = false; render(); } }
   }
 
   function bindWordCardEvents() {
     container.querySelectorAll('[data-speak]').forEach(button => button.addEventListener('click', () => speakWord(button.dataset.speak, 'en-US', 0.9, button.dataset.audioUrl)));
     container.querySelectorAll('[data-edit-word]').forEach(button => button.addEventListener('click', () => { beginEditing(button.dataset.editWord); container.querySelector('#library-edit-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
     container.querySelectorAll('[data-delete-word]').forEach(button => button.addEventListener('click', () => { deleteId = button.dataset.deleteWord; render(); }));
+    container.querySelectorAll('[data-explain-meaning]').forEach(button => button.addEventListener('click', () => {
+      const word = driveSync.getWords().find(item => item.id === button.dataset.explainMeaning);
+      if (word) requestExplanations([word], true);
+    }));
+    container.querySelectorAll('[data-merge-meanings]').forEach(button => button.addEventListener('click', () => {
+      try {
+        driveSync.mergeWordMeanings(button.dataset.mergeMeanings.split('|'));
+        explanationStatus = 'Duplicate meanings merged. Their review counts and recall history were kept.';
+        render();
+      } catch (error) { explanationStatus = error.message; render(); }
+    }));
     container.querySelector('[data-cancel-delete]')?.addEventListener('click', () => { deleteId = null; render(); });
     container.querySelector('[data-confirm-delete]')?.addEventListener('click', event => { driveSync.deleteWord(event.currentTarget.dataset.confirmDelete); deleteId = null; render(); });
   }
@@ -266,9 +359,16 @@ export function renderLibraryView(container) {
     if (editing && !activeImageConcept) activeImageConcept = imageConcepts[0] || '';
     const currentImageUrl = removeImage ? '' : (selectedImage?.url || editing?.imageUrl || '');
     const pexelsActive = Boolean(imageProviderSettings.provider === 'pexels' && imageProviderSettings.pexelsApiKey);
+    imageReviewController?.destroy();
+    imageReviewController = null;
     container.innerHTML = `
       <section class="full-view-stack library-view" aria-labelledby="library-heading">
-        <div class="content-title-row"><div><span class="eyebrow">${courseLabel}</span><h1 id="library-heading">Library</h1><p>Keep your vocabulary, meanings, and memory cues in one place.</p></div><button class="btn-green-solid" id="library-add-word"><i class="fa-solid fa-plus"></i> Add word</button></div>
+        <div class="content-title-row"><div><span class="eyebrow">${courseLabel}</span><h1 id="library-heading">Library</h1><p>Keep your vocabulary, meanings, and memory cues in one place.</p></div><div class="inline-actions"><button class="status-pill offline" id="library-improve-explanations" ${explaining || preparingImages ? 'disabled' : ''}>Improve explanations</button><button class="status-pill offline" id="library-review-images" ${explaining || preparingImages ? 'disabled' : ''}>Review images</button><button class="btn-green-solid" id="library-add-word"><i class="fa-solid fa-plus"></i> Add word</button></div></div>
+        ${explanationStatus ? `<p class="form-message" role="status" aria-live="polite">${escapeHtml(explanationStatus)}</p>` : ''}
+        ${explaining ? '<button class="status-pill offline" id="cancel-generating-explanations">Cancel explanation request</button>' : ''}
+        ${explanationReview.length ? renderExplanationReview(explanationReview) : ''}
+        ${preparingImages ? '<p role="status">Preparing cached scenes and image suggestions…</p>' : ''}
+        ${imageReviewWords ? '<div class="spec-card" id="library-image-review"></div>' : ''}
         <div class="spec-card">
           <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-calendar-days"></i> Monthly vocabulary</div><span class="muted-label">Choose the notebook you want to manage</span></div>
           <div class="archive-tabs">
@@ -282,14 +382,16 @@ export function renderLibraryView(container) {
             <label>Word<input name="word" required value="${escapeHtml(editing.word)}"></label>
             <label>Phonetic<input name="phonetic" value="${escapeHtml(editing.phonetic || '')}"></label>
             <label>Part of speech<input name="partOfSpeech" value="${escapeHtml(editing.partOfSpeech || '')}"></label>
-            <label class="wide">English definition<textarea name="definition" required>${escapeHtml(editing.definition)}</textarea></label>
+            <label class="wide">Meaning in plain English<textarea name="definition" required>${escapeHtml(editing.definition)}</textarea></label>
+            <label class="wide">When to use it (optional)<input name="usageNote" value="${escapeHtml(editing.usageNote || '')}" placeholder="A useful situation or grammar pattern"></label>
             ${isUkrainianTranslationEnabled() ? `<label class="wide">Ukrainian translation<input name="translation" lang="uk" value="${escapeHtml(editing.translation || '')}"></label>` : ''}
-            <label class="wide">Example<textarea name="example">${escapeHtml(editing.example || '')}</textarea></label>
+            <label class="wide">Modern example using this meaning<textarea name="example" required>${escapeHtml(exampleForLearning(editing))}</textarea></label>
           </div>
           <section class="library-image-chooser" aria-labelledby="library-image-heading">
             <div class="image-chooser-heading">
               <div><strong id="library-image-heading">Visual cue</strong><span>Search automatically, paste an image link, or upload a file.</span></div>
               <button type="button" class="status-pill offline" id="refresh-library-images"><i class="fa-solid fa-images"></i> More images</button>
+              <button type="button" class="status-pill offline" id="compare-library-images">Compare images with Gemini</button>
             </div>
             <div class="keyless-image-note"><i class="fa-solid fa-images"></i><span><strong>${pexelsActive ? 'Pexels search is active' : 'Public image search is active'}</strong>${pexelsActive ? 'Pexels is searched first; Openverse, Wikimedia Commons, and NASA Images remain parallel fallbacks.' : 'Openverse, Wikimedia Commons, and NASA Images are searched in parallel. Configure Pexels under Settings for the larger stock-photo library.'}</span></div>
             <div class="custom-image-source">
@@ -310,7 +412,7 @@ export function renderLibraryView(container) {
               ${activeImageConcept ? `<small class="active-image-search-state">Searching: “${escapeHtml(activeImageConcept)}” · page ${imageResultPage}</small>` : ''}
             </div>
             ${currentImageUrl ? `<div class="selected-image-preview"><img src="${escapeHtml(currentImageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current saved image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span>${selectedImage ? '' : '<small>Saved separately — it is not one of the active query results below.</small>'}</div></div><div class="image-feedback-actions" aria-label="Image feedback"><button type="button" class="status-pill connected" id="image-good"><i class="fa-solid fa-thumbs-up"></i> Good image</button><button type="button" class="status-pill offline" id="image-wrong"><i class="fa-solid fa-triangle-exclamation"></i> Wrong meaning</button><button type="button" class="status-pill offline" id="image-more-like"><i class="fa-solid fa-images"></i> More like this</button></div>` : ''}
-            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching for “${escapeHtml(activeImageConcept || editing.word)}” · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-results-heading"><strong>Results for “${escapeHtml(activeImageConcept || imageQuery)}”</strong><span>${imageCandidates.length} images · page ${imageResultPage}</span></div><div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.title)}" loading="lazy" decoding="async"><span>${escapeHtml(image.title)}</span><small>${escapeHtml(image.source || 'Public image')}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
+            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching for “${escapeHtml(activeImageConcept || editing.word)}” · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-results-heading"><strong>Results for “${escapeHtml(activeImageConcept || imageQuery)}”</strong><span>${imageCandidates.length} images · page ${imageResultPage}</span></div><div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.thumbnailUrl || image.url)}" alt="${escapeHtml(image.title)}" loading="lazy" decoding="async"><span>${escapeHtml(image.title)}</span><small>${escapeHtml(image.source || 'Public image')}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
             <p class="image-license-note">${imageCandidates.some(image => image.source === 'Pexels') ? '<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Photos provided by Pexels</a>. ' : ''}KeepVocab saves available creator, source, and rights information for every proposed image.</p>
           </section>
           <div class="inline-actions"><button class="btn-green-solid" type="submit">Save changes</button></div>
@@ -327,6 +429,40 @@ export function renderLibraryView(container) {
           <div class="library-grid">${groups.length ? groups.map(wordCard).join('') : `<div class="useful-empty-state compact"><h2>No matching words</h2><p>Try another search or progress filter.</p></div>`}</div>
         </div>
       </section>`;
+
+    container.querySelector('#library-improve-explanations').addEventListener('click', () => requestExplanations(selectedWords().filter(word => needsLearnerExplanation(word) || !exampleForLearning(word))));
+    container.querySelector('#library-review-images').addEventListener('click', startImageReview);
+    container.querySelector('#cancel-generating-explanations')?.addEventListener('click', () => { explanationAbort?.abort(); explaining = false; explanationStatus = 'The current meanings have been kept.'; render(); });
+    container.querySelectorAll('[data-approve-explanation]').forEach(input => input.addEventListener('change', () => { explanationReview[Number(input.dataset.approveExplanation)].selected = input.checked; }));
+    container.querySelector('#cancel-explanation-review')?.addEventListener('click', () => { explanationReview = []; render(); });
+    container.querySelector('#apply-explanation-review')?.addEventListener('click', () => {
+      try {
+        const { applied, skipped } = applyReviewedExplanations(driveSync, explanationReview);
+        explanationReview = [];
+        explanationStatus = `${applied} explanation${applied === 1 ? '' : 's'} updated.${skipped ? ` ${skipped} changed during review and were kept.` : ''}`;
+        render();
+      } catch (error) { container.querySelector('#explanation-review-status').textContent = error.message; }
+    });
+    if (imageReviewWords) imageReviewController = mountImageReview(container.querySelector('#library-image-review'), imageReviewWords, {
+      originalWords: imageReviewWords.map(word => imageReviewOriginals.get(word.id) || word),
+      excludeUrls: imageUrlsForWords(driveSync.getWords().filter(word => !imageReviewWords.some(item => item.id === word.id))),
+      onCancel() { imageReviewWords = null; render(); },
+      onApply(reviewed) {
+        let skipped = 0;
+        for (const word of reviewed) {
+          const latest = driveSync.getWords().find(item => item.id === word.id);
+          if (!latest || imageSenseFingerprint(latest) !== imageSenseFingerprint(word)) { skipped += 1; continue; }
+          const keys = ['imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery'];
+          const original = imageReviewOriginals.get(word.id);
+          if (!original || keys.some(key => (latest[key] || '') !== (original[key] || ''))) { skipped += 1; continue; }
+          driveSync.updateWord(word.id, Object.fromEntries(keys.map(key => [key, word[key] || ''])));
+        }
+        imageReviewWords = null;
+        explanationStatus = `Image review saved.${skipped ? ` ${skipped} changed meanings were kept.` : ''}`;
+        render();
+      }
+    });
+
     container.querySelector('#library-filter').value = filter;
     container.querySelector('#library-sort').value = sort;
     container.querySelector('#library-add-word').addEventListener('click', () => document.getElementById('btn-header-quick-add')?.click());
@@ -344,6 +480,10 @@ export function renderLibraryView(container) {
     bindWordCardEvents();
     container.querySelector('#cancel-library-edit')?.addEventListener('click', () => { editId = null; selectedImage = null; render(); });
     container.querySelector('#refresh-library-images')?.addEventListener('click', () => loadImageCandidates(editId, true));
+    container.querySelector('#compare-library-images')?.addEventListener('click', () => {
+      if (!getGeminiSettings().apiKey) { container.querySelector('#library-edit-message').textContent = 'Add your Gemini key in Settings to compare ambiguous image suggestions.'; return; }
+      loadImageCandidates(editId, false, true);
+    });
     const setEditorMessage = message => {
       const output = container.querySelector('#library-edit-message');
       if (output) output.textContent = message;
@@ -441,8 +581,17 @@ export function renderLibraryView(container) {
       loadImageCandidates(editId, true);
     });
     container.querySelector('#library-edit-form')?.addEventListener('input', event => {
-      if (['word', 'phonetic', 'partOfSpeech', 'definition', 'translation', 'example'].includes(event.target.name)) {
-        editDraft[event.target.name] = event.target.value;
+      if (['word', 'phonetic', 'partOfSpeech', 'definition', 'usageNote', 'translation', 'example'].includes(event.target.name)) editDraft[event.target.name] = event.target.value;
+      if (['word', 'partOfSpeech', 'definition'].includes(event.target.name)) {
+        if (event.target.name === 'definition') Object.assign(editDraft, { sourceDefinition: event.target.value, sourceFingerprint: '', explanationSource: 'manual' });
+        Object.assign(editDraft, { imageScenes: undefined, imageFeedback: undefined, imageRejectedUrls: [] });
+        activeImageConcept = ''; customImageConcept = ''; suggestedImageScenes = []; imageCandidates = []; selectedImage = null; imageQuery = ''; imageResultPage = 1;
+        imageRequestId += 1;
+        imageLoading = false;
+        const refresh = container.querySelector('#refresh-library-images');
+        if (refresh) refresh.disabled = false;
+        const grid = container.querySelector('.library-image-grid');
+        if (grid) grid.innerHTML = '';
       }
     });
     container.querySelector('#library-edit-form')?.addEventListener('submit', event => {
@@ -450,6 +599,10 @@ export function renderLibraryView(container) {
       const data = Object.fromEntries(new FormData(event.currentTarget));
       if (isUkrainianTranslationEnabled() && Object.hasOwn(data, 'translation')) data.translationLanguage = 'uk';
       const [senseChecked] = sanitizeExistingExamples(data.word || editing.word, [{ ...editing, ...data }]);
+      if (!exampleForLearning({ ...editing, ...data, example: senseChecked.example })) {
+        container.querySelector('#library-edit-message').textContent = 'Add one modern example sentence using this word in the selected meaning before saving.';
+        return;
+      }
       Object.assign(data, {
         example: senseChecked.example,
         exampleSourceUrl: senseChecked.exampleSourceUrl || '',
@@ -464,7 +617,11 @@ export function renderLibraryView(container) {
         imageGeneratedPrompt: selectedImage.generatedPrompt || ''
       });
       if (removeImage) Object.assign(data, clearImageSelectionPatch(), { imageKind: '', imageGeneratedModel: '', imageGeneratedAt: '', imageGeneratedPrompt: '' });
-      try { driveSync.updateWord(editId, data); editId = null; selectedImage = null; removeImage = false; render(); }
+      try {
+        const latest = driveSync.getWords().find(word => word.id === editId) || savedEditing;
+        if (data.definition !== latest.definition) Object.assign(data, { sourceDefinition: data.definition, sourceFingerprint: '', explanationSource: 'manual' });
+        driveSync.updateWord(editId, data); editId = null; selectedImage = null; removeImage = false; render();
+      }
       catch (error) { container.querySelector('#library-edit-message').textContent = error.message; }
     });
     container.querySelector('#export-library').addEventListener('click', () => {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildReminderSchedule, reminderNotifications, getHabitReminderTime, scheduleDailyReminder, cancelDailyReminder } from '../js/services/reminderService.js';
+import { buildReminderSchedule, reminderNotifications, getHabitReminderTime, getPracticeReadiness, scheduleDailyReminder, cancelDailyReminder } from '../js/services/reminderService.js';
 
 const now = new Date(2026, 8, 30, 12);
 
@@ -115,6 +115,39 @@ test('practice mode readiness schedules a reminder when SRS or 24h top-up exerci
   assert.equal(alarms[0].extra.reason, 'practice-ready');
   assert.equal(alarms[0].schedule.at.getDate(), studyTime.getDate());
   assert.equal(alarms[0].schedule.at.getHours(), 15);
+});
+
+test('readiness waits for recent reliable recall even when an imported review date is overdue', () => {
+  const recalledAt = new Date(now.getTime() - 60 * 60 * 1000);
+  const word = {
+    id: 'reliable', word: 'resilient', definition: 'Able to recover quickly.',
+    nextReviewDate: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
+    practiceStats: {
+      version: 2, attempts: 4, recalled: 4, successfulRecallDays: 4,
+      lastAnswerCorrect: true, lastAnsweredAt: recalledAt.toISOString(),
+      lastUnaidedRecallAt: recalledAt.toISOString()
+    }
+  };
+  const readiness = getPracticeReadiness([word], now);
+  assert.equal(readiness.readyNowCount, 0);
+  assert.equal(readiness.nextReadyAt.getTime(), recalledAt.getTime() + 24 * 60 * 60 * 1000);
+  assert.equal(getPracticeReadiness([word], readiness.nextReadyAt).readyNowCount, 1);
+});
+
+test('readiness preserves successful legacy review history instead of scheduling an unnecessary top-up', () => {
+  const nextReviewDate = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
+  const word = {
+    id: 'legacy', word: 'eloquent', definition: 'Fluent or persuasive in speaking.',
+    nextReviewDate: nextReviewDate.toISOString(),
+    practiceStats: {
+      version: 1, attempts: 4, recalled: 4, lastAnswerCorrect: true,
+      lastAnsweredAt: new Date(now.getTime() - 23 * 60 * 60 * 1000).toISOString()
+    }
+  };
+  const readiness = getPracticeReadiness([word], now);
+  assert.equal(readiness.readyNowCount, 0);
+  assert.equal(readiness.nextReadyAt.getTime(), nextReviewDate.getTime());
+  assert.equal(getPracticeReadiness([word], new Date(now.getTime() + 2 * 60 * 60 * 1000)).readyNowCount, 0);
 });
 
 test('late-evening refresh after 20:30 escalates to a final-call streak rescue before midnight', () => {

@@ -6,21 +6,26 @@ changes the vocabulary pool; an empty month never falls back to another month.
 Old all-months preferences are ignored, including restored backups. Manual
 exercise modes use this same month selection.
 
-The default daily goal is **20 exercises**. Each workout takes the smaller of the
-configured session size (5–50) and today's remaining daily goal. Submitted
-answers count immediately, including mistakes and unfinished sessions. Once the
-goal is reached, Today and Practice show “Daily goal complete”; optional manual
-modes remain available. The daily allowance resets at local midnight and is
-shared across months within each language. Settings → Routine & sound lets users
-adjust their goal. Each word appears once per workout; small libraries are never
-padded with repeats. Today displays the actual workout size and selected month,
-rather than presenting the full overdue backlog as today's assignment.
+The default daily goal is **20 exercises**, and it is a progress target. Each
+workout contains up to the configured session size (5–50), even when the daily
+goal is already complete. Submitted answers count immediately, including
+mistakes and unfinished sessions; extra practice remains visible in daily
+progress. Today and session results offer **Continue practice** whenever more
+words need review. When no words are ready, Practice shows “All caught up”.
+Settings → Routine & sound lets users adjust the goal and batch size separately.
+Each word appears once per workout; small libraries are never padded with
+repeats. Today displays the actual workout size and selected month.
 
 Due reviews fill the session first. If fewer words are due, still-learning words
 can fill remaining places after at least 24 hours without an answer, provided
 there are fewer than three successful recall days (including the established
 legacy review baseline). Recent answers, pending mistake retries and mastered
-words are never used as early filler. One meaning per spelling is selected.
+words are never used as early filler. Reliable words with three successful recall
+days wait for their scheduled date and at least 24 hours after their last recall,
+including when an imported schedule is stale. Manual mode selection follows
+these same cooldowns. Weak Words uses unresolved mistakes, respects retry times,
+and assigns each spelling once; lifetime errors alone cannot keep a recovered
+word in that mode. One meaning per spelling is selected.
 
 Ranking uses unresolved mistakes, recent error rate, successful recall days,
 recall strength, response time and lateness. A bounded priority share and saved
@@ -33,8 +38,13 @@ counts, independent recall attempts and successes, successful recall days, hints
 recognition successes, assisted successes, and timing totals. A bounded history
 of the latest 20 outcomes supplies recent error rates; it does not store raw
 answers. Library shows independent recall counts, recall days and average recall
-time. These fields stay on the vocabulary records and use the existing Drive
-backup. Old records retain their counts and schedules; their successful-review
+time, the last successful unaided recall date/time, and the next review. Recognition,
+hints, and later mistakes never overwrite that successful recall date. These fields
+stay on the vocabulary records and use the existing Drive backup. Sync chooses the
+latest learning snapshot separately from later metadata edits and selections, so
+those actions cannot erase newer recall dates or schedules. Answer counts are
+never blindly summed across overlapping snapshots. Old records retain their
+counts and schedules; their successful-review
 baseline is preserved without inventing historical independent recall days.
 
 The scheduler no longer forces a 3/7/14/30-day gap just because a box advanced.
@@ -95,14 +105,15 @@ subject to Android permissions and battery/force-stop behavior. The immediate
 test checks visible notification access; actual scheduled/background delivery
 must also be checked on an installed Android device.
 
-Validation covers default and custom session sizes, a 107-word backlog, remaining
-daily allowance, local-day reset, selected and empty months, retired preference
+Validation covers default and custom session sizes, a 107-word backlog, practice
+beyond the daily goal, progress across local days, selected and empty months, retired preference
 compatibility, language isolation, distinct words, early learning cooldowns,
 legacy history, recognition/hints vs independent recall, same-day repetition,
 mistake retries, notification/channel denial, exact-alarm fallback, saved alarm
 verification, notification test actions and Android-only controls. Renderer
 checks complete a 20-word workout and confirm month selection, persistent recall
-history, and the daily completion state at mobile and desktop widths.
+history, further useful practice after the daily goal, and resting-word states at
+mobile and desktop widths.
 
 The 1.8.0 native validation also exercises the actual Capacitor plugin on an
 Android 16 emulator, including the OS permission prompt, notification visibility,

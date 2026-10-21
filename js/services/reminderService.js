@@ -1,9 +1,9 @@
 import { localDateKey } from '../utils/dates.js';
+import { isWordReadyForPractice, normalizeWordPracticeStats } from './wordSelection.js?v=18600';
 
 export const DAILY_REMINDER_ID = 73001;
 export const STREAK_REMINDER_ID = 73002;
 export const TEST_REMINDER_ID = 73003;
-export const PRACTICE_READY_REMINDER_ID = 73004;
 export const REMINDER_CHANNEL_ID = 'keepvocab-practice';
 export const REMINDER_HORIZON_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -85,22 +85,19 @@ export function getHabitReminderTime(reviewMoments = [], preferredTime = '19:00'
   return formatMinutesAsTime(safeMinutes);
 }
 
-function wordPracticeReadyTimestamp(word, fallbackMs) {
-  const dueAt = Date.parse(word?.nextReviewDate || word?.createdAt || '');
-  const dueMs = Number.isFinite(dueAt) ? dueAt : fallbackMs;
-  const stats = word?.practiceStats && typeof word.practiceStats === 'object' ? word.practiceStats : {};
-  const answeredAt = Date.parse(stats.lastAnsweredAt || '');
-  const successfulDays = Array.isArray(stats.successfulRecallDays)
-    ? stats.successfulRecallDays.length
-    : Number(stats.successfulRecallDays || 0);
-  const legacySuccess = Number(stats.legacySuccessfulReviews || (!stats.attempts && Number(word?.box) > 1 ? Number(word.box) - 1 : 0));
-  const eligibleForTopUp = Number.isFinite(answeredAt)
-    && stats.lastAnswerCorrect === true
-    && !word?.mastered
-    && !(Number(word?.srs?.version || 0) < 3 && Number(word?.box) >= 4)
-    && (successfulDays + legacySuccess < 3);
-  const topUpMs = eligibleForTopUp ? answeredAt + DAY_MS : Infinity;
-  return Math.min(dueMs, topUpMs);
+function wordPracticeReadyTimestamp(word, now) {
+  if (isWordReadyForPractice(word, now)) return now.getTime();
+  const stats = normalizeWordPracticeStats(word);
+  // Eligibility can change at a scheduled review or when an answer's rest
+  // window ends. Ask the shared scheduler at each boundary so reminders also
+  // respect reliable recall, mature schedules, and migrated statistics.
+  const candidates = [
+    Date.parse(word?.nextReviewDate || word?.createdAt || ''),
+    Date.parse(stats.lastAnsweredAt) + DAY_MS,
+    Date.parse(stats.lastUnaidedRecallAt) + DAY_MS
+  ].filter(timestamp => Number.isFinite(timestamp) && timestamp > now.getTime())
+    .sort((left, right) => left - right);
+  return candidates.find(timestamp => isWordReadyForPractice(word, new Date(timestamp))) ?? Infinity;
 }
 
 export function getPracticeReadiness(words = [], now = new Date()) {
@@ -110,8 +107,8 @@ export function getPracticeReadiness(words = [], now = new Date()) {
     if (!word?.id || !word.word || !word.definition) continue;
     const spelling = String(word.word).trim().toLowerCase();
     if (!spelling) continue;
-    const readyAt = wordPracticeReadyTimestamp(word, nowMs);
-    const isWeak = word.practiceStats?.lastAnswerCorrect === false || Number(word.mistakes?.consecutiveFailures || 0) > 0;
+    const readyAt = wordPracticeReadyTimestamp(word, now);
+    const isWeak = normalizeWordPracticeStats(word).lastAnswerCorrect === false || Number(word.mistakes?.consecutiveFailures || 0) > 0;
     const previous = bySpelling.get(spelling);
     if (!previous || readyAt < previous.readyAt) {
       bySpelling.set(spelling, { readyAt, isWeak: Boolean(previous?.isWeak || isWeak) });
@@ -126,7 +123,7 @@ export function getPracticeReadiness(words = [], now = new Date()) {
     if (item.readyAt <= nowMs) {
       readyNowCount += 1;
       if (item.isWeak) weakReadyCount += 1;
-    } else {
+    } else if (Number.isFinite(item.readyAt)) {
       upcoming.push(item);
     }
   }

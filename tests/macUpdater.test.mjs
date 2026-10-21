@@ -9,6 +9,7 @@ import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { downloadVerifiedUpdate } from '../desktop/updateDownload.cjs';
 import { verifyBundle } from '../desktop/macUpdate.cjs';
+import { selectRelease } from '../js/services/appUpdates.js';
 
 const exec = promisify(execFile);
 const helper = fileURLToPath(new URL('../desktop/replaceApp.sh', import.meta.url));
@@ -19,6 +20,25 @@ async function workspace(t) {
 }
 const bytes = Buffer.from('verified application bytes');
 const update = { url: 'https://example.test/app.dmg', size: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') };
+
+test('macOS updates prefer the correct native build and retain universal compatibility', () => {
+  const asset = arch => ({
+    name: `KeepVocab-1.9.0-macOS-${arch}.dmg`,
+    browser_download_url: `https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.9.0/KeepVocab-1.9.0-macOS-${arch}.dmg`,
+    size: 100, digest: `sha256:${'a'.repeat(64)}`
+  });
+  const universal = asset('universal');
+  const arm64 = asset('arm64');
+  const x64 = asset('x64');
+  const release = { tag_name: 'v1.9.0', assets: [universal, x64, arm64] };
+  assert.equal(selectRelease(release, 'darwin', '1.8.3', 'arm64').name, arm64.name);
+  assert.equal(selectRelease(release, 'darwin', '1.8.3', 'x64').name, x64.name);
+  assert.equal(selectRelease(release, 'darwin', '1.8.3').name, universal.name);
+  assert.equal(selectRelease({ ...release, assets: [universal] }, 'darwin', '1.8.3', 'arm64').name, universal.name);
+  assert.equal(selectRelease({ ...release, assets: [x64] }, 'darwin', '1.8.3', 'arm64'), null);
+  assert.equal(selectRelease({ ...release, assets: [arm64] }, 'darwin', '1.8.3', 'x64'), null);
+  assert.equal(selectRelease({ ...release, assets: [{ ...arm64, digest: null }, universal] }, 'darwin', '1.8.3', 'arm64').name, universal.name);
+});
 
 test('download retries interrupted transfers, verifies bytes, and reuses a verified installer', async t => {
   const file = path.join(await workspace(t), 'update.dmg');

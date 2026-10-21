@@ -1,4 +1,4 @@
-import { APP_VERSION } from './version.js?v=18300';
+import { APP_VERSION } from './version.js?v=18600';
 export { APP_VERSION };
 export const RELEASE_API = 'https://api.github.com/repos/RODIONOLIINYK/KeepVocab/releases/latest';
 const RELEASE_PREFIX = 'https://github.com/RODIONOLIINYK/KeepVocab/releases/download/';
@@ -11,14 +11,18 @@ export function compareVersions(a, b) {
   return 0;
 }
 
-export function selectRelease(release, platform, currentVersion = APP_VERSION) {
+export function selectRelease(release, platform, currentVersion = APP_VERSION, architecture) {
   if (!release || release.draft || release.prerelease || compareVersions(release.tag_name, currentVersion) <= 0) return null;
   const version = release.tag_name.replace(/^v/, '');
-  const suffix = platform === 'android' ? /-Android-(?:debug|release)\.apk$/ : platform === 'darwin' ? /-macOS-universal\.dmg$/ : null;
-  if (!suffix) return null;
-  const asset = release.assets?.find(item => item.name?.startsWith(`KeepVocab-${version}-`) && suffix.test(item.name)
+  const suffixes = platform === 'android' ? [/-Android-(?:debug|release)\.apk$/]
+    : platform === 'darwin' ? [
+      ...(architecture === 'arm64' || architecture === 'x64' ? [new RegExp(`-macOS-${architecture}\\.dmg$`)] : []),
+      /-macOS-universal\.dmg$/
+    ] : [];
+  const assets = Array.isArray(release.assets) ? release.assets : [];
+  const asset = suffixes.map(suffix => assets.find(item => item.name?.startsWith(`KeepVocab-${version}-`) && suffix.test(item.name)
     && item.browser_download_url?.startsWith(`${RELEASE_PREFIX}${release.tag_name}/`)
-    && /^sha256:[a-f0-9]{64}$/i.test(item.digest || '') && item.size > 0 && item.size < 600_000_000);
+    && /^sha256:[a-f0-9]{64}$/i.test(item.digest || '') && item.size > 0 && item.size < 600_000_000)).find(Boolean);
   return asset ? { version, url: asset.browser_download_url, name: asset.name, sha256: asset.digest.slice(7).toLowerCase(), size: asset.size } : null;
 }
 

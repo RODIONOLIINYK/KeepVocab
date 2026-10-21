@@ -1,8 +1,9 @@
 // Fast dictionary lookup with a maintained Wiktionary source, a short fallback, and offline cache.
 
-import { sanitizeExistingExamples } from './exampleSearch.js?v=18300';
-import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18300';
-import { getTranslationLanguage, normalizeTranslationLanguage } from './translationSettings.js?v=18300';
+import { isModernUsageExample, sanitizeExistingExamples } from './exampleSearch.js?v=18600';
+import { groupSimilarSenses } from './learningDefinitions.js?v=18600';
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18600';
+import { getTranslationLanguage, normalizeTranslationLanguage } from './translationSettings.js?v=18600';
 
 const PRIMARY_API_BASE = 'https://freedictionaryapi.com/api/v1/entries/en/';
 const FALLBACK_API_BASE = 'https://api.datamuse.com/words';
@@ -131,29 +132,55 @@ function normalizeDefinition(value) {
   return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
+function sourceLabels(value) {
+  return (Array.isArray(value) ? value : value ? [value] : []).map(item => String(typeof item === 'object' ? item?.text || item?.name || '' : item).trim()).filter(Boolean);
+}
+
+function sensePenalty(sense) {
+  const labels = (sense.labels || []).join(' ').toLowerCase();
+  return (/\b(?:obsolete|archaic|dated|historical)\b/.test(labels) ? 100 : 0)
+    + (/\b(?:form-of|alt-of|inflection-of)\b/.test(labels)
+      || /^(?:(?:alternative|obsolete|archaic|nonstandard) (?:form|spelling) of|(?:simple past|past participle|present participle|plural|comparative(?: form)?|superlative(?: form)?|inflection) of)\b/i.test(sense.definition) ? 80 : 0)
+    + (/\b(?:rare|uncommon)\b/.test(labels) ? 30 : 0)
+    + (/\b(?:technical|botany|zoology|chemistry|physics|mathematics|linguistics|medicine|anatomy)\b/.test(labels) ? 10 : 0);
+}
+
 function distinctSenses(senses, word) {
-  const seen = new Set();
+  const seen = new Map();
   const cleaned = [];
   for (const sense of senses) {
     const definition = String(sense?.definition || '').trim();
     if (!definition) continue;
     const partOfSpeech = String(sense.partOfSpeech || 'word').trim().toLowerCase();
     const key = `${partOfSpeech}|${normalizeDefinition(definition)}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    cleaned.push({
-      id: `sense-${cleaned.length}`,
+    const labels = [...new Set([...sourceLabels(sense.tags), ...sourceLabels(sense.labels), ...sourceLabels(sense.categories)])];
+    const candidate = {
+      id: sense.id || `sense-${cleaned.length}`,
       partOfSpeech,
       definition,
+      sourceDefinition: definition,
+      ...(Array.isArray(sense.sourceDefinitions) ? { sourceDefinitions: sense.sourceDefinitions } : {}),
+      labels,
+      usageNote: String(sense.usageNote || '').trim(),
+      sourceUrl: sense.sourceUrl || '',
+      attribution: sense.attribution || '',
       example: String(sense.example || '').trim(),
       synonyms: [...new Set((sense.synonyms || []).filter(Boolean))].slice(0, 6),
       antonyms: [...new Set((sense.antonyms || []).filter(Boolean))].slice(0, 6)
-    });
+    };
+    if (seen.has(key)) {
+      const index = seen.get(key);
+      if (sensePenalty(candidate) < sensePenalty(cleaned[index])) cleaned[index] = { ...candidate, id: cleaned[index].id };
+    } else { seen.set(key, cleaned.length); cleaned.push(candidate); }
   }
   if (!cleaned.length) {
     throw new DictionaryApiError(`No usable definition was returned for “${word}”.`, 'BAD_RESPONSE');
   }
-  return sanitizeExistingExamples(word, cleaned).slice(0, 30);
+  const current = cleaned.filter(sense => sensePenalty(sense) < 80);
+  const ranked = (current.length ? current : cleaned).sort((left, right) => sensePenalty(left) - sensePenalty(right));
+  return groupSimilarSenses(sanitizeExistingExamples(word, ranked).map(sense => ({ ...sense,
+    example: isModernUsageExample(word, sense.example) ? sense.example : '',
+    needsExample: !isModernUsageExample(word, sense.example) })), { word }).slice(0, 30);
 }
 
 function finishResult(word, phonetic, audioUrl, senses, source) {
@@ -169,6 +196,12 @@ function finishResult(word, phonetic, audioUrl, senses, source) {
   };
 }
 
+function cachedResult(data, cleanWord) {
+  const word = data.word || cleanWord;
+  const senses = distinctSenses(Array.isArray(data.senses) ? data.senses : [data], word);
+  return { ...data, senses, ...senses[0], source: 'cache' };
+}
+
 function parseLegacyEntries(payload, cleanWord) {
   const entries = payload.filter(entry => entry && Array.isArray(entry.meanings));
   if (!entries.length) return null;
@@ -181,6 +214,8 @@ function parseLegacyEntries(payload, cleanWord) {
       partOfSpeech: meaning.partOfSpeech,
       definition: item?.definition,
       example: item?.example,
+      tags: [...sourceLabels(meaning.tags), ...sourceLabels(item?.tags)],
+      labels: [...sourceLabels(meaning.labels), ...sourceLabels(item?.labels)],
       synonyms: [...(meaning.synonyms || []), ...(item?.synonyms || [])],
       antonyms: [...(meaning.antonyms || []), ...(item?.antonyms || [])]
     }))
@@ -190,11 +225,17 @@ function parseLegacyEntries(payload, cleanWord) {
 }
 
 function flattenFreeApiSense(entry, sense, inherited = {}) {
-  const example = sense?.examples?.[0] || sense?.quotes?.[0]?.text || '';
+  const examples = [...(sense?.examples || []), ...(sense?.quotes || []).map(quote => quote?.text || '')];
+  const example = examples.find(value => isModernUsageExample({ word: entry.lookupWord, partOfSpeech: entry.partOfSpeech }, value)) || '';
   const current = {
     partOfSpeech: entry.partOfSpeech,
     definition: sense?.definition,
     example,
+    tags: [...sourceLabels(inherited.tags), ...sourceLabels(sense?.tags)],
+    labels: [...sourceLabels(inherited.labels), ...sourceLabels(sense?.labels)],
+    categories: [...sourceLabels(inherited.categories), ...sourceLabels(sense?.categories)],
+    sourceUrl: inherited.sourceUrl,
+    attribution: inherited.attribution,
     synonyms: [...(inherited.synonyms || []), ...(sense?.synonyms || [])],
     antonyms: [...(inherited.antonyms || []), ...(sense?.antonyms || [])]
   };
@@ -206,7 +247,8 @@ function parseFreeDictionary(payload, cleanWord) {
   const entries = Array.isArray(payload?.entries) ? payload.entries : [];
   if (!entries.length) return null;
   const pronunciation = entries.flatMap(entry => entry.pronunciations || []).find(item => item?.text)?.text || '';
-  const senses = entries.flatMap(entry => (entry.senses || []).flatMap(sense => flattenFreeApiSense(entry, sense, entry)));
+  const senses = entries.flatMap(entry => (entry.senses || []).flatMap(sense => flattenFreeApiSense({ ...entry, lookupWord: payload.word || cleanWord }, sense, { ...entry,
+    sourceUrl: payload.source?.url || '', attribution: payload.source?.license?.name || '' })));
   const word = String(payload.word || cleanWord).toLowerCase();
   return finishResult(word, pronunciation, '', distinctSenses(senses, word), 'freedictionaryapi.com');
 }
@@ -273,11 +315,11 @@ export async function fetchWordDetails(word, options = {}) {
   const cache = readObjectCache(storage, CACHE_KEY);
 
   if (!options.force && cacheEntryIsFresh(cache[cleanWord], options.cacheTtlMs || CACHE_TTL_MS)) {
-    return { ...cache[cleanWord].data, source: 'cache' };
+    return cachedResult(cache[cleanWord].data, cleanWord);
   }
 
   if (!fetchImpl) {
-    if (cache[cleanWord]?.data) return { ...cache[cleanWord].data, source: 'cache' };
+    if (cache[cleanWord]?.data) return cachedResult(cache[cleanWord].data, cleanWord);
     throw new DictionaryApiError('Dictionary lookup is unavailable in this browser.', 'NETWORK');
   }
 
@@ -296,7 +338,7 @@ export async function fetchWordDetails(word, options = {}) {
   }
 
   if (!result) {
-    if (cache[cleanWord]?.data) return { ...cache[cleanWord].data, source: 'cache' };
+    if (cache[cleanWord]?.data) return cachedResult(cache[cleanWord].data, cleanWord);
     if (fallbackError instanceof DictionaryApiError && fallbackError.code === 'NOT_FOUND') {
       throw new DictionaryApiError(`“${cleanWord}” was not found in the dictionary.`, 'NOT_FOUND', primaryError);
     }

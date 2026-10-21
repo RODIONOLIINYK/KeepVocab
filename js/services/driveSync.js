@@ -1,11 +1,13 @@
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18300';
-import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18300';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18600';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18600';
 import { activityByDevice, aggregateActivity, normalizedActivity, streakFromActivity, currentStudyStats } from './studyActivity.js';
 import { localDateKey } from '../utils/dates.js';
 import { getCourseDefinition, isCourseId } from '../data/courses.js';
 import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles, stampPracticePreferences } from './courseProfiles.js';
+import { normalizeWordPracticeStats } from './wordSelection.js?v=18600';
+import { areSensesNearDuplicate } from './learningDefinitions.js?v=18600';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
@@ -70,7 +72,20 @@ function normalizeSenseText(value) {
 }
 
 function senseIdentity(word) {
-  return [word.courseId || 'english', word.monthYear, word.word, word.partOfSpeech || 'unknown', normalizeSenseText(word.definition)].join('|').toLowerCase();
+  return [word.courseId || 'english', word.monthYear, word.word, word.partOfSpeech || 'unknown', normalizeSenseText(word.sourceDefinition || word.definition)].join('|').toLowerCase();
+}
+
+function semanticIdentity(word) {
+  const clean = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  return JSON.stringify([clean(word.word), clean(word.partOfSpeech), clean(word.sourceDefinition || word.definition)]);
+}
+
+function normalizeImageScenes(value) {
+  if (!value || typeof value !== 'object' || Number(value.version) !== 1 || !value.fingerprint || !value.generatorVersion || !Array.isArray(value.scenes)) return undefined;
+  const scenes = [...new Set(value.scenes.filter(scene => typeof scene === 'string').map(scene => scene.trim()).filter(scene => scene && scene.length <= 180))].slice(0, 3);
+  if (!scenes.length || !['object', 'curated', 'gemini'].includes(value.source)) return undefined;
+  return { version: 1, generatorVersion: String(value.generatorVersion || ''), fingerprint: String(value.fingerprint),
+    source: value.source, scenes, generatedAt: validIso(value.generatedAt) };
 }
 
 function makeSenseId(word, partOfSpeech, definition) {
@@ -90,6 +105,55 @@ function validIso(value, fallback = new Date().toISOString()) {
 
 function recordTimestamp(record) {
   return Date.parse(record?.updatedAt || record?.lastReviewedAt || record?.createdAt || 0) || 0;
+}
+
+function newestTimestamp(...values) {
+  return Math.max(0, ...values.map(value => Date.parse(value || '') || 0));
+}
+
+function learningTimestamp(word) {
+  return newestTimestamp(word?.practiceStats?.lastAnsweredAt, word?.practiceStats?.lastUnaidedRecallAt,
+    word?.lastReviewedAt, word?.lastExerciseResult?.occurredAt, word?.mastery?.lastPracticedAt);
+}
+
+function mergeStoredWord(local, remote) {
+  const metadata = recordTimestamp(remote) > recordTimestamp(local) ? remote : local;
+  // A conflicting identity keeps the existing whole-record conflict behavior.
+  if (local.senseId !== remote.senseId || local.word !== remote.word || local.courseId !== remote.courseId) return metadata;
+  const localLearningAt = learningTimestamp(local);
+  const remoteLearningAt = learningTimestamp(remote);
+  const learning = remoteLearningAt === localLearningAt ? metadata : remoteLearningAt > localLearningAt ? remote : local;
+  const merged = { ...metadata };
+  // Selecting or editing a word must not overwrite an answer from another device.
+  for (const field of ['box', 'mastered', 'srs', 'nextReviewDate', 'lastReviewedAt', 'mastery', 'mistakes', 'productiveSamples', 'lastExerciseResult', 'practiceStats']) {
+    if (Object.prototype.hasOwnProperty.call(learning, field)) merged[field] = learning[field];
+    else delete merged[field];
+  }
+  if (local.practiceStats || remote.practiceStats) {
+    const stats = normalizeWordPracticeStats(learning);
+    const localStats = normalizeWordPracticeStats(local);
+    const remoteStats = normalizeWordPracticeStats(remote);
+    // Keep factual dates and selection history; answer counts come from one
+    // learning snapshot so syncing an overlap never counts the same answer twice.
+    const lastRecall = newestTimestamp(localStats.lastUnaidedRecallAt, remoteStats.lastUnaidedRecallAt);
+    const lastSelected = newestTimestamp(localStats.lastSelectedAt, remoteStats.lastSelectedAt);
+    const byMode = { ...stats.byMode };
+    for (const mode of new Set([...Object.keys(localStats.byMode), ...Object.keys(remoteStats.byMode)])) {
+      const left = localStats.byMode[mode];
+      const right = remoteStats.byMode[mode];
+      const selectedAt = newestTimestamp(left?.lastSelectedAt, right?.lastSelectedAt);
+      const selections = Math.max(left?.selections || 0, right?.selections || 0);
+      if (byMode[mode] || selectedAt || selections) {
+        byMode[mode] = { ...(byMode[mode] || { attempts: 0, recalled: 0, missed: 0, lastAnsweredAt: '' }),
+          selections, lastSelectedAt: selectedAt ? new Date(selectedAt).toISOString() : '' };
+      }
+    }
+    merged.practiceStats = { ...learning.practiceStats, ...stats,
+      lastUnaidedRecallAt: lastRecall ? new Date(lastRecall).toISOString() : '',
+      selections: Math.max(localStats.selections, remoteStats.selections),
+      lastSelectedAt: lastSelected ? new Date(lastSelected).toISOString() : '', byMode };
+  }
+  return merged;
 }
 
 
@@ -119,7 +183,7 @@ function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource
   return {
     ...candidate,
     id,
-    senseId: String(candidate.senseId || makeSenseId(word, partOfSpeech, definition)),
+    senseId: String(candidate.senseId || makeSenseId(word, partOfSpeech, candidate.sourceDefinition || definition)),
     courseId: course.id,
     languageCode: course.languageCode,
     translationLanguage,
@@ -127,16 +191,26 @@ function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource
     translation,
     acceptedForms: [...new Set((Array.isArray(candidate.acceptedForms) ? candidate.acceptedForms : [word]).map(value => String(value || '').trim().toLowerCase()).filter(Boolean))],
     grammaticalTags: [...new Set((Array.isArray(candidate.grammaticalTags) ? candidate.grammaticalTags : []).map(value => String(value || '').trim()).filter(Boolean))],
+    labels: [...new Set((Array.isArray(candidate.labels) ? candidate.labels : []).map(value => String(value || '').trim()).filter(Boolean))],
     word,
     phonetic: String(candidate.phonetic || '').trim(),
     partOfSpeech,
     definition: definition || 'Definition not provided.',
+    sourceDefinition: String(candidate.sourceDefinition || definition).trim(),
+    sourceDefinitions: [...new Set((Array.isArray(candidate.sourceDefinitions) ? candidate.sourceDefinitions : []).map(String).map(value => value.trim()).filter(Boolean))].slice(0, 12),
+    sourceFingerprint: String(candidate.sourceFingerprint || ''),
+    explanationSource: String(candidate.explanationSource || ''),
+    explanationModel: String(candidate.explanationModel || ''),
+    explanationVersion: Number(candidate.explanationVersion) || 0,
+    usageNote: String(candidate.usageNote || '').trim(),
     example: String(candidate.example || '').trim(),
+    imageScenes: normalizeImageScenes(candidate.imageScenes),
     imageCustomConcept: String(candidate.imageCustomConcept || '').trim().slice(0, 160),
     imageFeedback: candidate.imageFeedback && typeof candidate.imageFeedback === 'object' ? {
       rejectedUrls: [...new Set((candidate.imageFeedback.rejectedUrls || []).map(String).filter(Boolean))].slice(0, 80),
       goodUrls: [...new Set((candidate.imageFeedback.goodUrls || []).map(String).filter(Boolean))].slice(0, 40),
       preferredConcepts: [...new Set((candidate.imageFeedback.preferredConcepts || []).map(String).filter(Boolean))].slice(0, 20),
+      senseFingerprint: String(candidate.imageFeedback.senseFingerprint || ''),
       updatedAt: candidate.imageFeedback.updatedAt || null
     } : undefined,
     audioUrl: String(candidate.audioUrl || '').trim(),
@@ -645,12 +719,17 @@ export class DriveSyncService {
     const words = this.getAllWords();
     const index = words.findIndex(word => word.id === wordId);
     if (index === -1) throw new Error('That vocabulary entry no longer exists.');
-    const allowed = ['word', 'phonetic', 'partOfSpeech', 'definition', 'example', 'lemma', 'translation', 'translationLanguage', 'exampleSourceUrl', 'exampleAttribution', 'exampleLicense', 'audioUrl', 'imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery', 'imageCustomConcept', 'imageKind', 'imageGeneratedModel', 'imageGeneratedAt', 'imageGeneratedPrompt'];
+    const allowed = ['word', 'phonetic', 'partOfSpeech', 'definition', 'sourceDefinition', 'sourceFingerprint', 'usageNote', 'explanationSource', 'explanationModel', 'example', 'lemma', 'translation', 'translationLanguage', 'exampleSourceUrl', 'exampleAttribution', 'exampleLicense', 'audioUrl', 'imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery', 'imageCustomConcept', 'imageKind', 'imageGeneratedModel', 'imageGeneratedAt', 'imageGeneratedPrompt'];
     const cleanPatch = Object.fromEntries(allowed.filter(key => Object.prototype.hasOwnProperty.call(patch, key)).map(key => [key, String(patch[key] ?? '').trim()]));
+    if (Object.prototype.hasOwnProperty.call(patch, 'explanationVersion')) cleanPatch.explanationVersion = Number(patch.explanationVersion) || 0;
+    if (Object.prototype.hasOwnProperty.call(patch, 'imageScenes')) cleanPatch.imageScenes = normalizeImageScenes(patch.imageScenes);
+    if (Array.isArray(patch.sourceDefinitions)) cleanPatch.sourceDefinitions = [...new Set(patch.sourceDefinitions.map(String).map(value => value.trim()).filter(Boolean))].slice(0, 12);
+    if (Array.isArray(patch.labels)) cleanPatch.labels = [...new Set(patch.labels.map(String).map(value => value.trim()).filter(Boolean))].slice(0, 20);
     if (patch.imageFeedback && typeof patch.imageFeedback === 'object') cleanPatch.imageFeedback = {
       rejectedUrls: [...new Set((patch.imageFeedback.rejectedUrls || []).map(String).filter(Boolean))].slice(0, 80),
       goodUrls: [...new Set((patch.imageFeedback.goodUrls || []).map(String).filter(Boolean))].slice(0, 40),
       preferredConcepts: [...new Set((patch.imageFeedback.preferredConcepts || []).map(String).filter(Boolean))].slice(0, 20),
+      senseFingerprint: String(patch.imageFeedback.senseFingerprint || ''),
       updatedAt: patch.imageFeedback.updatedAt || new Date().toISOString()
     };
     if (cleanPatch.word !== undefined) cleanPatch.word = normalizeWordText(cleanPatch.word).toLowerCase();
@@ -663,13 +742,92 @@ export class DriveSyncService {
     const translationLanguage = !translation ? 'en' : ['en', 'uk'].includes(cleanPatch.translationLanguage) ? cleanPatch.translationLanguage
       : cleanPatch.translation === undefined ? words[index].translationLanguage || 'en'
         : /[А-Яа-яІіЇїЄєҐґ]/u.test(translation) ? 'uk' : 'en';
+    if (cleanPatch.definition !== undefined && cleanPatch.definition !== words[index].definition && cleanPatch.sourceDefinition === undefined) {
+      cleanPatch.sourceDefinition = cleanPatch.definition;
+      cleanPatch.sourceFingerprint = '';
+      cleanPatch.explanationSource = 'manual';
+    }
     const updated = { ...words[index], ...cleanPatch, translationLanguage, updatedAt: new Date().toISOString() };
+    delete updated.conciseDefinition;
+    delete updated.conciseDefinitionSource;
+    if (semanticIdentity(updated) !== semanticIdentity(words[index])) {
+      delete updated.imageScenes;
+      delete updated.imageFeedback;
+      delete updated.imageRejectedUrls;
+      if (cleanPatch.imageUrl === undefined) {
+        for (const key of ['imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery']) updated[key] = '';
+      }
+    }
     if (words.some((word, candidateIndex) => candidateIndex !== index && senseIdentity(word) === senseIdentity(updated))) {
       throw new Error(`That meaning of “${updated.word}” is already in ${updated.notebook}.`);
     }
     words[index] = updated;
     this.saveWords(words);
     return updated;
+  }
+
+  mergeWordMeanings(wordIds) {
+    const ids = new Set((wordIds || []).map(String));
+    const words = this.getAllWords();
+    const records = words.filter(word => ids.has(String(word.id)));
+    if (ids.size < 2 || records.length !== ids.size) throw new Error('The duplicate meanings changed. Review them again before merging.');
+    const first = records[0];
+    if (records.some(word => ['word', 'partOfSpeech', 'monthYear', 'courseId'].some(key => (word[key] || '') !== (first[key] || ''))
+      || !areSensesNearDuplicate(first, word))) throw new Error('Only near-identical meanings of the same word in this month can be merged.');
+    const stats = records.map(normalizeWordPracticeStats);
+    const latest = [...records].sort((a, b) => learningTimestamp(b) - learningTimestamp(a))[0];
+    const target = [...records].sort((a, b) => normalizeWordPracticeStats(b).attempts - normalizeWordPracticeStats(a).attempts || String(a.id).localeCompare(String(b.id)))[0];
+    const merged = { ...target };
+    for (const field of ['srs', 'mastery', 'lastExerciseResult', 'lastReviewedAt']) if (latest[field] !== undefined) merged[field] = latest[field];
+    const latestStats = normalizeWordPracticeStats(latest);
+    const sum = key => stats.reduce((total, item) => total + Number(item[key] || 0), 0);
+    const maxDate = key => { const timestamp = newestTimestamp(...stats.map(item => item[key])); return timestamp ? new Date(timestamp).toISOString() : ''; };
+    const byMode = {};
+    for (const mode of new Set(stats.flatMap(item => Object.keys(item.byMode)))) {
+      const items = stats.map(item => item.byMode[mode]).filter(Boolean);
+      byMode[mode] = Object.fromEntries(['selections', 'attempts', 'recalled', 'missed'].map(key => [key, items.reduce((total, item) => total + Number(item[key] || 0), 0)]));
+      for (const key of ['lastSelectedAt', 'lastAnsweredAt']) { const at = newestTimestamp(...items.map(item => item[key])); byMode[mode][key] = at ? new Date(at).toISOString() : ''; }
+    }
+    merged.practiceStats = { ...latestStats,
+      ...Object.fromEntries(['attempts', 'recalled', 'missed', 'selections', 'recallAttempts', 'unaidedRecalled', 'recognitionCorrect', 'assistedCorrect', 'hintsUsed', 'timedRecallCount', 'recallTimeTotalMs'].map(key => [key, sum(key)])),
+      // Historical day counts lack complete date sets; adding them would invent retention days.
+      successfulRecallDays: Math.max(...stats.map(item => item.successfulRecallDays)),
+      legacySuccessfulReviews: Math.max(...stats.map(item => item.legacySuccessfulReviews)),
+      lastUnaidedRecallAt: maxDate('lastUnaidedRecallAt'), lastCorrectAt: maxDate('lastCorrectAt'),
+      lastMissedAt: maxDate('lastMissedAt'), lastSelectedAt: maxDate('lastSelectedAt'),
+      recentResults: stats.flatMap(item => item.recentResults).sort((a, b) => Date.parse(a.occurredAt) - Date.parse(b.occurredAt)).slice(-20), byMode };
+    const mistakes = records.map(word => word.mistakes || {});
+    const summedMap = key => {
+      const result = {};
+      for (const item of mistakes) for (const [name, count] of Object.entries(item[key] || {})) result[name] = (result[name] || 0) + Math.max(0, Number(count) || 0);
+      return result;
+    };
+    const lastMistakeAt = newestTimestamp(...mistakes.map(item => item.lastMistakeAt));
+    merged.mistakes = { version: 1,
+      incorrectAttempts: mistakes.reduce((total, item) => total + Math.max(0, Number(item.incorrectAttempts) || 0), 0),
+      consecutiveFailures: Math.max(0, Number(latest.mistakes?.consecutiveFailures) || 0),
+      lastMistakeAt: lastMistakeAt ? new Date(lastMistakeAt).toISOString() : '',
+      recentFailures: mistakes.flatMap(item => Array.isArray(item.recentFailures) ? item.recentFailures : []).filter(value => Number.isFinite(Date.parse(value))).sort((a, b) => Date.parse(a) - Date.parse(b)).slice(-20),
+      byExercise: summedMap('byExercise'), confusions: summedMap('confusions') };
+    merged.productiveSamples = [...new Map(records.flatMap(word => Array.isArray(word.productiveSamples) ? word.productiveSamples : []).map(sample => [JSON.stringify([sample.createdAt, sample.exerciseType, sample.text, sample.correct]), sample])).values()]
+      .sort((a, b) => (Date.parse(a.createdAt) || 0) - (Date.parse(b.createdAt) || 0)).slice(-20);
+    for (const key of ['lastRecalledAt', 'lastPracticedAt']) {
+      const at = newestTimestamp(...records.map(word => word[key]));
+      if (at) merged[key] = new Date(at).toISOString();
+    }
+    merged.box = Math.min(...records.map(word => Number(word.box) || 1));
+    merged.mastered = records.every(word => word.mastered);
+    const reviewDates = records.map(word => Date.parse(word.nextReviewDate || word.createdAt)).filter(Number.isFinite);
+    merged.nextReviewDate = new Date(reviewDates.length ? Math.min(...reviewDates) : Date.now()).toISOString();
+    merged.sourceDefinitions = [...new Set(records.flatMap(word => [word.sourceDefinition || word.definition, ...(word.sourceDefinitions || [])]))].slice(0, 12);
+    merged.updatedAt = new Date().toISOString();
+    const removed = records.filter(word => word.id !== merged.id);
+    const tombstones = this.getTombstones().filter(item => !removed.some(word => word.id === item.id));
+    tombstones.push(...removed.map(word => ({ id: word.id, senseId: word.senseId || '', monthYear: word.monthYear, deletedAt: merged.updatedAt })));
+    this.saveTombstones(tombstones, { silent: true });
+    this.saveWords(words.flatMap(word => !ids.has(String(word.id)) ? [word] : word.id === merged.id ? [merged] : []));
+    this.refreshNotebooks();
+    return merged;
   }
 
   deleteWord(wordId) {
@@ -837,10 +995,8 @@ export class DriveSyncService {
             continue;
           }
           const existing = wordMap.get(word.id);
-          if (!existing || recordTimestamp(word) > recordTimestamp(existing)) {
-            if (!existing) restoredWords += 1;
-            wordMap.set(word.id, word);
-          }
+          if (!existing) restoredWords += 1;
+          wordMap.set(word.id, existing ? mergeStoredWord(existing, word) : word);
         }
         for (const candidate of Array.isArray(payload.tombstones) ? payload.tombstones : []) {
           const item = normalizeTombstone(candidate, monthYear);

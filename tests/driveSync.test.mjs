@@ -12,6 +12,8 @@ import {
 import { getGeminiSettings, saveGeminiSettings } from '../js/services/geminiSettings.js';
 import { getImageProviderSettings, saveImageProviderSettings } from '../js/services/imageSearch.js';
 import { getTranslationLanguage, getTranslationName, isUkrainianTranslationEnabled } from '../js/services/translationSettings.js';
+import { recordExerciseResult } from '../js/services/exerciseResult.js';
+import { recordModeWordSelections } from '../js/services/wordSelection.js';
 
 function response(payload, status = 200) {
   return {
@@ -222,6 +224,99 @@ test('fresh reinstall restores exact meanings, original months, settings, and pr
   assert.equal(reinstalled.getSettings().learningStats.sessionsCompleted, 7);
   assert.deepEqual(reinstalled.getSettings().speakingProgress.completed, ['rent-apartment', 'present-idea']);
   assert.deepEqual(reinstalled.getMonthlyArchives().map(archive => archive.monthYear), ['July 2026', 'May 2026']);
+});
+
+test('newer metadata and selections cannot overwrite a newer recall from another device', async () => {
+  const drive = new MockDrive();
+  const first = new DriveSyncService(new MemoryStorage(), drive.fetch);
+  const added = first.addWord({ word: 'remember', definition: 'To bring something back to mind.', createdAt: '2026-08-01T10:00:00.000Z' }, 'August 2026 Vocabulary');
+  first.saveWords([{ ...added, updatedAt: added.createdAt }]);
+  authorize(first);
+  await first.syncGoogleDrive();
+  const second = new DriveSyncService(new MemoryStorage(), drive.fetch);
+  authorize(second);
+  await second.syncGoogleDrive();
+
+  const recalled = recordExerciseResult({ wordId: added.id, exerciseType: 'daily-typed-recall', correct: true,
+    recallType: 'free-recall', producedUnaided: true, occurredAt: '2026-08-14T10:00:00.000Z' }, first).word;
+  await first.syncGoogleDrive();
+  // The offline copy still has no answer history when it is selected and edited.
+  recordModeWordSelections(second, second.getWords(), { mode: 'flashcards', now: new Date('2026-08-15T10:00:00.000Z') });
+  second.updateWord(added.id, { example: 'Remember to call tomorrow.' });
+  await second.syncGoogleDrive();
+  await first.syncGoogleDrive();
+
+  for (const service of [first, second]) {
+    const merged = service.getWords().find(word => word.id === added.id);
+    assert.equal(merged.example, 'Remember to call tomorrow.');
+    assert.equal(merged.practiceStats.attempts, 1);
+    assert.equal(merged.practiceStats.unaidedRecalled, 1);
+    assert.equal(merged.practiceStats.lastUnaidedRecallAt, '2026-08-14T10:00:00.000Z');
+    assert.equal(merged.practiceStats.lastAnsweredAt, recalled.lastReviewedAt);
+    assert.equal(merged.nextReviewDate, recalled.nextReviewDate);
+    assert.deepEqual(merged.lastExerciseResult, recalled.lastExerciseResult);
+    assert.equal(merged.practiceStats.selections, 1);
+    assert.equal(merged.practiceStats.byMode.flashcards.selections, 1);
+    assert.equal(merged.practiceStats.byMode.practice.attempts, 1);
+  }
+  const before = structuredClone(first.getWords());
+  await first.syncGoogleDrive();
+  await second.syncGoogleDrive();
+  assert.deepEqual(first.getWords(), before);
+  assert.deepEqual(second.getWords(), before);
+
+  const reinstalled = new DriveSyncService(new MemoryStorage(), drive.fetch);
+  authorize(reinstalled);
+  await reinstalled.syncGoogleDrive();
+  assert.deepEqual(reinstalled.getWords(), before);
+});
+
+test('concurrent answers keep the latest schedule and the last factual recall without adding snapshot counts', async () => {
+  const drive = new MockDrive();
+  const first = new DriveSyncService(new MemoryStorage(), drive.fetch);
+  const added = first.addWord({ word: 'retain', definition: 'To keep something.', createdAt: '2026-08-01T10:00:00.000Z' }, 'August 2026 Vocabulary');
+  first.saveWords([{ ...added, updatedAt: added.createdAt }]);
+  authorize(first);
+  await first.syncGoogleDrive();
+  const second = new DriveSyncService(new MemoryStorage(), drive.fetch);
+  authorize(second);
+  await second.syncGoogleDrive();
+  recordExerciseResult({ wordId: added.id, exerciseType: 'daily-typed-recall', correct: true,
+    recallType: 'free-recall', producedUnaided: true, occurredAt: '2026-08-14T10:00:00.000Z' }, first);
+  const failed = recordExerciseResult({ wordId: added.id, exerciseType: 'daily-typed-recall', correct: false,
+    recallType: 'free-recall', producedUnaided: false, occurredAt: '2026-08-15T10:00:00.000Z' }, second).word;
+  await first.syncGoogleDrive();
+  await second.syncGoogleDrive();
+  await first.syncGoogleDrive();
+  for (const service of [first, second]) {
+    const merged = service.getWords()[0];
+    assert.equal(merged.practiceStats.attempts, failed.practiceStats.attempts);
+    assert.equal(merged.practiceStats.missed, 1);
+    assert.equal(merged.practiceStats.lastAnswerCorrect, false);
+    assert.equal(merged.practiceStats.lastUnaidedRecallAt, '2026-08-14T10:00:00.000Z');
+    assert.equal(merged.nextReviewDate, failed.nextReviewDate);
+    assert.equal(merged.srs.lastRating, 'again');
+    assert.deepEqual(merged.mistakes, failed.mistakes);
+  }
+});
+
+test('conflicting sense identities retain whole-record conflict resolution', async () => {
+  const drive = new MockDrive();
+  const service = new DriveSyncService(new MemoryStorage(), drive.fetch);
+  const added = service.addWord({ word: 'bank', definition: 'A financial institution.', createdAt: '2026-08-01T10:00:00.000Z' }, 'August 2026 Vocabulary');
+  service.saveWords([{ ...added, updatedAt: added.createdAt }]);
+  authorize(service);
+  await service.syncGoogleDrive();
+  const payload = drive.payloadByName('Dictionary August 2026.json');
+  payload.words[0] = { ...payload.words[0], senseId: 'different-sense', definition: 'Land beside a river.', updatedAt: '2026-08-20T10:00:00.000Z' };
+  recordExerciseResult({ wordId: added.id, exerciseType: 'daily-typed-recall', correct: true,
+    recallType: 'free-recall', producedUnaided: true, occurredAt: '2026-08-14T10:00:00.000Z' }, service);
+  await service.syncGoogleDrive();
+  const merged = service.getWords()[0];
+  assert.equal(merged.senseId, 'different-sense');
+  assert.equal(merged.definition, 'Land beside a river.');
+  assert.equal(merged.practiceStats, undefined);
+  assert.equal(merged.lastReviewedAt, undefined);
 });
 
 test('retired active-course settings migrate to the saved English profile without mixing progress', () => {

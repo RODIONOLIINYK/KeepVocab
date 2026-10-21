@@ -1,5 +1,6 @@
-import { generateGeminiContent } from './geminiSettings.js?v=18300';
-import { getTranslationLanguage, getTranslationName } from './translationSettings.js?v=18300';
+import { generateGeminiContent } from './geminiSettings.js?v=18600';
+import { getTranslationLanguage, getTranslationName } from './translationSettings.js?v=18600';
+import { exampleForLearning, isModernUsageExample } from './learningDefinitions.js?v=18600';
 
 export const CONTEXT_EXERCISE_CACHE = 'keepvocab_ai_context_cache_v3';
 
@@ -22,7 +23,7 @@ function containsTarget(sentence, target) {
 }
 
 function cacheKey(words, storage) {
-  return JSON.stringify([getTranslationLanguage(storage), (words || []).map(word => [word.id, word.word, word.translation, word.definition, word.example, word.updatedAt])]);
+  return JSON.stringify([getTranslationLanguage(storage), (words || []).map(word => [word.id, word.word, word.translation, word.definition, exampleForLearning(word), word.updatedAt])]);
 }
 
 function readCache(storage) {
@@ -37,7 +38,7 @@ function sanitizeGeneratedSet(result, words) {
   const items = (Array.isArray(result?.items) ? result.items : []).map(item => {
     const word = byId.get(String(item?.wordId || ''));
     const sentence = normalize(item?.sentence);
-    if (!word || !sentence || !containsTarget(sentence, word.word)) return null;
+    if (!word || !sentence || !containsTarget(sentence, word.word) || !isModernUsageExample(word, sentence)) return null;
     return { wordId: String(word.id), sentence, ...(item.source === 'saved-example' ? { source: item.source } : {}) };
   }).filter(Boolean);
   const uniqueItems = [...new Map(items.map(item => [item.wordId, item])).values()];
@@ -51,7 +52,7 @@ function sanitizeGeneratedSet(result, words) {
 
 function localContextItems(words) {
   return (words || []).map(word => {
-    const sentence = normalize(word.example);
+    const sentence = normalize(exampleForLearning(word));
     return sentence && containsTarget(sentence, word.word) ? { wordId: String(word.id), sentence, source: 'saved-example' } : null;
   }).filter(Boolean);
 }

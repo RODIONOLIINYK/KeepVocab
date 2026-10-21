@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Arch } from 'builder-util';
+import assertMacArchitecture from '../scripts/assert-mac-architecture.cjs';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -40,7 +42,7 @@ test('the local launch contract keeps the installed app on the API-authorized po
   assert.match(handoff, /http:\/\/127\.0\.0\.1:8085/);
 });
 
-test('the macOS package is universal, sandboxed, and keeps the authorized local origin', () => {
+test('the macOS package supports Apple Silicon only, stays sandboxed, and keeps the authorized local origin', () => {
   const packageJson = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf8'));
   const desktopMain = readFileSync(resolve(projectRoot, 'desktop/main.cjs'), 'utf8');
   const macTarget = packageJson.build.mac.target.find(target => target.target === 'dmg');
@@ -48,11 +50,18 @@ test('the macOS package is universal, sandboxed, and keeps the authorized local 
   assert.match(packageJson.version, /^\d+\.\d+\.\d+$/);
   assert.match(readFileSync(resolve(projectRoot, 'js/services/version.js'), 'utf8'), new RegExp(`APP_VERSION = '${packageJson.version.replaceAll('.', '\\.')}';`));
   assert.equal(packageJson.main, 'desktop/main.cjs');
-  assert.deepEqual(macTarget.arch, ['universal']);
+  assert.deepEqual(macTarget.arch, ['arm64']);
+  assert.deepEqual(packageJson.build.mac.target.find(target => target.target === 'zip').arch, ['arm64']);
+  assert.equal(packageJson.build.mac.artifactName, 'KeepVocab-${version}-macOS-${arch}.${ext}');
+  assert.deepEqual(packageJson.build.mac.electronLanguages, ['en', 'en_GB', 'uk']);
   assert.equal(packageJson.build.mac.identity, null);
   assert.ok(packageJson.dependencies['electron-updater']);
   assert.match(packageJson.scripts['mac:build'], /build:web/);
-  assert.match(packageJson.scripts['mac:build'], /--universal/);
+  assert.match(packageJson.scripts['mac:build'], /--arm64/);
+  assert.doesNotMatch(packageJson.scripts['mac:build'], /--(?:x64|universal)/);
+  assert.match(packageJson.scripts['mac:build'], /--publish never/);
+  assert.equal(packageJson.scripts['mac:build:universal'], undefined);
+  assert.equal(packageJson.build.beforePack, 'scripts/assert-mac-architecture.cjs');
   assert.match(desktopMain, /APP_HOST = '127\.0\.0\.1'/);
   assert.match(desktopMain, /APP_PORT = 8085/);
   assert.match(desktopMain, /protocol\.handle\('http'/);
@@ -80,6 +89,15 @@ test('the macOS package is universal, sandboxed, and keeps the authorized local 
   assert.equal(existsSync(resolve(projectRoot, 'icons/keepvocab-menubarTemplate@2x.png')), true);
 });
 
+test('the macOS packaging guard rejects Intel and universal overrides without compiling them', () => {
+  for (const electronPlatformName of ['darwin', 'mas']) {
+    assert.doesNotThrow(() => assertMacArchitecture({ electronPlatformName, arch: Arch.arm64 }));
+    for (const arch of [Arch.x64, Arch.universal, Arch.ia32, Arch.armv7l]) {
+      assert.throws(() => assertMacArchitecture({ electronPlatformName, arch }), /Apple Silicon \(arm64\) only/);
+    }
+  }
+});
+
 test('both add-word surfaces share the full composer and image pipeline', () => {
   const composer = readFileSync(resolve(projectRoot, 'js/components/AddWordModal.js'), 'utf8');
   for (const entry of ['js/app.js', 'js/quickAdd.js']) {
@@ -87,7 +105,7 @@ test('both add-word surfaces share the full composer and image pipeline', () => 
   }
   assert.match(composer, /prepareWordsForLibrary\(items/);
   assert.match(composer, /existingWords: driveSync\.getWords\(\)/);
-  assert.match(composer, /driveSync\.addWords\(enrichedItems\)/);
+  assert.match(composer, /driveSync\.addWords\(reviewedItems\)/);
 });
 
 test('the shared composer follows the active course and ignores stale work', () => {

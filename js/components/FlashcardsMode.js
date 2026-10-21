@@ -1,17 +1,19 @@
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18300';
-import { driveSync } from '../services/driveSync.js?v=18300';
-import { speakWord } from '../services/speechService.js?v=18300';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18300';
-import { getRatingPreviews } from '../services/srsEngine.js?v=18300';
+import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18600';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18600';
+import { driveSync } from '../services/driveSync.js?v=18600';
+import { speakWord } from '../services/speechService.js?v=18600';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18600';
+import { getRatingPreviews } from '../services/srsEngine.js?v=18600';
 import { escapeHtml } from '../utils/html.js';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18300';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18600';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function renderFlashcardsMode(container, onNavigate) {
-  const words = selectModeWords(getActivePracticeWords(driveSync), { mode: 'flashcards', limit: 10 });
+  const allWords = getActivePracticeWords(driveSync);
+  const words = selectModeWords(allWords, { mode: 'flashcards', limit: 10 });
   if (!words.length) {
-    container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow">Flashcards</span><h1>Your first card is waiting</h1><p>Add a word and KeepVocab will preserve its exact meaning, example, and visual cue.</p><button class="btn-green-solid" id="flashcard-add">Add vocabulary</button></section>`;
-    container.querySelector('#flashcard-add').addEventListener('click', () => document.getElementById('btn-header-quick-add')?.click());
+    container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow">Flashcards</span><h1>${allWords.length ? 'All caught up' : 'Your first card is waiting'}</h1><p>${allWords.length ? 'Your cards are resting until their next review. Recent answers shape when they return.' : 'Add a word and KeepVocab will preserve its exact meaning, example, and visual cue.'}</p><button class="btn-green-solid" id="flashcard-add">${allWords.length ? 'Back to Today' : 'Add vocabulary'}</button></section>`;
+    container.querySelector('#flashcard-add').addEventListener('click', () => allWords.length ? go('dashboard', onNavigate) : document.getElementById('btn-header-quick-add')?.click());
     return;
   }
   recordModeWordSelections(driveSync, words, { mode: 'flashcards' });
@@ -40,7 +42,7 @@ export function renderFlashcardsMode(container, onNavigate) {
     container.innerHTML = `<section class="flashcard-mode" aria-labelledby="flashcard-word"><header class="exercise-topbar"><button class="status-pill offline" id="flashcard-exit"><i class="fa-solid fa-arrow-left"></i> Exit</button><div class="exercise-progress"><span>${currentIndex + 1} of ${words.length}</span><i><b style="width:${Math.round((currentIndex + 1) / words.length * 100)}%"></b></i></div><button class="audio-btn-circle" id="flashcard-speak" aria-label="Hear ${escapeHtml(word.word)}"><i class="fa-solid fa-volume-high"></i></button></header>
       <button class="smart-flashcard ${revealed ? 'revealed' : ''}" id="flashcard-reveal" aria-expanded="${revealed}">
         <div class="smart-flashcard-prompt" aria-hidden="${revealed}">${showImageOnPrompt ? `<img src="${escapeHtml(word.imageUrl)}" alt="Visual cue for ${escapeHtml(word.word)}">` : ''}<span class="eyebrow">${showImageOnPrompt ? 'Image-supported review' : 'Recall the meaning'}</span><h1 id="flashcard-word">${escapeHtml(word.word)}</h1><p>${escapeHtml(word.phonetic || '')}</p><small><i class="fa-solid fa-hand-pointer"></i> Tap or press Space to reveal</small></div>
-        <div class="smart-flashcard-answer" aria-hidden="${!revealed}"><span class="eyebrow">${escapeHtml(word.partOfSpeech || 'word')}</span><h2>${escapeHtml(word.definition)}</h2>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}${word.example ? `<blockquote>“${escapeHtml(word.example)}”</blockquote>` : ''}${word.imageUrl && !showImageOnPrompt ? `<img src="${escapeHtml(word.imageUrl)}" alt="Memory image for ${escapeHtml(word.word)}">` : ''}</div>
+        <div class="smart-flashcard-answer" aria-hidden="${!revealed}"><span class="eyebrow">${escapeHtml(word.partOfSpeech || 'word')}</span><h2>${escapeHtml(definitionForLearning(word))}</h2>${word.usageNote ? `<p class="meaning-usage"><strong>When to use it:</strong> ${escapeHtml(word.usageNote)}</p>` : ''}${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}${exampleForLearning(word) ? `<blockquote>“${escapeHtml(exampleForLearning(word))}”</blockquote>` : '<p class="missing-example">Add a modern example in Library to see this meaning in use.</p>'}${word.imageUrl && !showImageOnPrompt ? `<img src="${escapeHtml(word.imageUrl)}" alt="Memory image for ${escapeHtml(word.word)}">` : ''}</div>
       </button>
       ${revealed ? `<div class="flashcard-rating" aria-label="How well did you remember?"><p>How well did you remember?</p><div>${['again','hard','good','easy'].map(rating => `<button class="flashcard-grade ${rating}" data-flashcard-rating="${rating}"><strong>${rating[0].toUpperCase() + rating.slice(1)}</strong><span>${escapeHtml(previews[rating].label)}</span></button>`).join('')}</div></div>` : '<p class="flashcard-guidance">Think of the exact meaning before revealing the card.</p>'}
       <div class="flashcard-nav"><button class="status-pill offline" id="flashcard-prev" ${currentIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i> Previous</button><button class="status-pill offline" id="flashcard-next" ${currentIndex === words.length - 1 ? 'disabled' : ''}>Next <i class="fa-solid fa-chevron-right"></i></button></div></section>`;

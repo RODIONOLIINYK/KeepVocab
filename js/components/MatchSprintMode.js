@@ -1,8 +1,9 @@
-import { driveSync } from '../services/driveSync.js?v=18300';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18300';
-import { playInteractionSound } from '../services/interactionSound.js?v=18300';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18600';
+import { driveSync } from '../services/driveSync.js?v=18600';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18600';
+import { playInteractionSound } from '../services/interactionSound.js?v=18600';
 import { escapeHtml } from '../utils/html.js';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18300';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18600';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -26,7 +27,8 @@ export function renderMatchSprintMode(container, onNavigate) {
   const allWords = getActivePracticeWords(driveSync);
   const round = buildRound(allWords);
   if (round.length < 2) {
-    container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-stopwatch"></i><h2>Add two different words</h2><p>Match Sprint pairs exact meanings with spellings, so a round needs at least two different words in the active month.</p><button class="btn-green-solid" id="match-back">Back to dashboard</button></div></section>`;
+    const hasVocabulary = new Set(allWords.map(word => word.word.toLowerCase())).size >= 2;
+    container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-stopwatch"></i><h2>${hasVocabulary ? 'Fewer than 2 words ready' : 'Add two different words'}</h2><p>${hasVocabulary ? 'Match Sprint needs two words ready for review. Recently recalled words are resting; Practice can use any remaining word.' : 'Match Sprint pairs exact meanings with spellings, so a round needs at least two different words in the active month.'}</p><button class="btn-green-solid" id="match-back">Back to dashboard</button></div></section>`;
     container.querySelector('#match-back').addEventListener('click', () => go('dashboard', onNavigate));
     return;
   }
@@ -118,7 +120,7 @@ export function renderMatchSprintMode(container, onNavigate) {
       const correct = correctPair === word.id;
       const content = kind === 'term'
         ? `<strong>${escapeHtml(word.word)}</strong><small>${escapeHtml(word.partOfSpeech || 'unknown')}</small>`
-        : `<span>${escapeHtml(word.definition)}</span>`;
+        : `<span>${escapeHtml(definitionForLearning(word))}</span>`;
       return `<button class="match-tile ${kind}${selected ? ' selected' : ''}${wrong ? ' wrong' : ''}${correct ? ' correct-match' : ''}${animateBoard ? ' tile-enter' : ''}" style="--match-delay:${Math.min(index, 6) * 35}ms" data-match-kind="${kind}" data-match-id="${escapeHtml(word.id)}" aria-pressed="${selected}"${resolvingPair ? ' disabled' : ''}>${content}${correct ? '<i class="fa-solid fa-check match-correct-check" aria-hidden="true"></i>' : ''}</button>`;
     };
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card match-shell">

@@ -11,8 +11,13 @@ const words = [
 ];
 
 test('speaking targets prioritize due and weak Library vocabulary ready for activation', () => {
-  const targets = selectSpeakingTargets(words, { limit: 2, now });
+  const readyWords = words.map(word => word.id === 'weak' ? { ...word, nextReviewDate: now.toISOString() } : word);
+  const targets = selectSpeakingTargets(readyWords, { limit: 2, now });
   assert.deepEqual(targets.map(word => word.id).sort(), ['due', 'weak']);
+});
+
+test('speaking targets respect future review dates even when old weakness is recorded', () => {
+  assert.deepEqual(selectSpeakingTargets(words, { limit: 3, now }).map(word => word.id), ['due']);
 });
 
 test('speaking targets must match the selected lesson context instead of filling random slots', () => {

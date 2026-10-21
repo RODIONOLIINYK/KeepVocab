@@ -18,7 +18,7 @@ function makeWord(index, overrides = {}) {
     word: `term${index}`,
     definition: `definition ${index}`,
     createdAt: '2026-07-01T00:00:00.000Z',
-    nextReviewDate: '2026-09-21T00:00:00.000Z',
+    nextReviewDate: START.toISOString(),
     ...overrides
   };
 }
@@ -83,7 +83,12 @@ test('recent misses get a bounded focus share and rotate within the difficult gr
   let words = Array.from({ length: 24 }, (_, index) => makeWord(index, index < 6 ? {
     mistakes: { incorrectAttempts: 8, consecutiveFailures: 2, recentFailures: [START.toISOString()] },
     practiceStats: { attempts: 10, recalled: 2, missed: 8, consecutiveMisses: 2, lastAnswerCorrect: false, lastMissedAt: START.toISOString() }
-  } : {}));
+  } : {
+    nextReviewDate: new Date(+START + 3 * DAY_MS).toISOString(),
+    srs: { version: 3 },
+    practiceStats: { version: 2, attempts: 1, recalled: 1, successfulRecallDays: 1, lastAnswerCorrect: true,
+      lastAnsweredAt: new Date(+START - DAY_MS).toISOString() }
+  }));
   const hardIds = new Set(words.slice(0, 6).map(word => word.id));
   const first = selectModeWords(words, { mode: 'visual-match', limit: 10, now: START });
   const firstHard = first.filter(word => hardIds.has(word.id));
@@ -137,6 +142,26 @@ test('legacy review evidence remains available before the next answer', () => {
   }));
   assert.equal(stats.lastAnsweredAt, START.toISOString());
   assert.equal(stats.lastAnswerCorrect, true);
+});
+
+test('all automatic modes respect reliable recall and failed-word cooldowns', () => {
+  const trained = makeWord('known', { box: 4, nextReviewDate: new Date(+START + 8 * DAY_MS).toISOString(), practiceStats: { version: 2, attempts: 8, recalled: 8,
+    successfulRecallDays: 5, unaidedRecalled: 8, lastUnaidedRecallAt: new Date(+START - DAY_MS).toISOString(),
+    lastAnsweredAt: new Date(+START - DAY_MS).toISOString(), lastAnswerCorrect: true },
+  srs: { version: 3, stabilityDays: 8, repetitions: 8 } });
+  const failed = applyExerciseResultToWord(makeWord('failed'), { wordId: 'word-failed', exerciseType: 'daily-typed-recall',
+    correct: false, recallType: 'free-recall', occurredAt: START.toISOString() }).word;
+  for (const mode of ['practice', 'flashcards', 'visual-match', 'match-sprint', 'context', 'use-it', 'speaking']) {
+    assert.deepEqual(selectModeWords([trained, failed], { mode, now: START }), []);
+    const retryAt = new Date(failed.nextReviewDate);
+    assert.deepEqual(selectModeWords([trained, failed], { mode, now: retryAt }).map(item => item.id), [failed.id]);
+    assert.equal(selectModeWords([trained], { mode, now: new Date(trained.nextReviewDate) }).length, 1);
+  }
+  const staleSchedule = { ...trained, nextReviewDate: START.toISOString(), practiceStats: {
+    ...trained.practiceStats, lastAnsweredAt: START.toISOString(), lastUnaidedRecallAt: START.toISOString()
+  } };
+  assert.deepEqual(selectModeWords([staleSchedule], { now: START }), []);
+  assert.equal(selectModeWords([staleSchedule], { now: new Date(+START + DAY_MS) }).length, 1);
 });
 
 test('shared exercise pool follows the English Library month, with no fallback to other months', async () => {

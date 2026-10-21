@@ -1,17 +1,17 @@
-import { driveSync } from '../services/driveSync.js?v=18300';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18300';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=18300';
-import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=18300';
+import { driveSync } from '../services/driveSync.js?v=18600';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18600';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18600';
+import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=18600';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18300';
-import { DEFAULT_SESSION_WORD_COUNT } from '../services/dailySession.js?v=18300';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18300';
-import { stableWordChoices } from '../services/wordChoices.js?v=18300';
-import { playInteractionSound } from '../services/interactionSound.js?v=18300';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice } from './PracticeElements.js?v=18300';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18600';
+import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=18600';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18600';
+import { stableWordChoices } from '../services/wordChoices.js?v=18600';
+import { playInteractionSound } from '../services/interactionSound.js?v=18600';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice } from './PracticeElements.js?v=18600';
 import { navigateTo as go } from '../utils/navigation.js';
 
-export function selectContextWords(words, limit = DEFAULT_SESSION_WORD_COUNT, now = new Date()) {
+export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE, now = new Date()) {
   return selectModeWords(words, { mode: 'context', limit, now });
 }
 
@@ -28,7 +28,9 @@ export function renderContextQuizMode(container, onNavigate) {
   }
 
   if (contextWords.length < 3) {
-    notice('Add 3 different words to this month', 'Context uses the month selected in Library. Add vocabulary or choose a month with at least three words.', [
+    const hasVocabulary = new Set(allWords.map(word => word.word.toLowerCase())).size >= 3;
+    notice(hasVocabulary ? 'Fewer than 3 words ready' : 'Add 3 different words to this month', hasVocabulary ? 'Context needs three words ready for review. Recently recalled words are resting; you can practice the remaining words in Practice.' : 'Context uses the month selected in Library. Add vocabulary or choose a month with at least three words.', [
+      ...(hasVocabulary ? [{ id: 'context-practice', label: 'Practice ready words', run: () => go('review', onNavigate) }] : []),
       { id: 'context-library', label: 'Open library', run: () => go('library', onNavigate) },
       { id: 'context-home', label: 'Dashboard', secondary: true, run: dashboard }
     ]);

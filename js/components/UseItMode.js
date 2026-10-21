@@ -1,12 +1,12 @@
-import { driveSync } from '../services/driveSync.js?v=18300';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18300';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18300';
-import { playInteractionSound } from '../services/interactionSound.js?v=18300';
-import { mountUseItExercise } from './UseItExercise.js?v=18300';
-import { createSpeechRecordingSession } from '../services/speechInput.js?v=18300';
+import { driveSync } from '../services/driveSync.js?v=18600';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18600';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18600';
+import { playInteractionSound } from '../services/interactionSound.js?v=18600';
+import { mountUseItExercise } from './UseItExercise.js?v=18600';
+import { createSpeechRecordingSession } from '../services/speechInput.js?v=18600';
 import { navigateTo as go } from '../utils/navigation.js';
 
-export { evaluateUseItFallback, evaluateUseItSentence } from '../services/useItEvaluation.js?v=18300';
+export { evaluateUseItFallback, evaluateUseItSentence } from '../services/useItEvaluation.js?v=18600';
 
 let activeSpeechSession = null;
 
@@ -17,9 +17,10 @@ export function teardownUseItMode() {
 
 export function renderUseItMode(container, onNavigate) {
   teardownUseItMode();
-  const words = selectModeWords(getActivePracticeWords(driveSync), { mode: 'use-it', limit: 10 });
+  const allWords = getActivePracticeWords(driveSync);
+  const words = selectModeWords(allWords, { mode: 'use-it', limit: 10 });
   if (!words.length) {
-    container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprout-mascot.webp" alt="Sprig"><h2>Add vocabulary first</h2><p>Use It turns saved meanings into active English.</p><button class="btn-green-solid" id="useit-back">Back to Today</button></div></section>`;
+    container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprout-mascot.webp" alt="Sprig"><h2>${allWords.length ? 'All caught up' : 'Add vocabulary first'}</h2><p>${allWords.length ? 'Your words are resting until their next review. Recall history keeps recently remembered words out of the next set.' : 'Use It turns saved meanings into active English.'}</p><button class="btn-green-solid" id="useit-back">Back to Today</button></div></section>`;
     container.querySelector('#useit-back').addEventListener('click', () => go('dashboard', onNavigate));
     return;
   }

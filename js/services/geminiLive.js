@@ -1,5 +1,5 @@
-import { DEFAULT_GEMINI_LIVE_MODEL } from './geminiSettings.js?v=18300';
-import { base64ToBytes, bytesToBase64 } from '../utils/base64.js?v=18300';
+import { DEFAULT_GEMINI_LIVE_MODEL } from './geminiSettings.js?v=18600';
+import { base64ToBytes, bytesToBase64 } from '../utils/base64.js?v=18600';
 
 export const GEMINI_LIVE_MODEL = DEFAULT_GEMINI_LIVE_MODEL;
 export const BARGE_IN_LEVEL = 0.12;

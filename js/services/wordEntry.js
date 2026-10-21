@@ -1,16 +1,17 @@
-import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18300';
-import { withEntryTranslations } from './dictionaryApi.js?v=18300';
-import { bulkResultToWord, attachImagesSequentially } from './bulkWords.js?v=18300';
-import { sanitizeExistingExamples } from './exampleSearch.js?v=18300';
-import { findRelevantImages, imageUrlsForWords } from './imageSearch.js?v=18300';
+import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18600';
+import { withEntryTranslations } from './dictionaryApi.js?v=18600';
+import { bulkResultToWord, attachImagesSequentially } from './bulkWords.js?v=18600';
+import { sanitizeExistingExamples } from './exampleSearch.js?v=18600';
+import { findRelevantImages, imageUrlsForWords, prepareImageScenes } from './imageSearch.js?v=18600';
+import { exampleForLearning, withLearnerExplanations } from './learningDefinitions.js?v=18600';
 
-export function fetchWordEntry(word, _courseId = 'english', options = {}) {
-  return fetchEnglishEntry(word, options);
+export async function fetchWordEntry(word, _courseId = 'english', options = {}) {
+  return withLearnerExplanations(await fetchEnglishEntry(word, options), options);
 }
 
 // Explicit requests bypass dictionary results and the AI cache for a fresh suggestion.
-export function fetchAiWordEntry(word, _courseId = 'english', options = {}) {
-  return enrichEnglishEntry(word, { ...options, force: true });
+export async function fetchAiWordEntry(word, _courseId = 'english', options = {}) {
+  return withLearnerExplanations(await enrichEnglishEntry(word, { ...options, force: true }), options);
 }
 
 export function wordEntryToWord(entry, senseIndex = 0) {
@@ -28,6 +29,11 @@ export async function prepareWordsForLibrary(words, { existingWords = [], onProg
     if (!item.word || !String(item.definition || '').trim()) throw new Error('Choose a meaning before saving.');
     return sanitizeExistingExamples(item.word, [item])[0];
   });
-  const translated = await withEntryTranslations({ senses: checked }, translationOptions);
-  return attachImagesSequentially(translated.senses, findImages, { excludeUrls: imageUrlsForWords(existingWords), onProgress });
+  const explained = await withLearnerExplanations({ senses: checked }, translationOptions);
+  if (translationOptions.requireExamples && explained.senses.some(word => !exampleForLearning(word))) {
+    throw new Error('Each meaning needs a modern example sentence using the word. Add the missing examples before saving.');
+  }
+  const translated = await withEntryTranslations(explained, translationOptions);
+  const visualWords = await prepareImageScenes(translated.senses, translationOptions);
+  return attachImagesSequentially(visualWords, findImages, { ...translationOptions, excludeUrls: imageUrlsForWords(existingWords), onProgress });
 }

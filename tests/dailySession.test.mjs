@@ -1,10 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_SESSION_SIZE, buildDailySession, buildWeakWordsSession, hasImmediateDuplicates, practicePriorityScore, recommendedExerciseType, selectPracticeWords } from '../js/services/dailySession.js';
+import { DEFAULT_SESSION_SIZE, buildDailySession, buildWeakWordsSession, practicePriorityScore, recommendedExerciseType, selectPracticeWords } from '../js/services/dailySession.js';
 import { applyExerciseResultToWord } from '../js/services/exerciseResult.js';
 import { applyModeSelectionToWord, normalizeWordPracticeStats } from '../js/services/wordSelection.js';
 
 const NOW = new Date('2026-08-14T12:00:00.000Z');
+
+function hasImmediateDuplicates(exercises) {
+  return exercises.some((exercise, index) => index > 0 && exercise.wordId === exercises[index - 1].wordId);
+}
 
 function makeWord(index, overrides = {}) {
   return {
@@ -97,7 +101,7 @@ test('practice selection prioritizes problems and keeps one meaning per spelling
     makeWord(4, { word: 'easy', definition: 'Not difficult.', nextReviewDate: new Date(NOW.getTime() + 86400000).toISOString(), mastery: { recognition: 1, recall: 1, context: 1, productive: 1 } })
   ];
   const selected = selectPracticeWords(words, { now: NOW, limit: 10 });
-  assert.deepEqual(new Set(selected.map(word => word.id)), new Set(['w-2', 'w-3', 'w-4']));
+  assert.deepEqual(new Set(selected.map(word => word.id)), new Set(['w-2', 'w-3']));
 });
 
 test('Daily Session handles empty and one-word libraries safely', () => {
@@ -213,8 +217,33 @@ test('dashboard previews are read-only and respect legacy future reviews and dup
   assert.deepEqual(words, original);
 });
 
-test('optional manual selection remains available after all scheduled reviews are complete', () => {
+test('automatic selection rests completed words while deliberate manual override remains possible', () => {
   const words = Array.from({ length: 4 }, (_, index) => answer(makeWord(index), true, NOW));
   assert.deepEqual(buildDailySession(words, { now: NOW }).exercises, []);
-  assert.equal(selectPracticeWords(words, { now: NOW }).length, 4);
+  assert.equal(selectPracticeWords(words, { now: NOW }).length, 0);
+  assert.equal(selectPracticeWords(words, { now: NOW, includeResting: true }).length, 4);
+});
+
+test('Weak Words respects recovery, cooldowns, and distinct words without filler repeats', () => {
+  const failed = answer(makeWord(1), false, NOW);
+  const recovered = answer(makeWord(2, { mistakes: { incorrectAttempts: 200, consecutiveFailures: 4,
+    recentFailures: [new Date(+NOW - 3600000).toISOString()], confusions: { old: 10 } } }), true, NOW);
+  const retryAt = new Date(failed.nextReviewDate);
+  assert.deepEqual(buildWeakWordsSession([failed, recovered], { now: NOW }).exercises, []);
+  const duplicate = { ...failed, id: 'other-meaning', definition: 'A second meaning.' };
+  const session = buildWeakWordsSession([failed, duplicate, recovered], { now: retryAt, targetSize: 20 });
+  assert.equal(session.exercises.length, 1);
+  assert.ok([failed.id, duplicate.id].includes(session.exercises[0].wordId));
+  assert.equal(session.composition.weak, 1);
+  assert.deepEqual(buildWeakWordsSession([recovered], { now: new Date(recovered.nextReviewDate) }).exercises, []);
+});
+
+test('a tiny Weak Words library asks for retrieval instead of a one-answer multiple choice', () => {
+  const failed = answer(makeWord(1, { imageUrl: 'image.png' }), false, NOW);
+  const now = new Date(failed.nextReviewDate);
+  for (const words of [[failed], [failed, { ...failed, id: 'second-sense', definition: 'Another meaning.' }]]) {
+    const session = buildWeakWordsSession(words, { now });
+    assert.equal(session.exercises.length, 1);
+    assert.equal(session.exercises[0].exerciseType, 'typed-recall');
+  }
 });

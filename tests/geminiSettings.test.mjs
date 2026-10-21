@@ -44,3 +44,30 @@ test('Gemini retries are limited to transient failures', () => {
   assert.equal(isRetryableGeminiError(new GeminiRequestError('bad key', 401)), false);
   assert.equal(isRetryableGeminiError(new GeminiRequestError('bad request', 400)), false);
 });
+
+test('Gemini structured output ignores thought summaries and combines final answer text parts', async () => {
+  const result = await generateGeminiContent('Return JSON.', { json: true, settings: { apiKey: 'test-key', textModel: 'gemini-test' },
+    fetchImpl: async () => ({ ok: true, json: async () => ({ candidates: [{ content: { parts: [
+      { thought: true, text: 'Check the term before answering.' },
+      { text: '```JSON\n{"found":' }, { text: 'true}\n```' }
+    ] }, finishReason: 'STOP' }] }) }) });
+  assert.deepEqual(result, { found: true });
+});
+
+test('token-limited JSON is an explicit incomplete response, never a usable partial entry', async () => {
+  for (const parts of [[], [{ text: '{"found":true' }]]) {
+    await assert.rejects(generateGeminiContent('Return JSON.', { json: true, settings: { apiKey: 'test-key', textModel: 'gemini-test' },
+      fetchImpl: async () => ({ ok: true, json: async () => ({ candidates: [{ content: { parts }, finishReason: 'MAX_TOKENS' }] }) }) }),
+    { code: 'MAX_TOKENS' });
+  }
+});
+
+test('whitespace-only keys are disabled and explicit disabled settings do not make paid requests', async () => {
+  const storage = new MemoryStorage();
+  storage.setItem(GEMINI_KEY_STORAGE, '   ');
+  assert.equal(getGeminiSettings(storage).enabled, false);
+  let calls = 0;
+  await assert.rejects(generateGeminiContent('Return JSON.', { settings: { apiKey: 'test-key', enabled: false },
+    fetchImpl: async () => { calls += 1; } }), /disabled/i);
+  assert.equal(calls, 0);
+});

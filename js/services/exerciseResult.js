@@ -1,7 +1,7 @@
-import { driveSync } from './driveSync.js?v=18300';
-import { migrateSrsState, scheduleWordReview, updateStreak } from './srsEngine.js?v=18300';
-import { recordLearningExercise } from './learningStats.js?v=18300';
-import { updateWordPracticeStats } from './wordSelection.js?v=18300';
+import { driveSync } from './driveSync.js?v=18600';
+import { migrateSrsState, scheduleWordReview } from './srsEngine.js?v=18600';
+import { recordLearningExercise } from './learningStats.js?v=18600';
+import { normalizeWordPracticeStats, updateWordPracticeStats } from './wordSelection.js?v=18600';
 
 export const EXERCISE_RESULT_VERSION = 1;
 
@@ -57,7 +57,8 @@ export function normalizeExerciseResult(input) {
     wordId: String(input.wordId),
     exerciseType: String(input.exerciseType),
     correct: Boolean(input.correct),
-    responseTimeMs: Number.isFinite(Number(input.responseTimeMs)) ? Math.max(0, Number(input.responseTimeMs)) : null,
+    responseTimeMs: input.responseTimeMs != null && input.responseTimeMs !== '' && Number.isFinite(Number(input.responseTimeMs))
+      ? Math.max(0, Number(input.responseTimeMs)) : null,
     hintsUsed: Math.max(0, Math.round(Number(input.hintsUsed) || 0)),
     recallType,
     producedUnaided: Boolean(input.producedUnaided),
@@ -129,10 +130,15 @@ export function applyExerciseResultToWord(word, input) {
   const result = scoreExerciseEvidence(input);
   const now = new Date(result.occurredAt);
   const migrated = migrateSrsState(word, now);
+  const practiceStats = updateWordPracticeStats(migrated, result);
+  // Late-arriving results retain their statistics without moving a newer
+  // review schedule or the last recall timestamp back in time.
+  if (now.getTime() < Date.parse(normalizeWordPracticeStats(word).lastAnsweredAt)) {
+    return { word: { ...word, practiceStats }, result };
+  }
   const scheduled = scheduleWordReview(migrated, result.rating, { now, evidenceStrength: result.evidenceStrength, result });
   const mastery = updateMastery(normalizeMastery(scheduled, now), result);
   const mistakes = updateMistakes(normalizeMistakes(scheduled), result);
-  const practiceStats = updateWordPracticeStats(migrated, result);
   return {
     word: {
       ...scheduled,
@@ -168,6 +174,5 @@ export function recordExerciseResult(input, persistence = driveSync) {
   persistence.saveWords(words);
   persistence.recordReview(new Date(applied.result.occurredAt));
   recordLearningExercise(applied.result, persistence);
-  if (persistence === driveSync) updateStreak(new Date(applied.result.occurredAt));
   return applied;
 }

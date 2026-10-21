@@ -1,8 +1,19 @@
-const TATOEBA_API = 'https://api.tatoeba.org/v1/sentences';
 const EXAMPLE_STOP_WORDS = new Set([
   'about', 'after', 'again', 'also', 'another', 'being', 'could', 'does', 'from', 'have', 'into', 'more', 'most', 'other', 'person', 'someone', 'something', 'that', 'their', 'there', 'these', 'they', 'this', 'those', 'very', 'what', 'when', 'where', 'which', 'while', 'with', 'would'
 ]);
 const UNSUITABLE_EXAMPLE = /\b(fuck|fucking|goddamn|bitch|bastard|racial|nigger|fat idiot)\b/i;
+
+// Historical attestations are source evidence, not modern practice sentences.
+export function isModernUsageExample(word, value) {
+  if (typeof value !== 'string') return false;
+  const sentence = value.replace(/\s+/g, ' ').trim();
+  const wordCount = sentence.split(/\s+/).filter(Boolean).length;
+  if (wordCount < 3 || wordCount > 34 || sentence.length > 240 || /[ſ]|\b(?:VV[a-z]|vvho\b|vvas\b|vvoman\b|[Hh]ovvever\b)/.test(sentence)
+    || (sentence.match(/\//g) || []).length > 1 || /[.!?][”"']?\s+[A-Z]/.test(sentence)) return false;
+  const target = typeof word === 'string' ? { word } : { ...word };
+  target.word = String(target.word || '').replace(/^[\p{P}\p{S}\s]+|[\p{P}\p{S}\s]+$/gu, '');
+  return sentenceUsesTargetForm(sentence, target);
+}
 const SENSE_PROFILES = [
   {
     definition: /\b(tempo|meter|musical passage|rhythm)\b/i,
@@ -117,21 +128,4 @@ export function assignExamplesToSenses(word, senses, candidates) {
     };
   });
 }
-
-export async function fetchExamplesForSenses(word, senses, fetchImpl = globalThis.fetch?.bind(globalThis)) {
-  const cleanedSenses = sanitizeExistingExamples(word, senses);
-  if (!fetchImpl || !cleanedSenses.some(sense => !String(sense.example || '').trim())) return cleanedSenses;
-  const request = new URL(TATOEBA_API);
-  request.searchParams.set('lang', 'eng');
-  request.searchParams.set('q', String(word || '').trim());
-  request.searchParams.set('sort', 'relevance');
-  request.searchParams.set('word_count', '5-18');
-  try {
-    const response = await fetchImpl(request.toString(), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(7000) });
-    if (!response.ok) return cleanedSenses;
-    const payload = await response.json();
-    return assignExamplesToSenses(word, cleanedSenses, Array.isArray(payload?.data) ? payload.data : []);
-  } catch {
-    return cleanedSenses;
-  }
-}
+import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18600';

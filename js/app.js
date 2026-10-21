@@ -1,29 +1,29 @@
-import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=18300';
-import { setupAddWordModal } from './components/AddWordModal.js?v=18300';
-import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18300';
+import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=18600';
+import { setupAddWordModal } from './components/AddWordModal.js?v=18600';
+import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18600';
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18300';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay, shouldPullFromDrive } from './services/syncPolicy.js?v=18300';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=18300';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=18300';
-import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=18300';
-import { buildScheduledPracticeSession } from './services/dailySession.js?v=18300';
+import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18600';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay, shouldPullFromDrive } from './services/syncPolicy.js?v=18600';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=18600';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=18600';
+import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=18600';
+import { buildScheduledPracticeSession } from './services/dailySession.js?v=18600';
 import { localDateKey } from './utils/dates.js';
-import { backfillLibraryTranslations } from './services/libraryTranslations.js?v=18300';
+import { backfillLibraryTranslations } from './services/libraryTranslations.js?v=18600';
 
-import { renderLibraryView } from './components/LibraryView.js?v=18300';
-import { renderStatsView } from './components/StatsView.js?v=18300';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18300';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18300';
-import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18300';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18300';
-import { renderDashboardView } from './components/DashboardView.js?v=18300';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=18300';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18300';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18300';
-import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18300';
-import { renderSettingsView } from './components/SettingsView.js?v=18300';
+import { renderLibraryView } from './components/LibraryView.js?v=18600';
+import { renderStatsView } from './components/StatsView.js?v=18600';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18600';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18600';
+import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18600';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18600';
+import { renderDashboardView } from './components/DashboardView.js?v=18600';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=18600';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18600';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18600';
+import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18600';
+import { renderSettingsView } from './components/SettingsView.js?v=18600';
 
 function repairContradictoryExamples() {
   for (const word of driveSync.getWords()) {
@@ -83,7 +83,6 @@ function initApp() {
     const settings = driveSync.getSettings();
     goalCount = settings.reviewsDate === localDateKey() ? Number(settings.reviewsToday || 0) : 0;
     updateGoalDisplay();
-    updateEngagementCard();
     queueSmartReminderRefresh({ requestPermission: true });
   });
 
@@ -122,7 +121,7 @@ function showToast(msg, type = 'success') {
 
 function updateGoalDisplay() {
   const dailyGoal = Math.max(1, Number(driveSync.getSettings().dailyGoal || 20));
-  const display = `${Math.min(goalCount, dailyGoal)} / ${dailyGoal}`;
+  const display = `${goalCount} / ${dailyGoal}`;
   const hdrGoal = document.getElementById('hdr-goal-count');
   if (hdrGoal) hdrGoal.textContent = display;
 }
@@ -134,7 +133,6 @@ function updateDashboardDerivedState() {
   const streak = document.getElementById('hdr-streak-count');
   if (streak) streak.textContent = String(Number(settings.dailyStreak || 0));
   updateVisibleDailyProgress(settings);
-  updateEngagementCard();
   renderConnectionState();
 }
 
@@ -181,10 +179,6 @@ function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
   });
 }
 
-function currentStreakMaintenancePlan(settingsOverride = {}, now = new Date()) {
-  return currentSmartReminderPlan(settingsOverride, now).streakPlan;
-}
-
 function rememberStudyStart(now = new Date()) {
   const settings = driveSync.getSettings();
   if (settings.reviewsDate !== localDateKey(now) || !(Number(settings.reviewsToday) > 0)) return;
@@ -216,57 +210,6 @@ function queueSmartReminderRefresh({ requestPermission = false } = {}) {
     pendingReminderPermissionRequest = false;
     refreshSmartReminder({ requestPermission: shouldRequest }).catch(error => console.warn('Smart reminder refresh failed.', error));
   }, 400);
-}
-
-function updateEngagementCard() {
-  const title = document.getElementById('coach-title');
-  const copy = document.getElementById('coach-copy');
-  const status = document.getElementById('coach-reminder-status');
-  const weeklyStatus = document.getElementById('coach-weekly-status');
-  const mascot = document.getElementById('coach-mascot-image');
-  if (!title || !copy || !status || !weeklyStatus || !mascot) return;
-
-  const settings = driveSync.getSettings();
-  const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
-  const reviewsToday = settings.reviewsDate === localDateKey() ? Number(settings.reviewsToday || 0) : 0;
-  const dueCount = buildScheduledPracticeSession(getScheduledPracticeWords(driveSync), settings).wordCount;
-  const streak = Number(settings.dailyStreak || 0);
-  const activity = settings.reviewActivity || {};
-  const today = new Date();
-  const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - ((today.getDay() + 6) % 7));
-  const activeDays = Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(monday);
-    date.setDate(monday.getDate() + index);
-    return Number(activity[localDateKey(date)] || 0) > 0;
-  }).filter(Boolean).length;
-  const isStreakMilestone = reviewsToday > 0 && [3, 7, 14, 30, 50, 100, 365].includes(streak);
-
-  if (isStreakMilestone) {
-    title.textContent = `${streak}-day streak!`;
-    copy.textContent = 'Sprig is celebrating the routine you built one short session at a time.';
-  } else if (reviewsToday >= dailyGoal) {
-    title.textContent = 'Daily goal complete!';
-    copy.textContent = 'Nice work. Sprig will keep tomorrow’s practice short and focused.';
-  } else if (dueCount > 0) {
-    title.textContent = `${dueCount} word${dueCount === 1 ? '' : 's'} ready for review`;
-    copy.textContent = `Practice ${dueCount} word${dueCount === 1 ? '' : 's'} from ${driveSync.getActiveNotebook().replace(/ Vocabulary$/, '')}.`;
-  } else {
-    title.textContent = 'Your memory garden is growing';
-    copy.textContent = 'Add a new word or practice a learning mode to keep your routine alive.';
-  }
-
-  mascot.src = isStreakMilestone || reviewsToday >= dailyGoal
-    ? 'assets/keepvocab-sprig-celebrate.webp'
-    : dueCount > 0
-      ? 'assets/keepvocab-sprig-thinking.webp'
-      : 'assets/keepvocab-sprout-mascot.webp';
-  weeklyStatus.innerHTML = `<i class="fa-solid fa-chart-line"></i> ${activeDays} / 5 active days`;
-
-  const reminderPlan = currentSmartReminderPlan();
-  const practiceReady = reminderPlan.practiceReadyPlan;
-  status.innerHTML = settings.reminderEnabled
-    ? `<i class="fa-solid fa-bell"></i> ${settings.smartReminderEnabled !== false ? 'Smart reminder' : 'Daily reminder'} at ${formatReminderTime(reminderPlan.time)} · ${reminderPlan.summary}${practiceReady ? ` · practice ready at ${formatReminderTime(practiceReady.time)}` : ''}${currentStreakMaintenancePlan() ? ' · streak safeguard on' : ''}`
-    : '<i class="fa-regular fa-bell"></i> Daily reminder is off';
 }
 
 function setupEngagementSystem() {
@@ -393,7 +336,6 @@ function setupEngagementSystem() {
     if (!control) return;
     if (control.id === 'btn-open-engagement-settings' || control.id === 'settings-routine') openSettings();
     if (control.id === 'settings-notifications') openSettings({ enableReminders: true });
-    if (control.id === 'btn-coach-review') window.location.hash = 'review';
     if (control.id === 'btn-close-engagement-settings' || control.id === 'btn-cancel-engagement-settings') closeSettings();
   });
 
@@ -420,7 +362,6 @@ function setupEngagementSystem() {
       const result = !remindersAvailable ? { status: 'sound-only' } : enabled
         ? await refreshSmartReminder({ requestPermission: true })
         : (await cancelDailyReminder(), { status: 'disabled' });
-      updateEngagementCard();
       if (['permission-required', 'channel-blocked', 'unavailable'].includes(result.status)) {
         deliveryStatus.textContent = deliveryMessage(result);
         helper.textContent = 'Your routine is saved. Resolve notification access above to receive reminders.';
@@ -460,7 +401,6 @@ function setupEngagementSystem() {
         updateDashboardDerivedState();
         if (['dashboard', 'stats', 'settings'].includes(currentView)) navigateTo(currentView);
       }
-      updateEngagementCard();
       queueSmartReminderRefresh();
       if (modal.classList.contains('active')) updateDeliveryStatus();
     }
@@ -472,7 +412,6 @@ function setupEngagementSystem() {
     reminderDay = today;
     updateDashboardDerivedState();
     if (currentView === 'dashboard') navigateTo('dashboard');
-    updateEngagementCard();
     queueSmartReminderRefresh();
   }, 60_000);
   const settings = driveSync.getSettings();
