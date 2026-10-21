@@ -1,11 +1,11 @@
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18200';
-import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18200';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18300';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18300';
 import { activityByDevice, aggregateActivity, normalizedActivity, streakFromActivity, currentStudyStats } from './studyActivity.js';
 import { localDateKey } from '../utils/dates.js';
 import { getCourseDefinition, isCourseId } from '../data/courses.js';
-import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles } from './courseProfiles.js';
+import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles, stampPracticePreferences } from './courseProfiles.js';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
@@ -718,7 +718,9 @@ export class DriveSyncService {
   updateCourseProfile(courseId, patch = {}, { silent = false } = {}) {
     const settings = this.getSettings();
     if (!isCourseId(courseId)) throw new Error(`Unknown course: ${courseId}`);
-    const profile = { ...(settings.courseProfiles?.[courseId] || {}), ...patch, courseId, updatedAt: new Date().toISOString() };
+    const previous = settings.courseProfiles?.[courseId] || {};
+    const timestamp = new Date().toISOString();
+    const profile = { ...previous, ...stampPracticePreferences(previous, patch, timestamp), courseId, updatedAt: timestamp };
     const next = { ...settings, courseProfiles: { ...settings.courseProfiles, [courseId]: profile }, updatedAt: new Date().toISOString() };
     const normalized = courseId === settings.activeCourseId ? migrateCourseSettings({ ...next, ...profile }) : next;
     this.write(STORAGE_KEY_SETTINGS, normalized);

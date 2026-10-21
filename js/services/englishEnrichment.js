@@ -1,7 +1,7 @@
-import { DictionaryApiError, fetchWordDetails, normalizeQuery, withEntryTranslations, entryTranslationLanguage } from './dictionaryApi.js?v=18200';
-import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18200';
-import { sanitizeExistingExamples } from './exampleSearch.js?v=18200';
-import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18200';
+import { DictionaryApiError, fetchWordDetails, normalizeQuery, withEntryTranslations, entryTranslationLanguage } from './dictionaryApi.js?v=18300';
+import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18300';
+import { sanitizeExistingExamples } from './exampleSearch.js?v=18300';
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18300';
 
 const CACHE_KEY = 'keepvocab_english_ai_entry_cache_v2';
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;

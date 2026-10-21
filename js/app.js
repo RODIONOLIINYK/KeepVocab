@@ -1,29 +1,29 @@
-import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=18200';
-import { setupAddWordModal } from './components/AddWordModal.js?v=18200';
-import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18200';
+import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=18300';
+import { setupAddWordModal } from './components/AddWordModal.js?v=18300';
+import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18300';
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18200';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay } from './services/syncPolicy.js?v=18200';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=18200';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=18200';
-import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=18200';
-import { buildScheduledPracticeSession } from './services/dailySession.js?v=18200';
+import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18300';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay, shouldPullFromDrive } from './services/syncPolicy.js?v=18300';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=18300';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=18300';
+import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=18300';
+import { buildScheduledPracticeSession } from './services/dailySession.js?v=18300';
 import { localDateKey } from './utils/dates.js';
-import { backfillLibraryTranslations } from './services/libraryTranslations.js?v=18200';
+import { backfillLibraryTranslations } from './services/libraryTranslations.js?v=18300';
 
-import { renderLibraryView } from './components/LibraryView.js?v=18200';
-import { renderStatsView } from './components/StatsView.js?v=18200';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18200';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18200';
-import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18200';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18200';
-import { renderDashboardView } from './components/DashboardView.js?v=18200';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=18200';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18200';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18200';
-import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18200';
-import { renderSettingsView } from './components/SettingsView.js?v=18200';
+import { renderLibraryView } from './components/LibraryView.js?v=18300';
+import { renderStatsView } from './components/StatsView.js?v=18300';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18300';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18300';
+import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18300';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18300';
+import { renderDashboardView } from './components/DashboardView.js?v=18300';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=18300';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18300';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18300';
+import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18300';
+import { renderSettingsView } from './components/SettingsView.js?v=18300';
 
 function repairContradictoryExamples() {
   for (const word of driveSync.getWords()) {
@@ -75,6 +75,7 @@ function initApp() {
   setupMonthDropdown();
   setupKeyboardShortcuts();
   setupAutomaticDriveBackup();
+  setupRemoteProgressRefresh();
   resumeRememberedDriveConnection();
 
   window.addEventListener('keepvocab:progress', () => {
@@ -132,8 +133,31 @@ function updateDashboardDerivedState() {
   updateGoalDisplay();
   const streak = document.getElementById('hdr-streak-count');
   if (streak) streak.textContent = String(Number(settings.dailyStreak || 0));
+  updateVisibleDailyProgress(settings);
   updateEngagementCard();
   renderConnectionState();
+}
+
+// Patch progress text in place so synced counts from other devices appear
+// without rebuilding the visible screen.
+function updateVisibleDailyProgress(settings = driveSync.getSettings()) {
+  const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
+  const completed = settings.reviewsDate === localDateKey() ? Math.max(0, Number(settings.reviewsToday || 0)) : 0;
+  const dashboardCount = document.getElementById('today-progress-count');
+  if (dashboardCount) dashboardCount.textContent = `${completed} of ${dailyGoal} exercises`;
+  const track = document.getElementById('today-progress-track');
+  if (track) {
+    track.setAttribute('aria-valuemax', String(dailyGoal));
+    track.setAttribute('aria-valuenow', String(Math.min(completed, dailyGoal)));
+    const fill = track.querySelector('span');
+    if (fill) fill.style.width = `${Math.min(100, Math.round(completed / dailyGoal * 100))}%`;
+  }
+  const dashboardStreak = document.getElementById('today-streak-label');
+  if (dashboardStreak) dashboardStreak.textContent = `${Number(settings.dailyStreak || 0)} day streak`;
+  const statsToday = document.getElementById('stats-today-count');
+  if (statsToday) statsToday.textContent = `${completed}/${dailyGoal} today`;
+  const goalInput = document.getElementById('daily-goal-input');
+  if (goalInput && document.activeElement !== goalInput) goalInput.value = String(dailyGoal);
 }
 
 function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
@@ -647,9 +671,9 @@ function scheduleAutomaticDriveSync() {
   automaticSyncTimer = window.setTimeout(flushAutomaticDriveSync, delay);
 }
 
-async function flushAutomaticDriveSync() {
+async function flushAutomaticDriveSync({ pullRemote = false } = {}) {
   automaticSyncTimer = null;
-  if (!driveSync.getDriveStatus().isConnected || !hasPendingDriveChanges() || automaticSyncRunning) return;
+  if (!driveSync.getDriveStatus().isConnected || automaticSyncRunning || (!pullRemote && !hasPendingDriveChanges())) return;
   const revisionAtStart = driveChangeRevision;
   automaticSyncRunning = true;
   try {
@@ -676,6 +700,18 @@ function setupAutomaticDriveBackup() {
     scheduleAutomaticDriveSync();
   });
   window.setInterval(scheduleAutomaticDriveSync, DRIVE_SYNC_MIN_INTERVAL_MS);
+}
+
+// Download progress and goals saved on other devices when the app returns to
+// the foreground or stays open, even if this device has nothing new to upload.
+function pullRemoteProgress({ resumed = false } = {}) {
+  if (!driveSync.getDriveStatus().isConnected || automaticSyncRunning || driveResumeRunning) return;
+  if (!shouldPullFromDrive(lastAutomaticDriveSyncAt, Date.now(), { resumed })) return;
+  if (automaticSyncTimer) {
+    window.clearTimeout(automaticSyncTimer);
+    automaticSyncTimer = null;
+  }
+  flushAutomaticDriveSync({ pullRemote: true });
 }
 
 function waitForGoogleIdentity(timeoutMs = 6_000) {
@@ -807,4 +843,15 @@ function setupKeyboardShortcuts() {
       document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
     }
   });
+}
+
+function setupRemoteProgressRefresh() {
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) pullRemoteProgress({ resumed: true });
+  });
+  window.addEventListener('focus', () => pullRemoteProgress({ resumed: true }));
+  window.setInterval(() => {
+    if (!document.hidden) pullRemoteProgress();
+  }, DRIVE_SYNC_MIN_INTERVAL_MS);
+  pullRemoteProgress({ resumed: true });
 }

@@ -1,10 +1,10 @@
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18200';
-import { driveSync } from '../services/driveSync.js?v=18200';
-import { speakWord } from '../services/speechService.js?v=18200';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18200';
-import { getRatingPreviews } from '../services/srsEngine.js?v=18200';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18300';
+import { driveSync } from '../services/driveSync.js?v=18300';
+import { speakWord } from '../services/speechService.js?v=18300';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18300';
+import { getRatingPreviews } from '../services/srsEngine.js?v=18300';
 import { escapeHtml } from '../utils/html.js';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18200';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18300';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function renderFlashcardsMode(container, onNavigate) {

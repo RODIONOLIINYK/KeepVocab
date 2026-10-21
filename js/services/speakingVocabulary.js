@@ -1,7 +1,7 @@
 import { recordExerciseResult } from './exerciseResult.js';
-import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18200';
-import { selectModeWords } from './wordSelection.js?v=18200';
-import { getSpeakingContextProfile } from './speakingPhrases.js?v=18200';
+import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18300';
+import { selectModeWords } from './wordSelection.js?v=18300';
+import { getSpeakingContextProfile } from './speakingPhrases.js?v=18300';
 
 const STOP_WORDS = new Set('a an and are as at be been being by can could did do does for from had has have he her hers him his how i if in into is it its may me might my of on or our ours she should so than that the their theirs them they this those to too us was we were what when where which who why will with would you your yours'.split(' '));
 

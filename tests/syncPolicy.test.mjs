@@ -23,3 +23,15 @@ test('background Drive paths never navigate or rebuild the active view', () => {
   assert.match(backgroundSection, /await driveSync\.resumeGoogleDrive\(\)/);
   assert.match(backgroundSection, /waitForGoogleIdentity/);
 });
+
+test('progress from other devices is pulled on resume and periodically while open', async () => {
+  const { shouldPullFromDrive, DRIVE_REMOTE_REFRESH_MS } = await import('../js/services/syncPolicy.js');
+  assert.equal(shouldPullFromDrive(0, 30_000, { resumed: true }), false);
+  assert.equal(shouldPullFromDrive(0, 61_000, { resumed: true }), true);
+  assert.equal(shouldPullFromDrive(0, 61_000), false);
+  assert.equal(shouldPullFromDrive(0, DRIVE_REMOTE_REFRESH_MS), true);
+  const source = readFileSync(resolve(projectRoot, 'js/app.js'), 'utf8');
+  const refresh = source.slice(source.indexOf('function setupRemoteProgressRefresh'));
+  assert.match(refresh, /visibilitychange/);
+  assert.doesNotMatch(refresh, /navigateTo\(/);
+});

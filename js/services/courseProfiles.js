@@ -5,8 +5,46 @@ import { normalizeTranslationLanguage } from './translationSettings.js';
 export const COURSE_SCOPED_SETTING_KEYS = Object.freeze([
   'activeNotebook', 'dailyGoal', 'practiceSessionSize', 'dailyStreak', 'lastReviewDate', 'reviewsToday', 'reviewsDate',
   'reviewActivity', 'exerciseActivityByDevice', 'learningStats', 'speakingProgress',
-  'reminderEnabled', 'reminderExplicitlyDisabled', 'smartReminderEnabled', 'streakReminderEnabled', 'reminderTime', 'reviewStartMoments'
+  'reminderEnabled', 'reminderExplicitlyDisabled', 'smartReminderEnabled', 'streakReminderEnabled', 'reminderTime', 'reviewStartMoments',
+  'practicePreferenceUpdatedAt'
 ]);
+
+// Daily targets carry their own edit time. The profile's updatedAt moves on
+// every answered exercise, so it cannot tell which device changed the goal last.
+export const PRACTICE_PREFERENCE_KEYS = Object.freeze(['dailyGoal', 'practiceSessionSize']);
+
+function preferenceTimes(profile = {}) {
+  const saved = profile.practicePreferenceUpdatedAt;
+  return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+}
+
+export function stampPracticePreferences(previousProfile = {}, patch = {}, timestamp = new Date().toISOString()) {
+  const changed = PRACTICE_PREFERENCE_KEYS.filter(key => Object.hasOwn(patch, key)
+    && Number(patch[key]) !== Number(previousProfile[key]));
+  if (!changed.length) return patch;
+  return {
+    ...patch,
+    practicePreferenceUpdatedAt: {
+      ...preferenceTimes(previousProfile),
+      ...Object.fromEntries(changed.map(key => [key, timestamp]))
+    }
+  };
+}
+
+function mergePracticePreferences(localProfile, remoteProfile, baseProfile) {
+  const localTimes = preferenceTimes(localProfile);
+  const remoteTimes = preferenceTimes(remoteProfile);
+  const merged = { practicePreferenceUpdatedAt: { ...preferenceTimes(baseProfile) } };
+  for (const key of PRACTICE_PREFERENCE_KEYS) {
+    const localTime = Date.parse(localTimes[key] || '') || 0;
+    const remoteTime = Date.parse(remoteTimes[key] || '') || 0;
+    if (!localTime && !remoteTime) continue;
+    const winner = remoteTime > localTime ? remoteProfile : localProfile;
+    if (Object.hasOwn(winner, key)) merged[key] = winner[key];
+    merged.practicePreferenceUpdatedAt[key] = remoteTime > localTime ? remoteTimes[key] : localTimes[key];
+  }
+  return merged;
+}
 
 function copyScopedSettings(source = {}) {
   return Object.fromEntries(COURSE_SCOPED_SETTING_KEYS
@@ -66,8 +104,9 @@ export function migrateCourseSettings(settings = {}) {
 
 export function updateActiveCourseSettings(settings = {}, patch = {}) {
   const migrated = migrateCourseSettings(settings);
+  const stampedPatch = stampPracticePreferences(migrated.courseProfiles.english, patch, patch.updatedAt || new Date().toISOString());
   const normalizedPatch = {
-    ...patch,
+    ...stampedPatch,
     ...(Object.prototype.hasOwnProperty.call(patch, 'reminderEnabled')
       ? { reminderExplicitlyDisabled: patch.reminderEnabled === false }
       : {})
@@ -155,6 +194,7 @@ export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
   const remoteProfile = remote.courseProfiles.english;
   const baseProfile = !hasProfileData(localSettings) ? remoteProfile : !hasProfileData(remoteSettings) ? localProfile : newestRecord(localProfile, remoteProfile);
   const speakingProgress = mergeSpeakingProgress(localProfile, remoteProfile);
+  const practicePreferences = mergePracticePreferences(localProfile, remoteProfile, baseProfile);
   const exerciseActivityByDevice = mergeActivityByDevice(localProfile, remoteProfile);
   const reviewActivity = aggregateActivity(exerciseActivityByDevice);
   const lastReviewDate = Object.keys(reviewActivity).sort().at(-1) || baseProfile.lastReviewDate;
@@ -163,6 +203,7 @@ export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
   const reminderEnabled = explicitlyDisabled ? false : Boolean(localProfile.reminderEnabled || remoteProfile.reminderEnabled || baseProfile.reminderEnabled);
   return migrateCourseSettings({ ...local, courseProfiles: { english: {
     ...baseProfile,
+    ...practicePreferences,
     reminderEnabled,
     reminderExplicitlyDisabled: explicitlyDisabled,
     reviewStartMoments,

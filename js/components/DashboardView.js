@@ -1,8 +1,8 @@
-import { getActivePracticeWords, getScheduledPracticeWords } from '../services/wordSelection.js?v=18200';
-import { driveSync } from '../services/driveSync.js?v=18200';
-import { buildScheduledPracticeSession, weaknessScore } from '../services/dailySession.js?v=18200';
-import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18200';
-import { completedExercisesToday } from '../services/learningStats.js?v=18200';
+import { getActivePracticeWords, getScheduledPracticeWords } from '../services/wordSelection.js?v=18300';
+import { driveSync } from '../services/driveSync.js?v=18300';
+import { buildScheduledPracticeSession, weaknessScore } from '../services/dailySession.js?v=18300';
+import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18300';
+import { completedExercisesToday } from '../services/learningStats.js?v=18300';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -45,7 +45,7 @@ export function renderDashboardView(container, onNavigate) {
         <button class="today-primary-cta" id="start-daily-session"><span>${session.dailyGoalComplete ? 'View progress' : session.exercises.length ? 'Start workout' : practiceWords.length ? 'Open library' : 'Add a word'}</span><i class="fa-solid fa-arrow-right"></i></button>
       </div><div class="daily-workout-mascot"><div class="mascot-bubble">${session.exercises.length ? `${session.wordCount} words in this workout` : session.dailyGoalComplete || practiceWords.length ? 'Nice work today' : 'Ready when you are'}</div><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking about your learning plan"></div>
     </article>
-    <div class="today-progress-card"><div class="today-progress-copy"><span>Daily progress</span><strong>${completedToday} of ${dailyGoal} exercises</strong></div><div class="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div><span class="today-streak"><i class="fa-solid fa-fire"></i> ${Number(settings.dailyStreak || 0)} day streak</span></div>
+    <div class="today-progress-card"><div class="today-progress-copy"><span>Daily progress</span><strong id="today-progress-count">${completedToday} of ${dailyGoal} exercises</strong></div><div class="today-progress-track" id="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div><span class="today-streak"><i class="fa-solid fa-fire"></i> <span id="today-streak-label">${Number(settings.dailyStreak || 0)} day streak</span></span></div>
     <div class="today-grid">
       <section class="practice-launchpad" aria-labelledby="practice-heading"><div class="today-section-heading"><div><span class="eyebrow">Choose a skill</span><h2 id="practice-heading">Manual practice</h2></div><span>Optional</span></div><div class="practice-quick-grid">${MODES.map(([view, icon, title, copy]) => `<button class="practice-quick-card" data-practice-view="${view}"><i class="fa-solid ${icon}"></i><span><strong>${title}</strong><small>${copy}</small></span><i class="fa-solid fa-chevron-right"></i></button>`).join('')}</div></section>
       <aside class="today-insights"><section class="today-insight-card"><div class="today-section-heading"><div><span class="eyebrow">Vocabulary health</span><h2>${activeWordCount} saved this month</h2><small>${activeWords.length} tracked meaning${activeWords.length === 1 ? '' : 's'}</small></div></div><div class="mastery-mini-list"><div><span>Recognized</span><strong>${stages.recognized + stages.recalled + stages.context + stages.productive}</strong></div><div><span>Reliably recalled</span><strong>${stages.recalled + stages.context + stages.productive}</strong></div><div><span>Used in context</span><strong>${stages.context + stages.productive}</strong></div><div><span>Used productively</span><strong>${stages.productive}</strong></div></div><button class="text-action" data-practice-view="stats">See progress <i class="fa-solid fa-arrow-right"></i></button></section>

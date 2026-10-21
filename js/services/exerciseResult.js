@@ -1,7 +1,7 @@
-import { driveSync } from './driveSync.js?v=18200';
-import { migrateSrsState, scheduleWordReview, updateStreak } from './srsEngine.js?v=18200';
-import { recordLearningExercise } from './learningStats.js?v=18200';
-import { updateWordPracticeStats } from './wordSelection.js?v=18200';
+import { driveSync } from './driveSync.js?v=18300';
+import { migrateSrsState, scheduleWordReview, updateStreak } from './srsEngine.js?v=18300';
+import { recordLearningExercise } from './learningStats.js?v=18300';
+import { updateWordPracticeStats } from './wordSelection.js?v=18300';
 
 export const EXERCISE_RESULT_VERSION = 1;
 

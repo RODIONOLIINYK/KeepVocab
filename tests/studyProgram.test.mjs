@@ -114,3 +114,50 @@ test('reminders default to enabled and survive desktop Drive syncs unless explic
   assert.equal(explicitlyOff.reminderEnabled, false);
   assert.equal(explicitlyOff.reminderExplicitlyDisabled, true);
 });
+
+test('daily goal and today’s exercise count sync between devices', () => {
+  const phoneStorage = new MemoryStorage();
+  const laptopStorage = new MemoryStorage();
+  phoneStorage.setItem('keepvocab_device_id', 'phone');
+  laptopStorage.setItem('keepvocab_device_id', 'laptop');
+  const phone = new DriveSyncService(phoneStorage);
+  const laptop = new DriveSyncService(laptopStorage);
+  phone.isFreshInstall = false;
+  laptop.isFreshInstall = false;
+  const day = new Date();
+
+  // The phone changes the goal first; the laptop then practises, which makes
+  // its profile newer overall but must not revert the phone's goal.
+  phone.updateSettings({ dailyGoal: 35 });
+  phone.recordReview(day); phone.recordReview(day); phone.recordReview(day);
+  const phoneSnapshot = phone.getSettings();
+  for (let index = 0; index < 4; index += 1) laptop.recordReview(day);
+  const laptopSnapshot = { ...laptop.getSettings(), updatedAt: new Date(Date.now() + 60_000).toISOString() };
+  laptopSnapshot.courseProfiles.english.updatedAt = laptopSnapshot.updatedAt;
+
+  const onLaptop = mergeDriveSettings(laptopSnapshot, phoneSnapshot);
+  const onPhone = mergeDriveSettings(phoneSnapshot, laptopSnapshot);
+  for (const merged of [onLaptop, onPhone]) {
+    assert.equal(merged.dailyGoal, 35);
+    assert.equal(merged.reviewsToday, 7);
+  }
+});
+
+test('the most recent goal edit wins regardless of which device practised last', () => {
+  const older = { courseProfiles: { english: { updatedAt: '2026-09-05T12:00:00.000Z', dailyGoal: 15, practiceSessionSize: 10,
+    practicePreferenceUpdatedAt: { dailyGoal: '2026-09-01T08:00:00.000Z', practiceSessionSize: '2026-09-03T08:00:00.000Z' } } } };
+  const newer = { courseProfiles: { english: { updatedAt: '2026-09-02T12:00:00.000Z', dailyGoal: 40, practiceSessionSize: 30,
+    practicePreferenceUpdatedAt: { dailyGoal: '2026-09-02T08:00:00.000Z', practiceSessionSize: '2026-09-02T08:00:00.000Z' } } } };
+  const merged = mergeDriveSettings(older, newer);
+  assert.equal(merged.dailyGoal, 40);
+  assert.equal(merged.practiceSessionSize, 10);
+  assert.deepEqual(mergeDriveSettings(newer, older).dailyGoal, 40);
+});
+
+test('saving an unchanged goal does not claim a newer edit', () => {
+  const service = new DriveSyncService(new MemoryStorage());
+  service.updateSettings({ dailyGoal: 20 });
+  assert.equal(service.getSettings().practicePreferenceUpdatedAt?.dailyGoal, undefined);
+  service.updateSettings({ dailyGoal: 22 });
+  assert.ok(service.getSettings().practicePreferenceUpdatedAt.dailyGoal);
+});

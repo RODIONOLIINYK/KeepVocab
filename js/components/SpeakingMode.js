@@ -8,16 +8,16 @@ import {
   getLessonPlan,
   buildCoachInitiativeCue,
   buildSpeakingInstruction
-} from '../data/speakingLessons.js?v=18200';
-import { GeminiLiveSession } from '../services/geminiLive.js?v=18200';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=18200';
-import { driveSync } from '../services/driveSync.js?v=18200';
-import { recordSpeakingStats } from '../services/learningStats.js?v=18200';
-import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=18200';
-import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, phraseMeaningHint, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=18200';
-import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18200';
+} from '../data/speakingLessons.js?v=18300';
+import { GeminiLiveSession } from '../services/geminiLive.js?v=18300';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18300';
+import { driveSync } from '../services/driveSync.js?v=18300';
+import { recordSpeakingStats } from '../services/learningStats.js?v=18300';
+import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=18300';
+import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, phraseMeaningHint, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=18300';
+import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18300';
 import { navigateTo as navigate } from '../utils/navigation.js';
-import { getTranslationLanguage, getTranslationName } from '../services/translationSettings.js?v=18200';
+import { getTranslationLanguage, getTranslationName } from '../services/translationSettings.js?v=18300';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
 export const COACH_SILENCE_MS = 9000;

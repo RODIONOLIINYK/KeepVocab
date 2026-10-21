@@ -1,12 +1,12 @@
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18200';
-import { driveSync } from '../services/driveSync.js?v=18200';
-import { findRelevantImages, imageSelectionPatch, imageUrlsForWords } from '../services/imageSearch.js?v=18200';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18200';
-import { playInteractionSound } from '../services/interactionSound.js?v=18200';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18300';
+import { driveSync } from '../services/driveSync.js?v=18300';
+import { findRelevantImages, imageSelectionPatch, imageUrlsForWords } from '../services/imageSearch.js?v=18300';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18300';
+import { playInteractionSound } from '../services/interactionSound.js?v=18300';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18200';
-import { stableWordChoices } from '../services/wordChoices.js?v=18200';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18200';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18300';
+import { stableWordChoices } from '../services/wordChoices.js?v=18300';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18300';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 

@@ -1,9 +1,9 @@
-import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18200';
-import { driveSync } from '../services/driveSync.js?v=18200';
-import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18200';
-import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18200';
-import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18200';
-import { completedExercisesToday } from '../services/learningStats.js?v=18200';
+import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18300';
+import { driveSync } from '../services/driveSync.js?v=18300';
+import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18300';
+import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18300';
+import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18300';
+import { completedExercisesToday } from '../services/learningStats.js?v=18300';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
