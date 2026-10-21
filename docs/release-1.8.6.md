@@ -55,7 +55,7 @@ work does not replace an installed application.
 Version 1.8.6, web cache v18600, Android version code 35.
 
 Android APK compilation succeeds with Java 21 and SDK 36: package
-`com.keepvocab.app`, version 1.8.6, version code 35, **7.73 MB**. All 81 bundled
+`com.keepvocab.app`, version 1.8.6, version code 35, **7.74 MB**. All 81 bundled
 web files match source. APK signature verification passes and its SHA-256 signing
 certificate matches the published 1.8.3 debug APK, preserving update compatibility.
 Android instrumentation tests compile; no Android device or emulator was available
