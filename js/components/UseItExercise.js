@@ -1,7 +1,7 @@
-import { definitionForLearning } from '../services/learningDefinitions.js?v=18700';
-import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18700';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=18700';
-import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=18700';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18800';
+import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18800';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18800';
+import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=18800';
 import { escapeHtml } from '../utils/html.js';
 
 export function mountUseItExercise(root, options) {

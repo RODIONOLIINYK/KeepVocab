@@ -1,9 +1,10 @@
-import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18700';
-import { driveSync } from '../services/driveSync.js?v=18700';
-import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18700';
-import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18700';
-import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18700';
-import { completedExercisesToday } from '../services/learningStats.js?v=18700';
+import { getImageLearningStatus, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18800';
+import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18800';
+import { driveSync } from '../services/driveSync.js?v=18800';
+import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18800';
+import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18800';
+import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18800';
+import { completedExercisesToday } from '../services/learningStats.js?v=18800';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -22,6 +23,7 @@ function modelOptions(current) {
 }
 
 export function renderSettingsView(container, onNavigate) {
+  container.releaseImageLearning?.();
   const gemini = getGeminiSettings();
   const imageProvider = getImageProviderSettings();
   const drive = driveSync.getDriveStatus();
@@ -52,11 +54,32 @@ export function renderSettingsView(container, onNavigate) {
       <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-images', 'Vocabulary images', 'Choose where Library photos come from.', pexelsReady ? 'Pexels' : imageProvider.provider === 'openverse' ? 'No key needed' : 'Set up', pexelsReady, true, 'settings-images-state')}</summary>
         <form id="image-provider-settings-form" class="settings-form"><label class="settings-full-width">Photo source<select id="settings-image-provider"><option value="pexels" ${imageProvider.provider === 'pexels' ? 'selected' : ''}>Pexels</option><option value="openverse" ${imageProvider.provider === 'openverse' ? 'selected' : ''}>Public catalogs · no key</option></select></label><label class="settings-full-width" id="settings-pexels-field" ${imageProvider.provider === 'openverse' ? 'hidden' : ''}>Pexels API key<div class="key-input-row"><input type="password" id="settings-pexels-key" value="${escapeHtml(imageProvider.pexelsApiKey)}" placeholder="Personal Pexels API key" autocomplete="off" spellcheck="false"><button type="button" id="settings-toggle-pexels-key" aria-label="Show Pexels API key" aria-pressed="false"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><span class="settings-privacy"><a href="https://www.pexels.com/api/new/" target="_blank" rel="noopener noreferrer">Get a free Pexels key</a></span></label><p class="settings-privacy">Your image settings are saved on this device and included in your private Drive backup when connected.</p><p id="image-provider-settings-status" class="settings-service-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid">Save photo source</button><button type="button" class="status-pill offline" id="remove-pexels-settings" ${imageProvider.pexelsApiKey ? '' : 'hidden'}>Remove Pexels key</button></div></form>
       </details>
+      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-brain', 'Local image learning', 'Match photos to meanings and learn from your explicit ratings.', '', false, true)}</summary><div class="settings-disclosure-body"><p>MobileCLIP compares photo pixels with the selected meaning. A small preference model learns from Good/Wrong and confirmed Keep choices. Skipped images are not negative examples.</p><p class="settings-privacy">Downloads about 85 MB once, then caches it on this device. Scoring runs locally. Learning records sync in your private Drive backup; model files stay on this device. <a href="https://huggingface.co/Xenova/mobileclip_s0/blob/757d59c9c6870a76a4b0306f05f5061bca15c39f/LICENSE" target="_blank" rel="noopener noreferrer">Model license</a></p><p id="image-learning-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid" id="enable-image-learning">Download and enable</button><button class="status-pill offline" id="disable-image-learning">Turn off</button><button class="status-pill offline" id="clear-image-model">Remove downloaded model</button><button class="status-pill offline" id="reset-image-preferences">Reset learned preferences</button></div><details class="settings-advanced"><summary>Training diagnostics</summary><p id="image-learning-diagnostics"></p><p>Each explicit label is saved immediately. Training starts with 8 labels, including at least two Good and two Wrong examples, then uses batches of 4 changed labels. Repeated identical clicks do not add extra training weight. The encoders remain frozen; the regularized degree-one preference model is retrained on a bounded replay set.</p></details></div></details>
       <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-download', 'App updates', `KeepVocab ${APP_VERSION}`, '', false, true)}</summary><div class="settings-disclosure-body"><p data-update-status class="settings-service-status" role="status" aria-live="polite">The app checks automatically. Updates keep your Library and progress.</p><div class="settings-actions"><button class="status-pill offline" data-check-update>Check for updates</button><button class="btn-green-solid" data-install-update hidden>Update app</button><a class="status-pill offline" data-update-downloads href="https://github.com/RODIONOLIINYK/KeepVocab/releases/latest" target="_blank" rel="noopener noreferrer" hidden>Open downloads</a></div></div></details>
     </div>
   </section>`;
 
   const query = selector => container.querySelector(selector);
+  const paintLearning = state => {
+    const output = query('#image-learning-status');
+    if (!output) { container.releaseImageLearning?.(); return; }
+    output.textContent = `${state.enabled ? 'Enabled' : 'Off'}${state.backend ? ` · ${state.backend}` : ''}. ${state.message || (state.enabled ? 'The model will load when you next search for images.' : 'Enable to download the model and start scoring images locally.')}${state.progress != null ? ` ${Math.round(state.progress)}%` : ''}`;
+    query('#image-learning-diagnostics').textContent = `${state.labels} labels · ${state.queued} queued · training revision ${state.revision} · ${state.changedParameters} parameters changed in last training · ΔL2 ${state.deltaL2.toFixed(6)} · weights ${state.beforeFingerprint || 'initial'} → ${state.fingerprint || 'initial'}`;
+    query('#disable-image-learning').hidden = !state.enabled;
+    query('#enable-image-learning').textContent = state.enabled ? 'Load model' : 'Download and enable';
+  };
+  paintLearning(getImageLearningStatus());
+  container.releaseImageLearning = subscribeImageLearning(paintLearning);
+  const learningAction = (selector, action) => query(selector).addEventListener('click', async () => {
+    const button = query(selector); button.disabled = true;
+    try { await action(); paintLearning(getImageLearningStatus()); }
+    catch (error) { query('#image-learning-status').textContent = error.message; }
+    finally { button.disabled = false; }
+  });
+  learningAction('#enable-image-learning', () => enableImageLearning({ allowMetered: true }));
+  learningAction('#disable-image-learning', disableImageLearning);
+  learningAction('#clear-image-model', clearImageModelDownloads);
+  learningAction('#reset-image-preferences', resetImagePreferences);
   query('#settings-back').addEventListener('click', () => go('dashboard', onNavigate));
   query('#translation-settings-form').addEventListener('submit', event => {
     event.preventDefault();

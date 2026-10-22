@@ -1,5 +1,6 @@
-import { escapeHtml } from '../utils/html.js?v=18700';
-import { findRelevantImages, imageSelectionPatch } from '../services/imageSearch.js?v=18700';
+import { recordImagePreference } from '../services/imageLearning.js?v=18800';
+import { escapeHtml } from '../utils/html.js?v=18800';
+import { findRelevantImages, imageSelectionPatch } from '../services/imageSearch.js?v=18800';
 
 let reviewId = 0;
 const clone = value => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
@@ -35,7 +36,7 @@ const styles = `<style>
 
 /** A temporary review surface: only onApply receives image changes; inputs and progress are never mutated. */
 export function mountImageReview(container, words, {
-  onApply = () => {}, onCancel = () => {}, findImages = findRelevantImages, onProgress = () => {}, excludeUrls = [], originalWords = null
+  onApply = () => {}, onCancel = () => {}, findImages = findRelevantImages, onProgress = () => {}, excludeUrls = [], originalWords = null, onFeedback = recordImagePreference
 } = {}) {
   const headingId = `image-review-heading-${++reviewId}`;
   const rows = (Array.isArray(words) ? words : []).map((word, index) => {
@@ -137,7 +138,12 @@ export function mountImageReview(container, words, {
       const word = clone(row.original);
       return row.decision === 'keep' ? { ...word, ...imageSelectionPatch({ ...row.proposal, url: safeImage(row.proposal.url), sourceUrl: safeLink(row.proposal.sourceUrl) }) } : word;
     });
-    try { await onApply(result); }
+    try {
+      const applied = await onApply(result);
+      for (const row of rows) if (row.decision === 'keep' && (!Array.isArray(applied?.appliedIds) || applied.appliedIds.includes(row.original.id))) {
+        void Promise.resolve().then(() => onFeedback(row.original, 'good', row.proposal)).catch(() => {});
+      }
+    }
     catch { if (active) applyError = 'The images could not be applied. Your review choices are still here. Try again.'; }
     finally { if (active) { applying = false; render(); } }
   }

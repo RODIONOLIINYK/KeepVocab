@@ -1,4 +1,4 @@
-import { bytesToBase64 } from '../utils/base64.js?v=18700';
+import { bytesToBase64 } from '../utils/base64.js?v=18800';
 
 const MAX_DIMENSION = 384;
 const MAX_SOURCE_BYTES = 2_000_000;

@@ -1,9 +1,9 @@
-import { driveSync } from '../services/driveSync.js?v=18700';
-import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary } from '../services/wordEntry.js?v=18700';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18700';
-import { mountImageReview } from './ImageReview.js?v=18700';
-import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18700';
-import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18700';
+import { driveSync } from '../services/driveSync.js?v=18800';
+import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary } from '../services/wordEntry.js?v=18800';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18800';
+import { mountImageReview } from './ImageReview.js?v=18800';
+import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18800';
+import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18800';
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
   <div class="modal-backdrop" id="add-word-modal">

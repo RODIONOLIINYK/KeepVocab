@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v18700';
+const CACHE_NAME = 'keepvocab-v18800';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -20,6 +20,13 @@ const ASSETS_TO_CACHE = [
   './js/services/speechService.js',
   './js/services/bulkWords.js',
   './js/services/imageSearch.js',
+  './js/services/imageLearning.js',
+  './js/services/imagePreferences.js',
+  './js/ml/clipConfig.js',
+  './js/ml/MOBILECLIP-LICENSE.txt',
+  './js/ml/TRANSFORMERS-LICENSE.txt',
+  './js/ml/ONNX-RUNTIME-LICENSE.txt',
+  './js/ml/clipWorker.bundle.js',
   './js/services/imageThumbnails.js',
   './js/services/exampleSearch.js',
   './js/services/syncPolicy.js',
@@ -99,7 +106,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
+          if (key.startsWith('keepvocab-v') && key !== CACHE_NAME) return caches.delete(key);
         })
       );
     })

@@ -1,9 +1,9 @@
-import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18700';
-import { withEntryTranslations } from './dictionaryApi.js?v=18700';
-import { bulkResultToWord, attachImagesSequentially } from './bulkWords.js?v=18700';
-import { sanitizeExistingExamples } from './exampleSearch.js?v=18700';
-import { findRelevantImages, imageUrlsForWords, prepareImageScenes } from './imageSearch.js?v=18700';
-import { exampleForLearning, withLearnerExplanations } from './learningDefinitions.js?v=18700';
+import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18800';
+import { withEntryTranslations } from './dictionaryApi.js?v=18800';
+import { bulkResultToWord, attachImagesSequentially } from './bulkWords.js?v=18800';
+import { sanitizeExistingExamples } from './exampleSearch.js?v=18800';
+import { findRelevantImages, imageUrlsForWords, prepareImageScenes } from './imageSearch.js?v=18800';
+import { exampleForLearning, withLearnerExplanations } from './learningDefinitions.js?v=18800';
 
 export async function fetchWordEntry(word, _courseId = 'english', options = {}) {
   return withLearnerExplanations(await fetchEnglishEntry(word, options), options);

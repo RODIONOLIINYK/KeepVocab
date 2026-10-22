@@ -1,14 +1,14 @@
-import { driveSync } from '../services/driveSync.js?v=18700';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18700';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=18700';
-import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=18700';
+import { driveSync } from '../services/driveSync.js?v=18800';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18800';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18800';
+import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet } from '../services/contextExercises.js?v=18800';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18700';
-import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=18700';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18700';
-import { stableWordChoices } from '../services/wordChoices.js?v=18700';
-import { playInteractionSound } from '../services/interactionSound.js?v=18700';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice } from './PracticeElements.js?v=18700';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18800';
+import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=18800';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18800';
+import { stableWordChoices } from '../services/wordChoices.js?v=18800';
+import { playInteractionSound } from '../services/interactionSound.js?v=18800';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice } from './PracticeElements.js?v=18800';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE, now = new Date()) {

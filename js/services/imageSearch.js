@@ -1,6 +1,7 @@
-import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=18700';
-import { prepareImageThumbnails } from './imageThumbnails.js?v=18700';
-import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18700';
+import { imageLearningEnabled, rankImagesLocally } from './imageLearning.js?v=18800';
+import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=18800';
+import { prepareImageThumbnails } from './imageThumbnails.js?v=18800';
+import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18800';
 
 const OPENVERSE_API = 'https://api.openverse.org/v1/images/';
 const WIKIMEDIA_COMMONS_API = 'https://commons.wikimedia.org/w/api.php';
@@ -697,9 +698,9 @@ export function rankImageCandidates(candidates, word, options = {}) {
     const urls = [candidate.url, candidate.sourceUrl].filter(Boolean).map(candidateUrlKey);
     const title = normalizeText(candidate.title).replace(/\s+-?\s*(?:op|copy|version)\s*\d+$/i, '').trim();
     const approved = urls.some(url => good.has(url));
-    if (!candidate.url || urls.some(url => rejected.has(url) || seenUrls.has(url)) || (title && seenTitles.has(title)) || (!approved && LOW_VALUE_PATTERN.test(title))) return [];
+    if (!candidate.url || urls.some(url => rejected.has(url) || seenUrls.has(url)) || (title && seenTitles.has(title)) || (!options.semanticPool && !approved && LOW_VALUE_PATTERN.test(title))) return [];
     const lexical = Math.max(...concepts.map(concept => resultScore(candidate, compactVisualSearchQuery(concept))), Number.NEGATIVE_INFINITY);
-    if (!approved && !Number.isFinite(lexical) && candidate.source !== 'Pexels') return [];
+    if (!options.semanticPool && !approved && !Number.isFinite(lexical) && candidate.source !== 'Pexels') return [];
     urls.forEach(url => seenUrls.add(url)); if (title) seenTitles.add(title);
     return [{ candidate, index, approved, score: (Number.isFinite(lexical) ? lexical : 0) + (approved ? 1000 : 0) }];
   });
@@ -832,7 +833,8 @@ export async function findRelevantImages(word, options = {}) {
       if (collected.length >= 40) break;
     }
   }
-  const ranked = rankImageCandidates(collected, word, { concepts, limit: 40, excludeUrls: options.excludeUrls });
+  const pool = rankImageCandidates(collected, word, { concepts, limit: 40, excludeUrls: options.excludeUrls, semanticPool: imageLearningEnabled(options.storage) });
+  const ranked = await rankImagesLocally(word, pool, { ...options, scenes: aiScenes });
   const reviewed = options.semanticRerank ? await rerankImagesWithGemini(word, ranked, options) : ranked;
   const validateImages = options.validateImages !== false && (options.loadImage || typeof globalThis.document?.createElement === 'function');
   if (!validateImages) return reviewed.slice(0, limit);

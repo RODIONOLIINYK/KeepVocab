@@ -1,29 +1,29 @@
-import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=18700';
-import { setupAddWordModal } from './components/AddWordModal.js?v=18700';
-import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18700';
+import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=18800';
+import { setupAddWordModal } from './components/AddWordModal.js?v=18800';
+import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18800';
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18700';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay, shouldPullFromDrive } from './services/syncPolicy.js?v=18700';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=18700';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=18700';
-import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=18700';
-import { buildScheduledPracticeSession } from './services/dailySession.js?v=18700';
+import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18800';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay, shouldPullFromDrive } from './services/syncPolicy.js?v=18800';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=18800';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=18800';
+import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=18800';
+import { buildScheduledPracticeSession } from './services/dailySession.js?v=18800';
 import { localDateKey } from './utils/dates.js';
-import { backfillLibraryTranslations } from './services/libraryTranslations.js?v=18700';
+import { backfillLibraryTranslations } from './services/libraryTranslations.js?v=18800';
 
-import { renderLibraryView } from './components/LibraryView.js?v=18700';
-import { renderStatsView } from './components/StatsView.js?v=18700';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18700';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18700';
-import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18700';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18700';
-import { renderDashboardView } from './components/DashboardView.js?v=18700';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=18700';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18700';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18700';
-import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18700';
-import { renderSettingsView } from './components/SettingsView.js?v=18700';
+import { renderLibraryView } from './components/LibraryView.js?v=18800';
+import { renderStatsView } from './components/StatsView.js?v=18800';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18800';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18800';
+import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18800';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18800';
+import { renderDashboardView } from './components/DashboardView.js?v=18800';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=18800';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18800';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18800';
+import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18800';
+import { renderSettingsView } from './components/SettingsView.js?v=18800';
 
 function repairContradictoryExamples() {
   for (const word of driveSync.getWords()) {

@@ -171,3 +171,45 @@ test('word text is escaped, unsafe credit links are omitted, and previews load l
   assert.doesNotMatch(container.innerHTML, /href="javascript:/);
   assert.match(container.innerHTML, /loading="lazy"/);
 });
+
+test('learning receives only confirmed Keep choices after Apply succeeds, never Cancel, Next or Skip', async () => {
+  const feedback = [];
+  const container = new Container();
+  let fail = true;
+  mountImageReview(container, [word('first'), word('second')], {
+    findImages: async () => [image('new')],
+    onFeedback: (...args) => feedback.push(args),
+    onApply: () => { if (fail) throw new Error('Save failed'); }
+  });
+  await container.click('next', 0);
+  await container.click('keep', 0);
+  await container.click('skip', 1);
+  assert.equal(feedback.length, 0);
+  await container.click('apply');
+  assert.equal(feedback.length, 0);
+  fail = false;
+  await container.click('apply');
+  assert.equal(feedback.length, 1);
+  assert.equal(feedback[0][0].id, 'first');
+  assert.equal(feedback[0][1], 'good');
+  assert.equal(feedback[0][2].url, image('new').url);
+  const cancelled = new Container();
+  mountImageReview(cancelled, [word('cancelled')], { onFeedback: (...args) => feedback.push(args) });
+  await cancelled.click('keep');
+  await cancelled.click('cancel');
+  assert.equal(feedback.length, 1);
+});
+
+test('stale rows excluded by the host do not teach preferences, and learning failures do not fail saving', async () => {
+  const container = new Container();
+  const taught = [];
+  mountImageReview(container, [word('stale'), word('saved')], {
+    onApply: () => ({ appliedIds: ['saved'] }),
+    onFeedback: item => { taught.push(item.id); throw new Error('Learning unavailable'); }
+  });
+  await container.click('keep-all');
+  await container.click('apply');
+  await Promise.resolve();
+  assert.deepEqual(taught, ['saved']);
+  assert.doesNotMatch(container.innerHTML, /could not be applied/);
+});

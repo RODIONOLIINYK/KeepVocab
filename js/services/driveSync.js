@@ -1,13 +1,14 @@
+import { mergeImageLearning } from './imagePreferences.js';
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18700';
-import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18700';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18800';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18800';
 import { activityByDevice, aggregateActivity, normalizedActivity, streakFromActivity, currentStudyStats } from './studyActivity.js';
 import { localDateKey } from '../utils/dates.js';
 import { getCourseDefinition, isCourseId } from '../data/courses.js';
 import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles, stampPracticePreferences } from './courseProfiles.js';
-import { normalizeWordPracticeStats } from './wordSelection.js?v=18700';
-import { areSensesNearDuplicate } from './learningDefinitions.js?v=18700';
+import { normalizeWordPracticeStats } from './wordSelection.js?v=18800';
+import { areSensesNearDuplicate } from './learningDefinitions.js?v=18800';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
@@ -163,7 +164,7 @@ export function mergeDriveSettings(localSettings = {}, remoteSettings = {}, { fr
     ? remoteSettings
     : localSettings;
   const mergedCourses = mergeCourseProfiles(freshInstall ? {} : localSettings, remoteSettings);
-  return migrateCourseSettings({ ...base, activeCourseId: mergedCourses.activeCourseId, courseProfiles: mergedCourses.courseProfiles });
+  return migrateCourseSettings({ ...base, imageLearning: mergeImageLearning(localSettings.imageLearning, remoteSettings.imageLearning), activeCourseId: mergedCourses.activeCourseId, courseProfiles: mergedCourses.courseProfiles });
 }
 
 function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource = 'drive') {
@@ -203,6 +204,7 @@ function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource
     explanationModel: String(candidate.explanationModel || ''),
     explanationVersion: Number(candidate.explanationVersion) || 0,
     usageNote: String(candidate.usageNote || '').trim(),
+    otherDefinitions: Array.isArray(candidate.otherDefinitions) ? candidate.otherDefinitions.filter(value => typeof value === 'string').map(value => value.slice(0, 1500)).slice(0, 8) : [],
     example: String(candidate.example || '').trim(),
     imageScenes: normalizeImageScenes(candidate.imageScenes),
     imageCustomConcept: String(candidate.imageCustomConcept || '').trim().slice(0, 160),

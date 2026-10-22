@@ -1,13 +1,13 @@
 {
   "name": "keepvocab",
-  "version": "1.8.7",
+  "version": "1.8.8",
   "private": true,
   "type": "module",
   "description": "A local-first vocabulary gym with Google Drive backup.",
   "main": "desktop/main.cjs",
   "scripts": {
     "test": "node --test",
-    "start": "python3 -m http.server 8085 --bind 127.0.0.1",
+    "start": "npm run build:web && python3 -m http.server 8085 --bind 127.0.0.1 --directory www",
     "build:web": "node scripts/build-web.mjs",
     "android:sync": "npm run build:web && cap sync android",
     "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug",
@@ -22,8 +22,10 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.4.2",
+    "@huggingface/transformers": "4.3.1",
     "electron": "43.4.1",
-    "electron-builder": "26.15.3"
+    "electron-builder": "26.15.3",
+    "esbuild": "0.28.2"
   },
   "build": {
     "appId": "com.keepvocab.app",

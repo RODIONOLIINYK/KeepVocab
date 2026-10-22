@@ -1,16 +1,17 @@
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18700';
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18700';
-import { speakWord } from '../services/speechService.js?v=18700';
-import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, prepareImageScenes, imageSenseFingerprint, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18700';
-import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18700';
-import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=18700';
-import { getPracticeReadiness } from '../services/reminderService.js?v=18700';
+import { recordImagePreference, imageLearningEnabled } from '../services/imageLearning.js?v=18800';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18800';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18800';
+import { speakWord } from '../services/speechService.js?v=18800';
+import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, prepareImageScenes, imageSenseFingerprint, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18800';
+import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18800';
+import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=18800';
+import { getPracticeReadiness } from '../services/reminderService.js?v=18800';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
-import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, groupSimilarSenses } from '../services/learningDefinitions.js?v=18700';
-import { renderMeaningExplanation, renderExplanationReview, applyReviewedExplanations } from './MeaningExplanation.js?v=18700';
-import { mountImageReview } from './ImageReview.js?v=18700';
-import { attachImagesSequentially } from '../services/bulkWords.js?v=18700';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=18700';
+import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, groupSimilarSenses } from '../services/learningDefinitions.js?v=18800';
+import { renderMeaningExplanation, renderExplanationReview, applyReviewedExplanations } from './MeaningExplanation.js?v=18800';
+import { mountImageReview } from './ImageReview.js?v=18800';
+import { attachImagesSequentially } from '../services/bulkWords.js?v=18800';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18800';
 
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -449,6 +450,7 @@ export function renderLibraryView(container) {
       onCancel() { imageReviewWords = null; render(); },
       onApply(reviewed) {
         let skipped = 0;
+        const appliedIds = [];
         for (const word of reviewed) {
           const latest = driveSync.getWords().find(item => item.id === word.id);
           if (!latest || imageSenseFingerprint(latest) !== imageSenseFingerprint(word)) { skipped += 1; continue; }
@@ -456,10 +458,12 @@ export function renderLibraryView(container) {
           const original = imageReviewOriginals.get(word.id);
           if (!original || keys.some(key => (latest[key] || '') !== (original[key] || ''))) { skipped += 1; continue; }
           driveSync.updateWord(word.id, Object.fromEntries(keys.map(key => [key, word[key] || ''])));
+          appliedIds.push(word.id);
         }
         imageReviewWords = null;
         explanationStatus = `Image review saved.${skipped ? ` ${skipped} changed meanings were kept.` : ''}`;
         render();
+        return { appliedIds };
       }
     });
 
@@ -557,19 +561,36 @@ export function renderLibraryView(container) {
       searchQuery: editing.imageSearchQuery,
       title: editing.imageAttribution
     } : null);
+    const teachImage = async (action, image) => {
+      try {
+        if (!imageLearningEnabled()) return;
+        const result = await recordImagePreference(editing, action, image);
+        if (container.libraryViewOwner !== viewOwner) return;
+        const output = container.querySelector('#library-edit-message');
+        if (output) output.textContent = result.reason || 'Image preference saved.';
+      } catch { const output = container.querySelector('#library-edit-message'); if (output) output.textContent = 'The rating was saved for this meaning; local model training could not finish.'; }
+    };
+    const feedbackMatchesSavedMeaning = () => {
+      const latest = driveSync.getWords().find(word => word.id === editId);
+      const matches = latest && imageSenseFingerprint({ ...editing, ...editDraft }) === imageSenseFingerprint(latest);
+      if (!matches) container.querySelector('#library-edit-message').textContent = 'Save the intended meaning before rating an image.';
+      return matches;
+    };
     container.querySelector('#image-good')?.addEventListener('click', () => {
       const image = feedbackImage();
-      if (!image) return;
+      if (!image || !feedbackMatchesSavedMeaning()) return;
       driveSync.updateWord(editId, { imageFeedback: updateImageFeedback(editing, 'good', image, activeImageConcept) });
       const message = container.querySelector('#library-edit-message');
-      if (message) message.textContent = 'Saved. KeepVocab will favor images like this for this meaning.';
+      if (message) message.textContent = 'Rating saved for this meaning.';
+      void teachImage('good', image);
     });
     container.querySelector('#image-wrong')?.addEventListener('click', () => {
       const image = feedbackImage();
-      if (!image) return;
+      if (!image || !feedbackMatchesSavedMeaning()) return;
       const patch = { imageFeedback: updateImageFeedback(editing, 'wrong', image, activeImageConcept) };
       if (!selectedImage) Object.assign(patch, clearImageSelectionPatch(), { imageKind: '' });
       driveSync.updateWord(editId, patch);
+      void teachImage('wrong', image);
       selectedImage = null;
       loadImageCandidates(editId, true);
     });

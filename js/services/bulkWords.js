@@ -1,5 +1,5 @@
-import { imageSelectionPatch } from './imageSearch.js?v=18700';
-import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18700';
+import { imageSelectionPatch } from './imageSearch.js?v=18800';
+import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18800';
 
 export const MAX_BULK_WORDS = 100;
 export const BULK_LOOKUP_DELAY_MS = 1000;
@@ -120,6 +120,7 @@ export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '', 
       audioUrl: sense.audioUrl || data.audioUrl || '',
       partOfSpeech: sense.partOfSpeech || 'unknown',
       definition: sense.definition || '',
+      otherDefinitions: senses.filter(item => item !== sense).map(item => item.sourceDefinition || item.definition).filter(Boolean).slice(0, 8),
       sourceDefinition: sense.sourceDefinition || sense.definition || '',
       sourceDefinitions: sense.sourceDefinitions || [],
       sourceFingerprint: sense.sourceFingerprint || '',

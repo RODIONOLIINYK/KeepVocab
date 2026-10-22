@@ -26,4 +26,6 @@ for (const directory of directories) {
   });
 }
 
+await import('./build-image-ml.mjs');
+
 console.log(`KeepVocab web assets copied to ${outputDir}`);

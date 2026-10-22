@@ -1,5 +1,5 @@
-import { generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=18700';
-import { blobToBase64 } from '../utils/base64.js?v=18700';
+import { generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=18800';
+import { blobToBase64 } from '../utils/base64.js?v=18800';
 
 export { blobToBase64 };
 
