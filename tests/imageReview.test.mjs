@@ -5,8 +5,8 @@ import { mountImageReview } from '../js/components/ImageReview.js';
 class Container {
   innerHTML = '';
   listeners = new Set();
-  addEventListener(type, callback) { assert.equal(type, 'click'); this.listeners.add(callback); }
-  removeEventListener(_type, callback) { this.listeners.delete(callback); }
+  addEventListener(type, callback) { if (type === 'keydown') { this.keyHandler = callback; return; } assert.equal(type, 'click'); this.listeners.add(callback); }
+  removeEventListener(type, callback) { if (type === 'keydown') { this.keyHandler = null; return; } this.listeners.delete(callback); }
   contains() { return true; }
   click(action, index = 0, candidateIndex = 0) {
     const button = { dataset: { imageReviewAction: action, imageReviewIndex: String(index), imageReviewCandidate: String(candidateIndex) } };
@@ -97,16 +97,16 @@ test('Keep all proposed images confirms pending images and skips missing images 
   assert.equal(applied.length, 1);
 });
 
-test('Next after Keep resets confirmation, while Skip restores the original image without negative labels', async () => {
+test('finding more preserves a chosen image, while keeping the original does not create negative labels', async () => {
   const container = new Container();
   let applied;
   mountImageReview(container, [word('first')], { onApply: value => { applied = value; }, findImages: async () => [image('new')] });
   await container.click('keep');
   await container.click('next');
   await container.click('apply');
-  assert.equal(applied, undefined);
+  assert.equal(applied[0].imageUrl, image('first').url);
   await container.click('skip');
-  assert.doesNotMatch(container.innerHTML, /new-thumb\.jpg/);
+  assert.match(container.innerHTML, /Current image kept/);
   await container.click('apply');
   assert.deepEqual(applied, [word('first')]);
 });
@@ -163,13 +163,13 @@ test('per-card search errors do not block reviewing other rows or skipping the f
   assert.equal(applied.length, 2);
 });
 
-test('word text is escaped, unsafe credit links are omitted, and previews load lazily', () => {
+test('word text is escaped, unsafe credit links are omitted, and previews load promptly', () => {
   const container = new Container();
   mountImageReview(container, [{ ...word('<script>'), definition: '<img onerror="steal()">', imageSourceUrl: 'javascript:alert(1)', imageAttribution: '<svg/onload=alert(1)>' }]);
   assert.match(container.innerHTML, /&lt;script&gt;/);
   assert.match(container.innerHTML, /&lt;img onerror=&quot;steal\(\)&quot;&gt;/);
   assert.doesNotMatch(container.innerHTML, /href="javascript:/);
-  assert.match(container.innerHTML, /loading="lazy"/);
+  assert.match(container.innerHTML, /loading="eager"/);
 });
 
 test('learning receives only confirmed Keep choices after Apply succeeds, never Cancel, Next or Skip', async () => {
@@ -277,4 +277,61 @@ test('review hands explicit labels to a save host without teaching before that h
   await container.click('keep');
   await container.click('apply');
   assert.deepEqual(context.feedback.map(label => [label.action, label.image.url]), [['good', image('chosen').url]]);
+});
+
+
+test('Save without image saves a new single word immediately, with no label or extra Apply step', async () => {
+  const container = new Container();
+  const original = word('single', false);
+  let saved;
+  mountImageReview(container, [{ ...original, imageCandidates: [image('one'), image('two')] }], {
+    allowSkipPending: true, originalWords: [original], onApply: rows => { saved = rows; },
+    onFeedback: () => assert.fail('Saving without a photo is not a training label')
+  });
+  assert.doesNotMatch(container.innerHTML, />Skip<|Keep all proposed/);
+  await container.click('choose', 0, 1);
+  await container.click('skip');
+  assert.equal(saved[0].word, original.word);
+  assert.equal(saved[0].definition, original.definition);
+  assert.equal(saved[0].imageUrl, '');
+});
+
+test('the gallery shows all available options without truncating to six or a narrow preview column', () => {
+  const container = new Container();
+  mountImageReview(container, [{ ...word('many', false), imageCandidates: Array.from({ length: 12 }, (_, i) => image('option-'+i)) }]);
+  assert.equal((container.innerHTML.match(/data-image-review-action="choose"/g) || []).length, 12);
+  assert.doesNotMatch(container.innerHTML, /image-review__preview|max-height:62vh/);
+});
+
+test('single word can be saved without an image while a slow search is still pending', async () => {
+  const container = new Container();
+  let finishSearch;
+  let signal;
+  let saved;
+  mountImageReview(container, [word('waiting', false)], {
+    allowSkipPending:true, findImages: (_word, options) => { signal=options.signal; return new Promise(resolve=>{finishSearch=resolve;}); },
+    onApply: rows=>{saved=rows;}, onFeedback:()=>assert.fail('No feedback for skipped search')
+  });
+  const pending=container.click('next');
+  await container.click('skip');
+  assert.equal(saved[0].imageUrl,'');
+  assert.equal(signal.aborted,true);
+  finishSearch([image('late')]);
+  await pending;
+  assert.equal(saved[0].imageUrl,'');
+});
+
+
+test('gallery arrow keys choose one option at a time and wrap without a network search', async () => {
+  const container = new Container();
+  let saved;
+  mountImageReview(container, [{ ...word('keyboard', false), imageCandidates: [image('a'),image('b'),image('c')] }], {
+    onApply:rows=>{saved=rows;}, findImages:()=>assert.fail('Keyboard selection should be local'), onFeedback:()=>{}
+  });
+  let prevented=false;
+  container.keyHandler({ key:'ArrowRight', preventDefault:()=>{prevented=true;}, target:{closest:()=>({dataset:{imageReviewIndex:'0',imageReviewCandidate:'0'}})} });
+  assert.equal(prevented,true);
+  assert.equal((container.innerHTML.match(/aria-checked="true"/g)||[]).length,1);
+  await container.click('apply');
+  assert.equal(saved[0].imageUrl,image('b').url);
 });

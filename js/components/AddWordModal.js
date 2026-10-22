@@ -370,6 +370,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     cancelImageReview = null;
     pendingImageFeedback = [];
     imageReviewRoot.hidden = true;
+    modal.classList.remove('is-picking-images');
     modal.classList.remove('active');
     preview.style.display = 'none';
     input.value = '';
@@ -406,11 +407,13 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       bulkPanel.hidden = true;
       tabs.hidden = true;
       imageReviewRoot.hidden = false;
+      modal.classList.add('is-picking-images');
       const finish = result => {
         imageReviewController?.destroy();
         imageReviewController = null;
         cancelImageReview = null;
         imageReviewRoot.hidden = true;
+        modal.classList.remove('is-picking-images');
         tabs.hidden = false;
         singlePanel.hidden = wasBulk;
         bulkPanel.hidden = !wasBulk;

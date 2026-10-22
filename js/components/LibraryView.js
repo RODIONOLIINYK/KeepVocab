@@ -11,6 +11,7 @@ import { definitionForLearning, exampleForLearning, needsLearnerExplanation, wit
 import { renderMeaningExplanation, renderExplanationReview, renderInlineExplanation, applyReviewedExplanations } from './MeaningExplanation.js?v=18900';
 import { mountImageReview } from './ImageReview.js?v=18900';
 import { attachImagesSequentially } from '../services/bulkWords.js?v=18900';
+import { animateDisclosures } from '../utils/disclosureMotion.js';
 
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -118,6 +119,7 @@ export function renderLibraryView(container) {
   let imageCandidates = [];
   let imageLoading = false;
   let imageError = '';
+  let imageFeedbackStatus = '';
   let selectedImage = null;
   let removeImage = false;
   let imageQuery = '';
@@ -194,6 +196,7 @@ export function renderLibraryView(container) {
   function beginEditing(wordId) {
     imageRequestId += 1;
     editId = wordId;
+    imageFeedbackStatus = '';
     editDraft = {};
     deleteId = null;
     imageCandidates = [];
@@ -239,7 +242,7 @@ export function renderLibraryView(container) {
         ${renderMeaningExplanation(meaning)}${isUkrainianTranslationEnabled() && meaning.translationLanguage === 'uk' && meaning.translation ? `<p class="word-translation" lang="uk">${escapeHtml(meaning.translation)}</p>` : ''}
         ${exampleForLearning(meaning) ? `<blockquote>“${escapeHtml(exampleForLearning(meaning))}”</blockquote>` : ''}
         <div class="library-card-footer"><span>${meaning.mastered ? 'Mastered' : (readiness.readyNowCount ? 'Due now' : 'Learning')}</span></div>
-        ${deleteId === meaning.id ? `<div class="delete-confirm"><span>Delete this meaning of “${escapeHtml(meaning.word)}”?</span><button data-cancel-delete>Cancel</button><button data-confirm-delete="${escapeHtml(meaning.id)}">Delete</button></div>` : `<div class="library-card-actions"><button data-edit-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-pen"></i> Edit</button><details class="library-card-menu"><summary>More</summary><button data-explain-meaning="${escapeHtml(meaning.id)}" ${explaining ? 'disabled' : ''}><i class="fa-solid fa-lightbulb"></i> Understand meaning</button><button data-delete-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-trash"></i> Delete</button></details></div>`}
+        ${deleteId === meaning.id ? `<div class="delete-confirm"><span>Delete this meaning of “${escapeHtml(meaning.word)}”?</span><button data-cancel-delete>Cancel</button><button data-confirm-delete="${escapeHtml(meaning.id)}">Delete</button></div>` : `<div class="library-card-actions"><button data-edit-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-pen"></i> Edit</button><button class="library-delete-action" data-delete-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-trash"></i> Delete</button><details class="library-card-menu" data-motion><summary>More <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary><div class="disclosure-body"><button data-explain-meaning="${escapeHtml(meaning.id)}" ${explaining ? 'disabled' : ''}><i class="fa-solid fa-lightbulb"></i> Understand meaning</button></div></details></div>`}
         ${explaining && explanationWordIds.has(meaning.id) ? '<p class="meaning-help-status" role="status">Building a concrete explanation and example…</p>' : ''}
         ${explanationErrors.has(meaning.id) ? `<p class="meaning-help-error" role="status">${escapeHtml(explanationErrors.get(meaning.id))}</p>` : ''}
         ${explanationReview.length === 1 && explanationReview[0].original.id === meaning.id ? renderInlineExplanation(explanationReview[0], explanationQuestions.get(meaning.id)) : ''}
@@ -373,6 +376,7 @@ export function renderLibraryView(container) {
       ? groups.map(wordCard).join('')
       : emptyLibraryResults();
     bindWordCardEvents();
+    animateDisclosures(container);
   }
 
   function render() {
@@ -391,14 +395,14 @@ export function renderLibraryView(container) {
     imageReviewController = null;
     container.innerHTML = `
       <section class="full-view-stack library-view" aria-labelledby="library-heading">
-        <div class="content-title-row"><div><span class="eyebrow">${courseLabel}</span><h1 id="library-heading">Library</h1><p>Keep your vocabulary, meanings, and memory cues in one place.</p></div><div class="inline-actions"><details class="library-tools"><summary>Tools</summary><div><button class="status-pill offline" id="library-improve-explanations" ${explaining || preparingImages || !monthWords.length ? 'disabled' : ''}>Improve explanations</button><button class="status-pill offline" id="library-review-images" ${explaining || preparingImages || !monthWords.length ? 'disabled' : ''}>Review images</button></div></details><button class="btn-green-solid" id="library-add-word"><i class="fa-solid fa-plus"></i> Add word</button></div></div>
+        <div class="content-title-row"><div><span class="eyebrow">${courseLabel}</span><h1 id="library-heading">Library</h1></div><div class="inline-actions"><details class="library-tools" data-motion><summary><i class="fa-solid fa-sliders" aria-hidden="true"></i> Tools <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary><div class="disclosure-body"><button class="status-pill offline" id="library-improve-explanations" ${explaining || preparingImages || !monthWords.length ? 'disabled' : ''}><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Improve explanations</button><button class="status-pill offline" id="library-review-images" ${explaining || preparingImages || !monthWords.length ? 'disabled' : ''}><i class="fa-solid fa-images" aria-hidden="true"></i> Review images</button></div></details><button class="btn-green-solid" id="library-add-word"><i class="fa-solid fa-plus"></i> Add word</button></div></div>
         ${explanationStatus ? `<p class="form-message" role="status" aria-live="polite">${escapeHtml(explanationStatus)}</p>` : ''}
         ${explaining ? '<button class="status-pill offline" id="cancel-generating-explanations">Cancel explanation request</button>' : ''}
         ${explanationReview.length > 1 ? renderExplanationReview(explanationReview) : ''}
         ${preparingImages ? '<p role="status">Preparing cached scenes and image suggestions…</p>' : ''}
         ${imageReviewWords ? '<div class="spec-card" id="library-image-review"></div>' : ''}
         <div class="spec-card" ${archives.length ? '' : 'hidden'}>
-          <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-calendar-days"></i> Monthly vocabulary</div><span class="muted-label">Choose the notebook you want to manage</span></div>
+          <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-calendar-days"></i> Monthly vocabulary</div></div>
           <div class="archive-tabs">
             ${archives.map(archive => `<button class="status-pill ${archive.monthYear === selectedMonthYear ? 'connected' : 'offline'}" data-month="${escapeHtml(archive.monthYear)}"><strong>${escapeHtml(archive.monthYear)}</strong><span>${archive.wordCount} word${archive.wordCount === 1 ? '' : 's'} · ${archive.count} meaning${archive.count === 1 ? '' : 's'}</span></button>`).join('')}
           </div>
@@ -417,10 +421,10 @@ export function renderLibraryView(container) {
           </div>
           <section class="library-image-chooser" aria-labelledby="library-image-heading">
             <div class="image-chooser-heading">
-              <div><strong id="library-image-heading">Visual cue</strong><span>Search automatically, paste an image link, or upload a file.</span></div>
+              <div><strong id="library-image-heading">Image</strong></div>
               <button type="button" class="image-text-action" id="refresh-library-images"><i class="fa-solid fa-rotate"></i> More options</button>
             </div>
-            <details class="image-search-options"><summary>Search or upload your own image</summary>
+            <details class="image-search-options" data-motion><summary>Search or upload <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary><div class="disclosure-body">
             <div class="custom-image-source">
               <label for="custom-image-url">Custom image link</label>
               <div><input id="custom-image-url" type="url" inputmode="url" placeholder="https://example.com/image.jpg"><button type="button" class="status-pill connected" id="use-custom-image-url">Use link</button></div>
@@ -438,11 +442,12 @@ export function renderLibraryView(container) {
               <small>Choose a suggested scene or describe your own. “More options” explores the next scene, then more results.</small>
               ${activeImageConcept ? `<small class="active-image-search-state">Searching: “${escapeHtml(activeImageConcept)}” · page ${imageResultPage}</small>` : ''}
             </div>
-            </details>
-            ${currentImageUrl ? `<div class="selected-image-preview"><img src="${escapeHtml(currentImageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current saved image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span></div></div><div class="image-feedback-actions" aria-label="Image feedback"><button type="button" class="image-text-action" id="image-good"><i class="fa-solid fa-thumbs-up"></i> Good image</button><button type="button" class="image-text-action" id="image-wrong"><i class="fa-solid fa-triangle-exclamation"></i> Wrong meaning</button><button type="button" class="image-text-action" id="image-more-like"><i class="fa-solid fa-images"></i> More like this</button></div>` : ''}
-            <p class="image-learning-note">${imageLearningEnabled() ? 'Good image teaches the local model a positive example; Wrong meaning teaches a negative one. Saving a replacement teaches both choices. More like this only adjusts the search.' : 'Image ratings improve searches. Install or enable Local image learning in Settings to also train your personal model.'} Searches and local scoring use no Gemini tokens.</p>
+            </div></details>
+            ${currentImageUrl ? `<div class="selected-image-preview"><img src="${escapeHtml(currentImageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current saved image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span></div></div><div class="image-feedback-actions" aria-label="Image feedback"><button type="button" class="image-text-action" id="image-good"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i><span>Fits meaning<small>${imageLearningEnabled() ? 'Teach: good match' : 'Prefer in searches'}</small></span></button><button type="button" class="image-text-action" id="image-wrong"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><span>Wrong meaning<small>${imageLearningEnabled() ? 'Teach: avoid this' : 'Exclude from searches'}</small></span></button><button type="button" class="image-text-action" id="image-more-like"><i class="fa-solid fa-images" aria-hidden="true"></i><span>Find similar<small>Search only</small></span></button></div>` : ''}
+            <p class="form-message image-feedback-status" id="image-feedback-status" role="status">${escapeHtml(imageFeedbackStatus)}</p>
+            <p class="image-learning-note">${imageLearningEnabled() ? 'Your ratings train your personal image model. Saving a replacement teaches it your choice, too.' : 'Ratings guide image searches. Enable Local image learning in Settings to train your personal model.'}</p>
             ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching for “${escapeHtml(activeImageConcept || editing.word)}” · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-results-heading"><strong>Results for “${escapeHtml(activeImageConcept || imageQuery)}”</strong><span>${imageCandidates.length} images · page ${imageResultPage}</span></div><div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.thumbnailUrl || image.url)}" alt="${escapeHtml(image.title)}" loading="lazy" decoding="async"><span>${escapeHtml(image.title)}</span><small>${escapeHtml(image.source || 'Public image')}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
-            <p class="image-license-note">${imageCandidates.some(image => image.source === 'Pexels') ? '<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Photos provided by Pexels</a>. ' : ''}KeepVocab saves available creator, source, and rights information for every proposed image.</p>
+            <p class="image-license-note">${imageCandidates.some(image => image.source === 'Pexels') ? '<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Photos provided by Pexels</a>. ' : ''}</p>
           </section>
           <div class="inline-actions"><button class="btn-green-solid" type="submit">Save changes</button></div>
           <p class="form-message" id="library-edit-message" role="status"></p>
@@ -459,6 +464,7 @@ export function renderLibraryView(container) {
         </div>
       </section>`;
 
+    animateDisclosures(container);
     container.querySelector('#library-improve-explanations').addEventListener('click', () => requestExplanations(selectedWords().filter(word => needsLearnerExplanation(word) || !exampleForLearning(word))));
     container.querySelector('#library-review-images').addEventListener('click', startImageReview);
     container.querySelector('#cancel-generating-explanations')?.addEventListener('click', () => { explanationAbort?.abort(); explaining = false; explanationStatus = 'The current meanings have been kept.'; render(); });
@@ -589,20 +595,24 @@ export function renderLibraryView(container) {
       searchQuery: editing.imageSearchQuery,
       title: editing.imageAttribution
     } : null);
+    const setImageFeedbackMessage = message => {
+      if (container.libraryViewOwner !== viewOwner || editId !== editing?.id) return;
+      imageFeedbackStatus = message;
+      const output = container.querySelector('#image-feedback-status');
+      if (output) output.textContent = message;
+    };
     const teachImage = async (action, image) => {
       try {
         if (!imageLearningEnabled()) {
-          const output = container.querySelector('#library-edit-message');
-          if (output) output.textContent = 'Search preference saved. Local model is off; enable it in Settings to train it.';
+          setImageFeedbackMessage('Search preference saved. Enable Local image learning in Settings to train your model.');
           return;
         }
         const result = await recordImagePreference(editing, action, image);
         if (container.libraryViewOwner !== viewOwner) return;
-        const output = container.querySelector('#library-edit-message');
-        if (output) output.textContent = result.recorded
-          ? `Saved as a ${action === 'good' ? 'positive' : 'negative'} training example. ${result.trained ? 'Your local model has been updated.' : 'It will train once enough Good and Wrong ratings are collected.'}`
-          : result.reason || 'Image preference saved.';
-      } catch { const output = container.querySelector('#library-edit-message'); if (output) output.textContent = 'The rating was saved for this meaning; local model training could not finish.'; }
+        setImageFeedbackMessage(result.recorded
+          ? `Saved as a ${action === 'good' ? 'positive' : 'negative'} training example. ${result.trained ? 'Your local model has been updated.' : 'It will train as you rate more matches.'}`
+          : result.reason || 'Image preference saved.');
+      } catch { setImageFeedbackMessage('Rating saved. Local model training could not finish.'); }
     };
     const feedbackMatchesSavedMeaning = () => {
       const latest = driveSync.getWords().find(word => word.id === editId);
@@ -614,8 +624,7 @@ export function renderLibraryView(container) {
       const image = feedbackImage();
       if (!image || !feedbackMatchesSavedMeaning()) return;
       driveSync.updateWord(editId, { imageFeedback: updateImageFeedback(editing, 'good', image, activeImageConcept) });
-      const message = container.querySelector('#library-edit-message');
-      if (message) message.textContent = 'Rating saved for this meaning.';
+      setImageFeedbackMessage('Good match saved.');
       void teachImage('good', image);
     });
     container.querySelector('#image-wrong')?.addEventListener('click', () => {
@@ -624,6 +633,7 @@ export function renderLibraryView(container) {
       const patch = { imageFeedback: updateImageFeedback(editing, 'wrong', image, activeImageConcept) };
       if (!selectedImage) Object.assign(patch, clearImageSelectionPatch(), { imageKind: '' });
       driveSync.updateWord(editId, patch);
+      setImageFeedbackMessage('Image excluded. Finding alternatives…');
       void teachImage('wrong', image);
       selectedImage = null;
       loadImageCandidates(editId, true);
@@ -632,6 +642,7 @@ export function renderLibraryView(container) {
       const image = feedbackImage();
       if (!image) return;
       activeImageConcept = image.searchQuery || activeImageConcept;
+      setImageFeedbackMessage('Finding similar images. This does not train the model.');
       driveSync.updateWord(editId, { imageFeedback: updateImageFeedback(editing, 'more-like-this', image, activeImageConcept) });
       loadImageCandidates(editId, true);
     });

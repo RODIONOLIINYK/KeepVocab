@@ -59,7 +59,7 @@ test('Library shows the canonical learner explanation and no competing short clu
     assert.ok(container.innerHTML.includes(candidate.definition));
     assert.ok(container.innerHTML.includes(candidate.example));
     assert.match(container.innerHTML, /Understand meaning/);
-    assert.doesNotMatch(container.innerHTML, /Obsolete competing clue|shorten-definition|conciseDefinition/);
+    assert.doesNotMatch(container.innerHTML, /Obsolete competing clue|shorten-definition|conciseDefinition|Choose the notebook you want to manage|Keep your vocabulary, meanings, and memory cues in one place/);
   } finally { for (const [name, method] of originals) driveSync[name] = method; }
 });
 
@@ -67,4 +67,41 @@ test('an empty or failed explanation has no review form or Apply button', async 
   const { renderExplanationReview } = await import('../js/components/MeaningExplanation.js');
   assert.equal(renderExplanationReview([]), '');
   assert.equal(renderExplanationReview([{ original, error: 'provider failed' }]), '');
+});
+
+
+test('Library exposes Delete beside Edit and confirms before deleting a meaning', () => {
+  const methods = ['getActiveNotebook', 'getWords', 'getWordsByMonthYear', 'getMonthlyArchives', 'deleteWord'];
+  const originals = new Map(methods.map(name => [name, driveSync[name]]));
+  const controls = new Map();
+  const getControl = selector => {
+    if (!controls.has(selector)) controls.set(selector, { callbacks: {}, dataset: {}, value: '', addEventListener(event, callback) { this.callbacks[event] = callback; } });
+    return controls.get(selector);
+  };
+  const deleteButton = getControl('delete-button');
+  deleteButton.dataset.deleteWord = candidate.id;
+  const container = {
+    innerHTML: '',
+    querySelector: getControl,
+    querySelectorAll(selector) { return selector === '[data-delete-word]' ? [deleteButton] : []; }
+  };
+  let words = [{ ...candidate }];
+  const deleted = [];
+  try {
+    driveSync.getActiveNotebook = () => 'October 2026 Vocabulary';
+    driveSync.getWords = driveSync.getWordsByMonthYear = () => words;
+    driveSync.getMonthlyArchives = () => [];
+    driveSync.deleteWord = id => { deleted.push(id); words = []; };
+    renderLibraryView(container);
+    const actions = container.innerHTML.split('class="library-card-actions"')[1].split('<details')[0];
+    assert.match(actions, /data-edit-word="meaning"/);
+    assert.match(actions, /data-delete-word="meaning"/);
+    assert.match(actions, /> Delete<\/button>/);
+    deleteButton.callbacks.click();
+    assert.deepEqual(deleted, []);
+    assert.match(container.innerHTML, /Delete this meaning of/);
+    getControl('[data-confirm-delete]').callbacks.click({ currentTarget: { dataset: { confirmDelete: candidate.id } } });
+    assert.deepEqual(deleted, [candidate.id]);
+    assert.match(container.innerHTML, /Add your first word/);
+  } finally { for (const [name, method] of originals) driveSync[name] = method; }
 });

@@ -24,12 +24,18 @@ Model files survive app-shell cache upgrades and stay on this device.
 ## Choosing and changing images
 
 Add Word fetches up to six candidates per meaning and displays them together.
-Choosing another ready option makes no search request. Save can leave unselected
+The gallery fills the composer, uses the app typography, and shows every available
+option without an inner scrolling card. Choosing another ready option makes no
+search request. Save can leave unselected
 meanings without an image; there is no mandatory approval for every word. During
 bulk preparation, **Save without waiting for images** cancels the image stage and
-saves all prepared meanings and translations immediately. Late results are ignored. Source
-and license metadata remain attached to chosen photos. Temporary candidate pools
-are removed before vocabulary is saved. Library secondary tools, custom search,
+saves all prepared meanings and translations immediately. Late results are ignored. Source and license metadata remain attached to chosen photos. For a new single word,
+**Save without image** saves immediately, including during a pending search.
+Batch review uses **No image**, and existing vocabulary uses **Keep current image**.
+These choices create no training labels. Browsing more results preserves a chosen
+image and adds to the gallery instead of replacing it. The picker explains whether
+local learning is off, still learning (fewer than 32 trained examples), or has no
+clear winning image. Enough training does not guarantee automatic selection. Temporary candidate pools are removed before vocabulary is saved. Library secondary tools, custom search,
 and upload controls are collapsed; recall statistics are kept out of word cards.
 
 Local ranking normally scores a metadata shortlist of twelve photos rather than
