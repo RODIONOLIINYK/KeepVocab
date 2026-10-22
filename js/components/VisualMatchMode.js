@@ -1,7 +1,9 @@
 import { definitionForLearning } from '../services/learningDefinitions.js?v=18900';
 import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18900';
 import { driveSync } from '../services/driveSync.js?v=18900';
-import { findRelevantImages, prepareImageScenes, imageSenseFingerprint, imageSelectionPatch, imageUrlsForWords } from '../services/imageSearch.js?v=18900';
+import { findRelevantImages, prepareImageScenes, imageSenseFingerprint, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18900';
+import { imageReplacementLabels } from '../services/imageChoicePolicy.js';
+import { recordImagePreference } from '../services/imageLearning.js?v=18900';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18900';
 import { playInteractionSound } from '../services/interactionSound.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
@@ -134,7 +136,16 @@ export async function renderVisualMatchMode(container, onNavigate) {
       const image = candidates[Number(button.dataset.imageCandidate)];
       const latest = driveSync.getWords().find(item => item.id === word.id);
       if (!latest || imageSenseFingerprint(latest) !== imageSenseFingerprint(word)) return;
-      driveSync.updateWord(word.id, imageSelectionPatch(image, query));
+      const previous = latest.imageUrl ? { url: latest.imageUrl, sourceUrl: latest.imageSourceUrl, searchQuery: latest.imageSearchQuery, ...(latest.imageMl ? { ml: latest.imageMl } : {}) } : null;
+      const labels = imageReplacementLabels(latest, previous, image);
+      let feedbackWord = { ...latest };
+      for (const label of labels) feedbackWord.imageFeedback = updateImageFeedback(feedbackWord, label.action, label.image);
+      driveSync.updateWord(word.id, {
+        ...imageSelectionPatch(image, query),
+        ...(image?.ml ? { imageMl: image.ml } : {}),
+        ...(labels.length ? { imageFeedback: feedbackWord.imageFeedback } : {})
+      });
+      for (const label of labels) void recordImagePreference(label.word, label.action, label.image).catch(() => {});
       if (forcedWord) {
         renderVisualMatchMode(container, onNavigate);
         return;

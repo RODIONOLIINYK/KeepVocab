@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { driveSync, MemoryStorage } from '../js/services/driveSync.js?v=18900';
-import { recordImagePreference, getImageLearningStatus, resetImagePreferences, rankImagesLocally } from '../js/services/imageLearning.js?v=18900';
+import { recordImagePreference, getImageLearningStatus, getImageLearningTrainingData, resetImagePreferences, rankImagesLocally } from '../js/services/imageLearning.js?v=18900';
+import { imageReplacementLabels } from '../js/services/imageChoicePolicy.js';
 import { imageSenseFingerprint } from '../js/services/imageSearch.js?v=18900';
 import { encodeFeatures, preferenceFeatures } from '../js/services/imagePreferences.js';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
@@ -55,4 +56,45 @@ test('Skip, Next, unavailable pixels and invalid features do not fabricate train
   const images = [{ url: 'https://example.test/fallback.jpg' }];
   assert.strictEqual(await rankImagesLocally(word, images), images);
   assert.equal(getImageLearningStatus().labels, 0);
+});
+
+test('editing a meaning image replaces the old positive dataset entry with a negative label and records the new image as positive', async t => {
+  isolated(t);
+  const firstChoice = {
+    ...candidate('river-old', 0),
+    sourceUrl: 'https://source.example/river-old'
+  };
+  const firstResult = await recordImagePreference(word, 'good', firstChoice);
+  assert.equal(firstResult.recorded, true);
+  let records = driveSync.getSettings().imageLearning.records;
+  assert.equal(records.length, 1);
+  assert.equal(records[0].label, 1);
+  const originalPositiveId = records[0].id;
+
+  // Simulate Library Edit where the saved word only stores url/sourceUrl on the previous image
+  const previousFromSavedWord = { url: firstChoice.url, sourceUrl: firstChoice.sourceUrl, searchQuery: 'river bank' };
+  const replacementChoice = {
+    ...candidate('river-new', 1),
+    sourceUrl: 'https://source.example/river-new'
+  };
+  const labels = imageReplacementLabels(word, previousFromSavedWord, replacementChoice);
+  assert.equal(labels.length, 2);
+  assert.equal(labels[0].action, 'wrong');
+  assert.equal(labels[1].action, 'good');
+
+  for (const item of labels) {
+    const res = await recordImagePreference(item.word, item.action, item.image);
+    assert.equal(res.recorded, true);
+  }
+
+  records = driveSync.getSettings().imageLearning.records;
+  assert.equal(records.length, 2);
+  const replacedEntry = records.find(record => record.id === originalPositiveId);
+  assert.ok(replacedEntry, 'Previous image entry should still be keyed by its canonical ID');
+  assert.equal(replacedEntry.label, 0, 'Previous positive label must be replaced with negative label 0');
+  assert.equal(records.filter(record => record.label === 1).length, 1, 'Old positive entry must be deleted and only the new choice is positive');
+  assert.equal(records.filter(record => record.label === 0).length, 1, 'Replaced image is recorded as negative');
+
+  const trainingData = getImageLearningTrainingData();
+  assert.deepEqual(trainingData.records.map(r => r.labelValue).sort(), [0, 1]);
 });

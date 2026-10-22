@@ -1,6 +1,6 @@
 import { getFsrsLearningStatus, subscribeFsrsLearning, saveFsrsPreferences, trainPersonalScheduler } from '../services/fsrsLearning.js';
 import { elapsedFsrsDays } from '../services/fsrsConfig.js';
-import { getImageLearningStatus, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18900';
+import { getImageLearningStatus, getImageLearningTrainingData, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18900';
 import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18900';
 import { driveSync } from '../services/driveSync.js?v=18900';
 import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18900';
@@ -62,12 +62,22 @@ export function renderSettingsView(container, onNavigate) {
       <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-images', 'Vocabulary images', 'Choose where Library photos come from.', pexelsReady ? 'Pexels' : imageProvider.provider === 'openverse' ? 'No key needed' : 'Set up', pexelsReady, true, 'settings-images-state')}</summary>
         <form id="image-provider-settings-form" class="settings-form"><label class="settings-full-width">Photo source<select id="settings-image-provider"><option value="pexels" ${imageProvider.provider === 'pexels' ? 'selected' : ''}>Pexels</option><option value="openverse" ${imageProvider.provider === 'openverse' ? 'selected' : ''}>Public catalogs · no key</option></select></label><label class="settings-full-width" id="settings-pexels-field" ${imageProvider.provider === 'openverse' ? 'hidden' : ''}>Pexels API key<div class="key-input-row"><input type="password" id="settings-pexels-key" value="${escapeHtml(imageProvider.pexelsApiKey)}" placeholder="Personal Pexels API key" autocomplete="off" spellcheck="false"><button type="button" id="settings-toggle-pexels-key" aria-label="Show Pexels API key" aria-pressed="false"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><span class="settings-privacy"><a href="https://www.pexels.com/api/new/" target="_blank" rel="noopener noreferrer">Get a free Pexels key</a></span></label><p class="settings-privacy">Your image settings are saved on this device and included in your private Drive backup when connected.</p><p id="image-provider-settings-status" class="settings-service-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid">Save photo source</button><button type="button" class="status-pill offline" id="remove-pexels-settings" ${imageProvider.pexelsApiKey ? '' : 'hidden'}>Remove Pexels key</button></div></form>
       </details>
-      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-brain', 'Local image learning', 'Match photos to meanings and learn from your choices.', '', false, true)}</summary><div class="settings-disclosure-body"><p>While enabled, Good image and keeping a replacement teach the preference model what you like. Wrong meaning is a negative example. More like this refines the search; it does not train the model. Skipping and automatic image choices do not create training labels.</p><p class="settings-privacy">Downloads about ${getImageLearningStatus().downloadMB} MB only with your permission, then caches it on this device. A complete installed model is enabled by default. Scoring and training run locally without Gemini tokens. Learning records sync in your private Drive backup; model files stay on this device. <a href="https://huggingface.co/Xenova/mobileclip_s0/blob/757d59c9c6870a76a4b0306f05f5061bca15c39f/LICENSE" target="_blank" rel="noopener noreferrer">Model license</a></p><p id="image-learning-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid" id="enable-image-learning">Download and enable</button><button class="status-pill offline" id="disable-image-learning">Turn off</button></div><details class="settings-advanced"><summary>Learning details and storage</summary><p id="image-learning-diagnostics"></p><p>Each explicit label is saved immediately. Training starts with 8 labels, including at least two Good and two Wrong examples, then uses batches of 4 changed labels. Repeated identical clicks do not add extra training weight. The encoders remain frozen; a small logistic regression model learns your preferences.</p><div class="settings-actions"><button class="status-pill offline" id="clear-image-model">Remove downloaded model</button><button class="status-pill offline" id="reset-image-preferences">Reset learned preferences</button></div></details></div></details>
+      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-brain', 'Local image learning', 'Match photos to meanings and learn from your choices.', '', false, true)}</summary><div class="settings-disclosure-body"><p>While enabled, Good image and keeping a replacement teach the preference model what you like. Wrong meaning is a negative example. More like this refines the search; it does not train the model. Skipping and automatic image choices do not create training labels.</p><p class="settings-privacy">Downloads about ${getImageLearningStatus().downloadMB} MB only with your permission, then caches it on this device. A complete installed model is enabled by default. Scoring and training run locally without Gemini tokens. Learning records sync in your private Drive backup; model files stay on this device. <a href="https://huggingface.co/Xenova/mobileclip_s0/blob/757d59c9c6870a76a4b0306f05f5061bca15c39f/LICENSE" target="_blank" rel="noopener noreferrer">Model license</a></p><p id="image-learning-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid" id="enable-image-learning">Download and enable</button><button class="status-pill offline" id="disable-image-learning">Turn off</button></div><details class="settings-advanced"><summary>Learning details and storage</summary><p id="image-learning-diagnostics"></p><p>Each explicit label is saved immediately. Training starts with 8 labels, including at least two Good and two Wrong examples, then uses batches of 4 changed labels. Repeated identical clicks do not add extra training weight. The encoders remain frozen; a small logistic regression model learns your preferences. Raw records contain a hashed image/meaning identity and numeric features, not the original word or image URL.</p><details class="settings-advanced" id="image-training-inspector"><summary>View all labels and training data</summary><p id="image-training-summary"></p><div class="settings-actions"><button type="button" class="status-pill offline" id="download-image-training-data">Download complete data (JSON)</button></div><div class="image-training-table-wrap"><table class="image-training-table"><thead><tr><th>Label</th><th>Saved</th><th>Training status</th><th>Record</th></tr></thead><tbody id="image-training-rows"></tbody></table></div><details class="settings-advanced"><summary>Current model weights</summary><pre id="image-training-weights"></pre></details></details><div class="settings-actions"><button class="status-pill offline" id="clear-image-model">Remove downloaded model</button><button class="status-pill offline" id="reset-image-preferences">Reset learned preferences</button></div></details></div></details>
       <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-download', 'App updates', `KeepVocab ${APP_VERSION}`, '', false, true)}</summary><div class="settings-disclosure-body"><p data-update-status class="settings-service-status" role="status" aria-live="polite">The app checks automatically. Updates keep your Library and progress.</p><div class="settings-actions"><button class="status-pill offline" data-check-update>Check for updates</button><button class="btn-green-solid" data-install-update hidden>Update app</button><a class="status-pill offline" data-update-downloads href="https://github.com/RODIONOLIINYK/KeepVocab/releases/latest" target="_blank" rel="noopener noreferrer" hidden>Open downloads</a></div></div></details>
     </div>
   </section>`;
 
   const query = selector => container.querySelector(selector);
+  const paintImageTrainingData = () => {
+    const data = getImageLearningTrainingData();
+    const summary = query('#image-training-summary');
+    if (!summary) return;
+    const included = data.records.filter(record => record.trainingStatus === 'included in latest fit').length;
+    summary.textContent = `${data.records.length} saved labels · ${included} included in the latest fit · ${data.records.length - included} queued or not in the current fit. Each record has 515 input features; the model has 516 weights including its intercept.`;
+    query('#image-training-rows').innerHTML = data.records.map((record, index) => `<tr><td>${record.label === 'fits meaning' ? 'Fits meaning (+1)' : 'Wrong meaning (0)'}</td><td>${escapeHtml(new Date(record.updatedAt).toLocaleString())}</td><td>${record.trainingStatus === 'included in latest fit' ? 'Used' : 'Queued / not used'}</td><td><details class="settings-advanced" data-training-record="${index}"><summary>${escapeHtml(record.id.slice(0, 12))}… · show features</summary><pre></pre></details></td></tr>`).join('');
+    const weights = query('#image-training-weights');
+    if (weights) weights.textContent = data.model ? JSON.stringify(data.model.weights, null, 2) : 'No fitted model yet. Labels are saved until the minimum training set is reached.';
+  };
   const paintLearning = state => {
     const output = query('#image-learning-status');
     if (!output) { container.releaseImageLearning?.(); return; }
@@ -77,6 +87,7 @@ export function renderSettingsView(container, onNavigate) {
     query('#enable-image-learning').hidden = state.enabled && ['ready', 'idle', 'scoring'].includes(state.phase);
     query('#enable-image-learning').textContent = state.installed ? 'Enable' : state.enabled ? 'Retry download' : 'Download and enable';
     query('#clear-image-model').hidden = !state.installed;
+    paintImageTrainingData();
   };
   paintLearning(getImageLearningStatus());
   container.releaseImageLearning = subscribeImageLearning(paintLearning);
@@ -90,6 +101,23 @@ export function renderSettingsView(container, onNavigate) {
   learningAction('#disable-image-learning', disableImageLearning);
   learningAction('#clear-image-model', clearImageModelDownloads);
   learningAction('#reset-image-preferences', resetImagePreferences);
+  query('#image-training-rows').addEventListener('toggle', event => {
+    const details = event.target.closest('details[data-training-record]');
+    if (!details?.open || details.dataset.loaded) return;
+    const record = getImageLearningTrainingData().records[Number(details.dataset.trainingRecord)];
+    const output = details.querySelector('pre');
+    if (record && output) {
+      output.textContent = JSON.stringify({ id: record.id, label: record.label, updatedAt: record.updatedAt, trainingStatus: record.trainingStatus, features: record.features }, null, 2);
+      details.dataset.loaded = 'true';
+    }
+  }, true);
+  query('#download-image-training-data').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(getImageLearningTrainingData(), null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a'); link.href = url; link.download = 'keepvocab-image-training-data.json'; link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+  query('#image-training-inspector > summary').addEventListener('click', () => paintImageTrainingData());
   const paintMemory = state => {
     const output = query('#memory-training-status');
     if (!output) { container.releaseFsrsLearning?.(); return; }

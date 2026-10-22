@@ -85,6 +85,39 @@ export function getImageLearningStatus() {
     changedParameters: model?.changedParameters || 0, deltaL2: model?.deltaL2 || 0,
     fingerprint: model?.fingerprint || '', beforeFingerprint: model?.beforeFingerprint || '' };
 }
+export function getImageLearningTrainingData() {
+  const records = dataset().records;
+  const model = savedModel();
+  const trained = new Set(model?.trainedRecordIds || []);
+  return {
+    exportedAt: new Date().toISOString(),
+    featureDescription: {
+      imageEmbedding: 'features[0..511]: quantized MobileCLIP image embedding',
+      selectedMeaningSimilarity: 'features[512]: similarity to the selected meaning',
+      meaningMargin: 'features[513]: similarity margin against alternative meanings',
+      unwantedContentSimilarity: 'features[514]: similarity to unwanted-content prompt',
+      encoding: 'features are signed 8-bit values divided by 127; weights[515] is the logistic-regression intercept',
+    },
+    records: records.map(record => ({
+      id: record.id,
+      label: record.label === 1 ? 'fits meaning' : 'wrong meaning',
+      labelValue: record.label,
+      updatedAt: record.updatedAt,
+      trainingStatus: trained.has(`${record.id}|${record.updatedAt}|${record.label}|${record.features}`) ? 'included in latest fit' : 'queued/not in latest fit',
+      encodedFeatures: record.features,
+      features: decodeFeatures(record.features),
+    })),
+    model: model ? {
+      model: model.model,
+      revision: model.revision,
+      trainedLabels: model.trainedLabels,
+      updatedAt: model.updatedAt,
+      fingerprint: model.fingerprint,
+      weights: model.weights,
+      trainedRecordIds: model.trainedRecordIds,
+    } : null,
+  };
+}
 function stopWorker(reason = 'The local image model was stopped.') {
   clearTimeout(idleTimer);worker?.terminate();worker = null;
   for (const item of pending.values()) { clearTimeout(item.timer); item.cleanup();item.reject(new Error(reason)); }
@@ -211,21 +244,39 @@ export async function rankImagesLocally(word, candidates, options = {}) {
   } catch (error) { phase = 'error';message = `${error.message} Metadata search is still available.`;emit();return candidates; }
 }
 let feedbackQueue = Promise.resolve();
+async function imageRecordIds(word, image) {
+  const sense = fingerprint(word);
+  const keys = [...new Set([image?.sourceUrl, image?.url].map(value => String(value || '').trim()).filter(Boolean))];
+  return Promise.all(keys.map(async key => {
+    const idBytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify([sense, key])));
+    return Array.from(new Uint8Array(idBytes), value => value.toString(16).padStart(2, '0')).join('');
+  }));
+}
 export function recordImagePreference(word, action, image) {
   if (!['good', 'wrong'].includes(action) || !image || !imageLearningEnabled()) return Promise.resolve({ recorded: false, reason: 'No explicit training label.' });
   const operation = async () => {
+    const ids = await imageRecordIds(word, image);
+    if (!ids.length) return { recorded: false, reason: 'Image pixels were unavailable; preference weights were unchanged.' };
+    const id = ids[0];
+    const idSet = new Set(ids);
+    const data = dataset();
+    const matching = data.records.filter(record => idSet.has(record.id));
+    const existing = matching.at(-1);
     let candidate = image;
     if (candidate.ml?.model !== CLIP_TAG || candidate.ml.sense !== fingerprint(word)) candidate = (await rankImagesLocally(word, [image]))[0];
-    if (!candidate?.ml || candidate.ml.sense !== fingerprint(word)) return { recorded: false, reason: 'Image pixels were unavailable; preference weights were unchanged.' };
-    try { decodeFeatures(candidate.ml.features); } catch { return { recorded: false, reason: 'Invalid image features; preference weights were unchanged.' }; }
-    const idBytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify([fingerprint(word), image.sourceUrl || image.url])));
-    const id = Array.from(new Uint8Array(idBytes), value => value.toString(16).padStart(2, '0')).join('');
-    const data = dataset();
+    const features = (candidate?.ml?.model === CLIP_TAG && candidate.ml.sense === fingerprint(word) && candidate.ml.features)
+      || existing?.features
+      || '';
+    if (!features) return { recorded: false, reason: 'Image pixels were unavailable; preference weights were unchanged.' };
+    try { decodeFeatures(features); } catch { return { recorded: false, reason: 'Invalid image features; preference weights were unchanged.' }; }
     const label = action === 'good' ? 1 : 0;
-    const existing = data.records.find(record => record.id === id);
-    if (existing?.label === label && existing.features === candidate.ml.features) return { recorded: false, reason: 'This label was already recorded.' };
-    const updatedAt = new Date(Math.max(Date.now(), Date.parse(existing?.updatedAt || data.resetAt || '') + 1 || 0)).toISOString();
-    const next = mergeImageLearning(data, { records: [{ id, model: CLIP_TAG, label, features: candidate.ml.features, updatedAt }] });
+    if (matching.length === 1 && existing?.id === id && existing?.label === label && existing.features === features) {
+      return { recorded: false, reason: 'This label was already recorded.' };
+    }
+    const latestExistingTime = Math.max(0, ...matching.map(record => Date.parse(record.updatedAt || '') || 0));
+    const updatedAt = new Date(Math.max(Date.now(), latestExistingTime + 1, (Date.parse(data.resetAt || '') || 0) + 1)).toISOString();
+    const retainedRecords = data.records.filter(record => !idSet.has(record.id));
+    const next = mergeImageLearning({ ...data, records: retainedRecords }, { records: [{ id, model: CLIP_TAG, label, features, updatedAt }] });
     driveSync.updateSettings({ imageLearning: next });
     const state = trainedModel();emit();
     return { recorded: true, trained: state.trained, queued: state.queued, changedParameters: state.model?.changedParameters || 0, deltaL2: state.model?.deltaL2 || 0,

@@ -676,15 +676,16 @@ export function renderLibraryView(container) {
         imageKind: selectedImage.imageKind || 'external',
         imageGeneratedModel: selectedImage.generatedModel || '',
         imageGeneratedAt: selectedImage.generatedAt || '',
-        imageGeneratedPrompt: selectedImage.generatedPrompt || ''
+        imageGeneratedPrompt: selectedImage.generatedPrompt || '',
+        ...(selectedImage.ml ? { imageMl: selectedImage.ml } : {})
       });
-      if (removeImage) Object.assign(data, clearImageSelectionPatch(), { imageKind: '', imageGeneratedModel: '', imageGeneratedAt: '', imageGeneratedPrompt: '' });
+      if (removeImage) Object.assign(data, clearImageSelectionPatch(), { imageKind: '', imageGeneratedModel: '', imageGeneratedAt: '', imageGeneratedPrompt: '', imageMl: undefined });
       try {
         const latest = driveSync.getWords().find(word => word.id === editId) || savedEditing;
         if (data.definition !== latest.definition) Object.assign(data, { sourceDefinition: data.definition, sourceFingerprint: '', explanationSource: 'manual' });
         const replacement = selectedImage;
         const previous = imageSenseFingerprint(latest) === imageSenseFingerprint({ ...latest, ...data }) && latest.imageUrl
-          ? { url: latest.imageUrl, sourceUrl: latest.imageSourceUrl, searchQuery: latest.imageSearchQuery } : null;
+          ? { url: latest.imageUrl, sourceUrl: latest.imageSourceUrl, searchQuery: latest.imageSearchQuery, ...(latest.imageMl ? { ml: latest.imageMl } : {}) } : null;
         const labels = replacement && !removeImage ? imageReplacementLabels({ ...latest, ...data }, previous, replacement) : [];
         let feedbackWord = { ...latest, ...data };
         for (const label of labels) feedbackWord.imageFeedback = updateImageFeedback(feedbackWord, label.action, label.image);
