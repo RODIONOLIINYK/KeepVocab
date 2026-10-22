@@ -29,6 +29,26 @@ test('Daily Session prioritizes scheduled vocabulary', () => {
   assert.deepEqual(new Set(session.exercises.map(exercise => exercise.wordId)), new Set(words.slice(0, 10).map(word => word.id)));
 });
 
+test('a large review backlog is served by urgency throughout each session, without shuffling', () => {
+  const words = Array.from({ length: 107 }, (_, index) => makeWord(index, {
+    nextReviewDate: new Date(NOW.getTime() - index * 86400000).toISOString()
+  }));
+  const expected = words.slice(-20).reverse().map(word => word.id);
+  const session = buildDailySession(words, { now: NOW });
+  assert.deepEqual(session.exercises.map(exercise => exercise.wordId), expected);
+  assert.deepEqual(buildDailySession([...words].reverse(), { now: NOW }).exercises, session.exercises);
+  assert.equal(session.exercises.length, 20);
+  assert.equal(session.dueWordCount, 107);
+});
+
+test('recently recalled FSRS words cannot fill or displace overdue reviews', () => {
+  const recent = Array.from({ length: 20 }, (_, index) => answer(makeWord(index), true, NOW));
+  const due = makeWord(100, { nextReviewDate: new Date(+NOW - 3 * 86400000).toISOString() });
+  const session = buildDailySession([...recent, due], { now: NOW });
+  assert.deepEqual(session.exercises.map(exercise => exercise.wordId), [due.id]);
+  assert.equal(session.dueWordCount, 1);
+});
+
 test('Daily Session includes weak vocabulary without letting it take over', () => {
   const words = Array.from({ length: 16 }, (_, index) => makeWord(index, index < 5 ? { mistakes: { incorrectAttempts: index + 1, consecutiveFailures: 1, recentFailures: [NOW.toISOString()] } } : {}));
   const session = buildDailySession(words, { now: NOW, targetSize: 12 });

@@ -45,8 +45,7 @@ export function selectPracticeWords(words, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
   const limit = Math.max(0, Math.round(options.limit ?? DEFAULT_SESSION_SIZE));
   return selectModeWords(words, {
-    mode: options.mode || 'practice', limit, now, rotateWithinFocus: true, includeResting: options.includeResting,
-    priorityShare: 0.5,
+    mode: options.mode || 'practice', limit, now, order: 'priority', includeResting: options.includeResting,
     settings: options.settings,
     priorityScore: (word, now) => practicePriorityScore(word, now, options.settings)
   });
@@ -82,6 +81,8 @@ export function buildDailySession(words, options = {}) {
   const targetSize = Math.max(1, Math.round(options.targetSize || DEFAULT_SESSION_SIZE));
   const weakOnly = options.kind === 'weak';
   const dueWords = getDueWords(words, now);
+  const dueWordCount = new Set(dueWords.filter(word => word?.id && word.word && word.definition && isWordReadyForPractice(word, now))
+    .map(word => String(word.word).trim().toLowerCase())).size;
   const pool = weakOnly ? (Array.isArray(words) ? words : []).filter(word => weaknessScore(word, now) > 0) : dueWords;
   const chosen = selectPracticeWords(pool, { now, limit: targetSize, mode: weakOnly ? 'weak' : 'practice', settings: options.settings });
   const spellings = new Set(chosen.map(word => String(word.word).trim().toLowerCase()));
@@ -109,7 +110,7 @@ export function buildDailySession(words, options = {}) {
   }, { due: 0, weak: 0, growth: 0 });
   return {
     id: `daily-${now.toISOString().slice(0, 10)}-${selected.length}`,
-    createdAt: now.toISOString(), exercises, wordCount: selected.length, composition,
+    createdAt: now.toISOString(), exercises, wordCount: selected.length, dueWordCount, composition,
     estimatedMinutes: exercises.length ? Math.max(1, Math.ceil(exercises.length * 32 / 60)) : 0
   };
 }

@@ -8,7 +8,7 @@ test('bulk word lists accept lines, commas, semicolons, bullets, and remove dupl
     ['resilient', 'meticulous', 'take into account', 'pragmatic']
   );
   assert.equal(MAX_BULK_WORDS, 100);
-  assert.equal(BULK_LOOKUP_DELAY_MS, 1000);
+  assert.equal(BULK_LOOKUP_DELAY_MS, 150);
   assert.equal(parseBulkWordList(Array.from({ length: 125 }, (_, index) => `word${index}`).join('\n')).length, 100);
 });
 
@@ -98,6 +98,8 @@ test('automatic images are selected sequentially and saved with attribution', as
   let maximumActive = 0;
   const seenExclusions = [];
   const enriched = await attachImagesSequentially(words, async (word, options) => {
+    assert.equal(options.limit, 6);
+    assert.equal(options.aiScenes, false);
     active += 1;
     maximumActive = Math.max(maximumActive, active);
     seenExclusions.push([...options.excludeUrls]);
@@ -115,6 +117,7 @@ test('automatic images are selected sequentially and saved with attribution', as
   assert.equal(maximumActive, 1);
   assert.equal(enriched.length, words.length);
   assert.equal(enriched[0].imageAttribution, 'Photographer for term0');
+  assert.equal(enriched[0].imageCandidates[0].url, enriched[0].imageUrl);
   assert.equal(enriched[11].imageSearchQuery, 'term11 meaning');
   assert.ok(seenExclusions[1].includes('https://images.example/term0.jpg'));
 });
@@ -149,4 +152,49 @@ test('manual bulk rows preserve a Ukrainian translation instead of copying the E
   const untranslated = bulkResultToWord({ term: 'bank', status: 'manual' }, 0, 'Land beside a river.');
   assert.equal(untranslated.translation, 'Land beside a river.');
   assert.equal(untranslated.translationLanguage, 'en');
+});
+
+test('skipping an in-flight bulk image search returns every original word immediately and ignores late provider results', async () => {
+  for (const lateFailure of [false, true]) {
+    const words = ['first', 'second', 'third'].map(word => ({ word, definition: `The meaning of ${word}.` }));
+    const before = structuredClone(words);
+    const controller = new AbortController();
+    const progress = [];
+    const searched = [];
+    let finishLate;
+    let failLate;
+    let activeSignal;
+    let reachedSecond;
+    const secondStarted = new Promise(resolve => { reachedSecond = resolve; });
+    const prepared = attachImagesSequentially(words, async (word, options) => {
+      searched.push(word.word);
+      activeSignal = options.signal;
+      if (word.word === 'first') return [{ url: 'https://example.test/first.jpg' }];
+      reachedSecond();
+      return new Promise((resolve, reject) => { finishLate = resolve; failLate = reject; });
+    }, { skipImagesSignal: controller.signal, onProgress: item => progress.push(item) });
+    await secondStarted;
+    controller.abort();
+    const saved = await prepared;
+    assert.deepEqual(saved, before, 'Skip discards even the first completed proposal');
+    assert.equal(activeSignal.aborted, true);
+    assert.deepEqual(searched, ['first', 'second']);
+    assert.equal(progress.length, 1);
+    if (lateFailure) failLate(new Error('Late network failure'));
+    else finishLate([{ url: 'https://example.test/too-late.jpg' }]);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.deepEqual(saved, before);
+    assert.deepEqual(words, before);
+    assert.equal(progress.length, 1);
+    assert.deepEqual(searched, ['first', 'second'], 'Skip never starts the third word');
+  }
+});
+
+test('skipping before imagery starts avoids all searches and drops stale candidate lists', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  const result = await attachImagesSequentially([{ word: 'kept', definition: 'A saved meaning.', imageUrl: 'https://example.test/original.jpg', imageCandidates: [{ url: 'https://example.test/proposal.jpg' }] }],
+    async () => assert.fail('Skipped images must not start any provider'), { skipImagesSignal: controller.signal });
+  assert.equal(result[0].imageUrl, 'https://example.test/original.jpg');
+  assert.equal(result[0].imageCandidates, undefined);
 });

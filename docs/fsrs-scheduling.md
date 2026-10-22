@@ -17,7 +17,9 @@ speed alone cannot earn Easy. Flashcard timing ends when the answer is revealed.
 Existing memory estimates and saved due dates migrate without inventing dated
 reviews. Newly reviewed meanings follow their FSRS due date rather than arbitrary
 daily top-ups. The daily goal remains a progress target: continue whenever more
-words need review. Last successful unaided recall remains visible in Library.
+words need review. Workouts show the most urgent reviews first; recent answers
+with future due dates rest until scheduled. Recall statistics stay saved without
+cluttering the Library cards.
 
 Settings → Review timing controls desired retention (80–97%, initially 90%),
 automatic fitting and manual fitting. Higher targets generally mean more reviews.

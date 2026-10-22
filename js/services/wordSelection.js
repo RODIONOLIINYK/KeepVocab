@@ -305,10 +305,25 @@ export function selectModeWords(words, options = {}) {
   const uniqueSpellings = new Set(valid.map(word => String(word.word).trim().toLowerCase())).size;
   const target = Math.min(limit, uniqueSpellings);
   const externalPriority = typeof options.priorityScore === 'function' ? options.priorityScore : null;
-  const priorityScore = word => (externalPriority ? Number(externalPriority(word, now)) || 0 : wordRecommendationScore(word, { now, settings }))
-    - recentSelectionPenalty(word, mode, now);
-  const priorityRanked = [...valid].sort((a, b) => priorityScore(b) - priorityScore(a)
-    || stableDailyTie(a, mode, now) - stableDailyTie(b, mode, now));
+  const scores = new Map(valid.map(word => [word, (externalPriority ? Number(externalPriority(word, now)) || 0 : wordRecommendationScore(word, { now, settings }))
+    - recentSelectionPenalty(word, mode, now)]));
+  const priorityScore = word => scores.get(word);
+  const dueAt = word => validTimestamp(word.nextReviewDate || word.createdAt);
+  const comparePriority = (a, b) => priorityScore(b) - priorityScore(a)
+    || dueAt(a) - dueAt(b)
+    || validTimestamp(normalizeWordPracticeStats(a).lastAnsweredAt) - validTimestamp(normalizeWordPracticeStats(b).lastAnsweredAt)
+    || String(a.id).localeCompare(String(b.id));
+  const priorityRanked = [...valid].sort(comparePriority);
+  const selectedIds = new Set();
+  const selectedSpellings = new Set();
+  if (options.order === 'priority') {
+    // Review queues use the whole urgency ranking, rather than a priority
+    // sample followed by rotation. Early learning / manual overrides follow
+    // actual due reviews, and the displayed order is the selection order.
+    priorityRanked.sort((a, b) => Number(dueAt(a) > now.getTime()) - Number(dueAt(b) > now.getTime())
+      || comparePriority(a, b));
+    return takeDistinct(priorityRanked, target, selectedIds, selectedSpellings);
+  }
   const focusPool = priorityRanked.filter(word => needsPriorityPractice(word, now));
   // A recently answered word may become due before an untouched one. Rank
   // both here so the due flag alone cannot defeat the selection cooldown.
@@ -316,8 +331,6 @@ export function selectModeWords(words, options = {}) {
   const priorityCount = target >= uniqueSpellings
     ? target
     : Math.min(target, Math.max(1, Math.round(target * Math.min(0.5, Math.max(0, Number(options.priorityShare ?? DEFAULT_PRIORITY_SHARE))))));
-  const selectedIds = new Set();
-  const selectedSpellings = new Set();
   const selected = takeDistinct(priorityPool, priorityCount, selectedIds, selectedSpellings);
 
   const focusIds = new Set(focusPool.map(word => word.id));
@@ -328,7 +341,7 @@ export function selectModeWords(words, options = {}) {
   if (selected.length < target) {
     selected.push(...takeDistinct([...valid].sort(rotationComparator(mode, now, priorityScore)), target - selected.length, selectedIds, selectedSpellings));
   }
-  return selected.sort((a, b) => stableDailyTie(a, `${mode}-order`, now) - stableDailyTie(b, `${mode}-order`, now));
+  return selected.sort(comparePriority);
 }
 
 export function applyModeSelectionToWord(word, options = {}) {

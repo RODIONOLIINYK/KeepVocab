@@ -1,6 +1,7 @@
 import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=18900';
 import { setupAddWordModal } from './components/AddWordModal.js?v=18900';
 import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18900';
+import { initializeImageLearning } from './services/imageLearning.js?v=18900';
 // Native application controller with monthly Google Drive backup.
 
 import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18900';
@@ -99,6 +100,28 @@ function initApp() {
   navigateTo(hash);
   renderConnectionState();
   updateDashboardDerivedState();
+  void initializeImageLearning({ requestDownload: requestImageModelDownload }).catch(error => showToast(error.message, 'error'));
+}
+
+function requestImageModelDownload({ downloadMB }) {
+  return new Promise(resolve => {
+    const opener = document.activeElement;
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop active';
+    backdrop.innerHTML = `<section class="modal-box" role="dialog" aria-modal="true" aria-labelledby="image-model-title" aria-describedby="image-model-description">
+      <h2 id="image-model-title">Smarter image suggestions</h2>
+      <p id="image-model-description">Download the optional local image model (about ${downloadMB} MB) to match photos to meanings and learn from your choices. It runs on this device without Gemini tokens.</p>
+      <p>You only need to download it once. If you skip this, we will not ask again; you can install it in Settings → Local image learning.</p>
+      <div class="engagement-modal-actions"><button type="button" class="status-pill offline" data-decline>Skip</button><button type="button" class="btn-green-solid" data-download>Download and enable</button></div>
+    </section>`;
+    const finish = accepted => { backdrop.remove(); if (opener?.isConnected) opener.focus(); resolve(accepted); };
+    backdrop.querySelector('[data-decline]').addEventListener('click', () => finish(false));
+    backdrop.querySelector('[data-download]').addEventListener('click', () => finish(true));
+    backdrop.addEventListener('click', event => { if (event.target === backdrop) finish(false); });
+    backdrop.addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); } });
+    document.body.appendChild(backdrop);
+    backdrop.querySelector('[data-decline]').focus();
+  });
 }
 
 function showToast(msg, type = 'success') {

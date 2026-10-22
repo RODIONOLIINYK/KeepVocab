@@ -2,7 +2,9 @@ import { imageSelectionPatch } from './imageSearch.js?v=18900';
 import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18900';
 
 export const MAX_BULK_WORDS = 100;
-export const BULK_LOOKUP_DELAY_MS = 1000;
+// Lookups remain sequential, with a short pacing gap instead of adding almost
+// two minutes of idle time to a 100-word import.
+export const BULK_LOOKUP_DELAY_MS = 150;
 
 export function parseBulkWordList(value, limit = MAX_BULK_WORDS) {
   const seen = new Set();
@@ -85,27 +87,58 @@ export function dedupeBulkResults(results) {
   });
 }
 
-export async function attachImagesSequentially(words, findImages, options = {}) {
-  const excluded = new Set((options.excludeUrls || []).filter(Boolean));
-  const onProgress = typeof options.onProgress === 'function' ? options.onProgress : () => {};
-  const enriched = [];
+const withoutImageCandidates = words => words.map(({ imageCandidates, ...word }) => word);
 
-  for (let index = 0; index < words.length; index += 1) {
-    const word = { ...words[index] };
-    try {
-      const [image] = await findImages(word, { ...options, excludeUrls: [...excluded], limit: 1 });
-      if (image?.url) {
-        Object.assign(word, imageSelectionPatch(image));
-        excluded.add(image.url);
-        if (image.sourceUrl) excluded.add(image.sourceUrl);
+// Skipping optional images completes immediately even if a provider ignores
+// cancellation. The rejected/late provider promise stays observed by the race.
+export async function withSkippableImages(words, prepareImages, signal) {
+  if (!signal) return prepareImages();
+  if (signal.aborted) return withoutImageCandidates(words);
+  let skip;
+  const skipped = new Promise(resolve => {
+    skip = () => resolve(withoutImageCandidates(words));
+    signal.addEventListener('abort', skip, { once: true });
+  });
+  try {
+    return await Promise.race([
+      Promise.resolve().then(() => signal.aborted ? withoutImageCandidates(words) : prepareImages()),
+      skipped
+    ]);
+  } finally { signal.removeEventListener('abort', skip); }
+}
+
+export async function attachImagesSequentially(words, findImages, options = {}) {
+  return withSkippableImages(words, async () => {
+    const excluded = new Set((options.excludeUrls || []).filter(Boolean));
+    const onProgress = typeof options.onProgress === 'function' ? options.onProgress : () => {};
+    const enriched = [];
+    const signal = options.skipImagesSignal && options.signal
+      ? AbortSignal.any([options.skipImagesSignal, options.signal]) : options.skipImagesSignal || options.signal;
+
+    for (let index = 0; index < words.length; index += 1) {
+      if (options.skipImagesSignal?.aborted) return withoutImageCandidates(words);
+      const word = { ...words[index] };
+      try {
+        const candidates = await findImages(word, { aiScenes: false, ...options, signal, excludeUrls: [...excluded], limit: 6 });
+        if (options.skipImagesSignal?.aborted) return withoutImageCandidates(words);
+        // Transient review data: the picker shows one fetched group immediately,
+        // instead of making the learner wait for another search after every skip.
+        word.imageCandidates = candidates;
+        const [image] = candidates;
+        if (image?.url) {
+          Object.assign(word, imageSelectionPatch(image));
+          excluded.add(image.url);
+          if (image.sourceUrl) excluded.add(image.sourceUrl);
+        }
+      } catch {
+        // Image search is optional: keep the fully defined word if a provider is unavailable.
+        if (options.skipImagesSignal?.aborted) return withoutImageCandidates(words);
       }
-    } catch {
-      // Image search is optional: keep the fully defined word if a provider is unavailable.
+      enriched.push(word);
+      onProgress({ completed: index + 1, total: words.length, word: word.word, found: Boolean(word.imageUrl) });
     }
-    enriched.push(word);
-    onProgress({ completed: index + 1, total: words.length, word: word.word, found: Boolean(word.imageUrl) });
-  }
-  return enriched;
+    return enriched;
+  }, options.skipImagesSignal);
 }
 
 export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '', manualTranslation = result?.manualTranslation || '') {

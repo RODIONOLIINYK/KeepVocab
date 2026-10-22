@@ -23,7 +23,7 @@ function savedImage(word) {
 }
 
 async function findAutomaticImages(word, excludeUrls) {
-  return findRelevantImages(word, { excludeUrls });
+  return findRelevantImages(word, { aiScenes: false, excludeUrls });
 }
 
 export async function renderVisualMatchMode(container, onNavigate) {
@@ -53,7 +53,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state visual-auto-loader"><i class="fa-solid fa-images fa-beat-fade"></i><h2>Preparing visual cues automatically</h2><p id="visual-auto-status">Matching images to the exact meanings in ${escapeHtml(notebook)}…</p><div class="review-progress visual-auto-progress"><span id="visual-auto-progress" style="width:0%"></span></div><span class="muted-label">You can replace any suggestion during the exercise.</span><button class="status-pill offline" id="visual-auto-exit">Back to dashboard</button></div></section>`;
     container.querySelector('#visual-auto-exit').addEventListener('click', () => go('dashboard', onNavigate));
 
-    const sceneWords = await prepareImageScenes(missing);
+    const sceneWords = await prepareImageScenes(missing, { aiScenes: false });
     if (!isCurrent()) return;
     for (const word of sceneWords) {
       const latest = driveSync.getWords().find(item => item.id === word.id);
@@ -112,7 +112,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
     const query = searchOverride || word.imageSearchQuery || '';
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images fa-beat-fade"></i><h2>Finding images for “${escapeHtml(word.word)}”</h2><p>${escapeHtml(word.partOfSpeech || 'unknown')}: ${escapeHtml(word.definition)}</p></div></section>`;
     const excludeUrls = new Set(imageUrlsForWords(driveSync.getWords()));
-    const candidates = await findRelevantImages(word, { extraQueries: query ? [query] : [], excludeUrls });
+    const candidates = await findRelevantImages(word, { aiScenes: false, extraQueries: query ? [query] : [], excludeUrls });
     if (!isCurrent()) return;
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card image-picker-shell">
       <div class="practice-topline"><button class="status-pill offline" id="visual-setup-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${forcedWord ? 'Replace visual cue' : `Visual setup ${position + 1} of ${missing.length}`}</span><strong>${prepared.length} selected</strong></div>

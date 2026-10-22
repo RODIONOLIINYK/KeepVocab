@@ -153,3 +153,35 @@ test('optional hard-case vision sends at most four verified small thumbnails, ig
   await rerankImagesWithGemini(word, candidates, options);
   assert.equal(imageCalls, 4); assert.equal(visionCalls, 1);
 });
+
+test('normal picker preparation and search use no paid scene generation when disabled, even with a Gemini key', async () => {
+  const saved = storage();
+  const word = sense('no-paid-scenes');
+  let sceneCalls = 0;
+  const fetchImpl = async (url) => {
+    if (String(url).includes('generativelanguage.googleapis.com')) { sceneCalls++; assert.fail('Normal image searches must not call Gemini'); }
+    return { ok: true, json: async () => ({ results: [] }) };
+  };
+  const [prepared] = await prepareImageScenes([word], { aiScenes: false, storage: saved, fetchImpl });
+  assert.equal(prepared.imageScenes, undefined);
+  await findRelevantImages(prepared, { aiScenes: false, storage: saved, fetchImpl, validateImages: false });
+  assert.equal(sceneCalls, 0);
+});
+
+test('skipping images aborts provider requests and an already-cancelled search makes no requests', async () => {
+  const controller = new AbortController();
+  const signals = [];
+  const pending = findRelevantImages(sense('cancel-providers'), {
+    aiScenes: false, signal: controller.signal,
+    extraQueries: ['cancel provider photo probe'], onlyExtraQueries: true,
+    fetchImpl: async (_url, options) => {
+      signals.push(options.signal);
+      return new Promise((_resolve, reject) => options.signal.addEventListener('abort', () => reject(new DOMException('Cancelled', 'AbortError')), { once: true }));
+    }
+  });
+  controller.abort();
+  assert.deepEqual(await pending, []);
+  assert.ok(signals.length > 0);
+  assert.ok(signals.every(signal => signal.aborted));
+  assert.deepEqual(await findRelevantImages(sense('already-cancelled'), { signal: controller.signal, fetchImpl: () => assert.fail('No cancelled network work') }), []);
+});

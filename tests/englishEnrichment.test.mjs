@@ -54,6 +54,13 @@ test('English dictionary misses use Gemini through the shared entry pipeline and
   assert.equal(options.calls.filter(url => url.includes('generativelanguage')).length, 1);
 });
 
+test('a Gemini entry is not charged for a second clarity pass before it is shown', async () => {
+  const options = fixture({ ...valid, senses: [{ ...valid.senses[0], definition: 'The state or quality of being at ease in company.' }] });
+  const entry = await fetchWordEntry('break the ice', 'english', options);
+  assert.equal(entry.aiGenerated, true);
+  assert.equal(options.calls.filter(url => url.includes('generativelanguage')).length, 1);
+});
+
 test('AI fallback groups nearly identical proposed senses with exact source evidence', async () => {
   const first = { ...valid.senses[0], definition: 'Make people feel comfortable together.' };
   const second = { ...first, definition: 'Make people feel comfortable together!' };

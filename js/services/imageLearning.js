@@ -1,7 +1,7 @@
 import { driveSync } from './driveSync.js?v=18900';
 import { prepareImageThumbnails } from './imageThumbnails.js?v=18900';
 import { base64ToBytes } from '../utils/base64.js';
-import { CLIP_TAG, CLIP_CACHE, VECTOR_DB, MODEL_DOWNLOAD_MB } from '../ml/clipConfig.js';
+import { CLIP_TAG, CLIP_CACHE, CLIP_DOWNLOAD_URLS, VECTOR_DB, MODEL_DOWNLOAD_MB } from '../ml/clipConfig.js';
 import { cosine, preferenceFeatures, encodeFeatures, decodeFeatures, mergeImageLearning, updatePreferenceModel, preferenceProbability } from './imagePreferences.js';
 
 const CONFIG_KEY = 'keepvocab_image_learning_device_v1';
@@ -13,12 +13,55 @@ let idleTimer;
 let phase = 'off';
 let message = '';
 let backend = '';
+let installed = false;
 const pending = new Map();
 const listeners = new Set();
 function emit(detail = {}) { for (const listener of listeners) listener({ ...getImageLearningStatus(), ...detail }); }
 export function subscribeImageLearning(listener) { listeners.add(listener); return () => listeners.delete(listener); }
-export function imageLearningEnabled(storage = globalThis.localStorage) {
-  try { return JSON.parse(storage?.getItem(CONFIG_KEY) || '{}').enabled === true; } catch { return false; }
+function deviceConfig(storage = globalThis.localStorage) {
+  try { return JSON.parse(storage?.getItem(CONFIG_KEY) || '{}') || {}; } catch { return {}; }
+}
+function saveDeviceConfig(patch, storage = globalThis.localStorage) { storage?.setItem(CONFIG_KEY, JSON.stringify({ ...deviceConfig(storage), ...patch })); }
+export function imageLearningEnabled(storage = globalThis.localStorage) { return deviceConfig(storage).enabled === true; }
+function downloadConsent(storage = globalThis.localStorage) {
+  const config = deviceConfig(storage);
+  // Before consent was explicit, the only way to enable was Settings' download button.
+  return config.downloadConsent === 'accepted' || (config.downloadConsent === undefined && config.enabled === true);
+}
+export async function hasDownloadedImageModel(cacheStorage = globalThis.caches) {
+  try {
+    if (!cacheStorage || !(await cacheStorage.keys()).includes(CLIP_CACHE)) return false;
+    const cache = await cacheStorage.open(CLIP_CACHE);
+    const files = await Promise.all(CLIP_DOWNLOAD_URLS.map(url => cache.match(url)));
+    return files.every(response => response?.ok && response.headers?.get('content-length') !== '0');
+  } catch { return false; }
+}
+// Check cached files without starting the worker or making a network request.
+export async function initializeImageLearning({ requestDownload, storage = globalThis.localStorage, cacheStorage = globalThis.caches, enable = enableImageLearning } = {}) {
+  installed = await hasDownloadedImageModel(cacheStorage);
+  const config = deviceConfig(storage);
+  if (installed) {
+    if (config.enabled !== false) {
+      saveDeviceConfig({ enabled: true, prompted: true, downloadConsent: downloadConsent(storage) ? 'accepted' : 'not-requested' }, storage);
+      phase = 'idle'; message = 'Installed. Image suggestions will be scored locally.';
+    }
+    emit();
+    return { installed: true, prompted: false, enabled: imageLearningEnabled(storage) };
+  }
+  if (config.enabled === true && downloadConsent(storage)) {
+    saveDeviceConfig({ prompted: true, downloadConsent: 'accepted' }, storage);
+    return { installed: false, prompted: false, enabled: true };
+  }
+  if (config.prompted || typeof config.enabled === 'boolean' || !requestDownload) return { installed: false, prompted: false, enabled: false };
+  // Persist before showing the prompt so closing the app does not make it reappear.
+  saveDeviceConfig({ enabled: false, prompted: true, downloadConsent: 'declined' }, storage);
+  const accepted = await requestDownload({ downloadMB: MODEL_DOWNLOAD_MB });
+  if (accepted) {
+    saveDeviceConfig({ enabled: true, downloadConsent: 'accepted' }, storage);
+    await enable({ allowMetered: true, storage });
+  }
+  emit();
+  return { installed, prompted: true, enabled: imageLearningEnabled(storage) };
 }
 function savedModel() {
   try { const model = JSON.parse(globalThis.localStorage?.getItem(MODEL_KEY) || 'null');
@@ -36,7 +79,7 @@ function trainedModel() {
 export function getImageLearningStatus() {
   const data = dataset();
   const model = savedModel();
-  return { enabled: imageLearningEnabled(), phase, message, backend, downloadMB: MODEL_DOWNLOAD_MB,
+  return { enabled: imageLearningEnabled(), installed, phase, message, backend, downloadMB: MODEL_DOWNLOAD_MB,
     labels: data.records.length, revision: model?.revision || 0, trainedLabels: model?.trainedLabels || 0,
     queued: data.records.filter(record => !model?.trainedRecordIds?.includes(`${record.id}|${record.updatedAt}|${record.label}|${record.features}`)).length,
     changedParameters: model?.changedParameters || 0, deltaL2: model?.deltaL2 || 0,
@@ -47,7 +90,7 @@ function stopWorker(reason = 'The local image model was stopped.') {
   for (const item of pending.values()) { clearTimeout(item.timer); item.cleanup();item.reject(new Error(reason)); }
   pending.clear();
 }
-function rpc(type, payload = {}, { signal, allowMetered = false } = {}) {
+function rpc(type, payload = {}, { signal, allowMetered = false, storage } = {}) {
   if (typeof Worker === 'undefined') return Promise.reject(new Error('This browser cannot run the local image model.'));
   if (signal?.aborted) return Promise.reject(new Error('Image scoring was cancelled.'));
   clearTimeout(idleTimer);
@@ -69,9 +112,9 @@ function rpc(type, payload = {}, { signal, allowMetered = false } = {}) {
     const connection = globalThis.navigator?.connection;
     pending.set(id, { resolve, reject, timer, cleanup: () => signal?.removeEventListener('abort', abort) });
     signal?.addEventListener('abort', abort, { once: true });
-    worker.postMessage({ id, type, payload, device: preferCPU ? 'wasm' : 'auto', allowDownloads: allowMetered || !(connection?.saveData || connection?.type === 'cellular') });
+    worker.postMessage({ id, type, payload, device: preferCPU ? 'wasm' : 'auto', allowDownloads: downloadConsent(storage) && (allowMetered || !(connection?.saveData || connection?.type === 'cellular')) });
   }).catch(error => {
-    if (error.backendFailure && !preferCPU) { preferCPU = true; stopWorker('Switching to CPU inference.'); return rpc(type, payload, { signal, allowMetered }); }
+    if (error.backendFailure && !preferCPU) { preferCPU = true; stopWorker('Switching to CPU inference.'); return rpc(type, payload, { signal, allowMetered, storage }); }
     throw error;
   });
 }
@@ -80,17 +123,18 @@ export async function enableImageLearning(options = {}) {
     if (!['auto', 'wasm'].includes(options.device)) throw new Error('Unsupported inference backend.');
     stopWorker(); preferCPU = options.device === 'wasm';
   }
-  globalThis.localStorage?.setItem(CONFIG_KEY, JSON.stringify({ enabled: true }));
-  phase = 'loading';message = 'Downloading the local image model…';emit();
-  try { const result = await rpc('initialize', {}, options);trainedModel();phase = 'ready';message = 'Local image scoring is ready.';backend = result.backend;emit();return getImageLearningStatus(); }
+  saveDeviceConfig({ enabled: true, prompted: true, downloadConsent: options.download === false && !downloadConsent(options.storage) ? 'not-requested' : 'accepted' }, options.storage);
+  phase = 'loading';message = installed ? 'Loading the installed image model…' : 'Downloading the local image model…';emit();
+  try { const result = await rpc('initialize', {}, options);installed = true;trainedModel();phase = 'ready';message = 'Local image scoring is ready.';backend = result.backend;emit();return getImageLearningStatus(); }
   catch (error) { phase = 'error';message = error.message;emit();throw error; }
 }
 export function disableImageLearning() {
-  globalThis.localStorage?.setItem(CONFIG_KEY, JSON.stringify({ enabled: false }));stopWorker();phase = 'off';message = 'Local image scoring is off.';emit();
+  saveDeviceConfig({ enabled: false, prompted: true });stopWorker();phase = 'off';message = 'Local image scoring is off. You can enable it again in Settings.';emit();
 }
 export async function clearImageModelDownloads() {
   disableImageLearning();
   await globalThis.caches?.delete(CLIP_CACHE);
+  installed = false; saveDeviceConfig({ downloadConsent: 'declined' });emit();
   if (globalThis.indexedDB) await new Promise((resolve, reject) => {
     const request = indexedDB.deleteDatabase(VECTOR_DB);
     request.onsuccess = resolve;request.onerror = () => reject(new Error('Could not clear image vectors.'));
@@ -146,9 +190,11 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     const prompt = prompts(word, options);
     const texts = await rpc('texts', { texts: prompt.texts }, options);
     const items = [];
-    for (let offset = 0; offset < Math.min(40, candidates.length); offset += 4) {
+    // A six-photo chooser needs a small shortlist, not forty serial inferences.
+    const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(40, Number(options.localCandidateLimit) || 12)));
+    for (let offset = 0; offset < scoringLimit; offset += 4) {
       if (options.signal?.aborted || !imageLearningEnabled()) return candidates;
-      const thumbnails = await prepareImageThumbnails(candidates.slice(offset, offset + 4), options);
+      const thumbnails = await prepareImageThumbnails(candidates.slice(offset, Math.min(offset + 4, scoringLimit)), options);
       for (const thumbnail of thumbnails) {
         const vector = await rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }) }, options);
         items.push({ candidate: thumbnail.candidate, vector, semantic: semanticScores(vector, texts, prompt.sceneCount, prompt.alternativeCount) });
@@ -160,7 +206,7 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     const scoredImages = new Set(items.map(item => item.candidate));
     phase = 'ready';message = `${items.length} image suggestions scored locally.`;emit();
     return [...scored.map(item => ({ ...item.candidate, ml: { model: CLIP_TAG, sense: fingerprint(word), features: encodeFeatures(item.features),
-      selected: item.semantic.selected, margin: item.semantic.margin, unwanted: item.semantic.unwanted, preference: item.probability, score: item.score } })),
+      selected: item.semantic.selected, contrast: item.semantic.contrast, margin: item.semantic.margin, unwanted: item.semantic.unwanted, preference: item.probability, trainedLabels: model?.trainedLabels || 0, score: item.score } })),
       ...candidates.filter(item => !scoredImages.has(item))];
   } catch (error) { phase = 'error';message = `${error.message} Metadata search is still available.`;emit();return candidates; }
 }

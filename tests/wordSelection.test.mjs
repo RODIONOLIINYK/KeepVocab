@@ -120,10 +120,28 @@ test('independent modes and due-word Practice share fair rotation', async () => 
   }
   const practice = await readFile(new URL('../js/components/PracticeModes.js', import.meta.url), 'utf8');
   const daily = await readFile(new URL('../js/services/dailySession.js', import.meta.url), 'utf8');
-  const library = await readFile(new URL('../js/components/LibraryView.js', import.meta.url), 'utf8');
   assert.match(practice, /selectPracticeWords/);
   assert.match(daily, /selectModeWords/);
-  assert.match(library, /Recalled.*Missed/s);
+});
+
+test('priority queues keep urgency for every position, including beyond the old focus share', () => {
+  const words = Array.from({ length: 30 }, (_, index) => makeWord(index));
+  const options = { now: START, order: 'priority', limit: 10,
+    priorityScore: word => Number(word.id.split('-')[1]) };
+  const expected = words.slice(20).reverse().map(word => word.id);
+  assert.deepEqual(selectModeWords(words, options).map(word => word.id), expected);
+  assert.deepEqual(selectModeWords([...words].reverse(), options).map(word => word.id), expected);
+});
+
+test('priority queues put due reviews ahead of optional early learning even when early learning has a higher score', () => {
+  const due = makeWord('due');
+  const early = makeWord('early', {
+    nextReviewDate: new Date(+START + DAY_MS).toISOString(), srs: { version: 3 },
+    practiceStats: { version: 2, attempts: 1, recalled: 1, successfulRecallDays: 1,
+      lastAnswerCorrect: true, lastAnsweredAt: new Date(+START - DAY_MS).toISOString() }
+  });
+  assert.deepEqual(selectModeWords([early, due], { now: START, order: 'priority', limit: 2,
+    priorityScore: word => word.id === early.id ? 1000 : 0 }).map(word => word.id), [due.id, early.id]);
 });
 
 test('Practice typing and visual results update the same selection mode statistics', () => {

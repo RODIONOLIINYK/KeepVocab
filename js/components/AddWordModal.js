@@ -1,9 +1,11 @@
 import { driveSync } from '../services/driveSync.js?v=18900';
-import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary } from '../services/wordEntry.js?v=18900';
+import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary, prepareBulkLearnerExplanations } from '../services/wordEntry.js?v=18900';
 import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18900';
 import { mountImageReview } from './ImageReview.js?v=18900';
 import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18900';
 import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18900';
+import { canAutoSelectImage } from '../services/imageChoicePolicy.js';
+import { recordImagePreference } from '../services/imageLearning.js?v=18900';
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
   <div class="modal-backdrop" id="add-word-modal">
@@ -46,7 +48,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
             <label class="wide">Meaning in plain English<textarea id="add-word-definition" lang="en" placeholder="Describe the exact intended meaning" required></textarea></label>
             <label class="wide">When to use it (optional)<input id="add-word-usage-note" type="text" lang="en" placeholder="A useful situation, grammar pattern, or usage note"></label>
             <label class="wide" id="add-word-translation-field" hidden>Ukrainian translation<textarea id="add-word-translation" lang="uk" placeholder="Added automatically when available; you can also enter it manually"></textarea></label>
-            <label class="wide">English example<textarea id="add-word-example" lang="en" placeholder="A sentence that makes this meaning clear"></textarea></label>
+            <label class="wide">English example (optional)<textarea id="add-word-example" lang="en" placeholder="Use a dictionary example or add one later"></textarea></label>
           </div>
           <p id="add-word-form-status" class="form-message" role="status" aria-live="polite"></p>
         </div>
@@ -62,7 +64,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
         <label for="bulk-word-input"><strong>Paste up to 100 words</strong><span>Use one word per line, or separate words with commas or semicolons.</span></label>
         <textarea id="bulk-word-input" rows="6" maxlength="10000" placeholder="resilient&#10;meticulous&#10;take into account"></textarea>
         <div class="bulk-add-toolbar"><span id="bulk-word-count">0 words</span><button type="button" class="btn-green-solid" id="prepare-bulk-words"><i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings</button></div>
-        <p class="sense-helper">Words are looked up one at a time. KeepVocab checks close spellings, lets you review every meaning, and automatically chooses a distinct image when you save.</p>
+        <p class="sense-helper">Review the meanings, then save. Examples are optional. Image suggestions appear together so you can choose quickly or save without an image.</p>
         <div id="bulk-import-progress" class="bulk-import-progress" hidden>
           <div class="bulk-progress-copy"><span><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> <strong id="bulk-progress-phase">Finding meanings</strong></span><span id="bulk-progress-eta">Estimating time…</span></div>
           <div class="bulk-progress-track" id="bulk-progress-track" role="progressbar" aria-label="Bulk import progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="bulk-progress-fill"></span></div>
@@ -70,6 +72,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
         </div>
         <div id="bulk-word-results" class="bulk-word-results" aria-live="polite"></div>
         <p id="bulk-word-status" class="form-message" role="status" aria-live="polite"></p>
+        <button type="button" class="text-action" id="skip-bulk-images" hidden>Save without waiting for images</button>
         <button type="button" class="bulk-retry-missing" id="retry-bulk-missing" hidden><i class="fa-solid fa-rotate-right"></i> Retry missing meanings</button>
         <div class="sense-modal-actions bulk-actions"><button type="button" class="status-pill offline" id="btn-cancel-bulk-add">Cancel</button><button type="button" class="btn-green-solid" id="btn-save-bulk-words" disabled><i class="fa-solid fa-bookmark"></i> Save word list</button></div>
       </div>
@@ -84,6 +87,15 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   let generation = 0;
   let imageReviewController = null;
   let cancelImageReview = null;
+  let bulkImageController = null;
+  let pendingImageFeedback = [];
+  const saveImageFeedback = () => {
+    const feedback = pendingImageFeedback;
+    pendingImageFeedback = [];
+    for (const label of feedback) {
+      void Promise.resolve().then(() => recordImagePreference(label.word, label.action, label.image)).catch(() => {});
+    }
+  };
   const beginOperation = () => {
     const revision = generation;
     const courseId = activeCourseId;
@@ -91,7 +103,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     return {
       courseId, translationLanguage,
       isCurrent: () => revision === generation && courseId === driveSync.getActiveCourseId() && translationLanguage === getTranslationLanguage(),
-      lookup: term => fetchWordEntry(term, courseId, { translationLanguage }),
+      lookup: (term, options = {}) => fetchWordEntry(term, courseId, { ...options, translationLanguage }),
     };
   };
   const modal = document.getElementById('add-word-modal');
@@ -130,6 +142,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   const bulkStatus = document.getElementById('bulk-word-status');
   const bulkSave = document.getElementById('btn-save-bulk-words');
   const bulkRetryMissing = document.getElementById('retry-bulk-missing');
+  const bulkSkipImages = document.getElementById('skip-bulk-images');
   const bulkProgress = document.getElementById('bulk-import-progress');
   const bulkProgressPhase = document.getElementById('bulk-progress-phase');
   const bulkProgressEta = document.getElementById('bulk-progress-eta');
@@ -169,6 +182,10 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   };
 
   const resetAsyncControls = () => {
+    bulkImageController?.abort();
+    bulkImageController = null;
+    bulkSkipImages.hidden = true;
+    bulkSkipImages.disabled = false;
     btnFetch.disabled = false;
     btnAiFetch.disabled = false;
     btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
@@ -310,18 +327,22 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       }
 
       const exampleLabel = document.createElement('label');
-      exampleLabel.textContent = 'Modern example using this meaning';
+      exampleLabel.textContent = 'English example (optional)';
       const exampleInput = document.createElement('textarea');
       exampleInput.rows = 2;
       const selectedSense = () => result.data?.senses?.[result.selectedSenseIndex || 0] || result.data;
       exampleInput.value = result.status === 'ready' ? exampleForLearning({ ...selectedSense(), word: result.data?.word || result.term }) : result.manualExample || '';
-      exampleInput.placeholder = `Write a natural sentence using ${result.data?.word || result.term}`;
+      exampleInput.placeholder = 'Dictionary examples are used when available; you can leave this blank.';
       exampleInput.addEventListener('input', () => {
         if (result.status === 'ready' && selectedSense()) selectedSense().example = exampleInput.value;
         else result.manualExample = exampleInput.value;
       });
       exampleLabel.appendChild(exampleInput);
-      row.appendChild(exampleLabel);
+      const exampleDetails = document.createElement('details');
+      const exampleSummary = document.createElement('summary');
+      exampleSummary.textContent = exampleInput.value ? 'Example (optional)' : 'Add an example (optional)';
+      exampleDetails.append(exampleSummary, exampleLabel);
+      row.appendChild(exampleDetails);
 
       bulkResultsList.appendChild(row);
     });
@@ -347,6 +368,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     imageReviewController = null;
     cancelImageReview?.();
     cancelImageReview = null;
+    pendingImageFeedback = [];
     imageReviewRoot.hidden = true;
     modal.classList.remove('active');
     preview.style.display = 'none';
@@ -372,30 +394,41 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
 
   const closeModal = () => { resetModal(); onClose(); };
 
-  const reviewPreparedImages = words => new Promise(resolve => {
-    const wasBulk = !bulkPanel.hidden;
-    const tabs = modal.querySelector('.add-mode-tabs');
-    singlePanel.hidden = true;
-    bulkPanel.hidden = true;
-    tabs.hidden = true;
-    imageReviewRoot.hidden = false;
-    const finish = result => {
-      imageReviewController?.destroy();
-      imageReviewController = null;
-      cancelImageReview = null;
-      imageReviewRoot.hidden = true;
-      tabs.hidden = false;
-      singlePanel.hidden = wasBulk;
-      bulkPanel.hidden = !wasBulk;
-      resolve(result);
-    };
-    cancelImageReview = () => finish(null);
-    imageReviewController = mountImageReview(imageReviewRoot, words, {
-      onApply: finish, onCancel: () => finish(null),
-      originalWords: words.map(word => ({ ...word, imageUrl: '', imageSourceUrl: '', imageAttribution: '', imageLicense: '', imageSearchQuery: '' })),
-      excludeUrls: driveSync.getWords().flatMap(word => [word.imageUrl, word.imageSourceUrl]).filter(Boolean)
+  const reviewPreparedImages = words => {
+    pendingImageFeedback = [];
+    if (words.every(word => !word.imageUrl || canAutoSelectImage(word.imageCandidates))) {
+      return Promise.resolve(words.map(({ imageCandidates, ...word }) => word));
+    }
+    return new Promise(resolve => {
+      const wasBulk = !bulkPanel.hidden;
+      const tabs = modal.querySelector('.add-mode-tabs');
+      singlePanel.hidden = true;
+      bulkPanel.hidden = true;
+      tabs.hidden = true;
+      imageReviewRoot.hidden = false;
+      const finish = result => {
+        imageReviewController?.destroy();
+        imageReviewController = null;
+        cancelImageReview = null;
+        imageReviewRoot.hidden = true;
+        tabs.hidden = false;
+        singlePanel.hidden = wasBulk;
+        bulkPanel.hidden = !wasBulk;
+        if (!result) pendingImageFeedback = [];
+        resolve(result);
+      };
+      cancelImageReview = () => finish(null);
+      imageReviewController = mountImageReview(imageReviewRoot, words, {
+        onApply: (result, { feedback = [] } = {}) => { pendingImageFeedback = feedback; finish(result); },
+        onCancel: () => finish(null),
+        // Feedback is committed only after the corresponding library save succeeds.
+        onFeedback: () => {},
+        allowSkipPending: true,
+        originalWords: words.map(word => ({ ...word, imageUrl: '', imageSourceUrl: '', imageAttribution: '', imageLicense: '', imageSearchQuery: '' })),
+        excludeUrls: driveSync.getWords().flatMap(word => [word.imageUrl, word.imageSourceUrl]).filter(Boolean)
+      });
     });
-  });
+  };
 
   const syncCourse = () => {
     const nextCourseId = driveSync.getActiveCourseId();
@@ -518,7 +551,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     selectedSenseIds = new Set(focusedSenseId ? [focusedSenseId] : []);
     renderSenseOptions();
     loadFocusedDraft();
-    formStatus.textContent = senses.some(sense => sense.needsExample) ? 'Some meanings still need a modern example. Add one below before saving.' : 'Choose the meanings you use. Overlapping dictionary entries are grouped, and each meaning has its own example.';
+    formStatus.textContent = 'Choose the meanings you use. Dictionary examples are included when available; you can save without an example.';
   };
 
   btnOpen?.addEventListener('click', openModal);
@@ -551,14 +584,14 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       bulkStatus.textContent = `This list has ${allTerms.length} words. Keep the first ${MAX_BULK_WORDS} or split it into smaller batches.`;
       return;
     }
-    const { isCurrent, lookup } = beginOperation();
+    const { isCurrent, lookup, translationLanguage } = beginOperation();
     bulkPrepare.disabled = true;
     bulkPrepare.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finding meanings…';
     bulkStatus.textContent = `Looking up ${allTerms.length} word${allTerms.length === 1 ? '' : 's'}…`;
     const lookupStartedAt = Date.now();
     updateBulkProgress({ completed: 0, total: allTerms.length, phase: 'Finding meanings', startedAt: lookupStartedAt });
     try {
-      const lookedUp = await lookupBulkWords(allTerms, lookup, {
+      const lookedUp = await lookupBulkWords(allTerms, term => lookup(term, { learnerExplanations: false }), {
         delayMs: BULK_LOOKUP_DELAY_MS,
         retries: 2,
         retryDelayMs: 750,
@@ -569,14 +602,17 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         }
       });
       if (!isCurrent()) return;
-      bulkResults = dedupeBulkResults(lookedUp);
+      bulkStatus.textContent = 'Preparing clear meanings…';
+      const explained = await prepareBulkLearnerExplanations(lookedUp, { translationLanguage });
+      if (!isCurrent()) return;
+      bulkResults = dedupeBulkResults(explained);
       renderBulkResults();
       const manualCount = bulkResults.filter(result => result.status === 'manual').length;
       const mergedCount = lookedUp.length - bulkResults.length;
       updateBulkProgress({ completed: lookedUp.length, total: lookedUp.length, phase: 'Meanings ready', startedAt: lookupStartedAt, finished: true });
       bulkStatus.textContent = manualCount
         ? `${bulkResults.length - manualCount} ready; ${manualCount} need${manualCount === 1 ? 's' : ''} a manual definition.`
-        : `${bulkResults.length} words ready${mergedCount ? `; ${mergedCount} corrected duplicate${mergedCount === 1 ? ' was' : 's were'} merged` : ''}. Review each meaning, then save; images are chosen automatically.`;
+        : `${bulkResults.length} words ready${mergedCount ? `; ${mergedCount} corrected duplicate${mergedCount === 1 ? ' was' : 's were'} merged` : ''}. Review the meanings, then save. Examples are optional.`;
     } catch (error) {
       if (!isCurrent()) return;
       bulkStatus.textContent = error.message || 'Some meanings could not be loaded. Try again.';
@@ -590,14 +626,14 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   bulkRetryMissing.addEventListener('click', async () => {
     const missingCount = bulkResults.filter(result => result.status !== 'ready').length;
     if (!missingCount) return;
-    const { isCurrent, lookup } = beginOperation();
+    const { isCurrent, lookup, translationLanguage } = beginOperation();
     const retryStartedAt = Date.now();
     bulkRetryMissing.disabled = true;
     bulkPrepare.disabled = true;
     updateBulkProgress({ completed: 0, total: missingCount, phase: 'Retrying missing meanings', startedAt: retryStartedAt });
     bulkStatus.textContent = `Retrying only ${missingCount} missing word${missingCount === 1 ? '' : 's'}…`;
     try {
-      const retried = await retryMissingBulkWords(bulkResults, lookup, {
+      const retried = await retryMissingBulkWords(bulkResults, term => lookup(term, { learnerExplanations: false }), {
         delayMs: BULK_LOOKUP_DELAY_MS,
         retries: 2,
         retryDelayMs: 1000,
@@ -608,7 +644,9 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         }
       });
       if (!isCurrent()) return;
-      bulkResults = dedupeBulkResults(retried);
+      const explained = await prepareBulkLearnerExplanations(retried, { translationLanguage });
+      if (!isCurrent()) return;
+      bulkResults = dedupeBulkResults(explained);
       renderBulkResults();
       const remaining = bulkResults.filter(result => result.status !== 'ready').length;
       updateBulkProgress({ completed: missingCount, total: missingCount, phase: 'Retry finished', startedAt: retryStartedAt, finished: true });
@@ -634,18 +672,27 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     const { isCurrent, courseId, translationLanguage } = beginOperation();
     const originalButton = bulkSave.innerHTML;
     bulkSave.disabled = true;
+    const imageController = new AbortController();
+    bulkImageController = imageController;
+    bulkSkipImages.hidden = false;
+    bulkSkipImages.disabled = false;
     const imageStartedAt = Date.now();
     updateBulkProgress({ completed: 0, total: items.length, phase: 'Choosing images', startedAt: imageStartedAt });
     try {
       const enrichedItems = await prepareWordsForLibrary(items, {
-        courseId, translationLanguage, requireExamples: true, existingWords: driveSync.getWords(),
+        courseId, translationLanguage, existingWords: driveSync.getWords(),
+        skipImagesSignal: imageController.signal,
         onProgress: ({ completed, total, word }) => {
-          if (!isCurrent()) return;
+          if (!isCurrent() || imageController.signal.aborted) return;
           bulkStatus.textContent = `Choosing image ${completed} of ${total}: ${word}`;
           bulkSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Choosing images ${completed}/${total}`;
           updateBulkProgress({ completed, total, phase: 'Choosing images', startedAt: imageStartedAt });
         }
       });
+      if (bulkImageController === imageController) {
+        bulkImageController = null;
+        bulkSkipImages.hidden = true;
+      }
       if (!isCurrent()) return;
       const reviewedItems = await reviewPreparedImages(enrichedItems);
       if (!isCurrent()) return;
@@ -654,17 +701,29 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         return;
       }
       const saved = driveSync.addWords(reviewedItems);
+      saveImageFeedback();
       driveSync.setActiveNotebook(saved[0].notebook);
       closeModal();
       showToast(`Saved ${saved.length} words to ${saved[0].notebook}.`);
       onSaved(saved);
     } catch (error) {
       if (!isCurrent()) return;
+      pendingImageFeedback = [];
       bulkStatus.textContent = error.message;
       showToast(error.message, 'error');
       bulkSave.disabled = false;
       bulkSave.innerHTML = originalButton;
+    } finally {
+      if (bulkImageController === imageController) {
+        bulkImageController = null;
+        bulkSkipImages.hidden = true;
+      }
     }
+  });
+  bulkSkipImages.addEventListener('click', () => {
+    bulkSkipImages.disabled = true;
+    bulkStatus.textContent = 'Saving words without image suggestions…';
+    bulkImageController?.abort();
   });
   input.addEventListener('input', () => {
     generation += 1;
@@ -754,7 +813,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     btnSave.disabled = true;
     try {
       const enrichedItems = await prepareWordsForLibrary(items, {
-        courseId, translationLanguage, requireExamples: true, existingWords: driveSync.getWords(),
+        courseId, translationLanguage, existingWords: driveSync.getWords(),
         onProgress: ({ completed, total }) => {
           if (!isCurrent()) return;
           formStatus.textContent = `Choosing image ${completed} of ${total}…`;
@@ -769,12 +828,14 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         return;
       }
       const saved = driveSync.addWords(reviewedItems);
+      saveImageFeedback();
       driveSync.setActiveNotebook(saved[0].notebook);
       closeModal();
       showToast(`Saved ${saved.length} meaning${saved.length === 1 ? '' : 's'} of “${saved[0].word}” to ${saved[0].notebook}.`);
       onSaved(saved);
     } catch (error) {
       if (!isCurrent()) return;
+      pendingImageFeedback = [];
       showToast(error.message, 'error');
       btnSave.disabled = false;
       btnSave.innerHTML = originalButton;

@@ -1,5 +1,5 @@
 import { AutoTokenizer, AutoProcessor, CLIPTextModelWithProjection, CLIPVisionModelWithProjection, RawImage, env } from '@huggingface/transformers';
-import { CLIP_MODEL, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, ORT_VERSION } from '../js/ml/clipConfig.js';
+import { CLIP_MODEL, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS } from '../js/ml/clipConfig.js';
 import { normalizedVector } from '../js/services/imagePreferences.js';
 
 env.allowLocalModels = false;
@@ -11,16 +11,35 @@ env.useFSCache = false;
 env.cacheKey = CLIP_CACHE;
 env.backends.onnx.wasm.numThreads = 1;
 env.backends.onnx.wasm.proxy = false;
-const runtime = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VERSION}/dist/`;
-env.backends.onnx.wasm.wasmPaths = { mjs: runtime + 'ort-wasm-simd-threaded.asyncify.mjs', wasm: runtime + 'ort-wasm-simd-threaded.asyncify.wasm' };
 let models = null;
-let allowDownloads = true;
+let allowDownloads = false;
 const originalFetch = env.fetch;
 env.fetch = (input, options) => {
-  if (!allowDownloads) throw new Error('Connect to Wi-Fi or explicitly download the model in Settings before using mobile data.');
+  if (!allowDownloads) throw new Error('Model files are missing. Download the local image model in Settings to continue.');
   return originalFetch(input, options);
 };
 let backend = 'wasm';
+let runtimeReady;
+async function prepareRuntime() {
+  if (!runtimeReady) runtimeReady = (async () => {
+    const cache = await self.caches?.open(CLIP_CACHE);
+    const blobs = [];
+    for (const url of CLIP_RUNTIME_URLS) {
+      let response = await cache?.match(url);
+      if (!response) {
+        if (!allowDownloads) throw new Error('The local runtime is missing. Download the image model in Settings.');
+        response = await originalFetch(url);
+        if (!response.ok) throw new Error('The local image runtime could not be downloaded.');
+        await cache?.put(url, response.clone());
+      }
+      blobs.push(URL.createObjectURL(await response.blob()));
+    }
+    // Both files are cached under the same consent as the model. Object URLs
+    // prevent ONNX Runtime from silently fetching its runtime from a CDN.
+    env.backends.onnx.wasm.wasmPaths = { mjs: blobs[0], wasm: blobs[1] };
+  })().catch(error => { runtimeReady = null; throw error; });
+  return runtimeReady;
+}
 let database;
 const memory = new Map();
 const cancelled = new Set();
@@ -62,8 +81,9 @@ async function initialize(devicePreference = 'auto') {
   if (models) return models;
   models = (async () => {
     status({ phase: 'loading', message: 'Loading local image and text models…' });
+    await prepareRuntime();
     const progress_callback = data => status({ phase: 'loading', file: data.file, progress: data.progress, loaded: data.loaded, total: data.total });
-    const config = { revision: CLIP_REVISION, dtype: 'q8', progress_callback };
+    const config = { revision: CLIP_REVISION, dtype: 'q8', progress_callback, local_files_only: !allowDownloads };
     const tokenizer = await AutoTokenizer.from_pretrained(CLIP_MODEL, config);
     const processor = await AutoProcessor.from_pretrained(CLIP_MODEL, config);
     let textModel, visionModel;
@@ -125,7 +145,7 @@ self.onmessage = ({ data }) => {
   if (data.type === 'cancel') { cancelled.add(data.id); return; }
   queue = queue.then(async () => {
     if (cancelled.delete(data.id)) return;
-    try { allowDownloads = data.allowDownloads !== false; const result = await run(data); if (!cancelled.delete(data.id)) self.postMessage({ id: data.id, result }); }
+    try { allowDownloads = data.allowDownloads === true; const result = await run(data); if (!cancelled.delete(data.id)) self.postMessage({ id: data.id, result }); }
     catch (error) { if (!cancelled.delete(data.id)) self.postMessage({ id: data.id, error: error.message || 'Local image inference failed.', backendFailure: backend === 'webgpu' }); }
   }).catch(() => {});
 };

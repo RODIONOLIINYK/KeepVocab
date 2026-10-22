@@ -26,17 +26,20 @@ recovered word in that mode. One meaning per spelling is selected.
 
 Ranking uses unresolved mistakes, recent error rate, successful recall days,
 recall strength, response time, lateness and predicted forgetting risk. A validated
-personal calibration can adjust priority using prior review context. A bounded priority share and saved
-selection history rotate the remaining words, including when a session is
-abandoned. Starting a session records selections separately from answer counts;
+personal calibration can adjust priority using prior review context. Practice,
+Listen & Spell and Choose Word fill the entire session in priority order, with
+the most urgent reviews first. Ties use earlier due dates and stable word IDs;
+the queue is never shuffled after ranking. Other manual modes keep a bounded
+focus share and rotate the remaining words. Saved selection history also rotates
+unanswered words after an abandoned session. Starting a session records selections separately from answer counts;
 dashboard previews write nothing. Sessions read the latest results and schedules.
 
 Each answer stores lifetime correct/missed counts, consecutive outcomes, per-mode
 counts, independent recall attempts and successes, successful recall days, hints,
 recognition successes, assisted successes, and timing totals. A bounded history
 of the latest 20 outcomes supplies recent error rates; it does not store raw
-answers. Library shows independent recall counts, recall days and average recall
-time, the last successful unaided recall date/time, and the next review. Recognition,
+answers. Vocabulary cards keep recall statistics out of the image and meaning
+interface; the progress view summarizes learning. Recognition,
 hints, and later mistakes never overwrite that successful recall date. These fields
 stay on the vocabulary records and use the existing Drive backup. Sync chooses the
 latest learning snapshot separately from later metadata edits and selections, so

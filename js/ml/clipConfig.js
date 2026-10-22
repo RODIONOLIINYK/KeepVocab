@@ -5,4 +5,8 @@ export const CLIP_DIMENSION = 512;
 export const CLIP_CACHE = 'keepvocab-clip-model-v1';
 export const VECTOR_DB = 'keepvocab-clip-vectors-v1';
 export const ORT_VERSION = '1.31.0-dev.20260914-8d85527a0';
-export const MODEL_DOWNLOAD_MB = 85;
+// Include the WASM runtime in the consent estimate and installed-file check.
+export const MODEL_DOWNLOAD_MB = 115;
+export const CLIP_MODEL_FILES = ['config.json', 'tokenizer.json', 'tokenizer_config.json', 'preprocessor_config.json', 'onnx/text_model_quantized.onnx', 'onnx/vision_model_quantized.onnx'];
+export const CLIP_RUNTIME_URLS = ['ort-wasm-simd-threaded.asyncify.mjs', 'ort-wasm-simd-threaded.asyncify.wasm'].map(file => `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VERSION}/dist/${file}`);
+export const CLIP_DOWNLOAD_URLS = [...CLIP_MODEL_FILES.map(file => `https://huggingface.co/${CLIP_MODEL}/resolve/${CLIP_REVISION}/${file}`), ...CLIP_RUNTIME_URLS];

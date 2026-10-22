@@ -79,10 +79,11 @@ export async function filterLoadableImages(images, options = {}) {
   let successful = 0;
 
   const worker = async () => {
-    while (nextIndex < candidates.length && successful < limit) {
+    while (!options.signal?.aborted && nextIndex < candidates.length && successful < limit) {
       const index = nextIndex;
       nextIndex += 1;
       for (let attempt = 0; attempt <= retries; attempt += 1) {
+        if (options.signal?.aborted) return;
         if (attempt) await wait(retryDelayMs * attempt);
         try {
           if (await loadImage(candidates[index].url, { attempt, timeoutMs: options.timeoutMs })) {
@@ -404,7 +405,7 @@ export async function prepareImageScenes(words, options = {}) {
     }
     const local = directObjectSense(word) ? [canonicalVisualTerm(word.word)] : confidentCuratedScenes(word);
     if (local.length) { records.set(key, saveSceneRecord(word, local, directObjectSense(word) ? 'object' : 'curated', options)); continue; }
-    if (!settings.apiKey || options.signal?.aborted || (!options.force && (sceneRetryAfter.get(key) || 0) > Date.now())) continue;
+    if (options.aiScenes === false || !settings.apiKey || options.signal?.aborted || (!options.force && (sceneRetryAfter.get(key) || 0) > Date.now())) continue;
     if (sceneRequests.has(key)) { tasks.set(key, sceneRequests.get(key)); continue; }
     let settle;
     const pending = new Promise(resolve => { settle = resolve; });
@@ -533,7 +534,7 @@ export async function findOpenverseImages(concept, fetchImpl = globalThis.fetch?
     remember(cacheKey, result);
     return result;
   } catch {
-    coolDownProvider('openverse');
+    if (!options.signal?.aborted) coolDownProvider('openverse');
     return [];
   }
 }
@@ -570,7 +571,7 @@ export async function findWikimediaImages(concept, fetchImpl = globalThis.fetch?
     remember(cacheKey, result);
     return result;
   } catch {
-    coolDownProvider('wikimedia');
+    if (!options.signal?.aborted) coolDownProvider('wikimedia');
     return [];
   }
 }
@@ -608,7 +609,7 @@ export async function findLibraryOfCongressImages(concept, fetchImpl = globalThi
     remember(cacheKey, result);
     return result;
   } catch {
-    coolDownProvider('loc');
+    if (!options.signal?.aborted) coolDownProvider('loc');
     return [];
   }
 }
@@ -652,7 +653,7 @@ export async function findNasaImages(concept, fetchImpl = globalThis.fetch?.bind
     remember(cacheKey, result);
     return result;
   } catch {
-    coolDownProvider('nasa');
+    if (!options.signal?.aborted) coolDownProvider('nasa');
     return [];
   }
 }
@@ -780,7 +781,11 @@ export function updateImageFeedback(word, action, image, concept = '') {
 }
 
 export async function findRelevantImages(word, options = {}) {
-  const { refresh = false, extraQueries = [], onlyExtraQueries = false, fetchImpl = globalThis.fetch?.bind(globalThis) } = options;
+  if (options.signal?.aborted) return [];
+  const { refresh = false, extraQueries = [], onlyExtraQueries = false, fetchImpl: networkFetch = globalThis.fetch?.bind(globalThis) } = options;
+  const fetchImpl = options.signal && networkFetch ? (url, init = {}) => networkFetch(url, {
+    ...init, signal: init.signal && AbortSignal.any ? AbortSignal.any([init.signal, options.signal]) : options.signal
+  }) : networkFetch;
   const limit = Math.min(40, Math.max(1, Math.floor(Number(options.limit) || 6)));
   const saved = getImageProviderSettings(options.storage);
   const provider = options.provider || saved.provider;
@@ -802,12 +807,12 @@ export async function findRelevantImages(word, options = {}) {
   };
   const page = searchPage(options);
   const providers = [
-    ...(provider === 'pexels' && pexelsApiKey ? [{ id: 'pexels', search: concept => findPexelsImages(concept, pexelsApiKey, fetchImpl, { page }) }] : []),
-    { id: 'openverse', search: concept => findOpenverseImages(concept, fetchImpl, { page }) },
-    { id: 'wikimedia', search: concept => findWikimediaImages(concept, fetchImpl, { page }) },
+    ...(provider === 'pexels' && pexelsApiKey ? [{ id: 'pexels', search: concept => findPexelsImages(concept, pexelsApiKey, fetchImpl, { page, signal: options.signal }) }] : []),
+    { id: 'openverse', search: concept => findOpenverseImages(concept, fetchImpl, { page, signal: options.signal }) },
+    { id: 'wikimedia', search: concept => findWikimediaImages(concept, fetchImpl, { page, signal: options.signal }) },
     ...(options.fetchImpl || typeof globalThis.document === 'undefined'
-      ? [{ id: 'loc', search: concept => findLibraryOfCongressImages(concept, fetchImpl, { page }) }] : []),
-    { id: 'nasa', search: concept => findNasaImages(concept, fetchImpl, { page }) }
+      ? [{ id: 'loc', search: concept => findLibraryOfCongressImages(concept, fetchImpl, { page, signal: options.signal }) }] : []),
+    { id: 'nasa', search: concept => findNasaImages(concept, fetchImpl, { page, signal: options.signal }) }
   ];
   const batches = await Promise.all(providers.flatMap((source, providerIndex) => concepts.slice(0, 3).map(async (concept, conceptIndex) => {
     const searchQuery = compactVisualSearchQuery(concept);
@@ -833,13 +838,14 @@ export async function findRelevantImages(word, options = {}) {
       if (collected.length >= 40) break;
     }
   }
+  if (options.signal?.aborted) return [];
   const pool = rankImageCandidates(collected, word, { concepts, limit: 40, excludeUrls: options.excludeUrls, semanticPool: imageLearningEnabled(options.storage) });
   const ranked = await rankImagesLocally(word, pool, { ...options, scenes: aiScenes });
   const reviewed = options.semanticRerank ? await rerankImagesWithGemini(word, ranked, options) : ranked;
   const validateImages = options.validateImages !== false && (options.loadImage || typeof globalThis.document?.createElement === 'function');
   if (!validateImages) return reviewed.slice(0, limit);
   return filterLoadableImages(reviewed, {
-    limit, loadImage: options.loadImage, concurrency: options.imageLoadConcurrency,
+    signal: options.signal, limit, loadImage: options.loadImage, concurrency: options.imageLoadConcurrency,
     retries: options.imageLoadRetries, retryDelayMs: options.imageRetryDelayMs, timeoutMs: options.imageLoadTimeoutMs
   });
 }

@@ -1430,3 +1430,19 @@ body:has(.modal-backdrop.active) { overflow: hidden; }
 .has-live-error .live-status-pill i { background: #b91c1c; animation: none; }
 .has-live-error #toggle-live-mic { opacity: .5; cursor: default; }
 .library-grid > .useful-empty-state { grid-column: 1 / -1; }
+
+/* Keep routine vocabulary and image choices compact; reveal secondary tools on demand. */
+.library-card-actions { display:flex; justify-content:space-between; align-items:flex-start; }
+.library-card-menu { font-size:.78rem; position:relative; }
+.library-card-menu summary, .library-tools summary, .image-search-options summary { cursor:pointer; color:var(--text-muted); padding:10px 6px; font-weight:600; }
+.library-card-menu[open] { background:var(--bg-card); border:1px solid var(--border-card); border-radius:8px; }
+.library-card-actions .library-card-menu button { display:flex; background:transparent; border:0; width:100%; justify-content:flex-start; font-size:.78rem; }
+.library-tools { position:relative; font-size:.8rem; }
+.library-tools[open] > div { position:absolute; right:0; z-index:5; padding:8px; min-width:180px; display:grid; gap:6px; border:1px solid var(--border-card); border-radius:10px; background:var(--bg-card); box-shadow:var(--shadow-soft); }
+.image-search-options { margin:12px 0; font-size:.8rem; }
+.image-search-options .custom-image-source { margin-top:8px; }
+.image-text-action { display:inline-flex; gap:5px; align-items:center; padding:7px 9px; min-height:34px; border:1px solid var(--border-card); border-radius:7px; background:transparent; color:var(--text-main); font:inherit; font-size:.76rem; cursor:pointer; }
+.image-text-action:hover { background:var(--bg-main,#f4f8f5); }
+.image-text-action:focus-visible, .library-card-menu summary:focus-visible, .library-tools summary:focus-visible, .image-search-options summary:focus-visible { outline:2px solid var(--primary-green); outline-offset:3px; }
+.image-learning-note { color:var(--text-muted); font-size:.75rem; line-height:1.5; margin:8px 0 14px; }
+.image-feedback-actions { gap:6px; margin:8px 0; }

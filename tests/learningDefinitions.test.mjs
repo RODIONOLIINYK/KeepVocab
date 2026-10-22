@@ -45,7 +45,9 @@ test('one primary explanation replaces difficult wording, preserving exact sourc
   assert.equal(result.audioUrl, 'audio.mp3');
   assert.deepEqual(original, before);
   assert.equal(options.calls.length, 1);
-  assert.match(options.calls[0].body.contents[0].parts[0].text, /There is no word limit/);
+  assert.match(options.calls[0].body.contents[0].parts[0].text, /Clarity matters more than brevity/);
+  assert.equal(options.calls[0].body.generationConfig.responseSchema.properties.senses.items.properties.situation, undefined);
+  assert.ok(options.calls[0].body.generationConfig.maxOutputTokens < 3072);
 });
 
 test('simple sensible definitions and good examples make no request; difficult short jargon does', async () => {
@@ -82,11 +84,15 @@ test('exact source and model cache survives restart; another source, POS or mode
   assert.equal(options.calls.length, 4);
 });
 
-test('a missing example gets concrete support even when the definition is already understandable', async () => {
+test('a missing example stays optional by default and can be generated when requested', async () => {
   const item = { word: 'outlandish', partOfSpeech: 'adjective', definition: 'Appearing to be foreign; strange, unfamiliar.', example: HISTORICAL };
   const options = fixture(row => ({ definition: row.currentDefinition,
     example: 'The unfamiliar clothes looked outlandish to the visitors.', usageNote: 'This selected sense describes something that seems foreign or unfamiliar.' }));
-  const result = await withLearnerExplanations({ senses: [item] }, options);
+  const optional = await withLearnerExplanations({ senses: [item] }, options);
+  assert.equal(optional.example, '');
+  assert.equal(optional.needsExample, true);
+  assert.equal(options.calls.length, 0);
+  const result = await withLearnerExplanations({ senses: [item] }, { ...options, generateMissingExamples: true });
   assert.equal(result.definition, item.definition);
   assert.equal(result.example, 'The unfamiliar clothes looked outlandish to the visitors.');
   assert.equal(result.needsExample, false);
@@ -99,7 +105,7 @@ test('a missing example gets concrete support even when the definition is alread
 test('failure to produce an example is honest, with no invented generic sentence or cached invalid result', async () => {
   const item = { word: 'outlandish', definition: 'Appearing to be foreign; strange, unfamiliar.', example: HISTORICAL };
   const options = fixture(row => ({ definition: row.currentDefinition, example: HISTORICAL }));
-  const result = await withLearnerExplanations({ senses: [item] }, options);
+  const result = await withLearnerExplanations({ senses: [item] }, { ...options, generateMissingExamples: true });
   assert.equal(result.example, '');
   assert.equal(result.needsExample, true);
   assert.equal(result.definition, item.definition);
@@ -109,7 +115,10 @@ test('failure to produce an example is honest, with no invented generic sentence
 test('manual wording and already approved explanations remain unchanged while missing examples may be repaired', async () => {
   const options = fixture(row => ({ definition: row.currentDefinition, example: 'She was meticulous when checking the figures.', usageNote: '' }));
   const manual = { ...sense, explanationSource: 'manual', example: '' };
-  const result = await withLearnerExplanations({ senses: [manual] }, options);
+  const optional = await withLearnerExplanations({ senses: [manual] }, options);
+  assert.equal(optional.needsExample, true);
+  assert.equal(options.calls.length, 0);
+  const result = await withLearnerExplanations({ senses: [manual] }, { ...options, generateMissingExamples: true });
   assert.equal(result.definition, SOURCE);
   assert.equal(result.explanationSource, 'manual');
   assert.equal(result.needsExample, false);
@@ -174,6 +183,19 @@ test('unconfigured, disabled and cancelled operations never pay for explanations
   const result = await withLearnerExplanations({ senses: [sense] }, { ...options, signal: controller.signal });
   assert.equal(result.definition, SOURCE);
   assert.equal(options.calls.length, 0);
+});
+
+test('bulk quota failures stop later requests and preserve every dictionary meaning', async () => {
+  const originals = Array.from({ length: 28 }, (_, index) => ({ ...sense, id: `saved-${index}`, word: `term${index}` }));
+  const options = fixture();
+  let calls = 0;
+  const result = await withLearnerExplanations({ senses: originals }, { ...options, fetchImpl: async () => {
+    calls += 1;
+    return { ok: false, status: 429, json: async () => ({ error: { message: 'Quota exhausted.' } }) };
+  } });
+  assert.equal(calls, 1);
+  assert.equal(result.explanationFailures.length, 28);
+  assert.ok(result.senses.every(item => item.definition === SOURCE));
 });
 
 test('restrain gets a concrete explanation, an unpacked example and a schema-bound cached response', async () => {

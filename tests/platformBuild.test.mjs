@@ -151,11 +151,12 @@ test('the Library has one Edit action with Pexels-first search, public fallbacks
   assert.match(settings, /id="settings-pexels-key"/);
   assert.match(settings, /option value="pexels"/);
   assert.match(settings, /saveImageProviderSettings\(\{ provider, pexelsApiKey \}\)/);
-  assert.match(library, /Openverse, Wikimedia Commons, and NASA Images/);
-  assert.match(library, /searched in parallel/);
+  const imageSearch = readFileSync(resolve(projectRoot, 'js/services/imageSearch.js'), 'utf8');
+  for (const provider of ['openverse', 'wikimedia', 'nasa']) assert.ok(imageSearch.includes(`id: '${provider}'`));
   assert.match(library, /id="custom-image-url"/);
   assert.match(library, /id="custom-image-file"/);
-  assert.match(library, /> More images</);
+  assert.match(library, /> More options</);
+  assert.doesNotMatch(library, /Compare images with Gemini|library-recall-stats/);
   assert.doesNotMatch(library, /Refresh suggestions/);
 });
 

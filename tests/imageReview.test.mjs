@@ -8,8 +8,8 @@ class Container {
   addEventListener(type, callback) { assert.equal(type, 'click'); this.listeners.add(callback); }
   removeEventListener(_type, callback) { this.listeners.delete(callback); }
   contains() { return true; }
-  click(action, index = 0) {
-    const button = { dataset: { imageReviewAction: action, imageReviewIndex: String(index) } };
+  click(action, index = 0, candidateIndex = 0) {
+    const button = { dataset: { imageReviewAction: action, imageReviewIndex: String(index), imageReviewCandidate: String(candidateIndex) } };
     return Promise.all([...this.listeners].map(callback => callback({ target: { closest: () => button } })));
   }
 }
@@ -189,15 +189,17 @@ test('learning receives only confirmed Keep choices after Apply succeeds, never 
   assert.equal(feedback.length, 0);
   fail = false;
   await container.click('apply');
-  assert.equal(feedback.length, 1);
+  assert.equal(feedback.length, 2);
   assert.equal(feedback[0][0].id, 'first');
-  assert.equal(feedback[0][1], 'good');
-  assert.equal(feedback[0][2].url, image('new').url);
+  assert.equal(feedback[0][1], 'wrong');
+  assert.equal(feedback[0][2].url, image('first').url);
+  assert.equal(feedback[1][1], 'good');
+  assert.equal(feedback[1][2].url, image('new').url);
   const cancelled = new Container();
   mountImageReview(cancelled, [word('cancelled')], { onFeedback: (...args) => feedback.push(args) });
   await cancelled.click('keep');
   await cancelled.click('cancel');
-  assert.equal(feedback.length, 1);
+  assert.equal(feedback.length, 2);
 });
 
 test('stale rows excluded by the host do not teach preferences, and learning failures do not fail saving', async () => {
@@ -212,4 +214,67 @@ test('stale rows excluded by the host do not teach preferences, and learning fai
   await Promise.resolve();
   assert.deepEqual(taught, ['saved']);
   assert.doesNotMatch(container.innerHTML, /could not be applied/);
+});
+
+test('add flow displays six ready options, selects locally without another request, and strips transient candidates', async () => {
+  const container = new Container();
+  const options = Array.from({ length: 6 }, (_, i) => image(`option-${i}`));
+  const source = { ...word('new', false), imageCandidates: options };
+  const taught = [];
+  let saved;
+  mountImageReview(container, [source], {
+    allowSkipPending: true, onApply: rows => { saved = rows; },
+    findImages: () => assert.fail('Selecting a ready option must not search again'),
+    onFeedback: (_word, action, selected) => taught.push({ action, url: selected.url })
+  });
+  assert.equal((container.innerHTML.match(/data-image-review-action="choose"/g) || []).length, 6);
+  await container.click('choose', 0, 4);
+  await container.click('apply');
+  assert.equal(saved[0].imageUrl, options[4].url);
+  assert.equal(Object.hasOwn(saved[0], 'imageCandidates'), false);
+  assert.deepEqual(taught, [{ action: 'good', url: options[4].url }]);
+});
+
+test('add flow can save all words without per-word image approval', async () => {
+  const container = new Container();
+  const originals = [word('one', false), word('two', false)];
+  const prepared = originals.map((item, i) => ({ ...item, imageUrl: image(`proposal${i}`).url, imageCandidates: [image(`proposal${i}`)] }));
+  let saved;
+  mountImageReview(container, prepared, { allowSkipPending: true, originalWords: originals, onApply: rows => { saved = rows; }, onFeedback: () => assert.fail('Unselected suggestions are not labels') });
+  await container.click('apply');
+  assert.deepEqual(saved.map(item => item.imageUrl), ['', '']);
+});
+
+test('automatic choices require strong learned and semantic signals and never self-train', async () => {
+  const { CLIP_TAG } = await import('../js/ml/clipConfig.js');
+  const { canAutoSelectImage } = await import('../js/services/imageChoicePolicy.js');
+  const best = { ...image('automatic'), ml: { model: CLIP_TAG, sense: 'exact', trainedLabels: 40, selected: .4, margin: .12, unwanted: .05, preference: .96, score: .5 } };
+  const runnerUp = { ...image('runnerup'), ml: { ...best.ml, score: .4 } };
+  assert.equal(canAutoSelectImage([best, runnerUp]), true);
+  for (const patch of [{ trainedLabels: 8 }, { preference: .8 }, { margin: -.1 }, { unwanted: .3 }, { selected: .1 }, { score: .42 }, { preference: NaN }]) {
+    assert.equal(canAutoSelectImage([{ ...best, ml: { ...best.ml, ...patch } }, runnerUp]), false);
+  }
+  assert.equal(canAutoSelectImage([best]), false);
+  assert.equal(canAutoSelectImage([best, runnerUp, { ...runnerUp, ml: { ...runnerUp.ml, score: .49 } }]), false);
+  assert.equal(canAutoSelectImage([{ ...best, ml: { ...best.ml, contrast: null, margin: 0 } }, runnerUp]), true);
+  const container = new Container();
+  let saved;
+  mountImageReview(container, [{ ...word('automatic', false), imageCandidates: [best, runnerUp] }], { onApply: rows => { saved = rows; }, onFeedback: () => assert.fail('Automatic choices are not human labels') });
+  await container.click('apply');
+  assert.equal(saved[0].imageUrl, best.url);
+});
+
+
+test('review hands explicit labels to a save host without teaching before that host persists', async () => {
+  const container = new Container();
+  let context;
+  mountImageReview(container, [word('deferred', false)], {
+    findImages: async () => [image('chosen')],
+    onApply: (_rows, value) => { context = value; },
+    onFeedback: () => {} // The Add host replays these only after addWords succeeds.
+  });
+  await container.click('next');
+  await container.click('keep');
+  await container.click('apply');
+  assert.deepEqual(context.feedback.map(label => [label.action, label.image.url]), [['good', image('chosen').url]]);
 });

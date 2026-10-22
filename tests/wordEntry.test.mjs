@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { prepareWordsForLibrary, wordEntryToWord } from '../js/services/wordEntry.js';
+import { prepareBulkLearnerExplanations, prepareWordsForLibrary, wordEntryToWord } from '../js/services/wordEntry.js';
+import { MemoryStorage } from '../js/services/driveSync.js';
+import { saveGeminiSettings } from '../js/services/geminiSettings.js';
 
 test('shared save pipeline attaches an image to each chosen meaning and preserves dictionary details', async () => {
   const entry = { word: 'coffee', lemma: 'coffee', audioUrl: 'https://example.test/audio.mp3', senses: [{ definition: 'A drink made from roasted coffee beans.', translation: 'Напій із обсмажених кавових зерен.', partOfSpeech: 'noun', acceptedForms: ['coffee', 'coffees'], example: 'I would like a coffee.' }] };
@@ -10,6 +12,8 @@ test('shared save pipeline attaches an image to each chosen meaning and preserve
     findImages: async (item, options) => {
       assert.equal(item.definition, entry.senses[0].definition);
       assert.deepEqual(options.excludeUrls, ['https://example.test/old.jpg']);
+      assert.equal(options.limit, 6);
+      assert.equal(options.aiScenes, false);
       return [{ url: 'https://example.test/coffee.jpg', attribution: 'Photo author', license: 'CC0' }];
     }
   });
@@ -74,11 +78,97 @@ test('an empty save batch does not create an empty vocabulary record', async () 
   }), []);
 });
 
-test('new vocabulary cannot bypass a missing or historical usage example in the composer save pipeline', async () => {
+test('missing, historical and unrelated examples never block single or bulk saving or trigger a paid repair', async () => {
+  const storage = new MemoryStorage();
+  saveGeminiSettings({ apiKey: 'fake-key-for-optional-examples-tests' }, storage, { silent: true });
   for (const example of ['', 'I think I have ſeen your Ladyſhip in ſuch an outlandiſh one.']) {
-    await assert.rejects(prepareWordsForLibrary([{ word: 'outlandish', definition: 'Strange or unfamiliar.', example }], {
-      requireExamples: true, settings: { enabled: false },
-      findImages: async () => assert.fail('Missing examples must be resolved before image preparation')
-    }), /modern example/);
+    const result = await prepareWordsForLibrary([{ word: 'outlandish', definition: 'Strange or unfamiliar.', example }], {
+      requireExamples: true, storage, fetchImpl: async () => assert.fail('Saving must not call Gemini'),
+      findImages: async () => []
+    });
+    assert.equal(result[0].word, 'outlandish');
+    assert.equal(result[0].example, '');
+    assert.equal(result[0].needsExample, true);
   }
+  const batch = await prepareWordsForLibrary([
+    { word: 'outlandish', definition: 'Strange or unfamiliar.', example: 'some shit' },
+    { word: 'walk', definition: 'Move on foot.', example: '' }
+  ], { storage, fetchImpl: async () => assert.fail('No paid request'), findImages: async () => [] });
+  assert.equal(batch.length, 2);
+  assert.ok(batch.every(word => word.example === ''));
+});
+
+test('bulk clarity preparation shares one compact request and preserves failed rows, word order, and sense identity', async () => {
+  const storage = new MemoryStorage();
+  saveGeminiSettings({ apiKey: 'fake-key-for-bulk-clarity-tests' }, storage, { silent: true });
+  const rows = [
+    { term: 'meticulous', status: 'ready', data: { word: 'meticulous', senses: [{ id: 'sense-1', definition: 'The quality or condition of being scrupulously attentive to minute particulars.', example: '' }] } },
+    { term: 'missing', status: 'manual', error: 'Not found', manualDefinition: 'My meaning' },
+    { term: 'careful', status: 'ready', data: { word: 'careful', senses: [{ id: 'sense-1', definition: 'Characterized by attention and caution.', example: '' }] } }
+  ];
+  const before = structuredClone(rows);
+  let requests = 0;
+  const result = await prepareBulkLearnerExplanations(rows, { storage, fetchImpl: async (_url, options) => {
+    requests += 1;
+    const body = JSON.parse(options.body);
+    assert.ok(body.generationConfig.maxOutputTokens < 3072);
+    const prompt = body.contents[0].parts[0].text;
+    const items = JSON.parse(prompt.slice(prompt.lastIndexOf('\nSenses: ') + 9));
+    assert.deepEqual(items.map(item => item.word), ['meticulous', 'careful']);
+    return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify({ senses: items.map(item => ({
+      id: item.id, meaningPreserved: true, definition: 'Paying close attention to avoid mistakes.', example: `She was ${item.word} when checking the figures.`, usageNote: ''
+    })) }) }] } }] }) };
+  } });
+  assert.equal(requests, 1);
+  assert.equal(result[0].data.definition, 'Paying close attention to avoid mistakes.');
+  assert.equal(result[2].data.definition, 'Paying close attention to avoid mistakes.');
+  assert.equal(result[1], rows[1]);
+  assert.equal(result[0].data.senses[0].id, 'sense-1');
+  assert.equal(result[2].data.senses[0].id, 'sense-1');
+  assert.deepEqual(rows, before);
+});
+
+test('bulk clarity preparation only rewrites the selected meaning, leaving unused dictionary senses free', async () => {
+  const storage = new MemoryStorage();
+  saveGeminiSettings({ apiKey: 'fake-key-for-selected-meaning-tests' }, storage, { silent: true });
+  const unused = { id: 'unused', definition: 'Characterized by minute attention to details.' };
+  const selected = { id: 'selected', definition: 'Characterized by attention and caution.' };
+  let requested = 0;
+  const [result] = await prepareBulkLearnerExplanations([{ term: 'careful', status: 'ready', selectedSenseIndex: 1, data: { word: 'careful', senses: [unused, selected] } }], {
+    storage, fetchImpl: async (_url, options) => {
+      const prompt = JSON.parse(options.body).contents[0].parts[0].text;
+      const senses = JSON.parse(prompt.slice(prompt.lastIndexOf('\nSenses: ') + 9));
+      requested += senses.length;
+      assert.equal(senses[0].sourceDefinition, selected.definition);
+      return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify({ senses: [{ id: '0', meaningPreserved: true,
+        definition: 'Paying attention to avoid mistakes.', example: 'She was careful when checking the figures.', usageNote: '' }] }) }] } }] }) };
+    }
+  });
+  assert.equal(requested, 1);
+  assert.equal(result.data.senses[0], unused);
+  assert.equal(result.data.senses[1].definition, 'Paying attention to avoid mistakes.');
+});
+
+test('bulk image Skip completes the shared save pipeline before the provider finishes and preserves prepared meanings and translations', async () => {
+  const controller = new AbortController();
+  let started;
+  const searching = new Promise(resolve => { started = resolve; });
+  let finishLate;
+  const pending = prepareWordsForLibrary([
+    { word: 'walk', definition: 'Move on foot.', example: '' },
+    { word: 'bank', definition: 'Land beside a river.', example: '' }
+  ], {
+    translationLanguage: 'uk', translate: async () => 'Підготовлений переклад.', skipImagesSignal: controller.signal,
+    findImages: (_word, options) => { assert.equal(options.limit, 6); started(); return new Promise(resolve => { finishLate = resolve; }); }
+  });
+  await searching;
+  controller.abort();
+  const result = await pending;
+  assert.deepEqual(result.map(item => item.word), ['walk', 'bank']);
+  assert.ok(result.every(item => item.translationLanguage === 'uk' && item.translation === 'Підготовлений переклад.'));
+  assert.ok(result.every(item => !item.imageUrl && !item.imageCandidates));
+  const before = structuredClone(result);
+  finishLate([{ url: 'https://example.test/late-proposal.jpg' }]);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(result, before);
 });
