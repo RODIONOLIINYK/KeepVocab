@@ -1,5 +1,5 @@
 import { localDateKey } from '../utils/dates.js';
-import { isWordReadyForPractice, normalizeWordPracticeStats } from './wordSelection.js?v=18800';
+import { isWordReadyForPractice, normalizeWordPracticeStats } from './wordSelection.js?v=18900';
 
 export const DAILY_REMINDER_ID = 73001;
 export const STREAK_REMINDER_ID = 73002;

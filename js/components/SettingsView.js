@@ -1,10 +1,12 @@
-import { getImageLearningStatus, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18800';
-import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18800';
-import { driveSync } from '../services/driveSync.js?v=18800';
-import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18800';
-import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18800';
-import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18800';
-import { completedExercisesToday } from '../services/learningStats.js?v=18800';
+import { getFsrsLearningStatus, subscribeFsrsLearning, saveFsrsPreferences, trainPersonalScheduler } from '../services/fsrsLearning.js';
+import { elapsedFsrsDays } from '../services/fsrsConfig.js';
+import { getImageLearningStatus, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18900';
+import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18900';
+import { driveSync } from '../services/driveSync.js?v=18900';
+import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18900';
+import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18900';
+import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18900';
+import { completedExercisesToday } from '../services/learningStats.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -24,6 +26,8 @@ function modelOptions(current) {
 
 export function renderSettingsView(container, onNavigate) {
   container.releaseImageLearning?.();
+  container.releaseFsrsLearning?.();
+  const memory = getFsrsLearningStatus();
   const gemini = getGeminiSettings();
   const imageProvider = getImageProviderSettings();
   const drive = driveSync.getDriveStatus();
@@ -45,6 +49,10 @@ export function renderSettingsView(container, onNavigate) {
         <div class="settings-streak-status ${streakAtRisk ? 'is-at-risk' : ''}"><strong>${streakAtRisk ? `Keep your ${streak}-day streak alive` : completedToday > 0 ? 'Your streak is safe today' : 'Build your streak'}</strong><p>${streakAtRisk ? 'Complete one exercise before midnight.' : completedToday > 0 ? 'Come back tomorrow to keep it growing.' : 'One exercise today is a good start.'}</p></div>
         <div class="settings-actions"><button class="status-pill offline" id="settings-routine">Edit routine</button>${remindersAvailable ? `<button class="status-pill offline" id="settings-notifications"><i class="fa-solid fa-bell" aria-hidden="true"></i> ${settings.reminderEnabled ? 'Manage reminders' : 'Set up reminders'}</button>` : ''}</div>${remindersAvailable ? '<p id="settings-notification-status" class="settings-notification-status" role="status" aria-live="polite">Checking notification access…</p>' : ''}
       </section>
+      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-clock', 'Review timing', 'FSRS-6 learns when each meaning needs another review.', '', false, true)}</summary><div class="settings-disclosure-body">
+        <form id="memory-settings-form" class="settings-form"><label>Recall target<select id="memory-retention">${[0.8, 0.85, 0.9, 0.92, 0.95, 0.97].map(value => `<option value="${value}" ${Math.abs(memory.config.retention - value) < 0.001 ? 'selected' : ''}>${Math.round(value * 100)}%${value === 0.9 ? ' · recommended starting point' : ''}</option>`).join('')}</select></label><label class="settings-checkbox"><input id="memory-auto-training" type="checkbox" ${memory.config.automaticTraining ? 'checked' : ''}> Learn timing from my review history</label><p class="settings-privacy">Higher targets mean more frequent reviews. Recall, recognition and answers with hints have separate memory states. Your daily goal never blocks useful practice.</p><div class="settings-actions"><button class="btn-green-solid">Save review preferences</button><button type="button" class="status-pill offline" id="train-memory-model">Fit from review history</button></div></form>
+        <p id="memory-training-status" role="status" aria-live="polite"></p><details class="settings-advanced"><summary>Memory model details</summary><p id="memory-review-counts"></p><div id="memory-training-diagnostics"></div><p>Standard parameters work immediately. Personal fitting requires 400 spaced reviews across 50 meanings in a stream, including forgotten answers. A candidate becomes active only after it improves predictions on later reviews kept out of training. Response history, hints, confidence, confusion patterns and word features also support grading and a bounded calibration of word priority.</p></details>
+      </div></details>
       <section class="settings-card"><div class="settings-card-heading">${heading('fa-brands fa-google-drive', 'Google Drive backup', 'Sync your Library, progress, and settings.', drive.isConnected ? 'Connected' : drive.lastError ? 'Attention' : 'Off', drive.isConnected)}</div>
         <div class="settings-detail-list"><div><span>Account</span><strong>${escapeHtml(drive.isConnected ? (drive.email || 'Connected Google account') : 'Not connected')}</strong></div><div><span>Last sync</span><strong>${lastSync && Number.isFinite(lastSync.getTime()) ? escapeHtml(lastSync.toLocaleString()) : 'Not backed up'}</strong></div></div><button class="btn-green-solid" id="settings-drive-action">${drive.isConnected ? 'Manage backup' : 'Connect Google Drive'}</button>${drive.lastError ? `<p class="settings-error" role="alert">${escapeHtml(drive.lastError)}</p>` : ''}
       </section>
@@ -80,6 +88,33 @@ export function renderSettingsView(container, onNavigate) {
   learningAction('#disable-image-learning', disableImageLearning);
   learningAction('#clear-image-model', clearImageModelDownloads);
   learningAction('#reset-image-preferences', resetImagePreferences);
+  const paintMemory = state => {
+    const output = query('#memory-training-status');
+    if (!output) { container.releaseFsrsLearning?.(); return; }
+    output.textContent = state.message || 'FSRS-6 is active with standard parameters. Dated reviews build your personal history.';
+    if (state.historyWarning) output.textContent += ` ${state.historyWarning}`;
+    query('#train-memory-model').disabled = state.phase === 'training';
+    query('#memory-training-diagnostics').innerHTML = ['recall', 'recognition', 'assisted'].map(channel => {
+      const model = state.config.models[channel];
+      const result = state.lastAttempt.results?.[channel];
+      return `<p><strong>${channel[0].toUpperCase() + channel.slice(1)}</strong>: ${model ? `personal revision ${model.revision} · ${model.changedParameters} of 21 parameters changed · ΔL2 ${Number(model.deltaL2).toFixed(6)} · held-out loss ${Number(model.before.logLoss).toFixed(4)} → ${Number(model.after.logLoss).toFixed(4)}${model.calibration ? ' · context calibration active' : ''}` : 'standard FSRS-6 parameters'}${result?.reason ? `<br>${escapeHtml(result.reason)}` : ''}</p>`;
+    }).join('');
+  };
+  paintMemory(memory);
+  container.releaseFsrsLearning = subscribeFsrsLearning(paintMemory);
+  void driveSync.getReviewEvents().then(events => {
+    const output = query('#memory-review-counts');if (!output) return;
+    const counts = ['recall', 'recognition', 'assisted'].map(channel => `${channel}: ${events.filter(event => event.channel === channel && event.memory.scheduled && event.memory.before.last_review && elapsedFsrsDays(event.memory.before.last_review, event.occurredAt) > 0).length} spaced reviews`);
+    output.textContent = `${events.length} dated events · ${counts.join(' · ')}`;
+  }).catch(error => { const output = query('#memory-review-counts');if (output) output.textContent = error.message; });
+  query('#memory-settings-form').addEventListener('submit', event => {
+    event.preventDefault();saveFsrsPreferences({ retention: Number(query('#memory-retention').value), automaticTraining: query('#memory-auto-training').checked });
+    query('#memory-training-status').textContent = 'Review preferences saved. The target applies to future scheduling.';
+  });
+  query('#train-memory-model').addEventListener('click', async () => {
+    try { await trainPersonalScheduler(driveSync, { force: true }); }
+    catch (error) { query('#memory-training-status').textContent = error.message; }
+  });
   query('#settings-back').addEventListener('click', () => go('dashboard', onNavigate));
   query('#translation-settings-form').addEventListener('submit', event => {
     event.preventDefault();

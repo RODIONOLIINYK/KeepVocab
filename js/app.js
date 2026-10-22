@@ -1,29 +1,29 @@
-import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=18800';
-import { setupAddWordModal } from './components/AddWordModal.js?v=18800';
-import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18800';
+import { getActivePracticeWords, getScheduledPracticeWords } from './services/wordSelection.js?v=18900';
+import { setupAddWordModal } from './components/AddWordModal.js?v=18900';
+import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18900';
 // Native application controller with monthly Google Drive backup.
 
-import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18800';
-import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay, shouldPullFromDrive } from './services/syncPolicy.js?v=18800';
-import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=18800';
-import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=18800';
-import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=18800';
-import { buildScheduledPracticeSession } from './services/dailySession.js?v=18800';
+import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18900';
+import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay, shouldPullFromDrive } from './services/syncPolicy.js?v=18900';
+import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=18900';
+import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=18900';
+import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=18900';
+import { buildScheduledPracticeSession } from './services/dailySession.js?v=18900';
 import { localDateKey } from './utils/dates.js';
-import { backfillLibraryTranslations } from './services/libraryTranslations.js?v=18800';
+import { backfillLibraryTranslations } from './services/libraryTranslations.js?v=18900';
 
-import { renderLibraryView } from './components/LibraryView.js?v=18800';
-import { renderStatsView } from './components/StatsView.js?v=18800';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18800';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18800';
-import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18800';
-import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18800';
-import { renderDashboardView } from './components/DashboardView.js?v=18800';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=18800';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18800';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18800';
-import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18800';
-import { renderSettingsView } from './components/SettingsView.js?v=18800';
+import { renderLibraryView } from './components/LibraryView.js?v=18900';
+import { renderStatsView } from './components/StatsView.js?v=18900';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18900';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18900';
+import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18900';
+import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18900';
+import { renderDashboardView } from './components/DashboardView.js?v=18900';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=18900';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18900';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18900';
+import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18900';
+import { renderSettingsView } from './components/SettingsView.js?v=18900';
 
 function repairContradictoryExamples() {
   for (const word of driveSync.getWords()) {
@@ -775,7 +775,38 @@ function setupMonthDropdown() {
 }
 
 function setupKeyboardShortcuts() {
+  const openers = new WeakMap();
+  const focusable = modal => [...modal.querySelectorAll('button, input, textarea, select, a[href], [tabindex]')]
+    .filter(element => !element.disabled && element.tabIndex >= 0 && element.getClientRects().length);
+  for (const modal of document.querySelectorAll('.modal-backdrop')) {
+    new MutationObserver(() => {
+      if (modal.classList.contains('active')) {
+        if (!openers.has(modal)) {
+          openers.set(modal, document.activeElement);
+          if (!modal.contains(document.activeElement)) (focusable(modal).find(element => element.matches('input, textarea, select')) || focusable(modal)[0])?.focus();
+        }
+      } else {
+        const opener = openers.get(modal);
+        openers.delete(modal);
+        if (opener?.isConnected) opener.focus();
+      }
+    }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+  }
   document.addEventListener('keydown', (e) => {
+    const modal = [...document.querySelectorAll('.modal-backdrop.active')].at(-1);
+    if (modal && e.key === 'Tab') {
+      const controls = focusable(modal);
+      const first = controls[0], last = controls.at(-1);
+      if (!controls.length) { e.preventDefault(); return; }
+      if (!modal.contains(document.activeElement) || (e.shiftKey && document.activeElement === first) || (!e.shiftKey && document.activeElement === last)) {
+        e.preventDefault();(e.shiftKey ? last : first).focus();
+      }
+      return;
+    }
+    if (modal && e.key === 'Escape') {
+      modal.classList.remove('active');
+      return;
+    }
     if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) return;
 
     if (e.key === 'Escape') {

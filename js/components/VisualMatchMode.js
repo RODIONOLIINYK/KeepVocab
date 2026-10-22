@@ -1,13 +1,13 @@
-import { definitionForLearning } from '../services/learningDefinitions.js?v=18800';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18800';
-import { driveSync } from '../services/driveSync.js?v=18800';
-import { findRelevantImages, prepareImageScenes, imageSenseFingerprint, imageSelectionPatch, imageUrlsForWords } from '../services/imageSearch.js?v=18800';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18800';
-import { playInteractionSound } from '../services/interactionSound.js?v=18800';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18900';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18900';
+import { driveSync } from '../services/driveSync.js?v=18900';
+import { findRelevantImages, prepareImageScenes, imageSenseFingerprint, imageSelectionPatch, imageUrlsForWords } from '../services/imageSearch.js?v=18900';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18900';
+import { playInteractionSound } from '../services/interactionSound.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18800';
-import { stableWordChoices } from '../services/wordChoices.js?v=18800';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18800';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18900';
+import { stableWordChoices } from '../services/wordChoices.js?v=18900';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -151,6 +151,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
     let index = 0;
     let score = 0;
     let selectedId = null;
+    let questionStartedAt = performance.now();
     const choiceState = { targetId: null, options: [] };
 
     function render() {
@@ -179,11 +180,11 @@ export async function renderVisualMatchMode(container, onNavigate) {
         const isCorrect = evaluateChoiceAnswer(target.word.id, selectedId);
         playInteractionSound(isCorrect ? 'correct' : 'wrong');
         if (isCorrect) score += 1;
-        recordExerciseResult({ wordId: target.word.id, exerciseType: 'visual-match', correct: isCorrect, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: isCorrect ? '' : selectedId });
+        recordExerciseResult({ wordId: target.word.id, exerciseType: 'visual-match', correct: isCorrect, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: isCorrect ? '' : selectedId });
         window.dispatchEvent(new CustomEvent('keepvocab:progress'));
         render();
       }));
-      container.querySelector('#visual-next')?.addEventListener('click', () => { index += 1; selectedId = null; choiceState.targetId = null; render(); });
+      container.querySelector('#visual-next')?.addEventListener('click', () => { index += 1; selectedId = null; choiceState.targetId = null; questionStartedAt = performance.now(); render(); });
     }
     render();
   }

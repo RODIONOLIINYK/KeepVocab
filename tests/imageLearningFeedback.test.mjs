@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { driveSync, MemoryStorage } from '../js/services/driveSync.js?v=18800';
-import { recordImagePreference, getImageLearningStatus, resetImagePreferences, rankImagesLocally } from '../js/services/imageLearning.js?v=18800';
-import { imageSenseFingerprint } from '../js/services/imageSearch.js?v=18800';
+import { driveSync, MemoryStorage } from '../js/services/driveSync.js?v=18900';
+import { recordImagePreference, getImageLearningStatus, resetImagePreferences, rankImagesLocally } from '../js/services/imageLearning.js?v=18900';
+import { imageSenseFingerprint } from '../js/services/imageSearch.js?v=18900';
 import { encodeFeatures, preferenceFeatures } from '../js/services/imagePreferences.js';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
 

@@ -1,6 +1,6 @@
 {
   "name": "keepvocab",
-  "version": "1.8.8",
+  "version": "1.8.9",
   "private": true,
   "type": "module",
   "description": "A local-first vocabulary gym with Google Drive backup.",
@@ -25,7 +25,8 @@
     "@huggingface/transformers": "4.3.1",
     "electron": "43.4.1",
     "electron-builder": "26.15.3",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "ts-fsrs": "5.4.2"
   },
   "build": {
     "appId": "com.keepvocab.app",

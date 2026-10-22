@@ -1,14 +1,17 @@
+import { replayWordFsrsHistory } from './srsEngine.js?v=18900';
+import { ReviewHistoryStore, mergeReviewEvents } from './reviewHistory.js';
+import { mergeFsrsConfig } from './fsrsConfig.js';
 import { mergeImageLearning } from './imagePreferences.js';
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18800';
-import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18800';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18900';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18900';
 import { activityByDevice, aggregateActivity, normalizedActivity, streakFromActivity, currentStudyStats } from './studyActivity.js';
 import { localDateKey } from '../utils/dates.js';
 import { getCourseDefinition, isCourseId } from '../data/courses.js';
 import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles, stampPracticePreferences } from './courseProfiles.js';
-import { normalizeWordPracticeStats } from './wordSelection.js?v=18800';
-import { areSensesNearDuplicate } from './learningDefinitions.js?v=18800';
+import { normalizeWordPracticeStats } from './wordSelection.js?v=18900';
+import { areSensesNearDuplicate, normalizeMeaningSupport, sourceDefinitionFingerprint } from './learningDefinitions.js?v=18900';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
@@ -164,7 +167,7 @@ export function mergeDriveSettings(localSettings = {}, remoteSettings = {}, { fr
     ? remoteSettings
     : localSettings;
   const mergedCourses = mergeCourseProfiles(freshInstall ? {} : localSettings, remoteSettings);
-  return migrateCourseSettings({ ...base, imageLearning: mergeImageLearning(localSettings.imageLearning, remoteSettings.imageLearning), activeCourseId: mergedCourses.activeCourseId, courseProfiles: mergedCourses.courseProfiles });
+  return migrateCourseSettings({ ...base, fsrs: mergeFsrsConfig(localSettings.fsrs, remoteSettings.fsrs, base.fsrs), imageLearning: mergeImageLearning(localSettings.imageLearning, remoteSettings.imageLearning), activeCourseId: mergedCourses.activeCourseId, courseProfiles: mergedCourses.courseProfiles });
 }
 
 function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource = 'drive') {
@@ -203,6 +206,7 @@ function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource
     explanationSource: String(candidate.explanationSource || ''),
     explanationModel: String(candidate.explanationModel || ''),
     explanationVersion: Number(candidate.explanationVersion) || 0,
+    meaningSupport: normalizeMeaningSupport(candidate.meaningSupport),
     usageNote: String(candidate.usageNote || '').trim(),
     otherDefinitions: Array.isArray(candidate.otherDefinitions) ? candidate.otherDefinitions.filter(value => typeof value === 'string').map(value => value.slice(0, 1500)).slice(0, 8) : [],
     example: String(candidate.example || '').trim(),
@@ -265,9 +269,13 @@ export class DriveSyncService {
     this.suppressEvents = false;
     this.isFreshInstall = !this.storage.getItem(STORAGE_KEY_WORDS);
     this.deviceId = this.getOrCreateDeviceId();
+    this.reviewHistory = new ReviewHistoryStore(storage);
     this.initStorage();
     this.restoreGoogleToken();
   }
+
+  appendReviewEvent(event) { return this.reviewHistory.append(event); }
+  getReviewEvents() { return this.reviewHistory.all(); }
 
   getOrCreateDeviceId() {
     const saved = String(this.storage.getItem(STORAGE_KEY_DEVICE_ID) || '').trim();
@@ -586,7 +594,7 @@ export class DriveSyncService {
     return response.json();
   }
 
-  async createJsonFile(folderId, name, kind, payload, monthYear = '') {
+  async createJsonFile(folderId, name, kind, payload, monthYear = '', properties = {}) {
     const boundary = `keepvocab_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const metadata = {
       name,
@@ -596,7 +604,8 @@ export class DriveSyncService {
         [BACKUP_APP_PROPERTY]: 'data',
         kind,
         schemaVersion: String(SCHEMA_VERSION),
-        ...(monthYear ? { monthYear } : {})
+        ...(monthYear ? { monthYear } : {}),
+        ...properties
       }
     };
     const body = [
@@ -723,6 +732,7 @@ export class DriveSyncService {
     if (index === -1) throw new Error('That vocabulary entry no longer exists.');
     const allowed = ['word', 'phonetic', 'partOfSpeech', 'definition', 'sourceDefinition', 'sourceFingerprint', 'usageNote', 'explanationSource', 'explanationModel', 'example', 'lemma', 'translation', 'translationLanguage', 'exampleSourceUrl', 'exampleAttribution', 'exampleLicense', 'audioUrl', 'imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery', 'imageCustomConcept', 'imageKind', 'imageGeneratedModel', 'imageGeneratedAt', 'imageGeneratedPrompt'];
     const cleanPatch = Object.fromEntries(allowed.filter(key => Object.prototype.hasOwnProperty.call(patch, key)).map(key => [key, String(patch[key] ?? '').trim()]));
+    if (Object.prototype.hasOwnProperty.call(patch, 'meaningSupport')) cleanPatch.meaningSupport = normalizeMeaningSupport(patch.meaningSupport);
     if (Object.prototype.hasOwnProperty.call(patch, 'explanationVersion')) cleanPatch.explanationVersion = Number(patch.explanationVersion) || 0;
     if (Object.prototype.hasOwnProperty.call(patch, 'imageScenes')) cleanPatch.imageScenes = normalizeImageScenes(patch.imageScenes);
     if (Array.isArray(patch.sourceDefinitions)) cleanPatch.sourceDefinitions = [...new Set(patch.sourceDefinitions.map(String).map(value => value.trim()).filter(Boolean))].slice(0, 12);
@@ -945,12 +955,15 @@ export class DriveSyncService {
     const folder = await this.findOrCreateBackupFolder();
     const files = await this.listBackupFiles(folder.id);
     const monthlyFiles = new Map();
+    const reviewFiles = [];
     let settingsFile = null;
     for (const file of files) {
       if (file.appProperties?.kind === 'month' && file.appProperties?.monthYear) {
         const group = monthlyFiles.get(file.appProperties.monthYear) || [];
         group.push(file);
         monthlyFiles.set(file.appProperties.monthYear, group);
+      } else if (file.appProperties?.kind === 'reviews') {
+        reviewFiles.push(file);
       } else if (file.appProperties?.kind === 'settings' && !settingsFile) {
         settingsFile = file;
       }
@@ -963,6 +976,15 @@ export class DriveSyncService {
       remoteByMonth.set(monthYear, payloads);
     }
 
+    const reviewPayloads = [];
+    for (const file of reviewFiles) {
+      const payload = await this.downloadJsonFile(file.id);
+      if (Number(payload?.schemaVersion) !== SCHEMA_VERSION || !Array.isArray(payload.events)) continue;
+      reviewPayloads.push({ file, payload });
+    }
+    if (reviewPayloads.length) await this.reviewHistory.merge(reviewPayloads.flatMap(({ file, payload }) => payload.events
+      .map(event => ({ ...event, deviceId: event.deviceId || file.appProperties?.deviceId || '' }))));
+    const localReviewEvents = await this.getReviewEvents();
     const localWordsForSync = this.getAllWords();
     const allMonths = new Set([
       ...localWordsForSync.map(word => word.monthYear),
@@ -1072,6 +1094,33 @@ export class DriveSyncService {
       updatedFiles += 1;
     }
 
+    // Each device writes its own append-only history shard, so another device
+    // (including an older app) cannot overwrite this device's review log.
+    const ownFiles = reviewPayloads.filter(({ file }) => file.appProperties?.deviceId === this.deviceId);
+    const ownEvents = mergeReviewEvents(localReviewEvents.filter(event => !event.deviceId || event.deviceId === this.deviceId), ...ownFiles.map(item => item.payload.events));
+    if (ownEvents.length) {
+      const payload = { schemaVersion: SCHEMA_VERSION, app: 'KeepVocab', algorithm: 'FSRS-6', deviceId: this.deviceId,
+        updatedAt: new Date().toISOString(), events: ownEvents };
+      if (!ownFiles.length) {
+        await this.createJsonFile(folder.id, `KeepVocab Reviews ${this.deviceId}.json`, 'reviews', payload, '', { deviceId: this.deviceId });createdFiles += 1;
+      } else if (JSON.stringify(mergeReviewEvents(ownFiles[0].payload.events)) !== JSON.stringify(ownEvents)) {
+        await this.updateJsonFile(ownFiles[0].file.id, payload);updatedFiles += 1;
+      }
+    }
+    settings = mergeDriveSettings(this.getSettings(), settings, { freshInstall: this.isFreshInstall });
+    // Preserve edits, additions and deletions made during network requests.
+    const latestWords = new Map(this.getAllWords().map(word => [word.id, word]));
+    const mergedWords = new Map(finalWords.map(word => [word.id, word]));
+    for (const latest of latestWords.values()) mergedWords.set(latest.id, mergedWords.has(latest.id) ? mergeStoredWord(mergedWords.get(latest.id), latest) : latest);
+    const tombstones = new Map(finalTombstones.map(item => [item.id, item]));
+    for (const item of this.getTombstones()) if (!tombstones.has(item.id) || Date.parse(item.deletedAt) > Date.parse(tombstones.get(item.id).deletedAt)) tombstones.set(item.id, item);
+    finalTombstones.splice(0, finalTombstones.length, ...tombstones.values());
+    const history = await this.getReviewEvents();
+    const byWord = new Map();
+    for (const event of history) { if (!byWord.has(event.wordId)) byWord.set(event.wordId, []); byWord.get(event.wordId).push(event); }
+    const surviving = [...mergedWords.values()].filter(word => !tombstones.has(word.id) || Date.parse(tombstones.get(word.id).deletedAt) < recordTimestamp(word))
+      .map(word => replayWordFsrsHistory(word, byWord.get(word.id), settings, { sourceFingerprint: sourceDefinitionFingerprint(word) }));
+    finalWords.splice(0, finalWords.length, ...surviving);
     this.suppressEvents = true;
     this.saveWords(finalWords, { silent: true });
     this.saveTombstones(finalTombstones, { silent: true });

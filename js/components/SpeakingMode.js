@@ -1,4 +1,4 @@
-import { definitionForLearning } from '../services/learningDefinitions.js?v=18800';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
 import {
   SPEAKING_CATEGORIES,
@@ -9,16 +9,16 @@ import {
   getLessonPlan,
   buildCoachInitiativeCue,
   buildSpeakingInstruction
-} from '../data/speakingLessons.js?v=18800';
-import { GeminiLiveSession } from '../services/geminiLive.js?v=18800';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=18800';
-import { driveSync } from '../services/driveSync.js?v=18800';
-import { recordSpeakingStats } from '../services/learningStats.js?v=18800';
-import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=18800';
-import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, phraseMeaningHint, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=18800';
-import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18800';
+} from '../data/speakingLessons.js?v=18900';
+import { GeminiLiveSession } from '../services/geminiLive.js?v=18900';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18900';
+import { driveSync } from '../services/driveSync.js?v=18900';
+import { recordSpeakingStats } from '../services/learningStats.js?v=18900';
+import { buildVocabularySpeakingInstruction, selectSpeakingTargets, speakingSessionHighlights, storeSpeakingActivations } from '../services/speakingVocabulary.js?v=18900';
+import { buildPhraseCoachingInstruction, detectUsedPhrases, lessonPhraseLibraryEntries, phraseLearningStatus, phraseMeaningHint, recordPhrasePractice, saveLessonPhrasesToLibrary, selectPhrasesForLesson } from '../services/speakingPhrases.js?v=18900';
+import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18900';
 import { navigateTo as navigate } from '../utils/navigation.js';
-import { getTranslationLanguage, getTranslationName } from '../services/translationSettings.js?v=18800';
+import { getTranslationLanguage, getTranslationName } from '../services/translationSettings.js?v=18900';
 
 const PROGRESS_STORAGE = 'keepvocab_speaking_progress_v1';
 export const COACH_SILENCE_MS = 9000;
@@ -188,6 +188,7 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
   let phraseHidden = false;
   const coachName = 'Mira';
   let finishing = false;
+  let failedToStart = false;
 
   const clearInitiativeTimer = () => {
     window.clearTimeout(initiativeTimer);
@@ -245,7 +246,7 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
     <div class="live-stage">
       <main class="live-coach-panel"><div class="live-status-pill"><i></i><span id="live-status-label">Connecting securely…</span></div>${renderVoiceOrb('connecting')}<div class="coach-identity"><strong>${coachName}</strong><span>Your AI speaking coach</span></div><p class="live-prompt">${escapeHtml(lesson.goal)}</p><p class="live-turn-cue" id="live-turn-cue" aria-live="polite">Setting up clear turn-by-turn audio…</p>
         <div class="live-controls"><button id="interrupt-live-coach" class="live-control interrupt" hidden><i class="fa-solid fa-hand"></i><span>Stop ${coachName}</span></button><button id="toggle-live-mic" class="live-control"><i class="fa-solid fa-microphone"></i><span>Mute</span></button><button id="end-live-lesson" class="end-lesson-button"><i class="fa-solid fa-stop"></i><span>End lesson</span></button></div>
-        <form id="live-text-fallback" class="live-text-fallback"><input id="live-text-input" lang="en" placeholder="Or type a reply" autocomplete="off"><button aria-label="Send typed reply"><i class="fa-solid fa-paper-plane"></i></button></form>
+        <form id="live-text-fallback" class="live-text-fallback"><input id="live-text-input" lang="en" aria-label="Typed reply to Mira" placeholder="Or type a reply" autocomplete="off"><button aria-label="Send typed reply"><i class="fa-solid fa-paper-plane"></i></button></form>
       </main>
       <aside class="live-side-panel"><div class="live-goal-card"><span>Lesson goal</span><p>${escapeHtml(lesson.goal)}</p></div>${vocabularyTargets.length ? `<div class="live-vocabulary-card"><span>Scenario-matched words</span><div>${vocabularyTargets.map(word => `<b>${escapeHtml(word.word)}</b>`).join('')}</div></div>` : ''}<div class="live-plan-card"><span>Today’s route</span><ol>${getLessonPlan(lesson).map(step => `<li>${escapeHtml(step.phase)}</li>`).join('')}</ol></div><div class="live-phrase-card"><div><span id="live-phrase-stage">Meet it in context</span><small>${phraseIndex + 1} of ${phraseTargets.length}</small></div><strong id="live-target-phrase">${escapeHtml(phraseTargets[0]?.text || '')}</strong><p id="live-target-meaning" lang="${getTranslationLanguage()}">${escapeHtml(phraseMeaningHint(phraseTargets[0]))}</p><div><button id="hide-live-phrase">Hide & recall <i class="fa-solid fa-eye-slash"></i></button><button id="next-live-phrase">Next expression <i class="fa-solid fa-rotate"></i></button></div></div><div class="live-transcript-card"><div><span>Live transcript</span><small>Generated by Gemini</small></div><div id="live-transcript" class="live-transcript" aria-live="polite"></div></div></aside>
     </div>
@@ -310,6 +311,10 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
     mergeTranscript(transcript, 'learner', text); renderTranscript(); input.value = '';
   });
   const finish = async () => {
+    if (failedToStart) {
+      renderLessonPreview(container, lesson.id, onNavigate);
+      return;
+    }
     if (finishing) return;
     finishing = true;
     clearInitiativeTimer();
@@ -344,16 +349,24 @@ async function startLiveLesson(container, lesson, vocabularyTargets, phraseTarge
     await session.disconnect().catch(() => {});
     if (activeSession !== session || finishing) return;
     activeSession = null;
+    failedToStart = true;
     showLiveError(container, error.message, () => navigate('settings', onNavigate));
   }
 }
 
 function showLiveError(container, message, onSetup) {
   const panel = container.querySelector('.live-coach-panel');
+  panel?.classList.add('has-live-error');
   panel?.querySelector('.live-error')?.remove();
   panel?.insertAdjacentHTML('beforeend', `<div class="live-error" role="alert"><i class="fa-solid fa-circle-exclamation"></i><div><strong>Live lesson could not start</strong><span>${escapeHtml(message)}</span></div><button id="live-error-setup">Check setup</button></div>`);
   const status = container.querySelector('#live-status-label');
   if (status) status.textContent = 'Connection needs attention';
+  const cue = container.querySelector('#live-turn-cue');
+  if (cue) cue.textContent = 'Check setup, then start the lesson again.';
+  const microphone = container.querySelector('#toggle-live-mic');
+  if (microphone) microphone.disabled = true;
+  const end = container.querySelector('#end-live-lesson');
+  if (end) end.innerHTML = '<i class="fa-solid fa-arrow-left"></i><span>Back to lesson</span>';
   container.querySelector('#speaking-orb')?.classList.add('error');
   container.querySelector('#live-error-setup')?.addEventListener('click', onSetup);
 }

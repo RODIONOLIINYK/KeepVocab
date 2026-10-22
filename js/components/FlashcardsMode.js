@@ -1,11 +1,11 @@
-import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18800';
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18800';
-import { driveSync } from '../services/driveSync.js?v=18800';
-import { speakWord } from '../services/speechService.js?v=18800';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18800';
-import { getRatingPreviews } from '../services/srsEngine.js?v=18800';
+import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18900';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18900';
+import { driveSync } from '../services/driveSync.js?v=18900';
+import { speakWord } from '../services/speechService.js?v=18900';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18900';
+import { getRatingPreviews } from '../services/srsEngine.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18800';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function renderFlashcardsMode(container, onNavigate) {
@@ -21,10 +21,13 @@ export function renderFlashcardsMode(container, onNavigate) {
   let currentIndex = 0;
   let revealed = false;
   let completed = false;
+  let questionStartedAt = performance.now();
+  let recallTimeMs = null;
 
   function move(delta) {
     currentIndex = Math.min(words.length - 1, Math.max(0, currentIndex + delta));
     revealed = false;
+    questionStartedAt = performance.now();recallTimeMs = null;
     render();
   }
 
@@ -36,9 +39,11 @@ export function renderFlashcardsMode(container, onNavigate) {
       return;
     }
     const word = driveSync.getWords().find(item => item.id === words[currentIndex].id) || words[currentIndex];
-    const previews = getRatingPreviews(word);
+
     const earlyStage = !word.mastery || Number(word.mastery.recall || 0) < .55;
     const showImageOnPrompt = Boolean(word.imageUrl && earlyStage);
+    const reviewResult = { exerciseType: 'flashcards', recallType: 'free-recall', producedUnaided: !showImageOnPrompt, hintsUsed: showImageOnPrompt ? 1 : 0 };
+    const previews = getRatingPreviews(word, new Date(), { settings: driveSync.getSettings(), result: reviewResult });
     container.innerHTML = `<section class="flashcard-mode" aria-labelledby="flashcard-word"><header class="exercise-topbar"><button class="status-pill offline" id="flashcard-exit"><i class="fa-solid fa-arrow-left"></i> Exit</button><div class="exercise-progress"><span>${currentIndex + 1} of ${words.length}</span><i><b style="width:${Math.round((currentIndex + 1) / words.length * 100)}%"></b></i></div><button class="audio-btn-circle" id="flashcard-speak" aria-label="Hear ${escapeHtml(word.word)}"><i class="fa-solid fa-volume-high"></i></button></header>
       <button class="smart-flashcard ${revealed ? 'revealed' : ''}" id="flashcard-reveal" aria-expanded="${revealed}">
         <div class="smart-flashcard-prompt" aria-hidden="${revealed}">${showImageOnPrompt ? `<img src="${escapeHtml(word.imageUrl)}" alt="Visual cue for ${escapeHtml(word.word)}">` : ''}<span class="eyebrow">${showImageOnPrompt ? 'Image-supported review' : 'Recall the meaning'}</span><h1 id="flashcard-word">${escapeHtml(word.word)}</h1><p>${escapeHtml(word.phonetic || '')}</p><small><i class="fa-solid fa-hand-pointer"></i> Tap or press Space to reveal</small></div>
@@ -48,19 +53,19 @@ export function renderFlashcardsMode(container, onNavigate) {
       <div class="flashcard-nav"><button class="status-pill offline" id="flashcard-prev" ${currentIndex === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i> Previous</button><button class="status-pill offline" id="flashcard-next" ${currentIndex === words.length - 1 ? 'disabled' : ''}>Next <i class="fa-solid fa-chevron-right"></i></button></div></section>`;
     container.querySelector('#flashcard-exit').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelector('#flashcard-speak').addEventListener('click', () => speakWord(word.word, 'en-US', .9, word.audioUrl));
-    container.querySelector('#flashcard-reveal').addEventListener('click', () => { revealed = !revealed; render(); });
+    container.querySelector('#flashcard-reveal').addEventListener('click', () => { if (recallTimeMs === null) recallTimeMs = performance.now() - questionStartedAt; revealed = !revealed; render(); });
     container.querySelector('#flashcard-prev').addEventListener('click', () => move(-1));
     container.querySelector('#flashcard-next').addEventListener('click', () => move(1));
     container.querySelectorAll('[data-flashcard-rating]').forEach(button => button.addEventListener('click', () => {
       const rating = button.dataset.flashcardRating;
-      recordExerciseResult({ wordId: word.id, exerciseType: 'flashcards', correct: rating !== 'again', hintsUsed: showImageOnPrompt ? 1 : 0, recallType: 'recognition', learnerRating: rating });
+      recordExerciseResult({ wordId: word.id, exerciseType: 'flashcards', correct: rating !== 'again', ...reviewResult, responseTimeMs: recallTimeMs, learnerRating: rating });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       if (currentIndex < words.length - 1) move(1); else { completed = true; render(); }
     }));
     const keyHandler = event => {
       if (!container.querySelector('.flashcard-mode')) return;
       if (event.target.matches('input,textarea,select')) return;
-      if (event.code === 'Space') { event.preventDefault(); revealed = !revealed; render(); }
+      if (event.code === 'Space') { event.preventDefault(); if (recallTimeMs === null) recallTimeMs = performance.now() - questionStartedAt; revealed = !revealed; render(); }
       if (event.key === 'ArrowLeft' && currentIndex > 0) move(-1);
       if (event.key === 'ArrowRight' && currentIndex < words.length - 1) move(1);
     };

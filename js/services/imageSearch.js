@@ -1,7 +1,7 @@
-import { imageLearningEnabled, rankImagesLocally } from './imageLearning.js?v=18800';
-import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=18800';
-import { prepareImageThumbnails } from './imageThumbnails.js?v=18800';
-import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18800';
+import { imageLearningEnabled, rankImagesLocally } from './imageLearning.js?v=18900';
+import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=18900';
+import { prepareImageThumbnails } from './imageThumbnails.js?v=18900';
+import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18900';
 
 const OPENVERSE_API = 'https://api.openverse.org/v1/images/';
 const WIKIMEDIA_COMMONS_API = 'https://commons.wikimedia.org/w/api.php';

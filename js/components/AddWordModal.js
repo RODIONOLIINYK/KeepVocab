@@ -1,9 +1,9 @@
-import { driveSync } from '../services/driveSync.js?v=18800';
-import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary } from '../services/wordEntry.js?v=18800';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18800';
-import { mountImageReview } from './ImageReview.js?v=18800';
-import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18800';
-import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18800';
+import { driveSync } from '../services/driveSync.js?v=18900';
+import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary } from '../services/wordEntry.js?v=18900';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18900';
+import { mountImageReview } from './ImageReview.js?v=18900';
+import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18900';
+import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18900';
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
   <div class="modal-backdrop" id="add-word-modal">
@@ -23,7 +23,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
       <div id="single-add-panel" role="tabpanel" aria-labelledby="single-add-tab">
       <div style="display: flex; flex-direction: column; gap: 12px;">
         <form class="quick-add-row" id="add-word-lookup-form" style="display: flex; gap: 10px;">
-          <input type="text" id="add-word-input" placeholder="Type a word, then press Enter" enterkeyhint="search" autocomplete="off" autocapitalize="none" autofocus style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 0.95rem; outline: none;">
+          <input type="text" id="add-word-input" aria-label="English word or phrase" placeholder="Type a word, then press Enter" enterkeyhint="search" autocomplete="off" autocapitalize="none" autofocus style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 0.95rem;">
           <button type="submit" class="btn-green-solid" id="btn-auto-fetch-word" style="padding: 10px 16px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings</button>
         </form>
         <button type="button" class="text-action" id="btn-ai-fetch-word" style="align-self: flex-end;"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Ask Gemini</button>

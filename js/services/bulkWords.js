@@ -1,5 +1,5 @@
-import { imageSelectionPatch } from './imageSearch.js?v=18800';
-import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18800';
+import { imageSelectionPatch } from './imageSearch.js?v=18900';
+import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18900';
 
 export const MAX_BULK_WORDS = 100;
 export const BULK_LOOKUP_DELAY_MS = 1000;

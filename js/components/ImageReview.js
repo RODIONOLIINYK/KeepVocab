@@ -1,6 +1,6 @@
-import { recordImagePreference } from '../services/imageLearning.js?v=18800';
-import { escapeHtml } from '../utils/html.js?v=18800';
-import { findRelevantImages, imageSelectionPatch } from '../services/imageSearch.js?v=18800';
+import { recordImagePreference } from '../services/imageLearning.js?v=18900';
+import { escapeHtml } from '../utils/html.js?v=18900';
+import { findRelevantImages, imageSelectionPatch } from '../services/imageSearch.js?v=18900';
 
 let reviewId = 0;
 const clone = value => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));

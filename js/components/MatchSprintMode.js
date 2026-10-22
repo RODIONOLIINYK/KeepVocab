@@ -1,9 +1,9 @@
-import { definitionForLearning } from '../services/learningDefinitions.js?v=18800';
-import { driveSync } from '../services/driveSync.js?v=18800';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18800';
-import { playInteractionSound } from '../services/interactionSound.js?v=18800';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18900';
+import { driveSync } from '../services/driveSync.js?v=18900';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18900';
+import { playInteractionSound } from '../services/interactionSound.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18800';
+import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -49,6 +49,7 @@ export function renderMatchSprintMode(container, onNavigate) {
   let disposed = false;
   let feedbackTimer = null;
   const startedAt = performance.now();
+  let attemptStartedAt = null;
   let elapsedSeconds = 0;
   const timer = window.setInterval(() => {
     elapsedSeconds = Math.floor((performance.now() - startedAt) / 1000);
@@ -78,7 +79,7 @@ export function renderMatchSprintMode(container, onNavigate) {
       resolvingPair = true;
       playInteractionSound('correct');
       render();
-      recordExerciseResult({ wordId: id, exerciseType: 'match-sprint', correct: true, responseTimeMs: performance.now() - startedAt, hintsUsed: missed.has(id) ? 1 : 0, recallType: 'recognition', producedUnaided: false });
+      recordExerciseResult({ wordId: id, exerciseType: 'match-sprint', correct: true, responseTimeMs: attemptStartedAt == null ? null : performance.now() - attemptStartedAt, hintsUsed: missed.has(id) ? 1 : 0, recallType: 'recognition', producedUnaided: false });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       feedbackTimer = window.setTimeout(() => {
         if (disposed) return;
@@ -86,6 +87,7 @@ export function renderMatchSprintMode(container, onNavigate) {
         correctPair = null;
         selectedTerm = null;
         selectedDefinition = null;
+        attemptStartedAt = null;
         resolvingPair = false;
         progressCelebration = true;
         animateBoard = true;
@@ -97,7 +99,7 @@ export function renderMatchSprintMode(container, onNavigate) {
     playInteractionSound('wrong');
     missed.add(selectedTerm);
     missed.add(selectedDefinition);
-    recordExerciseResult({ wordId: selectedTerm, exerciseType: 'match-sprint', correct: false, responseTimeMs: performance.now() - startedAt, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: selectedDefinition });
+    recordExerciseResult({ wordId: selectedTerm, exerciseType: 'match-sprint', correct: false, responseTimeMs: attemptStartedAt == null ? null : performance.now() - attemptStartedAt, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: selectedDefinition });
     wrongPair = { term: selectedTerm, definition: selectedDefinition };
     resolvingPair = true;
     render();
@@ -106,6 +108,7 @@ export function renderMatchSprintMode(container, onNavigate) {
       wrongPair = null;
       selectedTerm = null;
       selectedDefinition = null;
+      attemptStartedAt = null;
       resolvingPair = false;
       if (window.location.hash === '#match') render();
     }, 550);
@@ -135,6 +138,7 @@ export function renderMatchSprintMode(container, onNavigate) {
     container.querySelectorAll('[data-match-kind]').forEach(button => button.addEventListener('click', () => {
       if (resolvingPair) return;
       const { matchKind, matchId } = button.dataset;
+      if (!selectedTerm && !selectedDefinition) attemptStartedAt = performance.now();
       if (matchKind === 'term') selectedTerm = selectedTerm === matchId ? null : matchId;
       else selectedDefinition = selectedDefinition === matchId ? null : matchId;
       render();

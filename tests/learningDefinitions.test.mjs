@@ -141,7 +141,7 @@ test('large explicit repairs use bounded batches, keep order, and preserve parti
   const options = fixture(row => Number(row.id) === 13 ? null : ({ definition: `Only the ${row.sourceDefinition.match(/\d+$/)[0]} details must be checked with care.`,
     example: `They checked term${row.sourceDefinition.match(/\d+$/)[0]} with great care.` }));
   const result = await withLearnerExplanations({ senses: originals }, { ...options, force: true });
-  assert.deepEqual(options.calls.map(call => call.items.length), [12, 12, 3]);
+  assert.deepEqual(options.calls.map(call => call.items.length), [12, 12, 1, 3]);
   assert.deepEqual(result.senses.map(item => item.id), originals.map(item => item.id));
   assert.equal(result.senses[13].definition, originals[13].definition);
   assert.notEqual(result.senses[0].definition, originals[0].definition);
@@ -174,4 +174,43 @@ test('unconfigured, disabled and cancelled operations never pay for explanations
   const result = await withLearnerExplanations({ senses: [sense] }, { ...options, signal: controller.signal });
   assert.equal(result.definition, SOURCE);
   assert.equal(options.calls.length, 0);
+});
+
+test('restrain gets a concrete explanation, an unpacked example and a schema-bound cached response', async () => {
+  const word = { id: 'restrain', word: 'restrain', partOfSpeech: 'verb', definition: "To keep one's feelings or behaviour under control.", example: '' };
+  const options = fixture(() => ({ definition: 'To stop yourself from showing a feeling or doing something you want to do.',
+    example: 'She restrained her anger and replied calmly.', usageNote: 'Restrain yourself from doing something.',
+    situation: 'Someone insults you. You want to shout, but choose to stay calm.',
+    exampleExplanation: 'She feels angry but controls her reaction instead of shouting.', contrast: 'Prevent focuses on stopping an event from happening.' }));
+  const result = await improveLearnerExplanation(word, options);
+  assert.ok(result.meaningSupport.exampleExplanation.includes('reaction'));
+  assert.equal(result.sourceDefinition, word.definition);
+  assert.equal(options.calls.length, 1);
+  assert.deepEqual(options.calls[0].body.generationConfig.responseSchema.properties.senses.items.properties.id.enum, ['0']);
+  assert.ok(options.calls[0].body.generationConfig.responseSchema.properties.senses.items.required.includes('exampleExplanation'));
+  const cached = await improveLearnerExplanation(word, { storage: options.storage, fetchImpl: async () => assert.fail('Reuse complete cached help') });
+  assert.equal(cached.meaningSupport.exampleExplanation, result.meaningSupport.exampleExplanation);
+  const reopened = await improveLearnerExplanation(result, { storage: new MemoryStorage(), fetchImpl: async () => assert.fail('Saved help is available offline') });
+  assert.equal(reopened.meaningSupport.exampleExplanation, result.meaningSupport.exampleExplanation);
+});
+
+test('incomplete explicit help retries once, while failed provider requests keep their actual error', async () => {
+  let attempts = 0;
+  const word = { id: 'restrain', word: 'restrain', definition: 'To control a feeling.', partOfSpeech: 'verb' };
+  const options = fixture(() => ++attempts === 1 ? { definition: 'To keep an emotion under control.', example: 'She restrained her anger.' }
+    : { definition: 'To keep an emotion under control.', example: 'She restrained her anger.', situation: 'You feel angry but choose to stay calm.', exampleExplanation: 'She controls the anger instead of showing it.' });
+  const result = await improveLearnerExplanation(word, options);
+  assert.equal(attempts, 2);assert.ok(result.meaningSupport);
+  const failure = await withLearnerExplanations({ senses: [word] }, { ...options, refresh: true, force: true, requireSupport: true,
+    fetchImpl: async () => ({ ok: false, status: 429, json: async () => ({ error: { message: 'Quota exhausted.' } }) }) });
+  assert.equal(failure.definition, word.definition);
+  assert.equal(failure.explanationFailures[0].code, 'API_429');assert.match(failure.explanationFailures[0].message, /Quota exhausted/);
+});
+
+test('circular derivatives cannot masquerade as clearer definitions', async () => {
+  assert.equal(needsLearnerExplanation({ word: 'restrain', definition: 'To exercise restraint.' }), true);
+  assert.equal(needsLearnerExplanation({ word: 'meticulous', definition: 'Showing meticulousness.' }), true);
+  const options = fixture(() => ({ definition: 'To exercise restraint.', example: 'She restrained her anger.', situation: 'You are angry but stay calm.', exampleExplanation: 'She keeps the anger under control.' }));
+  await assert.rejects(improveLearnerExplanation({ word: 'restrain', definition: 'To control a feeling.' }, options), { code: 'EXPLANATION_UNAVAILABLE' });
+  assert.equal(options.calls.length, 2);
 });

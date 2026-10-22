@@ -1,3 +1,5 @@
+import { readFsrsConfig, rawFsrsRetrievability } from './fsrsConfig.js';
+import { memoryContextFeatures, calibratedRecallProbability } from './memoryFeatures.js';
 import { localDateKey } from '../utils/dates.js';
 
 // Every practice mode uses only the month selected in Library.
@@ -176,6 +178,7 @@ export function isWordReadyForPractice(word, now = new Date()) {
   const recallDays = stats.successfulRecallDays + stats.legacySuccessfulReviews;
   const reliable = recallDays >= 3 && stats.lastAnswerCorrect !== false
     && !stats.consecutiveMisses && !normalizeSelectionMistakes(word).consecutiveFailures;
+  if (word?.srs?.algorithm === 'FSRS-6') return Boolean(dueAt && dueAt <= timestamp);
   if (dueAt && dueAt <= timestamp) {
     return !(reliable && recallAt && timestamp - recallAt < DAY_MS);
   }
@@ -214,7 +217,10 @@ export function wordRecommendationScore(word, options = {}) {
   const recentCorrectPenalty = stats.lastAnswerCorrect === true && daysSinceAnswer < 3
     ? (3 - daysSinceAnswer) * 18 + Math.min(30, stats.consecutiveCorrect * 6)
     : 0;
-  return (due ? 55 : 0)
+  const config = readFsrsConfig(options.settings);
+  const rawRecall = rawFsrsRetrievability(word, now, config);
+  const recall = rawRecall === null ? null : calibratedRecallProbability(rawRecall, memoryContextFeatures(word, now, { stats }), config.models.recall?.calibration);
+  return (recall === null ? 0 : (1 - recall) * 90) + (due ? 55 : 0)
     + recentFailureCount(word, now) * 7
     + mistakes.consecutiveFailures * 18
     + stats.consecutiveMisses * 12
@@ -291,6 +297,7 @@ function takeDistinct(pool, count, selectedIds, selectedSpellings) {
 export function selectModeWords(words, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
   const mode = String(options.mode || 'independent');
+  const settings = options.settings || readFsrsConfig();
   const limit = Math.max(0, Math.round(options.limit ?? 10));
   const valid = (Array.isArray(words) ? words : []).filter(word => word?.id && word.word && word.definition
     && (options.includeResting === true || isWordReadyForPractice(word, now)));
@@ -298,7 +305,7 @@ export function selectModeWords(words, options = {}) {
   const uniqueSpellings = new Set(valid.map(word => String(word.word).trim().toLowerCase())).size;
   const target = Math.min(limit, uniqueSpellings);
   const externalPriority = typeof options.priorityScore === 'function' ? options.priorityScore : null;
-  const priorityScore = word => (externalPriority ? Number(externalPriority(word, now)) || 0 : wordRecommendationScore(word, { now }))
+  const priorityScore = word => (externalPriority ? Number(externalPriority(word, now)) || 0 : wordRecommendationScore(word, { now, settings }))
     - recentSelectionPenalty(word, mode, now);
   const priorityRanked = [...valid].sort((a, b) => priorityScore(b) - priorityScore(a)
     || stableDailyTie(a, mode, now) - stableDailyTie(b, mode, now));

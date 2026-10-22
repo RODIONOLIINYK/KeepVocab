@@ -16,19 +16,17 @@ Settings → Routine & sound lets users adjust the goal and batch size separatel
 Each word appears once per workout; small libraries are never padded with
 repeats. Today displays the actual workout size and selected month.
 
-Due reviews fill the session first. If fewer words are due, still-learning words
-can fill remaining places after at least 24 hours without an answer, provided
-there are fewer than three successful recall days (including the established
-legacy review baseline). Recent answers, pending mistake retries and mastered
-words are never used as early filler. Reliable words with three successful recall
-days wait for their scheduled date and at least 24 hours after their last recall,
-including when an imported schedule is stale. Manual mode selection follows
-these same cooldowns. Weak Words uses unresolved mistakes, respects retry times,
-and assigns each spelling once; lifetime errors alone cannot keep a recovered
-word in that mode. One meaning per spelling is selected.
+Due reviews fill the session first. Meanings reviewed with FSRS-6 wait for their
+actual due date; useful extra practice remains available when other meanings are
+due. Unreviewed legacy words may fill remaining places after the existing learning
+cooldown. Recently recalled reliable words rest until scheduled. Manual modes use
+these same readiness rules. Weak Words prioritizes unresolved mistakes, respects
+retry times and assigns each spelling once; lifetime errors alone cannot keep a
+recovered word in that mode. One meaning per spelling is selected.
 
 Ranking uses unresolved mistakes, recent error rate, successful recall days,
-recall strength, response time and lateness. A bounded priority share and saved
+recall strength, response time, lateness and predicted forgetting risk. A validated
+personal calibration can adjust priority using prior review context. A bounded priority share and saved
 selection history rotate the remaining words, including when a session is
 abandoned. Starting a session records selections separately from answer counts;
 dashboard previews write nothing. Sessions read the latest results and schedules.
@@ -47,7 +45,8 @@ never blindly summed across overlapping snapshots. Old records retain their
 counts and schedules; their successful-review
 baseline is preserved without inventing historical independent recall days.
 
-The scheduler no longer forces a 3/7/14/30-day gap just because a box advanced.
+FSRS-6 replaces box intervals with a memory model. See [FSRS scheduling](fsrs-scheduling.md)
+for stream separation, local fitting, backup and validation limits.
 New words earn progressively longer intervals through independent recall on
 separate days. Repeating an answer several times on one day does not establish
 long-term retention. Recognition and hinted answers supply weaker evidence;

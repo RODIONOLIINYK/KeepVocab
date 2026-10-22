@@ -1,8 +1,8 @@
-import { getActivePracticeWords, getScheduledPracticeWords } from '../services/wordSelection.js?v=18800';
-import { driveSync } from '../services/driveSync.js?v=18800';
-import { buildScheduledPracticeSession, weaknessScore } from '../services/dailySession.js?v=18800';
-import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18800';
-import { completedExercisesToday } from '../services/learningStats.js?v=18800';
+import { getActivePracticeWords, getScheduledPracticeWords } from '../services/wordSelection.js?v=18900';
+import { driveSync } from '../services/driveSync.js?v=18900';
+import { buildScheduledPracticeSession, weaknessScore } from '../services/dailySession.js?v=18900';
+import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18900';
+import { completedExercisesToday } from '../services/learningStats.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -38,7 +38,7 @@ export function renderDashboardView(container, onNavigate) {
   const auth = driveSync.getDriveStatus();
 
   container.innerHTML = `<section class="today-view" aria-labelledby="today-heading">
-    <div class="today-heading-row"><div><span class="eyebrow">Your learning plan</span><h1 id="today-heading">What should I do now?</h1><p>KeepVocab has chosen the next best mix from your real learning needs.</p></div><button class="today-settings-button" id="today-settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button></div>
+    <div class="today-heading-row"><div><span class="eyebrow">Your learning plan</span><h1 id="today-heading">What should I do now?</h1><p>KeepVocab has chosen the next best mix from your real learning needs.</p></div><button class="today-settings-button" id="today-settings" aria-label="Settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button></div>
     <article class="daily-workout-card ${session.exercises.length ? '' : 'is-empty'}">
       <div class="daily-workout-copy"><span class="daily-kicker"><i class="fa-solid fa-sparkles"></i> Today’s Workout</span><h2>${session.exercises.length ? session.dailyGoalComplete ? 'Keep strengthening your words' : 'Continue learning' : practiceWords.length ? 'All caught up' : 'Add your first vocabulary'}</h2><p class="daily-workout-meta">${session.exercises.length ? `${session.dailyGoalComplete ? 'Daily goal complete. More words are ready.<br>' : ''}${session.exercises.length} exercises · ~${session.estimatedMinutes} min` : practiceWords.length ? 'Your words are resting. Your recall history sets their next review.' : 'KeepVocab will build your first session automatically.'}<br><span>${notebookLabel}</span></p>
         ${session.exercises.length ? `<div class="workout-composition"><span><i class="fa-solid fa-keyboard"></i> ${session.exercises.filter(exercise => exercise.exerciseType === 'typed-recall').length} write the word</span>${session.exercises.some(exercise => exercise.exerciseType === 'image-recognition') ? `<span><i class="fa-solid fa-images"></i> ${session.exercises.filter(exercise => exercise.exerciseType === 'image-recognition').length} visual match</span>` : ''}</div>` : ''}

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderMeaningExplanation, reviewedExplanationPatch, applyReviewedExplanations } from '../js/components/MeaningExplanation.js';
 import { renderLibraryView } from '../js/components/LibraryView.js';
-import { driveSync } from '../js/services/driveSync.js?v=18800';
+import { driveSync } from '../js/services/driveSync.js?v=18900';
 
 const source = 'Appearing to be foreign; strange, unfamiliar.';
 const original = { id: 'meaning', word: 'outlandish', partOfSpeech: 'adjective', definition: source, sourceDefinition: source, example: '' };
@@ -58,7 +58,13 @@ test('Library shows the canonical learner explanation and no competing short clu
     renderLibraryView(container);
     assert.ok(container.innerHTML.includes(candidate.definition));
     assert.ok(container.innerHTML.includes(candidate.example));
-    assert.match(container.innerHTML, /Explain clearly/);
+    assert.match(container.innerHTML, /Understand meaning/);
     assert.doesNotMatch(container.innerHTML, /Obsolete competing clue|shorten-definition|conciseDefinition/);
   } finally { for (const [name, method] of originals) driveSync[name] = method; }
+});
+
+test('an empty or failed explanation has no review form or Apply button', async () => {
+  const { renderExplanationReview } = await import('../js/components/MeaningExplanation.js');
+  assert.equal(renderExplanationReview([]), '');
+  assert.equal(renderExplanationReview([{ original, error: 'provider failed' }]), '');
 });

@@ -156,7 +156,6 @@ test('the Library has one Edit action with Pexels-first search, public fallbacks
   assert.match(library, /id="custom-image-url"/);
   assert.match(library, /id="custom-image-file"/);
   assert.match(library, /> More images</);
-  assert.match(library, /AI concepts stay concise at 5–7 concrete words/);
   assert.doesNotMatch(library, /Refresh suggestions/);
 });
 

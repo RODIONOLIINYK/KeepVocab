@@ -1,9 +1,9 @@
 // Fast dictionary lookup with a maintained Wiktionary source, a short fallback, and offline cache.
 
-import { isModernUsageExample, sanitizeExistingExamples } from './exampleSearch.js?v=18800';
-import { groupSimilarSenses } from './learningDefinitions.js?v=18800';
-import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18800';
-import { getTranslationLanguage, normalizeTranslationLanguage } from './translationSettings.js?v=18800';
+import { isModernUsageExample, sanitizeExistingExamples } from './exampleSearch.js?v=18900';
+import { groupSimilarSenses } from './learningDefinitions.js?v=18900';
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18900';
+import { getTranslationLanguage, normalizeTranslationLanguage } from './translationSettings.js?v=18900';
 
 const PRIMARY_API_BASE = 'https://freedictionaryapi.com/api/v1/entries/en/';
 const FALLBACK_API_BASE = 'https://api.datamuse.com/words';

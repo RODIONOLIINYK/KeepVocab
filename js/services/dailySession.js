@@ -1,7 +1,7 @@
-import { completedExercisesToday } from './learningStats.js?v=18800';
-import { getDueWords } from './srsEngine.js?v=18800';
-import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=18800';
-import { isWordReadyForPractice, normalizeWordPracticeStats, selectModeWords, wordRecommendationScore } from './wordSelection.js?v=18800';
+import { completedExercisesToday } from './learningStats.js?v=18900';
+import { getDueWords } from './srsEngine.js?v=18900';
+import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=18900';
+import { isWordReadyForPractice, normalizeWordPracticeStats, selectModeWords, wordRecommendationScore } from './wordSelection.js?v=18900';
 
 export const DEFAULT_SESSION_SIZE = 20;
 
@@ -13,7 +13,7 @@ export function practiceSessionSize(settings = {}) {
 export function buildScheduledPracticeSession(words, settings = {}, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
   const dailyGoal = Math.max(1, Math.min(200, Math.round(Number(settings.dailyGoal) || 20)));
-  const session = buildDailySession(words, { now, targetSize: practiceSessionSize(settings) });
+  const session = buildDailySession(words, { now, targetSize: practiceSessionSize(settings), settings });
   return { ...session, dailyGoal, dailyGoalComplete: completedExercisesToday(settings, now) >= dailyGoal };
 }
 
@@ -33,12 +33,12 @@ export function weaknessScore(word, now = new Date()) {
   return mistakes.consecutiveFailures * 4 + stats.consecutiveMisses * 4 + recent * 2;
 }
 
-export function practicePriorityScore(word, now = new Date()) {
+export function practicePriorityScore(word, now = new Date(), settings) {
   const dueAt = Date.parse(word?.nextReviewDate || word?.createdAt || 0);
   const overdueDays = Number.isFinite(dueAt) && dueAt <= now.getTime()
     ? Math.min(365, Math.max(0, (now.getTime() - dueAt) / (24 * 60 * 60 * 1000)))
     : 0;
-  return wordRecommendationScore(word, { now }) + Math.min(30, overdueDays);
+  return wordRecommendationScore(word, { now, settings }) + Math.min(30, overdueDays);
 }
 
 export function selectPracticeWords(words, options = {}) {
@@ -47,7 +47,8 @@ export function selectPracticeWords(words, options = {}) {
   return selectModeWords(words, {
     mode: options.mode || 'practice', limit, now, rotateWithinFocus: true, includeResting: options.includeResting,
     priorityShare: 0.5,
-    priorityScore: practicePriorityScore
+    settings: options.settings,
+    priorityScore: (word, now) => practicePriorityScore(word, now, options.settings)
   });
 }
 
@@ -82,11 +83,11 @@ export function buildDailySession(words, options = {}) {
   const weakOnly = options.kind === 'weak';
   const dueWords = getDueWords(words, now);
   const pool = weakOnly ? (Array.isArray(words) ? words : []).filter(word => weaknessScore(word, now) > 0) : dueWords;
-  const chosen = selectPracticeWords(pool, { now, limit: targetSize, mode: weakOnly ? 'weak' : 'practice' });
+  const chosen = selectPracticeWords(pool, { now, limit: targetSize, mode: weakOnly ? 'weak' : 'practice', settings: options.settings });
   const spellings = new Set(chosen.map(word => String(word.word).trim().toLowerCase()));
   const topUps = weakOnly ? [] : selectPracticeWords((Array.isArray(words) ? words : []).filter(word =>
     needsLearningTopUp(word, now) && !spellings.has(String(word.word).trim().toLowerCase())), {
-    now, limit: targetSize - chosen.length
+    now, settings: options.settings, limit: targetSize - chosen.length
   });
   const dueIds = new Set(dueWords.map(word => word.id));
   const selected = [...chosen, ...topUps].map(word => {

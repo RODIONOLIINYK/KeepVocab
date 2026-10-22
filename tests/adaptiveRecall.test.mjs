@@ -79,11 +79,11 @@ test('unknown response times do not count as instant recall or strengthen eviden
   }
 });
 
-test('repeated same-day success never buys a multi-day gap or falsely marks a word mastered', () => {
+test('FSRS same-day learning stays within a short interval and never falsely marks a word mastered', () => {
   let item = word('a');
   for (let i = 0; i < 10; i++) item = answer(item, NOW);
   assert.equal(item.practiceStats.successfulRecallDays, 1);
-  assert.ok(Date.parse(item.nextReviewDate) - NOW <= DAY_MS);
+  assert.ok(Date.parse(item.nextReviewDate) - NOW <= 3 * DAY_MS);
   assert.equal(item.mastered, false);
   assert.equal(migrateSrsState(item, NOW).mastered, false);
 });
@@ -96,14 +96,14 @@ test('independent recall on separate days grows intervals; mistakes reset to a s
     item = answer(item, now);
     intervals.push((Date.parse(item.nextReviewDate) - now) / DAY_MS);
   }
-  assert.equal(intervals[0], 1);
+  assert.equal(intervals[0], 10 / 1440);
   assert.ok(intervals[1] > intervals[0]);
   assert.ok(intervals[2] > intervals[1]);
   assert.ok(intervals[5] > intervals[2]);
   const now = new Date(item.nextReviewDate);
   const failed = answer(item, now, { correct: false, producedUnaided: false });
   assert.ok(Date.parse(failed.nextReviewDate) - now <= 10 * 60000);
-  assert.equal(failed.practiceStats.successfulRecallDays, 6);
+  assert.equal(failed.practiceStats.successfulRecallDays, 5);
   assert.equal(failed.practiceStats.missed, 1);
   assert.equal(failed.mastered, false);
 });
@@ -119,7 +119,7 @@ test('hints and visual recognition produce shorter gaps than independent recall'
   assert.ok(Date.parse(recognized.nextReviewDate) - NOW <= DAY_MS);
 });
 
-test('learning top-ups expand a short session after 24 hours while keeping due reviews first', () => {
+test('FSRS honors actual due dates instead of adding arbitrary learning top-ups', () => {
   const yesterday = new Date(+NOW - DAY_MS);
   const learning = answer(word('learning'), yesterday);
   learning.nextReviewDate = new Date(+NOW + 3 * DAY_MS).toISOString();
@@ -129,8 +129,9 @@ test('learning top-ups expand a short session after 24 hours while keeping due r
   const words = [word('due'), learning, recent, mature, waitingMistake];
   const original = structuredClone(words);
   const session = buildDailySession(words, { now: NOW });
-  assert.deepEqual(session.exercises.map(exercise => exercise.wordId), ['due', 'learning']);
-  assert.equal(session.composition.growth, 2);
+  assert.deepEqual(session.exercises.map(exercise => exercise.wordId), ['due', 'recent']);
+  assert.equal(session.composition.growth, 1);
+  assert.equal(session.composition.due, 1);
   assert.deepEqual(buildDailySession(words, { now: NOW, targetSize: 1 }).exercises.map(item => item.wordId), ['due']);
   assert.deepEqual(words, original);
 });

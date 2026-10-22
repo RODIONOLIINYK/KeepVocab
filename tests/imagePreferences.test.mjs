@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
 import { normalizedVector, preferenceFeatures, encodeFeatures, decodeFeatures, fitPreferences, updatePreferenceModel, preferenceProbability, mergeImageLearning, MAX_LABELS } from '../js/services/imagePreferences.js';
-import { rankEmbeddedImages, semanticScores } from '../js/services/imageLearning.js?v=18800';
+import { rankEmbeddedImages, semanticScores } from '../js/services/imageLearning.js?v=18900';
 import { mergeDriveSettings } from '../js/services/driveSync.js';
 const vector = index => Array.from({ length: 512 }, (_, i) => i === index ? 1 : 0);
 const features = index => preferenceFeatures(vector(index), { selected: 0.4, margin: 0.15, unwanted: 0.1 });

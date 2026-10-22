@@ -128,4 +128,4 @@ export function assignExamplesToSenses(word, senses, candidates) {
     };
   });
 }
-import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18800';
+import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18900';

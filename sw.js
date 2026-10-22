@@ -1,11 +1,12 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v18800';
+const CACHE_NAME = 'keepvocab-v18900';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './quick-add.html',
   './css/styles.css',
+  './css/icons.css',
   './css/quick-add.css',
   './js/app.js',
   './js/components/AddWordModal.js',
@@ -31,6 +32,14 @@ const ASSETS_TO_CACHE = [
   './js/services/exampleSearch.js',
   './js/services/syncPolicy.js',
   './js/services/srsEngine.js',
+  './js/services/fsrsConfig.js',
+  './js/services/reviewHistory.js',
+  './js/services/memoryFeatures.js',
+  './js/services/fsrsOptimizer.js',
+  './js/services/fsrsLearning.js',
+  './js/ml/fsrsTrainer.worker.js',
+  './js/vendor/fsrs.js',
+  './js/vendor/TS-FSRS-LICENSE.txt',
   './js/services/exerciseResult.js',
   './js/services/wordSelection.js',
   './js/services/wordChoices.js',

@@ -22,10 +22,10 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/icons.css?v=18900">
 
   <!-- Specification Stylesheet -->
-  <link rel="stylesheet" href="css/styles.css?v=18800">
+  <link rel="stylesheet" href="css/styles.css?v=18900">
 </head>
 <body>
 
@@ -139,11 +139,11 @@
 
   <!-- Google Drive authorization -->
   <div class="modal-backdrop" id="engagement-settings-modal">
-    <div class="modal-box engagement-modal-box">
+    <div class="modal-box engagement-modal-box" role="dialog" aria-modal="true" aria-labelledby="routine-title">
       <div class="engagement-modal-heading">
         <img id="routine-mascot" src="assets/keepvocab-sprig-thinking.webp" alt="Sprig">
         <div>
-          <h2>Build your learning routine</h2>
+          <h2 id="routine-title">Build your learning routine</h2>
           <p id="routine-description">Choose your daily goal and the sounds you hear during practice.</p>
         </div>
         <button type="button" class="status-pill offline" id="btn-close-engagement-settings" aria-label="Close routine settings"><i class="fa-solid fa-xmark"></i></button>
@@ -183,7 +183,7 @@
           <span>Words per practice session</span>
           <input type="number" id="routine-session-size" min="5" max="50" step="1" value="20">
         </label>
-        <p class="reminder-helper">Practice uses only the month selected in Library and stops at your daily goal.</p>
+        <p class="reminder-helper">Practice uses the month selected in Library. Keep going after your goal when more words need review.</p>
         <label class="engagement-setting-row" for="sound-enabled">
           <span class="setting-icon sound"><i class="fa-solid fa-music"></i></span>
           <span><strong>App sounds</strong><small>Short taps and success cues during learning.</small></span>
@@ -202,12 +202,12 @@
 
   <!-- Google Drive monthly backup modal -->
   <div class="modal-backdrop" id="drive-auth-modal">
-    <div class="modal-box">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="drive-auth-title">
       <div style="text-align: center; margin-bottom: 20px;">
         <div style="width: 56px; height: 56px; border-radius: 14px; background: var(--primary-green-light); color: var(--primary-green-hover); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 10px;">
           <i class="fa-brands fa-google-drive"></i>
         </div>
-        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800;">Automatic Google Drive backup</h2>
+        <h2 id="drive-auth-title" style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800;">Automatic Google Drive backup</h2>
         <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;">
           Reinstall safely: reconnect the same Google account and the app restores every monthly vocabulary archive.
         </p>
@@ -244,6 +244,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=18800"></script>
+  <script type="module" src="js/app.js?v=18900"></script>
 </body>
 </html>

@@ -919,3 +919,43 @@ test('a successful connection from the previous build migrates to remembered sta
   const service = new DriveSyncService(storage, async () => { throw new Error('unused'); });
   assert.equal(service.getDriveStatus().remembered, true);
 });
+
+test('review histories use device-owned backup shards and merge distinct offline answers', async () => {
+  const drive = new MockDrive();
+  const first = new DriveSyncService(new MemoryStorage(), drive.fetch);authorize(first);
+  const [added] = first.addWords([{ word: 'restrain', definition: 'To keep a feeling under control.', createdAt: '2026-08-01T10:00:00Z' }], 'August 2026');
+  await first.syncGoogleDrive();
+  const second = new DriveSyncService(new MemoryStorage(), drive.fetch);authorize(second);await second.syncGoogleDrive();
+  recordExerciseResult({ id: 'offline-first', wordId: added.id, exerciseType: 'typed-recall', correct: true, recallType: 'free-recall', producedUnaided: true, occurredAt: '2026-08-14T10:00:00Z' }, first);
+  recordExerciseResult({ id: 'offline-second', wordId: added.id, exerciseType: 'typed-recall', correct: false, recallType: 'free-recall', producedUnaided: false, occurredAt: '2026-08-15T10:00:00Z' }, second);
+  await first.syncGoogleDrive();await second.syncGoogleDrive();await first.syncGoogleDrive();
+  const shards = [...drive.files.values()].filter(item => item.metadata.appProperties?.kind === 'reviews');
+  assert.equal(shards.length, 2);
+  for (const service of [first, second]) {
+    assert.equal((await service.getReviewEvents()).length, 2);
+    assert.equal(service.getWords()[0].srs.cards.recall.reps, 2);
+  }
+  const restored = new DriveSyncService(new MemoryStorage(), drive.fetch);authorize(restored);await restored.syncGoogleDrive();
+  assert.equal((await restored.getReviewEvents()).length, 2);
+  assert.equal([...drive.files.values()].filter(item => item.metadata.appProperties?.kind === 'reviews').length, 2, 'Restoring another device’s events does not duplicate them into a new owned shard');
+});
+
+test('an answer made during backup upload keeps its word schedule, activity and dated history', async () => {
+  const drive = new MockDrive();const service = new DriveSyncService(new MemoryStorage(), drive.fetch);authorize(service);
+  const [added] = service.addWords([{ word: 'restrain', definition: 'To control a feeling.' }], 'October 2026');
+  await service.syncGoogleDrive();service.updateSettings({ dailyGoal: 21 });
+  const update = service.updateJsonFile.bind(service);let answered = false;
+  service.updateJsonFile = async (...args) => {
+    if (!answered) { answered = true;recordExerciseResult({ id: 'during-sync', wordId: added.id, exerciseType: 'typed-recall', correct: true,
+      recallType: 'free-recall', producedUnaided: true }, service); }
+    return update(...args);
+  };
+  await service.syncGoogleDrive();assert.equal(answered, true);
+  assert.equal(service.getWords()[0].practiceStats.attempts, 1);
+  assert.equal(service.getWords()[0].srs.cards.recall.reps, 1);
+  assert.equal(service.getSettings().reviewsToday, 1);
+  assert.equal((await service.getReviewEvents()).length, 1);
+  await service.syncGoogleDrive();
+  const shard = [...drive.files.values()].find(item => item.metadata.appProperties?.kind === 'reviews');
+  assert.equal(shard.payload.events[0].id, 'during-sync');
+});

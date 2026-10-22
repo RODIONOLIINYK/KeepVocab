@@ -1,15 +1,15 @@
-import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18800';
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18800';
-import { driveSync } from '../services/driveSync.js?v=18800';
-import { speakWord } from '../services/speechService.js?v=18800';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18800';
-import { playInteractionSound } from '../services/interactionSound.js?v=18800';
-import { selectPracticeWords } from '../services/dailySession.js?v=18800';
+import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18900';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18900';
+import { driveSync } from '../services/driveSync.js?v=18900';
+import { speakWord } from '../services/speechService.js?v=18900';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18900';
+import { playInteractionSound } from '../services/interactionSound.js?v=18900';
+import { selectPracticeWords } from '../services/dailySession.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18800';
-import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18800';
-import { stableWordChoices } from '../services/wordChoices.js?v=18800';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18800';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18900';
+import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18900';
+import { stableWordChoices } from '../services/wordChoices.js?v=18900';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18900';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function emptyMode(container, icon, title, detail, onNavigate) {
@@ -46,7 +46,7 @@ export function renderSpellingMode(container, onNavigate) {
           <blockquote>${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}
           <div class="listen-controls"><button class="audio-btn-circle large" id="spell-listen" aria-label="Play word"><i class="fa-solid fa-volume-high"></i></button><button class="status-pill offline" id="spell-listen-slow"><i class="fa-solid fa-gauge-simple-low"></i> Slow</button></div>
           <p class="speech-help" id="spell-audio-status" role="status" aria-live="polite">Tap the speaker to hear the word. Use Slow to repeat it clearly.</p>
-          ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word returns to Box 1 for another review.'}</span></div><button class="btn-green-solid" id="spell-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
+          ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word will return sooner for another review.'}</span></div><button class="btn-green-solid" id="spell-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
         </div>
       </div></section>`;
     container.querySelector('#spell-exit').addEventListener('click', () => go('dashboard', onNavigate));

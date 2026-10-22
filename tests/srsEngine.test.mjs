@@ -51,7 +51,7 @@ test('legacy data migrates without destroying box, mastery, or review date', () 
   assert.equal(migrated.box, 4);
   assert.equal(migrated.mastered, true);
   assert.equal(migrated.nextReviewDate, legacy.nextReviewDate);
-  assert.equal(migrated.srs.version, 3);
+  assert.equal(migrated.srs.version, 4);
   assert.equal(migrated.srs.stabilityDays, 14);
 });
 
@@ -59,8 +59,8 @@ test('free production is stronger evidence than multiple choice', () => {
   const recognition = scoreExerciseEvidence({ wordId: 'w', exerciseType: 'choose-word', correct: true, recallType: 'recognition' });
   const production = scoreExerciseEvidence({ wordId: 'w', exerciseType: 'use-it', correct: true, recallType: 'productive', producedUnaided: true });
   assert.ok(production.evidenceStrength > recognition.evidenceStrength);
-  assert.equal(recognition.rating, 'hard');
-  assert.equal(production.rating, 'easy');
+  assert.equal(recognition.rating, 'good');
+  assert.equal(production.rating, 'good');
 });
 
 test('central results update adaptive scheduling, mastery, and mistakes together', () => {
