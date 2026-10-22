@@ -1,6 +1,6 @@
 // Adaptive spaced-repetition scheduler with backward-compatible Leitner fields.
 
-import { normalizeWordPracticeStats } from './wordSelection.js?v=18600';
+import { normalizeWordPracticeStats } from './wordSelection.js?v=18700';
 import { localDateKey } from '../utils/dates.js';
 
 export const SRS_VERSION = 3;

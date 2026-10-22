@@ -1,5 +1,5 @@
-import { escapeHtml } from '../utils/html.js?v=18600';
-import { findRelevantImages, imageSelectionPatch } from '../services/imageSearch.js?v=18600';
+import { escapeHtml } from '../utils/html.js?v=18700';
+import { findRelevantImages, imageSelectionPatch } from '../services/imageSearch.js?v=18700';
 
 let reviewId = 0;
 const clone = value => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));

@@ -33,13 +33,14 @@ function configureUpdater(isAppUrl, beforeQuit = () => {}) {
     if (!app.isPackaged) return { status: 'development', currentVersion: app.getVersion() };
     if (inFlight) return inFlight;
     inFlight = (async () => {
-      const { RELEASE_API, selectRelease } = await import(pathToFileURL(path.join(__dirname, '../www/js/services/appUpdates.js')).href);
-      const response = await net.fetch(RELEASE_API, { headers: { Accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(15000) });
+      const { RELEASE_API, releaseUpdateState } = await import(pathToFileURL(path.join(__dirname, '../www/js/services/appUpdates.js')).href);
+      const response = await net.fetch(RELEASE_API, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store', signal: AbortSignal.timeout(15000) });
       if (!response.ok) throw new Error('Cannot check for updates right now. Please try again later.');
       const architecture = app.runningUnderARM64Translation ? 'arm64' : process.arch;
-      offered = selectRelease(await response.json(), process.platform, app.getVersion(), architecture);
+      const result = releaseUpdateState(await response.json(), process.platform, app.getVersion(), architecture);
+      offered = result.update;
       if (offered && autoUpdater) await autoUpdater.checkForUpdates();
-      return { status: offered ? downloaded ? 'downloaded' : 'available' : 'current', currentVersion: app.getVersion(), update: offered };
+      return { ...result, status: offered && downloaded ? 'downloaded' : result.status };
     })().finally(() => { inFlight = null; });
     return inFlight;
   };

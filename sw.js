@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v18600';
+const CACHE_NAME = 'keepvocab-v18700';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

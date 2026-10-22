@@ -1,0 +1,42 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { renderSettingsView } from '../js/components/SettingsView.js';
+
+test('Settings distinguishes missing installers, usable updates, current versions and failed checks', async t => {
+  const previous = globalThis.keepVocabDesktop;
+  t.after(() => { if (previous === undefined) delete globalThis.keepVocabDesktop; else globalThis.keepVocabDesktop = previous; });
+  let result;
+  globalThis.keepVocabDesktop = { checkForUpdates: async () => { if (result instanceof Error) throw result; return result; } };
+  const controls = new Map();
+  const query = selector => {
+    if (!controls.has(selector)) controls.set(selector, { value: '', hidden: false, disabled: false, addEventListener() {}, classList: { toggle() {} } });
+    return controls.get(selector);
+  };
+  const container = { innerHTML: '', querySelector: query, querySelectorAll: () => [] };
+  renderSettingsView(container);
+  assert.match(container.innerHTML, /https:\/\/github.com\/RODIONOLIINYK\/KeepVocab\/releases\/latest/);
+  const check = query('[data-check-update]');
+  const install = query('[data-install-update]');
+  const downloads = query('[data-update-downloads]');
+  const status = query('[data-update-status]');
+  result = { status: 'unavailable', currentVersion: '1.8.2', latestVersion: '1.8.7', message: 'Version 1.8.7 needs a compatible installer.' };
+  await check.onclick();
+  assert.equal(status.textContent, result.message);
+  assert.equal(install.hidden, true);
+  assert.equal(downloads.hidden, false);
+  result = { status: 'available', currentVersion: '1.8.6', update: { version: '1.8.7' } };
+  await check.onclick();
+  assert.equal(install.hidden, false);
+  assert.equal(downloads.hidden, true);
+  assert.match(status.textContent, /1.8.7 is ready/);
+  result = { status: 'current', currentVersion: '1.8.7' };
+  await check.onclick();
+  assert.equal(install.hidden, true);
+  assert.match(status.textContent, /up to date \(1.8.7\)/);
+  result = new Error('Update server unavailable');
+  await check.onclick();
+  assert.equal(status.textContent, result.message);
+  assert.equal(install.hidden, true);
+  assert.equal(downloads.hidden, true);
+  assert.equal(check.disabled, false);
+});

@@ -1,6 +1,6 @@
-import { generateGeminiContent } from './geminiSettings.js?v=18600';
-import { getTranslationLanguage, getTranslationName } from './translationSettings.js?v=18600';
-import { exampleForLearning, isModernUsageExample } from './learningDefinitions.js?v=18600';
+import { generateGeminiContent } from './geminiSettings.js?v=18700';
+import { getTranslationLanguage, getTranslationName } from './translationSettings.js?v=18700';
+import { exampleForLearning, isModernUsageExample } from './learningDefinitions.js?v=18700';
 
 export const CONTEXT_EXERCISE_CACHE = 'keepvocab_ai_context_cache_v3';
 

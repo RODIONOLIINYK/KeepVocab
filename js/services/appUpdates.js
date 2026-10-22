@@ -1,4 +1,4 @@
-import { APP_VERSION } from './version.js?v=18600';
+import { APP_VERSION } from './version.js?v=18700';
 export { APP_VERSION };
 export const RELEASE_API = 'https://api.github.com/repos/RODIONOLIINYK/KeepVocab/releases/latest';
 const RELEASE_PREFIX = 'https://github.com/RODIONOLIINYK/KeepVocab/releases/download/';
@@ -26,6 +26,23 @@ export function selectRelease(release, platform, currentVersion = APP_VERSION, a
   return asset ? { version, url: asset.browser_download_url, name: asset.name, sha256: asset.digest.slice(7).toLowerCase(), size: asset.size } : null;
 }
 
+export function releaseUpdateState(release, platform, currentVersion = APP_VERSION, architecture) {
+  if (!/^v?\d+\.\d+\.\d+$/.test(String(release?.tag_name)) || !/^\d+\.\d+\.\d+$/.test(String(currentVersion))) {
+    throw new Error('The update server returned invalid version information. Please try again later.');
+  }
+  const update = selectRelease(release, platform, currentVersion, architecture);
+  if (update) return { status: 'available', currentVersion, update };
+  if (!release.draft && !release.prerelease && compareVersions(release.tag_name, currentVersion) > 0) {
+    const latestVersion = release.tag_name.replace(/^v/, '');
+    const reason = platform === 'darwin' && architecture === 'x64'
+      ? 'New Mac releases support Apple Silicon only.'
+      : 'No compatible, verified installer is available for this installation.';
+    return { status: 'unavailable', currentVersion, latestVersion, update: null,
+      message: `Version ${latestVersion} is newer than your installed ${currentVersion}. ${reason} Open downloads for installation options.` };
+  }
+  return { status: 'current', currentVersion, update: null };
+}
+
 function androidUpdater() {
   const capacitor = globalThis.Capacitor;
   if (capacitor?.getPlatform?.() !== 'android') return null;
@@ -39,8 +56,7 @@ export async function checkAppUpdate() {
     const { version } = await android.getVersion();
     const response = await fetch(RELEASE_API, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store', signal: AbortSignal.timeout(15_000) });
     if (!response.ok) throw new Error('Cannot check for updates right now. Try again when you are online.');
-    const update = selectRelease(await response.json(), 'android', version);
-    return { status: update ? 'available' : 'current', currentVersion: version, update };
+    return releaseUpdateState(await response.json(), 'android', version);
   }
   const registration = await globalThis.navigator?.serviceWorker?.getRegistration();
   if (registration) {

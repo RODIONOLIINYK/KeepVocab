@@ -9,7 +9,7 @@ import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { downloadVerifiedUpdate } from '../desktop/updateDownload.cjs';
 import { verifyBundle } from '../desktop/macUpdate.cjs';
-import { selectRelease } from '../js/services/appUpdates.js';
+import { selectRelease, releaseUpdateState } from '../js/services/appUpdates.js';
 
 const exec = promisify(execFile);
 const helper = fileURLToPath(new URL('../desktop/replaceApp.sh', import.meta.url));
@@ -20,6 +20,29 @@ async function workspace(t) {
 }
 const bytes = Buffer.from('verified application bytes');
 const update = { url: 'https://example.test/app.dmg', size: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') };
+
+test('newer releases without compatible verified assets never report up to date', () => {
+  const release = { tag_name: 'v1.8.6', assets: [{ name: 'KeepVocab-1.8.6-Android-debug.apk' }] };
+  for (const arch of ['arm64', 'x64', undefined]) {
+    const result = releaseUpdateState(release, 'darwin', '1.8.2', arch);
+    assert.equal(result.status, 'unavailable');
+    assert.equal(result.latestVersion, '1.8.6');
+    assert.equal(result.update, null);
+    assert.match(result.message, /newer than your installed 1.8.2/);
+  }
+  assert.equal(releaseUpdateState(release, 'darwin', '1.8.6', 'arm64').status, 'current');
+  assert.equal(releaseUpdateState(release, 'darwin', '1.9.0', 'arm64').status, 'current');
+  assert.throws(() => releaseUpdateState({}, 'darwin', '1.8.2', 'arm64'), /invalid version/);
+});
+
+test('arm64-only release upgrades native and Rosetta clients without weakening digest checks', () => {
+  const asset = { name: 'KeepVocab-1.8.6-macOS-arm64.dmg', size: 100, digest: `sha256:${'a'.repeat(64)}`,
+    browser_download_url: 'https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.8.6/KeepVocab-1.8.6-macOS-arm64.dmg' };
+  const release = { tag_name: 'v1.8.6', assets: [asset] };
+  assert.equal(releaseUpdateState(release, 'darwin', '1.8.2', 'arm64').status, 'available');
+  assert.equal(releaseUpdateState({ ...release, assets: [{ ...asset, digest: null }] }, 'darwin', '1.8.2', 'arm64').status, 'unavailable');
+  assert.equal(releaseUpdateState(release, 'darwin', '1.8.2', 'x64').status, 'unavailable');
+});
 
 test('macOS updates prefer the correct native build and retain universal compatibility', () => {
   const asset = arch => ({

@@ -1,13 +1,13 @@
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18600';
-import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18600';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18700';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18700';
 import { activityByDevice, aggregateActivity, normalizedActivity, streakFromActivity, currentStudyStats } from './studyActivity.js';
 import { localDateKey } from '../utils/dates.js';
 import { getCourseDefinition, isCourseId } from '../data/courses.js';
 import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles, stampPracticePreferences } from './courseProfiles.js';
-import { normalizeWordPracticeStats } from './wordSelection.js?v=18600';
-import { areSensesNearDuplicate } from './learningDefinitions.js?v=18600';
+import { normalizeWordPracticeStats } from './wordSelection.js?v=18700';
+import { areSensesNearDuplicate } from './learningDefinitions.js?v=18700';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';

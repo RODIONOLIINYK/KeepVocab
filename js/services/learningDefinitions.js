@@ -1,8 +1,8 @@
-import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18600';
-import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18600';
-import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18600';
-import { hasExampleSenseConflict, isModernUsageExample } from './exampleSearch.js?v=18600';
-export { isModernUsageExample } from './exampleSearch.js?v=18600';
+import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18700';
+import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18700';
+import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18700';
+import { hasExampleSenseConflict, isModernUsageExample } from './exampleSearch.js?v=18700';
+export { isModernUsageExample } from './exampleSearch.js?v=18700';
 
 const CACHE_KEY = 'keepvocab_learner_explanations_v1';
 const text = value => String(value || '').replace(/\s+/g, ' ').trim();

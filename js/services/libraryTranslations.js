@@ -1,6 +1,6 @@
-import { driveSync } from './driveSync.js?v=18600';
-import { hasUkrainianTranslation, translateEnglishText } from './dictionaryApi.js?v=18600';
-import { getTranslationLanguage, normalizeTranslationLanguage } from './translationSettings.js?v=18600';
+import { driveSync } from './driveSync.js?v=18700';
+import { hasUkrainianTranslation, translateEnglishText } from './dictionaryApi.js?v=18700';
+import { getTranslationLanguage, normalizeTranslationLanguage } from './translationSettings.js?v=18700';
 
 const activeBackfills = new WeakMap();
 

@@ -1,9 +1,9 @@
-import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18600';
-import { driveSync } from '../services/driveSync.js?v=18600';
-import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18600';
-import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18600';
-import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18600';
-import { completedExercisesToday } from '../services/learningStats.js?v=18600';
+import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18700';
+import { driveSync } from '../services/driveSync.js?v=18700';
+import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18700';
+import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18700';
+import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18700';
+import { completedExercisesToday } from '../services/learningStats.js?v=18700';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -52,7 +52,7 @@ export function renderSettingsView(container, onNavigate) {
       <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-images', 'Vocabulary images', 'Choose where Library photos come from.', pexelsReady ? 'Pexels' : imageProvider.provider === 'openverse' ? 'No key needed' : 'Set up', pexelsReady, true, 'settings-images-state')}</summary>
         <form id="image-provider-settings-form" class="settings-form"><label class="settings-full-width">Photo source<select id="settings-image-provider"><option value="pexels" ${imageProvider.provider === 'pexels' ? 'selected' : ''}>Pexels</option><option value="openverse" ${imageProvider.provider === 'openverse' ? 'selected' : ''}>Public catalogs · no key</option></select></label><label class="settings-full-width" id="settings-pexels-field" ${imageProvider.provider === 'openverse' ? 'hidden' : ''}>Pexels API key<div class="key-input-row"><input type="password" id="settings-pexels-key" value="${escapeHtml(imageProvider.pexelsApiKey)}" placeholder="Personal Pexels API key" autocomplete="off" spellcheck="false"><button type="button" id="settings-toggle-pexels-key" aria-label="Show Pexels API key" aria-pressed="false"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><span class="settings-privacy"><a href="https://www.pexels.com/api/new/" target="_blank" rel="noopener noreferrer">Get a free Pexels key</a></span></label><p class="settings-privacy">Your image settings are saved on this device and included in your private Drive backup when connected.</p><p id="image-provider-settings-status" class="settings-service-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid">Save photo source</button><button type="button" class="status-pill offline" id="remove-pexels-settings" ${imageProvider.pexelsApiKey ? '' : 'hidden'}>Remove Pexels key</button></div></form>
       </details>
-      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-download', 'App updates', `KeepVocab ${APP_VERSION}`, '', false, true)}</summary><div class="settings-disclosure-body"><p data-update-status class="settings-service-status" role="status" aria-live="polite">The app checks automatically. Updates keep your Library and progress.</p><div class="settings-actions"><button class="status-pill offline" data-check-update>Check for updates</button><button class="btn-green-solid" data-install-update hidden>Update app</button></div></div></details>
+      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-download', 'App updates', `KeepVocab ${APP_VERSION}`, '', false, true)}</summary><div class="settings-disclosure-body"><p data-update-status class="settings-service-status" role="status" aria-live="polite">The app checks automatically. Updates keep your Library and progress.</p><div class="settings-actions"><button class="status-pill offline" data-check-update>Check for updates</button><button class="btn-green-solid" data-install-update hidden>Update app</button><a class="status-pill offline" data-update-downloads href="https://github.com/RODIONOLIINYK/KeepVocab/releases/latest" target="_blank" rel="noopener noreferrer" hidden>Open downloads</a></div></div></details>
     </div>
   </section>`;
 
@@ -158,13 +158,17 @@ export function renderSettingsView(container, onNavigate) {
   const updateStatus = query('[data-update-status]');
   const checkButton = query('[data-check-update]');
   const installButton = query('[data-install-update]');
+  const downloadsLink = query('[data-update-downloads]');
   checkButton.onclick = async () => {
     checkButton.disabled = true;
     installButton.hidden = true;
+    downloadsLink.hidden = true;
+    availableUpdate = null;
     updateStatus.textContent = 'Checking for updates…';
     try {
       const result = await checkAppUpdate();
       availableUpdate = result.update;
+      downloadsLink.hidden = result.status !== 'unavailable';
       installButton.hidden = !['available', 'downloaded', 'web-ready'].includes(result.status);
       installButton.textContent = result.status === 'web-ready' ? 'Reload to update' : 'Update app';
       updateStatus.textContent = availableUpdate ? `Version ${availableUpdate.version} is ready to install.`

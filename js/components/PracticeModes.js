@@ -1,15 +1,15 @@
-import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18600';
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18600';
-import { driveSync } from '../services/driveSync.js?v=18600';
-import { speakWord } from '../services/speechService.js?v=18600';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18600';
-import { playInteractionSound } from '../services/interactionSound.js?v=18600';
-import { selectPracticeWords } from '../services/dailySession.js?v=18600';
+import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18700';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18700';
+import { driveSync } from '../services/driveSync.js?v=18700';
+import { speakWord } from '../services/speechService.js?v=18700';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18700';
+import { playInteractionSound } from '../services/interactionSound.js?v=18700';
+import { selectPracticeWords } from '../services/dailySession.js?v=18700';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18600';
-import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18600';
-import { stableWordChoices } from '../services/wordChoices.js?v=18600';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18600';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18700';
+import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18700';
+import { stableWordChoices } from '../services/wordChoices.js?v=18700';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18700';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function emptyMode(container, icon, title, detail, onNavigate) {

@@ -1,7 +1,7 @@
-import { completedExercisesToday } from './learningStats.js?v=18600';
-import { getDueWords } from './srsEngine.js?v=18600';
-import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=18600';
-import { isWordReadyForPractice, normalizeWordPracticeStats, selectModeWords, wordRecommendationScore } from './wordSelection.js?v=18600';
+import { completedExercisesToday } from './learningStats.js?v=18700';
+import { getDueWords } from './srsEngine.js?v=18700';
+import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=18700';
+import { isWordReadyForPractice, normalizeWordPracticeStats, selectModeWords, wordRecommendationScore } from './wordSelection.js?v=18700';
 
 export const DEFAULT_SESSION_SIZE = 20;
 

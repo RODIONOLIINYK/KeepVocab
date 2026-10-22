@@ -1,5 +1,5 @@
-import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18600';
-import { isUkrainianTranslationEnabled } from './translationSettings.js?v=18600';
+import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18700';
+import { isUkrainianTranslationEnabled } from './translationSettings.js?v=18700';
 
 const DAY_MS = 86_400_000;
 

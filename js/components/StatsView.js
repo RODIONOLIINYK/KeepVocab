@@ -1,9 +1,9 @@
-import { definitionForLearning } from '../services/learningDefinitions.js?v=18600';
-import { driveSync } from '../services/driveSync.js?v=18600';
-import { getDueWords } from '../services/srsEngine.js?v=18600';
-import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18600';
-import { normalizeLearningStats } from '../services/learningStats.js?v=18600';
-import { weaknessScore } from '../services/dailySession.js?v=18600';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18700';
+import { driveSync } from '../services/driveSync.js?v=18700';
+import { getDueWords } from '../services/srsEngine.js?v=18700';
+import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18700';
+import { normalizeLearningStats } from '../services/learningStats.js?v=18700';
+import { weaknessScore } from '../services/dailySession.js?v=18700';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 

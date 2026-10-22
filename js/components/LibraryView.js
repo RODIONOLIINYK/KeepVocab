@@ -1,16 +1,16 @@
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18600';
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18600';
-import { speakWord } from '../services/speechService.js?v=18600';
-import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, prepareImageScenes, imageSenseFingerprint, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18600';
-import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18600';
-import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=18600';
-import { getPracticeReadiness } from '../services/reminderService.js?v=18600';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18700';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18700';
+import { speakWord } from '../services/speechService.js?v=18700';
+import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, prepareImageScenes, imageSenseFingerprint, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18700';
+import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18700';
+import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=18700';
+import { getPracticeReadiness } from '../services/reminderService.js?v=18700';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
-import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, groupSimilarSenses } from '../services/learningDefinitions.js?v=18600';
-import { renderMeaningExplanation, renderExplanationReview, applyReviewedExplanations } from './MeaningExplanation.js?v=18600';
-import { mountImageReview } from './ImageReview.js?v=18600';
-import { attachImagesSequentially } from '../services/bulkWords.js?v=18600';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=18600';
+import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, groupSimilarSenses } from '../services/learningDefinitions.js?v=18700';
+import { renderMeaningExplanation, renderExplanationReview, applyReviewedExplanations } from './MeaningExplanation.js?v=18700';
+import { mountImageReview } from './ImageReview.js?v=18700';
+import { attachImagesSequentially } from '../services/bulkWords.js?v=18700';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18700';
 
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
