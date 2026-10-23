@@ -11,7 +11,7 @@ be accepted by the updater without generating new universal builds.
 
 # Post-Change Release Workflow (Mandatory After Major Changes)
 
-After any major change:
+After every major change, you MUST commit, push, and compile releases for both macOS and Android:
 1. Bump version in `package.json` (and `package-lock.json`), increment `versionCode` in `android/app/build.gradle`, and bump `CACHE_NAME` in `sw.js`.
 2. Run `npm test` and `npm run build:web` (which updates `js/services/version.js`).
 3. Compile the macOS (`arm64` only) release (`npm run mac:build`) and Android APK (`npm run android:apk`), and copy/rename the Android APK to `dist/KeepVocab-<version>-Android-debug.apk` alongside `SHA256SUMS.txt`.

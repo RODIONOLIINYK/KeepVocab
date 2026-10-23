@@ -629,3 +629,221 @@
 .image-training-table details > summary { cursor: pointer; color: var(--green-700, #24734b); white-space: nowrap; }
 .image-training-table pre, #image-training-weights { max-width: min(70vw, 680px); max-height: 360px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; padding: 10px; border-radius: 10px; background: var(--surface-muted, #f2f6f2); font: .68rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
 #image-training-weights { max-width: 100%; }
+
+/* KeepVocab design system layer — Duolingo-first, Brilliant-clean.
+   Loaded last so every view shares one set of surfaces, buttons, headings and motion. */
+:root {
+  --duo-green: #58cc02;
+  --duo-green-dark: #58a700;
+  --duo-green-light: #d7ffb8;
+  --duo-blue: #1cb0f6;
+  --duo-blue-dark: #1899d6;
+  --duo-orange: #ff9600;
+  --duo-red: #ff4b4b;
+  --duo-purple: #ce82ff;
+  --duo-line: #e5e5e5;
+  --duo-line-dark: #d0d0d0;
+  --duo-ink: #3c3c3c;
+  --duo-muted: #777777;
+  --duo-radius: 18px;
+  --duo-radius-lg: 24px;
+  --duo-spring: cubic-bezier(.2, 1.35, .4, 1);
+  --duo-ease: cubic-bezier(.2, .8, .2, 1);
+
+  --primary-green: var(--duo-green);
+  --primary-green-hover: var(--duo-green-dark);
+  --primary-green-light: #f1fde6;
+  --border-card: var(--duo-line);
+  --text-main: var(--duo-ink);
+  --text-muted: var(--duo-muted);
+  --text-dim: #afafaf;
+  --bg-app: #ffffff;
+  --bg-subtle: #f7f7f7;
+  --shadow-card: none;
+  --radius-card: var(--duo-radius);
+}
+body { background: var(--bg-app); }
+h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-heading); }
+
+/* ---------- One surface for every card ---------- */
+.spec-card,
+.settings-card,
+.speaking-preview-card,
+.speaking-summary-card,
+.live-stage,
+.library-view .library-word-card,
+.progress-mastery-grid article {
+  border: 2px solid var(--duo-line) !important;
+  border-bottom-width: 4px !important;
+  border-radius: var(--duo-radius-lg);
+  background: #fff;
+  box-shadow: none !important;
+}
+.spec-card, .settings-card { padding: 22px; }
+.today-view .spec-card { padding: 22px; }
+.today-view .daily-workout-card { padding: 0; }
+.today-view .today-progress-card { padding: 16px 20px; }
+.today-view .today-insight-card.compact { padding: 16px 18px; }
+
+/* Shared card header: a small Duo-style label */
+.card-header-bar { margin-bottom: 16px; }
+.card-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--duo-muted); font-size: .8rem; font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.card-tag i {
+  width: 30px; height: 30px; display: grid; place-items: center;
+  border-radius: 10px; background: var(--primary-green-light); color: var(--duo-green-dark);
+  font-size: .85rem;
+}
+
+/* ---------- One page heading for every view ---------- */
+.content-title-row, .progress-hero, .settings-title-row { padding: 8px 0 2px; }
+.content-title-row h1, .progress-hero h1, .settings-title-row h1 {
+  margin: 4px 0 6px;
+  font: 850 clamp(2rem, 4vw, 2.8rem)/1.05 var(--font-heading);
+  letter-spacing: -.03em; color: var(--duo-ink);
+}
+.content-title-row p, .progress-hero p, .settings-title-row p { color: var(--duo-muted); font-size: .95rem; line-height: 1.5; }
+.eyebrow { color: var(--duo-green-dark); }
+
+/* ---------- 3D buttons ---------- */
+.btn-green-solid, .today-primary-cta, .image-review .image-review__save {
+  border: 0 !important;
+  border-bottom: 4px solid var(--duo-green-dark) !important;
+  border-radius: 16px;
+  background: var(--duo-green) !important;
+  color: #fff;
+  box-shadow: none !important;
+  font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  transition: transform 160ms var(--duo-spring), filter 140ms ease, border-width 80ms ease;
+}
+.status-pill, .today-settings-button, .library-view .library-tools > summary {
+  border: 2px solid var(--duo-line) !important;
+  border-bottom-width: 4px !important;
+  border-radius: 14px;
+  box-shadow: none;
+  font-weight: 800;
+  transition: transform 160ms var(--duo-spring), background 140ms ease, border-color 140ms ease;
+}
+.status-pill.connected { background: #ddf4ff; color: var(--duo-blue-dark); border-color: #84d8ff !important; }
+.status-pill.offline { background: #fff; color: var(--duo-muted); }
+@media (hover: hover) and (pointer: fine) {
+  .btn-green-solid:hover:not(:disabled), .today-primary-cta:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .status-pill:hover, .today-settings-button:hover { background: var(--bg-subtle); transform: translateY(-1px); }
+}
+.btn-green-solid:active:not(:disabled), .today-primary-cta:active,
+.status-pill:active, .today-settings-button:active,
+.practice-quick-card:active, .choice-button:active:not(:disabled) {
+  transform: translateY(3px) !important;
+  border-bottom-width: 1px !important;
+  transition-duration: 60ms;
+}
+
+/* ---------- Navigation ---------- */
+.header-nav { border-bottom: 2px solid var(--duo-line); }
+.nav-link-item { font-family: var(--font-heading); font-weight: 800; border: 2px solid transparent; border-radius: 14px; }
+.nav-link-item.active { color: var(--duo-blue-dark); background: #ddf4ff !important; border-color: #84d8ff; box-shadow: none !important; }
+.nav-link-item i { transition: transform 260ms var(--duo-spring); }
+.nav-link-item:hover i, .nav-link-item.active i { transform: scale(1.15) rotate(-6deg); }
+.nav-links { background: transparent !important; border: 0 !important; }
+
+/* ---------- Today ---------- */
+.today-view { max-width: 1180px; gap: 20px; }
+.today-title-row { align-items: center; }
+.today-title-row .eyebrow { margin-bottom: 2px; }
+.daily-workout-card { border-radius: var(--duo-radius-lg); }
+.daily-workout-card.is-complete { border-color: #a5ed6e !important; }
+.daily-workout-card::before { border-color: var(--duo-green-light); }
+.daily-workout-copy h2 { color: var(--duo-ink); font-weight: 850; }
+.daily-kicker { border: 2px solid var(--duo-green-light); color: var(--duo-green-dark); background: var(--primary-green-light); }
+.daily-eval-badge { border: 2px solid var(--duo-line); background: #fff; }
+.daily-plan-bucket { border-color: var(--duo-line); background: #fff; }
+.daily-plan-bucket.revise .bucket-icon { background: var(--duo-green-light); color: var(--duo-green-dark); }
+.daily-plan-bucket.learn .bucket-icon { background: #ddf4ff; color: var(--duo-blue-dark); }
+.daily-plan-bucket.tomorrow .bucket-icon { background: #f6e5ff; color: #a560e8; }
+.daily-workout-mascot { background: linear-gradient(180deg, #f1fde6, #d7ffb8); border-left: 2px solid var(--duo-line); }
+.mascot-bubble { border: 2px solid var(--duo-line); border-bottom-width: 4px; color: var(--duo-ink); }
+.today-progress-track { height: 16px; background: var(--duo-line); }
+.today-progress-track span,
+.review-progress span,
+.exercise-progress > i > b { background: var(--duo-green) !important; }
+.today-streak { background: #fff4e5; border-color: #ffd28a; color: var(--duo-orange); }
+.workout-composition span { border: 2px solid var(--duo-line); background: #fff; }
+
+/* Practice tiles are the same tactile tile everywhere */
+.practice-quick-card {
+  border: 2px solid var(--duo-line) !important;
+  border-bottom-width: 4px !important;
+  border-radius: 18px;
+  background: #fff !important;
+  animation: duo-pop-in 420ms var(--duo-spring) both;
+  animation-delay: calc(var(--i, 0) * 40ms + 160ms);
+}
+.practice-quick-card strong { font-size: .92rem; }
+@media (hover: hover) and (pointer: fine) {
+  .practice-quick-card:hover { border-color: #84d8ff !important; background: #f5fbff !important; transform: translateY(-2px); }
+}
+.practice-quick-card > i:first-child { border-radius: 14px; }
+.today-insight-card .today-section-heading { margin-bottom: 14px; }
+.today-insight-card .today-section-heading h2 { font-size: 1.3rem; }
+.mastery-mini-list div { padding: 10px 12px; border: 2px solid var(--duo-line); border-radius: 14px; }
+.text-action { color: var(--duo-blue-dark); text-transform: uppercase; letter-spacing: .05em; font-size: .8rem; }
+.text-action i { transition: transform 200ms var(--duo-spring); }
+.text-action:hover i { transform: translateX(4px); }
+.cloud-dot { border-radius: 14px; }
+
+/* ---------- Motion: consistent page entrance ---------- */
+.full-view-stack > *, .today-view > *, .today-grid > *, .today-insights > *,
+.settings-view > *, .settings-grid > * {
+  animation: duo-rise 460ms var(--duo-spring) both;
+}
+.full-view-stack > :nth-child(2), .today-view > :nth-child(2), .settings-grid > :nth-child(1) { animation-delay: 60ms; }
+.full-view-stack > :nth-child(3), .today-view > :nth-child(3), .settings-grid > :nth-child(2) { animation-delay: 120ms; }
+.full-view-stack > :nth-child(4), .today-view > :nth-child(4), .settings-grid > :nth-child(3), .today-insights > :nth-child(2) { animation-delay: 180ms; }
+.full-view-stack > :nth-child(n+5), .settings-grid > :nth-child(n+4), .today-insights > :nth-child(3) { animation-delay: 240ms; }
+.content-title-row h1, .progress-hero h1, .settings-title-row h1 { animation: duo-title-in 520ms var(--duo-spring) both; }
+.card-tag i { animation: duo-icon-wiggle 3.2s 1s ease-in-out infinite; }
+.library-view .library-word-card { animation: duo-pop-in 420ms var(--duo-spring) both; }
+.library-view .library-word-card:nth-child(2) { animation-delay: 40ms; }
+.library-view .library-word-card:nth-child(3) { animation-delay: 80ms; }
+.library-view .library-word-card:nth-child(n+4) { animation-delay: 120ms; }
+@media (hover: hover) and (pointer: fine) {
+  .library-view .library-word-card { transition: transform 220ms var(--duo-spring), border-color 160ms ease; }
+  .library-view .library-word-card:hover { transform: translateY(-2px); border-color: var(--duo-line-dark) !important; }
+}
+.mascot-result, .daily-complete-card img { animation: duo-mascot-celebrate 900ms var(--duo-spring) both, sprig-idle-bob 3.6s 1s ease-in-out infinite; }
+
+@keyframes duo-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes duo-pop-in {
+  0% { opacity: 0; transform: scale(.88) translateY(8px); }
+  70% { opacity: 1; transform: scale(1.03) translateY(-1px); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes duo-title-in { 0% { opacity: 0; transform: translateY(10px) scale(.97); } 100% { opacity: 1; transform: none; } }
+@keyframes duo-icon-wiggle { 0%, 88%, 100% { transform: rotate(0); } 92% { transform: rotate(-12deg) scale(1.1); } 96% { transform: rotate(10deg); } }
+@keyframes duo-mascot-celebrate {
+  0% { opacity: 0; transform: translateY(30px) scale(.6); }
+  50% { opacity: 1; transform: translateY(-14px) scale(1.08, .94); }
+  70% { transform: translateY(0) scale(.96, 1.04); }
+  100% { transform: none; }
+}
+
+@media (max-width: 720px) {
+  .spec-card, .settings-card, .today-view .spec-card { padding: 16px; }
+  .today-view .daily-workout-card { padding: 0; }
+  .daily-workout-mascot { border-left: 0; border-top: 2px solid var(--duo-line); }
+  .today-settings-button span { display: none; }
+  .today-settings-button { width: 46px; padding: 0; justify-content: center; }
+  .nav-link-item.active { border-color: transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; animation-delay: 0ms !important; transition-duration: 1ms !important; }
+}
+
+/* Spec-card is a flex column; keep Today's grid layouts intact. */
+.today-view .daily-workout-card { gap: 0; }
+.spec-card > .card-header-bar { margin-bottom: 0; }
+.today-insight-card .today-section-heading { margin-bottom: 0; }
+.today-insight-card .text-action { margin-top: 0; align-self: flex-start; }
