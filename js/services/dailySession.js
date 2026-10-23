@@ -1,7 +1,16 @@
 import { completedExercisesToday } from './learningStats.js?v=18900';
 import { getDueWords } from './srsEngine.js?v=18900';
 import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=18900';
-import { isWordReadyForPractice, normalizeWordPracticeStats, selectModeWords, wordRecommendationScore } from './wordSelection.js?v=18900';
+import {
+  ensureDailyStudyPlan,
+  evaluateDailyStudyPlan,
+  isWordReadyForPractice,
+  normalizeWordPracticeStats,
+  selectModeWords,
+  wordRecommendationScore
+} from './wordSelection.js?v=18900';
+
+export { ensureDailyStudyPlan, evaluateDailyStudyPlan };
 
 export const DEFAULT_SESSION_SIZE = 20;
 
@@ -9,12 +18,26 @@ export function practiceSessionSize(settings = {}) {
   return Math.max(5, Math.min(50, Math.round(Number(settings.practiceSessionSize) || DEFAULT_SESSION_SIZE)));
 }
 
-// The goal measures progress; available reviews determine whether practice can continue.
+// Evaluates today's 8:00 AM study plan so completing a word reduces today's remaining
+// queue instead of pulling an infinite stream of backlog words into today.
 export function buildScheduledPracticeSession(words, settings = {}, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
+  const targetSize = Math.max(1, Math.round(Number(options.targetSize) || practiceSessionSize(settings)));
   const dailyGoal = Math.max(1, Math.min(200, Math.round(Number(settings.dailyGoal) || 20)));
-  const session = buildDailySession(words, { now, targetSize: practiceSessionSize(settings), settings });
-  return { ...session, dailyGoal, dailyGoalComplete: completedExercisesToday(settings, now) >= dailyGoal };
+  const dailyPlan = evaluateDailyStudyPlan(words, settings, { now, targetSize });
+  const session = buildDailySession(dailyPlan.readyTodayWords, {
+    now,
+    targetSize: Math.max(1, dailyPlan.readyTodayWords.length || targetSize),
+    settings,
+    choicePool: words
+  });
+  return {
+    ...session,
+    dueWordCount: dailyPlan.remainingTodayCount,
+    dailyGoal,
+    dailyGoalComplete: dailyPlan.isPlanComplete || completedExercisesToday(settings, now) >= dailyGoal,
+    dailyPlan
+  };
 }
 
 export function needsLearningTopUp(word, now = new Date()) {
@@ -45,8 +68,17 @@ export function selectPracticeWords(words, options = {}) {
   const now = options.now ? new Date(options.now) : new Date();
   const limit = Math.max(0, Math.round(options.limit ?? DEFAULT_SESSION_SIZE));
   return selectModeWords(words, {
-    mode: options.mode || 'practice', limit, now, order: 'priority', includeResting: options.includeResting,
+    mode: options.mode || 'practice',
+    limit,
+    now,
+    order: 'priority',
+    includeResting: options.includeResting,
     settings: options.settings,
+    useDailyPlan: options.useDailyPlan,
+    dailyPlan: options.dailyPlan,
+    minWords: options.minWords,
+    allowCompletedPlanWords: options.allowCompletedPlanWords,
+    planSize: options.planSize,
     priorityScore: (word, now) => practicePriorityScore(word, now, options.settings)
   });
 }
@@ -97,13 +129,14 @@ export function buildDailySession(words, options = {}) {
       ? 'weak' : stats.attempts > 0 || word.lastReviewedAt ? 'due' : 'growth';
     return { word, source };
   });
-  const hasChoices = new Set((Array.isArray(words) ? words : []).map(word => String(word.word || '').trim().toLowerCase())).size > 1;
+  const choicePool = Array.isArray(options.choicePool) && options.choicePool.length ? options.choicePool : words;
+  const hasChoices = new Set((Array.isArray(choicePool) ? choicePool : []).map(word => String(word.word || '').trim().toLowerCase())).size > 1;
   const exercises = weakOnly ? selected.map((item, index) => {
     const recommended = recommendedExerciseType(item.word);
     const exerciseType = !hasChoices && recommended.endsWith('-recognition') ? 'typed-recall' : recommended;
     return { id: `${item.word.id}-${index}-${exerciseType}`, wordId: item.word.id,
       exerciseType, source: 'weak', immediateRetry: false };
-  }) : practiceExercises(selected, words);
+  }) : practiceExercises(selected, choicePool);
   const composition = exercises.reduce((counts, exercise) => {
     counts[exercise.source] += 1;
     return counts;

@@ -3,7 +3,7 @@ import { driveSync } from '../services/driveSync.js?v=18900';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18900';
 import { playInteractionSound } from '../services/interactionSound.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
+import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -14,8 +14,8 @@ export function teardownMatchSprintMode() {
   activeSprintCleanup = null;
 }
 
-function buildRound(words) {
-  return shuffle(selectModeWords(words, { mode: 'match-sprint', limit: 6 }));
+function buildRound(words, settings) {
+  return shuffle(selectModeWords(words, { mode: 'match-sprint', limit: 6, settings, useDailyPlan: true, allowCompletedPlanWords: true, minWords: 2 }));
 }
 
 export function getUnmatchedWords(items, matchedIds) {
@@ -25,7 +25,8 @@ export function getUnmatchedWords(items, matchedIds) {
 export function renderMatchSprintMode(container, onNavigate) {
   teardownMatchSprintMode();
   const allWords = getActivePracticeWords(driveSync);
-  const round = buildRound(allWords);
+  const settings = ensureDailyStudyPlan(driveSync);
+  const round = buildRound(allWords, settings);
   if (round.length < 2) {
     const hasVocabulary = new Set(allWords.map(word => word.word.toLowerCase())).size >= 2;
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-stopwatch"></i><h2>${hasVocabulary ? 'Fewer than 2 words ready' : 'Add two different words'}</h2><p>${hasVocabulary ? 'Match Sprint needs two words ready for review. Recently recalled words are resting; Practice can use any remaining word.' : 'Match Sprint pairs exact meanings with spellings, so a round needs at least two different words in the active month.'}</p><button class="btn-green-solid" id="match-back">Back to dashboard</button></div></section>`;

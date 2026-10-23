@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { applyExerciseResultToWord, recordExerciseResult } from '../js/services/exerciseResult.js';
-import { getScheduledPracticeWords, normalizeWordPracticeStats, selectModeWords } from '../js/services/wordSelection.js';
+import { ensureDailyStudyPlan, evaluateDailyStudyPlan, getScheduledPracticeWords, normalizeWordPracticeStats, selectModeWords } from '../js/services/wordSelection.js';
 import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js';
-import { buildDailySession, buildScheduledPracticeSession, practiceSessionSize } from '../js/services/dailySession.js';
-import { localDateKey } from '../js/utils/dates.js';
+import { buildDailySession, buildScheduledPracticeSession, practiceSessionSize, selectPracticeWords } from '../js/services/dailySession.js';
+import { DAILY_EVALUATION_HOUR, getNextStudyDayStart, getStudyDayStart, localDateKey, studyDayKey } from '../js/utils/dates.js';
 import { DAY_MS, migrateSrsState } from '../js/services/srsEngine.js';
 import { getPracticeReadiness } from '../js/services/reminderService.js';
 
@@ -212,23 +212,90 @@ test('a 107-word backlog stays within each batch and remains available after the
   assert.deepEqual({ words, settings }, original);
 });
 
-test('abandoned sessions retain goal progress while offering another useful full batch', () => {
+test('abandoned sessions retain goal progress and shrink today’s 8:00 AM plan instead of refilling from the backlog', () => {
   // getSettings normalizes daily activity to the real local day.
   const activityDate = new Date();
   const persistence = new DriveSyncService(new MemoryStorage());
   const words = Array.from({ length: 30 }, (_, index) => word(String(index), { monthYear: 'October 2026', courseId: 'english' }));
   persistence.saveWords(words);
   persistence.setActiveNotebook('October 2026 Vocabulary');
-  const initial = buildScheduledPracticeSession(getScheduledPracticeWords(persistence), persistence.getSettings(), { now: activityDate });
+  const initialSettings = ensureDailyStudyPlan(persistence, { now: activityDate });
+  const initial = buildScheduledPracticeSession(getScheduledPracticeWords(persistence), initialSettings, { now: activityDate });
   assert.equal(initial.wordCount, 20);
-  // The same persisted study activity used by every exercise mode survives leaving a session.
-  for (let i = 0; i < 7; i++) recordExerciseResult({ wordId: words[i].id, exerciseType: 'daily-typed-recall', recallType: 'free-recall', correct: i % 2 === 0, occurredAt: activityDate.toISOString() }, persistence);
+  const initialIds = new Set(initial.exercises.map(exercise => exercise.wordId));
+  const answeredIds = initial.exercises.slice(0, 7).map(exercise => exercise.wordId);
+  // Answering 7 words (4 correct, 3 missed on 10m cooldown) shrinks today's remaining ready queue to 13 instead of pulling deferred words from tomorrow's pool.
+  for (let i = 0; i < answeredIds.length; i++) recordExerciseResult({ wordId: answeredIds[i], exerciseType: 'daily-typed-recall', recallType: 'free-recall', correct: i % 2 === 0, occurredAt: activityDate.toISOString() }, persistence);
   const settings = persistence.getSettings();
   assert.equal(settings.reviewsToday, 7);
   const next = buildScheduledPracticeSession(getScheduledPracticeWords(persistence), settings, { now: activityDate });
-  assert.equal(next.wordCount, 20);
+  assert.equal(next.wordCount, 13);
+  assert.equal(next.dailyPlan.completedTodayCount, 4);
+  assert.equal(next.dailyPlan.remainingTodayCount, 16);
+  assert.equal(next.dailyPlan.reviseTomorrowCount, 14);
   assert.equal(next.dailyGoalComplete, false);
-  assert.equal(next.exercises.some(exercise => words.slice(0, 7).some(item => item.id === exercise.wordId)), false);
+  assert.equal(next.exercises.some(exercise => answeredIds.includes(exercise.wordId)), false);
+  assert.equal(next.exercises.every(exercise => initialIds.has(exercise.wordId)), true);
+});
+
+test('8:00 AM daily evaluation separates reviseToday, learnToday, and reviseTomorrow and locks for the study day', () => {
+  assert.equal(DAILY_EVALUATION_HOUR, 8);
+  const beforeEight = new Date(2026, 9, 10, 7, 30, 0);
+  const afterEight = new Date(2026, 9, 10, 8, 15, 0);
+  assert.equal(studyDayKey(beforeEight), '2026-10-09');
+  assert.equal(studyDayKey(afterEight), '2026-10-10');
+  assert.equal(getStudyDayStart(afterEight).getHours(), 8);
+  assert.equal(getNextStudyDayStart(afterEight).getHours(), 8);
+
+  const yesterday = new Date(afterEight.getTime() - DAY_MS);
+  const revisedPool = Array.from({ length: 18 }, (_, index) => {
+    const reviewed = answer(word(`rev-${index}`), yesterday);
+    return { ...reviewed, nextReviewDate: new Date(afterEight.getTime() - (index + 1) * 60000).toISOString() };
+  });
+  const newPool = Array.from({ length: 12 }, (_, index) => word(`new-${index}`, {
+    createdAt: yesterday.toISOString(),
+    nextReviewDate: afterEight.toISOString()
+  }));
+  const allWords = [...revisedPool, ...newPool];
+  const plan = evaluateDailyStudyPlan(allWords, { practiceSessionSize: 20 }, { now: afterEight });
+
+  assert.equal(plan.plannedTodayCount, 20);
+  assert.equal(plan.reviseTodayCount, 14);
+  assert.equal(plan.learnTodayCount, 6);
+  assert.equal(plan.reviseTomorrowCount, 10);
+
+  // Completing one word today reduces today's remaining count by 1 without pulling an overflow word from tomorrow.
+  const firstTarget = plan.todayWords[0];
+  const updatedWords = allWords.map(item => item.id === firstTarget.id ? answer(item, new Date(afterEight.getTime() + 5 * 60000)) : item);
+  const afterOne = evaluateDailyStudyPlan(updatedWords, { practiceSessionSize: 20, dailyStudyPlan: plan.snapshot }, { now: new Date(afterEight.getTime() + 5 * 60000) });
+  assert.equal(afterOne.completedTodayCount, 1);
+  assert.equal(afterOne.remainingTodayCount, 19);
+  assert.equal(afterOne.reviseTomorrowCount, 11);
+
+  // Secondary modes (Flashcards, Choose Word, Visual Match, Match Sprint) select from Today's 8:00 AM Study Plan first.
+  const plannedIds = new Set(plan.allPlannedTodayWords.map(item => item.id));
+  for (const mode of ['flashcards', 'visual-match', 'match-sprint']) {
+    const selected = selectModeWords(updatedWords, {
+      mode,
+      limit: 6,
+      now: new Date(afterEight.getTime() + 5 * 60000),
+      settings: { practiceSessionSize: 20, dailyStudyPlan: plan.snapshot },
+      useDailyPlan: true,
+      allowCompletedPlanWords: true
+    });
+    assert.equal(selected.length, 6);
+    assert.equal(selected.every(item => plannedIds.has(item.id)), true);
+  }
+  const chooseSelected = selectPracticeWords(updatedWords, {
+    mode: 'choose-word',
+    limit: 10,
+    now: new Date(afterEight.getTime() + 5 * 60000),
+    settings: { practiceSessionSize: 20, dailyStudyPlan: plan.snapshot },
+    useDailyPlan: true,
+    allowCompletedPlanWords: true
+  });
+  assert.equal(chooseSelected.length, 10);
+  assert.equal(chooseSelected.every(item => plannedIds.has(item.id)), true);
 });
 
 test('completed goals do not pad sessions with recently recalled words after the backlog is cleared', () => {

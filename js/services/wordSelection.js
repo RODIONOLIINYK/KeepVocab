@@ -1,6 +1,6 @@
 import { readFsrsConfig, rawFsrsRetrievability } from './fsrsConfig.js';
 import { memoryContextFeatures, calibratedRecallProbability } from './memoryFeatures.js';
-import { localDateKey } from '../utils/dates.js';
+import { DAILY_EVALUATION_HOUR, getNextStudyDayStart, getStudyDayStart, localDateKey, studyDayKey } from '../utils/dates.js';
 
 // Every practice mode uses only the month selected in Library.
 export function getActivePracticeWords(persistence) {
@@ -178,7 +178,12 @@ export function isWordReadyForPractice(word, now = new Date()) {
   const recallDays = stats.successfulRecallDays + stats.legacySuccessfulReviews;
   const reliable = recallDays >= 3 && stats.lastAnswerCorrect !== false
     && !stats.consecutiveMisses && !normalizeSelectionMistakes(word).consecutiveFailures;
-  if (word?.srs?.algorithm === 'FSRS-6') return Boolean(dueAt && dueAt <= timestamp);
+  if (word?.srs?.algorithm === 'FSRS-6') {
+    if (stats.lastAnswerCorrect === true && answeredAt && dueAt <= answeredAt && timestamp - answeredAt < 10 * 60 * 1000) {
+      return false;
+    }
+    return Boolean(dueAt && dueAt <= timestamp);
+  }
   if (dueAt && dueAt <= timestamp) {
     return !(reliable && recallAt && timestamp - recallAt < DAY_MS);
   }
@@ -230,6 +235,279 @@ export function wordRecommendationScore(word, options = {}) {
     + slowRecall * 8
     + masteryNeed * 18
     - recentCorrectPenalty;
+}
+
+function planUrgencyScore(word, now, settings) {
+  const dueAt = validTimestamp(word?.nextReviewDate || word?.createdAt);
+  const overdueDays = dueAt && dueAt <= now.getTime()
+    ? Math.min(365, Math.max(0, (now.getTime() - dueAt) / DAY_MS))
+    : 0;
+  return wordRecommendationScore(word, { now, settings }) + Math.min(30, overdueDays);
+}
+
+function classifyStudyPlanWord(word, dayStartMs, nowMs) {
+  const stats = normalizeWordPracticeStats(word);
+  const answeredAt = validTimestamp(stats.lastAnsweredAt);
+  const answeredToday = answeredAt >= dayStartMs && answeredAt <= nowMs;
+  const completedToday = answeredToday && stats.lastAnswerCorrect === true;
+  const missedToday = answeredToday && stats.lastAnswerCorrect === false;
+  const resultsToday = stats.recentResults.filter(result => {
+    const t = validTimestamp(result.occurredAt);
+    return t >= dayStartMs && t <= nowMs;
+  }).length;
+  const priorAttempts = Math.max(0, stats.attempts - (resultsToday || (answeredToday ? 1 : 0)));
+  const hadPriorHistory = priorAttempts > 0
+    || (Boolean(word.lastReviewedAt) && validTimestamp(word.lastReviewedAt) < dayStartMs)
+    || (!answeredToday && count(word.box) > 1);
+  return {
+    word,
+    stats,
+    answeredAt,
+    answeredToday,
+    completedToday,
+    missedToday,
+    hadPriorHistory,
+    dueAt: validTimestamp(word?.nextReviewDate || word?.createdAt)
+  };
+}
+
+// Evaluates the active month's vocabulary at the 8:00 AM study day boundary
+// into three buckets: reviseToday, learnToday, and reviseTomorrow.
+export function evaluateDailyStudyPlan(words, settings = {}, options = {}) {
+  const now = options.now ? new Date(options.now) : new Date();
+  const evaluationHour = Number.isFinite(Number(options.evaluationHour))
+    ? Number(options.evaluationHour)
+    : DAILY_EVALUATION_HOUR;
+  const dayStart = getStudyDayStart(now, evaluationHour);
+  const nextDayStart = getNextStudyDayStart(now, evaluationHour);
+  const tomorrowEnd = new Date(nextDayStart.getTime() + DAY_MS);
+  const dayKey = studyDayKey(now, evaluationHour);
+  const dayStartMs = dayStart.getTime();
+  const nowMs = now.getTime();
+  const tomorrowEndMs = tomorrowEnd.getTime();
+  const configuredSize = Math.max(5, Math.min(50, Math.round(Number(settings?.practiceSessionSize) || 20)));
+  const planSize = Math.max(1, Math.round(Number(options.targetSize) || configuredSize));
+
+  const valid = (Array.isArray(words) ? words : []).filter(word => word?.id && word.word && word.definition);
+  const scores = new Map(valid.map(word => [word.id, planUrgencyScore(word, now, settings)]));
+  const compareUrgency = (left, right) => {
+    const leftInfo = classifyStudyPlanWord(left, dayStartMs, nowMs);
+    const rightInfo = classifyStudyPlanWord(right, dayStartMs, nowMs);
+    const leftActive = leftInfo.answeredToday || isWordReadyForPractice(left, now) ? 0 : 1;
+    const rightActive = rightInfo.answeredToday || isWordReadyForPractice(right, now) ? 0 : 1;
+    if (leftActive !== rightActive) return leftActive - rightActive;
+    const leftDue = leftInfo.dueAt <= nowMs ? 0 : 1;
+    const rightDue = rightInfo.dueAt <= nowMs ? 0 : 1;
+    if (leftDue !== rightDue) return leftDue - rightDue;
+    const scoreDiff = (scores.get(right.id) || 0) - (scores.get(left.id) || 0);
+    if (scoreDiff) return scoreDiff;
+    if (leftInfo.dueAt !== rightInfo.dueAt) return leftInfo.dueAt - rightInfo.dueAt;
+    if (leftInfo.answeredAt !== rightInfo.answeredAt) return leftInfo.answeredAt - rightInfo.answeredAt;
+    return String(left.id).localeCompare(String(right.id));
+  };
+
+  const rankedValid = [...valid].sort(compareUrgency);
+  const distinctWords = [];
+  const seenSpellings = new Set();
+  for (const word of rankedValid) {
+    const spelling = String(word.word).trim().toLowerCase();
+    if (!spelling || seenSpellings.has(spelling)) continue;
+    seenSpellings.add(spelling);
+    distinctWords.push(word);
+  }
+
+  const infoById = new Map(distinctWords.map(word => [String(word.id), classifyStudyPlanWord(word, dayStartMs, nowMs)]));
+  const wordById = new Map(distinctWords.map(word => [String(word.id), word]));
+  const saved = !options.ignoreSavedPlan && settings?.dailyStudyPlan && typeof settings.dailyStudyPlan === 'object'
+    ? settings.dailyStudyPlan
+    : null;
+  const savedMatches = Boolean(saved
+    && saved.dayKey === dayKey
+    && (!settings?.activeNotebook || !saved.notebook || saved.notebook === settings.activeNotebook)
+    && Number(saved.planSize) === planSize
+    && (Array.isArray(saved.reviseIds) || Array.isArray(saved.learnIds)));
+
+  let plannedReviseIds = [];
+  let plannedLearnIds = [];
+
+  if (savedMatches) {
+    const rawRevise = (saved.reviseIds || []).map(String).filter(id => wordById.has(id));
+    const rawLearn = (saved.learnIds || []).map(String).filter(id => wordById.has(id) && !rawRevise.includes(id));
+    if (rawRevise.length || rawLearn.length || !distinctWords.length) {
+      plannedReviseIds = [...rawRevise];
+      plannedLearnIds = [...rawLearn];
+      const lockedSet = new Set([...plannedReviseIds, ...plannedLearnIds]);
+      for (const word of distinctWords) {
+        const id = String(word.id);
+        if (lockedSet.has(id)) continue;
+        const info = infoById.get(id);
+        if (!info.answeredToday) continue;
+        if (lockedSet.size >= planSize) {
+          const dropFromLearn = [...plannedLearnIds].reverse().find(candidateId => !infoById.get(candidateId)?.answeredToday);
+          const dropFromRevise = [...plannedReviseIds].reverse().find(candidateId => !infoById.get(candidateId)?.answeredToday);
+          const dropId = dropFromLearn || dropFromRevise;
+          if (dropId) {
+            lockedSet.delete(dropId);
+            plannedLearnIds = plannedLearnIds.filter(item => item !== dropId);
+            plannedReviseIds = plannedReviseIds.filter(item => item !== dropId);
+          }
+        }
+        if (lockedSet.size < planSize) {
+          lockedSet.add(id);
+          if (info.hadPriorHistory || info.missedToday) plannedReviseIds.push(id);
+          else plannedLearnIds.push(id);
+        }
+      }
+      if (lockedSet.size < planSize) {
+        for (const word of distinctWords) {
+          if (lockedSet.size >= planSize) break;
+          const id = String(word.id);
+          if (lockedSet.has(id)) continue;
+          const info = infoById.get(id);
+          const addedAfterEvaluation = validTimestamp(word.createdAt) >= dayStartMs;
+          if (addedAfterEvaluation && isWordReadyForPractice(word, now)) {
+            lockedSet.add(id);
+            if (info.hadPriorHistory || info.missedToday) plannedReviseIds.push(id);
+            else plannedLearnIds.push(id);
+          }
+        }
+      }
+    }
+  }
+
+  if (!plannedReviseIds.length && !plannedLearnIds.length && distinctWords.length) {
+    const practicedToday = distinctWords.filter(word => infoById.get(String(word.id)).answeredToday).slice(0, planSize);
+    const practicedIds = new Set(practicedToday.map(word => String(word.id)));
+    const remainingSlots = Math.max(0, planSize - practicedToday.length);
+    const unpracticedReady = distinctWords.filter(word => {
+      const id = String(word.id);
+      return !practicedIds.has(id) && isWordReadyForPractice(word, now);
+    });
+    const reviseCandidates = unpracticedReady.filter(word => infoById.get(String(word.id)).hadPriorHistory);
+    const learnCandidates = unpracticedReady.filter(word => !infoById.get(String(word.id)).hadPriorHistory);
+
+    let reviseQuota = 0;
+    let learnQuota = 0;
+    if (reviseCandidates.length > 0 && learnCandidates.length > 0) {
+      const targetLearnTotal = Math.min(planSize, Math.max(1, Math.round(planSize * 0.3)));
+      const practicedNewCount = practicedToday.filter(word => !infoById.get(String(word.id)).hadPriorHistory).length;
+      learnQuota = Math.min(learnCandidates.length, Math.max(0, Math.min(remainingSlots, targetLearnTotal - practicedNewCount)));
+      reviseQuota = Math.min(reviseCandidates.length, Math.max(0, remainingSlots - learnQuota));
+      if (reviseQuota + learnQuota < remainingSlots) {
+        reviseQuota = Math.min(reviseCandidates.length, remainingSlots - learnQuota);
+        learnQuota = Math.min(learnCandidates.length, remainingSlots - reviseQuota);
+      }
+    } else if (reviseCandidates.length === 0) {
+      learnQuota = Math.min(learnCandidates.length, remainingSlots);
+    } else {
+      reviseQuota = Math.min(reviseCandidates.length, remainingSlots);
+    }
+
+    for (const word of practicedToday) {
+      const id = String(word.id);
+      const info = infoById.get(id);
+      if (info.hadPriorHistory) plannedReviseIds.push(id);
+      else plannedLearnIds.push(id);
+    }
+    for (const word of reviseCandidates.slice(0, reviseQuota)) plannedReviseIds.push(String(word.id));
+    for (const word of learnCandidates.slice(0, learnQuota)) plannedLearnIds.push(String(word.id));
+  }
+
+  const allPlannedIds = [...plannedReviseIds, ...plannedLearnIds];
+  const plannedIdSet = new Set(allPlannedIds);
+  const initialReviseSet = new Set(plannedReviseIds);
+
+  const reviseToday = [];
+  const learnToday = [];
+  const completedToday = [];
+
+  for (const id of allPlannedIds) {
+    const word = wordById.get(id);
+    const info = infoById.get(id);
+    if (!word || !info) continue;
+    if (info.completedToday) {
+      completedToday.push(word);
+    } else if (initialReviseSet.has(id) || info.missedToday || info.hadPriorHistory) {
+      reviseToday.push(word);
+    } else {
+      learnToday.push(word);
+    }
+  }
+
+  const todayWords = [...reviseToday, ...learnToday].sort(compareUrgency);
+  const readyTodayWords = todayWords.filter(word => isWordReadyForPractice(word, now));
+
+  const reviseTomorrow = [];
+  const tomorrowSeen = new Set();
+  const addTomorrowWord = word => {
+    const id = String(word.id);
+    if (tomorrowSeen.has(id)) return;
+    tomorrowSeen.add(id);
+    reviseTomorrow.push(word);
+  };
+
+  for (const word of completedToday) {
+    const info = infoById.get(String(word.id));
+    if (!info?.dueAt || info.dueAt <= tomorrowEndMs) addTomorrowWord(word);
+  }
+  for (const word of distinctWords) {
+    const id = String(word.id);
+    if (plannedIdSet.has(id)) continue;
+    const info = infoById.get(id);
+    if (isWordReadyForPractice(word, now) || (info.dueAt > 0 && info.dueAt <= tomorrowEndMs)) {
+      addTomorrowWord(word);
+    }
+  }
+
+  return {
+    dayKey,
+    evaluationHour,
+    evaluatedAt: dayStart.toISOString(),
+    nextEvaluationAt: nextDayStart.toISOString(),
+    planSize,
+    reviseToday,
+    learnToday,
+    completedToday,
+    reviseTomorrow,
+    todayWords,
+    readyTodayWords,
+    allPlannedTodayWords: [...todayWords, ...completedToday],
+    reviseTodayCount: reviseToday.length,
+    learnTodayCount: learnToday.length,
+    completedTodayCount: completedToday.length,
+    reviseTomorrowCount: reviseTomorrow.length,
+    plannedTodayCount: allPlannedIds.length,
+    remainingTodayCount: todayWords.length,
+    readyTodayCount: readyTodayWords.length,
+    isPlanComplete: allPlannedIds.length > 0 && todayWords.length === 0,
+    snapshot: {
+      dayKey,
+      notebook: String(settings?.activeNotebook || ''),
+      evaluatedAt: dayStart.toISOString(),
+      nextEvaluationAt: nextDayStart.toISOString(),
+      planSize,
+      reviseIds: plannedReviseIds,
+      learnIds: plannedLearnIds
+    }
+  };
+}
+
+export function ensureDailyStudyPlan(persistence, options = {}) {
+  if (!persistence || typeof persistence.getSettings !== 'function') return {};
+  const settings = persistence.getSettings();
+  const words = getScheduledPracticeWords(persistence);
+  const plan = evaluateDailyStudyPlan(words, settings, options);
+  const current = settings.dailyStudyPlan;
+  const needsSave = !current
+    || current.dayKey !== plan.snapshot.dayKey
+    || current.notebook !== plan.snapshot.notebook
+    || Number(current.planSize) !== plan.snapshot.planSize
+    || (current.reviseIds?.length || 0) + (current.learnIds?.length || 0) !== plan.snapshot.reviseIds.length + plan.snapshot.learnIds.length;
+  if (needsSave && typeof persistence.updateSettings === 'function') {
+    persistence.updateSettings({ dailyStudyPlan: plan.snapshot });
+    return persistence.getSettings();
+  }
+  return settings;
 }
 
 function needsPriorityPractice(word, now) {
@@ -299,9 +577,44 @@ export function selectModeWords(words, options = {}) {
   const mode = String(options.mode || 'independent');
   const settings = options.settings || readFsrsConfig();
   const limit = Math.max(0, Math.round(options.limit ?? 10));
+  if (!limit) return [];
+
+  if (options.useDailyPlan || options.dailyPlan) {
+    const plan = options.dailyPlan && typeof options.dailyPlan === 'object'
+      ? options.dailyPlan
+      : evaluateDailyStudyPlan(words, settings, { now, targetSize: options.planSize });
+    const primary = selectModeWords(plan.readyTodayWords, {
+      ...options,
+      useDailyPlan: false,
+      dailyPlan: null,
+      limit
+    });
+    const minWords = Math.max(0, Math.round(Number(options.minWords) || 0));
+    const shouldTopUpCompleted = primary.length < limit && (
+      options.allowCompletedPlanWords === true
+      || (primary.length > 0 && primary.length < minWords)
+    );
+    if (shouldTopUpCompleted && plan.completedToday.length > 0) {
+      const chosenIds = new Set(primary.map(word => word.id));
+      const chosenSpellings = new Set(primary.map(word => String(word.word).trim().toLowerCase()));
+      const completedPool = plan.completedToday.filter(word => !chosenIds.has(word.id)
+        && !chosenSpellings.has(String(word.word).trim().toLowerCase()));
+      const topUpTarget = options.allowCompletedPlanWords === true ? limit - primary.length : minWords - primary.length;
+      const topUp = selectModeWords(completedPool, {
+        ...options,
+        useDailyPlan: false,
+        dailyPlan: null,
+        includeResting: true,
+        limit: Math.max(0, topUpTarget)
+      });
+      return [...primary, ...topUp];
+    }
+    return primary;
+  }
+
   const valid = (Array.isArray(words) ? words : []).filter(word => word?.id && word.word && word.definition
     && (options.includeResting === true || isWordReadyForPractice(word, now)));
-  if (!valid.length || !limit) return [];
+  if (!valid.length) return [];
   const uniqueSpellings = new Set(valid.map(word => String(word.word).trim().toLowerCase())).size;
   const target = Math.min(limit, uniqueSpellings);
   const externalPriority = typeof options.priorityScore === 'function' ? options.priorityScore : null;

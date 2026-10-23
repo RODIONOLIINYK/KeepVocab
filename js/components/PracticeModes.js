@@ -7,7 +7,7 @@ import { playInteractionSound } from '../services/interactionSound.js?v=18900';
 import { selectPracticeWords } from '../services/dailySession.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18900';
-import { getActivePracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18900';
+import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections } from '../services/wordSelection.js?v=18900';
 import { stableWordChoices } from '../services/wordChoices.js?v=18900';
 import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18900';
 import { navigateTo as go } from '../utils/navigation.js';
@@ -19,7 +19,8 @@ function emptyMode(container, icon, title, detail, onNavigate) {
 
 export function renderSpellingMode(container, onNavigate) {
   const all = getActivePracticeWords(driveSync);
-  const queue = selectPracticeWords(all, { mode: 'listen-and-spell' });
+  const settings = ensureDailyStudyPlan(driveSync);
+  const queue = selectPracticeWords(all, { mode: 'listen-and-spell', settings, useDailyPlan: true, allowCompletedPlanWords: true });
   if (!queue.length) return emptyMode(container, 'fa-keyboard', all.length ? 'All caught up' : 'Add vocabulary first', all.length ? 'Your words are resting until their next review. Recent recall and mistakes determine when they return.' : 'Listen & Spell uses the words in your active month.', onNavigate);
   recordModeWordSelections(driveSync, queue, { mode: 'listen-and-spell' });
   const originalCount = queue.length;
@@ -83,7 +84,8 @@ export function renderSpellingMode(container, onNavigate) {
 
 export function renderChooseWordMode(container, onNavigate) {
   const all = getActivePracticeWords(driveSync);
-  const queue = selectPracticeWords(all, { mode: 'choose-word' });
+  const settings = ensureDailyStudyPlan(driveSync);
+  const queue = selectPracticeWords(all, { mode: 'choose-word', settings, useDailyPlan: true, allowCompletedPlanWords: true, minWords: 2 });
   if (new Set(all.map(word => word.word.toLowerCase())).size < 2) return emptyMode(container, 'fa-list-check', 'Add at least two words', 'Choose Word needs another word to create meaningful choices.', onNavigate);
   if (!queue.length) return emptyMode(container, 'fa-list-check', 'All caught up', 'Your words are resting until their next review. Recently recalled meanings stay out of the next set.', onNavigate);
   recordModeWordSelections(driveSync, queue, { mode: 'choose-word' });

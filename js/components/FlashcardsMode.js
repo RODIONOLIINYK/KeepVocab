@@ -5,12 +5,13 @@ import { speakWord } from '../services/speechService.js?v=18900';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18900';
 import { getRatingPreviews } from '../services/srsEngine.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
+import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function renderFlashcardsMode(container, onNavigate) {
   const allWords = getActivePracticeWords(driveSync);
-  const words = selectModeWords(allWords, { mode: 'flashcards', limit: 10 });
+  const settings = ensureDailyStudyPlan(driveSync);
+  const words = selectModeWords(allWords, { mode: 'flashcards', limit: 10, settings, useDailyPlan: true, allowCompletedPlanWords: true });
   if (!words.length) {
     container.innerHTML = `<section class="mode-empty-state"><img src="assets/keepvocab-sprig-thinking.webp" alt="Sprig thinking"><span class="eyebrow">Flashcards</span><h1>${allWords.length ? 'All caught up' : 'Your first card is waiting'}</h1><p>${allWords.length ? 'Your cards are resting until their next review. Recent answers shape when they return.' : 'Add a word and KeepVocab will preserve its exact meaning, example, and visual cue.'}</p><button class="btn-green-solid" id="flashcard-add">${allWords.length ? 'Back to Today' : 'Add vocabulary'}</button></section>`;
     container.querySelector('#flashcard-add').addEventListener('click', () => allWords.length ? go('dashboard', onNavigate) : document.getElementById('btn-header-quick-add')?.click());

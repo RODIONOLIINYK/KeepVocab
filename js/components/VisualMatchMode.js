@@ -9,7 +9,7 @@ import { playInteractionSound } from '../services/interactionSound.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18900';
 import { stableWordChoices } from '../services/wordChoices.js?v=18900';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
+import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -34,7 +34,8 @@ export async function renderVisualMatchMode(container, onNavigate) {
   const isCurrent = () => container.visualMatchOwner === owner && window.location.hash === '#visual';
   const notebook = driveSync.getActiveNotebook();
   const allWords = getActivePracticeWords(driveSync);
-  const words = selectModeWords(allWords, { mode: 'visual-match', limit: 10 });
+  const settings = ensureDailyStudyPlan(driveSync);
+  const words = selectModeWords(allWords, { mode: 'visual-match', limit: 10, settings, useDailyPlan: true, allowCompletedPlanWords: true, minWords: 2 });
   if (words.length < 2) {
     const hasVocabulary = new Set(allWords.map(word => word.word.toLowerCase())).size >= 2;
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images"></i><h2>${hasVocabulary ? 'Fewer than 2 words ready' : 'Add at least two words'}</h2><p>${hasVocabulary ? 'Visual Match needs two words ready for review. Recently recalled words are resting; Practice can use any remaining word.' : 'Visual Match needs multiple choices from the active month.'}</p><button class="btn-green-solid" id="visual-back">Back to dashboard</button></div></section>`;

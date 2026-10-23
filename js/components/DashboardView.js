@@ -1,6 +1,6 @@
-import { getActivePracticeWords, getScheduledPracticeWords } from '../services/wordSelection.js?v=18900';
+import { ensureDailyStudyPlan, getActivePracticeWords, getScheduledPracticeWords } from '../services/wordSelection.js?v=18900';
 import { driveSync } from '../services/driveSync.js?v=18900';
-import { buildScheduledPracticeSession, weaknessScore } from '../services/dailySession.js?v=18900';
+import { buildScheduledPracticeSession, evaluateDailyStudyPlan, weaknessScore } from '../services/dailySession.js?v=18900';
 import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18900';
 import { completedExercisesToday } from '../services/learningStats.js?v=18900';
 import { escapeHtml } from '../utils/html.js';
@@ -22,8 +22,9 @@ export function renderDashboardView(container, onNavigate) {
   const activeWords = getActivePracticeWords(driveSync);
   const practiceWords = getScheduledPracticeWords(driveSync);
   const activeWordCount = new Set(activeWords.map(word => String(word.word || '').trim().toLowerCase())).size;
-  const settings = driveSync.getSettings();
+  const settings = ensureDailyStudyPlan(driveSync);
   const session = buildScheduledPracticeSession(practiceWords, settings);
+  const plan = session.dailyPlan || evaluateDailyStudyPlan(practiceWords, settings);
   const notebookLabel = escapeHtml(driveSync.getActiveNotebook().replace(/ Vocabulary$/, ''));
   const weak = activeWords.filter(word => weaknessScore(word) > 0).length;
   const recent = activeWords.filter(word => Date.now() - Date.parse(word.createdAt || 0) <= 14 * 24 * 60 * 60 * 1000).length;
@@ -36,14 +37,43 @@ export function renderDashboardView(container, onNavigate) {
     return counts;
   }, { seen: 0, recognized: 0, recalled: 0, context: 0, productive: 0 });
   const auth = driveSync.getDriveStatus();
+  const workoutHeading = session.exercises.length
+    ? (plan.completedTodayCount > 0 ? 'Continue today’s plan' : 'Start today’s plan')
+    : plan.isPlanComplete
+      ? 'Today’s plan complete'
+      : practiceWords.length
+        ? 'All caught up for today'
+        : 'Add your first vocabulary';
+  const workoutMeta = session.exercises.length
+    ? `${session.exercises.length} exercise${session.exercises.length === 1 ? '' : 's'} remaining today · ~${session.estimatedMinutes} min${plan.completedTodayCount ? ` · ${plan.completedTodayCount} completed` : ''}`
+    : plan.isPlanComplete
+      ? `You finished all ${plan.plannedTodayCount} word${plan.plannedTodayCount === 1 ? '' : 's'} in today’s 8:00 AM plan.${plan.reviseTomorrowCount ? ` ${plan.reviseTomorrowCount} word${plan.reviseTomorrowCount === 1 ? '' : 's'} queued for tomorrow.` : ''}`
+      : practiceWords.length
+        ? `Evaluated daily at 8:00 AM.${plan.reviseTomorrowCount ? ` ${plan.reviseTomorrowCount} word${plan.reviseTomorrowCount === 1 ? '' : 's'} scheduled for tomorrow.` : ' Your next review will appear when due.'}`
+        : 'Start with a word you want to remember.';
+  const mascotImage = !session.exercises.length && (plan.isPlanComplete || practiceWords.length)
+    ? 'assets/keepvocab-sprig-celebrate.webp'
+    : 'assets/keepvocab-sprig-thinking.webp';
+  const mascotBubble = session.exercises.length
+    ? `${session.wordCount} word${session.wordCount === 1 ? '' : 's'} left today`
+    : plan.isPlanComplete
+      ? `${plan.completedTodayCount} done today!`
+      : practiceWords.length
+        ? 'Nice work today'
+        : 'Ready when you are';
 
   container.innerHTML = `<section class="today-view" aria-labelledby="today-heading">
-    <div class="today-heading-row"><div><h1 id="today-heading">What should I do now?</h1><p>Your most urgent reviews come first.</p></div><button class="today-settings-button" id="today-settings" aria-label="Settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button></div>
-    <article class="daily-workout-card ${session.exercises.length ? '' : 'is-empty'}">
-      <div class="daily-workout-copy"><span class="daily-kicker"><i class="fa-solid fa-sparkles"></i> Today’s Workout</span><h2>${session.exercises.length ? session.dailyGoalComplete ? 'Keep strengthening your words' : 'Continue learning' : practiceWords.length ? 'All caught up' : 'Add your first vocabulary'}</h2><p class="daily-workout-meta">${session.exercises.length ? `${session.dailyGoalComplete ? 'Daily goal complete. More words are ready.<br>' : ''}${session.exercises.length} exercises · ~${session.estimatedMinutes} min${session.dueWordCount > session.wordCount ? ` · ${session.dueWordCount} words due` : ''}` : practiceWords.length ? 'Your next review will appear when it’s due.' : 'Start with a word you want to remember.'}<br><span>${notebookLabel}</span></p>
+    <div class="today-heading-row"><div><h1 id="today-heading">What should I do now?</h1><p>Evaluated once a day at 8:00 AM into today’s plan and tomorrow’s revisions.</p></div><button class="today-settings-button" id="today-settings" aria-label="Settings"><i class="fa-solid fa-gear"></i><span>Settings</span></button></div>
+    <article class="daily-workout-card ${session.exercises.length ? '' : 'is-empty'} ${plan.isPlanComplete ? 'is-complete' : ''}">
+      <div class="daily-workout-copy"><div class="daily-kicker-row"><span class="daily-kicker"><i class="fa-solid fa-sparkles"></i> Today’s Workout</span><span class="daily-eval-badge"><i class="fa-regular fa-clock"></i> 8:00 AM plan</span></div><h2>${workoutHeading}</h2><p class="daily-workout-meta">${workoutMeta}<br><span>${notebookLabel}</span></p>
+        ${practiceWords.length ? `<div class="daily-plan-buckets" role="group" aria-label="8:00 AM daily study plan">
+          <div class="daily-plan-bucket revise"><span class="bucket-icon"><i class="fa-solid fa-rotate"></i></span><div><strong>${plan.reviseTodayCount}</strong><span>Revise today</span></div></div>
+          <div class="daily-plan-bucket learn"><span class="bucket-icon"><i class="fa-solid fa-seedling"></i></span><div><strong>${plan.learnTodayCount}</strong><span>Learn today</span></div></div>
+          <div class="daily-plan-bucket tomorrow"><span class="bucket-icon"><i class="fa-regular fa-calendar-check"></i></span><div><strong>${plan.reviseTomorrowCount}</strong><span>Revise tomorrow</span></div></div>
+        </div>` : ''}
         ${session.exercises.length ? `<div class="workout-composition"><span><i class="fa-solid fa-keyboard"></i> ${session.exercises.filter(exercise => exercise.exerciseType === 'typed-recall').length} write the word</span>${session.exercises.some(exercise => exercise.exerciseType === 'image-recognition') ? `<span><i class="fa-solid fa-images"></i> ${session.exercises.filter(exercise => exercise.exerciseType === 'image-recognition').length} visual match</span>` : ''}</div>` : ''}
-        <button class="today-primary-cta" id="start-daily-session"><span>${session.exercises.length ? session.dailyGoalComplete ? 'Continue practice' : 'Start workout' : practiceWords.length ? 'Open library' : 'Add a word'}</span><i class="fa-solid fa-arrow-right"></i></button>
-      </div><div class="daily-workout-mascot"><div class="mascot-bubble">${session.exercises.length ? `${session.wordCount} word${session.wordCount === 1 ? '' : 's'} in this workout` : session.dailyGoalComplete || practiceWords.length ? 'Nice work today' : 'Ready when you are'}</div><img src="assets/keepvocab-sprig-thinking.webp" alt="" aria-hidden="true"></div>
+        <button class="today-primary-cta" id="start-daily-session"><span>${session.exercises.length ? (plan.completedTodayCount > 0 ? 'Continue workout' : 'Start workout') : practiceWords.length ? 'Open library' : 'Add a word'}</span><i class="fa-solid fa-arrow-right"></i></button>
+      </div><div class="daily-workout-mascot"><div class="mascot-bubble">${mascotBubble}</div><img src="${mascotImage}" alt="" aria-hidden="true"></div>
     </article>
     <div class="today-progress-card"><div class="today-progress-copy"><span>Daily progress</span><strong id="today-progress-count">${completedToday} of ${dailyGoal} exercises</strong></div><div class="today-progress-track" id="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div><span class="today-streak"><i class="fa-solid fa-fire"></i> <span id="today-streak-label">${Number(settings.dailyStreak || 0)} day streak</span></span></div>
     <div class="today-grid">

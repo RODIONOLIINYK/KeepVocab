@@ -62,7 +62,7 @@ export function speakingTargetScore(word, now = new Date()) {
   return score;
 }
 
-export function selectSpeakingTargets(words, { limit = 3, now = new Date(), lesson = null } = {}) {
+export function selectSpeakingTargets(words, { limit = 3, now = new Date(), lesson = null, settings = null } = {}) {
   const candidates = lesson
     ? (words || []).filter(word => speakingContextRelevance(word, lesson) > 0)
     : words;
@@ -72,6 +72,7 @@ export function selectSpeakingTargets(words, { limit = 3, now = new Date(), less
     now,
     priorityShare: 0.5,
     rotateWithinFocus: true,
+    ...(settings ? { settings, useDailyPlan: true, allowCompletedPlanWords: true } : {}),
     priorityScore: word => speakingContextRelevance(word, lesson) * 100 + speakingTargetScore(word, now)
   });
 }

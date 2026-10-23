@@ -1,6 +1,6 @@
 import { driveSync } from '../services/driveSync.js?v=18900';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18900';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
+import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
 import { playInteractionSound } from '../services/interactionSound.js?v=18900';
 import { mountUseItExercise } from './UseItExercise.js?v=18900';
 import { createSpeechRecordingSession } from '../services/speechInput.js?v=18900';
@@ -18,7 +18,8 @@ export function teardownUseItMode() {
 export function renderUseItMode(container, onNavigate) {
   teardownUseItMode();
   const allWords = getActivePracticeWords(driveSync);
-  const words = selectModeWords(allWords, { mode: 'use-it', limit: 10 });
+  const settings = ensureDailyStudyPlan(driveSync);
+  const words = selectModeWords(allWords, { mode: 'use-it', limit: 10, settings, useDailyPlan: true, allowCompletedPlanWords: true });
   if (!words.length) {
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprout-mascot.webp" alt="Sprig"><h2>${allWords.length ? 'All caught up' : 'Add vocabulary first'}</h2><p>${allWords.length ? 'Your words are resting until their next review. Recall history keeps recently remembered words out of the next set.' : 'Use It turns saved meanings into active English.'}</p><button class="btn-green-solid" id="useit-back">Back to Today</button></div></section>`;
     container.querySelector('#useit-back').addEventListener('click', () => go('dashboard', onNavigate));

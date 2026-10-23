@@ -5,20 +5,26 @@ import { buildLocalContextSet, clozeContextSentence, generateContextExerciseSet 
 import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18900';
 import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=18900';
-import { getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
+import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
 import { stableWordChoices } from '../services/wordChoices.js?v=18900';
 import { playInteractionSound } from '../services/interactionSound.js?v=18900';
 import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice } from './PracticeElements.js?v=18900';
 import { navigateTo as go } from '../utils/navigation.js';
 
-export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE, now = new Date()) {
-  return selectModeWords(words, { mode: 'context', limit, now });
+export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE, now = new Date(), settings = null) {
+  return selectModeWords(words, {
+    mode: 'context',
+    limit,
+    now,
+    ...(settings ? { settings, useDailyPlan: true, allowCompletedPlanWords: true, minWords: 3 } : {})
+  });
 }
 
 export function renderContextQuizMode(container, onNavigate) {
   const allWords = getActivePracticeWords(driveSync);
   const courseId = driveSync.getActiveCourseId();
-  const contextWords = selectContextWords(allWords);
+  const currentSettings = ensureDailyStudyPlan(driveSync);
+  const contextWords = selectContextWords(allWords, DEFAULT_SESSION_SIZE, new Date(), currentSettings);
   const dashboard = () => go('dashboard', onNavigate);
   const settings = () => go('settings', onNavigate);
 
