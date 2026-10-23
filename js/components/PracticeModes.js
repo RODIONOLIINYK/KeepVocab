@@ -9,7 +9,7 @@ import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18900';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections } from '../services/wordSelection.js?v=18900';
 import { stableWordChoices } from '../services/wordChoices.js?v=18900';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18900';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput } from './PracticeElements.js?v=18900';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function emptyMode(container, icon, title, detail, onNavigate) {
@@ -30,7 +30,7 @@ export function renderSpellingMode(container, onNavigate) {
   let correct = false;
   let questionStartedAt = performance.now();
 
-  function render() {
+  function render(focusInput = false) {
     if (index >= queue.length) {
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Spelling session complete</h2><p>You recalled ${score} of ${originalCount} words. Missed words will be prioritized in your next session.</p><div class="inline-actions"><button class="btn-green-solid" id="spell-again">Practice again</button><button class="status-pill offline" id="spell-dashboard">Dashboard</button></div></div></section>`;
       container.querySelector('#spell-again').addEventListener('click', () => renderSpellingMode(container, onNavigate));
@@ -47,7 +47,7 @@ export function renderSpellingMode(container, onNavigate) {
           <blockquote>${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}
           <div class="listen-controls"><button class="audio-btn-circle large" id="spell-listen" aria-label="Play word"><i class="fa-solid fa-volume-high"></i></button><button class="status-pill offline" id="spell-listen-slow"><i class="fa-solid fa-gauge-simple"></i> Slow</button></div>
           <p class="speech-help" id="spell-audio-status" role="status" aria-live="polite">Tap the speaker to hear the word. Use Slow to repeat it clearly.</p>
-          ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word will return sooner for another review.'}</span></div><button class="btn-green-solid" id="spell-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
+          ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word will return sooner for another review.'}</span></div><button class="btn-green-solid" id="spell-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
         </div>
       </div></section>`;
     container.querySelector('#spell-exit').addEventListener('click', () => go('dashboard', onNavigate));
@@ -76,8 +76,8 @@ export function renderSpellingMode(container, onNavigate) {
       answered = true;
       render();
     });
-    container.querySelector('#spell-next')?.addEventListener('click', () => { index += 1; answered = false; correct = false; questionStartedAt = performance.now(); render(); });
-    container.querySelector('#spell-answer')?.focus();
+    container.querySelector('#spell-next')?.addEventListener('click', () => { index += 1; answered = false; correct = false; questionStartedAt = performance.now(); render(true); });
+    focusPracticeInput(container.querySelector('#spell-answer'), { allowTouch: focusInput });
   }
   render();
 }

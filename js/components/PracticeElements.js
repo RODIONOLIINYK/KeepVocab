@@ -1,5 +1,14 @@
 import { escapeHtml } from '../utils/html.js';
 
+// Let touch users read the clue before opening their keyboard. An explicit
+// Next/Edit action can resume typing; desktop practice keeps keyboard focus.
+export function focusPracticeInput(input, { allowTouch = false } = {}) {
+  if (!input) return;
+  const touch = globalThis.matchMedia?.('(pointer: coarse)').matches === true;
+  if (touch && !allowTouch) return;
+  input.focus({ preventScroll: !touch });
+}
+
 // Shared markup deliberately uses the existing practice styles and animations.
 export function renderPracticeHeader({ exitId, label, current, total, score }) {
   return `<div class="practice-topline"><button class="status-pill offline" id="${escapeHtml(exitId)}"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${escapeHtml(label ? `${label} · ` : '')}${current + 1} of ${total}</span><strong>Score ${score}</strong></div>

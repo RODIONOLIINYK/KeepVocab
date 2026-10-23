@@ -323,9 +323,9 @@
 /* KeepVocab design system — a quiet canvas, leaf-green actions, and tactile controls.
    Loaded last so every view shares one set of surfaces, buttons, headings and motion. */
 :root {
-  --duo-green: #28864b;
-  --duo-green-dark: #206d3d;
-  --duo-green-light: #dceee0;
+  --duo-green: #39bd55;
+  --duo-green-dark: #23913f;
+  --duo-green-light: #d6f3d2;
   --duo-blue: #4f8299;
   --duo-blue-dark: #35667c;
   --duo-orange: #ff9600;
@@ -341,13 +341,14 @@
   --duo-ease: cubic-bezier(.2, .8, .2, 1);
 
   --primary-green: var(--duo-green);
-  --primary-green-hover: var(--duo-green-dark);
-  --primary-green-light: #edf5ed;
+  --primary-green-hover: #217e3a;
+  --on-primary-green: #133b20;
+  --primary-green-light: #eaf8e7;
   --border-card: var(--duo-line);
   --text-main: var(--duo-ink);
   --text-muted: var(--duo-muted);
   --text-dim: #768078;
-  --bg-app: #f7f8f5;
+  --bg-app: #f7faf5;
   --bg-subtle: #f2f4ef;
   --shadow-card: none;
   --radius-card: var(--duo-radius);
@@ -404,7 +405,7 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
   border-bottom: 4px solid var(--duo-green-dark) !important;
   border-radius: 16px;
   background: var(--duo-green) !important;
-  color: #fff;
+  color: var(--on-primary-green);
   box-shadow: none !important;
   font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
   transition: transform 160ms var(--duo-spring), filter 140ms ease, border-width 80ms ease;
@@ -462,7 +463,7 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
 .daily-workout-mascot { min-height: 0; align-content: center; justify-items: center; gap: 10px; padding: 26px 24px 16px; border: 0; background: transparent; }
 .daily-workout-mascot img { width: 184px; height: 184px; max-height: none; object-fit: contain; filter: none; animation: today-sprig-arrive 420ms ease both; }
 .mascot-bubble { position: static; max-width: 218px; padding: 9px 12px; border: 1px solid var(--border-card); border-bottom-width: 2px; border-radius: 13px 13px 4px 13px; background: var(--bg-app); color: var(--primary-green-hover); box-shadow: none; font: 650 .75rem/1.4 var(--font-body); }
-.daily-plan-overview { grid-column: 1 / -1; padding: 22px 32px 0; border-top: 1px solid var(--border-card); background: #fbfcf9; }
+.daily-plan-overview { grid-column: 1 / -1; padding: 22px 32px 24px; border-top: 1px solid var(--border-card); background: #fbfcf9; }
 .daily-plan-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 16px; }
 .daily-plan-heading h3 { font: 650 .95rem var(--font-heading); }
 .daily-plan-heading > span { display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; color: var(--text-muted); }
@@ -475,14 +476,6 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
 .daily-plan-bucket > div > span { color: var(--text-main); font-size: .8rem; font-weight: 650; line-height: 1.3; }
 .daily-plan-bucket small { color: var(--text-muted); font-size: .68rem; line-height: 1.45; }
 .daily-plan-bucket.tomorrow .bucket-icon { background: var(--bg-subtle); color: var(--text-muted); }
-.today-plan-details { margin-top: 16px; }
-.today-plan-details summary { display: flex; align-items: center; gap: 7px; min-height: 44px; width: fit-content; color: var(--text-muted); cursor: pointer; list-style: none; font-size: .73rem; }
-.today-plan-details summary::-webkit-details-marker { display: none; }
-.today-plan-details summary > i:last-child { margin-left: 2px; font-size: .6rem; }
-.today-plan-details[open] summary > i:last-child { transform: rotate(180deg); }
-.today-plan-details summary:focus-visible { outline: 3px solid var(--primary-green-hover); outline-offset: 2px; border-radius: 4px; }
-.today-plan-details > div { max-width: 800px; padding: 0 0 20px; font-size: .78rem; line-height: 1.7; color: var(--text-muted); }
-.today-plan-details p + p { margin-top: 8px; }
 .today-view .today-progress-card { display: grid; grid-template-columns: auto minmax(80px,1fr) auto; align-items: center; gap: 20px; padding: 17px 22px; border-bottom-width: 2px !important; border-radius: 16px; }
 .today-progress-copy span { font-size: .65rem; text-transform: none; letter-spacing: 0; }
 .today-progress-copy strong { font-size: .82rem; font-weight: 650; }
@@ -553,7 +546,7 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
   .daily-workout-actions { grid-column: 1 / -1; grid-row: 4; gap: 12px; margin: 18px 18px 22px; }
   .daily-workout-actions .today-primary-cta { width: 100%; min-height: 49px; margin: 0; font-size: .85rem; }
   .workout-composition { width: 100%; justify-content: center; }
-  .daily-plan-overview { padding: 18px 14px 0; }
+  .daily-plan-overview { padding: 18px 14px; }
   .daily-plan-heading { margin-bottom: 13px; gap: 6px; }
   .daily-plan-heading h3 { font-size: .86rem; }
   .daily-plan-heading > span { font-size: .66rem; }
@@ -563,8 +556,6 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
   .daily-plan-bucket > strong { font-size: 1.45rem; }
   .daily-plan-bucket > div > span { font-size: .68rem; line-height: 1.4; }
   .daily-plan-bucket small { display: none; }
-  .today-plan-details { margin-top: 10px; }
-  .today-plan-details summary { font-size: .68rem; }
   .today-view .today-progress-card { grid-template-columns: 1fr auto; gap: 12px; padding: 14px 16px; }
   .today-progress-track { grid-column: 1 / -1; grid-row: 2; height: 10px; }
   .today-streak { grid-column: 2; grid-row: 1; font-size: .68rem; }
@@ -634,3 +625,5 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
 .today-view .spec-card > .card-header-bar { margin-bottom: 4px; }
 .today-insight-card .today-section-heading { margin-bottom: 0; }
 .today-insight-card .text-action { margin-top: 0; align-self: flex-start; }
+
+.image-review__choice-check { color: var(--on-primary-green); }

@@ -33,7 +33,7 @@ export function renderUseItMode(container, onNavigate) {
   let startedAt = performance.now();
   let exerciseController = null;
 
-  function render() {
+  function render(focusInput = false) {
     exerciseController?.destroy();
     const word = words[index];
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell"><div class="practice-topline"><button class="status-pill offline" id="useit-exit"><i class="fa-solid fa-arrow-left"></i> Today</button><span>Use It · ${index + 1} of ${words.length}</span><strong>Active production</strong></div><div class="review-progress"><span style="width:${Math.round(index / words.length * 100)}%"></span></div><div id="useit-exercise-root"></div></div></section>`;
@@ -44,6 +44,7 @@ export function renderUseItMode(container, onNavigate) {
     });
     exerciseController = mountUseItExercise(container.querySelector('#useit-exercise-root'), {
       word,
+      focusInput,
       speechSession,
       nextLabel: index + 1 >= words.length ? 'Finish' : 'Next word',
       onEvaluated(result, sentence) {
@@ -60,7 +61,7 @@ export function renderUseItMode(container, onNavigate) {
         }
         index += 1;
         startedAt = performance.now();
-        render();
+        render(true);
       }
     });
   }

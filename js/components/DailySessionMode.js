@@ -13,7 +13,7 @@ import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForm
 import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18900';
 import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18900';
 import { mountUseItExercise } from './UseItExercise.js?v=18900';
-import { renderPracticeHeader } from './PracticeElements.js?v=18900';
+import { renderPracticeHeader, focusPracticeInput } from './PracticeElements.js?v=18900';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {
@@ -150,7 +150,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     render();
   }
 
-  function render() {
+  function render(focusInput = false) {
     useItController?.destroy();
     useItController = null;
     if (index >= queue.length) return complete();
@@ -169,6 +169,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
       useItController = mountUseItExercise(container.querySelector('#weak-useit-exercise-root'), {
         word,
+        focusInput,
         nextLabel: index + 1 >= queue.length ? 'Finish' : 'Continue',
         onEvaluated(result, sentence) {
           learnerResponse = sentence;
@@ -198,7 +199,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
           confusedWithWordId = '';
           useItResult = null;
           questionStartedAt = performance.now();
-          render();
+          render(true);
         }
       });
       return;
@@ -214,7 +215,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
           ${visual ? `<figure class="practice-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>` : `<blockquote>${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}<span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>`}
           ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><strong><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'}" aria-hidden="true"></i> ${correct ? 'Correct' : 'Answer'}: ${escapeHtml(word.word)}</strong><span>${escapeHtml(exampleForLearning(word) || definitionForLearning(word))}</span></div><div class="inline-actions"><button class="status-pill offline" id="practice-hear-answer"><i class="fa-solid fa-volume-high"></i> Hear answer</button><button class="btn-green-solid" id="daily-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button></div>`
             : visual ? `<div class="choice-grid">${optionsList.map(option => `<button class="choice-button" data-daily-choice="${escapeHtml(option.id)}"><span>${escapeHtml(option.word)}</span></button>`).join('')}</div>`
-            : `<form class="practice-answer-form" id="daily-form"><input id="daily-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the word" aria-label="Your answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
+            : `<form class="practice-answer-form" id="daily-form"><input id="daily-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type the word" aria-label="Your answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
         </div>
       </div></section>`;
     } else {
@@ -226,7 +227,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
         ${exercise.exerciseType === 'listening-recall' ? `<button class="audio-btn-circle large" id="daily-listen" aria-label="Play the word"><i class="fa-solid fa-volume-high"></i></button>` : ''}
         ${answered ? `<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><i class="fa-solid ${correct ? 'fa-check' : 'fa-arrow-rotate-left'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${correct ? 'Strong answer' : 'Let’s strengthen this one'}</strong><span>${exercise.exerciseType === 'use-it' ? escapeHtml(useItResult?.feedback || '') : (correct ? escapeHtml(exampleForLearning(word) || definitionForLearning(word)) : `Answer: <b>${escapeHtml(word.word)}</b> — ${escapeHtml(definitionForLearning(word))}. It will be prioritized next time.`)}</span></div></div><button class="btn-green-solid" id="daily-next">Continue</button>`
           : choiceMode ? `<div class="choice-grid">${optionsList.map(option => `<button class="choice-button" data-daily-choice="${escapeHtml(option.id)}"><span>${escapeHtml(meaningLabels ? meaningLabels.get(option.id) : option.word)}</span></button>`).join('')}</div>`
-            : `<form class="practice-answer-form daily-answer-form ${exercise.exerciseType === 'use-it' ? 'is-sentence' : 'is-recall'}" id="daily-form">${exercise.exerciseType === 'use-it' ? `<input id="daily-answer" type="text" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Write a natural sentence" aria-label="${inputLabel}">` : `<input id="daily-answer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type your answer" aria-label="${inputLabel}">`}<button class="btn-green-solid" data-sound="none">Check</button></form><button class="daily-hint-button" id="daily-hint">Need a hint?</button><p class="daily-hint" id="daily-hint-copy" role="status" aria-live="polite"></p>`}
+            : `<form class="practice-answer-form daily-answer-form ${exercise.exerciseType === 'use-it' ? 'is-sentence' : 'is-recall'}" id="daily-form">${exercise.exerciseType === 'use-it' ? `<input id="daily-answer" type="text" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Write a natural sentence" aria-label="${inputLabel}">` : `<input id="daily-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type your answer" aria-label="${inputLabel}">`}<button class="btn-green-solid" data-sound="none">Check</button></form><button class="daily-hint-button" id="daily-hint">Need a hint?</button><p class="daily-hint" id="daily-hint-copy" role="status" aria-live="polite"></p>`}
       </div></div></section>`;
     }
     container.querySelector('.practice-image-prompt img, .daily-image-prompt img')?.addEventListener('error', () => {
@@ -253,8 +254,8 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       await submit(answer);
     });
     container.querySelector('#daily-hint')?.addEventListener('click', () => { hintsUsed += 1; container.querySelector('#daily-hint-copy').textContent = exercise.exerciseType === 'use-it' ? `Try a situation where “${word.word}” naturally describes what happened.` : `It starts with “${word.word.slice(0, Math.min(2, word.word.length))}”.`; });
-    container.querySelector('#daily-next')?.addEventListener('click', () => { index += 1; answered = false; correct = false; hintsUsed = 0; learnerResponse = ''; confusedWithWordId = ''; useItResult = null; questionStartedAt = performance.now(); render(); });
-    container.querySelector('#daily-answer')?.focus();
+    container.querySelector('#daily-next')?.addEventListener('click', () => { index += 1; answered = false; correct = false; hintsUsed = 0; learnerResponse = ''; confusedWithWordId = ''; useItResult = null; questionStartedAt = performance.now(); render(true); });
+    focusPracticeInput(container.querySelector('#daily-answer'), { allowTouch: focusInput });
   }
 
   render();

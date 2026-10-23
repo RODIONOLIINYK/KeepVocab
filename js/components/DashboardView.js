@@ -92,7 +92,7 @@ export function renderDashboardView(container, onNavigate) {
       </div>
       <div class="daily-workout-mascot"><div class="mascot-bubble">${escapeHtml(workout.bubble)}</div><img src="${mascotImage}" alt="" aria-hidden="true" width="640" height="640"></div>
       <div class="daily-plan-overview"><div class="daily-plan-heading"><h3>Your plan at a glance</h3><span><i class="fa-solid fa-circle-check" aria-hidden="true"></i> ${plan.completedTodayCount} of ${plan.plannedTodayCount} done</span></div><div class="daily-plan-buckets" role="group" aria-label="Daily study plan">${buckets.map(([kind, icon, count, title, copy]) => `<div class="daily-plan-bucket ${kind}"><span class="bucket-icon"><i class="fa-solid ${icon}" aria-hidden="true"></i></span><strong>${count}</strong><div><span>${title}</span><small>${copy}</small></div></div>`).join('')}</div>
-        <details class="today-plan-details"><summary><i class="fa-solid fa-circle-question" aria-hidden="true"></i> How your plan works<i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary><div><p>At 8:00 AM, we plan practice from your selected month: reviews and new words, ordered by memory needs. Counts show words; each visit practices one meaning per word.</p><p>FSRS-6 adjusts each next review after your answer. Short learning steps can return later today. Tomorrow is a forecast of saved review dates and can change as you practice.</p>${plan.deferredCount ? `<p>${plural(plan.deferredCount)} outside today’s plan will be reconsidered at the next refresh. Your daily exercise goal is separate from the number of words in your plan.</p>` : '<p>Your daily exercise goal is separate from the number of words in your plan.</p>'}</div></details>
+
       </div>
     </article>
     <div class="spec-card today-progress-card"><div class="today-progress-copy"><span>Your daily goal</span><strong id="today-progress-count">${completedToday} of ${dailyGoal} exercises</strong></div><div class="today-progress-track" id="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div><span class="today-streak"><i class="fa-solid fa-fire" aria-hidden="true"></i> <span id="today-streak-label">${Number(settings.dailyStreak || 0)} day streak</span></span></div>
@@ -116,16 +116,13 @@ export function renderDashboardView(container, onNavigate) {
   if (Number.isFinite(refreshAt)) {
     refreshTimer = setTimeout(() => {
       if (!container.querySelector('.today-view')) return;
-      const detailsOpen = container.querySelector('.today-plan-details')?.open;
       const focused = globalThis.document?.activeElement;
       const focusedId = container.contains?.(focused) ? focused.id : null;
       const focusedMode = container.contains?.(focused) ? focused.dataset?.practiceView : null;
-      const focusedSummary = focused?.matches?.('.today-plan-details summary');
       renderDashboardView(container, onNavigate);
-      if (detailsOpen) container.querySelector('.today-plan-details').open = true;
       const restoreFocus = focusedId ? container.querySelector(`#${focusedId}`)
         : focusedMode ? [...container.querySelectorAll('[data-practice-view]')].find(button => button.dataset.practiceView === focusedMode)
-          : focusedSummary ? container.querySelector('.today-plan-details summary') : null;
+          : null;
       restoreFocus?.focus({ preventScroll: true });
     }, Math.max(1000, Math.min(2147483647, refreshAt - Date.now() + 100)));
     refreshTimer.unref?.();

@@ -1,15 +1,17 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v19500';
+const CACHE_NAME = 'keepvocab-v19600';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './quick-add.html',
   './css/styles.css',
   './css/polish.css',
+  './css/mobile.css',
   './css/icons.css',
   './css/quick-add.css',
   './js/app.js',
+  './js/utils/mobileViewport.js',
   './js/components/AddWordModal.js',
   './js/services/driveSync.js',
   './js/services/courseProfiles.js',
@@ -98,9 +100,6 @@ const ASSETS_TO_CACHE = [
   './icons/keepvocab-mark-v2-180.png',
   './icons/keepvocab-mark-v2-192.png',
   './icons/keepvocab-mark-v2-512.png',
-  './icons/keepvocab-menubar-template.svg',
-  './icons/keepvocab-menubarTemplate.png',
-  './icons/keepvocab-menubarTemplate@2x.png',
   './manifest.json'
 ];
 

@@ -1,0 +1,526 @@
+/* Phone layouts follow the same visual system, with room for fingers and keyboards. */
+:root {
+  --app-safe-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --app-safe-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+  --app-safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --app-safe-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+}
+@media (max-width: 720px) {
+  :root { --mobile-nav-height: calc(72px + var(--app-safe-bottom)); }
+  html { scroll-padding-top: calc(76px + var(--app-safe-top)); scroll-padding-bottom: calc(var(--mobile-nav-height) + 20px); }
+  body { overflow-x: visible; min-width: 0; padding-bottom: calc(var(--mobile-nav-height) + 20px); }
+  .header-nav { gap: 10px; padding: calc(10px + var(--app-safe-top)) max(12px, var(--app-safe-right)) 10px max(12px, var(--app-safe-left)); }
+  .nav-brand { gap: 9px; min-height: 44px; }
+  .brand-name-text { font-size: 1.2rem; letter-spacing: -.02em; }
+  .brand-icon-box { flex: 0 0 34px; }
+  #btn-header-quick-add { min-height: 44px; border-radius: 13px; font-size: .78rem; letter-spacing: .015em; }
+  .header-nav .nav-links {
+    min-height: var(--mobile-nav-height); width: auto; align-items: center;
+    padding: 6px max(6px, var(--app-safe-right)) calc(6px + var(--app-safe-bottom)) max(6px, var(--app-safe-left));
+    border: 0 !important; border-top: 1px solid var(--border-card) !important;
+    background: #fff !important; box-shadow: 0 -4px 18px #23382306; backdrop-filter: none;
+  }
+  .nav-link-item { min-height: 58px; padding: 5px 2px; gap: 5px; font-size: .7rem; line-height: 1.2; border-radius: 12px; }
+  .nav-link-item i { font-size: 1.05rem; }
+  .app-container { width: 100%; min-width: 0; margin-top: 16px; padding-inline: max(12px, var(--app-safe-left)) max(12px, var(--app-safe-right)); }
+  #view-container, .full-view-stack, .full-view-stack > *, .today-grid > *, .progress-view { min-width: 0; max-width: 100%; }
+  button, a, summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px; }
+  .inline-actions { flex-wrap: wrap; gap: 8px; }
+  .inline-actions > button { min-height: 44px; min-width: 0; white-space: normal; }
+  .app-toast { bottom: calc(var(--mobile-nav-height) + 12px); }
+  .today-title-row p { font-size: .83rem; }
+  .today-view .daily-workout-card { grid-template-columns: minmax(0, 1fr) 92px; }
+  .daily-kicker-row { padding: 18px 16px 0; gap: 8px; }
+  .daily-workout-copy h2 { padding-left: 16px; font-size: clamp(1.5rem, 6vw, 1.9rem); }
+  .daily-workout-mascot { min-height: 0; padding-right: 10px; }
+  .daily-workout-mascot img { width: 92px; height: 92px; }
+  .daily-workout-meta { margin: 10px 16px 0; font-size: .85rem; }
+  .daily-workout-actions { margin: 18px 16px 20px; }
+  .daily-workout-actions .today-primary-cta { min-height: 50px; font-size: .95rem; }
+  .workout-composition span { font-size: .75rem; }
+  .daily-plan-heading h3 { font-size: .92rem; }
+  .daily-plan-heading > span { font-size: .73rem; }
+  .daily-plan-bucket > div > span { font-size: .75rem; }
+  .daily-plan-bucket { padding: 12px 5px; }
+  .today-view .today-progress-card { padding: 15px 16px; }
+  .today-progress-copy span { font-size: .7rem; }
+  .today-progress-copy strong { font-size: .8rem; }
+  .today-streak { font-size: .75rem; }
+  .today-view .practice-launchpad { padding: 18px 14px; }
+  .today-view .card-header-bar p { font-size: .8rem; }
+  .practice-quick-grid { gap: 10px; }
+  .practice-quick-card { min-height: 104px; grid-template-columns: 30px minmax(0, 1fr); align-content: start; gap: 8px; padding: 12px 10px; }
+  .practice-quick-card > span { display: contents; }
+  .practice-quick-card strong { align-self: center; font-size: .9rem; overflow-wrap: anywhere; }
+  .practice-quick-card small { grid-column: 1 / -1; font-size: .75rem; line-height: 1.45; }
+  .today-view .today-insight-card.compact strong { font-size: .85rem; }
+  .today-view .today-insight-card.compact small, .today-section-heading small { font-size: .76rem; line-height: 1.45; }
+  .mastery-mini-list div { font-size: .82rem; }
+  .today-view .text-action { min-height: 44px; font-size: .85rem; }
+  .progress-mastery-grid article { min-width: 0; }
+  .progress-mastery-grid small { font-size: .75rem; line-height: 1.45; }
+  .progress-outcomes > div { gap: 12px; line-height: 1.5; }
+  .algorithm-details .box-distribution > div { grid-template-columns: minmax(0, .9fr) minmax(40px, 1fr) 28px; gap: 10px; }
+  .modal-backdrop { top: var(--visual-viewport-top, 0px); bottom: auto; height: var(--visual-viewport-height, 100dvh); padding: max(10px, var(--app-safe-top)) max(10px, var(--app-safe-right)) max(10px, var(--app-safe-bottom)) max(10px, var(--app-safe-left)); align-items: center; }
+  .modal-box { width: 100%; max-height: 100%; padding: 18px; overscroll-behavior: contain; scroll-padding-block: 16px; border-radius: 20px; }
+  .modal-box input, .modal-box textarea { scroll-margin-block: 24px; }
+  body.keyboard-open { padding-bottom: 20px; }
+  body.keyboard-open .header-nav .nav-links { display: none; }
+  body.keyboard-open .app-toast { bottom: 12px; }
+  body.keyboard-open .header-nav { position: relative; }
+  body.keyboard-open .practice-prompt, body.keyboard-open .use-it-stage { padding-top: 12px; }
+  body.keyboard-open .practice-icon, body.keyboard-open .use-it-stage > img { display: none; }
+  body.keyboard-open .modal-backdrop { padding-block: 8px; }
+}
+@media (max-width: 359px) {
+  #btn-header-quick-add { width: 44px; min-width: 44px; justify-content: center; }
+  #btn-header-quick-add > span { display: none; }
+  .daily-kicker-row { gap: 6px; }
+  .daily-kicker { font-size: .62rem; }
+  .daily-eval-badge { font-size: .6rem; }
+  .daily-plan-bucket > div > span { font-size: .7rem; }
+  .practice-quick-grid { grid-template-columns: minmax(0, 1fr); }
+  .practice-quick-card { min-height: 70px; grid-template-columns: 36px minmax(0, 1fr); align-items: center; }
+  .practice-quick-card > i:first-child { grid-row: span 2; }
+  .practice-quick-card small { grid-column: 2; }
+}
+@media (min-width: 721px) and (max-width: 1000px) {
+  .practice-quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .practice-quick-card small { font-size: .75rem; }
+}
+@media (max-width: 960px) and (max-height: 520px) {
+  .header-nav { position: relative; }
+  .modal-backdrop { top: var(--visual-viewport-top, 0px); bottom: auto; height: var(--visual-viewport-height, 100dvh); padding-block: 8px; }
+  .modal-box { max-height: 100%; }
+  body.keyboard-open .header-nav .nav-links { display: none; }
+}
+/* Practice-only mobile overrides; append after existing styles and polish. */
+@media (max-width: 720px) {
+  .practice-shell,
+  .daily-session-shell,
+  .use-it-shell,
+  .match-shell {
+    min-width: 0;
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .practice-topline {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    font-size: .75rem;
+  }
+
+  .practice-topline > span,
+  .practice-topline > strong {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.3;
+  }
+
+  .practice-topline > strong { max-width: 88px; text-align: right; }
+  .practice-topline .status-pill { padding-inline: 10px; }
+  .daily-session-top { grid-template-columns: 44px minmax(0, 1fr) auto; }
+  .daily-exit-button { width: 44px; min-height: 44px; }
+
+  .practice-prompt,
+  .choose-prompt,
+  .visual-prompt,
+  .daily-exercise-stage,
+  .use-it-stage {
+    min-height: 0;
+    justify-content: flex-start;
+    gap: 14px;
+    padding: 20px 0 8px;
+  }
+
+  .practice-prompt blockquote,
+  .daily-exercise-stage h1,
+  .use-it-stage h1 {
+    width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .practice-prompt blockquote { font-size: 1.13rem; line-height: 1.5; }
+  .daily-exercise-stage h1,
+  .use-it-stage h1 { font-size: 1.5rem; line-height: 1.25; }
+  .practice-icon { width: 48px; height: 48px; border-radius: 14px; font-size: 1.3rem; }
+  .daily-sprig,
+  .use-it-stage > img { width: 64px; height: 64px; }
+
+  .practice-answer-form { width: 100%; gap: 8px; }
+  .practice-answer-form input,
+  .daily-answer-form.is-recall input,
+  .daily-answer-form.is-sentence input,
+  .use-it-stage textarea,
+  .live-text-fallback input {
+    min-height: 48px;
+    min-width: 0;
+    font-size: 16px;
+    scroll-margin-block: 100px;
+  }
+
+  .practice-answer-form > .btn-green-solid { width: 100%; justify-content: center; }
+  .daily-answer-form.is-recall,
+  .daily-answer-form.is-sentence { grid-template-columns: minmax(0, 1fr); }
+  .daily-answer-form.is-recall .btn-green-solid,
+  .daily-answer-form.is-sentence .btn-green-solid { width: 100%; }
+  .use-it-stage textarea { min-height: 112px; padding: 12px; }
+  .use-it-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .use-it-actions > :only-child { grid-column: 1 / -1; }
+
+  .practice-shell button,
+  .daily-session-shell button,
+  .use-it-shell button,
+  .match-shell button,
+  .flashcard-mode button,
+  .speaking-back,
+  .speaking-settings-btn,
+  .speaking-category-tabs button,
+  .speaking-level-filter select,
+  .lesson-start-btn,
+  .target-phrases button,
+  .speaking-vocabulary-targets button,
+  .live-phrase-card button {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .audio-btn-circle,
+  .speaking-settings-btn { min-width: 44px; min-height: 44px; }
+  .daily-hint-button { padding: 10px 14px; }
+  .choice-grid { grid-template-columns: minmax(0, 1fr); width: 100%; gap: 8px; }
+  .choice-button { min-width: 0; min-height: 54px; padding: 12px 38px; }
+  .choice-button > span { min-width: 0; overflow-wrap: anywhere; }
+  .answer-feedback-slot:empty,
+  .answer-action-slot:empty { display: none; }
+  .answer-feedback-slot,
+  .answer-action-slot { min-height: 0; width: 100%; }
+  .answer-action-slot > button { width: 100%; justify-content: center; }
+  .answer-feedback-card { grid-template-columns: 32px minmax(0, 1fr); gap: 9px; padding: 12px; }
+  .answer-feedback-icon { width: 32px; height: 32px; font-size: .9rem; }
+  .answer-feedback-card span,
+  .practice-feedback span { overflow-wrap: anywhere; }
+
+  .visual-prompt figure,
+  .daily-image-prompt { width: 100%; }
+  .visual-prompt img,
+  .daily-image-prompt img { height: clamp(160px, 50vw, 240px); }
+
+  .flashcard-mode { min-width: 0; gap: 12px; }
+  .smart-flashcard { min-width: 0; min-height: 260px; border-radius: 20px; }
+  .smart-flashcard-prompt,
+  .smart-flashcard-answer { min-width: 0; min-height: 260px; padding: 22px 18px; }
+  /* Inactive content must not determine the active face's height. */
+  .smart-flashcard .smart-flashcard-answer { display: none; }
+  .smart-flashcard.revealed .smart-flashcard-prompt { display: none; }
+  .smart-flashcard.revealed .smart-flashcard-answer { display: flex; }
+  .smart-flashcard-prompt h1 { max-width: 100%; font-size: clamp(1.9rem, 8vw, 3rem); overflow-wrap: anywhere; }
+  .smart-flashcard-answer h2 { font-size: 1.2rem; overflow-wrap: anywhere; }
+  .smart-flashcard-answer blockquote { font-size: .9rem; overflow-wrap: anywhere; }
+  .smart-flashcard-prompt img,
+  .smart-flashcard-answer img { width: 100%; max-height: 170px; }
+  .flashcard-rating > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flashcard-grade { min-height: 58px; }
+  .flashcard-nav > button { flex: 1; justify-content: center; }
+
+  .match-board { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 8px; }
+  .match-column { min-width: 0; gap: 8px; }
+  .match-tile { min-width: 0; min-height: 78px; padding: 10px 8px; overflow: visible; }
+  .match-tile.term strong { max-width: 100%; font-size: .9rem; overflow-wrap: anywhere; }
+  .match-tile.definition { font-size: .8rem; line-height: 1.4; overflow-wrap: anywhere; }
+
+  .speaking-hero-visual { min-height: 150px; }
+  .speaking-hero-copy,
+  .preview-main,
+  .preview-side { padding: 20px; }
+  .speaking-category-tabs { margin-inline: 0; padding: 2px 0 8px; }
+  .speaking-level-filter select { font-size: 16px; }
+  .live-header { grid-template-columns: 44px minmax(0, 1fr) auto; }
+  .live-header .speaking-back { width: 44px; justify-content: center; }
+  .live-header h1 { max-width: none; white-space: normal; overflow-wrap: anywhere; }
+  .live-stage { min-height: 0; }
+  .live-coach-panel { min-height: 0; padding: 66px 16px 22px; }
+  .live-coach-panel .speaking-orb { width: 132px; height: 132px; }
+  .live-coach-panel .orb-core { width: 88px; height: 88px; }
+  .live-prompt { margin-top: 12px; }
+  .live-controls { position: relative; bottom: auto; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; margin-top: 16px; }
+  .live-control,
+  .end-lesson-button { min-width: 0; flex: 1 1 76px; min-height: 58px; padding: 10px 6px 8px; }
+  .live-text-fallback { width: 100%; border-radius: 14px; }
+  .live-text-fallback button { flex: 0 0 48px; min-height: 48px; }
+  .live-side-panel { min-width: 0; }
+  .live-transcript-card { min-height: 180px; }
+  .live-transcript { max-height: 280px; overscroll-behavior-y: contain; }
+  .transcript-turn p { max-width: 100%; font-size: .85rem; overflow-wrap: anywhere; }
+  .live-phrase-card > div:first-child,
+  .live-transcript-card > div:first-child { flex-wrap: wrap; gap: 6px; }
+  .live-phrase-card button { padding-block: 8px; font-size: .78rem; }
+  .summary-transcript { max-height: none; overflow: visible; }
+  .mode-empty-state,
+  .mode-completion-card { margin-block: 0; padding: 24px 18px; }
+  .mode-completion-actions { width: 100%; }
+  .mode-completion-actions > button { min-height: 44px; width: 100%; justify-content: center; }
+}
+
+/* Landscape phones and the reduced viewport above an open software keyboard. */
+@media (max-width: 960px) and (max-height: 520px) {
+  .practice-prompt,
+  .choose-prompt,
+  .visual-prompt,
+  .daily-exercise-stage,
+  .use-it-stage,
+  .live-stage,
+  .live-coach-panel { min-height: 0; }
+  .practice-prompt,
+  .choose-prompt,
+  .daily-exercise-stage,
+  .use-it-stage { padding-block: 12px; gap: 10px; }
+  .practice-icon,
+  .practice-mascot,
+  .daily-sprig,
+  .use-it-stage > img { width: 44px; height: 44px; }
+  .smart-flashcard,
+  .smart-flashcard-prompt,
+  .smart-flashcard-answer { min-height: 180px; }
+  .smart-flashcard-prompt,
+  .smart-flashcard-answer { padding-block: 14px; }
+  .smart-flashcard-prompt img,
+  .smart-flashcard-answer img { max-height: 110px; }
+  .visual-prompt img,
+  .daily-image-prompt img { height: 150px; }
+  .live-coach-panel .speaking-orb { width: 96px; height: 96px; }
+  .live-coach-panel .orb-core { width: 70px; height: 70px; }
+  .live-controls { position: relative; bottom: auto; }
+}
+/* Mobile Library, vocabulary composer, and Settings. Load after polish.css. */
+@media (max-width: 720px) {
+  .library-view,
+  .settings-view,
+  .library-view .spec-card,
+  .settings-view .settings-card,
+  .settings-view .settings-disclosure-body,
+  .settings-view .settings-advanced {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .library-view .content-title-row > .inline-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 10px;
+  }
+  .library-view .content-title-row > .inline-actions > * { min-width: 0; }
+  .library-view .library-tools > summary { width: 100%; }
+  .library-view .library-tools[open] > .disclosure-body {
+    left: 0;
+    right: auto;
+    min-width: 0;
+    width: min(280px, calc(100vw - 48px));
+    max-width: calc(100vw - 48px);
+  }
+
+  .library-view .card-header-bar { flex-wrap: wrap; align-items: center; gap: 10px; }
+  .library-view .card-header-bar .card-tag { min-width: 0; flex: 1 1 160px; flex-wrap: wrap; }
+  .library-view .library-result-count { flex-basis: 100%; margin-left: 0; line-height: 1.4; }
+  .library-view .archive-tabs { max-width: 100%; gap: 8px; }
+  .library-view .archive-tabs > button { flex: 1 1 135px; min-width: 0; }
+
+  .library-view .library-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .library-view .library-toolbar .search-field { grid-column: 1 / -1; min-width: 0; }
+  .library-view .library-toolbar input,
+  .library-view .library-toolbar select,
+  .library-view .editor-grid input,
+  .library-view .editor-grid textarea,
+  .library-view .meaning-followup input,
+  .library-view .custom-image-source input[type="url"],
+  .library-view .custom-image-concept-controls input {
+    min-width: 0;
+    max-width: 100%;
+    min-height: 46px;
+    font-size: 16px;
+  }
+  .library-view .search-field input { width: 100%; }
+  .library-view .library-grid { columns: 1; }
+  .library-view .library-word-card { margin-bottom: 12px; }
+  .library-view .library-meaning,
+  .library-view .library-card-heading,
+  .library-view .library-card-heading span,
+  .library-view .meaning-help,
+  .library-view .form-message { overflow-wrap: anywhere; }
+  .library-view .library-card-heading > .audio-btn-circle { flex: 0 0 44px; width: 44px; height: 44px; }
+
+  .library-view .library-card-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 6px;
+  }
+  .library-view .library-card-actions > button,
+  .library-view .library-card-menu > summary,
+  .library-view .library-tools > summary,
+  .library-view .inline-actions .library-tools button,
+  .library-view .library-card-menu .disclosure-body button,
+  .library-view .image-text-action,
+  .library-view .image-search-options > summary,
+  .library-view .meaning-support > summary,
+  .library-view .meaning-help-heading > button,
+  .library-view .image-concept-picker button,
+  .library-view .delete-confirm button,
+  .library-view .duplicate-meaning-review button {
+    min-height: 44px;
+    min-width: 0;
+  }
+  .library-view .library-card-actions > button,
+  .library-view .library-card-menu > summary { gap: 4px; padding-inline: 6px; }
+  .library-view .library-card-menu { width: 100%; margin-left: 0; }
+  .library-view .library-card-menu > .disclosure-body { min-width: 0; width: min(240px, calc(100vw - 72px)); }
+  .library-view .delete-confirm { flex-wrap: wrap; gap: 6px; }
+  .library-view .delete-confirm > span { flex-basis: 100%; margin-right: 0; }
+  .library-view .delete-confirm > button { flex: 1; }
+
+  .library-view .editor-grid { grid-template-columns: minmax(0, 1fr); }
+  .library-view .editor-grid label { min-width: 0; }
+  .library-view .editor-grid label.wide { grid-column: auto; }
+  .library-view .library-editor { scroll-margin-top: 90px; }
+  .library-view .library-editor > .inline-actions > button { width: 100%; }
+  .library-view .custom-image-source { grid-template-columns: minmax(0, 1fr); }
+  .library-view .custom-image-source > div { grid-template-columns: minmax(0, 1fr); }
+  .library-view .custom-image-upload { min-height: 46px; white-space: normal; text-align: center; }
+  .library-view .custom-image-concept-controls { grid-template-columns: minmax(0, 1fr); }
+  .library-view .image-results-heading { flex-wrap: wrap; gap: 6px; overflow-wrap: anywhere; }
+  .library-view .library-image-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .library-view .image-feedback-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .library-view .image-feedback-actions button { min-width: 0; }
+
+  .library-view .status-pill,
+  .settings-view .status-pill,
+  #add-word-modal .status-pill {
+    max-width: 100%;
+    min-height: 44px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .settings-view .settings-title-row { margin-bottom: 18px; }
+  .settings-view .settings-card-heading > div { min-width: 0; }
+  .settings-view .settings-card-heading h2,
+  .settings-view .settings-card-heading p,
+  .settings-view .settings-disclosure-body p,
+  .settings-view .settings-service-status { overflow-wrap: anywhere; }
+  .settings-view .settings-heading-meta { min-width: 0; }
+  .settings-view .settings-state { max-width: 100%; white-space: normal; }
+  .settings-view .settings-form { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .settings-view .settings-form input:not([type="checkbox"]),
+  .settings-view .settings-form select { min-height: 46px; font-size: 16px; }
+  .settings-view .settings-form .key-input-row { grid-template-columns: minmax(0, 1fr) 46px; }
+  .settings-view .settings-form .key-input-row button { min-width: 46px; min-height: 46px; }
+  .settings-view .settings-actions { align-items: stretch; }
+  .settings-view .settings-actions > :is(button, a) { width: 100%; min-width: 0; min-height: 46px; white-space: normal; }
+  .settings-view .settings-advanced > summary { min-height: 44px; padding-block: 12px; box-sizing: border-box; overflow-wrap: anywhere; }
+  .settings-view .settings-disclosure > summary { min-height: 44px; }
+  .settings-view .image-training-table-wrap { width: 100%; min-width: 0; overscroll-behavior-inline: contain; }
+  .settings-view .image-training-table { min-width: 480px; }
+  .settings-view .image-training-table pre { max-width: 240px; }
+
+  #add-word-modal {
+    box-sizing: border-box;
+    padding: max(8px, var(--app-safe-top)) max(8px, var(--app-safe-right)) max(8px, var(--app-safe-bottom)) max(8px, var(--app-safe-left));
+  }
+  #add-word-modal .sense-modal-box {
+    width: 100%;
+    min-width: 0;
+    max-width: 620px;
+    max-height: 100%;
+    padding: 16px;
+    scrollbar-gutter: auto;
+  }
+  #add-word-modal .sense-modal-header { gap: 12px; }
+  #add-word-modal .sense-modal-header h2 { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+  #add-word-modal #btn-close-add-modal { flex: 0 0 44px; min-width: 44px; min-height: 44px; }
+  #add-word-modal .quick-add-row { flex-direction: column; }
+  #add-word-modal .quick-add-row > * { min-width: 0; width: 100%; }
+  /* The lookup input currently has an inline .95rem font size. */
+  #add-word-modal #add-word-input { font-size: 16px !important; }
+  #add-word-modal .sense-editor-grid { grid-template-columns: minmax(0, 1fr); }
+  #add-word-modal .sense-editor-grid label { min-width: 0; }
+  #add-word-modal .sense-editor-grid label.wide { grid-column: auto; }
+  #add-word-modal .sense-editor-grid input,
+  #add-word-modal .sense-editor-grid textarea,
+  #add-word-modal .bulk-add-panel > textarea,
+  #add-word-modal .bulk-word-row :is(input, select, textarea) { min-width: 0; max-width: 100%; min-height: 46px; font-size: 16px; }
+  #add-word-modal .sense-picker-heading,
+  #add-word-modal .sense-editor-heading { align-items: flex-start; flex-direction: column; gap: 6px; }
+  #add-word-modal .add-mode-tabs button,
+  #add-word-modal .text-action,
+  #add-word-modal .bulk-retry-missing,
+  #add-word-modal .btn-green-solid { min-height: 46px; white-space: normal; }
+  #add-word-modal .sense-modal-actions { bottom: -16px; gap: 8px; flex-wrap: wrap; padding: 12px 0; background: var(--bg-card); }
+  #add-word-modal .sense-modal-actions > button { flex: 1 1 110px; min-width: 0; min-height: 46px; }
+  #add-word-modal .bulk-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #add-word-modal .bulk-add-toolbar { align-items: stretch; flex-direction: column; }
+  #add-word-modal .bulk-add-toolbar button { width: 100%; justify-content: center; }
+  #add-word-modal .bulk-word-heading button { flex: 0 0 44px; width: 44px; height: 44px; }
+  #add-word-modal .bulk-progress-copy { flex-wrap: wrap; }
+
+  .image-review__choices { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .image-review__meaning { display: block; }
+  .image-review__meaning h3 { margin-bottom: 5px; }
+  .image-review__guidance { align-items: flex-start; }
+  .image-review__guidance > div { min-width: 0; overflow-wrap: anywhere; }
+  .image-review__row-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .image-review .image-review__secondary,
+  .image-review .image-review__back,
+  .image-review .image-review__save { min-width: 0; min-height: 46px; padding-inline: 10px; overflow-wrap: anywhere; }
+  .image-review__footer { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .image-review__footer .image-review__back { margin-right: 0; }
+  .image-review__footer .image-review__count,
+  .image-review__footer .image-review__save { grid-column: 1 / -1; width: 100%; }
+  .library-view .image-review__footer { position: static; }
+  #add-word-modal .image-review__footer { bottom: -16px; padding-bottom: 12px; }
+  #add-word-modal.is-picking-images .image-review__heading { padding-right: 48px; }
+}
+
+@media (max-width: 380px) {
+  .library-view .library-toolbar { grid-template-columns: minmax(0, 1fr); }
+  .library-view .library-card-actions > button,
+  .library-view .library-card-menu > summary { font-size: .73rem; padding-inline: 4px; }
+  .library-view .image-feedback-actions { grid-template-columns: minmax(0, 1fr); }
+  .library-view .image-feedback-actions button { flex-direction: row; justify-content: flex-start; min-height: 54px; padding: 10px; text-align: left; }
+  .library-view .image-feedback-actions button small { font-size: .68rem; }
+  .library-view .selected-image-preview { grid-template-columns: 70px minmax(0, 1fr); gap: 9px; }
+  .library-view .selected-image-preview img { width: 70px; height: 64px; }
+  #add-word-modal .sense-modal-box { padding: 14px; }
+  #add-word-modal .sense-modal-actions,
+  #add-word-modal .image-review__footer { bottom: -14px; }
+  .image-review__row-actions { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (min-width: 721px) and (max-width: 1000px) {
+  .today-view .daily-workout-card { grid-template-columns: minmax(0, 1fr) 210px; }
+}
+
+@media (max-width: 720px) {
+  .library-view .archive-tabs { scroll-snap-type: x proximity; overscroll-behavior-inline: contain; }
+  .library-view .archive-tabs > button { flex: 0 0 146px; min-width: 146px; min-height: 68px; white-space: nowrap; overflow-wrap: normal; scroll-snap-align: start; }
+  .library-view .archive-tabs > button span { white-space: nowrap; overflow-wrap: normal; line-height: 1.5; }
+  .library-view .content-title-row .btn-green-solid { min-height: 46px; padding-inline: 10px; gap: 8px; font-size: .85rem; }
+}
+
+@media (max-width: 960px) and (max-height: 520px) {
+  .practice-shell { gap: 12px; }
+  .practice-shell > .card-header-bar { display: none; }
+  .typed-review-prompt:has(.practice-answer-form) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 8px 20px; }
+  .typed-review-prompt:has(.practice-answer-form) .practice-icon { display: none; }
+  .typed-review-prompt:has(.practice-answer-form) > p { grid-column: 1; font-size: .8rem; }
+  .typed-review-prompt:has(.practice-answer-form) > blockquote { grid-column: 1; margin: 0; font-size: 1.05rem; }
+  .typed-review-prompt:has(.practice-answer-form) > .review-pos-hint { grid-column: 1; justify-self: center; }
+  .typed-review-prompt .practice-answer-form { grid-column: 2; grid-row: 1 / span 4; align-self: center; }
+}

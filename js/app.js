@@ -11,6 +11,7 @@ import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSo
 import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=18900';
 import { buildScheduledPracticeSession } from './services/dailySession.js?v=18900';
 import { localDateKey } from './utils/dates.js';
+import { setupMobileViewport } from './utils/mobileViewport.js';
 import { backfillLibraryTranslations } from './services/libraryTranslations.js?v=18900';
 
 import { renderLibraryView } from './components/LibraryView.js?v=18900';
@@ -62,6 +63,7 @@ let pendingReminderPermissionRequest = false;
 document.addEventListener('DOMContentLoaded', initApp);
 
 function initApp() {
+  setupMobileViewport();
   startAutomaticUpdateChecks();
   setInteractionSoundEnabledProvider(() => driveSync.getSettings().soundEnabled !== false);
   setupButtonSounds();
