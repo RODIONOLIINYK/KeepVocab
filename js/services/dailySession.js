@@ -97,7 +97,8 @@ export function recommendedExerciseType(word) {
 // Keep the selected words and their order; only assign the requested task mix.
 function practiceExercises(selected, words) {
   const visualCandidates = words.length > 1
-    ? selected.flatMap((item, index) => item.word.imageUrl ? [index] : []) : [];
+    ? selected.flatMap((item, index) => item.word.imageUrl
+      && !['recognition', 'assisted'].includes(item.word.srs?.lastChannel) ? [index] : []) : [];
   const visualCount = Math.min(Math.round(selected.length * 0.3), visualCandidates.length);
   const visualPositions = new Set(Array.from({ length: visualCount }, (_, index) =>
     visualCandidates[Math.floor((index + 0.5) * visualCandidates.length / visualCount)]));

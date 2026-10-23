@@ -201,6 +201,16 @@ test('correct Visual Match and typed answers both respect the per-word review sc
   }
 });
 
+test('the next workout tests recall after recognition instead of repeating image-only evidence', () => {
+  const words = Array.from({ length: 4 }, (_, index) => answer(makeWord(index, {
+    imageUrl: 'https://example.com/image.png'
+  }), true, NOW, 'image-recognition'));
+  const due = new Date(words[0].nextReviewDate);
+  const session = buildDailySession(words, { now: due });
+  assert.equal(session.exercises.length, 4);
+  assert.ok(session.exercises.every(exercise => exercise.exerciseType === 'typed-recall'));
+});
+
 test('past lifetime mistakes do not outrank a fresh unresolved miss after recovery', () => {
   const recovered = answer(makeWord(1, {
     mistakes: { incorrectAttempts: 1000, recentFailures: [new Date(NOW.getTime() - 60000).toISOString()] },

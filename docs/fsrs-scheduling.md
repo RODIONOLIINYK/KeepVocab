@@ -1,6 +1,6 @@
 # FSRS-6 review scheduling
 
-KeepVocab 1.8.9 uses the 21-parameter FSRS-6 implementation from
+KeepVocab uses the 21-parameter FSRS-6 implementation from
 [ts-fsrs 5.4.2](https://github.com/open-spaced-repetition/ts-fsrs/tree/v5.4.2).
 The pinned, licensed browser bundle is about 21 KB. No model download or API is
 needed to schedule a review or fit personal memory parameters.
@@ -24,6 +24,40 @@ cluttering the Library cards.
 Settings → Review timing controls desired retention (80–97%, initially 90%),
 automatic fitting and manual fitting. Higher targets generally mean more reviews.
 Changed targets affect future scheduling; fitting preserves current due dates.
+
+## How Today chooses words
+
+The study day runs from **8:00 AM to the next local 8:00 AM**. Its first evaluation
+locks up to the configured session size (5–50 distinct spellings, initially 20)
+from the month selected in Library. It reserves reviews due later that study day,
+but practice starts only at their saved due times. When both reviewed and new
+words are available, the plan reserves about 30% of places for new words and uses
+the rest for revision, filling unused places from the other group. Priority uses
+due status, predicted recall, unresolved mistakes, recent errors and lateness;
+ties use due time, previous answer time and a stable word ID. The daily exercise
+goal records activity separately and does not change an FSRS due date.
+
+Learn today means a planned spelling without prior practice history. Revise today
+means a planned spelling with earlier practice, or a new word missed today.
+Only ready words become exercises. Words on a short learning cooldown stay
+pending in the plan, with the next available time shown on Today and the session
+result. **A correct answer does not finish the word for today if FSRS still needs
+another step before 8:00 AM.** A new word rated Good normally returns in 10
+minutes; Again normally returns in 1 minute, and a failed established review has
+a 10-minute relearning step. Later intervals come from FSRS memory state and
+desired retention. Recognition or hinted success still needs unaided recall and
+cannot extend an established recall interval. These short steps follow the
+[pinned upstream defaults](https://github.com/open-spaced-repetition/ts-fsrs/blob/v5.4.2/packages/fsrs/src/constant.ts).
+After a recognition or assisted answer, the next regular workout uses typed
+recall for that meaning rather than repeatedly selecting another image prompt.
+
+Revise tomorrow counts distinct spellings with at least one practiced meaning due
+in the **next** 8:00 AM–8:00 AM study day. It checks all saved meanings, even when
+today's plan chose a different meaning of that word. This forecast changes with future answers; it
+does not assume every successful word returns tomorrow. Untouched overflow and
+overdue words outside today's bounded plan appear as a separate deferred count,
+ready for a later plan. Finishing a word does not silently replace it with that
+backlog. Calendar boundaries preserve local 8:00 AM through daylight saving changes.
 
 ## Local personal fitting
 

@@ -32,6 +32,43 @@ function exerciseCopy(exercise, word) {
   return { title: 'Write the word', prompt: definitionForLearning(word) };
 }
 
+// Refresh only the still-visible result/rest screen. A due learning step must
+// become available without navigating away, and must not replace another view.
+function refreshPlanAt(container, at, refresh) {
+  const deadline = Date.parse(at || '');
+  if (!Number.isFinite(deadline)) return;
+  const screen = container.firstElementChild;
+  const check = () => {
+    if (!container.isConnected || container.firstElementChild !== screen) return;
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) refresh();
+    else setTimeout(check, Math.min(remaining + 50, 60000));
+  };
+  setTimeout(check, Math.max(50, Math.min(deadline - Date.now() + 50, 60000)));
+}
+
+function renderScheduledRestState(container, onNavigate, notebookLabel, result = null) {
+  const session = buildScheduledPracticeSession(getScheduledPracticeWords(driveSync), ensureDailyStudyPlan(driveSync));
+  const plan = session.dailyPlan;
+  const ready = session.exercises.length > 0;
+  const waiting = plan.waitingTodayCount > 0;
+  const nextTime = plan.nextReadyAt ? new Date(plan.nextReadyAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+  const heading = ready ? (result ? 'Session complete' : 'Ready to continue')
+    : waiting ? 'A little space helps memory'
+      : plan.isPlanComplete ? 'Today’s plan complete' : 'No reviews due today';
+  const nextCopy = ready ? `${session.wordCount} word${session.wordCount === 1 ? ' is' : 's are'} ready in today’s plan.`
+    : waiting ? `${plan.waitingTodayCount} word${plan.waitingTodayCount === 1 ? ' still needs' : 's still need'} practice today.${nextTime ? ` The next review opens at ${nextTime}.` : ' They return when their review is due.'} FSRS spaces learning steps so you can try recalling them again.`
+      : plan.isPlanComplete ? `You finished today’s plan.${plan.reviseTomorrowCount ? ` ${plan.reviseTomorrowCount} word${plan.reviseTomorrowCount === 1 ? ' is' : 's are'} currently scheduled to revise tomorrow.` : ' Your next plan starts at 8:00 AM.'}`
+        : 'Your saved words are resting until their scheduled reviews. Your next plan starts at 8:00 AM.';
+  container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-complete-heading"><div class="spec-card practice-shell review-recall-shell"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-${waiting ? 'clock' : 'dumbbell'}" aria-hidden="true"></i> Practice</div><span class="muted-label">${escapeHtml(notebookLabel)}</span></div><div class="useful-empty-state mode-complete"><img class="mascot-result" src="assets/${waiting ? 'keepvocab-sprig-thinking' : 'keepvocab-sprig-celebrate'}.webp" alt="Sprig"><h2 id="practice-complete-heading">${heading}</h2><p role="status">${result ? `${result.correct} of ${result.total} exercises were correct. ` : ''}${escapeHtml(nextCopy)}</p>${result ? `<div class="review-score-orb"><strong>${result.correct}</strong><span>correct</span></div>` : ''}<div class="inline-actions">${ready ? '<button class="btn-green-solid" id="daily-continue">Continue today’s plan</button>' : ''}<button class="${ready ? 'status-pill offline' : 'btn-green-solid'}" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-open-library">Open library</button>${result ? '<button class="status-pill offline" id="daily-stats">View progress</button>' : ''}</div></div></div></section>`;
+  container.querySelector('#daily-continue')?.addEventListener('click', () => renderDailySessionMode(container, onNavigate));
+  container.querySelector('#daily-finish').addEventListener('click', () => go('dashboard', onNavigate));
+  container.querySelector('#daily-open-library').addEventListener('click', () => go('library', onNavigate));
+  container.querySelector('#daily-stats')?.addEventListener('click', () => go('stats', onNavigate));
+  refreshPlanAt(container, plan.nextReadyAt || plan.nextEvaluationAt,
+    () => renderScheduledRestState(container, onNavigate, notebookLabel, result));
+}
+
 export function renderDailySessionMode(container, onNavigate, options = {}) {
   const words = options.kind === 'weak' ? getActivePracticeWords(driveSync) : getScheduledPracticeWords(driveSync);
   const practiceNotebookLabel = driveSync.getActiveNotebook();
@@ -39,10 +76,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
   const session = options.kind === 'weak' ? buildWeakWordsSession(words) : buildScheduledPracticeSession(words, settings);
   if (!session.exercises.length) {
     if (options.kind !== 'weak' && words.length) {
-      const tomorrowCount = session.dailyPlan?.reviseTomorrowCount || 0;
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell review-recall-shell"><div class="useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Today’s plan complete</h2><p>You have completed today’s 8:00 AM study plan.${tomorrowCount ? ` ${tomorrowCount} word${tomorrowCount === 1 ? ' is' : 's are'} scheduled to revise tomorrow.` : ' Your next daily evaluation runs at 8:00 AM.'}</p><div class="inline-actions"><button class="btn-green-solid" id="daily-empty-action">Back to Today</button><button class="status-pill offline" id="daily-open-library">Open library</button></div></div></div></section>`;
-      container.querySelector('#daily-empty-action').addEventListener('click', () => go('dashboard', onNavigate));
-      container.querySelector('#daily-open-library').addEventListener('click', () => go('library', onNavigate));
+      renderScheduledRestState(container, onNavigate, practiceNotebookLabel);
       return;
     }
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><img class="mascot-result" src="assets/keepvocab-sprout-mascot.webp" alt="Sprig"><h2>${options.kind === 'weak' ? 'No weak words ready' : 'Build your first workout'}</h2><p>${options.kind === 'weak' ? 'Unresolved mistakes return when their next review is due. Recently recalled words get time to rest.' : 'Add vocabulary to the selected Library month and KeepVocab will choose the right first exercises.'}</p><button class="btn-green-solid" id="daily-empty-action">${options.kind === 'weak' ? 'Back to Today' : 'Add a word'}</button></div></section>`;
@@ -71,10 +105,8 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     const improved = driveSync.getWords().filter(word => (initialWeak.get(word.id) || 0) > weaknessScore(word)).length;
     recordSessionCompletion(session, { kind: options.kind || 'daily', exercises: queue.length, correct: score, minutes: Math.max(1, Math.round((performance.now() - startedAt) / 60_000)), weakWordsImproved: improved });
     if (options.kind !== 'weak') {
-      const nextSession = buildScheduledPracticeSession(getScheduledPracticeWords(driveSync), ensureDailyStudyPlan(driveSync));
-      const tomorrowCount = nextSession.dailyPlan?.reviseTomorrowCount || 0;
-      container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-complete-heading"><div class="spec-card practice-shell review-recall-shell"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-dumbbell"></i> Practice</div><span class="muted-label">${escapeHtml(practiceNotebookLabel)}</span></div><div class="useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2 id="practice-complete-heading">${nextSession.exercises.length ? 'Session complete' : 'Today’s plan complete'}</h2><p>${score} of ${queue.length} exercises were correct.${nextSession.exercises.length ? ` ${nextSession.wordCount} word${nextSession.wordCount === 1 ? ' remains' : 's remain'} in today’s 8:00 AM plan.` : ` You finished today’s plan.${tomorrowCount ? ` ${tomorrowCount} word${tomorrowCount === 1 ? ' is' : 's are'} queued to revise tomorrow.` : ''}`}</p><div class="review-score-orb"><strong>${score}</strong><span>correct</span></div><div class="inline-actions">${nextSession.exercises.length ? '<button class="btn-green-solid" id="daily-continue">Finish today’s plan</button>' : ''}<button class="${nextSession.exercises.length ? 'status-pill offline' : 'btn-green-solid'}" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></div></section>`;
-      container.querySelector('#daily-continue')?.addEventListener('click', () => renderDailySessionMode(container, onNavigate));
+      renderScheduledRestState(container, onNavigate, practiceNotebookLabel, { correct: score, total: queue.length });
+      return;
     } else {
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-complete-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Practice complete</span><h1>${options.kind === 'weak' ? 'Your weak words are getting stronger' : 'You moved your vocabulary forward'}</h1><p>${score} of ${queue.length} exercises were correct. ${improved ? `${improved} weak word${improved === 1 ? '' : 's'} improved.` : 'Mistakes are already shaping your next workout.'}</p><div class="daily-complete-metrics"><div><strong>${score}</strong><span>correct</span></div><div><strong>${queue.length}</strong><span>exercises</span></div><div><strong>${improved}</strong><span>recovered</span></div></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></section>`;
     }

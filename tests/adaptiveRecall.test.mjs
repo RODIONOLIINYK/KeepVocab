@@ -215,6 +215,7 @@ test('a 107-word backlog stays within each batch and remains available after the
 test('abandoned sessions retain goal progress and shrink today’s 8:00 AM plan instead of refilling from the backlog', () => {
   // getSettings normalizes daily activity to the real local day.
   const activityDate = new Date();
+  activityDate.setHours(12, 0, 0, 0);
   const persistence = new DriveSyncService(new MemoryStorage());
   const words = Array.from({ length: 30 }, (_, index) => word(String(index), { monthYear: 'October 2026', courseId: 'english' }));
   persistence.saveWords(words);
@@ -224,15 +225,19 @@ test('abandoned sessions retain goal progress and shrink today’s 8:00 AM plan 
   assert.equal(initial.wordCount, 20);
   const initialIds = new Set(initial.exercises.map(exercise => exercise.wordId));
   const answeredIds = initial.exercises.slice(0, 7).map(exercise => exercise.wordId);
-  // Answering 7 words (4 correct, 3 missed on 10m cooldown) shrinks today's remaining ready queue to 13 instead of pulling deferred words from tomorrow's pool.
+  // All seven answers are on FSRS learning cooldowns. Keep those words in the
+  // plan, with 13 ready now, instead of filling their places from the backlog.
   for (let i = 0; i < answeredIds.length; i++) recordExerciseResult({ wordId: answeredIds[i], exerciseType: 'daily-typed-recall', recallType: 'free-recall', correct: i % 2 === 0, occurredAt: activityDate.toISOString() }, persistence);
   const settings = persistence.getSettings();
   assert.equal(settings.reviewsToday, 7);
   const next = buildScheduledPracticeSession(getScheduledPracticeWords(persistence), settings, { now: activityDate });
   assert.equal(next.wordCount, 13);
-  assert.equal(next.dailyPlan.completedTodayCount, 4);
-  assert.equal(next.dailyPlan.remainingTodayCount, 16);
-  assert.equal(next.dailyPlan.reviseTomorrowCount, 14);
+  assert.equal(next.dailyPlan.completedTodayCount, 0);
+  assert.equal(next.dailyPlan.practicedTodayCount, 7);
+  assert.equal(next.dailyPlan.remainingTodayCount, 20);
+  assert.equal(next.dailyPlan.waitingTodayCount, 7);
+  assert.equal(next.dailyPlan.reviseTomorrowCount, 0);
+  assert.equal(next.dailyPlan.deferredCount, 10);
   assert.equal(next.dailyGoalComplete, false);
   assert.equal(next.exercises.some(exercise => answeredIds.includes(exercise.wordId)), false);
   assert.equal(next.exercises.every(exercise => initialIds.has(exercise.wordId)), true);
@@ -262,15 +267,17 @@ test('8:00 AM daily evaluation separates reviseToday, learnToday, and reviseTomo
   assert.equal(plan.plannedTodayCount, 20);
   assert.equal(plan.reviseTodayCount, 14);
   assert.equal(plan.learnTodayCount, 6);
-  assert.equal(plan.reviseTomorrowCount, 10);
+  assert.equal(plan.reviseTomorrowCount, 0);
+  assert.equal(plan.deferredCount, 10);
 
   // Completing one word today reduces today's remaining count by 1 without pulling an overflow word from tomorrow.
-  const firstTarget = plan.todayWords[0];
+  const firstTarget = plan.reviseToday[0];
   const updatedWords = allWords.map(item => item.id === firstTarget.id ? answer(item, new Date(afterEight.getTime() + 5 * 60000)) : item);
   const afterOne = evaluateDailyStudyPlan(updatedWords, { practiceSessionSize: 20, dailyStudyPlan: plan.snapshot }, { now: new Date(afterEight.getTime() + 5 * 60000) });
   assert.equal(afterOne.completedTodayCount, 1);
   assert.equal(afterOne.remainingTodayCount, 19);
-  assert.equal(afterOne.reviseTomorrowCount, 11);
+  assert.equal(afterOne.reviseTomorrowCount, 0);
+  assert.equal(afterOne.deferredCount, 10);
 
   // Secondary modes (Flashcards, Choose Word, Visual Match, Match Sprint) select from Today's 8:00 AM Study Plan first.
   const plannedIds = new Set(plan.allPlannedTodayWords.map(item => item.id));
@@ -322,4 +329,141 @@ test('imported untouched future reviews wait consistently across Practice, manua
   assert.equal(buildScheduledPracticeSession([fresh], {}, { now: NOW }).wordCount, 1);
   assert.equal(selectModeWords([fresh], { now: NOW }).length, 1);
   assert.equal(getPracticeReadiness([fresh], NOW).readyNowCount, 1);
+});
+
+test('Today retains successful FSRS learning steps, waits for their due time, then completes after graduation', () => {
+  const now = new Date(2026, 9, 10, 12);
+  const initial = word('learning', { nextReviewDate: now.toISOString() });
+  const plan = evaluateDailyStudyPlan([initial], {}, { now });
+  const settings = { dailyStudyPlan: plan.snapshot };
+  let item = answer(initial, now);
+  const due = new Date(item.nextReviewDate);
+  assert.equal(due - now, 10 * 60000);
+
+  for (const reference of [now, new Date(due - 1)]) {
+    const waiting = buildScheduledPracticeSession([item], settings, { now: reference });
+    assert.equal(waiting.wordCount, 0);
+    assert.equal(waiting.dailyPlan.completedTodayCount, 0);
+    assert.equal(waiting.dailyPlan.waitingTodayCount, 1);
+    assert.equal(waiting.dailyPlan.nextReadyAt, due.toISOString());
+    assert.equal(waiting.dailyPlan.isPlanComplete, false);
+    assert.equal(waiting.dailyPlan.reviseTomorrowCount, 0);
+  }
+  const retry = buildScheduledPracticeSession([item], settings, { now: due });
+  assert.deepEqual(retry.exercises.map(exercise => exercise.wordId), [item.id]);
+  item = answer(item, due);
+  const finished = buildScheduledPracticeSession([item], settings, { now: due });
+  assert.ok(new Date(item.nextReviewDate) >= getNextStudyDayStart(due));
+  assert.equal(finished.dailyPlan.completedTodayCount, 1);
+  assert.equal(finished.dailyPlan.remainingTodayCount, 0);
+  assert.equal(finished.dailyPlan.isPlanComplete, true);
+});
+
+test('recognition and mistakes remain pending until their scheduled recall or relearning step', () => {
+  const now = new Date(2026, 9, 10, 12);
+  for (const overrides of [{ recallType: 'recognition', producedUnaided: false }, { correct: false, producedUnaided: false }]) {
+    const initial = word('retry', { nextReviewDate: now.toISOString() });
+    const plan = evaluateDailyStudyPlan([initial], {}, { now });
+    const item = answer(initial, now, overrides);
+    const settings = { dailyStudyPlan: plan.snapshot };
+    const waiting = buildScheduledPracticeSession([item], settings, { now });
+    assert.equal(waiting.wordCount, 0);
+    assert.equal(waiting.dailyPlan.isPlanComplete, false);
+    assert.equal(waiting.dailyPlan.waitingTodayCount, 1);
+    assert.equal(waiting.dailyPlan.nextReadyAt, item.nextReviewDate);
+    const due = buildScheduledPracticeSession([item], settings, { now: new Date(item.nextReviewDate) });
+    assert.equal(due.wordCount, 1);
+    if (!overrides.correct && overrides.correct !== undefined) assert.equal(due.composition.weak, 1);
+  }
+});
+
+test('a locked plan reserves reviews due later today without offering them early', () => {
+  const now = new Date(2026, 9, 10, 9);
+  const later = new Date(2026, 9, 10, 16);
+  const words = [word('morning', { nextReviewDate: now.toISOString() }), word('afternoon', {
+    nextReviewDate: later.toISOString(), lastReviewedAt: new Date(2026, 9, 9, 16).toISOString(),
+    srs: { repetitions: 4, lastRating: 'good' }
+  })];
+  const plan = evaluateDailyStudyPlan(words, {}, { now });
+  assert.equal(plan.plannedTodayCount, 2);
+  assert.equal(plan.readyTodayCount, 1);
+  assert.equal(plan.waitingTodayCount, 1);
+  assert.equal(plan.nextReadyAt, later.toISOString());
+  const session = buildScheduledPracticeSession(words, { dailyStudyPlan: plan.snapshot }, { now: later });
+  assert.equal(session.wordCount, 2);
+  assert.ok(session.exercises.some(exercise => exercise.wordId === 'afternoon'));
+});
+
+test('tomorrow forecasts actual practiced due dates separately from untouched deferred words', () => {
+  const now = new Date(2026, 9, 10, 12);
+  const tomorrow = getNextStudyDayStart(now);
+  const followingDay = getNextStudyDayStart(tomorrow);
+  const reviewed = id => word(id, { lastReviewedAt: new Date(2026, 9, 9, 12).toISOString(),
+    srs: { repetitions: 4, lastRating: 'good' } });
+  const words = [
+    word('today-a'), word('today-b'),
+    { ...reviewed('tomorrow'), nextReviewDate: tomorrow.toISOString() },
+    { ...reviewed('last-minute'), nextReviewDate: new Date(followingDay - 1).toISOString() },
+    { ...reviewed('following-day'), nextReviewDate: followingDay.toISOString() },
+    word('untouched-tomorrow', { nextReviewDate: tomorrow.toISOString() })
+  ];
+  const plan = evaluateDailyStudyPlan(words, {}, { now, targetSize: 1 });
+  assert.equal(plan.plannedTodayCount, 1);
+  assert.equal(plan.deferredCount, 1);
+  assert.deepEqual(new Set(plan.reviseTomorrow.map(item => item.id)), new Set(['tomorrow', 'last-minute']));
+  assert.equal(plan.scheduledTomorrowCount, 2);
+});
+
+test('replacing a planned word with one practiced outside the plan persists even when its size is unchanged', () => {
+  const now = new Date(2026, 9, 10, 12);
+  const persistence = new DriveSyncService(new MemoryStorage());
+  const words = ['a', 'b', 'c'].map(id => word(id, { monthYear: 'October 2026', courseId: 'english' }));
+  persistence.saveWords(words);
+  persistence.setActiveNotebook('October 2026 Vocabulary');
+  const first = ensureDailyStudyPlan(persistence, { now, targetSize: 2 });
+  const selected = new Set([...first.dailyStudyPlan.reviseIds, ...first.dailyStudyPlan.learnIds]);
+  const outside = persistence.getWords().find(item => !selected.has(item.id));
+  persistence.saveWords(persistence.getWords().map(item => item.id === outside.id ? answer(item, now) : item));
+  const updated = ensureDailyStudyPlan(persistence, { now, targetSize: 2 });
+  const ids = [...updated.dailyStudyPlan.reviseIds, ...updated.dailyStudyPlan.learnIds];
+  assert.equal(ids.length, 2);
+  assert.ok(ids.includes(outside.id));
+  assert.deepEqual(ensureDailyStudyPlan(persistence, { now, targetSize: 2 }).dailyStudyPlan, updated.dailyStudyPlan);
+});
+
+test('the saved meaning retains its FSRS steps when another meaning of the same spelling becomes more urgent', () => {
+  const now = new Date(2026, 9, 10, 12);
+  const words = [word('bank-a', { word: 'bank', nextReviewDate: now.toISOString() }),
+    word('bank-b', { word: 'bank', nextReviewDate: now.toISOString() })];
+  const initial = evaluateDailyStudyPlan(words, {}, { now });
+  const planned = initial.allPlannedTodayWords[0];
+  const updated = words.map(item => item.id === planned.id ? answer(item, now) : item);
+  const settings = { dailyStudyPlan: initial.snapshot };
+  const waiting = evaluateDailyStudyPlan(updated, settings, { now });
+  assert.equal(waiting.plannedTodayCount, 1);
+  assert.equal(waiting.waitingTodayCount, 1);
+  assert.equal(waiting.readyTodayCount, 0);
+  assert.deepEqual(waiting.allPlannedTodayWords.map(item => item.id), [planned.id]);
+  const due = buildScheduledPracticeSession(updated, settings, { now: new Date(waiting.nextReadyAt) });
+  assert.deepEqual(due.exercises.map(exercise => exercise.wordId), [planned.id]);
+});
+
+test('tomorrow forecasts all practiced meanings independently of today’s locked meaning, counting each spelling once', () => {
+  const now = new Date(2026, 9, 10, 12);
+  const tomorrow = getNextStudyDayStart(now);
+  const previous = new Date(2026, 9, 9, 12).toISOString();
+  const chosen = word('bank-today', { word: 'bank', nextReviewDate: now.toISOString() });
+  const siblings = ['bank-tomorrow-a', 'bank-tomorrow-b'].map(id => word(id, {
+    word: 'BANK', nextReviewDate: tomorrow.toISOString(), lastReviewedAt: previous,
+    srs: { repetitions: 4, lastRating: 'good' }
+  }));
+  const plan = evaluateDailyStudyPlan([chosen, ...siblings], {}, { now });
+  assert.deepEqual(plan.allPlannedTodayWords.map(item => item.id), [chosen.id]);
+  const resting = answer(chosen, now, { learnerRating: 'easy' });
+  assert.ok(new Date(resting.nextReviewDate) >= getNextStudyDayStart(tomorrow));
+  const after = evaluateDailyStudyPlan([resting, ...siblings], { dailyStudyPlan: plan.snapshot }, { now });
+  assert.deepEqual(after.allPlannedTodayWords.map(item => item.id), [chosen.id]);
+  assert.equal(after.reviseTomorrowCount, 1);
+  assert.equal(after.scheduledTomorrowCount, 1);
+  assert.ok(siblings.some(item => item.id === after.reviseTomorrow[0].id));
 });
