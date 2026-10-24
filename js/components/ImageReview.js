@@ -1,5 +1,5 @@
 import { canAutoSelectImage, imageChoiceGuidance, imageReplacementLabels } from '../services/imageChoicePolicy.js';
-import { recordImagePreference, getImageLearningStatus } from '../services/imageLearning.js?v=18900';
+import { recordImagePreference, getImageLearningStatus, subscribeImageLearning } from '../services/imageLearning.js?v=18900';
 import { escapeHtml } from '../utils/html.js?v=18900';
 import { findRelevantImages, imageSelectionPatch } from '../services/imageSearch.js?v=18900';
 
@@ -51,6 +51,10 @@ export function mountImageReview(container, words, {
   let active = true;
   let applying = false;
   let applyError = '';
+  let reviewRoot = null;
+  let learningSignature = '';
+  let releaseLearning = () => {};
+  const statusSignature = status => JSON.stringify([status.enabled, status.installed, status.phase, status.labels, status.trainedLabels]);
 
   function reserved(index) {
     const urls = new Set(excludeUrls.map(url => String(url || '').replace(/#.*$/, '')).filter(Boolean));
@@ -78,6 +82,7 @@ export function mountImageReview(container, words, {
     const focus = globalThis.document?.activeElement;
     const focusedChoice = focus?.dataset?.imageReviewAction && container.contains?.(focus) ? { ...focus.dataset } : null;
     const learning = getImageLearningStatus();
+    learningSignature = statusSignature(learning);
     container.innerHTML = `<section class="image-review ${single ? 'image-review--single' : ''}" aria-labelledby="${headingId}">
       <header class="image-review__heading"><div><span class="eyebrow">${allowSkipPending ? 'One last touch · optional' : 'Visual memory cues'}</span><h2 id="${headingId}">${single ? 'Choose an image' : 'Choose your images'}</h2></div></header>
       <div class="image-review__grid">${rows.map((row, index) => {
@@ -102,6 +107,7 @@ export function mountImageReview(container, words, {
       <footer class="image-review__footer">${single ? '' : `<span class="image-review__count">${progress.kept} of ${progress.total} images selected</span>`}<button type="button" class="image-review__back" data-image-review-action="cancel" ${applying ? 'disabled' : ''}>Back</button>${addSingle && progress.kept ? `<button type="button" class="image-review__secondary" data-image-review-action="skip" data-image-review-index="0" ${applying ? 'disabled' : ''}>Save without image</button>` : ''}<button type="button" class="image-review__save" data-image-review-action="apply" ${!rows.length || (!allowSkipPending && progress.pending) || applying ? 'disabled' : ''}>${applying ? 'Saving…' : allowSkipPending ? single ? progress.kept ? 'Save word' : 'Save without image' : `Save ${rows.length} words` : 'Save images'}</button></footer>
       ${applyError ? `<p class="image-review__status image-review__error" role="alert">${escapeHtml(applyError)}</p>` : ''}
     </section>`;
+    reviewRoot = container.firstElementChild;
     if (focusedChoice) {
       const selector = `[data-image-review-action="${focusedChoice.imageReviewAction}"]${focusedChoice.imageReviewIndex != null ? `[data-image-review-index="${Number(focusedChoice.imageReviewIndex)}"]` : ''}${focusedChoice.imageReviewCandidate != null ? `[data-image-review-candidate="${Number(focusedChoice.imageReviewCandidate)}"]` : ''}`;
       container.querySelector?.(selector)?.focus?.({ preventScroll: true });
@@ -172,6 +178,7 @@ export function mountImageReview(container, words, {
   function destroy() {
     if (!active) return;
     active = false;
+    releaseLearning();
     rows.forEach(row => row.controller?.abort());
     container.removeEventListener('click', handleClick);
     container.removeEventListener('keydown', handleKeydown);
@@ -233,6 +240,13 @@ export function mountImageReview(container, words, {
 
   container.addEventListener('click', handleClick);
   container.addEventListener('keydown', handleKeydown);
+  releaseLearning = subscribeImageLearning(status => {
+    if (!active) return;
+    // A host may replace the chooser during navigation without calling destroy.
+    // Never let a late worker notification bring that old screen back.
+    if (reviewRoot && container.contains?.(reviewRoot) === false) { destroy(); return; }
+    if (statusSignature(status) !== learningSignature) render();
+  });
   render();
   return { destroy };
 }

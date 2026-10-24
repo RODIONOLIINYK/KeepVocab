@@ -130,7 +130,13 @@ function rpc(type, payload = {}, { signal, allowMetered = false, storage } = {})
   if (!worker) {
     worker = new Worker(new URL('../ml/clipWorker.bundle.js', import.meta.url), { type: 'module' });
     worker.onmessage = ({ data }) => {
-      if (data.type === 'status') { phase = data.phase || phase;message = data.message || message;backend = data.backend || backend;emit(data);return; }
+      if (data.type === 'status') {
+        phase = data.phase || phase;message = data.message || message;backend = data.backend || backend;
+        // Searches can initialize the model lazily, without the Settings enable
+        // action. A ready worker is stronger evidence than an earlier cache check.
+        if (data.phase === 'ready') installed = true;
+        emit(data);return;
+      }
       const item = pending.get(data.id);if (!item) return;
       pending.delete(data.id);clearTimeout(item.timer);item.cleanup();
       if (data.error) item.reject(Object.assign(new Error(data.error), { backendFailure: data.backendFailure })); else item.resolve(data.result);

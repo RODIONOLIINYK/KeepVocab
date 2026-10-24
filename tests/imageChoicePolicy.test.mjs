@@ -10,12 +10,35 @@ function candidates(patch = {}) {
   return [{ url: 'https://example.test/a.jpg', ml }, { url: 'https://example.test/b.jpg', ml: { ...ml, score: .4 } }];
 }
 
-test('disabled or missing local models explain how to enable learning', () => {
-  for (const state of [{ ...status, enabled: false }, { ...status, installed: false }]) {
-    assert.deepEqual(imageChoiceGuidance(candidates(), state), {
-      title: 'Choose an image', detail: 'Local learning is off. You can turn it on in Settings.', kind: 'manual'
-    });
+test('only an explicitly disabled local model says learning is off', () => {
+  assert.deepEqual(imageChoiceGuidance(candidates(), { ...status, enabled: false }), {
+    title: 'Choose an image', detail: 'Local learning is off. You can turn it on in Settings.', kind: 'manual'
+  });
+});
+
+test('enabled learning distinguishes a pending download, loading and errors from being off', () => {
+  const photos = [{ url: 'https://example.test/photo.jpg' }];
+  const waiting = imageChoiceGuidance(photos, { ...status, installed: false, phase: 'idle' });
+  assert.match(waiting.detail, /Local learning is on/);
+  assert.match(waiting.detail, /not ready/);
+  assert.match(waiting.detail, /download in Settings/);
+  for (const phase of ['loading', 'scoring']) {
+    const guidance = imageChoiceGuidance(photos, { ...status, installed: false, phase });
+    assert.equal(guidance.title, 'Local learning is on');
+    assert.equal(guidance.kind, 'learning');
+    assert.doesNotMatch(guidance.detail, /learning is off|turn it on/);
   }
+  const failed = imageChoiceGuidance(photos, { ...status, installed: false, phase: 'error' });
+  assert.match(failed.detail, /Local learning is on, but scoring is unavailable/);
+  assert.doesNotMatch(failed.detail, /learning is off|turn it on/);
+});
+
+test('scored photos use their model evidence even if the earlier installed-file snapshot was false', () => {
+  const state = { ...status, installed: false };
+  assert.equal(imageChoiceGuidance(candidates(), state).kind, 'automatic');
+  const learning = imageChoiceGuidance(candidates({ trainedLabels: 12 }), { ...state, trainedLabels: 12, labels: 12 });
+  assert.equal(learning.kind, 'learning');
+  assert.match(learning.detail, /12\/32/);
 });
 
 test('missing photos and failed or missing scoring invite manual choice', () => {

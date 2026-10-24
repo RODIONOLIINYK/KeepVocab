@@ -1,52 +1,29 @@
-# Shared exercise UI and Today preservation QA
+# v1.9.6 design restoration and regression check
 
-- Visual source for canonical Use It: `/Users/kalyma123/Desktop/Screenshot 2026-08-21 at 13.13.49.png`
-- Visual source for the reported Weak Words failure: `/Users/kalyma123/Desktop/Screenshot 2026-08-21 at 13.12.58.png`
-- Canonical shared-component capture: `/tmp/keepvocab-useit-shared-mobile.png`
-- Preserved Today capture: `/tmp/keepvocab-today-preserved-mobile.png`
-- Tested browser viewport: 431 × 747 CSS pixels
-- Source Use It image: 858 × 1410 pixels
-- Source Weak Words image: 820 × 1536 pixels
+Source visual truth: user-provided `Screenshot 2026-10-24 at 13.56.35.png` (Library, 389 × 789 pixels), and committed v1.9.6 sources at `eeef4ff`.
 
-## Full-view comparison
+Implementation: `http://127.0.0.1:8086/#library`, isolated local sample storage (16 meanings / 15 words, four saved photos, new/due/future schedules). No preview fixtures are included in the application release.
 
-The shared component keeps the canonical manual Use It hierarchy from the approved reference: thinking Sprig, `Make it yours`, the word prompt, saved definition, large rounded textarea, full-width green `Check sentence` action, secondary `Speak instead` action, and Gemini evaluation status. Weak Words mounts this exact component rather than rebuilding its own sentence field or feedback card.
+Evidence:
+- `work/design-review/restored-library-mobile-final.jpg`: Library at CSS viewport 390 × 805; host capture 375 ×774, normalized to 390 × 805 for comparison.
+- `work/design-review/restored-snapshot-comparison.png`: original snapshot and restored implementation in one comparison input. The original is normalized to 390 × 805. Content differs intentionally: sample vocabulary versus the user's 92-word archive.
+- `work/design-review/restored-library-tools-mobile.jpg`: Tools visible above the archive/vocabulary cards; browser hit testing reaches the menu button.
+- `work/design-review/archive-counts-regression.jpg`: the exact 92/115 and 68/87 count strings fit within their buttons at 390px; measured widths 174.36px and 171.63px. A temporary harness used the real styles and archive markup, then was removed.
+- `work/design-review/local-learning-enabled-fixed.jpg`: enabled learning reports “Local learning is on” while scoring is unavailable; no false off message.
 
-Today’s Workout remains on the separate `daily-session-shell` visual preset. Its phone capture retains the circular icon-only exit control, centered `Today's Workout` progress, right-aligned score, compact progress line, mascot, exercise label, and full-width stacked choice cards. No canonical Use It CSS or wrapper was applied to Today.
+Fidelity surfaces:
+- Typography: original Inter / Outfit font faces and weights restored; no new icon font.
+- Layout: original header, bottom navigation, cards, Today, Library, Speaking and Progress layouts restored. Archive chips keep their 146px minimum and grow to fit longer counts.
+- Colors: original theme retained; the only palette change is white text on green action buttons. Browser computed text color is rgb(255,255,255).
+- Images: original logo, installed icons and Sprig artwork restored. New generated artwork is excluded from the app.
+- Copy: original product copy and scheduling behavior retained; image-learning status distinguishes enabled/readiness/error states.
 
-The live test library currently has zero weak words, so opening the Weak Words route would only show the empty state. The rendered Weak Words Use It surface was verified through the exact shared component used by the live manual route, plus an automated source-ownership regression that requires both routes to mount `UseItExercise`.
+Comparison history / fixes:
+- [P2, fixed] Monthly counts overflowed fixed-width chips in the source snapshot. Chips now use intrinsic width and the exact long strings fit.
+- [P1, fixed] Library Tools could paint beneath later cards / be clipped. Visible overflow and a positioned title layer keep it usable; verified in browser.
+- [P1, fixed] An unverified model installation was presented as learning disabled. Service/component regressions and browser evidence confirm the corrected state.
+- [P2, fixed] Overlapping entrance delays and 320ms menu expansion felt slow. Menus now open in 180ms, and one short route entrance plus touch press/navigation feedback replaces stacked delays. Reduced-motion behavior remains supported.
 
-## Focused-region comparison
-
-- Canonical textarea: 367 × 126 CSS pixels at a 431px viewport.
-- Canonical Check button: 371px wide.
-- Document width: 431px scroll width and 431px client width; no horizontal overflow.
-- The textarea receives focus on entry and remains editable.
-- Mobile action ordering remains `Check sentence` followed by `Speak instead`, matching the reference.
-- The status copy reports that Gemini checks meaning, grammar, and naturalness.
-
-## Behavior and code ownership
-
-- Manual Use It and Weak Words Use It both mount `UseItExercise`.
-- Manual, Weak Words, and Today Use It all call `evaluateUseItSentence`.
-- Recall and recognition variants share `exerciseEvaluation` helpers instead of maintaining separate normalization/equality rules.
-- Gemini evaluation is always attempted for a non-empty sentence when configured, even when a local form matcher does not recognize the spelling.
-- Cross-part-of-speech forms are explicitly supported, including noun `cuddle` used as verb `cuddled`.
-- Without Gemini, a non-empty sentence is saved locally and never produces an exact-headword error.
-- Gemini feedback that asks for the exact word is replaced with meaning-focused guidance.
-
-## Runtime checks
-
-- Canonical Use It rendered nonblank at `#useit` with the expected component hierarchy.
-- Today rendered nonblank at `#daily` with class `spec-card daily-session-shell` and `Today's Workout / 1 of 10 / 0 correct`.
-- No horizontal overflow was found at the tested phone width.
-- Browser diagnostics contained zero console warnings or errors.
-- All 153 automated tests passed.
-- Production web build passed.
-- PWA cache and changed module URLs were advanced together to v86.
-
-## Findings
-
-No actionable P0, P1, or P2 issue remains in the requested Use It validation path, Weak Words component ownership, or preserved Today visual preset.
+Validation: 507 tests pass; primary navigation, daily practice entry, Library Tools, image review selection/cancel, and populated mobile layouts checked. Browser errors were checked during the flow; the expected unavailable local-model status is handled in the chooser.
 
 final result: passed

@@ -5,6 +5,12 @@
   --app-safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
   --app-safe-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
 }
+
+/* Library actions float above sibling cards, including their entrance-animation
+   stacking contexts. Keep the title row below app navigation and dialogs. */
+.library-view { overflow: visible; }
+.library-view > .content-title-row { position: relative; z-index: 5; overflow: visible; }
+
 @media (max-width: 720px) {
   :root { --mobile-nav-height: calc(72px + var(--app-safe-bottom)); }
   html { scroll-padding-top: calc(76px + var(--app-safe-top)); scroll-padding-bottom: calc(var(--mobile-nav-height) + 20px); }
@@ -509,7 +515,7 @@
 
 @media (max-width: 720px) {
   .library-view .archive-tabs { scroll-snap-type: x proximity; overscroll-behavior-inline: contain; }
-  .library-view .archive-tabs > button { flex: 0 0 146px; min-width: 146px; min-height: 68px; white-space: nowrap; overflow-wrap: normal; scroll-snap-align: start; }
+  .library-view .archive-tabs > button { flex: 0 0 auto; min-width: 146px; min-height: 68px; white-space: nowrap; overflow-wrap: normal; scroll-snap-align: start; }
   .library-view .archive-tabs > button span { white-space: nowrap; overflow-wrap: normal; line-height: 1.5; }
   .library-view .content-title-row .btn-green-solid { min-height: 46px; padding-inline: 10px; gap: 8px; font-size: .85rem; }
 }

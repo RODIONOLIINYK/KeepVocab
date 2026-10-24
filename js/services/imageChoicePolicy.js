@@ -17,14 +17,30 @@ export function canAutoSelectImage(candidates) {
 // Explain the automation gate in terms of the user's choices. The preference
 // score is not calibrated confidence, so it must never become a percentage.
 export function imageChoiceGuidance(candidates, status = {}) {
-  if (status.enabled === false || status.installed === false) {
+  if (status.enabled === false) {
     return { title: 'Choose an image', detail: 'Local learning is off. You can turn it on in Settings.', kind: 'manual' };
+  }
+  const scored = Boolean(candidates?.[0]?.url && candidates[0]?.ml?.model === CLIP_TAG
+    && Number.isFinite(candidates[0].ml.score));
+  if (status.enabled === true && !scored && ['loading', 'scoring'].includes(status.phase)) {
+    return { title: 'Local learning is on', detail: status.phase === 'loading'
+      ? 'The image model is loading. You can choose a photo while it gets ready.'
+      : 'The image model is scoring these photos. You can still choose one yourself.', kind: 'learning' };
   }
   if (!candidates?.length) {
     return { title: 'Choose an image', detail: 'Find photos, then choose one that fits the meaning.', kind: 'manual' };
   }
-  if (status.phase === 'error' || !candidates[0]?.url || candidates[0]?.ml?.model !== CLIP_TAG
-    || !Number.isFinite(candidates[0].ml.score)) {
+  if (status.phase === 'error') {
+    return { title: 'Choose an image', detail: status.enabled === true
+      ? 'Local learning is on, but scoring is unavailable right now. Check the model in Settings or choose a photo yourself.'
+      : 'Local scoring is unavailable for these photos. Choose one that fits the meaning.', kind: 'manual' };
+  }
+  if (!scored && status.installed === false) {
+    return { title: 'Choose an image', detail: status.enabled === true
+      ? 'Local learning is on. The image model is not ready on this device yet. Check its download in Settings or choose a photo yourself.'
+      : 'The image model is not ready on this device yet. Check its download in Settings or choose a photo yourself.', kind: 'manual' };
+  }
+  if (!scored) {
     return { title: 'Choose an image', detail: 'Local scoring is unavailable for these photos. Choose one that fits the meaning.', kind: 'manual' };
   }
   if (canAutoSelectImage(candidates)) {

@@ -342,7 +342,7 @@
 
   --primary-green: var(--duo-green);
   --primary-green-hover: #217e3a;
-  --on-primary-green: #133b20;
+  --on-primary-green: #fff;
   --primary-green-light: #eaf8e7;
   --border-card: var(--duo-line);
   --text-main: var(--duo-ink);

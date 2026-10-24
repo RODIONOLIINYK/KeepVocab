@@ -22,12 +22,12 @@ export function animateDisclosures(root, selector = 'details[data-motion]') {
       const resting = { height, opacity: 1, transform: 'translateY(0) scale(1)' };
       const frames = open ? [
         { height: '0px', opacity: 0, transform: 'translateY(-6px) scale(.97)', offset: 0 },
-        { height, opacity: 1, transform: 'translateY(1px) scale(1.015)', offset: .76 },
+        { height, opacity: 1, transform: 'translateY(0) scale(1)', offset: .85 },
         { ...resting, offset: 1 }
       ] : [resting, { height: '0px', opacity: 0, transform: 'translateY(-4px) scale(.98)' }];
       body.style.overflow = 'hidden';
       const current = body.animate(frames, {
-        duration: open ? 320 : 180,
+        duration: open ? 180 : 120,
         easing: open ? 'cubic-bezier(.2,.7,.3,1)' : 'cubic-bezier(.4,0,1,1)',
         fill: 'both'
       });

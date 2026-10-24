@@ -510,7 +510,7 @@ function navigateTo(viewName) {
   if (viewEnterTimer) window.clearTimeout(viewEnterTimer);
   requestAnimationFrame(() => {
     container.classList.add('view-enter');
-    viewEnterTimer = window.setTimeout(() => container.classList.remove('view-enter'), 380);
+    viewEnterTimer = window.setTimeout(() => container.classList.remove('view-enter'), 200);
   });
   if (driveSync.getSettings().translationLanguage === 'uk') {
     void backfillLibraryTranslations(getActivePracticeWords(driveSync)).then(count => {
