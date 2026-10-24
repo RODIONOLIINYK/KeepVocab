@@ -125,7 +125,7 @@ test('Gemini turns the exact word sense into concise public-catalog search scene
 
   assert.match(prompt, /Target word: bank/);
   assert.match(prompt, /Exact selected definition: The land beside a river/);
-  assert.match(prompt, /Exactly 5-7 concrete words/);
+  assert.match(prompt, /5-16 concrete words/);
   assert.match(prompt, /concrete physical object directly named by an unambiguous target/);
   assert.match(prompt, /such as wrench/);
   assert.match(prompt, /wrench or laptops/);
@@ -152,10 +152,10 @@ test('physical object meanings search the object name without inventing a scene'
   assert.equal(buildVisualSearchQueries(laptops)[0], 'laptops');
 });
 
-test('AI visual descriptions are mechanically capped at seven useful words', () => {
+test('AI visual descriptions retain the complete scene instead of clipping its meaning', () => {
   assert.equal(
     compactGeneratedScene('A family relaxing on the grassy river edge at sunset'),
-    'family relaxing grassy river edge sunset'
+    'a family relaxing on the grassy river edge at sunset'
   );
 });
 
@@ -178,9 +178,9 @@ test('visual-scene validation rejects word repetition and clipped definitions', 
   const conquest = { word: 'conquest', definition: 'A victory gained through force.' };
   assert.equal(isConcreteVisualScene('conquest victory gained through force', conquest), false);
   assert.equal(isConcreteVisualScene('victory gained through military force', conquest), false);
-  assert.equal(isConcreteVisualScene('soldier planting a flag on a captured hilltop', conquest), false);
+  assert.equal(isConcreteVisualScene('soldier planting a flag on a captured hilltop', conquest), true);
   assert.equal(isConcreteVisualScene('soldier planting flag on captured hilltop', conquest), true);
-  assert.equal(compactVisualSearchQuery('soldier planting a flag on a captured hilltop'), 'soldier flag hilltop');
+  assert.equal(compactVisualSearchQuery('soldier planting a flag on a captured hilltop'), 'soldier planting flag captured hilltop');
   assert.deepEqual(buildVisualSceneDescriptions(conquest), [
     'soldier planting flag on captured hilltop',
     'victorious army entering a captured fortress',
@@ -239,8 +239,8 @@ test('an active custom interpretation can suppress unrelated generated fallbacks
     }
   );
 
-  assert.deepEqual(requestedQueries, ['soap bubble popping']);
-  assert.equal(results[0].searchQuery, 'soap bubble popping');
+  assert.deepEqual(requestedQueries, ['soap bubble popping sunlight']);
+  assert.equal(results[0].searchQuery, 'soap bubble popping sunlight');
 });
 
 test('already attached image URLs are excluded from new suggestions', async () => {
@@ -481,11 +481,11 @@ test('saved Pexels settings are read automatically while exact-scene relevance c
   };
 
   const results = await findRelevantImages({ word: 'conquest', definition: 'A victory gained through force.' }, {
-    storage, fetchImpl, aiScenes: false, extraQueries: ['soldier planting a flag on a captured hilltop'], onlyExtraQueries: true, limit: 10
+    storage, fetchImpl, aiScenes: false, extraQueries: ['soldier planting a flag on a captured ridge'], onlyExtraQueries: true, limit: 10
   });
 
   assert.equal(requested.find(item => item.host === 'api.pexels.com')?.authorization, 'saved-device-key');
-  assert.equal(requested.find(item => item.host === 'api.pexels.com')?.query, 'soldier flag hilltop');
+  assert.equal(requested.find(item => item.host === 'api.pexels.com')?.query, 'soldier planting flag captured ridge');
   assert.ok(results.some(image => image.source === 'Pexels'));
 });
 

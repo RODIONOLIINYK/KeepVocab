@@ -90,7 +90,7 @@ const offline = () => { throw new Error('Unexpected network request'); };
 const makeService = storage => new DriveSyncService(storage || new MemoryStorage(), offline);
 
 function sceneRecord(word) {
-  return { version: 1, generatorVersion: '2', fingerprint: imageSenseFingerprint(word), source: 'gemini',
+  return { version: 1, generatorVersion: '3', fingerprint: imageSenseFingerprint(word), source: 'gemini',
     scenes: ['person balancing stones beside quiet water'], generatedAt: '2026-05-12T09:00:00.000Z' };
 }
 

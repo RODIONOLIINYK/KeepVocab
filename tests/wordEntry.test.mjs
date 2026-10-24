@@ -26,6 +26,46 @@ test('shared save pipeline attaches an image to each chosen meaning and preserve
   assert.equal(word.imageUrl, undefined);
 });
 
+test('saving generates image prompts together for every exact meaning and reuses them on later searches', async () => {
+  const storage = new MemoryStorage();
+  saveGeminiSettings({ apiKey: 'fake-key-for-per-meaning-image-scenes' }, storage, { silent: true });
+  const words = [
+    { word: 'notice', partOfSpeech: 'noun', definition: 'A warning about a change.', sourceDefinition: 'A formal warning of an upcoming change.' },
+    { word: 'notice', partOfSpeech: 'noun', definition: 'Attention given to somebody.', sourceDefinition: 'Careful attention paid to somebody or something.' }
+  ];
+  const before = structuredClone(words);
+  const otherMeaning = 'A short written announcement displayed publicly.';
+  const scenes = ['tenant reading eviction letter beside apartment doorway', 'teacher listening closely beside child holding toy'];
+  let requests = 0;
+  const options = {
+    storage, translationLanguage: 'en', existingWords: [{ word: 'notice', definition: otherMeaning }],
+    fetchImpl: async (_url, request) => {
+      requests++;
+      const prompt = JSON.parse(request.body).contents[0].parts[0].text;
+      const items = JSON.parse(prompt.match(/\nSenses: ([^\n]+)/)[1]);
+      assert.equal(items.length, 2);
+      for (const [index, item] of items.entries()) {
+        assert.equal(item.definition || item.sourceDefinition, words[index].sourceDefinition);
+        assert.ok(item.otherDefinitions.includes(otherMeaning));
+      }
+      return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify({ items: items.map((item, index) => ({ id: item.id, scenes: [scenes[index]] })).reverse() }) }] } }] }) };
+    },
+    findImages: async (item, searchOptions) => {
+      const index = words.findIndex(word => word.sourceDefinition === item.sourceDefinition);
+      assert.deepEqual(item.imageScenes.scenes, [scenes[index]]);
+      assert.equal(searchOptions.aiScenes, false, 'provider searches reuse prepared scenes without another paid request');
+      return [{ url: `https://example.test/notice-${index}.jpg`, searchQuery: scenes[index] }];
+    }
+  };
+  const saved = await prepareWordsForLibrary(words, options);
+  assert.equal(requests, 1);
+  assert.deepEqual(saved.map(word => word.imageScenes.scenes), scenes.map(scene => [scene]));
+  assert.equal(new Set(saved.map(word => word.imageUrl)).size, 2);
+  await prepareWordsForLibrary(saved, options);
+  assert.equal(requests, 1, 'valid prepared scenes survive saving and do not regenerate');
+  assert.deepEqual(words, before);
+});
+
 test('image failure keeps the defined word saveable; missing meanings never start image search', async () => {
   const result = await prepareWordsForLibrary([{ word: 'coffee', definition: 'A hot drink.', translation: 'A hot drink.' }], {
     translationLanguage: 'uk',
@@ -83,7 +123,7 @@ test('missing, historical and unrelated examples never block single or bulk savi
   saveGeminiSettings({ apiKey: 'fake-key-for-optional-examples-tests' }, storage, { silent: true });
   for (const example of ['', 'I think I have ſeen your Ladyſhip in ſuch an outlandiſh one.']) {
     const result = await prepareWordsForLibrary([{ word: 'outlandish', definition: 'Strange or unfamiliar.', example }], {
-      requireExamples: true, storage, fetchImpl: async () => assert.fail('Saving must not call Gemini'),
+      requireExamples: true, storage, aiScenes: false, fetchImpl: async () => assert.fail('Saving must not request an explanation'),
       findImages: async () => []
     });
     assert.equal(result[0].word, 'outlandish');
@@ -93,7 +133,7 @@ test('missing, historical and unrelated examples never block single or bulk savi
   const batch = await prepareWordsForLibrary([
     { word: 'outlandish', definition: 'Strange or unfamiliar.', example: 'some shit' },
     { word: 'walk', definition: 'Move on foot.', example: '' }
-  ], { storage, fetchImpl: async () => assert.fail('No paid request'), findImages: async () => [] });
+  ], { storage, aiScenes: false, fetchImpl: async () => assert.fail('No explanation request'), findImages: async () => [] });
   assert.equal(batch.length, 2);
   assert.ok(batch.every(word => word.example === ''));
 });

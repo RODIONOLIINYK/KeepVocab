@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildVisualSceneDescriptions, prepareImageScenes, generateVisualScenesWithGemini, imageSenseFingerprint, imageSceneRecordFor, findRelevantImages, findPexelsImages, rankImageCandidates, updateImageFeedback, rerankImagesWithGemini } from '../js/services/imageSearch.js';
+import { buildVisualSceneDescriptions, compactGeneratedScene, compactVisualSearchQuery, isConcreteVisualScene, prepareImageScenes, generateVisualScenesWithGemini, imageSenseFingerprint, imageSceneRecordFor, findRelevantImages, findPexelsImages, rankImageCandidates, updateImageFeedback, rerankImagesWithGemini } from '../js/services/imageSearch.js';
 
 function storage() {
   const data = new Map([['keepvocab_gemini_live_key_v1', 'test-image-api-key']]);
@@ -154,7 +154,7 @@ test('optional hard-case vision sends at most four verified small thumbnails, ig
   assert.equal(imageCalls, 4); assert.equal(visionCalls, 1);
 });
 
-test('normal picker preparation and search use no paid scene generation when disabled, even with a Gemini key', async () => {
+test('explicitly disabled scene generation makes no new AI requests, even with a Gemini key', async () => {
   const saved = storage();
   const word = sense('no-paid-scenes');
   let sceneCalls = 0;
@@ -166,6 +166,73 @@ test('normal picker preparation and search use no paid scene generation when dis
   assert.equal(prepared.imageScenes, undefined);
   await findRelevantImages(prepared, { aiScenes: false, storage: saved, fetchImpl, validateImages: false });
   assert.equal(sceneCalls, 0);
+});
+
+test('prepared meaning prompts drive image searches without another AI call or raw definition fallbacks', async () => {
+  const saved = storage();
+  const words = [
+    { word: 'bank', partOfSpeech: 'noun', definition: 'The land beside a river.' },
+    { word: 'bank', partOfSpeech: 'noun', definition: 'A financial institution that holds money.' }
+  ];
+  const scenes = ['fisherman resting beside a winding river', 'customer depositing cash with office teller'];
+  let calls = 0;
+  const prepared = await prepareImageScenes(words, { storage: saved, fetchImpl: async (_url, options) => {
+    calls++;
+    const items = requestedSenses(options);
+    assert.deepEqual(items[0].otherDefinitions, [words[1].definition]);
+    assert.deepEqual(items[1].otherDefinitions, [words[0].definition]);
+    // The mapping must follow IDs even if the model reverses its response.
+    return response({ items: items.map((item, index) => ({ id: item.id, scenes: [scenes[index]] })).reverse() });
+  } });
+  assert.equal(calls, 1);
+  assert.deepEqual(prepared.map(word => word.imageScenes.scenes), scenes.map(scene => [scene]));
+  for (const [index, word] of prepared.entries()) {
+    const queries = [];
+    const fetchImpl = async url => {
+      assert.equal(String(url).includes('generativelanguage.googleapis.com'), false);
+      const parsed = new URL(url);
+      queries.push(parsed.searchParams.get('query') || parsed.searchParams.get('q') || parsed.searchParams.get('gsrsearch'));
+      return { ok: true, json: async () => ({}) };
+    };
+    await findRelevantImages(word, { aiScenes: false, storage: saved, fetchImpl, validateImages: false });
+    // Also cover a renderer that only has the persisted scene cache.
+    await findRelevantImages(words[index], { aiScenes: false, storage: saved, fetchImpl, validateImages: false });
+    assert.ok(queries.length > 0);
+    assert.deepEqual([...new Set(queries)], [compactVisualSearchQuery(scenes[index])]);
+  }
+});
+
+test('generation receives meaning restrictions and retries duplicate depictions for sibling meanings', async () => {
+  const saved = storage();
+  const words = [
+    { word: 'sceneambiguity', partOfSpeech: 'noun', sourceDefinition: 'A notice or sign placed at an entrance.', definition: 'A posted message.', usageNote: 'A physical object.', labels: ['literal'] },
+    { word: 'sceneambiguity', partOfSpeech: 'noun', definition: 'A supporting structure beneath a machine.' }
+  ];
+  const scenes = ['person mounting wooden notice beside entrance', 'mechanic fitting metal support beneath heavy machine'];
+  const batches = [];
+  const prepared = await prepareImageScenes(words, { storage: saved, fetchImpl: async (_url, options) => {
+    const items = requestedSenses(options); batches.push(items);
+    if (batches.length === 1) return response({ items: items.map(item => ({ id: item.id, scenes: [scenes[0]] })) });
+    return response({ items: [{ id: items[0].id, scenes: [scenes[1]] }] });
+  } });
+  assert.equal(batches.length, 2);
+  assert.equal(batches[0][0].definition, words[0].sourceDefinition);
+  assert.equal(batches[0][0].learnerDefinition, words[0].definition);
+  assert.equal(batches[0][0].usageNote, words[0].usageNote);
+  assert.deepEqual(batches[0][0].labels, ['literal']);
+  assert.deepEqual(batches[1][0].avoidScenes, [scenes[0]]);
+  assert.deepEqual(prepared.map(word => word.imageScenes.scenes), scenes.map(scene => [scene]));
+});
+
+test('longer prompts keep final disambiguating details and search retains actions and negation', () => {
+  const word = sense('longscene');
+  const longScene = 'a worker removing a wooden notice from the entrance to a closed shop';
+  assert.equal(compactGeneratedScene(longScene), longScene);
+  assert.equal(isConcreteVisualScene(longScene, word), true);
+  assert.equal(isConcreteVisualScene(`${longScene} while another worker carefully watches from the busy street`, word), false);
+  assert.notEqual(compactVisualSearchQuery('person plugging cable into wall socket'), compactVisualSearchQuery('person unplugging cable from wall socket'));
+  assert.match(compactVisualSearchQuery('person refusing money without touching offered cash'), /without/);
+  assert.match(compactVisualSearchQuery(longScene), /closed shop$/);
 });
 
 test('skipping images aborts provider requests and an already-cancelled search makes no requests', async () => {

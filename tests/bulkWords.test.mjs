@@ -122,6 +122,18 @@ test('automatic images are selected sequentially and saved with attribution', as
   assert.ok(seenExclusions[1].includes('https://images.example/term0.jpg'));
 });
 
+test('each meaning gets a distinct image even if a provider returns an excluded URL or source again', async () => {
+  const shared = { url: 'https://images.example/shared.jpg', sourceUrl: 'https://sources.example/shared' };
+  const unique = { url: 'https://images.example/second.jpg', sourceUrl: 'https://sources.example/second' };
+  const result = await attachImagesSequentially([
+    { word: 'bank', definition: 'A financial institution.' },
+    { word: 'bank', definition: 'Land beside a river.' }
+  ], async word => word.definition.includes('financial') ? [shared] : [shared, { ...shared, url: 'https://images.example/shared-resized.jpg' }, unique]);
+  assert.equal(result[0].imageUrl, shared.url);
+  assert.equal(result[1].imageUrl, unique.url);
+  assert.deepEqual(result[1].imageCandidates, [unique]);
+});
+
 test('bulk sense conversion saves the explicitly selected meaning and pronunciation audio', () => {
   const result = {
     term: 'bank',

@@ -63,6 +63,19 @@ test('next image excludes visited images and other reserved URL/source identitie
   assert.match(container.innerHTML, /fourth-thumb\.jpg/);
 });
 
+test('review can prepare missing meaning prompts and preserves existing scene metadata for reuse', async () => {
+  const container = new Container();
+  const original = { ...word('scene', false), sourceDefinition: 'A formal warning of an upcoming change.', imageScenes: { scenes: ['tenant reading eviction letter beside apartment doorway'] } };
+  mountImageReview(container, [original], { findImages: async (item, options) => {
+    assert.equal(item.sourceDefinition, original.sourceDefinition);
+    assert.deepEqual(item.imageScenes, original.imageScenes);
+    assert.notEqual(options.aiScenes, false, 'older meanings without prepared prompts may generate them');
+    return [image('scene')];
+  } });
+  await container.click('next');
+  assert.match(container.innerHTML, /scene-thumb\.jpg/);
+});
+
 test('concurrent candidate results cannot reserve the same image for two meanings', async () => {
   const container = new Container();
   const resolvers = [];

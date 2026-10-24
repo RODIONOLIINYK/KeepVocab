@@ -54,6 +54,72 @@ test('English dictionary misses use Gemini through the shared entry pipeline and
   assert.equal(options.calls.filter(url => url.includes('generativelanguage')).length, 1);
 });
 
+test('a dictionary miss asks Gemini for an obvious typo correction and preserves its original spelling', async () => {
+  const corrected = { found: true, word: 'measures', correctedFrom: 'mesures', senses: [{
+    partOfSpeech: 'noun', definition: 'Actions taken to achieve a goal or deal with a problem.',
+    example: 'These safety measures protect the workers.'
+  }] };
+  const options = fixture(corrected, { translationLanguage: 'en' });
+  const originalFetch = options.fetchImpl;
+  let prompt = '';
+  options.fetchImpl = async (url, request) => {
+    if (url.includes('generativelanguage')) prompt = JSON.parse(request.body).contents[0].parts[0].text;
+    return originalFetch(url, request);
+  };
+  const entry = await fetchWordEntry(' Mesures ', 'english', options);
+  assert.equal(entry.aiGenerated, true);
+  assert.equal(entry.word, 'measures');
+  assert.equal(entry.lemma, 'measures');
+  assert.equal(entry.correctedFrom, 'mesures');
+  assert.equal(entry.senses[0].example, corrected.senses[0].example);
+  assert.equal(wordEntryToWord(entry).word, 'measures');
+  assert.match(prompt, /dictionary did not find this term/);
+  assert.match(prompt, /mesures can be corrected to measures/);
+  assert.match(prompt, /Term: "mesures"/);
+  assert.deepEqual(await fetchWordEntry('mesures', 'english', options), entry);
+  assert.equal(options.calls.filter(url => url.includes('generativelanguage')).length, 1);
+  const cached = JSON.parse(options.storage.getItem('keepvocab_english_ai_entry_cache_v2'));
+  assert.equal(Object.values(cached)[0].data.correctedFrom, 'mesures');
+});
+
+test('automatic typo correction accepts adjacent transpositions without changing valid inflected forms', async () => {
+  const receive = { found: true, word: 'receive', correctedFrom: 'recieve', senses: [{
+    partOfSpeech: 'verb', definition: 'Be given something.', example: 'You will receive the parcel tomorrow.'
+  }] };
+  const corrected = await fetchWordEntry('recieve', 'english', fixture(receive, { translationLanguage: 'en' }));
+  assert.equal(corrected.word, 'receive');
+  assert.equal(corrected.correctedFrom, 'recieve');
+  const measures = { found: true, word: 'measures', senses: [{
+    partOfSpeech: 'verb', definition: 'Finds the size, amount, or degree of something.', example: 'She measures the table before buying a cloth.'
+  }] };
+  const exact = await fetchWordEntry('measures', 'english', fixture(measures, { translationLanguage: 'en' }));
+  assert.equal(exact.word, 'measures');
+  assert.equal(exact.correctedFrom, undefined);
+});
+
+test('automatic Gemini corrections require explicit matching metadata and a nearby English spelling', async () => {
+  for (const [term, result] of [
+    ['mesures', { word: 'measures' }],
+    ['mesures', { word: 'measures', correctedFrom: 'another input' }],
+    ['zzzzzzz', { word: 'banana', correctedFrom: 'zzzzzzz' }],
+    ['bonjour', { word: 'hello', correctedFrom: 'bonjour' }],
+    ['nonsense', { word: 'no sense', correctedFrom: 'nonsense' }]
+  ]) {
+    const options = fixture({ ...valid, ...result }, { translationLanguage: 'en' });
+    await assert.rejects(fetchWordEntry(term, 'english', options), { code: 'BAD_RESPONSE' });
+    assert.equal(options.calls.filter(url => url.includes('generativelanguage')).length, 1);
+    assert.equal(options.storage.getItem('keepvocab_english_ai_entry_cache_v2'), null);
+  }
+});
+
+test('exact-term Gemini requests do not reuse or accept an automatic spelling correction', async () => {
+  const { enrichEnglishEntry } = await import('../js/services/englishEnrichment.js');
+  const options = fixture({ ...valid, word: 'measures', correctedFrom: 'mesures' }, { translationLanguage: 'en' });
+  assert.equal((await fetchWordEntry('mesures', 'english', options)).word, 'measures');
+  await assert.rejects(enrichEnglishEntry('mesures', options), { code: 'BAD_RESPONSE' });
+  assert.equal(options.calls.filter(url => url.includes('generativelanguage')).length, 2);
+});
+
 test('a Gemini entry is not charged for a second clarity pass before it is shown', async () => {
   const options = fixture({ ...valid, senses: [{ ...valid.senses[0], definition: 'The state or quality of being at ease in company.' }] });
   const entry = await fetchWordEntry('break the ice', 'english', options);

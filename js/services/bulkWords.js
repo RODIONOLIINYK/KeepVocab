@@ -119,8 +119,9 @@ export async function attachImagesSequentially(words, findImages, options = {}) 
       if (options.skipImagesSignal?.aborted) return withoutImageCandidates(words);
       const word = { ...words[index] };
       try {
-        const candidates = await findImages(word, { aiScenes: false, ...options, signal, excludeUrls: [...excluded], limit: 6 });
+        const found = await findImages(word, { aiScenes: false, ...options, signal, excludeUrls: [...excluded], limit: 6 });
         if (options.skipImagesSignal?.aborted) return withoutImageCandidates(words);
+        const candidates = (Array.isArray(found) ? found : []).filter(image => image?.url && ![image.url, image.sourceUrl].some(url => url && excluded.has(url)));
         // Transient review data: the picker shows one fetched group immediately,
         // instead of making the learner wait for another search after every skip.
         word.imageCandidates = candidates;

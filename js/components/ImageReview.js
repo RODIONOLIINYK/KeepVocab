@@ -129,7 +129,7 @@ export function mountImageReview(container, words, {
     const excluded = new Set([...reserved(index), ...row.seen]);
     render();
     try {
-      const candidates = await findImages(clone(row.original), { aiScenes: false, limit: 6, page: row.page, excludeUrls: [...excluded], signal: controller.signal });
+      const candidates = await findImages(clone(row.original), { limit: 6, page: row.page, excludeUrls: [...excluded], signal: controller.signal });
       if (!active || revision !== row.revision || controller.signal.aborted) return;
       const candidate = (Array.isArray(candidates) ? candidates : []).find(image => safeImage(image?.url)
         && !identities(image).some(url => excluded.has(url)) && !conflict(index, image));

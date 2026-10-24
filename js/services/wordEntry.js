@@ -59,10 +59,15 @@ export async function prepareWordsForLibrary(words, { existingWords = [], onProg
   // Keep trustworthy dictionary examples; missing/unsuitable ones can be added later.
   const explained = await withLearnerExplanations({ senses: checked }, { ...translationOptions, learnerExplanations: false });
   const translated = await withEntryTranslations(explained, translationOptions);
-  const imageOptions = { aiScenes: false, ...translationOptions };
+  const imageOptions = { ...translationOptions };
   return withSkippableImages(translated.senses, async () => {
-    const visualWords = await prepareImageScenes(translated.senses, imageOptions);
+    const visualWords = await prepareImageScenes(translated.senses.map(word => ({ ...word, otherDefinitions: [...new Set([
+      ...(word.otherDefinitions || []),
+      ...existingWords.filter(item => String(item.word || '').toLowerCase() === word.word.toLowerCase()).map(item => item.sourceDefinition || item.definition)
+    ].filter(definition => definition && definition !== (word.sourceDefinition || word.definition)))] })), imageOptions);
     if (imageOptions.skipImagesSignal?.aborted) return translated.senses;
-    return attachImagesSequentially(visualWords, findImages, { ...imageOptions, excludeUrls: imageUrlsForWords(existingWords), onProgress });
+    // Scenes are prepared together above. Image providers reuse those exact
+    // meaning prompts without starting another paid generation for each word.
+    return attachImagesSequentially(visualWords, findImages, { ...imageOptions, aiScenes: false, excludeUrls: imageUrlsForWords(existingWords), onProgress });
   }, imageOptions.skipImagesSignal);
 }

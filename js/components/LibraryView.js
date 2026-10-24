@@ -133,33 +133,36 @@ export function renderLibraryView(container) {
 
   async function loadImageCandidates(wordId, refresh = false) {
     const saved = driveSync.getWords().find(item => item.id === wordId);
-    const word = saved ? { ...saved, ...editDraft } : null;
+    let word = saved ? { ...saved, ...editDraft } : null;
     if (!word) return;
     const requestId = ++imageRequestId;
     imageLoading = true;
     imageError = '';
     render();
     const excludeUrls = imageUrlsUsedByOtherWords(driveSync.getWords(), wordId);
+    const otherDefinitions = driveSync.getWords().filter(item => item.id !== wordId && item.word.toLowerCase() === word.word.toLowerCase()).map(item => item.sourceDefinition || item.definition);
+    word.otherDefinitions = [...new Set([...(word.otherDefinitions || []), ...otherDefinitions])];
     const customActive = Boolean(customImageConcept && activeImageConcept === customImageConcept);
-    if (!customActive) {
-      const [preparedWord] = await prepareImageScenes([word], { aiScenes: false });
-      const aiScenes = preparedWord.imageScenes?.scenes || [];
-      if (container.libraryViewOwner !== viewOwner || !container.querySelector('#library-edit-form') || editId !== wordId || requestId !== imageRequestId) return;
-      const curatedScenes = buildVisualSceneDescriptions(word);
-      suggestedImageScenes = [...new Set(aiScenes.length ? aiScenes : curatedScenes)].slice(0, 3);
-      const latest = driveSync.getWords().find(item => item.id === wordId);
-      if (preparedWord.imageScenes && latest && imageSenseFingerprint(latest) === imageSenseFingerprint(word)) driveSync.updateWord(wordId, { imageScenes: preparedWord.imageScenes });
-      if (!activeImageConcept) activeImageConcept = suggestedImageScenes[0] || '';
-      if (refresh) {
+    // A saved custom search remains selected while automatic depictions stay
+    // available as alternatives. Valid scenes are reused on subsequent opens.
+    const [preparedWord] = await prepareImageScenes([word]);
+    const aiScenes = preparedWord.imageScenes?.scenes || [];
+    if (container.libraryViewOwner !== viewOwner || !container.querySelector('#library-edit-form') || editId !== wordId || requestId !== imageRequestId) return;
+    const curatedScenes = buildVisualSceneDescriptions(word);
+    suggestedImageScenes = [...new Set(aiScenes.length ? aiScenes : curatedScenes)].slice(0, 3);
+    const latest = driveSync.getWords().find(item => item.id === wordId);
+    if (preparedWord.imageScenes && latest && imageSenseFingerprint(latest) === imageSenseFingerprint(word)) driveSync.updateWord(wordId, { imageScenes: preparedWord.imageScenes });
+    word = preparedWord;
+    if (!activeImageConcept) activeImageConcept = suggestedImageScenes[0] || '';
+    if (refresh) {
+      if (customActive) imageResultPage += 1;
+      else {
         const next = nextImageSuggestionState(suggestedImageScenes, activeImageConcept, imageResultPage);
         activeImageConcept = next.concept;
         imageResultPage = next.page;
       }
-      render();
-    } else if (refresh) {
-      imageResultPage += 1;
-      render();
     }
+    render();
     const sceneQueries = activeImageSearchQueries(activeImageConcept);
     const results = await findRelevantImages(word, {
       refresh,
@@ -169,7 +172,7 @@ export function renderLibraryView(container) {
       aiScenes: false,
       provider: imageProviderSettings.provider,
       pexelsApiKey: imageProviderSettings.pexelsApiKey,
-      otherDefinitions: driveSync.getWords().filter(item => item.id !== wordId && item.word.toLowerCase() === word.word.toLowerCase()).map(item => item.sourceDefinition || item.definition),
+      otherDefinitions,
       page: imageResultPage,
       limit: 10
     });
@@ -309,7 +312,11 @@ export function renderLibraryView(container) {
     imageRequestId += 1;
     render();
     try {
-      const prepared = await prepareImageScenes(originals, { aiScenes: false });
+      const allWords = driveSync.getWords();
+      const prepared = await prepareImageScenes(originals.map(word => ({ ...word, otherDefinitions: [...new Set([
+        ...(word.otherDefinitions || []),
+        ...allWords.filter(item => item.id !== word.id && item.word.toLowerCase() === word.word.toLowerCase()).map(item => item.sourceDefinition || item.definition)
+      ])] })));
       for (const word of prepared) {
         const latest = driveSync.getWords().find(item => item.id === word.id);
         if (latest && word.imageScenes && imageSenseFingerprint(latest) === imageSenseFingerprint(word)) driveSync.updateWord(word.id, { imageScenes: word.imageScenes });
@@ -399,7 +406,7 @@ export function renderLibraryView(container) {
         ${explanationStatus ? `<p class="form-message" role="status" aria-live="polite">${escapeHtml(explanationStatus)}</p>` : ''}
         ${explaining ? '<button class="status-pill offline" id="cancel-generating-explanations">Cancel explanation request</button>' : ''}
         ${explanationReview.length > 1 ? renderExplanationReview(explanationReview) : ''}
-        ${preparingImages ? '<p role="status">Preparing cached scenes and image suggestions…</p>' : ''}
+        ${preparingImages ? '<p role="status">Preparing scenes for each meaning and image suggestions…</p>' : ''}
         ${imageReviewWords ? '<div class="spec-card" id="library-image-review"></div>' : ''}
         <div class="spec-card" ${archives.length ? '' : 'hidden'}>
           <div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-calendar-days"></i> Monthly vocabulary</div></div>
