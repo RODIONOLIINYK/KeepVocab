@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { driveSync, MemoryStorage } from '../js/services/driveSync.js?v=18900';
 import { recordImagePreference, getImageLearningStatus, getImageLearningTrainingData, resetImagePreferences, rankImagesLocally } from '../js/services/imageLearning.js?v=18900';
-import { imageReplacementLabels } from '../js/services/imageChoicePolicy.js';
+import { imageReplacementLabels, imageChoiceLabels } from '../js/services/imageChoicePolicy.js';
 import { imageSenseFingerprint } from '../js/services/imageSearch.js?v=18900';
 import { encodeFeatures, preferenceFeatures } from '../js/services/imagePreferences.js';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
@@ -58,7 +58,7 @@ test('Skip, Next, unavailable pixels and invalid features do not fabricate train
   assert.equal(getImageLearningStatus().labels, 0);
 });
 
-test('editing a meaning image replaces the old positive dataset entry with a negative label and records the new image as positive', async t => {
+test('replacing a suitable image preserves its suitability label and learns a separate relative preference', async t => {
   isolated(t);
   const firstChoice = {
     ...candidate('river-old', 0),
@@ -79,22 +79,61 @@ test('editing a meaning image replaces the old positive dataset entry with a neg
   };
   const labels = imageReplacementLabels(word, previousFromSavedWord, replacementChoice);
   assert.equal(labels.length, 2);
-  assert.equal(labels[0].action, 'wrong');
-  assert.equal(labels[1].action, 'good');
+  assert.equal(labels[0].action, 'good');
+  assert.equal(labels[1].action, 'less-preferred');
 
   for (const item of labels) {
-    const res = await recordImagePreference(item.word, item.action, item.image);
+    const res = await recordImagePreference(item.word, item.action, item.image, { preferredImage: item.preferredImage });
     assert.equal(res.recorded, true);
   }
 
   records = driveSync.getSettings().imageLearning.records;
-  assert.equal(records.length, 2);
+  assert.equal(records.length, 3);
   const replacedEntry = records.find(record => record.id === originalPositiveId);
   assert.ok(replacedEntry, 'Previous image entry should still be keyed by its canonical ID');
-  assert.equal(replacedEntry.label, 0, 'Previous positive label must be replaced with negative label 0');
-  assert.equal(records.filter(record => record.label === 1).length, 1, 'Old positive entry must be deleted and only the new choice is positive');
-  assert.equal(records.filter(record => record.label === 0).length, 1, 'Replaced image is recorded as negative');
+  assert.equal(replacedEntry.label, 1, 'Another image being preferred does not make the old image a wrong meaning');
+  assert.equal(records.filter(record => record.label === 1).length, 2);
+  assert.equal(records.filter(record => record.kind === 'comparison').length, 1);
 
   const trainingData = getImageLearningTrainingData();
-  assert.deepEqual(trainingData.records.map(r => r.labelValue).sort(), [0, 1]);
+  assert.deepEqual(trainingData.records.map(r => r.label).sort(), ['fits meaning', 'fits meaning', 'less preferred']);
+});
+
+test('ordinary viewed-gallery choices train without explicit rejections and do not inflate the intercept', async t => {
+  isolated(t);
+  for (let choice = 0; choice < 2; choice++) {
+    const winner = candidate(`winner-${choice}`, 0);
+    const viewed = [1, 2, 3].map((_, index) => candidate(`viewed-${choice}-${index}`, 1));
+    for (const item of imageChoiceLabels(word, winner, viewed)) {
+      assert.equal((await recordImagePreference(item.word, item.action, item.image, { preferredImage: item.preferredImage })).recorded, true);
+    }
+  }
+  const status = getImageLearningStatus();
+  assert.equal(status.labels, 8);
+  assert.equal(status.positiveLabels, 2);
+  assert.equal(status.negativeLabels, 0);
+  assert.equal(status.comparisons, 6);
+  assert.equal(status.trainedLabels, 8);
+  assert.ok(status.deltaL2 > 0);
+  const model = getImageLearningTrainingData().model;
+  assert.equal(model.weights.at(-1), 0, 'Pairwise preferences cannot create positive-only classifier bias');
+  assert.ok(model.weights[0] > model.weights[1]);
+});
+
+test('reversing a comparison updates one pair and explicit wrong remains distinct', async t => {
+  isolated(t);
+  const a = candidate('a', 0);
+  const b = candidate('b', 1);
+  assert.equal((await recordImagePreference(word, 'less-preferred', a)).recorded, false);
+  assert.equal((await recordImagePreference(word, 'less-preferred', a, { preferredImage: a })).recorded, false);
+  assert.equal((await recordImagePreference(word, 'less-preferred', a, { preferredImage: b })).recorded, true);
+  assert.equal((await recordImagePreference(word, 'less-preferred', a, { preferredImage: b })).recorded, false);
+  assert.equal((await recordImagePreference(word, 'less-preferred', b, { preferredImage: a })).recorded, true);
+  let records = driveSync.getSettings().imageLearning.records;
+  assert.equal(records.length, 1);
+  assert.equal(records[0].features, b.ml.features);
+  assert.equal(records[0].preferredFeatures, a.ml.features);
+  assert.equal((await recordImagePreference(word, 'wrong', b)).recorded, true);
+  records = getImageLearningTrainingData().records;
+  assert.deepEqual(records.map(item => item.label).sort(), ['less preferred', 'wrong meaning']);
 });

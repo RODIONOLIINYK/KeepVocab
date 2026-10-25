@@ -112,6 +112,61 @@ test('approved URLs affect ranking, rejected source URLs suppress variants, and 
   assert.equal(rankImageCandidates([candidates[2]], changed, { concepts: ['person balancing stones'] }).length, 1);
 });
 
+test('rejecting a photo preserves peers from its prompt and excludes resized Pexels aliases', () => {
+  const original = sense('fox-feedback');
+  const prompt = 'running fox across meadow';
+  const standing = { url: 'https://images.pexels.com/photos/73101/pexels-photo-73101.jpeg?w=350&h=200', sourceUrl: 'https://www.pexels.com/photo/standing-fox-73101/', title: 'Fox standing in meadow', source: 'Pexels', searchQuery: prompt };
+  const running = { url: 'https://images.pexels.com/photos/73102/pexels-photo-73102.jpeg?w=350', sourceUrl: 'https://www.pexels.com/photo/running-fox-73102/', title: 'Fox running across meadow', source: 'Pexels', searchQuery: prompt };
+  const word = { ...original, imageFeedback: updateImageFeedback(original, 'wrong', standing) };
+  const resized = { ...standing, url: standing.url.replace('w=350&h=200', 'w=900'), sourceUrl: '' };
+  const ranked = rankImageCandidates([resized, running], word, { concepts: [prompt] });
+  assert.deepEqual(ranked, [running]);
+  assert.deepEqual(word.imageFeedback.preferredConcepts, []);
+
+  word.imageFeedback = updateImageFeedback(word, 'good', resized);
+  assert.deepEqual(word.imageFeedback.rejectedUrls, []);
+  assert.equal(rankImageCandidates([standing], word, { concepts: [prompt] }).length, 1);
+  word.imageFeedback = updateImageFeedback(word, 'wrong', standing);
+  assert.deepEqual(word.imageFeedback.goodUrls, []);
+});
+
+test('photo identity normalization preserves query-addressed images on other hosts', () => {
+  const original = sense('query-image-identity');
+  const rejected = { url: 'https://photos.example/image?id=fox-standing', title: 'Fox standing across meadow', source: 'Pexels' };
+  const alternative = { url: 'https://photos.example/image?id=fox-running', title: 'Fox running across meadow', source: 'Pexels' };
+  const word = { ...original, imageFeedback: updateImageFeedback(original, 'wrong', rejected) };
+  assert.deepEqual(rankImageCandidates([rejected, alternative], word, { concepts: ['fox running meadow'] }), [alternative]);
+});
+
+test('approving a resized photo overrides a legacy rejection of that photo', () => {
+  const original = { ...sense('legacy-rejection'), imageRejectedUrls: ['https://images.pexels.com/photos/73103/old.jpeg?w=100'] };
+  const photo = { url: 'https://images.pexels.com/photos/73103/new.jpeg?w=400', title: 'Person balancing stones', source: 'Pexels' };
+  const word = { ...original, imageFeedback: updateImageFeedback(original, 'good', photo) };
+  assert.equal(rankImageCandidates([photo], word, { concepts: ['person balancing stones'] }).length, 1);
+});
+
+test('search keeps the exact prompt after rejecting one of its results', async () => {
+  const prompt = 'fox running through unique rejection meadow';
+  const original = { word: 'run', partOfSpeech: 'verb', definition: 'Move quickly on foot.' };
+  const rejected = { url: 'https://images.pexels.com/photos/73104/preview.jpeg?w=200', searchQuery: prompt };
+  const word = { ...original, imageFeedback: updateImageFeedback(original, 'wrong', rejected) };
+  const requested = [];
+  const results = await findRelevantImages(word, {
+    aiScenes: false, validateImages: false, provider: 'pexels', pexelsApiKey: 'test-rejection-key', extraQueries: [prompt], onlyExtraQueries: true,
+    fetchImpl: async value => {
+      const request = new URL(value);
+      if (request.hostname !== 'api.pexels.com') return { ok: true, json: async () => ({}) };
+      requested.push(request.searchParams.get('query'));
+      return { ok: true, json: async () => ({ photos: [
+        { id: 73104, url: 'https://www.pexels.com/photo/standing-fox-73104/', alt: 'Fox standing still in unique rejection meadow', src: { medium: 'https://images.pexels.com/photos/73104/preview.jpeg?w=500' } },
+        { id: 73105, url: 'https://www.pexels.com/photo/running-fox-73105/', alt: 'Fox running through unique rejection meadow', src: { medium: 'https://images.pexels.com/photos/73105/preview.jpeg?w=500' } }
+      ] }) };
+    }
+  });
+  assert.deepEqual(requested, [prompt]);
+  assert.deepEqual(results.map(image => image.sourceUrl), ['https://www.pexels.com/photo/running-fox-73105/']);
+});
+
 test('search ranks the whole bounded candidate pool before choosing a small result set and avoids needless pixel loads', async () => {
   let loads = 0;
   const images = Array.from({ length: 40 }, (_, index) => ({ title: index === 39 ? 'Unique pool river bank scene' : `River bank ${index}`, thumbnail: `https://pool.test/${index}.jpg`, foreign_landing_url: `https://pool.test/source/${index}`, tags: ['river', 'bank'] }));

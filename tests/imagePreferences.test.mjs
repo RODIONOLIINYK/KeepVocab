@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
-import { normalizedVector, preferenceFeatures, encodeFeatures, decodeFeatures, fitPreferences, updatePreferenceModel, preferenceProbability, mergeImageLearning, MAX_LABELS } from '../js/services/imagePreferences.js';
+import { normalizedVector, preferenceFeatures, encodeFeatures, decodeFeatures, fitPreferences, updatePreferenceModel, preferenceProbability, mergeImageLearning, MAX_LABELS, COMPARISON_RECORD_MODEL } from '../js/services/imagePreferences.js';
 import { rankEmbeddedImages, semanticScores } from '../js/services/imageLearning.js?v=18900';
 import { mergeDriveSettings } from '../js/services/driveSync.js';
+import { canAutoSelectImage } from '../js/services/imageChoicePolicy.js';
 const vector = index => Array.from({ length: 512 }, (_, i) => i === index ? 1 : 0);
 const features = index => preferenceFeatures(vector(index), { selected: 0.4, margin: 0.15, unwanted: 0.1 });
 const record = (id, label, index = label ? 0 : 1, date = '2026-10-22T10:00:00.000Z') => ({ id, label, model: CLIP_TAG, features: encodeFeatures(features(index)), updatedAt: date });
@@ -17,6 +18,27 @@ test('real gradients update parameters from zero and prefer the positively label
   assert.ok(preferenceProbability(model, features(0)) > preferenceProbability(model, features(1)));
   assert.equal(model.revision, 1);
   assert.deepEqual(initial.map(item => item.features), initial.map(item => encodeFeatures(decodeFeatures(item.features))));
+});
+
+test('52 balanced-loss examples can suggest a clear match even though preference stays below the old .90 gate', () => {
+  const records = Array.from({ length: 52 }, (_, i) => record(`clear-${i}`, i < 48 ? 1 : 0));
+  const model = fitPreferences(records);
+  const preferred = preferenceProbability(model, features(0));
+  const rejected = preferenceProbability(model, features(1));
+  assert.ok(preferred > rejected && preferred > .6 && preferred < .9);
+  const items = [
+    { candidate: { url: 'https://example.test/clear.jpg' }, vector: vector(0), semantic: { selected: .43, contrast: .3, margin: .13, unwanted: .05, score: .4955 } },
+    { candidate: { url: 'https://example.test/weak.jpg' }, vector: vector(1), semantic: { selected: .31, contrast: .3, margin: .01, unwanted: .05, score: .3035 } }
+  ];
+  const ranked = rankEmbeddedImages(items, model).map(item => ({ ...item.candidate, ml: {
+    model: CLIP_TAG, sense: 'exact meaning', ...item.semantic, preference: item.probability, score: item.score,
+    trainedLabels: model.trainedLabels, trainedPositiveLabels: model.trainedPositiveLabels, trainedNegativeLabels: model.trainedNegativeLabels
+  } }));
+  assert.equal(ranked[0].url, items[0].candidate.url);
+  assert.ok(ranked[0].ml.preference < .9);
+  assert.equal(canAutoSelectImage(ranked), true);
+  const weakWinner = [{ ...ranked[0], ml: { ...ranked[0].ml, margin: 0 } }, ranked[1]];
+  assert.equal(canAutoSelectImage(weakWinner), false);
 });
 
 test('each click is retained but parameters stay fixed until four changed labels form a replay batch', () => {
@@ -56,6 +78,32 @@ test('training waits for sufficient independent labels and both classes', () => 
   assert.equal(fitPreferences(initial.slice(0, 7)), null);
   assert.equal(fitPreferences(initial.map(item => ({ ...item, label: 1 }))), null);
   assert.equal(fitPreferences(initial.map((item, i) => ({ ...item, label: i === 0 ? 0 : 1 }))), null);
+});
+
+test('pairwise preference learns from normal choices without declaring the alternatives unsuitable', () => {
+  const choices = [record('chosen-a', 1), record('chosen-b', 1)];
+  const pairs = Array.from({ length: 6 }, (_, i) => ({ ...record(`pair-${i}`, 0), model: COMPARISON_RECORD_MODEL, kind: 'comparison', preferredFeatures: encodeFeatures(features(0)) }));
+  const model = fitPreferences([...choices, ...pairs]);
+  assert.ok(model && model.deltaL2 > 0);
+  assert.equal(model.trainedComparisons, 6);
+  assert.equal(model.trainedNegativeLabels, 0);
+  assert.equal(model.weights.at(-1), 0);
+  assert.ok(preferenceProbability(model, features(0)) > preferenceProbability(model, features(1)));
+  const decoded = mergeImageLearning({ records: pairs }).records;
+  assert.equal(decoded.length, 6);
+  assert.ok(decoded.every(item => item.kind === 'comparison' && item.preferredFeatures === pairs[0].preferredFeatures));
+  assert.ok(decoded.every(item => item.model !== CLIP_TAG), 'Older clients must ignore these records, not reinterpret them as wrong meaning');
+});
+
+test('pairwise records reject missing winner features and changing only the winner queues a refit', () => {
+  const pair = { ...record('pair', 0), model: COMPARISON_RECORD_MODEL, kind: 'comparison', preferredFeatures: encodeFeatures(features(0)) };
+  assert.equal(mergeImageLearning({ records: [{ ...pair, preferredFeatures: 'invalid' }, { ...pair, id: 'bad-label', label: 1 }] }).records.length, 0);
+  const data = { records: [...initial, pair] };
+  const model = updatePreferenceModel(data).model;
+  const revised = mergeImageLearning(data, { records: [{ ...pair, preferredFeatures: encodeFeatures(features(3)), updatedAt: '2026-10-22T11:00:00.000Z' }] });
+  const next = updatePreferenceModel(revised, model);
+  assert.equal(next.trained, true);
+  assert.notEqual(next.model.fingerprint, model.fingerprint);
 });
 
 test('corrected labels replace previous labels and refit instead of retaining contradictory targets', () => {

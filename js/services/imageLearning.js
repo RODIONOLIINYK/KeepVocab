@@ -2,7 +2,7 @@ import { driveSync } from './driveSync.js?v=18900';
 import { prepareImageThumbnails } from './imageThumbnails.js?v=18900';
 import { base64ToBytes } from '../utils/base64.js';
 import { CLIP_TAG, CLIP_CACHE, CLIP_DOWNLOAD_URLS, VECTOR_DB, MODEL_DOWNLOAD_MB } from '../ml/clipConfig.js';
-import { cosine, preferenceFeatures, encodeFeatures, decodeFeatures, mergeImageLearning, updatePreferenceModel, preferenceProbability } from './imagePreferences.js';
+import { cosine, preferenceFeatures, encodeFeatures, decodeFeatures, mergeImageLearning, updatePreferenceModel, preferenceProbability, imageLearningRecordKey, COMPARISON_RECORD_MODEL } from './imagePreferences.js';
 
 const CONFIG_KEY = 'keepvocab_image_learning_device_v1';
 const MODEL_KEY = 'keepvocab_image_preference_model_v1';
@@ -81,7 +81,10 @@ export function getImageLearningStatus() {
   const model = savedModel();
   return { enabled: imageLearningEnabled(), installed, phase, message, backend, downloadMB: MODEL_DOWNLOAD_MB,
     labels: data.records.length, revision: model?.revision || 0, trainedLabels: model?.trainedLabels || 0,
-    queued: data.records.filter(record => !model?.trainedRecordIds?.includes(`${record.id}|${record.updatedAt}|${record.label}|${record.features}`)).length,
+    queued: data.records.filter(record => !model?.trainedRecordIds?.includes(imageLearningRecordKey(record))).length,
+    positiveLabels: data.records.filter(record => record.kind !== 'comparison' && record.label === 1).length,
+    negativeLabels: data.records.filter(record => record.kind !== 'comparison' && record.label === 0).length,
+    comparisons: data.records.filter(record => record.kind === 'comparison').length,
     changedParameters: model?.changedParameters || 0, deltaL2: model?.deltaL2 || 0,
     fingerprint: model?.fingerprint || '', beforeFingerprint: model?.beforeFingerprint || '' };
 }
@@ -100,17 +103,22 @@ export function getImageLearningTrainingData() {
     },
     records: records.map(record => ({
       id: record.id,
-      label: record.label === 1 ? 'fits meaning' : 'wrong meaning',
+      label: record.kind === 'comparison' ? 'less preferred' : record.label === 1 ? 'fits meaning' : 'wrong meaning',
       labelValue: record.label,
+      kind: record.kind || 'explicit',
       updatedAt: record.updatedAt,
-      trainingStatus: trained.has(`${record.id}|${record.updatedAt}|${record.label}|${record.features}`) ? 'included in latest fit' : 'queued/not in latest fit',
+      trainingStatus: trained.has(imageLearningRecordKey(record)) ? 'included in latest fit' : 'queued/not in latest fit',
       encodedFeatures: record.features,
       features: decodeFeatures(record.features),
+      ...(record.kind === 'comparison' ? { encodedPreferredFeatures: record.preferredFeatures, preferredFeatures: decodeFeatures(record.preferredFeatures) } : {}),
     })),
     model: model ? {
       model: model.model,
       revision: model.revision,
       trainedLabels: model.trainedLabels,
+      trainedComparisons: model.trainedComparisons || 0,
+      trainedPositiveLabels: model.trainedPositiveLabels || 0,
+      trainedNegativeLabels: model.trainedNegativeLabels || 0,
       updatedAt: model.updatedAt,
       fingerprint: model.fingerprint,
       weights: model.weights,
@@ -245,7 +253,8 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     const scoredImages = new Set(items.map(item => item.candidate));
     phase = 'ready';message = `${items.length} image suggestions scored locally.`;emit();
     return [...scored.map(item => ({ ...item.candidate, ml: { model: CLIP_TAG, sense: fingerprint(word), features: encodeFeatures(item.features),
-      selected: item.semantic.selected, contrast: item.semantic.contrast, margin: item.semantic.margin, unwanted: item.semantic.unwanted, preference: item.probability, trainedLabels: model?.trainedLabels || 0, score: item.score } })),
+      selected: item.semantic.selected, contrast: item.semantic.contrast, margin: item.semantic.margin, unwanted: item.semantic.unwanted, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
+      trainedComparisons: model?.trainedComparisons || 0, trainedPositiveLabels: model?.trainedPositiveLabels || 0, trainedNegativeLabels: model?.trainedNegativeLabels || 0, score: item.score } })),
       ...candidates.filter(item => !scoredImages.has(item))];
   } catch (error) { phase = 'error';message = `${error.message} Metadata search is still available.`;emit();return candidates; }
 }
@@ -258,35 +267,53 @@ async function imageRecordIds(word, image) {
     return Array.from(new Uint8Array(idBytes), value => value.toString(16).padStart(2, '0')).join('');
   }));
 }
-export function recordImagePreference(word, action, image) {
-  if (!['good', 'wrong'].includes(action) || !image || !imageLearningEnabled()) return Promise.resolve({ recorded: false, reason: 'No explicit training label.' });
+export function recordImagePreference(word, action, image, { preferredImage } = {}) {
+  if (!['good', 'wrong', 'less-preferred'].includes(action) || !image || !imageLearningEnabled()
+    || (action === 'less-preferred' && !preferredImage?.url)) return Promise.resolve({ recorded: false, reason: 'No training choice.' });
   const operation = async () => {
     const ids = await imageRecordIds(word, image);
     if (!ids.length) return { recorded: false, reason: 'Image pixels were unavailable; preference weights were unchanged.' };
-    const id = ids[0];
-    const idSet = new Set(ids);
     const data = dataset();
-    const matching = data.records.filter(record => idSet.has(record.id));
-    const existing = matching.at(-1);
-    let candidate = image;
-    if (candidate.ml?.model !== CLIP_TAG || candidate.ml.sense !== fingerprint(word)) candidate = (await rankImagesLocally(word, [image]))[0];
-    const features = (candidate?.ml?.model === CLIP_TAG && candidate.ml.sense === fingerprint(word) && candidate.ml.features)
-      || existing?.features
-      || '';
+    const featuresFor = async (photo, photoIds) => {
+      const existing = data.records.filter(record => photoIds.includes(record.id)).at(-1);
+      let candidate = photo;
+      if ((candidate.ml?.model !== CLIP_TAG || candidate.ml.sense !== fingerprint(word)) && existing?.features) return existing.features;
+      if (candidate.ml?.model !== CLIP_TAG || candidate.ml.sense !== fingerprint(word)) candidate = (await rankImagesLocally(word, [photo]))[0];
+      return (candidate?.ml?.model === CLIP_TAG && candidate.ml.sense === fingerprint(word) && candidate.ml.features)
+        || existing?.features || '';
+    };
+    const features = await featuresFor(image, ids);
     if (!features) return { recorded: false, reason: 'Image pixels were unavailable; preference weights were unchanged.' };
     try { decodeFeatures(features); } catch { return { recorded: false, reason: 'Invalid image features; preference weights were unchanged.' }; }
+    let id = ids[0];
+    let idSet = new Set(ids);
+    let preferredFeatures = '';
+    if (action === 'less-preferred') {
+      const preferredIds = await imageRecordIds(word, preferredImage);
+      if (!preferredIds.length || preferredIds.some(key => idSet.has(key))) return { recorded: false, reason: 'A comparison needs two different photos.' };
+      preferredFeatures = await featuresFor(preferredImage, preferredIds);
+      try { decodeFeatures(preferredFeatures); } catch { return { recorded: false, reason: 'Comparison pixels were unavailable; preference weights were unchanged.' }; }
+      // Either direction updates the same pair, so a later choice corrects the
+      // previous comparison and Drive sync cannot resurrect both directions.
+      id = `comparison:${[id, preferredIds[0]].sort().join(':')}`;
+      idSet = new Set([id]);
+    }
+    const matching = data.records.filter(record => idSet.has(record.id));
+    const existing = matching.at(-1);
     const label = action === 'good' ? 1 : 0;
-    if (matching.length === 1 && existing?.id === id && existing?.label === label && existing.features === features) {
+    if (matching.length === 1 && existing?.id === id && existing?.label === label && existing.features === features
+      && (existing.preferredFeatures || '') === preferredFeatures) {
       return { recorded: false, reason: 'This label was already recorded.' };
     }
     const latestExistingTime = Math.max(0, ...matching.map(record => Date.parse(record.updatedAt || '') || 0));
     const updatedAt = new Date(Math.max(Date.now(), latestExistingTime + 1, (Date.parse(data.resetAt || '') || 0) + 1)).toISOString();
     const retainedRecords = data.records.filter(record => !idSet.has(record.id));
-    const next = mergeImageLearning({ ...data, records: retainedRecords }, { records: [{ id, model: CLIP_TAG, label, features, updatedAt }] });
+    const next = mergeImageLearning({ ...data, records: retainedRecords }, { records: [{ id, model: action === 'less-preferred' ? COMPARISON_RECORD_MODEL : CLIP_TAG, label, features, updatedAt,
+      ...(action === 'less-preferred' ? { kind: 'comparison', preferredFeatures } : {}) }] });
     driveSync.updateSettings({ imageLearning: next });
     const state = trainedModel();emit();
     return { recorded: true, trained: state.trained, queued: state.queued, changedParameters: state.model?.changedParameters || 0, deltaL2: state.model?.deltaL2 || 0,
-      revision: state.model?.revision || 0, reason: state.trained ? `Trained revision ${state.model.revision}; ${state.model.changedParameters} parameters changed.` : `Label saved; ${state.queued} labels queued. Training starts with 8 labels and both Good and Wrong examples, then batches of 4.` };
+      revision: state.model?.revision || 0, reason: state.trained ? `Trained revision ${state.model.revision}; ${state.model.changedParameters} parameters changed.` : `Choice saved; ${state.queued} examples queued. Training starts with 8 examples, including two choices and two comparisons or rejections, then batches of 4.` };
   };
   feedbackQueue = feedbackQueue.catch(() => {}).then(operation);
   return feedbackQueue;

@@ -1,13 +1,10 @@
 # Image choices and local learning
 
-Normal Add Word, bulk add, Library, and Visual Match searches use public image
-providers and the optional local model. They do not request Gemini scenes or
-vision comparisons. Existing saved scenes are reused. The scene-generation and
-small-thumbnail vision services remain available to explicit callers, but are
-not invoked by the normal picker. Difficult dictionary wording can still be
-simplified by Gemini; bulk rewrites share requests for selected meanings, use a
-compact response, and are never repeated during save. Missing examples alone do
-not trigger a paid repair or block adding/editing words.
+Normal Add Word, bulk add, Library, and Visual Match use public image providers
+and optional local ranking. When Gemini is configured, missing concrete scenes
+are prepared for the exact selected meaning and cached for reuse. Scene prompts
+preserve visible actions and distinguishing details. Choosing a ready photo
+requires no extra image search or AI request.
 
 ## Installation
 
@@ -16,7 +13,7 @@ separate device cache without downloading or starting inference. Complete instal
 are enabled by default unless the user previously turned learning off. If files
 are missing, a one-time prompt offers an approximately 115 MB download (including
 the runtime). Skipping, dismissing, or closing the prompt prevents repeat prompts.
-Settings → Local image learning can install or re-enable it later. Every remote
+Settings → Image suggestions can install or re-enable it later. Every remote
 model/runtime fetch requires saved consent; scoring can load a complete cache
 without network permission. No model weights are currently bundled in the project.
 Model files survive app-shell cache upgrades and stay on this device.
@@ -32,10 +29,10 @@ bulk preparation, **Save without waiting for images** cancels the image stage an
 saves all prepared meanings and translations immediately. Late results are ignored. Source and license metadata remain attached to chosen photos. For a new single word,
 **Save without image** saves immediately, including during a pending search.
 Batch review uses **No image**, and existing vocabulary uses **Keep current image**.
-These choices create no training labels. Browsing more results preserves a chosen
-image and adds to the gallery instead of replacing it. The picker explains whether
-local learning is off, still learning (fewer than 32 trained examples), or has no
-clear winning image. Enough training does not guarantee automatic selection. Temporary candidate pools are removed before vocabulary is saved. Library secondary tools, custom search,
+These choices alone create no training labels. Browsing more results preserves a chosen
+image and adds to the gallery instead of replacing it. The picker shows photos and the controls needed to choose, find more, or save
+without an image. It contains no training progress, model explanations, confidence
+messages, or extra labeling task. Temporary candidate pools are removed before vocabulary is saved. Library secondary tools, custom search,
 and upload controls are collapsed; recall statistics are kept out of word cards.
 
 Local ranking normally scores a metadata shortlist of twelve photos rather than
@@ -45,44 +42,71 @@ vectors. Scoring combines the exact meaning, available concrete scenes, competin
 senses, and a text/logo penalty. Near duplicates are removed and diversity helps
 show alternatives.
 
-Automatic selection is deliberately conservative: at least 32 trained human
-labels, a preference score of at least 0.90, strong selected-meaning similarity,
-a positive competing-sense margin when alternatives exist, low text/logo similarity,
-and a score lead over every other displayed candidate are required. Every shown
-candidate must have valid local scores. A sole dictionary sense uses a stronger
-direct-similarity threshold instead of a nonexistent competing-sense margin.
-These thresholds are heuristics, not calibrated correctness probabilities or a
-measured accuracy claim. Otherwise the learner chooses or saves without a photo.
-Automatic picks never create their own positive training examples.
+Automatic suggestions use exact-meaning similarity, a positive competing-sense
+margin when alternatives exist, low unwanted-text similarity, and a score lead
+over all other displayed candidates. Every displayed candidate needs valid local
+scores. A sole dictionary sense uses a stronger direct-similarity threshold.
+Preference learning contributes a small bounded ranking adjustment; its sigmoid
+output is not a calibrated confidence and is not required to exceed 0.90. Clear
+semantic matches do not require a label count or deliberate negative ratings.
+These gates are heuristics, not measured accuracy claims. Automatic selections
+never teach themselves as human choices.
 
-## Which actions train the logistic model?
+## Normal choices now teach comparisons
 
-With Local image learning enabled and image pixels available:
+A confirmed photo choice records a positive for the selected image and up to three
+relative comparisons against loaded alternatives that were at least half visible
+in the viewport when a choice was made. Unseen, unloaded, conflicting, and avoided
+photos are not used as implicit alternatives. A comparison means “this photo was
+preferred for this meaning,” not “the other photo is wrong.” Both photos can remain
+valid search results. Replacing an existing photo likewise never automatically
+marks the old photo as wrong.
 
-- **Good image** records a positive image/meaning label immediately.
-- **Wrong meaning** records a negative label immediately and suppresses that image
-  in future searches for this meaning.
-- **Saving a different image** records a negative for the previous image and a
-  positive for the chosen replacement, after the save succeeds.
-- **Choosing/keeping a photo while adding words** records a positive only after
-  the words are saved successfully.
-- **More like this** changes preferred search concepts. It does not train the
-  logistic model. Browsing, Skip, Cancel, and automatic picks create no labels.
+The ordinary gallery has no comparison game, suitability questionnaire, or
+training counters. Library’s optional **Hide this photo** removes only that photo
+and leaves the prompt, page, and other results intact. Known Pexels and Unsplash
+resize aliases share identity so the same hidden photo cannot return at a
+different size. Hiding is an ordinary search action; its negative evidence is
+recorded silently when local suggestions are enabled.
 
-A repeated identical label has no extra weight; correcting a label replaces its
-old target. Missing pixels do not fabricate examples. When local learning is off,
-explicit Library ratings still update search preferences, but do not train weights.
+This design follows research on relative preferences from implicit feedback:
+[Joachims et al.](https://dl.acm.org/doi/10.1145/1076034.1076063) and
+[BPR](https://arxiv.org/abs/1205.2618). The specific UI and thresholds are design
+choices, not measured improvements in engagement or accuracy.
 
-The preference model is degree-one logistic regression, `sigmoid(b + w · x)`,
-using 512 image coordinates plus sense similarity, contrast margin and unwanted
-text similarity: 515 features and 516 parameters. It starts after eight distinct
-labels including at least two positive and two negative examples. Later fits wait
-for four changed labels; corrections to trained labels refit immediately. Training
-replays up to 256 labels with class balancing and L2 regularization. Preference
-influence grows gradually through 64 labels and is capped at ±0.06; taste cannot
-positively reward an image matching a competing sense better.
+## Which actions train the local model?
 
-Labels sync in private Drive backup; derived model weights stay local. Settings
-contains training diagnostics and reset controls. Synthetic tests verify consent,
-label persistence, batching, corrections, safe automatic selection, and save
-boundaries; they do not establish real-world recommendation accuracy.
+With image suggestions enabled and image pixels available:
+
+- **Hide this photo** records an explicit negative and suppresses only that
+  image for this meaning. There is no separate rating task.
+- **Saving a chosen photo** records a positive and bounded relative preferences
+  over actually viewed alternatives, after the save succeeds.
+- Browsing, Cancel, unselected automatic picks, and saving without a photo
+  create no implicit labels.
+
+A repeated identical choice has no extra weight. A corrected rating replaces its
+old target; reversing a comparison replaces that pair’s previous direction.
+Missing pixels do not fabricate examples. When local learning is off, explicit
+rejections still update search preferences without training weights.
+
+The frozen encoder creates 512 image coordinates. The preference model combines
+those with sense similarity, contrast margin, and unwanted-text similarity:
+515 features and 516 parameters including the intercept. Explicit ratings train
+balanced logistic classification. Comparisons train a pairwise logistic objective
+on winner-minus-loser features, with no intercept contribution. If there are fewer
+than two explicit negatives, only the pairwise objective is fitted; positive-only
+classification cannot inflate suitability for every image.
+
+Training starts with eight saved examples, including at least two positive
+choices and two comparisons or explicit rejections. Later fits wait for four
+changed examples; corrections to fitted records trigger a refit immediately.
+Training replays up to 256 examples with L2 regularization. Preference influence
+is capped at ±0.06 and cannot positively reward a competing sense.
+
+Records sync through private Drive backup; derived weights stay local. Pairwise
+records use a distinct record-model tag so older clients ignore them rather than
+mistaking a lower preference for an explicit rejection. Settings exposes download and on/off controls, without training diagnostics or
+weights. Tests cover persistence, gradients, ordinary-choice learning without
+hard negatives, visibility, rejection scope, stale meanings, and save/cancel
+boundaries. They do not establish real-world recommendation accuracy.

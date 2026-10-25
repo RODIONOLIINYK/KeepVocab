@@ -1,7 +1,7 @@
-import { canAutoSelectImage, imageChoiceGuidance, imageReplacementLabels } from '../services/imageChoicePolicy.js';
-import { recordImagePreference, getImageLearningStatus, subscribeImageLearning } from '../services/imageLearning.js?v=18900';
+import { canAutoSelectImage, imageChoiceLabels } from '../services/imageChoicePolicy.js';
+import { recordImagePreference } from '../services/imageLearning.js?v=18900';
 import { escapeHtml } from '../utils/html.js?v=18900';
-import { findRelevantImages, imageSelectionPatch } from '../services/imageSearch.js?v=18900';
+import { findRelevantImages, imageSelectionPatch, imageIdentityKeys } from '../services/imageSearch.js?v=18900';
 
 let reviewId = 0;
 const clone = value => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
@@ -19,7 +19,7 @@ function safeImage(value) {
 }
 
 function identities(image) {
-  return [...new Set([safeImage(image?.url), safeLink(image?.sourceUrl)].filter(Boolean).map(url => url.replace(/#.*$/, '')))];
+  return imageIdentityKeys({ url: safeImage(image?.url), sourceUrl: safeLink(image?.sourceUrl) });
 }
 
 function currentImage(word) {
@@ -46,18 +46,14 @@ export function mountImageReview(container, words, {
     // must restore its real saved image state, rather than accept that proposal.
     if (Array.isArray(originalWords)) Object.assign(original, imageSelectionPatch(currentImage(originalWords[index] || {})));
     const automatic = canAutoSelectImage(candidates);
-    return { original, proposal, candidates, automatic, explicit: false, decision: automatic ? 'keep' : 'pending', seen: new Set([...identities(proposal), ...candidates.flatMap(identities)]), page: Array.isArray(word.imageCandidates) && word.imageCandidates.length ? 1 : 0, revision: 0, controller: null, loading: false, error: '' };
+    return { original, proposal, candidates, automatic, explicit: false, decision: automatic ? 'keep' : 'pending', viewed: new Set(), seen: new Set([...identities(proposal), ...candidates.flatMap(identities)]), page: Array.isArray(word.imageCandidates) && word.imageCandidates.length ? 1 : 0, revision: 0, controller: null, loading: false, error: '' };
   });
   let active = true;
   let applying = false;
   let applyError = '';
-  let reviewRoot = null;
-  let learningSignature = '';
-  let releaseLearning = () => {};
-  const statusSignature = status => JSON.stringify([status.enabled, status.installed, status.phase, status.labels, status.trainedLabels]);
 
   function reserved(index) {
-    const urls = new Set(excludeUrls.map(url => String(url || '').replace(/#.*$/, '')).filter(Boolean));
+    const urls = new Set(excludeUrls.flatMap(url => imageIdentityKeys({ url })));
     rows.forEach((row, otherIndex) => {
       if (index === otherIndex) return;
       // Originals remain reserved because Skip leaves their existing image unchanged.
@@ -69,6 +65,27 @@ export function mountImageReview(container, words, {
   }
 
   const conflict = (index, image) => identities(image).some(url => reserved(index).has(url));
+  // Normal choices teach preferences over loaded, visible alternatives only.
+  function rememberVisible(index) {
+    const row = rows[index];
+    const width = globalThis.innerWidth || globalThis.document?.documentElement?.clientWidth;
+    const height = globalThis.innerHeight || globalThis.document?.documentElement?.clientHeight;
+    if (!width || !height) return;
+    for (const img of container.querySelectorAll?.(`[data-image-review-index="${index}"][data-image-review-action="choose"] img`) || []) {
+      if (!img.complete || !img.naturalWidth) continue;
+      const candidateIndex = Number(img.closest('[data-image-review-candidate]').dataset.imageReviewCandidate);
+      const candidate = row.candidates[candidateIndex];
+      if (!candidate || conflict(index, candidate)) continue;
+      const rect = img.getBoundingClientRect();
+      const area = rect.width * rect.height;
+      const visible = Math.max(0, Math.min(rect.right, width) - Math.max(rect.left, 0)) * Math.max(0, Math.min(rect.bottom, height) - Math.max(rect.top, 0));
+      if (area > 0 && visible / area >= .5) row.viewed.add(candidateIndex);
+    }
+  }
+
+  const choiceLabels = row => imageChoiceLabels(row.original, row.proposal,
+    [...row.viewed].map(i => row.candidates[i]).filter(image => image && !conflict(rows.indexOf(row), image)));
+
   function counts() {
     return { total: rows.length, kept: rows.filter(row => row.decision === 'keep').length, skipped: rows.filter(row => row.decision === 'skip').length,
       pending: rows.filter(row => row.decision === 'pending').length, loading: rows.filter(row => row.loading).length };
@@ -81,19 +98,15 @@ export function mountImageReview(container, words, {
     const addSingle = allowSkipPending && single;
     const focus = globalThis.document?.activeElement;
     const focusedChoice = focus?.dataset?.imageReviewAction && container.contains?.(focus) ? { ...focus.dataset } : null;
-    const learning = getImageLearningStatus();
-    learningSignature = statusSignature(learning);
     container.innerHTML = `<section class="image-review ${single ? 'image-review--single' : ''}" aria-labelledby="${headingId}">
-      <header class="image-review__heading"><div><span class="eyebrow">${allowSkipPending ? 'One last touch · optional' : 'Visual memory cues'}</span><h2 id="${headingId}">${single ? 'Choose an image' : 'Choose your images'}</h2></div></header>
+      <header class="image-review__heading"><div><h2 id="${headingId}">${single ? 'Choose an image' : 'Choose your images'}</h2></div></header>
       <div class="image-review__grid">${rows.map((row, index) => {
         const chosen = row.decision === 'keep' ? row.proposal : null;
         const existing = currentImage(row.original);
-        const guidance = imageChoiceGuidance(row.candidates, learning);
         const firstAvailable = row.candidates.findIndex(candidate => !conflict(index, candidate));
-        const status = row.loading ? 'Finding more images…' : row.error || (row.decision === 'skip' ? (existing ? 'Current image kept.' : 'No image. Your word and meaning will still be saved.') : chosen ? (row.automatic && !row.explicit ? 'Selected for you. You can change it.' : 'Selected. Save to use this image.') : 'Tap an image to select it.');
+        const status = row.loading ? 'Finding more images…' : row.error || (row.decision === 'skip' ? (existing ? 'Current image kept.' : 'No image. Your word and meaning will still be saved.') : chosen ? (row.automatic && !row.explicit ? 'Suggested photo. You can change it.' : 'Selected. Save to use this image.') : 'Tap an image to select it.');
         return `<article class="image-review__card ${chosen ? 'is-kept' : row.decision === 'skip' ? 'is-without-image' : ''}" aria-busy="${row.loading}">
           <div class="image-review__meaning"><h3>${escapeHtml(row.original.word)}</h3><p>${escapeHtml(row.original.definition)}</p></div>
-          <div class="image-review__guidance"><i class="fa-solid ${guidance.kind === 'automatic' ? 'fa-check' : guidance.kind === 'learning' ? 'fa-seedling' : 'fa-hand-pointer'}" aria-hidden="true"></i><div>${guidance.title !== 'Choose an image' ? `<strong>${escapeHtml(guidance.title)}</strong>` : ''}<span>${escapeHtml(guidance.detail)}</span></div></div>
           ${row.candidates.length ? `<div class="image-review__choices" role="radiogroup" aria-label="Image options for ${escapeHtml(row.original.word)}">${row.candidates.map((candidate, candidateIndex) => {
             const selected = chosen?.url === candidate.url;
             const unavailable = conflict(index, candidate);
@@ -107,7 +120,6 @@ export function mountImageReview(container, words, {
       <footer class="image-review__footer">${single ? '' : `<span class="image-review__count">${progress.kept} of ${progress.total} images selected</span>`}<button type="button" class="image-review__back" data-image-review-action="cancel" ${applying ? 'disabled' : ''}>Back</button>${addSingle && progress.kept ? `<button type="button" class="image-review__secondary" data-image-review-action="skip" data-image-review-index="0" ${applying ? 'disabled' : ''}>Save without image</button>` : ''}<button type="button" class="image-review__save" data-image-review-action="apply" ${!rows.length || (!allowSkipPending && progress.pending) || applying ? 'disabled' : ''}>${applying ? 'Saving…' : allowSkipPending ? single ? progress.kept ? 'Save word' : 'Save without image' : `Save ${rows.length} words` : 'Save images'}</button></footer>
       ${applyError ? `<p class="image-review__status image-review__error" role="alert">${escapeHtml(applyError)}</p>` : ''}
     </section>`;
-    reviewRoot = container.firstElementChild;
     if (focusedChoice) {
       const selector = `[data-image-review-action="${focusedChoice.imageReviewAction}"]${focusedChoice.imageReviewIndex != null ? `[data-image-review-index="${Number(focusedChoice.imageReviewIndex)}"]` : ''}${focusedChoice.imageReviewCandidate != null ? `[data-image-review-candidate="${Number(focusedChoice.imageReviewCandidate)}"]` : ''}`;
       container.querySelector?.(selector)?.focus?.({ preventScroll: true });
@@ -163,11 +175,11 @@ export function mountImageReview(container, words, {
       return row.decision === 'keep' ? { ...word, ...imageSelectionPatch({ ...row.proposal, url: safeImage(row.proposal.url), sourceUrl: safeLink(row.proposal.sourceUrl) }) } : word;
     });
     try {
-      const feedback = rows.filter(row => row.decision === 'keep' && row.explicit).flatMap(row => imageReplacementLabels(row.original, currentImage(row.original), row.proposal));
+      const feedback = rows.filter(row => row.decision === 'keep' && row.explicit).flatMap(row => choiceLabels(row));
       const applied = await onApply(result, { feedback });
       for (const row of rows) if (row.decision === 'keep' && row.explicit && (!Array.isArray(applied?.appliedIds) || applied.appliedIds.includes(row.original.id))) {
-        for (const label of imageReplacementLabels(row.original, currentImage(row.original), row.proposal)) {
-          void Promise.resolve().then(() => onFeedback(label.word, label.action, label.image)).catch(() => {});
+        for (const label of choiceLabels(row)) {
+          void Promise.resolve().then(() => onFeedback(label.word, label.action, label.image, { preferredImage: label.preferredImage })).catch(() => {});
         }
       }
     }
@@ -178,7 +190,6 @@ export function mountImageReview(container, words, {
   function destroy() {
     if (!active) return;
     active = false;
-    releaseLearning();
     rows.forEach(row => row.controller?.abort());
     container.removeEventListener('click', handleClick);
     container.removeEventListener('keydown', handleKeydown);
@@ -210,7 +221,7 @@ export function mountImageReview(container, words, {
       if (allowSkipPending && rows.length === 1) return apply();
     }
     if (action === 'choose') selectImage(index, Number(button.dataset.imageReviewCandidate));
-    if (action === 'keep' && row.proposal && !row.loading && !conflict(index, row.proposal)) { row.decision = 'keep'; row.explicit = true; row.error = ''; }
+    if (action === 'keep' && row.proposal && !row.loading && !conflict(index, row.proposal)) { rememberVisible(index); row.decision = 'keep'; row.explicit = true; row.error = ''; }
     render();
   }
 
@@ -218,6 +229,7 @@ export function mountImageReview(container, words, {
     const row = rows[index];
     const candidate = row?.candidates[candidateIndex];
     if (!candidate || conflict(index, candidate)) return;
+    rememberVisible(index);
     row.proposal = clone(candidate); row.decision = 'keep'; row.explicit = true; row.error = '';
   }
 
@@ -240,13 +252,6 @@ export function mountImageReview(container, words, {
 
   container.addEventListener('click', handleClick);
   container.addEventListener('keydown', handleKeydown);
-  releaseLearning = subscribeImageLearning(status => {
-    if (!active) return;
-    // A host may replace the chooser during navigation without calling destroy.
-    // Never let a late worker notification bring that old screen back.
-    if (reviewRoot && container.contains?.(reviewRoot) === false) { destroy(); return; }
-    if (statusSignature(status) !== learningSignature) render();
-  });
   render();
   return { destroy };
 }

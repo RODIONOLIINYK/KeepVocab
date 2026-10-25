@@ -93,7 +93,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     const feedback = pendingImageFeedback;
     pendingImageFeedback = [];
     for (const label of feedback) {
-      void Promise.resolve().then(() => recordImagePreference(label.word, label.action, label.image)).catch(() => {});
+      void Promise.resolve().then(() => recordImagePreference(label.word, label.action, label.image, { preferredImage: label.preferredImage })).catch(() => {});
     }
   };
   const beginOperation = () => {

@@ -1,6 +1,5 @@
-import { getFsrsLearningStatus, subscribeFsrsLearning, saveFsrsPreferences, trainPersonalScheduler } from '../services/fsrsLearning.js';
-import { elapsedFsrsDays } from '../services/fsrsConfig.js';
-import { getImageLearningStatus, getImageLearningTrainingData, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18900';
+import { getFsrsLearningStatus, subscribeFsrsLearning, saveFsrsPreferences } from '../services/fsrsLearning.js';
+import { getImageLearningStatus, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18900';
 import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18900';
 import { driveSync } from '../services/driveSync.js?v=18900';
 import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18900';
@@ -49,9 +48,9 @@ export function renderSettingsView(container, onNavigate) {
         <div class="settings-streak-status ${streakAtRisk ? 'is-at-risk' : ''}"><strong>${streakAtRisk ? `Keep your ${streak}-day streak alive` : completedToday > 0 ? 'Your streak is safe today' : 'Build your streak'}</strong><p>${streakAtRisk ? 'Complete one exercise before midnight.' : completedToday > 0 ? 'Come back tomorrow to keep it growing.' : 'One exercise today is a good start.'}</p></div>
         <div class="settings-actions"><button class="status-pill offline" id="settings-routine">Edit routine</button>${remindersAvailable ? `<button class="status-pill offline" id="settings-notifications"><i class="fa-solid fa-bell" aria-hidden="true"></i> ${settings.reminderEnabled ? 'Manage reminders' : 'Set up reminders'}</button>` : ''}</div>${remindersAvailable ? '<p id="settings-notification-status" class="settings-notification-status" role="status" aria-live="polite">Checking notification access…</p>' : ''}
       </section>
-      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-clock', 'Review timing', 'FSRS-6 learns when each meaning needs another review.', '', false, true)}</summary><div class="settings-disclosure-body">
-        <form id="memory-settings-form" class="settings-form"><label>Recall target<select id="memory-retention">${[0.8, 0.85, 0.9, 0.92, 0.95, 0.97].map(value => `<option value="${value}" ${Math.abs(memory.config.retention - value) < 0.001 ? 'selected' : ''}>${Math.round(value * 100)}%${value === 0.9 ? ' · recommended starting point' : ''}</option>`).join('')}</select></label><label class="settings-checkbox"><input id="memory-auto-training" type="checkbox" ${memory.config.automaticTraining ? 'checked' : ''}> Learn timing from my review history</label><p class="settings-privacy">Higher targets mean more frequent reviews. Recall, recognition and answers with hints have separate memory states. Your daily goal never blocks useful practice.</p><div class="settings-actions"><button class="btn-green-solid">Save review preferences</button><button type="button" class="status-pill offline" id="train-memory-model">Fit from review history</button></div></form>
-        <p id="memory-training-status" role="status" aria-live="polite"></p><details class="settings-advanced"><summary>Memory model details</summary><p id="memory-review-counts"></p><div id="memory-training-diagnostics"></div><p>Standard parameters work immediately. Personal fitting requires 400 spaced reviews across 50 meanings in a stream, including forgotten answers. A candidate becomes active only after it improves predictions on later reviews kept out of training. Response history, hints, confidence, confusion patterns and word features also support grading and a bounded calibration of word priority.</p></details>
+      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-clock', 'Review timing', 'Choose how often words return.', '', false, true)}</summary><div class="settings-disclosure-body">
+        <form id="memory-settings-form" class="settings-form"><label>Recall target<select id="memory-retention">${[0.8, 0.85, 0.9, 0.92, 0.95, 0.97].map(value => `<option value="${value}" ${Math.abs(memory.config.retention - value) < 0.001 ? 'selected' : ''}>${Math.round(value * 100)}%${value === 0.9 ? ' · recommended starting point' : ''}</option>`).join('')}</select></label><label class="settings-checkbox"><input id="memory-auto-training" type="checkbox" ${memory.config.automaticTraining ? 'checked' : ''}> Adjust timing from my practice</label><p class="settings-privacy">Higher targets mean more frequent reviews. Your daily goal never blocks useful practice.</p><div class="settings-actions"><button class="btn-green-solid">Save review preferences</button></div></form>
+        <p id="memory-settings-status" role="status" aria-live="polite"></p>
       </div></details>
       <section class="settings-card"><div class="settings-card-heading">${heading('fa-brands fa-google-drive', 'Google Drive backup', 'Sync your Library, progress, and settings.', drive.isConnected ? 'Connected' : drive.lastError ? 'Attention' : 'Off', drive.isConnected)}</div>
         <div class="settings-detail-list"><div><span>Account</span><strong>${escapeHtml(drive.isConnected ? (drive.email || 'Connected Google account') : 'Not connected')}</strong></div><div><span>Last sync</span><strong>${lastSync && Number.isFinite(lastSync.getTime()) ? escapeHtml(lastSync.toLocaleString()) : 'Not backed up'}</strong></div></div><button class="btn-green-solid" id="settings-drive-action">${drive.isConnected ? 'Manage backup' : 'Connect Google Drive'}</button>${drive.lastError ? `<p class="settings-error" role="alert">${escapeHtml(drive.lastError)}</p>` : ''}
@@ -62,88 +61,48 @@ export function renderSettingsView(container, onNavigate) {
       <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-images', 'Vocabulary images', 'Choose where Library photos come from.', pexelsReady ? 'Pexels' : imageProvider.provider === 'openverse' ? 'No key needed' : 'Set up', pexelsReady, true, 'settings-images-state')}</summary>
         <form id="image-provider-settings-form" class="settings-form"><label class="settings-full-width">Photo source<select id="settings-image-provider"><option value="pexels" ${imageProvider.provider === 'pexels' ? 'selected' : ''}>Pexels</option><option value="openverse" ${imageProvider.provider === 'openverse' ? 'selected' : ''}>Public catalogs · no key</option></select></label><label class="settings-full-width" id="settings-pexels-field" ${imageProvider.provider === 'openverse' ? 'hidden' : ''}>Pexels API key<div class="key-input-row"><input type="password" id="settings-pexels-key" value="${escapeHtml(imageProvider.pexelsApiKey)}" placeholder="Personal Pexels API key" autocomplete="off" spellcheck="false"><button type="button" id="settings-toggle-pexels-key" aria-label="Show Pexels API key" aria-pressed="false"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><span class="settings-privacy"><a href="https://www.pexels.com/api/new/" target="_blank" rel="noopener noreferrer">Get a free Pexels key</a></span></label><p class="settings-privacy">Your image settings are saved on this device and included in your private Drive backup when connected.</p><p id="image-provider-settings-status" class="settings-service-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid">Save photo source</button><button type="button" class="status-pill offline" id="remove-pexels-settings" ${imageProvider.pexelsApiKey ? '' : 'hidden'}>Remove Pexels key</button></div></form>
       </details>
-      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-brain', 'Local image learning', 'Match photos to meanings and learn from your choices.', '', false, true)}</summary><div class="settings-disclosure-body"><p>While enabled, Good image and keeping a replacement teach the preference model what you like. Wrong meaning is a negative example. More like this refines the search; it does not train the model. Skipping and automatic image choices do not create training labels.</p><p class="settings-privacy">Downloads about ${getImageLearningStatus().downloadMB} MB only with your permission, then caches it on this device. A complete installed model is enabled by default. Scoring and training run locally without Gemini tokens. Learning records sync in your private Drive backup; model files stay on this device. <a href="https://huggingface.co/Xenova/mobileclip_s0/blob/757d59c9c6870a76a4b0306f05f5061bca15c39f/LICENSE" target="_blank" rel="noopener noreferrer">Model license</a></p><p id="image-learning-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid" id="enable-image-learning">Download and enable</button><button class="status-pill offline" id="disable-image-learning">Turn off</button></div><details class="settings-advanced"><summary>Learning details and storage</summary><p id="image-learning-diagnostics"></p><p>Each explicit label is saved immediately. Training starts with 8 labels, including at least two Good and two Wrong examples, then uses batches of 4 changed labels. Repeated identical clicks do not add extra training weight. The encoders remain frozen; a small logistic regression model learns your preferences. Raw records contain a hashed image/meaning identity and numeric features, not the original word or image URL.</p><details class="settings-advanced" id="image-training-inspector"><summary>View all labels and training data</summary><p id="image-training-summary"></p><div class="settings-actions"><button type="button" class="status-pill offline" id="download-image-training-data">Download complete data (JSON)</button></div><div class="image-training-table-wrap"><table class="image-training-table"><thead><tr><th>Label</th><th>Saved</th><th>Training status</th><th>Record</th></tr></thead><tbody id="image-training-rows"></tbody></table></div><details class="settings-advanced"><summary>Current model weights</summary><pre id="image-training-weights"></pre></details></details><div class="settings-actions"><button class="status-pill offline" id="clear-image-model">Remove downloaded model</button><button class="status-pill offline" id="reset-image-preferences">Reset learned preferences</button></div></details></div></details>
+      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-images', 'Image suggestions', 'Better photos for your meanings.', '', false, true)}</summary><div class="settings-disclosure-body"><p>Suggestions adapt to the photos you choose.</p><p class="settings-privacy">Requires a one-time download of about ${getImageLearningStatus().downloadMB} MB. Photo preferences stay on this device and sync with your private Drive backup when connected. Downloaded files stay on this device. <a href="https://huggingface.co/Xenova/mobileclip_s0/blob/757d59c9c6870a76a4b0306f05f5061bca15c39f/LICENSE" target="_blank" rel="noopener noreferrer">License</a></p><p id="image-learning-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid" id="enable-image-learning">Download and turn on</button><button class="status-pill offline" id="disable-image-learning">Turn off</button><button class="status-pill offline" id="clear-image-model">Remove downloaded files</button><button class="status-pill offline" id="reset-image-preferences">Reset photo preferences</button></div></div></details>
       <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-download', 'App updates', `KeepVocab ${APP_VERSION}`, '', false, true)}</summary><div class="settings-disclosure-body"><p data-update-status class="settings-service-status" role="status" aria-live="polite">The app checks automatically. Updates keep your Library and progress.</p><div class="settings-actions"><button class="status-pill offline" data-check-update>Check for updates</button><button class="btn-green-solid" data-install-update hidden>Update app</button><a class="status-pill offline" data-update-downloads href="https://github.com/RODIONOLIINYK/KeepVocab/releases/latest" target="_blank" rel="noopener noreferrer" hidden>Open downloads</a></div></div></details>
     </div>
   </section>`;
 
   const query = selector => container.querySelector(selector);
-  const paintImageTrainingData = () => {
-    const data = getImageLearningTrainingData();
-    const summary = query('#image-training-summary');
-    if (!summary) return;
-    const included = data.records.filter(record => record.trainingStatus === 'included in latest fit').length;
-    summary.textContent = `${data.records.length} saved labels · ${included} included in the latest fit · ${data.records.length - included} queued or not in the current fit. Each record has 515 input features; the model has 516 weights including its intercept.`;
-    query('#image-training-rows').innerHTML = data.records.map((record, index) => `<tr><td>${record.label === 'fits meaning' ? 'Fits meaning (+1)' : 'Wrong meaning (0)'}</td><td>${escapeHtml(new Date(record.updatedAt).toLocaleString())}</td><td>${record.trainingStatus === 'included in latest fit' ? 'Used' : 'Queued / not used'}</td><td><details class="settings-advanced" data-training-record="${index}"><summary>${escapeHtml(record.id.slice(0, 12))}… · show features</summary><pre></pre></details></td></tr>`).join('');
-    const weights = query('#image-training-weights');
-    if (weights) weights.textContent = data.model ? JSON.stringify(data.model.weights, null, 2) : 'No fitted model yet. Labels are saved until the minimum training set is reached.';
-  };
   const paintLearning = state => {
     const output = query('#image-learning-status');
     if (!output) { container.releaseImageLearning?.(); return; }
-    output.textContent = `${state.enabled ? 'Enabled' : 'Off'}. ${state.message || (state.enabled ? 'The model will load when you next search for images.' : state.installed ? 'The model is installed. Enable to use local image learning.' : 'Download and enable to use local image learning.')}${state.progress != null ? ` ${Math.round(state.progress)}%` : ''}`;
-    query('#image-learning-diagnostics').textContent = `${state.labels} labels · ${state.queued} queued · training revision ${state.revision} · ${state.changedParameters} parameters changed in last training · ΔL2 ${state.deltaL2.toFixed(6)} · weights ${state.beforeFingerprint || 'initial'} → ${state.fingerprint || 'initial'}`;
+    const progress = Number.isFinite(state.progress) ? ` ${Math.max(0, Math.min(100, Math.round(state.progress)))}%` : '';
+    output.textContent = !state.enabled ? 'Off.' : state.phase === 'error'
+      ? state.installed ? 'Image suggestions are unavailable. Try turning them on again.' : 'Download could not finish. Check your connection and retry.'
+      : state.phase === 'loading' ? state.installed ? 'Getting ready…' : `Downloading…${progress}`
+      : state.installed ? 'Ready.' : 'Download needed. Tap Download and turn on.';
     query('#disable-image-learning').hidden = !state.enabled;
-    query('#enable-image-learning').hidden = state.enabled && ['ready', 'idle', 'scoring'].includes(state.phase);
-    query('#enable-image-learning').textContent = state.installed ? 'Enable' : state.enabled ? 'Retry download' : 'Download and enable';
+    query('#enable-image-learning').hidden = state.enabled && (state.phase === 'loading' || state.installed && state.phase !== 'error');
+    query('#enable-image-learning').textContent = state.installed ? state.enabled && state.phase === 'error' ? 'Try again' : 'Turn on'
+      : state.phase === 'error' ? 'Retry download' : 'Download and turn on';
     query('#clear-image-model').hidden = !state.installed;
-    paintImageTrainingData();
   };
   paintLearning(getImageLearningStatus());
   container.releaseImageLearning = subscribeImageLearning(paintLearning);
-  const learningAction = (selector, action) => query(selector).addEventListener('click', async () => {
+  const learningAction = (selector, action, failureMessage, successMessage = '') => query(selector).addEventListener('click', async () => {
     const button = query(selector); button.disabled = true;
-    try { await action(); paintLearning(getImageLearningStatus()); }
-    catch (error) { query('#image-learning-status').textContent = error.message; }
+    try { await action(); paintLearning(getImageLearningStatus()); if (successMessage) query('#image-learning-status').textContent = successMessage; }
+    catch { query('#image-learning-status').textContent = failureMessage; }
     finally { button.disabled = false; }
   });
-  learningAction('#enable-image-learning', () => enableImageLearning({ allowMetered: true, download: !getImageLearningStatus().installed }));
-  learningAction('#disable-image-learning', disableImageLearning);
-  learningAction('#clear-image-model', clearImageModelDownloads);
-  learningAction('#reset-image-preferences', resetImagePreferences);
-  query('#image-training-rows').addEventListener('toggle', event => {
-    const details = event.target.closest('details[data-training-record]');
-    if (!details?.open || details.dataset.loaded) return;
-    const record = getImageLearningTrainingData().records[Number(details.dataset.trainingRecord)];
-    const output = details.querySelector('pre');
-    if (record && output) {
-      output.textContent = JSON.stringify({ id: record.id, label: record.label, updatedAt: record.updatedAt, trainingStatus: record.trainingStatus, features: record.features }, null, 2);
-      details.dataset.loaded = 'true';
-    }
-  }, true);
-  query('#download-image-training-data').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(getImageLearningTrainingData(), null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a'); link.href = url; link.download = 'keepvocab-image-training-data.json'; link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  });
-  query('#image-training-inspector > summary').addEventListener('click', () => paintImageTrainingData());
+  learningAction('#enable-image-learning', () => enableImageLearning({ allowMetered: true, download: !getImageLearningStatus().installed }), 'Could not turn on image suggestions. Check your connection and try again.');
+  learningAction('#disable-image-learning', disableImageLearning, 'Could not turn off image suggestions. Try again.');
+  learningAction('#clear-image-model', clearImageModelDownloads, 'Could not remove files. Close other KeepVocab windows and try again.');
+  learningAction('#reset-image-preferences', resetImagePreferences, 'Could not reset photo preferences. Try again.', 'Photo preferences reset.');
   const paintMemory = state => {
-    const output = query('#memory-training-status');
+    const output = query('#memory-settings-status');
     if (!output) { container.releaseFsrsLearning?.(); return; }
-    output.textContent = state.message || 'FSRS-6 is active with standard parameters. Dated reviews build your personal history.';
-    if (state.historyWarning) output.textContent += ` ${state.historyWarning}`;
-    query('#train-memory-model').disabled = state.phase === 'training';
-    query('#memory-training-diagnostics').innerHTML = ['recall', 'recognition', 'assisted'].map(channel => {
-      const model = state.config.models[channel];
-      const result = state.lastAttempt.results?.[channel];
-      return `<p><strong>${channel[0].toUpperCase() + channel.slice(1)}</strong>: ${model ? `personal revision ${model.revision} · ${model.changedParameters} of 21 parameters changed · ΔL2 ${Number(model.deltaL2).toFixed(6)} · held-out loss ${Number(model.before.logLoss).toFixed(4)} → ${Number(model.after.logLoss).toFixed(4)}${model.calibration ? ' · context calibration active' : ''}` : 'standard FSRS-6 parameters'}${result?.reason ? `<br>${escapeHtml(result.reason)}` : ''}</p>`;
-    }).join('');
+    output.textContent = state.config.automaticTraining ? 'Review timing adjusts automatically as you practice.' : 'Automatic timing adjustment is off.';
   };
   paintMemory(memory);
   container.releaseFsrsLearning = subscribeFsrsLearning(paintMemory);
-  void driveSync.getReviewEvents().then(events => {
-    const output = query('#memory-review-counts');if (!output) return;
-    const counts = ['recall', 'recognition', 'assisted'].map(channel => `${channel}: ${events.filter(event => event.channel === channel && event.memory.scheduled && event.memory.before.last_review && elapsedFsrsDays(event.memory.before.last_review, event.occurredAt) > 0).length} spaced reviews`);
-    output.textContent = `${events.length} dated events · ${counts.join(' · ')}`;
-  }).catch(error => { const output = query('#memory-review-counts');if (output) output.textContent = error.message; });
   query('#memory-settings-form').addEventListener('submit', event => {
     event.preventDefault();saveFsrsPreferences({ retention: Number(query('#memory-retention').value), automaticTraining: query('#memory-auto-training').checked });
-    query('#memory-training-status').textContent = 'Review preferences saved. The target applies to future scheduling.';
-  });
-  query('#train-memory-model').addEventListener('click', async () => {
-    try { await trainPersonalScheduler(driveSync, { force: true }); }
-    catch (error) { query('#memory-training-status').textContent = error.message; }
+    query('#memory-settings-status').textContent = 'Review preferences saved. Your next reviews will use these settings.';
   });
   query('#settings-back').addEventListener('click', () => go('dashboard', onNavigate));
   query('#translation-settings-form').addEventListener('submit', event => {

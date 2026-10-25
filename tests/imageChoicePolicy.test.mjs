@@ -1,95 +1,57 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { canAutoSelectImage, imageChoiceGuidance } from '../js/services/imageChoicePolicy.js';
+import { canAutoSelectImage, imageChoiceLabels, imageReplacementLabels } from '../js/services/imageChoicePolicy.js';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
 
-const status = { enabled: true, installed: true, phase: 'ready', labels: 40, trainedLabels: 40 };
 function candidates(patch = {}) {
-  const ml = { model: CLIP_TAG, sense: 'river bank', trainedLabels: 40, selected: .4, contrast: .2,
-    margin: .2, unwanted: .05, preference: .96, score: .5, ...patch };
+  const ml = { model: CLIP_TAG, sense: 'river bank', selected: .4, contrast: .2,
+    margin: .2, unwanted: .05, preference: .68, score: .5, ...patch };
   return [{ url: 'https://example.test/a.jpg', ml }, { url: 'https://example.test/b.jpg', ml: { ...ml, score: .4 } }];
 }
 
-test('only an explicitly disabled local model says learning is off', () => {
-  assert.deepEqual(imageChoiceGuidance(candidates(), { ...status, enabled: false }), {
-    title: 'Choose an image', detail: 'Local learning is off. You can turn it on in Settings.', kind: 'manual'
-  });
+test('clear semantic matches can be suggested from first use and normal choices without deliberate ratings', () => {
+  assert.equal(canAutoSelectImage(candidates({ trainedLabels: 0, preference: .5 })), true);
+  assert.equal(canAutoSelectImage(candidates({ trainedLabels: 40, trainedComparisons: 36, trainedPositiveLabels: 4, trainedNegativeLabels: 0 })), true);
+  for (const preference of [undefined, .2, .68, .9]) assert.equal(canAutoSelectImage(candidates({ preference })), true);
 });
 
-test('enabled learning distinguishes a pending download, loading and errors from being off', () => {
-  const photos = [{ url: 'https://example.test/photo.jpg' }];
-  const waiting = imageChoiceGuidance(photos, { ...status, installed: false, phase: 'idle' });
-  assert.match(waiting.detail, /Local learning is on/);
-  assert.match(waiting.detail, /not ready/);
-  assert.match(waiting.detail, /download in Settings/);
-  for (const phase of ['loading', 'scoring']) {
-    const guidance = imageChoiceGuidance(photos, { ...status, installed: false, phase });
-    assert.equal(guidance.title, 'Local learning is on');
-    assert.equal(guidance.kind, 'learning');
-    assert.doesNotMatch(guidance.detail, /learning is off|turn it on/);
+test('semantic ambiguity, unsuitable content and a close runner-up still require a choice', () => {
+  for (const patch of [{ margin: 0 }, { margin: -.1 }, { unwanted: .4 }, { selected: .1 }, { score: .42 }]) {
+    assert.equal(canAutoSelectImage(candidates({ ...patch, preference: 1, trainedLabels: 256 })), false);
   }
-  const failed = imageChoiceGuidance(photos, { ...status, installed: false, phase: 'error' });
-  assert.match(failed.detail, /Local learning is on, but scoring is unavailable/);
-  assert.doesNotMatch(failed.detail, /learning is off|turn it on/);
-});
-
-test('scored photos use their model evidence even if the earlier installed-file snapshot was false', () => {
-  const state = { ...status, installed: false };
-  assert.equal(imageChoiceGuidance(candidates(), state).kind, 'automatic');
-  const learning = imageChoiceGuidance(candidates({ trainedLabels: 12 }), { ...state, trainedLabels: 12, labels: 12 });
-  assert.equal(learning.kind, 'learning');
-  assert.match(learning.detail, /12\/32/);
-});
-
-test('missing photos and failed or missing scoring invite manual choice', () => {
-  assert.match(imageChoiceGuidance([], status).detail, /Find photos/);
-  assert.equal(imageChoiceGuidance(undefined).kind, 'manual');
-  for (const [images, state] of [[candidates(), { ...status, phase: 'error' }], [[{ url: 'a' }], status], [candidates({ score: NaN }), status]]) {
-    const guidance = imageChoiceGuidance(images, state);
-    assert.equal(guidance.title, 'Choose an image');
-    assert.match(guidance.detail, /scoring is unavailable/);
-  }
-});
-
-test('new learning distinguishes saved ratings from examples used by the scored model', () => {
-  const initial = imageChoiceGuidance(candidates({ trainedLabels: 0 }), { ...status, labels: 0, trainedLabels: 0 });
-  assert.equal(initial.title, 'Learning your taste');
-  assert.match(initial.detail, /0\/32/);
-  const pending = imageChoiceGuidance(candidates({ trainedLabels: 28 }), { ...status, labels: 31, trainedLabels: 28, queued: 3 });
-  assert.match(pending.detail, /28\/32/);
-  assert.match(pending.detail, /31 saved/);
-  assert.doesNotMatch(pending.detail, /31\/32/);
-  const stale = imageChoiceGuidance(candidates({ trainedLabels: 28 }), status);
-  assert.match(stale.detail, /28\/32/);
-  assert.match(stale.detail, /40 saved/);
-});
-
-test('untrained ratings explain the need for both liked and rejected examples', () => {
-  const guidance = imageChoiceGuidance(candidates({ trainedLabels: 0 }), { ...status, labels: 12, trainedLabels: 0 });
-  assert.match(guidance.detail, /0\/32/);
-  assert.match(guidance.detail, /12 saved/);
-  assert.match(guidance.detail, /at least two liked and two rejected/);
-  assert.match(guidance.detail, /clear match/);
-});
-
-test('enough training never promises automatic selection for an ambiguous or unsuitable match', () => {
-  for (const patch of [{ preference: .7 }, { margin: 0 }, { unwanted: .4 }, { selected: .1 }]) {
-    const images = candidates(patch);
-    assert.equal(canAutoSelectImage(images), false);
-    const guidance = imageChoiceGuidance(images, status);
-    assert.equal(guidance.title, 'Your choice needed');
-    assert.match(guidance.detail, /No clear winner/);
-    assert.doesNotMatch(guidance.detail, /%|confidence/);
-  }
-  assert.equal(imageChoiceGuidance(candidates().slice(0, 1), status).title, 'Your choice needed');
-});
-
-test('automatic guidance follows the existing conservative selection gate', () => {
+  assert.equal(canAutoSelectImage(candidates({ contrast: null, margin: 0, selected: .37 })), false);
+  assert.equal(canAutoSelectImage(candidates({ contrast: null, margin: 0, selected: .4 })), true);
   const images = candidates();
-  assert.equal(canAutoSelectImage(images), true);
-  const guidance = imageChoiceGuidance(images, status);
-  assert.equal(guidance.title, 'Selected for you');
-  assert.equal(guidance.kind, 'automatic');
-  assert.match(guidance.detail, /choose another/);
-  assert.doesNotMatch(guidance.detail, /%|confidence/);
+  assert.equal(canAutoSelectImage([...images, { ...images[1], ml: { ...images[1].ml, score: .49 } }]), false);
+});
+
+test('automatic suggestions require usable scores from the same meaning for every alternative', () => {
+  assert.equal(canAutoSelectImage(), false);
+  assert.equal(canAutoSelectImage([]), false);
+  assert.equal(canAutoSelectImage(candidates().slice(0, 1)), false);
+  const [first, second] = candidates();
+  for (const alternative of [null, { ...second, url: '' }, { ...second, ml: undefined },
+    { ...second, ml: { ...second.ml, model: 'other' } }, { ...second, ml: { ...second.ml, sense: 'financial bank' } },
+    { ...second, ml: { ...second.ml, score: NaN } }, { ...second, ml: { ...second.ml, selected: NaN } }]) {
+    assert.equal(canAutoSelectImage([first, alternative]), false);
+  }
+  for (const patch of [{ sense: '' }, { sense: undefined }, { selected: NaN }, { margin: NaN }, { unwanted: NaN }, { score: NaN }]) {
+    assert.equal(canAutoSelectImage(candidates(patch)), false);
+  }
+});
+
+test('ordinary choices create bounded relative preferences only for supplied viewed alternatives', () => {
+  const word = { word: 'run' };
+  const selected = { url: 'running-fox', sourceUrl: 'source-running' };
+  const viewed = [{ url: 'running-fox' }, { url: 'alias', sourceUrl: 'source-running' },
+    { url: 'standing-fox', sourceUrl: 'source-standing' }, { url: 'standing-copy', sourceUrl: 'source-standing' },
+    { url: 'running-side' }, { url: 'running-front' }, { url: 'fourth-alternative' }];
+  const labels = imageChoiceLabels(word, selected, viewed);
+  assert.deepEqual(labels.map(item => [item.action, item.image.url]), [
+    ['good', 'running-fox'], ['less-preferred', 'standing-fox'], ['less-preferred', 'running-side'], ['less-preferred', 'running-front']
+  ]);
+  assert.ok(labels.slice(1).every(item => item.preferredImage === selected));
+  assert.deepEqual(imageChoiceLabels(word, selected).map(item => item.action), ['good']);
+  assert.deepEqual(imageChoiceLabels(word, null, viewed), []);
+  assert.deepEqual(imageReplacementLabels(word, viewed[2], selected).map(item => item.action), ['good', 'less-preferred']);
 });

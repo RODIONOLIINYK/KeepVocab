@@ -704,8 +704,28 @@ export async function findPexelsImages(concept, apiKey, fetchImpl = globalThis.f
 }
 
 function candidateUrlKey(value) {
-  try { const url = new URL(value); url.hash = ''; return url.toString(); }
+  try {
+    const url = new URL(value);
+    url.hash = '';
+    // A photo's resized previews and landing page describe the same image.
+    // Keep this provider-specific: arbitrary URL queries can identify different
+    // photos, so stripping every site's query would reject unrelated images.
+    if (url.hostname === 'images.pexels.com') {
+      const id = url.pathname.match(/^\/photos\/(\d+)\//)?.[1];
+      if (id) return `pexels:photo:${id}`;
+    }
+    if (/^(?:www\.)?pexels\.com$/.test(url.hostname)) {
+      const id = url.pathname.match(/^\/photo\/(?:[^/]*-)?(\d+)\/?$/)?.[1];
+      if (id) return `pexels:photo:${id}`;
+    }
+    if (url.hostname === 'images.unsplash.com') url.search = '';
+    return url.toString();
+  }
   catch { return String(value || '').trim(); }
+}
+
+export function imageIdentityKeys(image) {
+  return [...new Set([image?.url, image?.sourceUrl].filter(Boolean).map(candidateUrlKey))];
 }
 
 export function rankImageCandidates(candidates, word, options = {}) {
@@ -781,9 +801,11 @@ export function imageFeedbackFor(word) {
   const stale = stored.senseFingerprint && stored.senseFingerprint !== imageSenseFingerprint(word);
   const feedback = stale ? {} : stored;
   const list = value => Array.isArray(value) ? value : [];
+  const goodUrls = uniqueRaw(list(feedback.goodUrls), 40);
+  const approved = new Set(goodUrls.map(candidateUrlKey));
   return {
-    rejectedUrls: uniqueRaw([...list(feedback.rejectedUrls), ...(stale ? [] : list(word?.imageRejectedUrls))], 80),
-    goodUrls: uniqueRaw(list(feedback.goodUrls), 40), preferredConcepts: unique(list(feedback.preferredConcepts), 20),
+    rejectedUrls: uniqueRaw([...list(feedback.rejectedUrls), ...(stale ? [] : list(word?.imageRejectedUrls).filter(url => !approved.has(candidateUrlKey(url))))], 80),
+    goodUrls, preferredConcepts: unique(list(feedback.preferredConcepts), 20),
     senseFingerprint: imageSenseFingerprint(word), updatedAt: feedback.updatedAt || null
   };
 }
@@ -792,8 +814,11 @@ export function updateImageFeedback(word, action, image, concept = '') {
   const feedback = imageFeedbackFor(word);
   const urls = [image?.url, image?.sourceUrl].map(value => String(value || '').trim()).filter(Boolean);
   const url = urls[0] || '';
-  if (action === 'wrong' && url) { feedback.rejectedUrls = uniqueRaw([...urls, ...feedback.rejectedUrls], 80); feedback.goodUrls = feedback.goodUrls.filter(value => !urls.includes(value)); }
-  if (action === 'good' && url) { feedback.goodUrls = uniqueRaw([...urls, ...feedback.goodUrls], 40); feedback.rejectedUrls = feedback.rejectedUrls.filter(value => !urls.includes(value)); }
+  const identities = new Set(urls.map(candidateUrlKey));
+  // "Wrong meaning" applies to this image only. Its search prompt remains a
+  // useful source of other images, even when this particular result is wrong.
+  if (action === 'wrong' && url) { feedback.rejectedUrls = uniqueRaw([...urls, ...feedback.rejectedUrls], 80); feedback.goodUrls = feedback.goodUrls.filter(value => !identities.has(candidateUrlKey(value))); }
+  if (action === 'good' && url) { feedback.goodUrls = uniqueRaw([...urls, ...feedback.goodUrls], 40); feedback.rejectedUrls = feedback.rejectedUrls.filter(value => !identities.has(candidateUrlKey(value))); }
   if (action === 'more-like-this') feedback.preferredConcepts = unique([concept || image?.searchQuery, ...feedback.preferredConcepts], 20);
   feedback.updatedAt = new Date().toISOString();
   return feedback;

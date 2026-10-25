@@ -102,7 +102,7 @@ function initApp() {
   navigateTo(hash);
   renderConnectionState();
   updateDashboardDerivedState();
-  void initializeImageLearning({ requestDownload: requestImageModelDownload }).catch(error => showToast(error.message, 'error'));
+  void initializeImageLearning({ requestDownload: requestImageModelDownload }).catch(() => showToast('Image suggestions could not start. You can still choose photos.', 'error'));
 }
 
 function requestImageModelDownload({ downloadMB }) {
@@ -112,9 +112,9 @@ function requestImageModelDownload({ downloadMB }) {
     backdrop.className = 'modal-backdrop active';
     backdrop.innerHTML = `<section class="modal-box" role="dialog" aria-modal="true" aria-labelledby="image-model-title" aria-describedby="image-model-description">
       <h2 id="image-model-title">Smarter image suggestions</h2>
-      <p id="image-model-description">Download the optional local image model (about ${downloadMB} MB) to match photos to meanings and learn from your choices. It runs on this device without Gemini tokens.</p>
-      <p>You only need to download it once. If you skip this, we will not ask again; you can install it in Settings → Local image learning.</p>
-      <div class="engagement-modal-actions"><button type="button" class="status-pill offline" data-decline>Skip</button><button type="button" class="btn-green-solid" data-download>Download and enable</button></div>
+      <p id="image-model-description">Download optional files (about ${downloadMB} MB) for better photo suggestions.</p>
+      <p>You can turn this on later in Settings → Image suggestions.</p>
+      <div class="engagement-modal-actions"><button type="button" class="status-pill offline" data-decline>Skip</button><button type="button" class="btn-green-solid" data-download>Download and turn on</button></div>
     </section>`;
     const finish = accepted => { backdrop.remove(); if (opener?.isConnected) opener.focus(); resolve(accepted); };
     backdrop.querySelector('[data-decline]').addEventListener('click', () => finish(false));

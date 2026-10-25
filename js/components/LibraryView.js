@@ -1,10 +1,10 @@
-import { recordImagePreference, imageLearningEnabled } from '../services/imageLearning.js?v=18900';
+import { recordImagePreference } from '../services/imageLearning.js?v=18900';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18900';
 import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18900';
 import { speakWord } from '../services/speechService.js?v=18900';
-import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, prepareImageScenes, imageSenseFingerprint, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18900';
+import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, prepareImageScenes, imageSenseFingerprint, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback, imageIdentityKeys } from '../services/imageSearch.js?v=18900';
 import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18900';
-import { imageReplacementLabels } from '../services/imageChoicePolicy.js';
+import { imageChoiceLabels } from '../services/imageChoicePolicy.js';
 import { getPracticeReadiness } from '../services/reminderService.js?v=18900';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
 import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, meaningSupportFor, groupSimilarSenses } from '../services/learningDefinitions.js?v=18900';
@@ -95,6 +95,20 @@ export function activeImageResultCandidates(currentImage, results, limit = 10) {
     .slice(0, limit);
 }
 
+export function remainingImageCandidates(candidates, rejectedImage) {
+  const urls = new Set(imageIdentityKeys(rejectedImage));
+  return (candidates || []).filter(image => !imageIdentityKeys(image).some(url => urls.has(url)));
+}
+
+export function reviewedImagePatch(latest, reviewed, feedback = []) {
+  const keys = ['imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery'];
+  const patch = Object.fromEntries(keys.map(key => [key, reviewed[key] || '']));
+  for (const label of feedback.filter(label => label.word.id === reviewed.id && ['good', 'wrong'].includes(label.action))) {
+    patch.imageFeedback = updateImageFeedback({ ...latest, ...patch }, label.action, label.image);
+  }
+  return patch;
+}
+
 export function renderLibraryView(container) {
   let selectedMonthYear = (driveSync.getActiveNotebook() || getCurrentMonthNotebookTitle()).replace(/ Vocabulary$/, '');
   let query = '';
@@ -119,7 +133,6 @@ export function renderLibraryView(container) {
   let imageCandidates = [];
   let imageLoading = false;
   let imageError = '';
-  let imageFeedbackStatus = '';
   let selectedImage = null;
   let removeImage = false;
   let imageQuery = '';
@@ -129,6 +142,7 @@ export function renderLibraryView(container) {
   let suggestedImageScenes = [];
   let imageRequestId = 0;
   let imageResultPage = 1;
+  let viewedImageCandidates = new Map();
   const imageProviderSettings = getImageProviderSettings();
 
   async function loadImageCandidates(wordId, refresh = false) {
@@ -136,6 +150,15 @@ export function renderLibraryView(container) {
     let word = saved ? { ...saved, ...editDraft } : null;
     if (!word) return;
     const requestId = ++imageRequestId;
+    const savedSense = imageSenseFingerprint(saved);
+    const meaningStillCurrent = () => {
+      const latest = driveSync.getWords().find(item => item.id === wordId);
+      if (latest && imageSenseFingerprint(latest) === savedSense) return true;
+      imageLoading = false; imageCandidates = []; selectedImage = null; viewedImageCandidates.clear();
+      imageError = 'This meaning changed while images loaded. Reopen it to refresh suggestions.';
+      render();
+      return false;
+    };
     imageLoading = true;
     imageError = '';
     render();
@@ -148,6 +171,7 @@ export function renderLibraryView(container) {
     const [preparedWord] = await prepareImageScenes([word]);
     const aiScenes = preparedWord.imageScenes?.scenes || [];
     if (container.libraryViewOwner !== viewOwner || !container.querySelector('#library-edit-form') || editId !== wordId || requestId !== imageRequestId) return;
+    if (!meaningStillCurrent()) return;
     const curatedScenes = buildVisualSceneDescriptions(word);
     suggestedImageScenes = [...new Set(aiScenes.length ? aiScenes : curatedScenes)].slice(0, 3);
     const latest = driveSync.getWords().find(item => item.id === wordId);
@@ -177,6 +201,7 @@ export function renderLibraryView(container) {
       limit: 10
     });
     if (container.libraryViewOwner !== viewOwner || !container.querySelector('#library-edit-form') || editId !== wordId || requestId !== imageRequestId) return;
+    if (!meaningStillCurrent()) return;
     const currentImage = !removeImage && word.imageUrl ? {
       url: word.imageUrl,
       sourceUrl: word.imageSourceUrl || '',
@@ -199,10 +224,10 @@ export function renderLibraryView(container) {
   function beginEditing(wordId) {
     imageRequestId += 1;
     editId = wordId;
-    imageFeedbackStatus = '';
     editDraft = {};
     deleteId = null;
     imageCandidates = [];
+    viewedImageCandidates.clear();
     imageLoading = false;
     imageError = '';
     selectedImage = null;
@@ -450,9 +475,7 @@ export function renderLibraryView(container) {
               ${activeImageConcept ? `<small class="active-image-search-state">Searching: “${escapeHtml(activeImageConcept)}” · page ${imageResultPage}</small>` : ''}
             </div>
             </div></details>
-            ${currentImageUrl ? `<div class="selected-image-preview"><img src="${escapeHtml(currentImageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current saved image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span></div></div><div class="image-feedback-actions" aria-label="Image feedback"><button type="button" class="image-text-action" id="image-good"><i class="fa-solid fa-thumbs-up" aria-hidden="true"></i><span>Fits meaning<small>${imageLearningEnabled() ? 'Teach: good match' : 'Prefer in searches'}</small></span></button><button type="button" class="image-text-action" id="image-wrong"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><span>Wrong meaning<small>${imageLearningEnabled() ? 'Teach: avoid this' : 'Exclude from searches'}</small></span></button><button type="button" class="image-text-action" id="image-more-like"><i class="fa-solid fa-images" aria-hidden="true"></i><span>Find similar<small>Search only</small></span></button></div>` : ''}
-            <p class="form-message image-feedback-status" id="image-feedback-status" role="status">${escapeHtml(imageFeedbackStatus)}</p>
-            <p class="image-learning-note">${imageLearningEnabled() ? 'Your ratings train your personal image model. Saving a replacement teaches it your choice, too.' : 'Ratings guide image searches. Enable Local image learning in Settings to train your personal model.'}</p>
+            ${currentImageUrl ? `<div class="selected-image-preview"><img src="${escapeHtml(currentImageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current saved image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span><button type="button" class="image-text-action" id="image-wrong"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i>Hide this photo</button></div></div>` : ''}
             ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching for “${escapeHtml(activeImageConcept || editing.word)}” · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-results-heading"><strong>Results for “${escapeHtml(activeImageConcept || imageQuery)}”</strong><span>${imageCandidates.length} images · page ${imageResultPage}</span></div><div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.thumbnailUrl || image.url)}" alt="${escapeHtml(image.title)}" loading="lazy" decoding="async"><span>${escapeHtml(image.title)}</span><small>${escapeHtml(image.source || 'Public image')}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
             <p class="image-license-note">${imageCandidates.some(image => image.source === 'Pexels') ? '<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Photos provided by Pexels</a>. ' : ''}</p>
           </section>
@@ -489,7 +512,7 @@ export function renderLibraryView(container) {
       originalWords: imageReviewWords.map(word => imageReviewOriginals.get(word.id) || word),
       excludeUrls: imageUrlsForWords(driveSync.getWords().filter(word => !imageReviewWords.some(item => item.id === word.id))),
       onCancel() { imageReviewWords = null; render(); },
-      onApply(reviewed) {
+      onApply(reviewed, { feedback = [] } = {}) {
         let skipped = 0;
         const appliedIds = [];
         for (const word of reviewed) {
@@ -498,7 +521,7 @@ export function renderLibraryView(container) {
           const keys = ['imageUrl', 'imageSourceUrl', 'imageAttribution', 'imageLicense', 'imageSearchQuery'];
           const original = imageReviewOriginals.get(word.id);
           if (!original || keys.some(key => (latest[key] || '') !== (original[key] || ''))) { skipped += 1; continue; }
-          driveSync.updateWord(word.id, Object.fromEntries(keys.map(key => [key, word[key] || ''])));
+          driveSync.updateWord(word.id, reviewedImagePatch(latest, word, feedback));
           appliedIds.push(word.id);
         }
         imageReviewWords = null;
@@ -591,73 +614,56 @@ export function renderLibraryView(container) {
       loadImageCandidates(editId);
     });
     container.querySelectorAll('[data-library-image]').forEach(button => button.addEventListener('click', () => {
+      const rememberVisible = (img, image) => {
+        if (!img?.complete || !img.naturalWidth || !image) return;
+        const rect = img.getBoundingClientRect();
+        const visible = Math.max(0, Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0)) * Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+        if (rect.width * rect.height > 0 && visible / (rect.width * rect.height) >= .5) viewedImageCandidates.set(image.url, image);
+      };
+      for (const option of container.querySelectorAll('[data-library-image]')) {
+        rememberVisible(option.querySelector('img'), imageCandidates[Number(option.dataset.libraryImage)]);
+      }
+      const preview = container.querySelector('.selected-image-preview img');
+      if (!selectedImage && editing.imageUrl) rememberVisible(preview, { url: editing.imageUrl, sourceUrl: editing.imageSourceUrl, searchQuery: editing.imageSearchQuery, ...(editing.imageMl ? { ml: editing.imageMl } : {}) });
       selectedImage = imageCandidates[Number(button.dataset.libraryImage)] || null;
       imageQuery = selectedImage?.searchQuery || imageQuery;
       removeImage = false;
       render();
     }));
-    const feedbackImage = () => selectedImage || (!removeImage && editing?.imageUrl ? {
+    const imageToHide = () => selectedImage || (!removeImage && editing?.imageUrl ? {
       url: editing.imageUrl,
       sourceUrl: editing.imageSourceUrl,
       searchQuery: editing.imageSearchQuery,
       title: editing.imageAttribution
     } : null);
-    const setImageFeedbackMessage = message => {
-      if (container.libraryViewOwner !== viewOwner || editId !== editing?.id) return;
-      imageFeedbackStatus = message;
-      const output = container.querySelector('#image-feedback-status');
-      if (output) output.textContent = message;
-    };
-    const teachImage = async (action, image) => {
-      try {
-        if (!imageLearningEnabled()) {
-          setImageFeedbackMessage('Search preference saved. Enable Local image learning in Settings to train your model.');
-          return;
-        }
-        const result = await recordImagePreference(editing, action, image);
-        if (container.libraryViewOwner !== viewOwner) return;
-        setImageFeedbackMessage(result.recorded
-          ? `Saved as a ${action === 'good' ? 'positive' : 'negative'} training example. ${result.trained ? 'Your local model has been updated.' : 'It will train as you rate more matches.'}`
-          : result.reason || 'Image preference saved.');
-      } catch { setImageFeedbackMessage('Rating saved. Local model training could not finish.'); }
-    };
-    const feedbackMatchesSavedMeaning = () => {
+    const imageMatchesSavedMeaning = () => {
       const latest = driveSync.getWords().find(word => word.id === editId);
       const matches = latest && imageSenseFingerprint({ ...editing, ...editDraft }) === imageSenseFingerprint(latest);
-      if (!matches) container.querySelector('#library-edit-message').textContent = 'Save the intended meaning before rating an image.';
+      if (!matches) container.querySelector('#library-edit-message').textContent = 'Save the intended meaning before hiding this photo.';
       return matches;
     };
-    container.querySelector('#image-good')?.addEventListener('click', () => {
-      const image = feedbackImage();
-      if (!image || !feedbackMatchesSavedMeaning()) return;
-      driveSync.updateWord(editId, { imageFeedback: updateImageFeedback(editing, 'good', image, activeImageConcept) });
-      setImageFeedbackMessage('Good match saved.');
-      void teachImage('good', image);
-    });
     container.querySelector('#image-wrong')?.addEventListener('click', () => {
-      const image = feedbackImage();
-      if (!image || !feedbackMatchesSavedMeaning()) return;
-      const patch = { imageFeedback: updateImageFeedback(editing, 'wrong', image, activeImageConcept) };
+      const image = imageToHide();
+      if (!image || !imageMatchesSavedMeaning()) return;
+      const latest = driveSync.getWords().find(word => word.id === editId);
+      const patch = { imageFeedback: updateImageFeedback(latest, 'wrong', image, activeImageConcept) };
       if (!selectedImage) Object.assign(patch, clearImageSelectionPatch(), { imageKind: '' });
       driveSync.updateWord(editId, patch);
-      setImageFeedbackMessage('Image excluded. Finding alternatives…');
-      void teachImage('wrong', image);
+      imageRequestId += 1;
+      imageLoading = false;
+      imageCandidates = remainingImageCandidates(imageCandidates, image);
+      viewedImageCandidates = new Map(remainingImageCandidates([...viewedImageCandidates.values()], image).map(item => [item.url, item]));
+      void recordImagePreference(latest, 'wrong', image).catch(() => {});
       selectedImage = null;
-      loadImageCandidates(editId, true);
-    });
-    container.querySelector('#image-more-like')?.addEventListener('click', () => {
-      const image = feedbackImage();
-      if (!image) return;
-      activeImageConcept = image.searchQuery || activeImageConcept;
-      setImageFeedbackMessage('Finding similar images. This does not train the model.');
-      driveSync.updateWord(editId, { imageFeedback: updateImageFeedback(editing, 'more-like-this', image, activeImageConcept) });
-      loadImageCandidates(editId, true);
+      render();
+      if (!imageCandidates.length) loadImageCandidates(editId);
     });
     container.querySelector('#library-edit-form')?.addEventListener('input', event => {
       if (['word', 'phonetic', 'partOfSpeech', 'definition', 'usageNote', 'translation', 'example'].includes(event.target.name)) editDraft[event.target.name] = event.target.value;
       if (['word', 'partOfSpeech', 'definition'].includes(event.target.name)) {
         if (event.target.name === 'definition') Object.assign(editDraft, { sourceDefinition: event.target.value, sourceFingerprint: '', explanationSource: 'manual' });
         Object.assign(editDraft, { imageScenes: undefined, imageFeedback: undefined, imageRejectedUrls: [] });
+        viewedImageCandidates.clear();
         activeImageConcept = ''; customImageConcept = ''; suggestedImageScenes = []; imageCandidates = []; selectedImage = null; imageQuery = ''; imageResultPage = 1;
         imageRequestId += 1;
         imageLoading = false;
@@ -691,14 +697,12 @@ export function renderLibraryView(container) {
         const latest = driveSync.getWords().find(word => word.id === editId) || savedEditing;
         if (data.definition !== latest.definition) Object.assign(data, { sourceDefinition: data.definition, sourceFingerprint: '', explanationSource: 'manual' });
         const replacement = selectedImage;
-        const previous = imageSenseFingerprint(latest) === imageSenseFingerprint({ ...latest, ...data }) && latest.imageUrl
-          ? { url: latest.imageUrl, sourceUrl: latest.imageSourceUrl, searchQuery: latest.imageSearchQuery, ...(latest.imageMl ? { ml: latest.imageMl } : {}) } : null;
-        const labels = replacement && !removeImage ? imageReplacementLabels({ ...latest, ...data }, previous, replacement) : [];
+        const labels = replacement && !removeImage ? imageChoiceLabels({ ...latest, ...data }, replacement, [...viewedImageCandidates.values()]) : [];
         let feedbackWord = { ...latest, ...data };
-        for (const label of labels) feedbackWord.imageFeedback = updateImageFeedback(feedbackWord, label.action, label.image);
+        for (const label of labels) if (label.action === 'good' || label.action === 'wrong') feedbackWord.imageFeedback = updateImageFeedback(feedbackWord, label.action, label.image);
         if (labels.length) data.imageFeedback = feedbackWord.imageFeedback;
         driveSync.updateWord(editId, data);
-        for (const label of labels) void recordImagePreference(label.word, label.action, label.image).catch(() => {});
+        for (const label of labels) void recordImagePreference(label.word, label.action, label.image, { preferredImage: label.preferredImage }).catch(() => {});
         editId = null; selectedImage = null; removeImage = false; render();
       }
       catch (error) { container.querySelector('#library-edit-message').textContent = error.message; }

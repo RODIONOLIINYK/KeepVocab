@@ -5,6 +5,10 @@ export const PREFERENCE_DIMENSION = CLIP_DIMENSION + 3;
 export const MIN_LABELS = 8;
 export const TRAIN_BATCH = 4;
 export const MAX_LABELS = 256;
+// Older clients accept only CLIP_TAG records and would strip comparison fields,
+// turning a relative loser into an explicit rejection. A separate record tag
+// makes those clients ignore comparisons safely during mixed-version sync.
+export const COMPARISON_RECORD_MODEL = `${CLIP_TAG}:pairwise-v1`;
 export const sigmoid = value => 1 / (1 + Math.exp(-Math.max(-30, Math.min(30, value))));
 const time = value => Date.parse(value || '') || 0;
 export function normalizedVector(values, dimension = CLIP_DIMENSION) {
@@ -35,16 +39,24 @@ export function parameterFingerprint(weights) {
   for (const char of weights.map(value => Number(value).toFixed(9)).join(',')) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
   return (hash >>> 0).toString(16).padStart(8, '0');
 }
+export const imageLearningRecordKey = record => `${record.id}|${record.updatedAt}|${record.label}|${record.features}${record.kind === 'comparison' ? `|${record.preferredFeatures}` : ''}`;
 export function mergeImageLearning(left = {}, right = {}) {
   left = left && typeof left === 'object' ? left : {};
   right = right && typeof right === 'object' ? right : {};
   const resetAt = time(left.resetAt) >= time(right.resetAt) ? left.resetAt || '' : right.resetAt || '';
   const records = new Map();
   for (const item of [...(Array.isArray(left.records) ? left.records : []), ...(Array.isArray(right.records) ? right.records : [])]) {
-    if (!item || typeof item.id !== 'string' || item.id.length > 3000 || item.model !== CLIP_TAG || ![0, 1].includes(item.label)
+    if (!item || typeof item.id !== 'string' || item.id.length > 3000 || item.model !== (item.kind === 'comparison' ? COMPARISON_RECORD_MODEL : CLIP_TAG) || ![0, 1].includes(item.label)
       || time(item.updatedAt) <= time(resetAt) || !time(item.updatedAt)) continue;
-    try { decodeFeatures(item.features); } catch { continue; }
-    const clean = { id: item.id, model: CLIP_TAG, label: item.label, features: item.features, updatedAt: item.updatedAt };
+    try {
+      decodeFeatures(item.features);
+      if (item.kind === 'comparison') {
+        if (item.label !== 0) continue;
+        decodeFeatures(item.preferredFeatures);
+      } else if (item.kind !== undefined) continue;
+    } catch { continue; }
+    const clean = { id: item.id, model: item.model, label: item.label, features: item.features, updatedAt: item.updatedAt };
+    if (item.kind === 'comparison') Object.assign(clean, { kind: 'comparison', preferredFeatures: item.preferredFeatures });
     const previous = records.get(clean.id);
     // A stable tie-break makes concurrent edits converge on both devices.
     if (!previous || time(clean.updatedAt) > time(previous.updatedAt)
@@ -53,26 +65,40 @@ export function mergeImageLearning(left = {}, right = {}) {
   return { version: 1, resetAt, records: [...records.values()].sort((a, b) => time(a.updatedAt) - time(b.updatedAt) || a.id.localeCompare(b.id)).slice(-MAX_LABELS) };
 }
 export function fitPreferences(records, previous = null) {
-  const examples = records.map(record => ({ x: decodeFeatures(record.features), y: record.label }));
+  const examples = records.filter(record => record.kind !== 'comparison').map(record => ({ x: decodeFeatures(record.features), y: record.label }));
+  const comparisons = records.filter(record => record.kind === 'comparison').map(record => {
+    const losing = decodeFeatures(record.features);
+    return decodeFeatures(record.preferredFeatures).map((value, index) => value - losing[index]);
+  });
   const positives = examples.filter(item => item.y).length;
   const negatives = examples.length - positives;
-  if (examples.length < MIN_LABELS || positives < 2 || negatives < 2) return null;
+  if (records.length < MIN_LABELS || positives < 2 || negatives + comparisons.length < 2) return null;
+  // A normal choice proves relative preference, not that every alternative is
+  // unsuitable. Without explicit rejections train the pairwise objective only;
+  // positive-only classification would otherwise push its intercept upward.
+  const classify = negatives >= 2;
   const weights = Array(PREFERENCE_DIMENSION + 1).fill(0);
   // Refit a bounded, balanced replay set instead of repeatedly fitting the last click.
   for (let epoch = 0; epoch < 40; epoch++) {
     const gradient = weights.map((value, index) => value * (index === PREFERENCE_DIMENSION ? 0.05 : 0.2));
-    for (const { x, y } of examples) {
+    for (const { x, y } of classify ? examples : []) {
       const z = weights[PREFERENCE_DIMENSION] + x.reduce((sum, value, index) => sum + value * weights[index], 0);
       const error = (sigmoid(z) - y) * 0.5 / (y ? positives : negatives);
       for (let index = 0; index < x.length; index++) gradient[index] += error * x[index];
       gradient[PREFERENCE_DIMENSION] += error;
+    }
+    for (const difference of comparisons) {
+      const z = difference.reduce((sum, value, index) => sum + value * weights[index], 0);
+      const error = (sigmoid(z) - 1) * 0.5 / comparisons.length;
+      for (let index = 0; index < difference.length; index++) gradient[index] += error * difference[index];
     }
     for (let index = 0; index < weights.length; index++) weights[index] -= 0.4 * gradient[index];
   }
   const before = previous?.weights?.length === weights.length ? previous.weights : weights.map(() => 0);
   const deltaL2 = Math.hypot(...weights.map((value, index) => value - before[index]));
   return { model: CLIP_TAG, weights, revision: (Number(previous?.revision) || 0) + 1, trainedLabels: records.length,
-    trainedRecordIds: records.map(record => `${record.id}|${record.updatedAt}|${record.label}|${record.features}`),
+    trainedRecordIds: records.map(imageLearningRecordKey),
+    trainedComparisons: comparisons.length, trainedPositiveLabels: positives, trainedNegativeLabels: negatives,
     fingerprint: parameterFingerprint(weights), beforeFingerprint: parameterFingerprint(before), deltaL2,
     changedParameters: weights.filter((value, index) => Math.abs(value - before[index]) > 1e-9).length,
     updatedAt: new Date().toISOString() };
@@ -80,8 +106,8 @@ export function fitPreferences(records, previous = null) {
 export function updatePreferenceModel(data, previous = null) {
   const records = mergeImageLearning(data).records;
   const trained = new Set(previous?.trainedRecordIds || []);
-  const queued = records.filter(record => !trained.has(`${record.id}|${record.updatedAt}|${record.label}|${record.features}`)).length;
-  const removed = (previous?.trainedRecordIds || []).some(key => !records.some(record => key === `${record.id}|${record.updatedAt}|${record.label}|${record.features}`));
+  const queued = records.filter(record => !trained.has(imageLearningRecordKey(record))).length;
+  const removed = (previous?.trainedRecordIds || []).some(key => !records.some(record => key === imageLearningRecordKey(record)));
   if (previous && !removed && queued < TRAIN_BATCH) return { model: previous, queued, trained: false };
   const model = fitPreferences(records, previous);
   return { model, queued: model ? 0 : queued, trained: Boolean(model) };

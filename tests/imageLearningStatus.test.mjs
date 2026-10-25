@@ -36,21 +36,22 @@ async function setup(context) {
   return cleanup;
 }
 
-test('the chooser honors the real enabled preference when the installed-file check is false', async context => {
+test('the chooser stays usable without exposing installation or training state', async context => {
   const cleanup = await setup(context);
   assert.equal(getImageLearningStatus().enabled, true);
   assert.equal(getImageLearningStatus().installed, false);
   const container = new ReviewContainer();
   const controller = mountImageReview(container, [{ ...meaning, imageCandidates: [{ ...photo,
-    ml: { model: CLIP_TAG, score: .4, trainedLabels: 0 }
+    ml: { model: CLIP_TAG, score: .4, trainedLabels: 52 }
   }] }]);
   cleanup.push(() => controller.destroy());
-  assert.match(container.innerHTML, /Learning your taste/);
-  assert.match(container.innerHTML, /0\/32 rated examples/);
-  assert.doesNotMatch(container.innerHTML, /Local learning is off|turn it on in Settings/);
+  assert.match(container.innerHTML, /Choose an image/);
+  assert.doesNotMatch(container.innerHTML, /learning|model|trained|labels|parameters|Settings|confidence|uncertain/i);
+  await container.click('choose');
+  assert.match(container.innerHTML, /aria-checked="true"/);
 });
 
-test('an open chooser follows enable/loading/ready changes without losing the selected image and unsubscribes on destroy', async context => {
+test('background download progress leaves the chosen photo and picker markup untouched', async context => {
   const cleanup = await setup(context);
   let finishLoading;
   globalThis.Worker = class {
@@ -65,28 +66,19 @@ test('an open chooser follows enable/loading/ready changes without losing the se
   const container = new ReviewContainer();
   const controller = mountImageReview(container, [{ ...meaning, imageCandidates: [photo] }]);
   cleanup.push(() => controller.destroy());
-  assert.match(container.innerHTML, /Local learning is on/);
-  assert.match(container.innerHTML, /not ready on this device/);
   await container.click('choose');
-  assert.match(container.innerHTML, /aria-checked="true"/);
-
+  const selectedMarkup = container.innerHTML;
   disableImageLearning();
-  assert.match(container.innerHTML, /Local learning is off/);
+  assert.equal(container.innerHTML, selectedMarkup);
   const loading = enableImageLearning({ allowMetered: true });
-  assert.match(container.innerHTML, /image model is loading/);
-  assert.doesNotMatch(container.innerHTML, /Local learning is off/);
-  assert.match(container.innerHTML, /aria-checked="true"/);
+  assert.equal(container.innerHTML, selectedMarkup);
   finishLoading();
   await loading;
   assert.equal(getImageLearningStatus().installed, true);
-  assert.match(container.innerHTML, /Local scoring is unavailable for these photos/);
-  assert.doesNotMatch(container.innerHTML, /Local learning is off|image model is loading/);
-  assert.match(container.innerHTML, /aria-checked="true"/);
-
+  assert.equal(container.innerHTML, selectedMarkup);
   controller.destroy();
-  const lastMarkup = container.innerHTML;
   disableImageLearning();
-  assert.equal(container.innerHTML, lastMarkup);
+  assert.equal(container.innerHTML, selectedMarkup);
 });
 
 test('lazy local scoring marks the model installed when its worker becomes ready, without a Settings enable action', async context => {

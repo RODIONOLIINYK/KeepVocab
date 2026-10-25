@@ -202,17 +202,15 @@ test('learning receives only confirmed Keep choices after Apply succeeds, never 
   assert.equal(feedback.length, 0);
   fail = false;
   await container.click('apply');
-  assert.equal(feedback.length, 2);
+  assert.equal(feedback.length, 1);
   assert.equal(feedback[0][0].id, 'first');
-  assert.equal(feedback[0][1], 'wrong');
-  assert.equal(feedback[0][2].url, image('first').url);
-  assert.equal(feedback[1][1], 'good');
-  assert.equal(feedback[1][2].url, image('new').url);
+  assert.equal(feedback[0][1], 'good');
+  assert.equal(feedback[0][2].url, image('new').url);
   const cancelled = new Container();
   mountImageReview(cancelled, [word('cancelled')], { onFeedback: (...args) => feedback.push(args) });
   await cancelled.click('keep');
   await cancelled.click('cancel');
-  assert.equal(feedback.length, 2);
+  assert.equal(feedback.length, 1);
 });
 
 test('stale rows excluded by the host do not teach preferences, and learning failures do not fail saving', async () => {
@@ -258,15 +256,16 @@ test('add flow can save all words without per-word image approval', async () => 
   assert.deepEqual(saved.map(item => item.imageUrl), ['', '']);
 });
 
-test('automatic choices require strong learned and semantic signals and never self-train', async () => {
+test('automatic suggestions require a clear semantic match and never self-train', async () => {
   const { CLIP_TAG } = await import('../js/ml/clipConfig.js');
   const { canAutoSelectImage } = await import('../js/services/imageChoicePolicy.js');
   const best = { ...image('automatic'), ml: { model: CLIP_TAG, sense: 'exact', trainedLabels: 40, selected: .4, margin: .12, unwanted: .05, preference: .96, score: .5 } };
   const runnerUp = { ...image('runnerup'), ml: { ...best.ml, score: .4 } };
   assert.equal(canAutoSelectImage([best, runnerUp]), true);
-  for (const patch of [{ trainedLabels: 8 }, { preference: .8 }, { margin: -.1 }, { unwanted: .3 }, { selected: .1 }, { score: .42 }, { preference: NaN }]) {
+  for (const patch of [{ margin: -.1 }, { unwanted: .3 }, { selected: .1 }, { score: .42 }]) {
     assert.equal(canAutoSelectImage([{ ...best, ml: { ...best.ml, ...patch } }, runnerUp]), false);
   }
+  assert.equal(canAutoSelectImage([{ ...best, ml: { ...best.ml, trainedLabels: 0, preference: .5 } }, runnerUp]), true);
   assert.equal(canAutoSelectImage([best]), false);
   assert.equal(canAutoSelectImage([best, runnerUp, { ...runnerUp, ml: { ...runnerUp.ml, score: .49 } }]), false);
   assert.equal(canAutoSelectImage([{ ...best, ml: { ...best.ml, contrast: null, margin: 0 } }, runnerUp]), true);
@@ -347,4 +346,43 @@ test('gallery arrow keys choose one option at a time and wrap without a network 
   assert.equal((container.innerHTML.match(/aria-checked="true"/g)||[]).length,1);
   await container.click('apply');
   assert.equal(saved[0].imageUrl,image('b').url);
+});
+
+function visiblePhotos(container, context, specs) {
+  const before = { width: globalThis.innerWidth, height: globalThis.innerHeight };
+  globalThis.innerWidth = 800; globalThis.innerHeight = 600;
+  context.after(() => {
+    if (before.width == null) delete globalThis.innerWidth; else globalThis.innerWidth = before.width;
+    if (before.height == null) delete globalThis.innerHeight; else globalThis.innerHeight = before.height;
+  });
+  container.querySelectorAll = () => specs.map(({ index, top = 50, loaded = true }) => ({
+    complete: loaded, naturalWidth: loaded ? 400 : 0,
+    getBoundingClientRect: () => ({ top, bottom: top + 100, left: 50, right: 250, width: 200, height: 100 }),
+    closest: () => ({ dataset: { imageReviewCandidate: String(index) } })
+  }));
+}
+
+test('ordinary saved choices learn relative preferences only from visible loaded alternatives', async context => {
+  const container = new Container();
+  const photos = Array.from({ length: 6 }, (_, i) => image(`exposure-${i}`));
+  const taught = [];
+  visiblePhotos(container, context, [{ index: 0 }, { index: 1 }, { index: 2, loaded: false }, { index: 3, top: 700 }, { index: 4, top: 570 }]);
+  let saved;
+  mountImageReview(container, [{ ...word('exposure', false), imageCandidates: photos }], {
+    onApply: rows => { saved = rows; }, onFeedback: (...args) => taught.push(args)
+  });
+  await container.click('choose', 0, 0);
+  assert.equal(taught.length, 0);
+  await container.click('apply');
+  assert.deepEqual(taught.map(args => [args[1], args[2].url]), [['good', photos[0].url], ['less-preferred', photos[1].url]]);
+  assert.equal(taught[1][3].preferredImage.url, photos[0].url);
+  assert.deepEqual(saved[0].imageFeedback.rejectedUrls, []);
+});
+
+test('the normal picker contains only image choices and useful save/search controls', () => {
+  const container = new Container();
+  mountImageReview(container, [{ ...word('simple', false), imageCandidates: [image('one'), image('two')] }]);
+  assert.doesNotMatch(container.innerHTML, /training|model|labels|parameters|Learning your taste|Compare two|fit meaning|rated examples|confidence|certainty/i);
+  assert.match(container.innerHTML, /Choose an image/);
+  assert.match(container.innerHTML, /Find more/);
 });
