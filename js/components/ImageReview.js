@@ -177,10 +177,8 @@ export function mountImageReview(container, words, {
     try {
       const feedback = rows.filter(row => row.decision === 'keep' && row.explicit).flatMap(row => choiceLabels(row));
       const applied = await onApply(result, { feedback });
-      for (const row of rows) if (row.decision === 'keep' && row.explicit && (!Array.isArray(applied?.appliedIds) || applied.appliedIds.includes(row.original.id))) {
-        for (const label of choiceLabels(row)) {
-          void Promise.resolve().then(() => onFeedback(label.word, label.action, label.image, { preferredImage: label.preferredImage })).catch(() => {});
-        }
+      for (const label of feedback) if (!Array.isArray(applied?.appliedIds) || applied.appliedIds.includes(label.word.id)) {
+        void Promise.resolve().then(() => onFeedback(label.word, label.action, label.image, { preferredImage: label.preferredImage, decisionId: label.decisionId })).catch(() => {});
       }
     }
     catch { if (active) applyError = 'The images could not be applied. Your review choices are still here. Try again.'; }

@@ -101,7 +101,7 @@ test('the worker loads a cached runtime offline and rejects missing files withou
   const calls = [], messages = [];
   const makeContext = urls => {
     const env = { fetch: async url => { calls.push(url); return new Response('runtime'); }, backends: { onnx: { wasm: {} } } };
-    const factory = { from_pretrained: async (_, options) => { assert.equal(options.local_files_only, true); return {}; } };
+    const factory = { from_pretrained: async (_, options) => { assert.equal(options.local_files_only, false); return {}; } };
     const self = { caches: cacheStorage(urls), postMessage: message => messages.push(message), navigator: {} };
     const context = vm.createContext({ env, self, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, CLIPTextModelWithProjection: factory, CLIPVisionModelWithProjection: factory, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise });
     vm.runInContext(source, context);
@@ -113,6 +113,7 @@ test('the worker loads a cached runtime offline and rejects missing files withou
   assert.equal(messages.at(-1).result.backend, 'wasm');
   assert.equal(cached.env.backends.onnx.wasm.wasmPaths.wasm, 'blob:cached');
   assert.equal(calls.length, 0);
+  assert.throws(() => cached.env.fetch('https://example.test/missing-model.onnx'), /missing|Download/);
   const missing = makeContext([]);
   missing.self.onmessage({ data: { id: 2, type: 'initialize', payload: {}, allowDownloads: false } });
   await vm.runInContext('queue', missing.context);

@@ -1,5 +1,7 @@
 import { replayWordFsrsHistory } from './srsEngine.js?v=18900';
 import { ReviewHistoryStore, mergeReviewEvents } from './reviewHistory.js';
+import { ImageLearningHistoryStore, mergeImageEvents, IMAGE_HISTORY_CHUNK } from './imageLearningHistory.js';
+import { CLIP_TAG } from '../ml/clipConfig.js';
 import { mergeFsrsConfig } from './fsrsConfig.js';
 import { mergeImageLearning } from './imagePreferences.js';
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
@@ -270,12 +272,24 @@ export class DriveSyncService {
     this.isFreshInstall = !this.storage.getItem(STORAGE_KEY_WORDS);
     this.deviceId = this.getOrCreateDeviceId();
     this.reviewHistory = new ReviewHistoryStore(storage);
+    this.imageHistory = new ImageLearningHistoryStore(storage);
     this.initStorage();
     this.restoreGoogleToken();
   }
 
   appendReviewEvent(event) { return this.reviewHistory.append(event); }
   getReviewEvents() { return this.reviewHistory.all(); }
+
+  async archiveLegacyImageLearning(data = this.getSettings().imageLearning) {
+    const signature = JSON.stringify(data || {});
+    if (signature === this.imageMigrationSignature) return;
+    const records = (data?.records || []).map(record => ({ ...record, id: `legacy:${record.id}:${record.updatedAt}`, key: record.id,
+      decisionId: `legacy:${record.id}`, encoder: CLIP_TAG, deviceId: this.deviceId }));
+    await this.imageHistory.merge(records, data?.resetAt || '');
+    this.imageMigrationSignature = signature;
+  }
+  async getImageEvents() { await this.archiveLegacyImageLearning(); return this.imageHistory.all(); }
+  async appendImageEvent(event) { const result = await this.imageHistory.append({ ...event, deviceId: this.deviceId }); this.emitChange('image-preferences'); return result; }
 
   getOrCreateDeviceId() {
     const saved = String(this.storage.getItem(STORAGE_KEY_DEVICE_ID) || '').trim();
@@ -956,6 +970,7 @@ export class DriveSyncService {
     const files = await this.listBackupFiles(folder.id);
     const monthlyFiles = new Map();
     const reviewFiles = [];
+    const imageFiles = [];
     let settingsFile = null;
     for (const file of files) {
       if (file.appProperties?.kind === 'month' && file.appProperties?.monthYear) {
@@ -964,6 +979,8 @@ export class DriveSyncService {
         monthlyFiles.set(file.appProperties.monthYear, group);
       } else if (file.appProperties?.kind === 'reviews') {
         reviewFiles.push(file);
+      } else if (file.appProperties?.kind === 'image-feedback-v2') {
+        imageFiles.push(file);
       } else if (file.appProperties?.kind === 'settings' && !settingsFile) {
         settingsFile = file;
       }
@@ -985,6 +1002,13 @@ export class DriveSyncService {
     if (reviewPayloads.length) await this.reviewHistory.merge(reviewPayloads.flatMap(({ file, payload }) => payload.events
       .map(event => ({ ...event, deviceId: event.deviceId || file.appProperties?.deviceId || '' }))));
     const localReviewEvents = await this.getReviewEvents();
+    const imagePayloads = [];
+    for (const file of imageFiles) {
+      const payload = await this.downloadJsonFile(file.id);
+      if (payload?.formatVersion !== 2 || !Array.isArray(payload.records)) continue;
+      imagePayloads.push({ file, payload });
+      await this.imageHistory.merge(payload.records.map(record => ({ ...record, deviceId: record.deviceId || file.appProperties?.deviceId || '' })), payload.resetAt);
+    }
     const localWordsForSync = this.getAllWords();
     const allMonths = new Set([
       ...localWordsForSync.map(word => word.monthYear),
@@ -1105,6 +1129,24 @@ export class DriveSyncService {
         await this.createJsonFile(folder.id, `KeepVocab Reviews ${this.deviceId}.json`, 'reviews', payload, '', { deviceId: this.deviceId });createdFiles += 1;
       } else if (JSON.stringify(mergeReviewEvents(ownFiles[0].payload.events)) !== JSON.stringify(ownEvents)) {
         await this.updateJsonFile(ownFiles[0].file.id, payload);updatedFiles += 1;
+      }
+    }
+    // Independent versioned files keep complete image decisions out of settings
+    // and protect the archive from older clients' bounded legacy replay format.
+    await this.archiveLegacyImageLearning(settings.imageLearning);
+    const imageEvents = await this.imageHistory.all();
+    const ownImages = imageEvents.filter(event => !event.deviceId || event.deviceId === this.deviceId);
+    const ownImageFiles = imagePayloads.filter(({ file }) => file.appProperties?.deviceId === this.deviceId);
+    const partCount = Math.max(Math.ceil(ownImages.length / IMAGE_HISTORY_CHUNK), ownImageFiles.length, this.imageHistory.resetAt ? 1 : 0);
+    for (let part = 0; part < partCount; part++) {
+      const key = String(part).padStart(6, '0');
+      const records = ownImages.slice(part * IMAGE_HISTORY_CHUNK, (part + 1) * IMAGE_HISTORY_CHUNK);
+      const existing = ownImageFiles.find(({ file }) => file.appProperties?.part === key);
+      const payload = { schemaVersion: SCHEMA_VERSION, formatVersion: 2, app: 'KeepVocab', deviceId: this.deviceId,
+        resetAt: this.imageHistory.resetAt, records };
+      if (!existing) { await this.createJsonFile(folder.id, `KeepVocab Photo Choices ${this.deviceId} ${key}.json`, 'image-feedback-v2', payload, '', { deviceId: this.deviceId, part: key }); createdFiles++; }
+      else if (JSON.stringify(mergeImageEvents(existing.payload.records)) !== JSON.stringify(records) || (existing.payload.resetAt || '') !== payload.resetAt) {
+        await this.updateJsonFile(existing.file.id, payload); updatedFiles++;
       }
     }
     settings = mergeDriveSettings(this.getSettings(), settings, { freshInstall: this.isFreshInstall });

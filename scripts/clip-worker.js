@@ -1,6 +1,8 @@
 import { AutoTokenizer, AutoProcessor, CLIPTextModelWithProjection, CLIPVisionModelWithProjection, RawImage, env } from '@huggingface/transformers';
 import { CLIP_MODEL, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS } from '../js/ml/clipConfig.js';
 import { normalizedVector } from '../js/services/imagePreferences.js';
+import { fullFrameImage } from '../js/services/imagePreprocessing.js';
+import { IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
 
 env.allowLocalModels = false;
 // Some optional tokenizer/config lookups omit revision. Pin their URLs and cache
@@ -83,7 +85,10 @@ async function initialize(devicePreference = 'auto') {
     status({ phase: 'loading', message: 'Loading local image and text models…' });
     await prepareRuntime();
     const progress_callback = data => status({ phase: 'loading', file: data.file, progress: data.progress, loaded: data.loaded, total: data.total });
-    const config = { revision: CLIP_REVISION, dtype: 'q8', progress_callback, local_files_only: !allowDownloads };
+    // local_files_only=true conflicts with allowLocalModels=false in this
+    // runtime, even with a complete browser cache. Cache misses are protected
+    // by the explicit consent-enforcing env.fetch wrapper above instead.
+    const config = { revision: CLIP_REVISION, dtype: 'q8', progress_callback, local_files_only: false };
     const tokenizer = await AutoTokenizer.from_pretrained(CLIP_MODEL, config);
     const processor = await AutoProcessor.from_pretrained(CLIP_MODEL, config);
     let textModel, visionModel;
@@ -128,10 +133,13 @@ async function run({ type, payload, device }) {
     const blob = payload.blob;
     if (!(blob instanceof Blob) || blob.size > 128_000 || !/^image\/(png|jpeg|webp)$/.test(blob.type)) throw new Error('Invalid thumbnail.');
     const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())), value => value.toString(16).padStart(2, '0')).join('');
-    return cached(`${CLIP_TAG}:image:${digest}`, async () => {
+    return cached(`${CLIP_TAG}:${IMAGE_PREPROCESSING}:image:${digest}`, async () => {
       const image = await RawImage.fromBlob(blob);
       if (image.width > 384 || image.height > 384) throw new Error('Thumbnail is too large.');
-      const inputs = await model.processor(image);
+      const fullFrame = await fullFrameImage(image, RawImage);
+      // Already square with the complete frame: the model's standard center
+      // crop cannot discard the subject's feet, hands or surrounding objects.
+      const inputs = await model.processor(fullFrame);
       const output = await model.visionModel(inputs);
       const vector = Array.from(output.image_embeds.data);
       for (const tensor of [...Object.values(inputs), ...Object.values(output)]) tensor?.dispose?.();

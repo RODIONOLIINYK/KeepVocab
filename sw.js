@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v110000';
+const CACHE_NAME = 'keepvocab-v111000';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -27,6 +27,12 @@ const ASSETS_TO_CACHE = [
   './js/services/imageSearch.js',
   './js/services/imageLearning.js',
   './js/services/imagePreferences.js',
+  './js/services/imageLearningHistory.js',
+  './js/services/imagePersonalizer.js',
+  './js/services/imagePersonalizerTraining.js',
+  './js/services/imagePreprocessing.js',
+  './js/ml/imageTrainer.worker.js',
+  './js/ml/pretrainedImagePersonalizer.js',
   './js/services/imageChoicePolicy.js',
   './js/ml/clipConfig.js',
   './js/ml/MOBILECLIP-LICENSE.txt',

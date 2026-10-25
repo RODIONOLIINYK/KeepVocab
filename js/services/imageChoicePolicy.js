@@ -27,8 +27,9 @@ export function imageChoiceLabels(word, selected, viewedCandidates = []) {
     alternatives.push(image);
     if (alternatives.length === 3) break;
   }
-  return [{ word, action: 'good', image: selected }, ...alternatives.map(image => ({
-    word, action: 'less-preferred', image, preferredImage: selected
+  const decisionId = globalThis.crypto?.randomUUID?.() || `choice-${Date.now()}-${Math.random()}`;
+  return [{ word, action: 'good', image: selected, decisionId }, ...alternatives.map(image => ({
+    word, action: 'less-preferred', image, preferredImage: selected, decisionId
   }))];
 }
 

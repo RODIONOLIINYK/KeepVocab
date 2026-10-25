@@ -103,8 +103,9 @@ export function scoreExerciseEvidence(input, word) {
   const evidenceStrength = clamp(base - hintPenalty + unaidedBoost + speedBoost + confidenceAdjustment, 0.15, 1);
   const average = word?.practiceStats?.timedRecallCount ? word.practiceStats.recallTimeTotalMs / word.practiceStats.timedRecallCount : 0;
   const expected = average || (['productive', 'speaking'].includes(result.recallType) ? 30000 : 10000 + String(word?.word || '').length * 300);
-  const slow = result.responseTimeMs != null && result.responseTimeMs < 120000 && result.responseTimeMs > Math.max(20000, expected * 2);
-  const rating = result.hintsUsed || slow || (result.confidence != null && result.confidence < 0.4) ? 'hard'
+  // Mobile typing, reading and interruptions are not evidence of forgetting.
+  // Timing remains a historical feature, never an automatic Hard judgement.
+  const rating = result.hintsUsed || (result.confidence != null && result.confidence < 0.4) ? 'hard'
     : result.producedUnaided && result.confidence >= 0.9 && result.responseTimeMs != null && result.responseTimeMs < expected ? 'easy' : 'good';
   return { ...result, rating, evidenceStrength };
 }

@@ -49,9 +49,12 @@ export function fitMemoryCalibration(predictions) {
   for (let epoch = 0; epoch < 80; epoch++) {
     const gradient = weights.map(value => value * 0.1);
     for (const { event, correct, probability } of examples) {
-      const z = probabilityLogit(probability) + event.context.reduce((sum, value, index) => sum + value * weights[index], 0);
+      const rawDelta = event.context.reduce((sum, value, index) => sum + value * weights[index], 0);
+      // Fit the same bounded correction used during scheduling. A saturated
+      // correction has zero data gradient; regularization can still shrink it.
+      const z = probabilityLogit(probability) + Math.max(-.5, Math.min(.5, rawDelta));
       const error = (1 / (1 + Math.exp(-z)) - Number(correct)) / examples.length;
-      for (let index = 0; index < weights.length; index++) gradient[index] += error * event.context[index];
+      for (let index = 0; index < weights.length; index++) gradient[index] += Math.abs(rawDelta) < .5 ? error * event.context[index] : 0;
     }
     for (let index = 0; index < weights.length; index++) weights[index] -= 0.25 * gradient[index];
   }

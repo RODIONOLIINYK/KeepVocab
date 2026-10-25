@@ -128,13 +128,14 @@ test('Drive unions explicit labels, converges on concurrent edits, and reset mar
   assert.equal(updatePreferenceModel(reset, updatePreferenceModel({ records: initial }).model).model, null);
 });
 
-test('malformed, mismatched-model and oversized histories cannot enter training', () => {
+test('malformed records are rejected while complete histories survive a bounded legacy replay', () => {
   assert.deepEqual(mergeDriveSettings({ imageLearning: null }, { imageLearning: null }).imageLearning, { version: 1, resetAt: '', records: [] });
   const valid = record('valid', 1);
   const data = mergeImageLearning({ records: [valid, { ...valid, id: 'wrong', model: 'other' }, { ...valid, id: 'bad', features: 'x' }, { ...valid, id: 'label', label: -1 }] });
   assert.deepEqual(data.records, [valid]);
   const capped = mergeImageLearning({ records: Array.from({ length: 400 }, (_, i) => record(String(i), i % 2)) });
-  assert.equal(capped.records.length, MAX_LABELS);
+  assert.equal(capped.records.length, 400);
+  assert.equal(fitPreferences(capped.records).trainedLabels, MAX_LABELS);
   assert.throws(() => normalizedVector([NaN]), /Invalid/);
   assert.throws(() => normalizedVector(Array(512).fill(0)), /Empty/);
 });
@@ -147,11 +148,11 @@ test('sense contrast rejects a wrong meaning despite generic word overlap; prefe
   const model = { model: CLIP_TAG, trainedLabels: 64, weights: Array(516).fill(0) };model.weights[1] = 100;
   const ranked = rankEmbeddedImages([{ candidate: { id: 'wrong' }, vector: ship, semantic: wrong }, { candidate: { id: 'correct' }, vector: cat, semantic: correct }], model);
   assert.equal(ranked[0].candidate.id, 'correct');
-  assert.ok(ranked.every(item => Math.abs(item.score - item.semantic.score - 0.03 / (item.index + 1)) <= 0.060001));
+  assert.ok(ranked.every(item => Math.abs(item.score - item.semantic.score) <= 0.060001));
   const wrongRank = ranked.find(item => item.candidate.id === 'wrong');
-  assert.ok(wrongRank.score <= wrong.score + 0.03 / (wrongRank.index + 1));
+  assert.ok(wrongRank.score <= wrong.score);
   const early = rankEmbeddedImages([{ vector: ship, semantic: correct }], { ...model, trainedLabels: 8 })[0];
-  assert.ok(early.score - correct.score - 0.03 <= 0.007501);
+  assert.ok(early.score - correct.score <= 0.007501);
 });
 
 test('vector duplicate suppression retains a distinct visual alternative', () => {

@@ -1,0 +1,315 @@
+{
+  "dataset": "assistant-visually-reviewed-coco128-v1",
+  "kind": "visually-reviewed-curated-photos",
+  "encoder": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:q8",
+  "preprocessing": "full-frame-letterbox-256-v1",
+  "trainingChoices": 54,
+  "validationChoices": 18,
+  "testChoices": 18,
+  "trainingMeanings": 18,
+  "validationMeanings": 6,
+  "testMeanings": 6,
+  "accepted": false,
+  "baselineTestAgreement": 0.7222222222222222,
+  "candidateTestAgreement": 0.5,
+  "baselineTestLoss": 0.6650399170149579,
+  "candidateTestLoss": 0.7609952139514983,
+  "improvementLowerBound": -0.21483699191661473,
+  "use": "hidden-layer-initialization-only",
+  "parameters": 49825,
+  "dataSha256": "bc8d7211fb5305ffd7f58a5ca42dda083913930c23860b1ece03b02770e4fd82",
+  "weightsSha256": "61c8080298ae4825b11917e029d0516cf1eb85b4c38084db496909cc090cc7a1",
+  "note": "Small agent-curated development dataset. Repeated choices within each meaning are correlated. This is not a measurement of the user’s preferences or population-wide accuracy.",
+  "testDecisions": [
+    {
+      "id": "curated-24-0",
+      "meaningId": "curated-24-teddy bear",
+      "loss": 1.072555294652084,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-24-1",
+      "meaningId": "curated-24-teddy bear",
+      "loss": 0.5349035469799504,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-24-2",
+      "meaningId": "curated-24-teddy bear",
+      "loss": 0.5741113431436213,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-25-0",
+      "meaningId": "curated-25-toilet",
+      "loss": 0.5747025515598964,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-25-1",
+      "meaningId": "curated-25-toilet",
+      "loss": 0.49774839224174655,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-25-2",
+      "meaningId": "curated-25-toilet",
+      "loss": 0.7136824875682014,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-26-0",
+      "meaningId": "curated-26-coffee",
+      "loss": 0.7556572887311123,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-26-1",
+      "meaningId": "curated-26-coffee",
+      "loss": 0.5941493446506516,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-26-2",
+      "meaningId": "curated-26-coffee",
+      "loss": 0.7512389820376756,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-27-0",
+      "meaningId": "curated-27-striped",
+      "loss": 1.4733078634166705,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-27-1",
+      "meaningId": "curated-27-striped",
+      "loss": 0.6435111799510602,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-27-2",
+      "meaningId": "curated-27-striped",
+      "loss": 1.437423237824497,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-28-0",
+      "meaningId": "curated-28-motorcycle",
+      "loss": 0.63180731334506,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-28-1",
+      "meaningId": "curated-28-motorcycle",
+      "loss": 0.7016079940655984,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-28-2",
+      "meaningId": "curated-28-motorcycle",
+      "loss": 0.7362749821214929,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-29-0",
+      "meaningId": "curated-29-audience",
+      "loss": 0.7622147595227785,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-29-1",
+      "meaningId": "curated-29-audience",
+      "loss": 0.563023132077752,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-29-2",
+      "meaningId": "curated-29-audience",
+      "loss": 0.6799941572371174,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    }
+  ],
+  "baselineDecisions": [
+    {
+      "id": "curated-24-0",
+      "meaningId": "curated-24-teddy bear",
+      "loss": 0.5228997640817002,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-24-1",
+      "meaningId": "curated-24-teddy bear",
+      "loss": 0.6320874590666725,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-24-2",
+      "meaningId": "curated-24-teddy bear",
+      "loss": 0.6738473434539467,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-25-0",
+      "meaningId": "curated-25-toilet",
+      "loss": 0.6803197170531815,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-25-1",
+      "meaningId": "curated-25-toilet",
+      "loss": 0.6398933655832941,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-25-2",
+      "meaningId": "curated-25-toilet",
+      "loss": 0.6942687710404926,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-26-0",
+      "meaningId": "curated-26-coffee",
+      "loss": 0.8069916312496477,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-26-1",
+      "meaningId": "curated-26-coffee",
+      "loss": 0.640531996484151,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-26-2",
+      "meaningId": "curated-26-coffee",
+      "loss": 0.660958010136979,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-27-0",
+      "meaningId": "curated-27-striped",
+      "loss": 0.6937253189245964,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-27-1",
+      "meaningId": "curated-27-striped",
+      "loss": 0.6490839229209276,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-27-2",
+      "meaningId": "curated-27-striped",
+      "loss": 0.6600825926371641,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-28-0",
+      "meaningId": "curated-28-motorcycle",
+      "loss": 0.6312279284309216,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-28-1",
+      "meaningId": "curated-28-motorcycle",
+      "loss": 0.6916166557988805,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-28-2",
+      "meaningId": "curated-28-motorcycle",
+      "loss": 0.7356145664907761,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-29-0",
+      "meaningId": "curated-29-audience",
+      "loss": 0.7597518497073222,
+      "accuracy": 0,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-29-1",
+      "meaningId": "curated-29-audience",
+      "loss": 0.5627462720371164,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    },
+    {
+      "id": "curated-29-2",
+      "meaningId": "curated-29-audience",
+      "loss": 0.635071341171469,
+      "accuracy": 1,
+      "rejectedAboveThreshold": 0,
+      "eligible": true
+    }
+  ]
+}

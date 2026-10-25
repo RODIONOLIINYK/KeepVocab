@@ -37,9 +37,10 @@ test('recognition and hinted success cannot extend or strengthen an established 
   assert.equal(reviewChannel(answer({ recallType: 'productive' })), 'recall');
 });
 
-test('Good is the automatic success grade; hesitation and explicit confidence inform grading without speed-only Easy', () => {
+test('Good is the automatic success grade; phone latency cannot create Hard or speed-only Easy', () => {
   assert.equal(scoreExerciseEvidence(answer({ responseTimeMs: 1000 }), word).rating, 'good');
-  assert.equal(scoreExerciseEvidence(answer({ responseTimeMs: 50000 }), word).rating, 'hard');
+  assert.equal(scoreExerciseEvidence(answer({ responseTimeMs: 50000 }), word).rating, 'good');
+  assert.equal(scoreExerciseEvidence(answer({ responseTimeMs: 110000 }), word).rating, 'good');
   assert.equal(scoreExerciseEvidence(answer({ confidence: 0.2 }), word).rating, 'hard');
   assert.equal(scoreExerciseEvidence(answer({ responseTimeMs: 2000, confidence: 0.95 }), word).rating, 'easy');
   assert.equal(scoreExerciseEvidence(answer({ correct: false, confidence: 1 }), word).rating, 'again');

@@ -1,0 +1,43 @@
+{
+  "kind": "real-photo-full-pipeline",
+  "encoder": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:q8",
+  "preprocessing": "full-frame-letterbox-256-v1",
+  "splits": {
+    "train": {
+      "choices": 54,
+      "meanings": 18,
+      "fullFrameClipChosenAt1": 20,
+      "fullFrameCandidateChosenAt1": 53,
+      "centerCropClipChosenAt1": 11
+    },
+    "validation": {
+      "choices": 18,
+      "meanings": 6,
+      "fullFrameClipChosenAt1": 5,
+      "fullFrameCandidateChosenAt1": 12,
+      "centerCropClipChosenAt1": 8
+    },
+    "test": {
+      "choices": 18,
+      "meanings": 6,
+      "fullFrameClipChosenAt1": 13,
+      "fullFrameCandidateChosenAt1": 9,
+      "centerCropClipChosenAt1": 11
+    }
+  },
+  "browserCheck": {
+    "choices": 12,
+    "persistedEvents": 24,
+    "comparisons": 12,
+    "explicitNegativeEvents": 0,
+    "workerResult": "insufficient-independent-choices",
+    "isolatedOrigin": "127.0.0.1:8087",
+    "imagesVisuallyInspected": true
+  },
+  "notes": [
+    "The 90 choices cover 30 meanings; three pairs per meaning share a winner and are correlated.",
+    "CLIP image and text encoders, preprocessing, semantic scoring and MLP ranking were run. Search provider retrieval and Gemini were not called.",
+    "This test set was inspected after its initial evaluation; subsequent runs were implementation regression checks, not a fresh benchmark.",
+    "Node uses native CPU inference and Sharp resizing. Physical phone performance was not measured."
+  ]
+}

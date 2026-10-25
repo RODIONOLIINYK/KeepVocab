@@ -2,10 +2,16 @@ import { driveSync } from './driveSync.js?v=18900';
 import { prepareImageThumbnails } from './imageThumbnails.js?v=18900';
 import { base64ToBytes } from '../utils/base64.js';
 import { CLIP_TAG, CLIP_CACHE, CLIP_DOWNLOAD_URLS, VECTOR_DB, MODEL_DOWNLOAD_MB } from '../ml/clipConfig.js';
-import { cosine, preferenceFeatures, encodeFeatures, decodeFeatures, mergeImageLearning, updatePreferenceModel, preferenceProbability, imageLearningRecordKey, COMPARISON_RECORD_MODEL } from './imagePreferences.js';
+import { cosine, preferenceFeatures, encodeFullFeatures, decodeFeatures, mergeImageLearning, preferenceProbability } from './imagePreferences.js';
 
 const CONFIG_KEY = 'keepvocab_image_learning_device_v1';
 const MODEL_KEY = 'keepvocab_image_preference_model_v1';
+import { IMAGE_PREPROCESSING, encodeMeaning, personalizerScore, validPersonalizer } from './imagePersonalizer.js';
+import { ImagePersonalizerTraining } from './imagePersonalizerTraining.js';
+let trainingInstance;
+function training() { return trainingInstance ||= new ImagePersonalizerTraining(driveSync); }
+let cachedModel = null;
+const recentRecords = new Map();
 let worker;
 let preferCPU = false;
 let nextId = 0;
@@ -63,68 +69,26 @@ export async function initializeImageLearning({ requestDownload, storage = globa
   emit();
   return { installed, prompted: true, enabled: imageLearningEnabled(storage) };
 }
-function savedModel() {
-  try { const model = JSON.parse(globalThis.localStorage?.getItem(MODEL_KEY) || 'null');
-    return model?.model === CLIP_TAG && model.weights?.length === 516 && model.weights.every(Number.isFinite) ? model : null;
-  } catch { return null; }
-}
 function dataset() { return mergeImageLearning(driveSync.getSettings().imageLearning); }
-function trainedModel() {
-  const state = updatePreferenceModel(dataset(), savedModel());
-  if (globalThis.localStorage) {
-    if (state.model) localStorage.setItem(MODEL_KEY, JSON.stringify(state.model)); else localStorage.removeItem(MODEL_KEY);
-  }
-  return state;
-}
 export function getImageLearningStatus() {
-  const data = dataset();
-  const model = savedModel();
+  const history = driveSync.imageHistory;
+  const data = [...recentRecords.values()];
   return { enabled: imageLearningEnabled(), installed, phase, message, backend, downloadMB: MODEL_DOWNLOAD_MB,
-    labels: data.records.length, revision: model?.revision || 0, trainedLabels: model?.trainedLabels || 0,
-    queued: data.records.filter(record => !model?.trainedRecordIds?.includes(imageLearningRecordKey(record))).length,
-    positiveLabels: data.records.filter(record => record.kind !== 'comparison' && record.label === 1).length,
-    negativeLabels: data.records.filter(record => record.kind !== 'comparison' && record.label === 0).length,
-    comparisons: data.records.filter(record => record.kind === 'comparison').length,
-    changedParameters: model?.changedParameters || 0, deltaL2: model?.deltaL2 || 0,
-    fingerprint: model?.fingerprint || '', beforeFingerprint: model?.beforeFingerprint || '' };
+    labels: Math.max(history.count, dataset().records.length), revision: cachedModel?.revision || 0,
+    trainedLabels: cachedModel?.trainingDecisionIds?.length || 0, queued: 0,
+    positiveLabels: history.summary?.positive || data.filter(r => r.label === 1).length,
+    negativeLabels: history.summary?.negative || data.filter(r => r.label === 0 && r.kind !== 'comparison').length,
+    comparisons: history.summary?.comparisons || data.filter(r => r.kind === 'comparison').length,
+    historyWarning: history.error, trainingReport: training().report };
 }
-export function getImageLearningTrainingData() {
-  const records = dataset().records;
-  const model = savedModel();
-  const trained = new Set(model?.trainedRecordIds || []);
-  return {
-    exportedAt: new Date().toISOString(),
-    featureDescription: {
-      imageEmbedding: 'features[0..511]: quantized MobileCLIP image embedding',
-      selectedMeaningSimilarity: 'features[512]: similarity to the selected meaning',
-      meaningMargin: 'features[513]: similarity margin against alternative meanings',
-      unwantedContentSimilarity: 'features[514]: similarity to unwanted-content prompt',
-      encoding: 'features are signed 8-bit values divided by 127; weights[515] is the logistic-regression intercept',
-    },
-    records: records.map(record => ({
-      id: record.id,
-      label: record.kind === 'comparison' ? 'less preferred' : record.label === 1 ? 'fits meaning' : 'wrong meaning',
-      labelValue: record.label,
-      kind: record.kind || 'explicit',
-      updatedAt: record.updatedAt,
-      trainingStatus: trained.has(imageLearningRecordKey(record)) ? 'included in latest fit' : 'queued/not in latest fit',
-      encodedFeatures: record.features,
-      features: decodeFeatures(record.features),
-      ...(record.kind === 'comparison' ? { encodedPreferredFeatures: record.preferredFeatures, preferredFeatures: decodeFeatures(record.preferredFeatures) } : {}),
-    })),
-    model: model ? {
-      model: model.model,
-      revision: model.revision,
-      trainedLabels: model.trainedLabels,
-      trainedComparisons: model.trainedComparisons || 0,
-      trainedPositiveLabels: model.trainedPositiveLabels || 0,
-      trainedNegativeLabels: model.trainedNegativeLabels || 0,
-      updatedAt: model.updatedAt,
-      fingerprint: model.fingerprint,
-      weights: model.weights,
-      trainedRecordIds: model.trainedRecordIds,
-    } : null,
-  };
+export async function getImageLearningTrainingData() {
+  const records = await driveSync.getImageEvents();
+  return { exportedAt: new Date().toISOString(), records: records.map(record => ({ ...record,
+    labelValue: record.label, label: record.kind === 'comparison' ? 'less preferred' : record.label ? 'fits meaning' : 'wrong meaning' })),
+    model: await training().current(), report: training().report };
+}
+export async function trainPersonalImageModel(options = {}) {
+  const result = await training().train(options); cachedModel = await training().current(); emit(); return result;
 }
 function stopWorker(reason = 'The local image model was stopped.') {
   clearTimeout(idleTimer);worker?.terminate();worker = null;
@@ -172,11 +136,11 @@ export async function enableImageLearning(options = {}) {
   }
   saveDeviceConfig({ enabled: true, prompted: true, downloadConsent: options.download === false && !downloadConsent(options.storage) ? 'not-requested' : 'accepted' }, options.storage);
   phase = 'loading';message = installed ? 'Loading the installed image model…' : 'Downloading the local image model…';emit();
-  try { const result = await rpc('initialize', {}, options);installed = true;trainedModel();phase = 'ready';message = 'Local image scoring is ready.';backend = result.backend;emit();return getImageLearningStatus(); }
+  try { const result = await rpc('initialize', {}, options);installed = true;cachedModel = await training().current();phase = 'ready';message = 'Local image scoring is ready.';backend = result.backend;emit();return getImageLearningStatus(); }
   catch (error) { phase = 'error';message = error.message;emit();throw error; }
 }
 export function disableImageLearning() {
-  saveDeviceConfig({ enabled: false, prompted: true });stopWorker();phase = 'off';message = 'Local image scoring is off. You can enable it again in Settings.';emit();
+  training().stop(); saveDeviceConfig({ enabled: false, prompted: true });stopWorker();phase = 'off';message = 'Local image scoring is off. You can enable it again in Settings.';emit();
 }
 export async function clearImageModelDownloads() {
   disableImageLearning();
@@ -188,18 +152,23 @@ export async function clearImageModelDownloads() {
     request.onblocked = () => reject(new Error('Close other KeepVocab windows before clearing model data.'));
   });
 }
-export function resetImagePreferences() {
-  const data = dataset();
-  const resetAt = new Date(Math.max(Date.now(), ...data.records.map(record => Date.parse(record.updatedAt) + 1), (Date.parse(data.resetAt) || 0) + 1)).toISOString();
+export async function resetImagePreferences() {
+  training().stop(); cachedModel = null; recentRecords.clear();
+  await feedbackQueue.catch(() => {});
+  const records = await driveSync.getImageEvents();
+  const resetAt = new Date(records.reduce((latest, record) => Math.max(latest, Date.parse(record.updatedAt) || 0), Date.now()) + 1).toISOString();
   driveSync.updateSettings({ imageLearning: { version: 1, resetAt, records: [] } });
-  globalThis.localStorage?.removeItem(MODEL_KEY);emit();
+  await driveSync.imageHistory.merge([], resetAt); await driveSync.imageHistory.saveModel(null);
+  globalThis.localStorage?.removeItem(MODEL_KEY); emit();
 }
 const fingerprint = word => JSON.stringify([String(word.word || '').trim().toLowerCase(), String(word.partOfSpeech || '').trim().toLowerCase(), String(word.sourceDefinition || word.definition || '').replace(/\s+/g, ' ').trim()]);
-function prompts(word, options) {
+export function imageClipPrompts(word, options = {}) {
   const selected = `A photo illustrating ${word.word} (${word.partOfSpeech || 'word'}): ${word.definition || word.sourceDefinition}`;
-  const scenes = (options.scenes || word.imageScenes?.scenes || []).slice(0, 3).map(scene => `A photo of ${scene}`);
+  const rawScenes = [...new Set([...(options.extraQueries || []), ...(options.scenes || []), ...(word.imageScenes?.scenes || [])].map(s => String(s).trim()).filter(Boolean))].slice(0, 3);
+  const scenes = rawScenes.map(scene => `A photo of ${scene}`);
   const alternatives = [...new Set([...(options.otherDefinitions || []), ...(word.otherDefinitions || [])])].filter(value => value && value !== word.definition && value !== word.sourceDefinition).slice(0, 8).map(value => `A photo illustrating ${word.word}: ${value}`);
-  return { texts: [selected, ...scenes, ...alternatives, 'Text, a logo, a diagram, a screenshot or a document.'].map(text => text.slice(0, 2000)), sceneCount: scenes.length, alternativeCount: alternatives.length };
+  const contrasts = (word.imageScenes?.contrasts || []).slice(0, 2).map(scene => `A photo of ${scene}`);
+  return { scenes: rawScenes, texts: [selected, ...scenes, ...alternatives, ...contrasts, 'Text, a logo, a diagram, a screenshot or a document.'].map(text => text.slice(0, 2000)), sceneCount: scenes.length, alternativeCount: alternatives.length + contrasts.length };
 }
 export function semanticScores(image, texts, sceneCount, alternativeCount) {
   const direct = cosine(image, texts[0]);
@@ -213,12 +182,14 @@ export function semanticScores(image, texts, sceneCount, alternativeCount) {
 export function rankEmbeddedImages(items, model = null) {
   const scored = items.map((item, index) => {
     const features = preferenceFeatures(item.vector, item.semantic);
-    const probability = preferenceProbability(model, features);
+    const neural = validPersonalizer(model) && item.meaningFeatures;
+    const adjustment = neural ? personalizerScore(model, encodeFullFeatures(features), item.meaningFeatures) - personalizerScore(null, encodeFullFeatures(features), item.meaningFeatures) : 0;
+    const probability = neural ? 0.5 + adjustment / .16 : preferenceProbability(model, features);
     // Early feedback should have little influence. A visual preference must not
     // positively reward an image that matches another supplied sense better.
     const strength = 0.12 * Math.min(1, (model?.trainedLabels || 0) / 64);
     const preference = item.semantic.margin < 0 ? Math.min(0, probability - 0.5) : probability - 0.5;
-    return { ...item, index, features, probability, score: item.semantic.score + strength * preference + 0.03 / (index + 1) };
+    return { ...item, index, features, probability, score: item.semantic.score + (neural ? adjustment : strength * preference) };
   });
   const selected = [];
   while (scored.length) {
@@ -234,25 +205,26 @@ export function rankEmbeddedImages(items, model = null) {
 export async function rankImagesLocally(word, candidates, options = {}) {
   if (!imageLearningEnabled(options.storage) || !candidates.length) return candidates;
   try {
-    const prompt = prompts(word, options);
+    const prompt = imageClipPrompts(word, options);
     const texts = await rpc('texts', { texts: prompt.texts }, options);
+    const meaningFeatures = encodeMeaning(texts[0]);
     const items = [];
     // A six-photo chooser needs a small shortlist, not forty serial inferences.
     const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(40, Number(options.localCandidateLimit) || 12)));
     for (let offset = 0; offset < scoringLimit; offset += 4) {
       if (options.signal?.aborted || !imageLearningEnabled()) return candidates;
-      const thumbnails = await prepareImageThumbnails(candidates.slice(offset, Math.min(offset + 4, scoringLimit)), options);
+      const thumbnails = await prepareImageThumbnails(candidates.slice(offset, Math.min(offset + 4, scoringLimit)), { ...options, preferOriginal: true });
       for (const thumbnail of thumbnails) {
         const vector = await rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }) }, options);
-        items.push({ candidate: thumbnail.candidate, vector, semantic: semanticScores(vector, texts, prompt.sceneCount, prompt.alternativeCount) });
+        items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, semantic: semanticScores(vector, texts, prompt.sceneCount, prompt.alternativeCount) });
       }
       phase = 'scoring';message = `Scored ${items.length} of ${candidates.length} image suggestions locally.`;emit();
     }
-    const model = trainedModel().model;
+    const model = cachedModel = await training().current();
     const scored = rankEmbeddedImages(items, model);
     const scoredImages = new Set(items.map(item => item.candidate));
     phase = 'ready';message = `${items.length} image suggestions scored locally.`;emit();
-    return [...scored.map(item => ({ ...item.candidate, ml: { model: CLIP_TAG, sense: fingerprint(word), features: encodeFeatures(item.features),
+    return [...scored.map(item => ({ ...item.candidate, ml: { model: CLIP_TAG, sense: fingerprint(word), features: encodeFullFeatures(item.features), meaningFeatures, preprocessing: IMAGE_PREPROCESSING, scenes: prompt.scenes,
       selected: item.semantic.selected, contrast: item.semantic.contrast, margin: item.semantic.margin, unwanted: item.semantic.unwanted, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
       trainedComparisons: model?.trainedComparisons || 0, trainedPositiveLabels: model?.trainedPositiveLabels || 0, trainedNegativeLabels: model?.trainedNegativeLabels || 0, score: item.score } })),
       ...candidates.filter(item => !scoredImages.has(item))];
@@ -267,54 +239,49 @@ async function imageRecordIds(word, image) {
     return Array.from(new Uint8Array(idBytes), value => value.toString(16).padStart(2, '0')).join('');
   }));
 }
-export function recordImagePreference(word, action, image, { preferredImage } = {}) {
+export function recordImagePreference(word, action, image, { preferredImage, decisionId } = {}) {
   if (!['good', 'wrong', 'less-preferred'].includes(action) || !image || !imageLearningEnabled()
-    || (action === 'less-preferred' && !preferredImage?.url)) return Promise.resolve({ recorded: false, reason: 'No training choice.' });
+    || action === 'less-preferred' && !preferredImage?.url) return Promise.resolve({ recorded: false, reason: 'No training choice.' });
   const operation = async () => {
+    await driveSync.archiveLegacyImageLearning();
     const ids = await imageRecordIds(word, image);
-    if (!ids.length) return { recorded: false, reason: 'Image pixels were unavailable; preference weights were unchanged.' };
-    const data = dataset();
-    const featuresFor = async (photo, photoIds) => {
-      const existing = data.records.filter(record => photoIds.includes(record.id)).at(-1);
+    if (!ids.length) return { recorded: false, reason: 'No photo available.' };
+    const featuresFor = async (photo, keys) => {
       let candidate = photo;
-      if ((candidate.ml?.model !== CLIP_TAG || candidate.ml.sense !== fingerprint(word)) && existing?.features) return existing.features;
-      if (candidate.ml?.model !== CLIP_TAG || candidate.ml.sense !== fingerprint(word)) candidate = (await rankImagesLocally(word, [photo]))[0];
-      return (candidate?.ml?.model === CLIP_TAG && candidate.ml.sense === fingerprint(word) && candidate.ml.features)
-        || existing?.features || '';
+      const existingMl = candidate.ml?.model === CLIP_TAG && candidate.ml.sense === fingerprint(word) ? candidate.ml : null;
+      if (existingMl?.preprocessing === IMAGE_PREPROCESSING && existingMl.meaningFeatures) return existingMl;
+      const previous = await driveSync.imageHistory.latest(keys[0]);
+      if (previous?.meaningFeatures && previous.preprocessing === IMAGE_PREPROCESSING) return { ...previous, model: CLIP_TAG };
+      candidate = (await rankImagesLocally(word, [photo]))[0];
+      if (candidate?.ml?.model === CLIP_TAG && candidate.ml.sense === fingerprint(word)) return candidate.ml;
+      return previous?.features ? previous : existingMl;
     };
-    const features = await featuresFor(image, ids);
-    if (!features) return { recorded: false, reason: 'Image pixels were unavailable; preference weights were unchanged.' };
-    try { decodeFeatures(features); } catch { return { recorded: false, reason: 'Invalid image features; preference weights were unchanged.' }; }
-    let id = ids[0];
-    let idSet = new Set(ids);
-    let preferredFeatures = '';
+    const ml = await featuresFor(image, ids);
+    try { decodeFeatures(ml?.features); } catch { return { recorded: false, reason: 'Image pixels were unavailable; choice was not fabricated.' }; }
+    let key = ids[0], preferred = null;
     if (action === 'less-preferred') {
       const preferredIds = await imageRecordIds(word, preferredImage);
-      if (!preferredIds.length || preferredIds.some(key => idSet.has(key))) return { recorded: false, reason: 'A comparison needs two different photos.' };
-      preferredFeatures = await featuresFor(preferredImage, preferredIds);
-      try { decodeFeatures(preferredFeatures); } catch { return { recorded: false, reason: 'Comparison pixels were unavailable; preference weights were unchanged.' }; }
-      // Either direction updates the same pair, so a later choice corrects the
-      // previous comparison and Drive sync cannot resurrect both directions.
-      id = `comparison:${[id, preferredIds[0]].sort().join(':')}`;
-      idSet = new Set([id]);
+      if (!preferredIds.length || preferredIds.some(id => ids.includes(id))) return { recorded: false, reason: 'Two different photos are needed.' };
+      preferred = await featuresFor(preferredImage, preferredIds);
+      try { decodeFeatures(preferred?.features); } catch { return { recorded: false, reason: 'Comparison pixels were unavailable.' }; }
+      key = `comparison:${[ids[0], preferredIds[0]].sort().join(':')}`;
     }
-    const matching = data.records.filter(record => idSet.has(record.id));
-    const existing = matching.at(-1);
-    const label = action === 'good' ? 1 : 0;
-    if (matching.length === 1 && existing?.id === id && existing?.label === label && existing.features === features
-      && (existing.preferredFeatures || '') === preferredFeatures) {
-      return { recorded: false, reason: 'This label was already recorded.' };
-    }
-    const latestExistingTime = Math.max(0, ...matching.map(record => Date.parse(record.updatedAt || '') || 0));
-    const updatedAt = new Date(Math.max(Date.now(), latestExistingTime + 1, (Date.parse(data.resetAt || '') || 0) + 1)).toISOString();
-    const retainedRecords = data.records.filter(record => !idSet.has(record.id));
-    const next = mergeImageLearning({ ...data, records: retainedRecords }, { records: [{ id, model: action === 'less-preferred' ? COMPARISON_RECORD_MODEL : CLIP_TAG, label, features, updatedAt,
-      ...(action === 'less-preferred' ? { kind: 'comparison', preferredFeatures } : {}) }] });
-    driveSync.updateSettings({ imageLearning: next });
-    const state = trainedModel();emit();
-    return { recorded: true, trained: state.trained, queued: state.queued, changedParameters: state.model?.changedParameters || 0, deltaL2: state.model?.deltaL2 || 0,
-      revision: state.model?.revision || 0, reason: state.trained ? `Trained revision ${state.model.revision}; ${state.model.changedParameters} parameters changed.` : `Choice saved; ${state.queued} examples queued. Training starts with 8 examples, including two choices and two comparisons or rejections, then batches of 4.` };
+    const previous = await driveSync.imageHistory.latest(key), label = action === 'good' ? 1 : 0;
+    if (previous && (!decisionId || previous.decisionId === decisionId) && previous.label === label && previous.features === ml.features && (previous.preferredFeatures || '') === (preferred?.features || '')) return { recorded: false, reason: 'This choice was already saved.' };
+    const model = await training().current();
+    const meaningId = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fingerprint(word)))), b => b.toString(16).padStart(2, '0')).join('');
+    const updatedAt = new Date(Math.max(Date.now(), Date.parse(previous?.updatedAt || '') + 1 || 0, Date.parse(driveSync.imageHistory.resetAt || '') + 1 || 0)).toISOString();
+    const record = { id: crypto.randomUUID(), key, decisionId: decisionId || crypto.randomUUID(), meaningId, updatedAt, label,
+      features: ml.features, ...(preferred ? { kind: 'comparison', preferredFeatures: preferred.features } : {}),
+      encoder: CLIP_TAG, preprocessing: ml.preprocessing || 'legacy-center-crop', ...(ml.meaningFeatures ? { meaningFeatures: ml.meaningFeatures } : {}),
+      context: { word: word.word, definition: word.sourceDefinition || word.definition, scenes: ml.scenes || word.imageScenes?.scenes || [],
+        imageUrl: image.url, sourceUrl: image.sourceUrl, preferredUrl: preferredImage?.url },
+      predictions: preferred && ml.meaningFeatures ? [null, model].filter((m, i) => i === 0 || m).map(m => ({ revision: m?.revision || 0,
+        chosenScore: personalizerScore(m, preferred.features, ml.meaningFeatures), alternativeScore: personalizerScore(m, ml.features, ml.meaningFeatures) })) : [] };
+    await driveSync.appendImageEvent(record);
+    recentRecords.set(record.id, record); if (recentRecords.size > 128) recentRecords.delete(recentRecords.keys().next().value);
+    training().request(); emit();
+    return { recorded: true, trained: false, reason: 'Photo choice saved.' };
   };
-  feedbackQueue = feedbackQueue.catch(() => {}).then(operation);
-  return feedbackQueue;
+  feedbackQueue = feedbackQueue.catch(() => {}).then(operation); return feedbackQueue;
 }

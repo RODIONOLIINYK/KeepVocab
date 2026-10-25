@@ -115,3 +115,31 @@ On a controlled synthetic population of 4,200 events, 15 coefficients changed
 0.088464 → 0.082150. A real browser worker reproduces and persists that result.
 These checks demonstrate a functioning fitting pipeline; they do not establish
 better retention on the user's actual vocabulary. That needs future real reviews.
+
+
+## 1.11.0 grading and evaluation fixes
+
+A correct answer remains Good when phone typing, reading, or an interruption
+makes it slow. Speed alone cannot create Hard or Easy. Failure remains Again;
+hints and explicit low confidence can produce Hard, and explicit high confidence
+with appropriate unaided evidence can produce Easy. Prior timing remains a
+bounded context feature rather than a current-answer speed penalty.
+
+The context calibration fitter now uses the same ±0.5 logit clamp and saturated
+gradient as inference. This affects priority calibration; FSRS-6's published
+memory equations and 21 parameters remain unchanged.
+
+A read-only CLI compares the default scheduler with exported candidate weights
+on chronological later reviews:
+
+```sh
+node scripts/evaluate-fsrs-history.mjs reviews.json --candidate=weights.json --output=report.json
+node scripts/evaluate-fsrs-history.mjs reviews.json --fit --output=report.json
+```
+
+Candidate JSON accepts a 21-weight array or `{ "weights": [...] }`, including
+weights produced by another compatible FSRS-6 optimizer. The tool does not
+activate weights. Candidate provenance must exclude the evaluation answers;
+the CLI cannot establish that from an arbitrary imported array. Controlled
+synthetic histories and upstream-library parity tests exercise the pipeline;
+no user-retention improvement is claimed without real later review evidence.

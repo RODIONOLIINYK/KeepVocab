@@ -22,14 +22,15 @@ function mimeType(value) {
   return ['image/jpeg', 'image/png', 'image/webp'].includes(type) ? type : '';
 }
 
-function imageUrl(image) {
-  for (const value of [image?.thumbnailUrl, image?.url]) {
+function imageUrls(image, preferOriginal = false) {
+  const urls = [];
+  for (const value of preferOriginal ? [image?.url, image?.thumbnailUrl] : [image?.thumbnailUrl, image?.url]) {
     try {
       const url = new URL(value);
-      if (['http:', 'https:'].includes(url.protocol) && !url.username && !url.password) return url.href;
+      if (['http:', 'https:'].includes(url.protocol) && !url.username && !url.password && !urls.includes(url.href)) urls.push(url.href);
     } catch { /* Invalid or local URLs are not fetched for optional vision. */ }
   }
-  return '';
+  return urls;
 }
 
 function abortError() {
@@ -239,12 +240,10 @@ export async function prepareImageThumbnails(images, options = {}) {
     while (next < results.length && !signal.aborted) {
       const index = next++;
       const candidate = images[index];
-      const url = imageUrl(candidate);
-      if (!url) continue;
-      try {
+      for (const url of imageUrls(candidate, options.preferOriginal)) try {
         const value = await sharedThumbnail(url, config, signal);
-        if (value && !signal.aborted) results[index] = { ...value, inlineData: { ...value.inlineData }, candidateId: index, index, candidate };
-      } catch { /* Optional vision never prevents metadata-only image picking. */ }
+        if (value && !signal.aborted) { results[index] = { ...value, inlineData: { ...value.inlineData }, candidateId: index, index, candidate }; break; }
+      } catch { /* Fall back to the preview if the original exceeds the mobile budget. */ }
     }
   }));
   return results.filter(Boolean);

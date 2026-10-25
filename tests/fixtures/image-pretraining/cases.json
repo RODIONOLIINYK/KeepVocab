@@ -1,0 +1,3917 @@
+{
+  "kind": "visually-reviewed-curated-photos",
+  "annotatedAt": "2026-10-25T15:17:49.458240Z",
+  "source": {
+    "dataset": "COCO train2017",
+    "subsetArchive": "https://github.com/ultralytics/assets/releases/download/v0.0.0/coco128.zip",
+    "rawImagesIncludedInRepository": false,
+    "archiveSha256": "61e5e3028863d8ffc3b81d6a514603954889f0edd5e4b44c4ce60b2da99aeb8e"
+  },
+  "splitPolicy": "Distinct meaning groups and disjoint image files across train/validation/test; repeated decisions within one meaning are correlated.",
+  "cases": [
+    {
+      "id": "curated-00-0",
+      "meaningId": "curated-00-giraffe",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "giraffe",
+        "definition": "A tall living African animal with a long neck.",
+        "imageScenes": {
+          "scenes": [
+            "A live giraffe standing outdoors, with its whole body visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000025",
+          "url": "https://images.cocodataset.org/train2017/000000000025.jpg",
+          "file": "images/000000000025.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9f016b98f31e4fe826910e56ee39fa0c2889f48d38cc5f4f6b6421c8c5fc7214"
+        },
+        {
+          "id": "000000000144",
+          "url": "https://images.cocodataset.org/train2017/000000000144.jpg",
+          "file": "images/000000000144.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "6740b5472043073062f46b253399a6bc2fe68ca77d429f652ad956c03d51b0fa"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000025"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A live giraffe standing outdoors, with its whole body visible.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-00-1",
+      "meaningId": "curated-00-giraffe",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "giraffe",
+        "definition": "A tall living African animal with a long neck.",
+        "imageScenes": {
+          "scenes": [
+            "A live giraffe standing outdoors, with its whole body visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000025",
+          "url": "https://images.cocodataset.org/train2017/000000000025.jpg",
+          "file": "images/000000000025.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9f016b98f31e4fe826910e56ee39fa0c2889f48d38cc5f4f6b6421c8c5fc7214"
+        },
+        {
+          "id": "000000000072",
+          "url": "https://images.cocodataset.org/train2017/000000000072.jpg",
+          "file": "images/000000000072.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "93d0d304967360bed3bfe2aafc701817e83f494c687e625fb8b765d2be54c9b2"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000025"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A live giraffe standing outdoors, with its whole body visible.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-00-2",
+      "meaningId": "curated-00-giraffe",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "giraffe",
+        "definition": "A tall living African animal with a long neck.",
+        "imageScenes": {
+          "scenes": [
+            "A live giraffe standing outdoors, with its whole body visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000025",
+          "url": "https://images.cocodataset.org/train2017/000000000025.jpg",
+          "file": "images/000000000025.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9f016b98f31e4fe826910e56ee39fa0c2889f48d38cc5f4f6b6421c8c5fc7214"
+        },
+        {
+          "id": "000000000136",
+          "url": "https://images.cocodataset.org/train2017/000000000136.jpg",
+          "file": "images/000000000136.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "e20c569a1e6174fd845a434a3fe3d50fb4f8a0e275fb348cc2c9b42a11600ccc"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000025"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A live giraffe standing outdoors, with its whole body visible.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-01-0",
+      "meaningId": "curated-01-zebra",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "zebra",
+        "definition": "An African animal with black and white stripes.",
+        "imageScenes": {
+          "scenes": [
+            "A zebra with its striped body clearly visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000034",
+          "url": "https://images.cocodataset.org/train2017/000000000034.jpg",
+          "file": "images/000000000034.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0e67e637241ac2fbf132aa2b6cc9775b474b520e1c9a99dbef377063a5a48b85"
+        },
+        {
+          "id": "000000000154",
+          "url": "https://images.cocodataset.org/train2017/000000000154.jpg",
+          "file": "images/000000000154.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2938c94a9b07cacf10a8343c35949b065ae868190a11020f458f50450bd13552"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000034"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A zebra with its striped body clearly visible.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-01-1",
+      "meaningId": "curated-01-zebra",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "zebra",
+        "definition": "An African animal with black and white stripes.",
+        "imageScenes": {
+          "scenes": [
+            "A zebra with its striped body clearly visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000034",
+          "url": "https://images.cocodataset.org/train2017/000000000034.jpg",
+          "file": "images/000000000034.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0e67e637241ac2fbf132aa2b6cc9775b474b520e1c9a99dbef377063a5a48b85"
+        },
+        {
+          "id": "000000000025",
+          "url": "https://images.cocodataset.org/train2017/000000000025.jpg",
+          "file": "images/000000000025.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9f016b98f31e4fe826910e56ee39fa0c2889f48d38cc5f4f6b6421c8c5fc7214"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000034"
+        ],
+        "wrong": [
+          "000000000025"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A zebra with its striped body clearly visible.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-01-2",
+      "meaningId": "curated-01-zebra",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "zebra",
+        "definition": "An African animal with black and white stripes.",
+        "imageScenes": {
+          "scenes": [
+            "A zebra with its striped body clearly visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000034",
+          "url": "https://images.cocodataset.org/train2017/000000000034.jpg",
+          "file": "images/000000000034.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0e67e637241ac2fbf132aa2b6cc9775b474b520e1c9a99dbef377063a5a48b85"
+        },
+        {
+          "id": "000000000263",
+          "url": "https://images.cocodataset.org/train2017/000000000263.jpg",
+          "file": "images/000000000263.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "4abc27b830dedd072dab619c6b7f2467886f601e41b0cc8c2de888f57cf90d7b"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000034"
+        ],
+        "wrong": [
+          "000000000263"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A zebra with its striped body clearly visible.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-02-0",
+      "meaningId": "curated-02-sleep",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "sleep",
+        "definition": "To rest while unconscious with the eyes closed.",
+        "imageScenes": {
+          "scenes": [
+            "An animal lying asleep with its eyes closed."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000074",
+          "url": "https://images.cocodataset.org/train2017/000000000074.jpg",
+          "file": "images/000000000074.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "99d864809a7355862032b54283bd4808971da5a2b976b20467203e6c192e755d"
+        },
+        {
+          "id": "000000000042",
+          "url": "https://images.cocodataset.org/train2017/000000000042.jpg",
+          "file": "images/000000000042.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9008ddd846fc6002ec47ea6067cb92cf70f294773cc15765b6a14ffb392f52fa"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000074"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "An animal lying asleep with its eyes closed.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-02-1",
+      "meaningId": "curated-02-sleep",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "sleep",
+        "definition": "To rest while unconscious with the eyes closed.",
+        "imageScenes": {
+          "scenes": [
+            "An animal lying asleep with its eyes closed."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000074",
+          "url": "https://images.cocodataset.org/train2017/000000000074.jpg",
+          "file": "images/000000000074.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "99d864809a7355862032b54283bd4808971da5a2b976b20467203e6c192e755d"
+        },
+        {
+          "id": "000000000394",
+          "url": "https://images.cocodataset.org/train2017/000000000394.jpg",
+          "file": "images/000000000394.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2cf78c1cfa98714d2ed8a643f931c39511bbb6085fddf157b27ed709089e0343"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000074"
+        ],
+        "wrong": [
+          "000000000394"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "An animal lying asleep with its eyes closed.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-02-2",
+      "meaningId": "curated-02-sleep",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "sleep",
+        "definition": "To rest while unconscious with the eyes closed.",
+        "imageScenes": {
+          "scenes": [
+            "An animal lying asleep with its eyes closed."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000074",
+          "url": "https://images.cocodataset.org/train2017/000000000074.jpg",
+          "file": "images/000000000074.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "99d864809a7355862032b54283bd4808971da5a2b976b20467203e6c192e755d"
+        },
+        {
+          "id": "000000000307",
+          "url": "https://images.cocodataset.org/train2017/000000000307.jpg",
+          "file": "images/000000000307.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "c839076b4fa14020f97c8a5909c84a1e85c912ca262a91c8c4648ebe27caf61f"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000074"
+        ],
+        "wrong": [
+          "000000000307"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "An animal lying asleep with its eyes closed.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-03-0",
+      "meaningId": "curated-03-fly",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "fly",
+        "definition": "To travel through the air.",
+        "imageScenes": {
+          "scenes": [
+            "An airplane airborne above the ground."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000081",
+          "url": "https://images.cocodataset.org/train2017/000000000081.jpg",
+          "file": "images/000000000081.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9f9dd4dcc774b81fcbb64531eb717859562ff162cf058e12f80c7b4630cbaa6b"
+        },
+        {
+          "id": "000000000247",
+          "url": "https://images.cocodataset.org/train2017/000000000247.jpg",
+          "file": "images/000000000247.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "a57c40ee95f73bb493e573bbbd593d037fdf176a02f1d3f6a3f437c8f78f805a"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000081"
+        ],
+        "wrong": [
+          "000000000247"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "An airplane airborne above the ground.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-03-1",
+      "meaningId": "curated-03-fly",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "fly",
+        "definition": "To travel through the air.",
+        "imageScenes": {
+          "scenes": [
+            "An airplane airborne above the ground."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000081",
+          "url": "https://images.cocodataset.org/train2017/000000000081.jpg",
+          "file": "images/000000000081.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9f9dd4dcc774b81fcbb64531eb717859562ff162cf058e12f80c7b4630cbaa6b"
+        },
+        {
+          "id": "000000000071",
+          "url": "https://images.cocodataset.org/train2017/000000000071.jpg",
+          "file": "images/000000000071.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "5393bf6575c435daa599c1272d9e61e99c099994ae4d3755311684663fed0917"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000081"
+        ],
+        "wrong": [
+          "000000000071"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "An airplane airborne above the ground.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-03-2",
+      "meaningId": "curated-03-fly",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "fly",
+        "definition": "To travel through the air.",
+        "imageScenes": {
+          "scenes": [
+            "An airplane airborne above the ground."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000081",
+          "url": "https://images.cocodataset.org/train2017/000000000081.jpg",
+          "file": "images/000000000081.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9f9dd4dcc774b81fcbb64531eb717859562ff162cf058e12f80c7b4630cbaa6b"
+        },
+        {
+          "id": "000000000349",
+          "url": "https://images.cocodataset.org/train2017/000000000349.jpg",
+          "file": "images/000000000349.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "8ad9716416dc27aeff76bb09d936949f67627cb30948288b61c117df34501049"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000081"
+        ],
+        "wrong": [
+          "000000000349"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "An airplane airborne above the ground.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-04-0",
+      "meaningId": "curated-04-park",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "park",
+        "definition": "To leave a vehicle stationary in a place.",
+        "imageScenes": {
+          "scenes": [
+            "Bicycles left parked together in a bicycle rack."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000073",
+          "url": "https://images.cocodataset.org/train2017/000000000073.jpg",
+          "file": "images/000000000073.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "4a17dd87b487b4b6432d3aa60f6026a5349c8708834a3cae141ff16e0539a32c"
+        },
+        {
+          "id": "000000000086",
+          "url": "https://images.cocodataset.org/train2017/000000000086.jpg",
+          "file": "images/000000000086.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f58a99916783cdf4a7619286dc46adedd4ea1143bcc2cd773c6504aa5280915a"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000073"
+        ],
+        "wrong": [
+          "000000000086"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "Bicycles left parked together in a bicycle rack.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-04-1",
+      "meaningId": "curated-04-park",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "park",
+        "definition": "To leave a vehicle stationary in a place.",
+        "imageScenes": {
+          "scenes": [
+            "Bicycles left parked together in a bicycle rack."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000073",
+          "url": "https://images.cocodataset.org/train2017/000000000073.jpg",
+          "file": "images/000000000073.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "4a17dd87b487b4b6432d3aa60f6026a5349c8708834a3cae141ff16e0539a32c"
+        },
+        {
+          "id": "000000000071",
+          "url": "https://images.cocodataset.org/train2017/000000000071.jpg",
+          "file": "images/000000000071.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "5393bf6575c435daa599c1272d9e61e99c099994ae4d3755311684663fed0917"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000073"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "Bicycles left parked together in a bicycle rack.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-04-2",
+      "meaningId": "curated-04-park",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "park",
+        "definition": "To leave a vehicle stationary in a place.",
+        "imageScenes": {
+          "scenes": [
+            "Bicycles left parked together in a bicycle rack."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000073",
+          "url": "https://images.cocodataset.org/train2017/000000000073.jpg",
+          "file": "images/000000000073.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "4a17dd87b487b4b6432d3aa60f6026a5349c8708834a3cae141ff16e0539a32c"
+        },
+        {
+          "id": "000000000247",
+          "url": "https://images.cocodataset.org/train2017/000000000247.jpg",
+          "file": "images/000000000247.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "a57c40ee95f73bb493e573bbbd593d037fdf176a02f1d3f6a3f437c8f78f805a"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000073"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "Bicycles left parked together in a bicycle rack.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-05-0",
+      "meaningId": "curated-05-ride",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "ride",
+        "definition": "To travel sitting on a bicycle.",
+        "imageScenes": {
+          "scenes": [
+            "A person riding a bicycle outdoors."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000086",
+          "url": "https://images.cocodataset.org/train2017/000000000086.jpg",
+          "file": "images/000000000086.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f58a99916783cdf4a7619286dc46adedd4ea1143bcc2cd773c6504aa5280915a"
+        },
+        {
+          "id": "000000000073",
+          "url": "https://images.cocodataset.org/train2017/000000000073.jpg",
+          "file": "images/000000000073.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "4a17dd87b487b4b6432d3aa60f6026a5349c8708834a3cae141ff16e0539a32c"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000086"
+        ],
+        "wrong": [
+          "000000000073"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person riding a bicycle outdoors.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-05-1",
+      "meaningId": "curated-05-ride",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "ride",
+        "definition": "To travel sitting on a bicycle.",
+        "imageScenes": {
+          "scenes": [
+            "A person riding a bicycle outdoors."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000086",
+          "url": "https://images.cocodataset.org/train2017/000000000086.jpg",
+          "file": "images/000000000086.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f58a99916783cdf4a7619286dc46adedd4ea1143bcc2cd773c6504aa5280915a"
+        },
+        {
+          "id": "000000000247",
+          "url": "https://images.cocodataset.org/train2017/000000000247.jpg",
+          "file": "images/000000000247.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "a57c40ee95f73bb493e573bbbd593d037fdf176a02f1d3f6a3f437c8f78f805a"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000086"
+        ],
+        "wrong": [
+          "000000000247"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person riding a bicycle outdoors.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-05-2",
+      "meaningId": "curated-05-ride",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "ride",
+        "definition": "To travel sitting on a bicycle.",
+        "imageScenes": {
+          "scenes": [
+            "A person riding a bicycle outdoors."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000086",
+          "url": "https://images.cocodataset.org/train2017/000000000086.jpg",
+          "file": "images/000000000086.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f58a99916783cdf4a7619286dc46adedd4ea1143bcc2cd773c6504aa5280915a"
+        },
+        {
+          "id": "000000000394",
+          "url": "https://images.cocodataset.org/train2017/000000000394.jpg",
+          "file": "images/000000000394.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2cf78c1cfa98714d2ed8a643f931c39511bbb6085fddf157b27ed709089e0343"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000086"
+        ],
+        "wrong": [
+          "000000000394"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person riding a bicycle outdoors.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-06-0",
+      "meaningId": "curated-06-eat",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "eat",
+        "definition": "To put food in the mouth and consume it.",
+        "imageScenes": {
+          "scenes": [
+            "A person actively eating a meal at a table."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000110",
+          "url": "https://images.cocodataset.org/train2017/000000000110.jpg",
+          "file": "images/000000000110.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "39d967c7856965853e90b9283db4a6895a034eb17fe0c84581d17af4a59edcf2"
+        },
+        {
+          "id": "000000000194",
+          "url": "https://images.cocodataset.org/train2017/000000000194.jpg",
+          "file": "images/000000000194.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0713bcf193a25769b047e4dde7820e7fa857bab06f9140a4a64c78d94ed9b4a1"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000110"
+        ],
+        "wrong": [
+          "000000000194"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person actively eating a meal at a table.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-06-1",
+      "meaningId": "curated-06-eat",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "eat",
+        "definition": "To put food in the mouth and consume it.",
+        "imageScenes": {
+          "scenes": [
+            "A person actively eating a meal at a table."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000110",
+          "url": "https://images.cocodataset.org/train2017/000000000110.jpg",
+          "file": "images/000000000110.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "39d967c7856965853e90b9283db4a6895a034eb17fe0c84581d17af4a59edcf2"
+        },
+        {
+          "id": "000000000009",
+          "url": "https://images.cocodataset.org/train2017/000000000009.jpg",
+          "file": "images/000000000009.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "3b0bb6bebad60a3329f1e3484434872e86998aeb7750d779b308e4a064868c2c"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000110"
+        ],
+        "wrong": [
+          "000000000009"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person actively eating a meal at a table.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-06-2",
+      "meaningId": "curated-06-eat",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "eat",
+        "definition": "To put food in the mouth and consume it.",
+        "imageScenes": {
+          "scenes": [
+            "A person actively eating a meal at a table."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000110",
+          "url": "https://images.cocodataset.org/train2017/000000000110.jpg",
+          "file": "images/000000000110.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "39d967c7856965853e90b9283db4a6895a034eb17fe0c84581d17af4a59edcf2"
+        },
+        {
+          "id": "000000000127",
+          "url": "https://images.cocodataset.org/train2017/000000000127.jpg",
+          "file": "images/000000000127.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0ce2f02f39d5d49260d91762bc9a659f8f9d516d8e416c8120306330bfd58023"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000110"
+        ],
+        "wrong": [
+          "000000000127"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person actively eating a meal at a table.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-07-0",
+      "meaningId": "curated-07-cook",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "cook",
+        "definition": "To prepare food using heat.",
+        "imageScenes": {
+          "scenes": [
+            "People cooking food on an outdoor grill."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000308",
+          "url": "https://images.cocodataset.org/train2017/000000000308.jpg",
+          "file": "images/000000000308.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "07c410e96a812351bf385add8645b8dc2ed064902ff2ef01072be6351b428393"
+        },
+        {
+          "id": "000000000294",
+          "url": "https://images.cocodataset.org/train2017/000000000294.jpg",
+          "file": "images/000000000294.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "66bff049c25ed6498e69a51ac65b88d5fc800233fed0f89ee07ab178f7db766d"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000308"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "People cooking food on an outdoor grill.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-07-1",
+      "meaningId": "curated-07-cook",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "cook",
+        "definition": "To prepare food using heat.",
+        "imageScenes": {
+          "scenes": [
+            "People cooking food on an outdoor grill."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000308",
+          "url": "https://images.cocodataset.org/train2017/000000000308.jpg",
+          "file": "images/000000000308.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "07c410e96a812351bf385add8645b8dc2ed064902ff2ef01072be6351b428393"
+        },
+        {
+          "id": "000000000338",
+          "url": "https://images.cocodataset.org/train2017/000000000338.jpg",
+          "file": "images/000000000338.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "fdf5b5b2f8227082a5542fbc33b5f8740b040d345653c33bec6158d835542d6b"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000308"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "People cooking food on an outdoor grill.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-07-2",
+      "meaningId": "curated-07-cook",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "cook",
+        "definition": "To prepare food using heat.",
+        "imageScenes": {
+          "scenes": [
+            "People cooking food on an outdoor grill."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000308",
+          "url": "https://images.cocodataset.org/train2017/000000000308.jpg",
+          "file": "images/000000000308.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "07c410e96a812351bf385add8645b8dc2ed064902ff2ef01072be6351b428393"
+        },
+        {
+          "id": "000000000196",
+          "url": "https://images.cocodataset.org/train2017/000000000196.jpg",
+          "file": "images/000000000196.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "1e1d801e63ed90d34ee666845ebcc17b56edef1f864d048ff588ce7073bc94a2"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000308"
+        ],
+        "wrong": [
+          "000000000196"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "People cooking food on an outdoor grill.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-08-0",
+      "meaningId": "curated-08-crowded",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "crowded",
+        "definition": "Containing many people or vehicles close together.",
+        "imageScenes": {
+          "scenes": [
+            "A busy outdoor street filled with people and traffic."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000257",
+          "url": "https://images.cocodataset.org/train2017/000000000257.jpg",
+          "file": "images/000000000257.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "ae711135026cbd548fa1e04edc0ee96bce57162587e0238e7f76b4dc46cf4208"
+        },
+        {
+          "id": "000000000094",
+          "url": "https://images.cocodataset.org/train2017/000000000094.jpg",
+          "file": "images/000000000094.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "143779e4a70bb6b6e10232aa02c2ce99a9a1246d763da344b424aba4ca71cd9f"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000257"
+        ],
+        "wrong": [
+          "000000000094"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A busy outdoor street filled with people and traffic.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-08-1",
+      "meaningId": "curated-08-crowded",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "crowded",
+        "definition": "Containing many people or vehicles close together.",
+        "imageScenes": {
+          "scenes": [
+            "A busy outdoor street filled with people and traffic."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000257",
+          "url": "https://images.cocodataset.org/train2017/000000000257.jpg",
+          "file": "images/000000000257.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "ae711135026cbd548fa1e04edc0ee96bce57162587e0238e7f76b4dc46cf4208"
+        },
+        {
+          "id": "000000000149",
+          "url": "https://images.cocodataset.org/train2017/000000000149.jpg",
+          "file": "images/000000000149.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "73a20e38429ba6c78f62a90df787360c4a9ae3d331b002b509a8ee15179788a4"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000257"
+        ],
+        "wrong": [
+          "000000000149"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A busy outdoor street filled with people and traffic.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-08-2",
+      "meaningId": "curated-08-crowded",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "crowded",
+        "definition": "Containing many people or vehicles close together.",
+        "imageScenes": {
+          "scenes": [
+            "A busy outdoor street filled with people and traffic."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000257",
+          "url": "https://images.cocodataset.org/train2017/000000000257.jpg",
+          "file": "images/000000000257.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "ae711135026cbd548fa1e04edc0ee96bce57162587e0238e7f76b4dc46cf4208"
+        },
+        {
+          "id": "000000000109",
+          "url": "https://images.cocodataset.org/train2017/000000000109.jpg",
+          "file": "images/000000000109.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "69edeeca53763fb2a4ee51739e4f9a4f053584b4f3ca4ff9911c49fa52ed2762"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000257"
+        ],
+        "wrong": [
+          "000000000109"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A busy outdoor street filled with people and traffic.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-09-0",
+      "meaningId": "curated-09-umbrella",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "umbrella",
+        "definition": "A portable canopy held above a person for shelter.",
+        "imageScenes": {
+          "scenes": [
+            "A person holding an open umbrella above their head."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000036",
+          "url": "https://images.cocodataset.org/train2017/000000000036.jpg",
+          "file": "images/000000000036.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2bb515b26d250fcdf16effa3a7280babe32ae9b6f7608563e53cd01f5cd66ad4"
+        },
+        {
+          "id": "000000000315",
+          "url": "https://images.cocodataset.org/train2017/000000000315.jpg",
+          "file": "images/000000000315.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "5804350236bc0d52715f9354498d52f8d260b0e3d8f965526cd85ca6a18b7caa"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000036"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person holding an open umbrella above their head.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-09-1",
+      "meaningId": "curated-09-umbrella",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "umbrella",
+        "definition": "A portable canopy held above a person for shelter.",
+        "imageScenes": {
+          "scenes": [
+            "A person holding an open umbrella above their head."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000036",
+          "url": "https://images.cocodataset.org/train2017/000000000036.jpg",
+          "file": "images/000000000036.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2bb515b26d250fcdf16effa3a7280babe32ae9b6f7608563e53cd01f5cd66ad4"
+        },
+        {
+          "id": "000000000151",
+          "url": "https://images.cocodataset.org/train2017/000000000151.jpg",
+          "file": "images/000000000151.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "b92d7d249e574fbd4ad8ba2fbc2c1879ca281b779f1276ac3daa0304b80039e4"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000036"
+        ],
+        "wrong": [
+          "000000000151"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person holding an open umbrella above their head.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-09-2",
+      "meaningId": "curated-09-umbrella",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "umbrella",
+        "definition": "A portable canopy held above a person for shelter.",
+        "imageScenes": {
+          "scenes": [
+            "A person holding an open umbrella above their head."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000036",
+          "url": "https://images.cocodataset.org/train2017/000000000036.jpg",
+          "file": "images/000000000036.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2bb515b26d250fcdf16effa3a7280babe32ae9b6f7608563e53cd01f5cd66ad4"
+        },
+        {
+          "id": "000000000370",
+          "url": "https://images.cocodataset.org/train2017/000000000370.jpg",
+          "file": "images/000000000370.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0d3719ec6f6f54229f498f7b01b113a864cd1eeccac196086741d98e23ae2455"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000036"
+        ],
+        "wrong": [
+          "000000000370"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person holding an open umbrella above their head.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-10-0",
+      "meaningId": "curated-10-kitchen",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "kitchen",
+        "definition": "A room equipped for preparing and cooking food.",
+        "imageScenes": {
+          "scenes": [
+            "A complete kitchen with work surfaces and cooking appliances."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000164",
+          "url": "https://images.cocodataset.org/train2017/000000000164.jpg",
+          "file": "images/000000000164.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "186a1427f32ce7e5cf17052f66d5ee7cd57d7f83762001891e16195a6bda586d"
+        },
+        {
+          "id": "000000000138",
+          "url": "https://images.cocodataset.org/train2017/000000000138.jpg",
+          "file": "images/000000000138.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0255bce78addf8d82e9f5d434ad2a98fccd5542cbb041980ce7ad00054a3227e"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000164"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A complete kitchen with work surfaces and cooking appliances.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-10-1",
+      "meaningId": "curated-10-kitchen",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "kitchen",
+        "definition": "A room equipped for preparing and cooking food.",
+        "imageScenes": {
+          "scenes": [
+            "A complete kitchen with work surfaces and cooking appliances."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000164",
+          "url": "https://images.cocodataset.org/train2017/000000000164.jpg",
+          "file": "images/000000000164.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "186a1427f32ce7e5cf17052f66d5ee7cd57d7f83762001891e16195a6bda586d"
+        },
+        {
+          "id": "000000000089",
+          "url": "https://images.cocodataset.org/train2017/000000000089.jpg",
+          "file": "images/000000000089.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "cc548c7e669fefde96bdb7b1454c90cf518d414b85eb36827cc78f488d622e5a"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000164"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A complete kitchen with work surfaces and cooking appliances.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-10-2",
+      "meaningId": "curated-10-kitchen",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "kitchen",
+        "definition": "A room equipped for preparing and cooking food.",
+        "imageScenes": {
+          "scenes": [
+            "A complete kitchen with work surfaces and cooking appliances."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000164",
+          "url": "https://images.cocodataset.org/train2017/000000000164.jpg",
+          "file": "images/000000000164.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "186a1427f32ce7e5cf17052f66d5ee7cd57d7f83762001891e16195a6bda586d"
+        },
+        {
+          "id": "000000000338",
+          "url": "https://images.cocodataset.org/train2017/000000000338.jpg",
+          "file": "images/000000000338.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "fdf5b5b2f8227082a5542fbc33b5f8740b040d345653c33bec6158d835542d6b"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000164"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A complete kitchen with work surfaces and cooking appliances.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-11-0",
+      "meaningId": "curated-11-clock",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "clock",
+        "definition": "An instrument that displays the time of day.",
+        "imageScenes": {
+          "scenes": [
+            "A clearly visible clock face with hands."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000064",
+          "url": "https://images.cocodataset.org/train2017/000000000064.jpg",
+          "file": "images/000000000064.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "406f84619f5197d416f60566d41ad4d58f1d10b0a182652bbda266eedbc3f1ab"
+        },
+        {
+          "id": "000000000078",
+          "url": "https://images.cocodataset.org/train2017/000000000078.jpg",
+          "file": "images/000000000078.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "3139fdefaa9b4320c8a4eec2032c77306a0fd167dd88633bd73f66f952baf5a7"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000064"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A clearly visible clock face with hands.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-11-1",
+      "meaningId": "curated-11-clock",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "clock",
+        "definition": "An instrument that displays the time of day.",
+        "imageScenes": {
+          "scenes": [
+            "A clearly visible clock face with hands."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000064",
+          "url": "https://images.cocodataset.org/train2017/000000000064.jpg",
+          "file": "images/000000000064.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "406f84619f5197d416f60566d41ad4d58f1d10b0a182652bbda266eedbc3f1ab"
+        },
+        {
+          "id": "000000000250",
+          "url": "https://images.cocodataset.org/train2017/000000000250.jpg",
+          "file": "images/000000000250.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "a4e4243da053d3a958a1f52fd8fe9cc264d39e07077266a7089b281597050a29"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000064"
+        ],
+        "wrong": [
+          "000000000250"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A clearly visible clock face with hands.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-11-2",
+      "meaningId": "curated-11-clock",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "clock",
+        "definition": "An instrument that displays the time of day.",
+        "imageScenes": {
+          "scenes": [
+            "A clearly visible clock face with hands."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000064",
+          "url": "https://images.cocodataset.org/train2017/000000000064.jpg",
+          "file": "images/000000000064.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "406f84619f5197d416f60566d41ad4d58f1d10b0a182652bbda266eedbc3f1ab"
+        },
+        {
+          "id": "000000000359",
+          "url": "https://images.cocodataset.org/train2017/000000000359.jpg",
+          "file": "images/000000000359.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "8da8a8320518a8adadbbd79615e066fd60b31c6025919665264ff9d0f746a5dd"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000064"
+        ],
+        "wrong": [
+          "000000000359"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A clearly visible clock face with hands.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-12-0",
+      "meaningId": "curated-12-run",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "run",
+        "definition": "To move quickly on foot with a running stride.",
+        "imageScenes": {
+          "scenes": [
+            "A person visibly running across a sports field."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000368",
+          "url": "https://images.cocodataset.org/train2017/000000000368.jpg",
+          "file": "images/000000000368.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "a10be0a1beb5a34b50af22cc657dbf186a944db7ce8924e570295f35bd954036"
+        },
+        {
+          "id": "000000000241",
+          "url": "https://images.cocodataset.org/train2017/000000000241.jpg",
+          "file": "images/000000000241.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "14007b87745069ed85c6412dffc8ad11a22de98d5f5c9ae896523e12622961c5"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000368"
+        ],
+        "wrong": [
+          "000000000241"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person visibly running across a sports field.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-12-1",
+      "meaningId": "curated-12-run",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "run",
+        "definition": "To move quickly on foot with a running stride.",
+        "imageScenes": {
+          "scenes": [
+            "A person visibly running across a sports field."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000368",
+          "url": "https://images.cocodataset.org/train2017/000000000368.jpg",
+          "file": "images/000000000368.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "a10be0a1beb5a34b50af22cc657dbf186a944db7ce8924e570295f35bd954036"
+        },
+        {
+          "id": "000000000165",
+          "url": "https://images.cocodataset.org/train2017/000000000165.jpg",
+          "file": "images/000000000165.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2d3d9e0b4b165c0f783b97cd963097b13effa1af851c9576617fb7c910d63cd8"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000368"
+        ],
+        "wrong": [
+          "000000000165"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person visibly running across a sports field.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-12-2",
+      "meaningId": "curated-12-run",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "run",
+        "definition": "To move quickly on foot with a running stride.",
+        "imageScenes": {
+          "scenes": [
+            "A person visibly running across a sports field."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000368",
+          "url": "https://images.cocodataset.org/train2017/000000000368.jpg",
+          "file": "images/000000000368.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "a10be0a1beb5a34b50af22cc657dbf186a944db7ce8924e570295f35bd954036"
+        },
+        {
+          "id": "000000000328",
+          "url": "https://images.cocodataset.org/train2017/000000000328.jpg",
+          "file": "images/000000000328.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "8ba0ed80d34589221b1243e0764471d91716b3a267827cb37ecfc3cfae52cc90"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000368"
+        ],
+        "wrong": [
+          "000000000328"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person visibly running across a sports field.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-13-0",
+      "meaningId": "curated-13-elephant",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "elephant",
+        "definition": "A very large animal with a trunk and large ears.",
+        "imageScenes": {
+          "scenes": [
+            "A living elephant with its trunk and body visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000263",
+          "url": "https://images.cocodataset.org/train2017/000000000263.jpg",
+          "file": "images/000000000263.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "4abc27b830dedd072dab619c6b7f2467886f601e41b0cc8c2de888f57cf90d7b"
+        },
+        {
+          "id": "000000000312",
+          "url": "https://images.cocodataset.org/train2017/000000000312.jpg",
+          "file": "images/000000000312.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "cd2fac2dfdc17fb1af0d12228e344d2e828fbe28a7c1e32396a95cb0b129d096"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000263"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A living elephant with its trunk and body visible.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-13-1",
+      "meaningId": "curated-13-elephant",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "elephant",
+        "definition": "A very large animal with a trunk and large ears.",
+        "imageScenes": {
+          "scenes": [
+            "A living elephant with its trunk and body visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000263",
+          "url": "https://images.cocodataset.org/train2017/000000000263.jpg",
+          "file": "images/000000000263.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "4abc27b830dedd072dab619c6b7f2467886f601e41b0cc8c2de888f57cf90d7b"
+        },
+        {
+          "id": "000000000025",
+          "url": "https://images.cocodataset.org/train2017/000000000025.jpg",
+          "file": "images/000000000025.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9f016b98f31e4fe826910e56ee39fa0c2889f48d38cc5f4f6b6421c8c5fc7214"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000263"
+        ],
+        "wrong": [
+          "000000000025"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A living elephant with its trunk and body visible.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-13-2",
+      "meaningId": "curated-13-elephant",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "elephant",
+        "definition": "A very large animal with a trunk and large ears.",
+        "imageScenes": {
+          "scenes": [
+            "A living elephant with its trunk and body visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000263",
+          "url": "https://images.cocodataset.org/train2017/000000000263.jpg",
+          "file": "images/000000000263.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "4abc27b830dedd072dab619c6b7f2467886f601e41b0cc8c2de888f57cf90d7b"
+        },
+        {
+          "id": "000000000144",
+          "url": "https://images.cocodataset.org/train2017/000000000144.jpg",
+          "file": "images/000000000144.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "6740b5472043073062f46b253399a6bc2fe68ca77d429f652ad956c03d51b0fa"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000263"
+        ],
+        "wrong": [
+          "000000000144"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A living elephant with its trunk and body visible.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-14-0",
+      "meaningId": "curated-14-carry",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "carry",
+        "definition": "To hold and transport an object.",
+        "imageScenes": {
+          "scenes": [
+            "A dog carrying a flying disc in its mouth."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000394",
+          "url": "https://images.cocodataset.org/train2017/000000000394.jpg",
+          "file": "images/000000000394.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2cf78c1cfa98714d2ed8a643f931c39511bbb6085fddf157b27ed709089e0343"
+        },
+        {
+          "id": "000000000307",
+          "url": "https://images.cocodataset.org/train2017/000000000307.jpg",
+          "file": "images/000000000307.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "c839076b4fa14020f97c8a5909c84a1e85c912ca262a91c8c4648ebe27caf61f"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000394"
+        ],
+        "wrong": [
+          "000000000307"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A dog carrying a flying disc in its mouth.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-14-1",
+      "meaningId": "curated-14-carry",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "carry",
+        "definition": "To hold and transport an object.",
+        "imageScenes": {
+          "scenes": [
+            "A dog carrying a flying disc in its mouth."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000394",
+          "url": "https://images.cocodataset.org/train2017/000000000394.jpg",
+          "file": "images/000000000394.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2cf78c1cfa98714d2ed8a643f931c39511bbb6085fddf157b27ed709089e0343"
+        },
+        {
+          "id": "000000000309",
+          "url": "https://images.cocodataset.org/train2017/000000000309.jpg",
+          "file": "images/000000000309.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "40087a8191fc80eba012c1ba4735402b4890aa0669a84ea0d3dac043ca543247"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000394"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A dog carrying a flying disc in its mouth.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-14-2",
+      "meaningId": "curated-14-carry",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "carry",
+        "definition": "To hold and transport an object.",
+        "imageScenes": {
+          "scenes": [
+            "A dog carrying a flying disc in its mouth."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000394",
+          "url": "https://images.cocodataset.org/train2017/000000000394.jpg",
+          "file": "images/000000000394.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2cf78c1cfa98714d2ed8a643f931c39511bbb6085fddf157b27ed709089e0343"
+        },
+        {
+          "id": "000000000074",
+          "url": "https://images.cocodataset.org/train2017/000000000074.jpg",
+          "file": "images/000000000074.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "99d864809a7355862032b54283bd4808971da5a2b976b20467203e6c192e755d"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000394"
+        ],
+        "wrong": [
+          "000000000074"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A dog carrying a flying disc in its mouth.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-15-0",
+      "meaningId": "curated-15-train",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "train",
+        "definition": "A connected series of railway vehicles.",
+        "imageScenes": {
+          "scenes": [
+            "A railway train visible on railway tracks."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000071",
+          "url": "https://images.cocodataset.org/train2017/000000000071.jpg",
+          "file": "images/000000000071.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "5393bf6575c435daa599c1272d9e61e99c099994ae4d3755311684663fed0917"
+        },
+        {
+          "id": "000000000349",
+          "url": "https://images.cocodataset.org/train2017/000000000349.jpg",
+          "file": "images/000000000349.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "8ad9716416dc27aeff76bb09d936949f67627cb30948288b61c117df34501049"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000071"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A railway train visible on railway tracks.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-15-1",
+      "meaningId": "curated-15-train",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "train",
+        "definition": "A connected series of railway vehicles.",
+        "imageScenes": {
+          "scenes": [
+            "A railway train visible on railway tracks."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000071",
+          "url": "https://images.cocodataset.org/train2017/000000000071.jpg",
+          "file": "images/000000000071.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "5393bf6575c435daa599c1272d9e61e99c099994ae4d3755311684663fed0917"
+        },
+        {
+          "id": "000000000081",
+          "url": "https://images.cocodataset.org/train2017/000000000081.jpg",
+          "file": "images/000000000081.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9f9dd4dcc774b81fcbb64531eb717859562ff162cf058e12f80c7b4630cbaa6b"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000071"
+        ],
+        "wrong": [
+          "000000000081"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A railway train visible on railway tracks.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-15-2",
+      "meaningId": "curated-15-train",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "train",
+        "definition": "A connected series of railway vehicles.",
+        "imageScenes": {
+          "scenes": [
+            "A railway train visible on railway tracks."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000071",
+          "url": "https://images.cocodataset.org/train2017/000000000071.jpg",
+          "file": "images/000000000071.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "5393bf6575c435daa599c1272d9e61e99c099994ae4d3755311684663fed0917"
+        },
+        {
+          "id": "000000000247",
+          "url": "https://images.cocodataset.org/train2017/000000000247.jpg",
+          "file": "images/000000000247.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "a57c40ee95f73bb493e573bbbd593d037fdf176a02f1d3f6a3f437c8f78f805a"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000071"
+        ],
+        "wrong": [
+          "000000000247"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A railway train visible on railway tracks.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-16-0",
+      "meaningId": "curated-16-ski",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "ski",
+        "definition": "To move across snow using skis.",
+        "imageScenes": {
+          "scenes": [
+            "A person skiing on a snowy mountain slope."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000382",
+          "url": "https://images.cocodataset.org/train2017/000000000382.jpg",
+          "file": "images/000000000382.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9455b8af106ef7a2a3b6c4c7ceeda5f4e81b5e364a2aef8e6cf68abc1396f8bd"
+        },
+        {
+          "id": "000000000201",
+          "url": "https://images.cocodataset.org/train2017/000000000201.jpg",
+          "file": "images/000000000201.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "4efc7ce561df432c2d3d9a60040f62b1b8389b36b401269bfc6802065dfcb9d8"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000382"
+        ],
+        "wrong": [
+          "000000000201"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person skiing on a snowy mountain slope.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-16-1",
+      "meaningId": "curated-16-ski",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "ski",
+        "definition": "To move across snow using skis.",
+        "imageScenes": {
+          "scenes": [
+            "A person skiing on a snowy mountain slope."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000382",
+          "url": "https://images.cocodataset.org/train2017/000000000382.jpg",
+          "file": "images/000000000382.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9455b8af106ef7a2a3b6c4c7ceeda5f4e81b5e364a2aef8e6cf68abc1396f8bd"
+        },
+        {
+          "id": "000000000154",
+          "url": "https://images.cocodataset.org/train2017/000000000154.jpg",
+          "file": "images/000000000154.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2938c94a9b07cacf10a8343c35949b065ae868190a11020f458f50450bd13552"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000382"
+        ],
+        "wrong": [
+          "000000000154"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person skiing on a snowy mountain slope.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-16-2",
+      "meaningId": "curated-16-ski",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "ski",
+        "definition": "To move across snow using skis.",
+        "imageScenes": {
+          "scenes": [
+            "A person skiing on a snowy mountain slope."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000382",
+          "url": "https://images.cocodataset.org/train2017/000000000382.jpg",
+          "file": "images/000000000382.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9455b8af106ef7a2a3b6c4c7ceeda5f4e81b5e364a2aef8e6cf68abc1396f8bd"
+        },
+        {
+          "id": "000000000034",
+          "url": "https://images.cocodataset.org/train2017/000000000034.jpg",
+          "file": "images/000000000034.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0e67e637241ac2fbf132aa2b6cc9775b474b520e1c9a99dbef377063a5a48b85"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000382"
+        ],
+        "wrong": [
+          "000000000034"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person skiing on a snowy mountain slope.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-17-0",
+      "meaningId": "curated-17-tennis",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "tennis",
+        "definition": "A sport played by hitting a ball with a racket across a net.",
+        "imageScenes": {
+          "scenes": [
+            "A person playing tennis on a tennis court."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000415",
+          "url": "https://images.cocodataset.org/train2017/000000000415.jpg",
+          "file": "images/000000000415.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "cc75d90eac7419395e81ddd7e33c81dbec387892e086b40cbf12dc3fe09f8bb1"
+        },
+        {
+          "id": "000000000419",
+          "url": "https://images.cocodataset.org/train2017/000000000419.jpg",
+          "file": "images/000000000419.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "4b4e5c24a3aafa6d591ab385cc3756f90a804212a8e060ba374d1658b69b308e"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000415"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person playing tennis on a tennis court.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-17-1",
+      "meaningId": "curated-17-tennis",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "tennis",
+        "definition": "A sport played by hitting a ball with a racket across a net.",
+        "imageScenes": {
+          "scenes": [
+            "A person playing tennis on a tennis court."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000415",
+          "url": "https://images.cocodataset.org/train2017/000000000415.jpg",
+          "file": "images/000000000415.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "cc75d90eac7419395e81ddd7e33c81dbec387892e086b40cbf12dc3fe09f8bb1"
+        },
+        {
+          "id": "000000000192",
+          "url": "https://images.cocodataset.org/train2017/000000000192.jpg",
+          "file": "images/000000000192.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "93a9d9132aefccbb1f1bfb51198b5b427d1cf4a977ef259c9d0507ee5b0df732"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000415"
+        ],
+        "wrong": [
+          "000000000192"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person playing tennis on a tennis court.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-17-2",
+      "meaningId": "curated-17-tennis",
+      "split": "train",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "tennis",
+        "definition": "A sport played by hitting a ball with a racket across a net.",
+        "imageScenes": {
+          "scenes": [
+            "A person playing tennis on a tennis court."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000415",
+          "url": "https://images.cocodataset.org/train2017/000000000415.jpg",
+          "file": "images/000000000415.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "cc75d90eac7419395e81ddd7e33c81dbec387892e086b40cbf12dc3fe09f8bb1"
+        },
+        {
+          "id": "000000000368",
+          "url": "https://images.cocodataset.org/train2017/000000000368.jpg",
+          "file": "images/000000000368.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "a10be0a1beb5a34b50af22cc657dbf186a944db7ce8924e570295f35bd954036"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000415"
+        ],
+        "wrong": [
+          "000000000368"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person playing tennis on a tennis court.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-18-0",
+      "meaningId": "curated-18-birthday",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "birthday",
+        "definition": "The annual celebration of the day a person was born.",
+        "imageScenes": {
+          "scenes": [
+            "A child celebrating beside a birthday cake and balloon."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000428",
+          "url": "https://images.cocodataset.org/train2017/000000000428.jpg",
+          "file": "images/000000000428.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "49e87dbacfb3911d83fde336b7c01b79cc7bc77a021a601f2eb8d861f170a466"
+        },
+        {
+          "id": "000000000536",
+          "url": "https://images.cocodataset.org/train2017/000000000536.jpg",
+          "file": "images/000000000536.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "745e538b3979ffa93f63bb294163e173d9a99413bce6cf3289215b541c9f1eb1"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000428"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A child celebrating beside a birthday cake and balloon.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-18-1",
+      "meaningId": "curated-18-birthday",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "birthday",
+        "definition": "The annual celebration of the day a person was born.",
+        "imageScenes": {
+          "scenes": [
+            "A child celebrating beside a birthday cake and balloon."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000428",
+          "url": "https://images.cocodataset.org/train2017/000000000428.jpg",
+          "file": "images/000000000428.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "49e87dbacfb3911d83fde336b7c01b79cc7bc77a021a601f2eb8d861f170a466"
+        },
+        {
+          "id": "000000000459",
+          "url": "https://images.cocodataset.org/train2017/000000000459.jpg",
+          "file": "images/000000000459.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9dac859e6bc3eaf091e94593a005735f9c3c3e71c1c40a708b4c24da99b2e06c"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000428"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A child celebrating beside a birthday cake and balloon.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-18-2",
+      "meaningId": "curated-18-birthday",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "birthday",
+        "definition": "The annual celebration of the day a person was born.",
+        "imageScenes": {
+          "scenes": [
+            "A child celebrating beside a birthday cake and balloon."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000428",
+          "url": "https://images.cocodataset.org/train2017/000000000428.jpg",
+          "file": "images/000000000428.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "49e87dbacfb3911d83fde336b7c01b79cc7bc77a021a601f2eb8d861f170a466"
+        },
+        {
+          "id": "000000000438",
+          "url": "https://images.cocodataset.org/train2017/000000000438.jpg",
+          "file": "images/000000000438.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "ee66d39f65c8ce3421fda1ca85b1942f6dff29813c97b6fb4ea4ed015c3a822a"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000428"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A child celebrating beside a birthday cake and balloon.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-19-0",
+      "meaningId": "curated-19-doughnut",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "doughnut",
+        "definition": "A small sweet fried cake, often shaped like a ring.",
+        "imageScenes": {
+          "scenes": [
+            "Several doughnuts whose shape and icing are visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000438",
+          "url": "https://images.cocodataset.org/train2017/000000000438.jpg",
+          "file": "images/000000000438.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "ee66d39f65c8ce3421fda1ca85b1942f6dff29813c97b6fb4ea4ed015c3a822a"
+        },
+        {
+          "id": "000000000450",
+          "url": "https://images.cocodataset.org/train2017/000000000450.jpg",
+          "file": "images/000000000450.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "3b1fe58cb414f373c61990a5fed4f1a6418a02b2e8a3ed3ecef613f4e7198068"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000438"
+        ],
+        "wrong": [
+          "000000000450"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "Several doughnuts whose shape and icing are visible.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-19-1",
+      "meaningId": "curated-19-doughnut",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "doughnut",
+        "definition": "A small sweet fried cake, often shaped like a ring.",
+        "imageScenes": {
+          "scenes": [
+            "Several doughnuts whose shape and icing are visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000438",
+          "url": "https://images.cocodataset.org/train2017/000000000438.jpg",
+          "file": "images/000000000438.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "ee66d39f65c8ce3421fda1ca85b1942f6dff29813c97b6fb4ea4ed015c3a822a"
+        },
+        {
+          "id": "000000000428",
+          "url": "https://images.cocodataset.org/train2017/000000000428.jpg",
+          "file": "images/000000000428.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "49e87dbacfb3911d83fde336b7c01b79cc7bc77a021a601f2eb8d861f170a466"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000438"
+        ],
+        "wrong": [
+          "000000000428"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "Several doughnuts whose shape and icing are visible.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-19-2",
+      "meaningId": "curated-19-doughnut",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "doughnut",
+        "definition": "A small sweet fried cake, often shaped like a ring.",
+        "imageScenes": {
+          "scenes": [
+            "Several doughnuts whose shape and icing are visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000438",
+          "url": "https://images.cocodataset.org/train2017/000000000438.jpg",
+          "file": "images/000000000438.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "ee66d39f65c8ce3421fda1ca85b1942f6dff29813c97b6fb4ea4ed015c3a822a"
+        },
+        {
+          "id": "000000000436",
+          "url": "https://images.cocodataset.org/train2017/000000000436.jpg",
+          "file": "images/000000000436.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "84b778ac377b3fb394edee6f6c3e688c600a3ac440247b64942b1e6e116ff9a3"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000438"
+        ],
+        "wrong": [
+          "000000000436"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "Several doughnuts whose shape and icing are visible.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-20-0",
+      "meaningId": "curated-20-sit",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "sit",
+        "definition": "To rest with the body supported by the buttocks.",
+        "imageScenes": {
+          "scenes": [
+            "A person sitting on a bench."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000510",
+          "url": "https://images.cocodataset.org/train2017/000000000510.jpg",
+          "file": "images/000000000510.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "c2fcc1d44e81016f4c53e7e610c44dc28a2ca1bc5e73f73623129d261bff15e2"
+        },
+        {
+          "id": "000000000459",
+          "url": "https://images.cocodataset.org/train2017/000000000459.jpg",
+          "file": "images/000000000459.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9dac859e6bc3eaf091e94593a005735f9c3c3e71c1c40a708b4c24da99b2e06c"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000510"
+        ],
+        "wrong": [
+          "000000000459"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person sitting on a bench.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-20-1",
+      "meaningId": "curated-20-sit",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "sit",
+        "definition": "To rest with the body supported by the buttocks.",
+        "imageScenes": {
+          "scenes": [
+            "A person sitting on a bench."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000510",
+          "url": "https://images.cocodataset.org/train2017/000000000510.jpg",
+          "file": "images/000000000510.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "c2fcc1d44e81016f4c53e7e610c44dc28a2ca1bc5e73f73623129d261bff15e2"
+        },
+        {
+          "id": "000000000474",
+          "url": "https://images.cocodataset.org/train2017/000000000474.jpg",
+          "file": "images/000000000474.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "e5a6b72ea2fda1cd1ea969018036e6da16fa491f9a2ac974a7361b539b00a155"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000510"
+        ],
+        "wrong": [
+          "000000000474"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person sitting on a bench.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-20-2",
+      "meaningId": "curated-20-sit",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "sit",
+        "definition": "To rest with the body supported by the buttocks.",
+        "imageScenes": {
+          "scenes": [
+            "A person sitting on a bench."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000510",
+          "url": "https://images.cocodataset.org/train2017/000000000510.jpg",
+          "file": "images/000000000510.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "c2fcc1d44e81016f4c53e7e610c44dc28a2ca1bc5e73f73623129d261bff15e2"
+        },
+        {
+          "id": "000000000536",
+          "url": "https://images.cocodataset.org/train2017/000000000536.jpg",
+          "file": "images/000000000536.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "745e538b3979ffa93f63bb294163e173d9a99413bce6cf3289215b541c9f1eb1"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000510"
+        ],
+        "wrong": [
+          "000000000536"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A person sitting on a bench.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-21-0",
+      "meaningId": "curated-21-cat",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "cat",
+        "definition": "A small domesticated feline animal.",
+        "imageScenes": {
+          "scenes": [
+            "A living pet cat clearly visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000443",
+          "url": "https://images.cocodataset.org/train2017/000000000443.jpg",
+          "file": "images/000000000443.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f6483d57885c348a27dcdc272e4bd5296c75596d7c64fe638b24dbb503209902"
+        },
+        {
+          "id": "000000000502",
+          "url": "https://images.cocodataset.org/train2017/000000000502.jpg",
+          "file": "images/000000000502.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f7ce0feeb7699cd56886c64ac4ea923c76be97b34ee3a2ea0909c45e08411ec0"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000443"
+        ],
+        "wrong": [
+          "000000000502"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A living pet cat clearly visible.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-21-1",
+      "meaningId": "curated-21-cat",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "cat",
+        "definition": "A small domesticated feline animal.",
+        "imageScenes": {
+          "scenes": [
+            "A living pet cat clearly visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000443",
+          "url": "https://images.cocodataset.org/train2017/000000000443.jpg",
+          "file": "images/000000000443.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f6483d57885c348a27dcdc272e4bd5296c75596d7c64fe638b24dbb503209902"
+        },
+        {
+          "id": "000000000491",
+          "url": "https://images.cocodataset.org/train2017/000000000491.jpg",
+          "file": "images/000000000491.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9d5732e879b066bfe8a38e3fcad64836fa1a5ac9f507625082c4b14fe449f993"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000443"
+        ],
+        "wrong": [
+          "000000000491"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A living pet cat clearly visible.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-21-2",
+      "meaningId": "curated-21-cat",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "cat",
+        "definition": "A small domesticated feline animal.",
+        "imageScenes": {
+          "scenes": [
+            "A living pet cat clearly visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000443",
+          "url": "https://images.cocodataset.org/train2017/000000000443.jpg",
+          "file": "images/000000000443.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f6483d57885c348a27dcdc272e4bd5296c75596d7c64fe638b24dbb503209902"
+        },
+        {
+          "id": "000000000490",
+          "url": "https://images.cocodataset.org/train2017/000000000490.jpg",
+          "file": "images/000000000490.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "1274c3c4010d45ddd84faf1c56f7c997c0c2533e4f25c6ccea25e8233e5684e5"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000443"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A living pet cat clearly visible.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-22-0",
+      "meaningId": "curated-22-bus",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "bus",
+        "definition": "A large road vehicle designed to carry many passengers.",
+        "imageScenes": {
+          "scenes": [
+            "A complete bus seen from outside."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000471",
+          "url": "https://images.cocodataset.org/train2017/000000000471.jpg",
+          "file": "images/000000000471.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "8f473ca6e651f74a74efea3673445230f6bb7d6ae92f76bf3c1e523853ec3995"
+        },
+        {
+          "id": "000000000532",
+          "url": "https://images.cocodataset.org/train2017/000000000532.jpg",
+          "file": "images/000000000532.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "60745e50cb857e4683d3622ac6c1e7ade63bd73ee458eb76a70455badaee2869"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000471"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A complete bus seen from outside.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-22-1",
+      "meaningId": "curated-22-bus",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "bus",
+        "definition": "A large road vehicle designed to carry many passengers.",
+        "imageScenes": {
+          "scenes": [
+            "A complete bus seen from outside."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000471",
+          "url": "https://images.cocodataset.org/train2017/000000000471.jpg",
+          "file": "images/000000000471.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "8f473ca6e651f74a74efea3673445230f6bb7d6ae92f76bf3c1e523853ec3995"
+        },
+        {
+          "id": "000000000472",
+          "url": "https://images.cocodataset.org/train2017/000000000472.jpg",
+          "file": "images/000000000472.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "e86077ae0fa75248880ca12cdc9ef09bb68fa68083313ce280fd77082c780769"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000471"
+        ],
+        "wrong": [
+          "000000000472"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A complete bus seen from outside.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-22-2",
+      "meaningId": "curated-22-bus",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "bus",
+        "definition": "A large road vehicle designed to carry many passengers.",
+        "imageScenes": {
+          "scenes": [
+            "A complete bus seen from outside."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000471",
+          "url": "https://images.cocodataset.org/train2017/000000000471.jpg",
+          "file": "images/000000000471.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "8f473ca6e651f74a74efea3673445230f6bb7d6ae92f76bf3c1e523853ec3995"
+        },
+        {
+          "id": "000000000531",
+          "url": "https://images.cocodataset.org/train2017/000000000531.jpg",
+          "file": "images/000000000531.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "111bb407e512f23fcc14bbc51ad4b312b0797332aab86ecd9373808286ed30b1"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000471"
+        ],
+        "wrong": [
+          "000000000531"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A complete bus seen from outside.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-23-0",
+      "meaningId": "curated-23-snow",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "snow",
+        "definition": "Frozen white precipitation covering the ground.",
+        "imageScenes": {
+          "scenes": [
+            "A landscape with the ground covered in snow."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000508",
+          "url": "https://images.cocodataset.org/train2017/000000000508.jpg",
+          "file": "images/000000000508.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0fc73f660a10ed91c52f76a2b34b5fa252bf70ff84f7b2a35374726388528ca2"
+        },
+        {
+          "id": "000000000520",
+          "url": "https://images.cocodataset.org/train2017/000000000520.jpg",
+          "file": "images/000000000520.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "2b971302ba56e1049294f9e0b198f37316148c8257b8d7344002aed624c45844"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000508"
+        ],
+        "wrong": [
+          "000000000520"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A landscape with the ground covered in snow.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-23-1",
+      "meaningId": "curated-23-snow",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "snow",
+        "definition": "Frozen white precipitation covering the ground.",
+        "imageScenes": {
+          "scenes": [
+            "A landscape with the ground covered in snow."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000508",
+          "url": "https://images.cocodataset.org/train2017/000000000508.jpg",
+          "file": "images/000000000508.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0fc73f660a10ed91c52f76a2b34b5fa252bf70ff84f7b2a35374726388528ca2"
+        },
+        {
+          "id": "000000000502",
+          "url": "https://images.cocodataset.org/train2017/000000000502.jpg",
+          "file": "images/000000000502.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f7ce0feeb7699cd56886c64ac4ea923c76be97b34ee3a2ea0909c45e08411ec0"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000508"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A landscape with the ground covered in snow.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-23-2",
+      "meaningId": "curated-23-snow",
+      "split": "validation",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "snow",
+        "definition": "Frozen white precipitation covering the ground.",
+        "imageScenes": {
+          "scenes": [
+            "A landscape with the ground covered in snow."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000508",
+          "url": "https://images.cocodataset.org/train2017/000000000508.jpg",
+          "file": "images/000000000508.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0fc73f660a10ed91c52f76a2b34b5fa252bf70ff84f7b2a35374726388528ca2"
+        },
+        {
+          "id": "000000000472",
+          "url": "https://images.cocodataset.org/train2017/000000000472.jpg",
+          "file": "images/000000000472.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "e86077ae0fa75248880ca12cdc9ef09bb68fa68083313ce280fd77082c780769"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000508"
+        ],
+        "wrong": [
+          "000000000472"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A landscape with the ground covered in snow.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-24-0",
+      "meaningId": "curated-24-teddy bear",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "teddy bear",
+        "definition": "A soft toy made to look like a bear.",
+        "imageScenes": {
+          "scenes": [
+            "A child beside a large stuffed teddy bear."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000623",
+          "url": "https://images.cocodataset.org/train2017/000000000623.jpg",
+          "file": "images/000000000623.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "c11d16bc49acabc2a52b990174110753dbe3a9a71eb7aa37af8f5fc4c616fb20"
+        },
+        {
+          "id": "000000000575",
+          "url": "https://images.cocodataset.org/train2017/000000000575.jpg",
+          "file": "images/000000000575.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "839789fe6192bbd5776761d675aa76017b67810b556f3e25e2f3a31acffd86f3"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000623"
+        ],
+        "wrong": [
+          "000000000575"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A child beside a large stuffed teddy bear.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-24-1",
+      "meaningId": "curated-24-teddy bear",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "teddy bear",
+        "definition": "A soft toy made to look like a bear.",
+        "imageScenes": {
+          "scenes": [
+            "A child beside a large stuffed teddy bear."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000623",
+          "url": "https://images.cocodataset.org/train2017/000000000623.jpg",
+          "file": "images/000000000623.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "c11d16bc49acabc2a52b990174110753dbe3a9a71eb7aa37af8f5fc4c616fb20"
+        },
+        {
+          "id": "000000000581",
+          "url": "https://images.cocodataset.org/train2017/000000000581.jpg",
+          "file": "images/000000000581.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "60ad7a794ae3032c302c4e1d5111099921ce7e8df23df4401f60bdc74dc83bf1"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000623"
+        ],
+        "wrong": [
+          "000000000581"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A child beside a large stuffed teddy bear.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-24-2",
+      "meaningId": "curated-24-teddy bear",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "teddy bear",
+        "definition": "A soft toy made to look like a bear.",
+        "imageScenes": {
+          "scenes": [
+            "A child beside a large stuffed teddy bear."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000623",
+          "url": "https://images.cocodataset.org/train2017/000000000623.jpg",
+          "file": "images/000000000623.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "c11d16bc49acabc2a52b990174110753dbe3a9a71eb7aa37af8f5fc4c616fb20"
+        },
+        {
+          "id": "000000000599",
+          "url": "https://images.cocodataset.org/train2017/000000000599.jpg",
+          "file": "images/000000000599.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9d924b4353cca7295c149e3659866a18e78234f0dc701df119191152f4a31fec"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000623"
+        ],
+        "wrong": [
+          "000000000599"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A child beside a large stuffed teddy bear.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-25-0",
+      "meaningId": "curated-25-toilet",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "toilet",
+        "definition": "A bathroom fixture with a bowl used for bodily waste.",
+        "imageScenes": {
+          "scenes": [
+            "A toilet bowl with its lid open."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000636",
+          "url": "https://images.cocodataset.org/train2017/000000000636.jpg",
+          "file": "images/000000000636.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "8e948d6888e7bf449e91883d3a2b0d61804308aada31fbf289add4da4dd978e8"
+        },
+        {
+          "id": "000000000590",
+          "url": "https://images.cocodataset.org/train2017/000000000590.jpg",
+          "file": "images/000000000590.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "dd687875b5ff4fd0a91dcc910690da36858271562ea908ff61661b4cec9b4cee"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000636"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A toilet bowl with its lid open.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-25-1",
+      "meaningId": "curated-25-toilet",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "toilet",
+        "definition": "A bathroom fixture with a bowl used for bodily waste.",
+        "imageScenes": {
+          "scenes": [
+            "A toilet bowl with its lid open."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000636",
+          "url": "https://images.cocodataset.org/train2017/000000000636.jpg",
+          "file": "images/000000000636.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "8e948d6888e7bf449e91883d3a2b0d61804308aada31fbf289add4da4dd978e8"
+        },
+        {
+          "id": "000000000560",
+          "url": "https://images.cocodataset.org/train2017/000000000560.jpg",
+          "file": "images/000000000560.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "96801af258ded041845af111c4535dcb12a512cf22f6fd9854e5723920532d60"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000636"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A toilet bowl with its lid open.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-25-2",
+      "meaningId": "curated-25-toilet",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "toilet",
+        "definition": "A bathroom fixture with a bowl used for bodily waste.",
+        "imageScenes": {
+          "scenes": [
+            "A toilet bowl with its lid open."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000636",
+          "url": "https://images.cocodataset.org/train2017/000000000636.jpg",
+          "file": "images/000000000636.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "8e948d6888e7bf449e91883d3a2b0d61804308aada31fbf289add4da4dd978e8"
+        },
+        {
+          "id": "000000000562",
+          "url": "https://images.cocodataset.org/train2017/000000000562.jpg",
+          "file": "images/000000000562.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "e31320272d768add7113d41a9c65407fd4868da1229f8658fc877e9b07c4c794"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000636"
+        ],
+        "wrong": [
+          "000000000562"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A toilet bowl with its lid open.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-26-0",
+      "meaningId": "curated-26-coffee",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "coffee",
+        "definition": "A drink made from roasted coffee beans.",
+        "imageScenes": {
+          "scenes": [
+            "A cup of coffee served on a table."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000605",
+          "url": "https://images.cocodataset.org/train2017/000000000605.jpg",
+          "file": "images/000000000605.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9135dd0723240d2d4f64ce2173901a0f23a222dea98b72e1259c28f28fa2aab6"
+        },
+        {
+          "id": "000000000584",
+          "url": "https://images.cocodataset.org/train2017/000000000584.jpg",
+          "file": "images/000000000584.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f1ae69b71470e4d4e88e342b69fa47187fe5c7a56882eac0e548107075f4716f"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000605"
+        ],
+        "wrong": [
+          "000000000584"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A cup of coffee served on a table.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-26-1",
+      "meaningId": "curated-26-coffee",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "coffee",
+        "definition": "A drink made from roasted coffee beans.",
+        "imageScenes": {
+          "scenes": [
+            "A cup of coffee served on a table."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000605",
+          "url": "https://images.cocodataset.org/train2017/000000000605.jpg",
+          "file": "images/000000000605.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9135dd0723240d2d4f64ce2173901a0f23a222dea98b72e1259c28f28fa2aab6"
+        },
+        {
+          "id": "000000000620",
+          "url": "https://images.cocodataset.org/train2017/000000000620.jpg",
+          "file": "images/000000000620.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "4c7d0e5b1ac23a287f95640c4aaab93a0e120c384558e3fff70b96f6f1eb80ce"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000605"
+        ],
+        "wrong": [
+          "000000000620"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A cup of coffee served on a table.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-26-2",
+      "meaningId": "curated-26-coffee",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "coffee",
+        "definition": "A drink made from roasted coffee beans.",
+        "imageScenes": {
+          "scenes": [
+            "A cup of coffee served on a table."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000605",
+          "url": "https://images.cocodataset.org/train2017/000000000605.jpg",
+          "file": "images/000000000605.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9135dd0723240d2d4f64ce2173901a0f23a222dea98b72e1259c28f28fa2aab6"
+        },
+        {
+          "id": "000000000572",
+          "url": "https://images.cocodataset.org/train2017/000000000572.jpg",
+          "file": "images/000000000572.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "b779e782a66c196373580de6ede5c4faacabf05fb521eab8df4d11b71d8d2770"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000605"
+        ],
+        "wrong": [
+          "000000000572"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A cup of coffee served on a table.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-27-0",
+      "meaningId": "curated-27-striped",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "striped",
+        "definition": "Having a pattern of long narrow bands.",
+        "imageScenes": {
+          "scenes": [
+            "An animal whose fur has clearly visible stripes."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000599",
+          "url": "https://images.cocodataset.org/train2017/000000000599.jpg",
+          "file": "images/000000000599.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9d924b4353cca7295c149e3659866a18e78234f0dc701df119191152f4a31fec"
+        },
+        {
+          "id": "000000000650",
+          "url": "https://images.cocodataset.org/train2017/000000000650.jpg",
+          "file": "images/000000000650.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9bb45795336c1d05189fe51a77e04270cd1da8929d62060926798f3dd2d25204"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000599"
+        ],
+        "wrong": [
+          "000000000650"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "An animal whose fur has clearly visible stripes.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-27-1",
+      "meaningId": "curated-27-striped",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "striped",
+        "definition": "Having a pattern of long narrow bands.",
+        "imageScenes": {
+          "scenes": [
+            "An animal whose fur has clearly visible stripes."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000599",
+          "url": "https://images.cocodataset.org/train2017/000000000599.jpg",
+          "file": "images/000000000599.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9d924b4353cca7295c149e3659866a18e78234f0dc701df119191152f4a31fec"
+        },
+        {
+          "id": "000000000581",
+          "url": "https://images.cocodataset.org/train2017/000000000581.jpg",
+          "file": "images/000000000581.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "60ad7a794ae3032c302c4e1d5111099921ce7e8df23df4401f60bdc74dc83bf1"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000599"
+        ],
+        "wrong": [
+          "000000000581"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "An animal whose fur has clearly visible stripes.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-27-2",
+      "meaningId": "curated-27-striped",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "striped",
+        "definition": "Having a pattern of long narrow bands.",
+        "imageScenes": {
+          "scenes": [
+            "An animal whose fur has clearly visible stripes."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000599",
+          "url": "https://images.cocodataset.org/train2017/000000000599.jpg",
+          "file": "images/000000000599.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "9d924b4353cca7295c149e3659866a18e78234f0dc701df119191152f4a31fec"
+        },
+        {
+          "id": "000000000575",
+          "url": "https://images.cocodataset.org/train2017/000000000575.jpg",
+          "file": "images/000000000575.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "839789fe6192bbd5776761d675aa76017b67810b556f3e25e2f3a31acffd86f3"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000599"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "An animal whose fur has clearly visible stripes.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-28-0",
+      "meaningId": "curated-28-motorcycle",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "motorcycle",
+        "definition": "A motor-powered road vehicle with two wheels.",
+        "imageScenes": {
+          "scenes": [
+            "A motorcycle with its two wheels and body visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000629",
+          "url": "https://images.cocodataset.org/train2017/000000000629.jpg",
+          "file": "images/000000000629.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "be76e3e5bed8c8a9a0d8081844bfca7ce013093e746b66aad13922373644ad32"
+        },
+        {
+          "id": "000000000529",
+          "url": "https://images.cocodataset.org/train2017/000000000529.jpg",
+          "file": "images/000000000529.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "5d9958bdec3062b05090258293a19af01d231de69b943d1ff0bb4a7b943e6db3"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000629"
+        ],
+        "wrong": []
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A motorcycle with its two wheels and body visible.",
+        "alternativeMayAlsoBeSuitable": true
+      }
+    },
+    {
+      "id": "curated-28-1",
+      "meaningId": "curated-28-motorcycle",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "motorcycle",
+        "definition": "A motor-powered road vehicle with two wheels.",
+        "imageScenes": {
+          "scenes": [
+            "A motorcycle with its two wheels and body visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000629",
+          "url": "https://images.cocodataset.org/train2017/000000000629.jpg",
+          "file": "images/000000000629.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "be76e3e5bed8c8a9a0d8081844bfca7ce013093e746b66aad13922373644ad32"
+        },
+        {
+          "id": "000000000641",
+          "url": "https://images.cocodataset.org/train2017/000000000641.jpg",
+          "file": "images/000000000641.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "8eae4239a000d602acb4c58801a3c070e4bf3da608e57e7a3dcbd5ef719895cc"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000629"
+        ],
+        "wrong": [
+          "000000000641"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A motorcycle with its two wheels and body visible.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-28-2",
+      "meaningId": "curated-28-motorcycle",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "motorcycle",
+        "definition": "A motor-powered road vehicle with two wheels.",
+        "imageScenes": {
+          "scenes": [
+            "A motorcycle with its two wheels and body visible."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000629",
+          "url": "https://images.cocodataset.org/train2017/000000000629.jpg",
+          "file": "images/000000000629.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "be76e3e5bed8c8a9a0d8081844bfca7ce013093e746b66aad13922373644ad32"
+        },
+        {
+          "id": "000000000634",
+          "url": "https://images.cocodataset.org/train2017/000000000634.jpg",
+          "file": "images/000000000634.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "d769636e9b9d22fa6fd4dcc2e683b2c95a5a9c247b3cc95df7367b1dba52f9bc"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000629"
+        ],
+        "wrong": [
+          "000000000634"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A motorcycle with its two wheels and body visible.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-29-0",
+      "meaningId": "curated-29-audience",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "audience",
+        "definition": "People gathered to watch a public performance or event.",
+        "imageScenes": {
+          "scenes": [
+            "A large audience watching a sporting event."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000544",
+          "url": "https://images.cocodataset.org/train2017/000000000544.jpg",
+          "file": "images/000000000544.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f599082d9c87db6029fc3d6e468074d1294dc98a8755152ca7324811aa1d10cd"
+        },
+        {
+          "id": "000000000569",
+          "url": "https://images.cocodataset.org/train2017/000000000569.jpg",
+          "file": "images/000000000569.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "07655c58e2286ec5e8b74eee71a03841ccf732cbc502d6c380d894a14041ad5f"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000544"
+        ],
+        "wrong": [
+          "000000000569"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A large audience watching a sporting event.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-29-1",
+      "meaningId": "curated-29-audience",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "audience",
+        "definition": "People gathered to watch a public performance or event.",
+        "imageScenes": {
+          "scenes": [
+            "A large audience watching a sporting event."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000544",
+          "url": "https://images.cocodataset.org/train2017/000000000544.jpg",
+          "file": "images/000000000544.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f599082d9c87db6029fc3d6e468074d1294dc98a8755152ca7324811aa1d10cd"
+        },
+        {
+          "id": "000000000625",
+          "url": "https://images.cocodataset.org/train2017/000000000625.jpg",
+          "file": "images/000000000625.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "0938276afa762c367dac4968bc9a3d4abf9d83db1f4bea67262bff976568e24c"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000544"
+        ],
+        "wrong": [
+          "000000000625"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A large audience watching a sporting event.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    },
+    {
+      "id": "curated-29-2",
+      "meaningId": "curated-29-audience",
+      "split": "test",
+      "occurredAt": "2026-10-25T15:17:49.458240Z",
+      "word": {
+        "word": "audience",
+        "definition": "People gathered to watch a public performance or event.",
+        "imageScenes": {
+          "scenes": [
+            "A large audience watching a sporting event."
+          ]
+        }
+      },
+      "candidates": [
+        {
+          "id": "000000000544",
+          "url": "https://images.cocodataset.org/train2017/000000000544.jpg",
+          "file": "images/000000000544.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "f599082d9c87db6029fc3d6e468074d1294dc98a8755152ca7324811aa1d10cd"
+        },
+        {
+          "id": "000000000626",
+          "url": "https://images.cocodataset.org/train2017/000000000626.jpg",
+          "file": "images/000000000626.jpg",
+          "source": "COCO train2017 via COCO128",
+          "sha256": "47b4a3b3fe24c6b1f77a9d89aa2e5d1a3b410b7ba611f54c252c2e13e975afc8"
+        }
+      ],
+      "feedback": {
+        "selected": [
+          "000000000544"
+        ],
+        "wrong": [
+          "000000000626"
+        ]
+      },
+      "annotation": {
+        "reviewer": "assistant visual inspection",
+        "reason": "A large audience watching a sporting event.",
+        "alternativeMayAlsoBeSuitable": false
+      }
+    }
+  ]
+}

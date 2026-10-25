@@ -28,7 +28,22 @@ export function encodeFeatures(features) {
   if (features.length !== PREFERENCE_DIMENSION || !features.every(Number.isFinite)) throw new Error('Invalid preference features.');
   return bytesToBase64(Uint8Array.from(features, value => Math.round(Math.max(-1, Math.min(1, value)) * 127) & 255));
 }
+export function encodeFullFeatures(features) {
+  if (features.length !== PREFERENCE_DIMENSION || !Array.from(features).every(Number.isFinite)) throw new Error('Invalid preference features.');
+  const bytes = new Uint8Array(features.length * 4), view = new DataView(bytes.buffer);
+  features.forEach((value, index) => view.setFloat32(index * 4, Math.max(-1, Math.min(1, value)), true));
+  return `f32:${bytesToBase64(bytes)}`;
+}
 export function decodeFeatures(encoded) {
+  if (typeof encoded === 'string' && encoded.startsWith('f32:')) {
+    const body = encoded.slice(4);
+    if (body.length !== 2748 || !/^[A-Za-z0-9+/]+={0,2}$/.test(body)) throw new Error('Invalid preference record.');
+    const bytes = base64ToBytes(body);
+    if (bytes.length !== PREFERENCE_DIMENSION * 4) throw new Error('Invalid preference record.');
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), result = Array.from({ length: PREFERENCE_DIMENSION }, (_, index) => view.getFloat32(index * 4, true));
+    if (!result.every(value => Number.isFinite(value) && Math.abs(value) <= 1)) throw new Error('Invalid preference record.');
+    return result;
+  }
   if (typeof encoded !== 'string' || encoded.length !== 688 || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)) throw new Error('Invalid preference record.');
   const bytes = base64ToBytes(encoded);
   if (bytes.length !== PREFERENCE_DIMENSION) throw new Error('Invalid preference record.');
@@ -62,9 +77,12 @@ export function mergeImageLearning(left = {}, right = {}) {
     if (!previous || time(clean.updatedAt) > time(previous.updatedAt)
       || (time(clean.updatedAt) === time(previous.updatedAt) && JSON.stringify(clean) > JSON.stringify(previous))) records.set(clean.id, clean);
   }
-  return { version: 1, resetAt, records: [...records.values()].sort((a, b) => time(a.updatedAt) - time(b.updatedAt) || a.id.localeCompare(b.id)).slice(-MAX_LABELS) };
+  return { version: 1, resetAt, records: [...records.values()].sort((a, b) => time(a.updatedAt) - time(b.updatedAt) || a.id.localeCompare(b.id)) };
 }
 export function fitPreferences(records, previous = null) {
+  // Legacy replay bound, never a retention limit. Production learning uses the
+  // versioned meaning-conditioned worker; this fitter remains for migration.
+  records = records.slice(-MAX_LABELS);
   const examples = records.filter(record => record.kind !== 'comparison').map(record => ({ x: decodeFeatures(record.features), y: record.label }));
   const comparisons = records.filter(record => record.kind === 'comparison').map(record => {
     const losing = decodeFeatures(record.features);

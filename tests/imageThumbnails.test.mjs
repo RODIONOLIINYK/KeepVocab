@@ -156,3 +156,14 @@ test('cached thumbnails are bounded by entry count and configured zero limits av
   assert.deepEqual(await prepareImageThumbnails([candidate('zero')], { ...options, limit: 0 }), []);
   assert.equal(calls, 34);
 });
+
+
+test('CLIP can prefer an uncropped original and falls back to its preview within the download budget', async () => {
+  for (const oversized of [false,true]) {
+    const seen=[];
+    const photo={url:'https://photos.test/full-'+oversized,thumbnailUrl:'https://photos.test/preview-'+oversized};
+    const result=await prepareImageThumbnails([photo],{preferOriginal:true,maxSourceBytes:20,
+      fetchImpl:async url=>{seen.push(url);return url===photo.url&&oversized?new Response('big',{headers:{'content-type':'image/jpeg','content-length':'21'}}):imageResponse();},decode:smallDecode});
+    assert.deepEqual(seen,oversized?[photo.url,photo.thumbnailUrl]:[photo.url]);assert.equal(result.length,1);
+  }
+});
