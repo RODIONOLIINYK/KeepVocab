@@ -30,14 +30,14 @@ export async function evaluateImagePipeline(fixtures, { embedTexts, embedImage, 
       const features = encodeFullFeatures(preferenceFeatures(alternative.vector, alternative.semantic));
       events.push({ id: `${item.id}:${alternative.candidate.id}`, key: `${item.id}:${alternative.candidate.id}`, decisionId: item.id,
         meaningId: item.meaningId || item.word.word.toLowerCase(), updatedAt: item.occurredAt || new Date(Date.UTC(2026, 0, index + 1)).toISOString(),
-        kind: 'comparison', label: 0, features, preferredFeatures: encodeFullFeatures(preferenceFeatures(chosen.vector, chosen.semantic)), meaningFeatures,
+        task: fixtures.targetTask === 'semantic' ? 'semantic' : 'preference', kind: 'comparison', label: 0, features, preferredFeatures: encodeFullFeatures(preferenceFeatures(chosen.vector, chosen.semantic)), meaningFeatures,
         encoder: CLIP_TAG, preprocessing, context: { word: item.word.word, definition: item.word.definition, scenes: prompt.scenes,
           imageUrl: alternative.candidate.url, preferredUrl: chosen.candidate.url }, source: 'curated-pretraining' });
     }
     timings.push(performance.now() - start); progress({ completed: index + 1, total: cases.length, id: item.id });
   }
   for (const report of Object.values(reports)) { report.chosenAt1Rate = report.choices ? report.chosenAt1 / report.choices : null; report.chosenAt3Rate = report.choices ? report.chosenAt3 / report.choices : null; }
-  return { kind: fixtures.kind || 'unspecified', evidence, encoder: CLIP_TAG, preprocessing,
+  return { kind: fixtures.kind || 'unspecified', targetTask: fixtures.targetTask === 'semantic' ? 'semantic' : 'preference', evidence, encoder: CLIP_TAG, preprocessing,
     evaluatedCases: cases.length, models: reports, timingsMs: timings, events,
-    note: 'Chosen-image agreement measures the supplied preferences, not correctness of all unchosen photos. No population accuracy is inferred.' };
+    note: fixtures.targetTask === 'semantic' ? 'Meaning-correctness agreement on independently reviewed fixed candidate galleries; no population accuracy or personal taste is inferred.' : 'Chosen-image agreement measures the supplied preferences, not correctness of all unchosen photos. No population accuracy is inferred.' };
 }

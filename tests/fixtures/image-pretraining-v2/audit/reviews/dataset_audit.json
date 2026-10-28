@@ -1,0 +1,2806 @@
+{
+  "reviewer": "agent dataset_audit",
+  "reviews": [
+    {
+      "id": "semantic-v2-fence-0",
+      "fits": [
+        "21903"
+      ],
+      "wrong": [
+        "186632",
+        "341094"
+      ],
+      "uncertain": [
+        "267191",
+        "266892"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-fence-1",
+      "fits": [
+        "426203"
+      ],
+      "wrong": [
+        "109827",
+        "371472",
+        "347335"
+      ],
+      "uncertain": [
+        "408830"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-fence-2",
+      "fits": [
+        "505789"
+      ],
+      "wrong": [
+        "451308",
+        "120777",
+        "443844"
+      ],
+      "uncertain": [
+        "212559"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-fence-3",
+      "fits": [
+        "377882"
+      ],
+      "wrong": [
+        "256916",
+        "326128",
+        "245576",
+        "140420"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-traffic-light-0",
+      "fits": [
+        "110282"
+      ],
+      "wrong": [
+        "389566",
+        "324614",
+        "486573",
+        "118594"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-traffic-light-1",
+      "fits": [
+        "133087"
+      ],
+      "wrong": [
+        "498857",
+        "73118",
+        "436315",
+        "330818"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-traffic-light-2",
+      "fits": [
+        "76417"
+      ],
+      "wrong": [
+        "82715",
+        "341828",
+        "565962",
+        "468925"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-traffic-light-3",
+      "fits": [],
+      "wrong": [
+        "75456",
+        "1993",
+        "132796"
+      ],
+      "uncertain": [
+        "568290",
+        "162858"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-purple-0",
+      "fits": [],
+      "wrong": [
+        "118367",
+        "230983",
+        "404678"
+      ],
+      "uncertain": [
+        "286708",
+        "56350"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-purple-1",
+      "fits": [
+        "2006"
+      ],
+      "wrong": [
+        "32817",
+        "434230",
+        "51938",
+        "416256"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-purple-2",
+      "fits": [
+        "28809"
+      ],
+      "wrong": [
+        "145781",
+        "378873",
+        "297562",
+        "438304"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-purple-3",
+      "fits": [
+        "172595"
+      ],
+      "wrong": [
+        "347370",
+        "154213",
+        "404484",
+        "201148"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-book-0",
+      "fits": [
+        "578545"
+      ],
+      "wrong": [
+        "114907",
+        "2532",
+        "248111",
+        "566282"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-book-1",
+      "fits": [
+        "520077"
+      ],
+      "wrong": [
+        "79651",
+        "505573",
+        "378453",
+        "100274"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-book-2",
+      "fits": [],
+      "wrong": [
+        "67315",
+        "144798",
+        "146155",
+        "107851"
+      ],
+      "uncertain": [
+        "464358"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-book-3",
+      "fits": [],
+      "wrong": [
+        "157847",
+        "365208"
+      ],
+      "uncertain": [
+        "200839",
+        "500464",
+        "163314"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-suitcase-0",
+      "fits": [
+        "453001"
+      ],
+      "wrong": [
+        "28285",
+        "289702",
+        "335450",
+        "576031"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-suitcase-1",
+      "fits": [],
+      "wrong": [
+        "308753",
+        "224093",
+        "498919",
+        "133244"
+      ],
+      "uncertain": [
+        "184611"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-suitcase-2",
+      "fits": [
+        "360097"
+      ],
+      "wrong": [
+        "575081",
+        "384513",
+        "184400",
+        "456143"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-suitcase-3",
+      "fits": [
+        "81061"
+      ],
+      "wrong": [
+        "348045",
+        "180135",
+        "136772",
+        "445999"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-snowy-0",
+      "fits": [
+        "424776"
+      ],
+      "wrong": [
+        "55002",
+        "300913",
+        "426166"
+      ],
+      "uncertain": [
+        "76261"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-snowy-1",
+      "fits": [
+        "576031"
+      ],
+      "wrong": [
+        "306437",
+        "235057",
+        "576654",
+        "408112"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-snowy-2",
+      "fits": [
+        "481159"
+      ],
+      "wrong": [
+        "252294",
+        "174123",
+        "414340",
+        "543043"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-snowy-3",
+      "fits": [
+        "52591",
+        "491470"
+      ],
+      "wrong": [
+        "220584",
+        "22755",
+        "300233"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-trash-can-0",
+      "fits": [
+        "551304"
+      ],
+      "wrong": [
+        "356125",
+        "210299",
+        "485802"
+      ],
+      "uncertain": [
+        "6818"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-trash-can-1",
+      "fits": [],
+      "wrong": [
+        "152465",
+        "273715",
+        "312340"
+      ],
+      "uncertain": [
+        "230983",
+        "124277"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-trash-can-2",
+      "fits": [
+        "190923"
+      ],
+      "wrong": [
+        "249180",
+        "313562",
+        "189698",
+        "308430"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-trash-can-3",
+      "fits": [],
+      "wrong": [
+        "540466",
+        "519338",
+        "186980",
+        "391144"
+      ],
+      "uncertain": [
+        "206271"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-tennis-racket-0",
+      "fits": [
+        "200421"
+      ],
+      "wrong": [
+        "231747",
+        "109976",
+        "486479",
+        "223188"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-tennis-racket-1",
+      "fits": [],
+      "wrong": [
+        "578967",
+        "226662",
+        "262587",
+        "156278"
+      ],
+      "uncertain": [
+        "248112"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-tennis-racket-2",
+      "fits": [
+        "316404"
+      ],
+      "wrong": [
+        "460967",
+        "414261",
+        "187271",
+        "474021"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-tennis-racket-3",
+      "fits": [],
+      "wrong": [
+        "197796",
+        "485424",
+        "473219",
+        "196843"
+      ],
+      "uncertain": [
+        "216296"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-subway-0",
+      "fits": [],
+      "wrong": [
+        "538364",
+        "44279",
+        "388056",
+        "235399"
+      ],
+      "uncertain": [
+        "463199"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-subway-1",
+      "fits": [
+        "290293"
+      ],
+      "wrong": [
+        "123321",
+        "25386",
+        "520301",
+        "35062"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-subway-2",
+      "fits": [],
+      "wrong": [
+        "150417",
+        "545730",
+        "357742",
+        "314264"
+      ],
+      "uncertain": [
+        "507667"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-subway-3",
+      "fits": [
+        "217400"
+      ],
+      "wrong": [
+        "95843",
+        "357903",
+        "425227",
+        "526197"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-leaf-0",
+      "fits": [
+        "148707"
+      ],
+      "wrong": [
+        "83531",
+        "442993",
+        "228214",
+        "370818"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-leaf-1",
+      "fits": [],
+      "wrong": [
+        "199681",
+        "578489",
+        "12576"
+      ],
+      "uncertain": [
+        "180011",
+        "76416"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-leaf-2",
+      "fits": [
+        "447200"
+      ],
+      "wrong": [
+        "485802",
+        "404601",
+        "311789",
+        "160864"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-leaf-3",
+      "fits": [],
+      "wrong": [
+        "446574",
+        "217285",
+        "378116"
+      ],
+      "uncertain": [
+        "496571",
+        "312340"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-catch-0",
+      "fits": [
+        "17029"
+      ],
+      "wrong": [
+        "515579",
+        "255824",
+        "169996",
+        "425226"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-catch-1",
+      "fits": [
+        "328238"
+      ],
+      "wrong": [
+        "442161",
+        "253433",
+        "370478"
+      ],
+      "uncertain": [
+        "434548"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-catch-2",
+      "fits": [],
+      "wrong": [
+        "513041",
+        "444275",
+        "356505"
+      ],
+      "uncertain": [
+        "227482",
+        "25057"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-catch-3",
+      "fits": [
+        "138492"
+      ],
+      "wrong": [
+        "515579",
+        "290081",
+        "256407",
+        "480021"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-bedroom-0",
+      "fits": [],
+      "wrong": [
+        "416104",
+        "298697",
+        "525155",
+        "427500"
+      ],
+      "uncertain": [
+        "106389"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-bedroom-1",
+      "fits": [
+        "384651"
+      ],
+      "wrong": [
+        "157418",
+        "521719",
+        "471756"
+      ],
+      "uncertain": [
+        "195842"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-bedroom-2",
+      "fits": [
+        "370478"
+      ],
+      "wrong": [
+        "189226",
+        "286994",
+        "563281",
+        "337055"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-bedroom-3",
+      "fits": [],
+      "wrong": [
+        "298396",
+        "390555",
+        "32735",
+        "204871"
+      ],
+      "uncertain": [
+        "532901"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-floor-0",
+      "fits": [
+        "154358"
+      ],
+      "wrong": [
+        "438876",
+        "528524"
+      ],
+      "uncertain": [
+        "416256",
+        "388927"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-floor-1",
+      "fits": [
+        "294783"
+      ],
+      "wrong": [
+        "91921",
+        "391375",
+        "6460",
+        "281179"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-floor-2",
+      "fits": [],
+      "wrong": [
+        "528578",
+        "56350",
+        "470773",
+        "332901",
+        "518326"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-floor-3",
+      "fits": [],
+      "wrong": [
+        "63552",
+        "127987",
+        "319696",
+        "492077"
+      ],
+      "uncertain": [
+        "248111"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-shirt-0",
+      "fits": [
+        "223959",
+        "302536"
+      ],
+      "wrong": [
+        "539143",
+        "572956",
+        "7574"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-shirt-1",
+      "fits": [
+        "96427",
+        "468505",
+        "174018"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "447465",
+        "430073"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-shirt-2",
+      "fits": [
+        "443844"
+      ],
+      "wrong": [
+        "528399",
+        "545958",
+        "92839",
+        "294831"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-shirt-3",
+      "fits": [
+        "13177"
+      ],
+      "wrong": [
+        "210520",
+        "400367",
+        "223747"
+      ],
+      "uncertain": [
+        "104424"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-painting-0",
+      "fits": [
+        "104666"
+      ],
+      "wrong": [
+        "450439",
+        "343937",
+        "512194"
+      ],
+      "uncertain": [
+        "491497"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-painting-1",
+      "fits": [
+        "342295"
+      ],
+      "wrong": [
+        "233139",
+        "535094",
+        "376856",
+        "113354"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-painting-2",
+      "fits": [
+        "407403"
+      ],
+      "wrong": [
+        "564127",
+        "144333",
+        "467848",
+        "236914"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-painting-3",
+      "fits": [
+        "480021"
+      ],
+      "wrong": [
+        "314709",
+        "236412",
+        "474028",
+        "377239"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-pink-0",
+      "fits": [
+        "163257"
+      ],
+      "wrong": [
+        "182441",
+        "227898",
+        "42889"
+      ],
+      "uncertain": [
+        "170278"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-pink-1",
+      "fits": [
+        "326970",
+        "578489",
+        "541634"
+      ],
+      "wrong": [
+        "144932",
+        "23937"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-pink-2",
+      "fits": [
+        "437392"
+      ],
+      "wrong": [
+        "411817",
+        "181816",
+        "413404",
+        "308545"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-pink-3",
+      "fits": [
+        "495448"
+      ],
+      "wrong": [
+        "343149",
+        "239318",
+        "166391"
+      ],
+      "uncertain": [
+        "357816"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-cabinet-0",
+      "fits": [
+        "109976"
+      ],
+      "wrong": [
+        "302107",
+        "148662",
+        "463522",
+        "164969"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-cabinet-1",
+      "fits": [
+        "415716"
+      ],
+      "wrong": [
+        "463647",
+        "336628",
+        "323709"
+      ],
+      "uncertain": [
+        "215778"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-cabinet-2",
+      "fits": [
+        "187271"
+      ],
+      "wrong": [
+        "438226",
+        "69213",
+        "395575",
+        "42528"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-cabinet-3",
+      "fits": [
+        "370818"
+      ],
+      "wrong": [
+        "140929",
+        "348488",
+        "290163",
+        "56344"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-snow-0",
+      "fits": [
+        "248284"
+      ],
+      "wrong": [
+        "321214",
+        "214224",
+        "388846"
+      ],
+      "uncertain": [
+        "534270"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-snow-1",
+      "fits": [
+        "51938"
+      ],
+      "wrong": [
+        "374727",
+        "443969",
+        "205324",
+        "440475"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-snow-2",
+      "fits": [],
+      "wrong": [
+        "247806",
+        "321790",
+        "104572"
+      ],
+      "uncertain": [
+        "508602",
+        "425906"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-snow-3",
+      "fits": [
+        "292997"
+      ],
+      "wrong": [
+        "490936",
+        "150638",
+        "346707",
+        "47740"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-ride-bicycle-0",
+      "fits": [
+        "577932"
+      ],
+      "wrong": [
+        "205333",
+        "364884",
+        "259830",
+        "548339"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-ride-bicycle-1",
+      "fits": [
+        "144333"
+      ],
+      "wrong": [
+        "101762",
+        "139871",
+        "465549",
+        "572620"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-ride-bicycle-2",
+      "fits": [],
+      "wrong": [
+        "326174",
+        "185157",
+        "356248",
+        "134034"
+      ],
+      "uncertain": [
+        "492077"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-ride-bicycle-3",
+      "fits": [
+        "472623"
+      ],
+      "wrong": [
+        "110042",
+        "414034",
+        "401862",
+        "492937"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-beach-0",
+      "fits": [
+        "47740"
+      ],
+      "wrong": [
+        "383838",
+        "289343",
+        "354307",
+        "33707"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-beach-1",
+      "fits": [
+        "163746"
+      ],
+      "wrong": [
+        "103548",
+        "463690",
+        "352584",
+        "109916"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-beach-2",
+      "fits": [],
+      "wrong": [
+        "349678",
+        "350679",
+        "545100",
+        "320632"
+      ],
+      "uncertain": [
+        "377670"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-beach-3",
+      "fits": [],
+      "wrong": [
+        "308793",
+        "108026",
+        "275791",
+        "479099",
+        "185802"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-run-0",
+      "fits": [
+        "457559"
+      ],
+      "wrong": [
+        "75612",
+        "289938",
+        "459662",
+        "61333"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-run-1",
+      "fits": [
+        "130586"
+      ],
+      "wrong": [
+        "439715",
+        "526728",
+        "21465",
+        "532575"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-run-2",
+      "fits": [],
+      "wrong": [
+        "328117",
+        "24919",
+        "140286"
+      ],
+      "uncertain": [
+        "103548",
+        "78565"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-run-3",
+      "fits": [],
+      "wrong": [
+        "180188",
+        "23023",
+        "335954"
+      ],
+      "uncertain": [
+        "435206",
+        "329447"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-tower-0",
+      "fits": [
+        "414340"
+      ],
+      "wrong": [
+        "458054",
+        "277689",
+        "17627",
+        "579307"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-tower-1",
+      "fits": [],
+      "wrong": [
+        "271402",
+        "287874",
+        "570756",
+        "16010"
+      ],
+      "uncertain": [
+        "323709"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-tower-2",
+      "fits": [
+        "349678"
+      ],
+      "wrong": [
+        "462629",
+        "345385",
+        "465836",
+        "244181"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-tower-3",
+      "fits": [
+        "456496"
+      ],
+      "wrong": [
+        "45728",
+        "183965",
+        "398203",
+        "398810"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-tray-0",
+      "fits": [
+        "15254"
+      ],
+      "wrong": [
+        "802",
+        "95069",
+        "459500",
+        "224675"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-tray-1",
+      "fits": [
+        "24567"
+      ],
+      "wrong": [
+        "183437",
+        "406570",
+        "504000"
+      ],
+      "uncertain": [
+        "66231"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-tray-2",
+      "fits": [
+        "236721"
+      ],
+      "wrong": [
+        "541773",
+        "555597",
+        "47571",
+        "76625"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-tray-3",
+      "fits": [
+        "284106"
+      ],
+      "wrong": [
+        "269196",
+        "253835",
+        "153011",
+        "263860"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-red-0",
+      "fits": [
+        "153229",
+        "15746",
+        "427655"
+      ],
+      "wrong": [
+        "308328",
+        "238866"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-red-1",
+      "fits": [
+        "578500"
+      ],
+      "wrong": [
+        "482585",
+        "355610"
+      ],
+      "uncertain": [
+        "50331",
+        "351096"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-red-2",
+      "fits": [
+        "568290"
+      ],
+      "wrong": [
+        "431727",
+        "89880",
+        "118209"
+      ],
+      "uncertain": [
+        "463849"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-red-3",
+      "fits": [
+        "383838"
+      ],
+      "wrong": [
+        "229553",
+        "409358",
+        "310980"
+      ],
+      "uncertain": [
+        "249180"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-scooter-0",
+      "fits": [],
+      "wrong": [
+        "203546",
+        "15079",
+        "143961",
+        "576654"
+      ],
+      "uncertain": [
+        "345027"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-scooter-1",
+      "fits": [
+        "292456"
+      ],
+      "wrong": [
+        "404805",
+        "525286",
+        "71451",
+        "215723"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-scooter-2",
+      "fits": [
+        "271402"
+      ],
+      "wrong": [
+        "515266",
+        "76625",
+        "475223",
+        "218439"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-scooter-3",
+      "fits": [
+        "19109"
+      ],
+      "wrong": [
+        "348481",
+        "152465",
+        "92839",
+        "537802"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-bear-0",
+      "fits": [
+        "312586"
+      ],
+      "wrong": [
+        "395575",
+        "463690",
+        "314182",
+        "101884"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-bear-1",
+      "fits": [
+        "572517"
+      ],
+      "wrong": [
+        "23034",
+        "289594",
+        "348012",
+        "12062"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-bear-2",
+      "fits": [
+        "431727"
+      ],
+      "wrong": [
+        "53505",
+        "279769",
+        "489339",
+        "467848"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-bear-3",
+      "fits": [
+        "414261"
+      ],
+      "wrong": [
+        "63552",
+        "200152",
+        "326174",
+        "275392"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-cow-0",
+      "fits": [],
+      "wrong": [
+        "184611",
+        "512929",
+        "297562",
+        "256407"
+      ],
+      "uncertain": [
+        "224093"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-cow-1",
+      "fits": [
+        "430073"
+      ],
+      "wrong": [
+        "276285",
+        "135410",
+        "429598"
+      ],
+      "uncertain": [
+        "560880"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-cow-2",
+      "fits": [
+        "535094"
+      ],
+      "wrong": [
+        "294163",
+        "466339",
+        "545100",
+        "47571"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-cow-3",
+      "fits": [
+        "114907"
+      ],
+      "wrong": [
+        "212559",
+        "489014",
+        "421757",
+        "292005"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-black-0",
+      "fits": [
+        "525155",
+        "222118"
+      ],
+      "wrong": [
+        "185472",
+        "335954"
+      ],
+      "uncertain": [
+        "31620"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-black-1",
+      "fits": [
+        "47828",
+        "481159"
+      ],
+      "wrong": [
+        "464786",
+        "166664"
+      ],
+      "uncertain": [
+        "555597"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-black-2",
+      "fits": [
+        "289702",
+        "155451",
+        "377497",
+        "337055"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "196843"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-black-3",
+      "fits": [
+        "176847",
+        "35279"
+      ],
+      "wrong": [
+        "459437",
+        "378873"
+      ],
+      "uncertain": [
+        "60347"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-field-0",
+      "fits": [
+        "336265"
+      ],
+      "wrong": [
+        "160772",
+        "255483",
+        "517523",
+        "394510"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-field-1",
+      "fits": [
+        "426376"
+      ],
+      "wrong": [
+        "68093",
+        "65736",
+        "526197"
+      ],
+      "uncertain": [
+        "160864"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-field-2",
+      "fits": [
+        "121242"
+      ],
+      "wrong": [
+        "239318",
+        "214200",
+        "288391",
+        "133087"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-field-3",
+      "fits": [
+        "134689"
+      ],
+      "wrong": [
+        "328117",
+        "243626",
+        "124277",
+        "250619"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-statue-0",
+      "fits": [],
+      "wrong": [
+        "75456",
+        "326248",
+        "390555",
+        "117645"
+      ],
+      "uncertain": [
+        "341094"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-statue-1",
+      "fits": [
+        "130465"
+      ],
+      "wrong": [
+        "553731",
+        "484351",
+        "364884"
+      ],
+      "uncertain": [
+        "404484"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-statue-2",
+      "fits": [],
+      "wrong": [
+        "236592",
+        "445999",
+        "572620",
+        "157390"
+      ],
+      "uncertain": [
+        "223188"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-statue-3",
+      "fits": [
+        "181816"
+      ],
+      "wrong": [
+        "195842",
+        "225532",
+        "134096",
+        "44279"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-cup-0",
+      "fits": [
+        "414034"
+      ],
+      "wrong": [
+        "101787",
+        "451308",
+        "21503"
+      ],
+      "uncertain": [
+        "197796"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-cup-1",
+      "fits": [],
+      "wrong": [
+        "323263",
+        "388056",
+        "189451",
+        "335954"
+      ],
+      "uncertain": [
+        "156278"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-cup-2",
+      "fits": [],
+      "wrong": [
+        "347370",
+        "546829",
+        "255536"
+      ],
+      "uncertain": [
+        "319696",
+        "256407"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-cup-3",
+      "fits": [
+        "384527"
+      ],
+      "wrong": [
+        "338325",
+        "540466",
+        "500464"
+      ],
+      "uncertain": [
+        "25386"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-brick-0",
+      "fits": [
+        "201148"
+      ],
+      "wrong": [
+        "42889",
+        "465129",
+        "345385",
+        "174123"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-brick-1",
+      "fits": [
+        "479099"
+      ],
+      "wrong": [
+        "104572",
+        "302165",
+        "181969"
+      ],
+      "uncertain": [
+        "376625"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-brick-2",
+      "fits": [
+        "429598",
+        "336587"
+      ],
+      "wrong": [
+        "465836",
+        "506004",
+        "228214"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-brick-3",
+      "fits": [
+        "447200"
+      ],
+      "wrong": [
+        "97585",
+        "16228",
+        "356505",
+        "344268"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-living-room-0",
+      "fits": [
+        "385997"
+      ],
+      "wrong": [
+        "425226",
+        "64359",
+        "397303",
+        "376900"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-living-room-1",
+      "fits": [
+        "556000"
+      ],
+      "wrong": [
+        "336628",
+        "522156",
+        "400044",
+        "428867"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-living-room-2",
+      "fits": [
+        "568710"
+      ],
+      "wrong": [
+        "253433",
+        "308430",
+        "313588",
+        "356125"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-living-room-3",
+      "fits": [
+        "491497"
+      ],
+      "wrong": [
+        "456865",
+        "210273",
+        "112110",
+        "468505"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-parked-bicycle-0",
+      "fits": [
+        "101762"
+      ],
+      "wrong": [
+        "116825",
+        "567886",
+        "438862"
+      ],
+      "uncertain": [
+        "289343"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-parked-bicycle-1",
+      "fits": [],
+      "wrong": [
+        "563281",
+        "431140",
+        "169996",
+        "2592"
+      ],
+      "uncertain": [
+        "185157"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-parked-bicycle-2",
+      "fits": [
+        "426166"
+      ],
+      "wrong": [
+        "130599",
+        "210299",
+        "330818",
+        "560178"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-parked-bicycle-3",
+      "fits": [
+        "259830"
+      ],
+      "wrong": [
+        "206579",
+        "150638",
+        "139871"
+      ],
+      "uncertain": [
+        "492077"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-play-tennis-0",
+      "fits": [
+        "321790"
+      ],
+      "wrong": [
+        "59635",
+        "307172",
+        "170116",
+        "357742"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-play-tennis-1",
+      "fits": [],
+      "wrong": [
+        "267670",
+        "82715",
+        "153229",
+        "36660"
+      ],
+      "uncertain": [
+        "551820"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-play-tennis-2",
+      "fits": [],
+      "wrong": [
+        "248616",
+        "236412",
+        "137950",
+        "290843",
+        "447465"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-play-tennis-3",
+      "fits": [
+        "438304"
+      ],
+      "wrong": [
+        "231831",
+        "425221",
+        "326542",
+        "465179"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-airport-0",
+      "fits": [
+        "84270"
+      ],
+      "wrong": [
+        "297343",
+        "470773",
+        "540414",
+        "302107"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-airport-1",
+      "fits": [
+        "408112"
+      ],
+      "wrong": [
+        "126107",
+        "128476",
+        "398905",
+        "357816"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-airport-2",
+      "fits": [
+        "308328"
+      ],
+      "wrong": [
+        "322429",
+        "331352",
+        "56344",
+        "62355"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-airport-3",
+      "fits": [
+        "425221"
+      ],
+      "wrong": [
+        "358923",
+        "182441",
+        "126137",
+        "314264"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-dog-0",
+      "fits": [
+        "89880"
+      ],
+      "wrong": [
+        "510095",
+        "527750",
+        "274272",
+        "519208"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-dog-1",
+      "fits": [
+        "520301"
+      ],
+      "wrong": [
+        "330554",
+        "113354",
+        "492110"
+      ],
+      "uncertain": [
+        "528524"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-dog-2",
+      "fits": [
+        "367195"
+      ],
+      "wrong": [
+        "6460",
+        "467511",
+        "89761",
+        "557916"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-dog-3",
+      "fits": [
+        "32817"
+      ],
+      "wrong": [
+        "508639",
+        "404601",
+        "148662",
+        "58111"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-ski-0",
+      "fits": [],
+      "wrong": [
+        "218091",
+        "213171",
+        "172935",
+        "550084"
+      ],
+      "uncertain": [
+        "37689"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-ski-1",
+      "fits": [
+        "465836"
+      ],
+      "wrong": [
+        "413247",
+        "91921",
+        "180188",
+        "343937"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-ski-2",
+      "fits": [],
+      "wrong": [
+        "451571",
+        "140420",
+        "145781",
+        "343937"
+      ],
+      "uncertain": [
+        "227491"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-ski-3",
+      "fits": [
+        "426376"
+      ],
+      "wrong": [
+        "472375",
+        "290163",
+        "263860"
+      ],
+      "uncertain": [
+        "205333"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-roof-0",
+      "fits": [],
+      "wrong": [
+        "32735",
+        "517056",
+        "348488"
+      ],
+      "uncertain": [
+        "521719",
+        "139099"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-roof-1",
+      "fits": [
+        "28285"
+      ],
+      "wrong": [
+        "76261",
+        "304817",
+        "354307",
+        "545594"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-roof-2",
+      "fits": [
+        "135902"
+      ],
+      "wrong": [
+        "229858",
+        "261116",
+        "408830"
+      ],
+      "uncertain": [
+        "574297"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-roof-3",
+      "fits": [],
+      "wrong": [
+        "508602",
+        "110282",
+        "94871",
+        "275058"
+      ],
+      "uncertain": [
+        "247806"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-bicycle-0",
+      "fits": [
+        "492937"
+      ],
+      "wrong": [
+        "100238",
+        "298904",
+        "539143",
+        "255749"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-bicycle-1",
+      "fits": [
+        "169996"
+      ],
+      "wrong": [
+        "552902",
+        "273715",
+        "308753"
+      ],
+      "uncertain": [
+        "543043"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-bicycle-2",
+      "fits": [],
+      "wrong": [
+        "439715",
+        "83531",
+        "481413",
+        "152465",
+        "60507"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-bicycle-3",
+      "fits": [
+        "167486"
+      ],
+      "wrong": [
+        "147223",
+        "23023",
+        "434230",
+        "68628"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-microwave-0",
+      "fits": [
+        "319696"
+      ],
+      "wrong": [
+        "578967",
+        "197528",
+        "7281",
+        "357567"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-microwave-1",
+      "fits": [
+        "199681"
+      ],
+      "wrong": [
+        "118367",
+        "378116",
+        "18491",
+        "348045"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-microwave-2",
+      "fits": [
+        "444275"
+      ],
+      "wrong": [
+        "469067",
+        "64523",
+        "220584"
+      ],
+      "uncertain": [
+        "802"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-microwave-3",
+      "fits": [
+        "577584"
+      ],
+      "wrong": [
+        "190923",
+        "308545",
+        "471991",
+        "451435"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-stand-0",
+      "fits": [
+        "210388",
+        "481413"
+      ],
+      "wrong": [
+        "382734",
+        "357903",
+        "413552"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-stand-1",
+      "fits": [
+        "118209"
+      ],
+      "wrong": [
+        "464358",
+        "427500",
+        "528399",
+        "479126"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-stand-2",
+      "fits": [
+        "258541"
+      ],
+      "wrong": [
+        "423229",
+        "352584",
+        "486573",
+        "254368"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-stand-3",
+      "fits": [
+        "378453",
+        "416104"
+      ],
+      "wrong": [
+        "491470",
+        "226662",
+        "79408"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-microphone-0",
+      "fits": [
+        "344268"
+      ],
+      "wrong": [
+        "263966",
+        "486112",
+        "564127",
+        "223747"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-microphone-1",
+      "fits": [],
+      "wrong": [
+        "261535",
+        "21903",
+        "268000",
+        "42889",
+        "396526"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-microphone-2",
+      "fits": [
+        "180135"
+      ],
+      "wrong": [
+        "365208",
+        "250137",
+        "25139",
+        "227898"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-microphone-3",
+      "fits": [
+        "398905"
+      ],
+      "wrong": [
+        "519611",
+        "118594",
+        "396518",
+        "158660"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-clock-0",
+      "fits": [
+        "343149"
+      ],
+      "wrong": [
+        "480275",
+        "545958",
+        "37988",
+        "174004"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-clock-1",
+      "fits": [
+        "233139"
+      ],
+      "wrong": [
+        "238866",
+        "266892",
+        "29187",
+        "170278"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-clock-2",
+      "fits": [],
+      "wrong": [
+        "9483",
+        "19042",
+        "551660",
+        "476215"
+      ],
+      "uncertain": [
+        "442993"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-clock-3",
+      "fits": [],
+      "wrong": [
+        "572408",
+        "241297",
+        "320743",
+        "183965"
+      ],
+      "uncertain": [
+        "388927"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-tree-0",
+      "fits": [
+        "83540"
+      ],
+      "wrong": [
+        "265518",
+        "58655",
+        "97924"
+      ],
+      "uncertain": [
+        "395180"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-tree-1",
+      "fits": [
+        "101780",
+        "205324"
+      ],
+      "wrong": [
+        "182417",
+        "184400",
+        "572388"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-tree-2",
+      "fits": [
+        "104424",
+        "341921",
+        "153011"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "382088",
+        "281179"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-tree-3",
+      "fits": [
+        "395575"
+      ],
+      "wrong": [
+        "379533",
+        "25560",
+        "508482",
+        "13348"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-stream-0",
+      "fits": [],
+      "wrong": [
+        "45090",
+        "81061",
+        "301376",
+        "54654"
+      ],
+      "uncertain": [
+        "545730"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-stream-1",
+      "fits": [],
+      "wrong": [
+        "261712",
+        "350679",
+        "443969",
+        "204871"
+      ],
+      "uncertain": [
+        "203546"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-stream-2",
+      "fits": [
+        "247838"
+      ],
+      "wrong": [
+        "174371",
+        "554595",
+        "294831",
+        "151962"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-stream-3",
+      "fits": [],
+      "wrong": [
+        "215778",
+        "186980",
+        "45728",
+        "300913"
+      ],
+      "uncertain": [
+        "140420"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-railway-0",
+      "fits": [
+        "100274"
+      ],
+      "wrong": [
+        "142620",
+        "308793",
+        "336309",
+        "324614"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-railway-1",
+      "fits": [
+        "356427"
+      ],
+      "wrong": [
+        "498857",
+        "401862",
+        "255824",
+        "23937"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-railway-2",
+      "fits": [],
+      "wrong": [
+        "321214",
+        "167898",
+        "485237",
+        "562818"
+      ],
+      "uncertain": [
+        "519338"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-railway-3",
+      "fits": [
+        "337055"
+      ],
+      "wrong": [
+        "140286",
+        "398810",
+        "465585",
+        "417911"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-market-0",
+      "fits": [
+        "139099"
+      ],
+      "wrong": [
+        "221872",
+        "382743",
+        "345941",
+        "511398"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-market-1",
+      "fits": [
+        "378873"
+      ],
+      "wrong": [
+        "391144",
+        "541634",
+        "253002",
+        "580410"
+      ],
+      "uncertain": [],
+      "reviewer": "agent dataset_audit"
+    },
+    {
+      "id": "semantic-v2-market-2",
+      "fits": [
+        "371472"
+      ],
+      "wrong": [
+        "438226",
+        "55002",
+        "365095"
+      ],
+      "uncertain": [
+        "213033"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    },
+    {
+      "id": "semantic-v2-market-3",
+      "fits": [
+        "313562",
+        "110042"
+      ],
+      "wrong": [
+        "351096",
+        "416330"
+      ],
+      "uncertain": [
+        "182611"
+      ],
+      "reviewer": "agent dataset_audit",
+      "note": "Small/incidental depiction or visual ambiguity; exclude uncertain candidates from semantic ground truth."
+    }
+  ]
+}

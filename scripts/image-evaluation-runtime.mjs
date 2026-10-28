@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { AutoTokenizer, AutoProcessor, CLIPTextModelWithProjection, CLIPVisionModelWithProjection, RawImage, env } from '@huggingface/transformers';
-import { CLIP_MODEL, CLIP_REVISION, CLIP_TAG } from '../js/ml/clipConfig.js';
+import { CLIP_MODEL, CLIP_REVISION, CLIP_TAG, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE } from '../js/ml/clipConfig.js';
 import { normalizedVector } from '../js/services/imagePreferences.js';
 import { fullFrameImage } from '../js/services/imagePreprocessing.js';
 import { IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
@@ -12,9 +12,9 @@ import { base64ToBytes } from '../js/utils/base64.js';
 export async function imageEvaluationRuntime({ cacheDir = 'work/image-pretraining/cache', directory = '.', allowDownloads = false, preprocessing = IMAGE_PREPROCESSING, progress = () => {} } = {}) {
   await mkdir(cacheDir, { recursive: true }); env.cacheDir = resolve(cacheDir, 'models'); env.allowLocalModels = true;
   env.remotePathTemplate = `{model}/resolve/${CLIP_REVISION}/`;
-  const settings = { revision: CLIP_REVISION, dtype: 'q8', device: 'cpu', local_files_only: !allowDownloads, progress_callback: p => { if (p.status === 'done') progress({ file: p.file }); } };
+  const settings = { revision: CLIP_REVISION, device: 'cpu', local_files_only: !allowDownloads, progress_callback: p => { if (p.status === 'done') progress({ file: p.file }); } };
   let runtime;
-  const initialize = async () => runtime ||= Promise.all([AutoTokenizer.from_pretrained(CLIP_MODEL, settings), AutoProcessor.from_pretrained(CLIP_MODEL, settings), CLIPTextModelWithProjection.from_pretrained(CLIP_MODEL, settings), CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, settings)]);
+  const initialize = async () => runtime ||= Promise.all([AutoTokenizer.from_pretrained(CLIP_MODEL, settings), AutoProcessor.from_pretrained(CLIP_MODEL, settings), CLIPTextModelWithProjection.from_pretrained(CLIP_MODEL, { ...settings, dtype: CLIP_TEXT_DTYPE }), CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, { ...settings, dtype: CLIP_VISION_DTYPE })]);
   const cached = async (key, compute) => {
     const file = resolve(cacheDir, `${createHash('sha256').update(key).digest('hex')}.json`);
     try { return normalizedVector(JSON.parse(await readFile(file, 'utf8'))); } catch { /* Compute missing embeddings from pixels/text. */ }

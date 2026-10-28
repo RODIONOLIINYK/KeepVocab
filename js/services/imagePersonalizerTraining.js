@@ -1,14 +1,18 @@
-import { validPersonalizer, activeImageExamples } from './imagePersonalizer.js';
+import { validPersonalizer, activeImageExamples, isValidatedSemanticModel, createPreferencePersonalizer } from './imagePersonalizer.js';
 
 const signature = records => JSON.stringify(activeImageExamples(records).map(r => [r.id, r.updatedAt]).sort());
 export class ImagePersonalizerTraining {
   constructor(persistence, { pretrained = () => import('../ml/pretrainedImagePersonalizer.js') } = {}) { this.persistence = persistence; this.pretrained = pretrained; this.timer = null; this.active = null; this.worker = null; this.generation = 0; this.report = null; }
-  async current() {
+  async personal() {
     const history = this.persistence.imageHistory; await history.ready;
     const model = await history.model();
-    if (validPersonalizer(model) && (model.resetAt || '') === history.resetAt) return model;
-    const generic = await this.pretrained(); return generic?.getPretrainedImageModel?.() || null;
+    return validPersonalizer(model) && model.role !== 'semantic' && (model.resetAt || '') === history.resetAt ? model : null;
   }
+  async semantic() {
+    const generic = await this.pretrained(), model = generic?.getPretrainedImageModel?.();
+    return isValidatedSemanticModel(model) ? model : null;
+  }
+  async current() { return await this.personal() || await this.semantic(); }
   request() {
     clearTimeout(this.timer);
     this.timer = setTimeout(() => { this.timer = null; void this.train().catch(() => {}); }, 30000);
@@ -23,9 +27,10 @@ export class ImagePersonalizerTraining {
     if (typeof Worker === 'undefined') return { accepted: false, reason: 'Background training is unavailable on this device.' };
     const operation = async () => {
       const requestedGeneration = this.generation;
-      const records = await this.persistence.getImageEvents(), before = signature(records), model = await this.current();
-      const generic = !model && await this.pretrained();
-      const initialization = generic?.getImagePersonalizerInitialization?.() || null;
+      const records = await this.persistence.getImageEvents(), before = signature(records), model = await this.personal();
+      // A public semantic head is immutable. Only its validated hidden features
+      // may initialize a separate zero-output personal preference correction.
+      const initialization = model ? null : createPreferencePersonalizer(await this.semantic());
       if (requestedGeneration !== this.generation) return { accepted: false, reason: 'Training cancelled.' };
       const generation = this.generation, resetAt = this.persistence.imageHistory.resetAt;
       const result = await new Promise((resolve, reject) => {
@@ -35,11 +40,14 @@ export class ImagePersonalizerTraining {
         this.cancel = () => { finish(); resolve({ accepted: false, reason: 'Training cancelled.' }); };
         worker.onmessage = ({ data }) => { if (data.progress) return; finish(); if (data.error) reject(new Error(data.error)); else resolve(data.result); };
         worker.onerror = () => { finish(); reject(new Error('Photo preferences could not be updated.')); };
-        worker.postMessage({ records, model, options, initialization });
+        worker.postMessage({ records, model, options: { ...options, task: 'preference' }, initialization });
       });
       this.report = result;
-      if (result.accepted && validPersonalizer(result.model)) {
-        const latest = await this.persistence.getImageEvents(), active = await this.current();
+      if (result.accepted && (!validPersonalizer(result.model) || result.model.role !== 'preference')) {
+        return { accepted: false, reason: 'Only a separately validated personal preference model can replace personal weights.' };
+      }
+      if (result.accepted) {
+        const latest = await this.persistence.getImageEvents(), active = await this.personal();
         if (generation !== this.generation || resetAt !== this.persistence.imageHistory.resetAt || before !== signature(latest) || (active?.revision || 0) !== (model?.revision || 0)) {
           this.request(); return { accepted: false, reason: 'Photo choices changed during training; candidate discarded.' };
         }

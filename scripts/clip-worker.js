@@ -1,5 +1,5 @@
 import { AutoTokenizer, AutoProcessor, CLIPTextModelWithProjection, CLIPVisionModelWithProjection, RawImage, env } from '@huggingface/transformers';
-import { CLIP_MODEL, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS } from '../js/ml/clipConfig.js';
+import { CLIP_MODEL, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE } from '../js/ml/clipConfig.js';
 import { normalizedVector } from '../js/services/imagePreferences.js';
 import { fullFrameImage } from '../js/services/imagePreprocessing.js';
 import { IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
@@ -88,19 +88,19 @@ async function initialize(devicePreference = 'auto') {
     // local_files_only=true conflicts with allowLocalModels=false in this
     // runtime, even with a complete browser cache. Cache misses are protected
     // by the explicit consent-enforcing env.fetch wrapper above instead.
-    const config = { revision: CLIP_REVISION, dtype: 'q8', progress_callback, local_files_only: false };
+    const config = { revision: CLIP_REVISION, progress_callback, local_files_only: false };
     const tokenizer = await AutoTokenizer.from_pretrained(CLIP_MODEL, config);
     const processor = await AutoProcessor.from_pretrained(CLIP_MODEL, config);
     let textModel, visionModel;
-    // Quantized WASM is the predictable baseline; WebGPU is attempted only on a supported adapter.
+    // WASM with fp32 vision and q8 text is the model-author configuration; WebGPU is attempted only on a supported adapter.
     const gpu = self.navigator?.gpu && await navigator.gpu.requestAdapter().catch(() => null);
     const devices = devicePreference === 'wasm' || !gpu ? ['wasm'] : ['webgpu'];
     gpu?.destroy?.();
     for (const device of devices) {
       try {
         backend = device;
-        textModel = await CLIPTextModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device });
-        visionModel = await CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device });
+        textModel = await CLIPTextModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_TEXT_DTYPE });
+        visionModel = await CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_VISION_DTYPE });
         backend = device; break;
       } catch (error) {
         await textModel?.dispose().catch(() => {}); await visionModel?.dispose().catch(() => {});

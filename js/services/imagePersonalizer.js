@@ -7,6 +7,7 @@ export const PERSONALIZER_INPUTS = CLIP_DIMENSION * 3 + 3;
 export const PERSONALIZER_LAYERS = [PERSONALIZER_INPUTS, 32, 16, 1];
 export const PERSONALIZER_PARAMETERS = 49825;
 export const PERSONALIZER_LIMIT = .08;
+export const PERSONAL_PREFERENCE_LIMIT = .04;
 const layers = [[PERSONALIZER_INPUTS, 32], [32, 16], [16, 1]];
 const offsets = [];
 let end = 0;
@@ -24,9 +25,29 @@ export function personalizerInput(features, meaningFeatures) {
   result.set(image.slice(CLIP_DIMENSION), CLIP_DIMENSION * 3);
   return result;
 }
-export function validPersonalizer(model) {
+function validHead(model) {
   return Boolean(model?.version === PERSONALIZER_VERSION && model.encoder === CLIP_TAG && model.preprocessing === IMAGE_PREPROCESSING
     && model.weights?.length === PERSONALIZER_PARAMETERS && Array.from(model.weights).every(Number.isFinite));
+}
+export function validPersonalizer(model) {
+  if (!validHead(model) || model.role && !['semantic', 'preference'].includes(model.role)) return false;
+  // A personal model may contain one frozen semantic base, never a chain of
+  // nested corrections. This also rejects cyclic or malformed imported models.
+  return !model.semanticBase || model.role === 'preference' && validHead(model.semanticBase)
+    && model.semanticBase.role === 'semantic' && !model.semanticBase.semanticBase
+    && (model.semanticBase.genericValidation?.accepted ?? model.semanticBase.validation?.accepted) === true;
+}
+export function isValidatedSemanticModel(model) {
+  return validPersonalizer(model) && model.role === 'semantic'
+    && (model.genericValidation?.accepted ?? model.validation?.accepted) === true;
+}
+export function createPreferencePersonalizer(semanticModel) {
+  if (!isValidatedSemanticModel(semanticModel)) return null;
+  const model = createPersonalizer(); model.weights = Float32Array.from(semanticModel.weights);
+  model.weights.fill(0, offsets[2]);
+  return { ...model, role: 'preference', pretrained: true, semanticBase: clone(semanticModel),
+    featureInitialization: { source: 'validated-semantic-head', dataset: semanticModel.genericValidation?.dataset || '',
+      weightsSha256: semanticModel.genericValidation?.weightsSha256 || '' } };
 }
 export function createPersonalizer(seed = 78123) {
   const weights = new Float32Array(PERSONALIZER_PARAMETERS);
@@ -38,7 +59,7 @@ export function createPersonalizer(seed = 78123) {
   }
   // A new residual is exactly zero: installing the head cannot change CLIP's ranking.
   return { version: PERSONALIZER_VERSION, encoder: CLIP_TAG, preprocessing: IMAGE_PREPROCESSING,
-    layers: [...PERSONALIZER_LAYERS], weights, revision: 0, trainingDecisionIds: [] };
+    layers: [...PERSONALIZER_LAYERS], weights, role: 'preference', revision: 0, trainingDecisionIds: [] };
 }
 function forward(weights, input) {
   const activations = [input];
@@ -57,11 +78,16 @@ function baseScore(features) {
   const x = decodeFeatures(features);
   return x[512] + .6 * x[513] - .25 * Math.max(0, x[514]);
 }
+const residualLimit = model => model?.role === 'preference' ? PERSONAL_PREFERENCE_LIMIT : PERSONALIZER_LIMIT;
+function frozenBaseScore(model, features, meaningFeatures) {
+  return model?.role === 'preference' && isValidatedSemanticModel(model.semanticBase)
+    ? personalizerScore(model.semanticBase, features, meaningFeatures) : baseScore(features);
+}
 export function personalizerScore(model, features, meaningFeatures) {
-  const base = baseScore(features);
-  if (!validPersonalizer(model) || !meaningFeatures) return base;
+  if (!validPersonalizer(model) || !meaningFeatures) return baseScore(features);
+  const base = frozenBaseScore(model, features, meaningFeatures);
   const x = personalizerInput(features, meaningFeatures);
-  let residual = PERSONALIZER_LIMIT * Math.tanh(forward(model.weights, x)[3][0]);
+  let residual = residualLimit(model) * Math.tanh(forward(model.weights, x)[3][0]);
   // Preference never boosts an image toward a competing dictionary sense.
   if (decodeFeatures(features)[513] < 0) residual = Math.min(0, residual);
   return base + residual;
@@ -101,6 +127,30 @@ export function splitImageDecisions(records) {
   const a = Math.floor(histories.length * .6), b = Math.floor(histories.length * .8);
   return { train: histories.slice(0, a).flat(), validation: histories.slice(a, b).flat(), test: histories.slice(b).flat(), partitionUnit: 'meaning', decisions: decisions.length, meanings: histories.length };
 }
+/** Freeze independently curated semantic partitions rather than reassigning
+ * meanings after ambiguous galleries have been excluded during visual review. */
+export function semanticDatasetPartitions(records, idsBySplit) {
+  const names = ['train', 'validation', 'test'];
+  if (!idsBySplit || typeof idsBySplit !== 'object' || names.some(name => !Array.isArray(idsBySplit[name]))
+    || Object.keys(idsBySplit).some(name => !names.includes(name))) throw new Error('Semantic dataset partitions require train, validation and test ID arrays.');
+  const active = activeImageExamples(records);
+  if (active.some(record => record.task !== 'semantic')) throw new Error('Explicit dataset partitions accept semantic training records only.');
+  const decisions = imageDecisions(active), byId = new Map(decisions.map(decision => [decision.id, decision]));
+  const used = new Set(), meaningSplits = new Map(), partition = {};
+  for (const name of names) {
+    partition[name] = idsBySplit[name].map(id => {
+      if (typeof id !== 'string' || !byId.has(id)) throw new Error(`Unknown semantic dataset decision: ${String(id)}`);
+      if (used.has(id)) throw new Error(`Duplicate semantic dataset decision: ${id}`);
+      used.add(id);
+      const decision = byId.get(id), meaning = decision.meaningId || decision.id;
+      if (decision.records.some(record => (record.meaningId || decision.id) !== meaning)) throw new Error(`Semantic decision contains mixed meanings: ${id}`);
+      if (meaningSplits.has(meaning) && meaningSplits.get(meaning) !== name) throw new Error(`Semantic meaning crosses dataset partitions: ${meaning}`);
+      meaningSplits.set(meaning, name); return decision;
+    });
+  }
+  if (used.size !== decisions.length) throw new Error('Semantic dataset partitions are missing active decisions.');
+  return { ...partition, partitionUnit: 'meaning', decisions: decisions.length, meanings: meaningSplits.size, explicit: true };
+}
 function observations(decision) {
   const pairs = decision.records.filter(r => r.kind === 'comparison');
   if (pairs.length) return pairs.map(r => ({ winner: r.preferredFeatures, loser: r.features, meaning: r.meaningFeatures, weight: 1 / pairs.length }));
@@ -124,19 +174,21 @@ export function evaluatePersonalizer(model, decisions) {
     accuracy: rows.length ? rows.reduce((s, r) => s + r.accuracy, 0) / rows.length : null, rows };
 }
 export function imageModelAcceptance(candidate, incumbent, test, { minimumDecisions = 12, bootstrapSamples = 300 } = {}) {
-  const after = evaluatePersonalizer(candidate, test), before = evaluatePersonalizer(incumbent, test), baseline = evaluatePersonalizer(null, test);
+  const semanticModel = candidate?.role === 'preference' && isValidatedSemanticModel(candidate.semanticBase) ? candidate.semanticBase : null;
+  const after = evaluatePersonalizer(candidate, test), before = evaluatePersonalizer(incumbent || semanticModel, test), baseline = evaluatePersonalizer(null, test);
+  const semanticBaseline = evaluatePersonalizer(semanticModel, test);
   if (after.decisions < minimumDecisions) return { accepted: false, reason: 'More independent later choices are needed.', before, after, baseline };
   // Bootstrap whole meanings, never individual pairs from the same choice.
   const grouped = new Map();
-  after.rows.forEach((row, i) => { const id = row.meaningId || row.id; if (!grouped.has(id)) grouped.set(id, []); grouped.get(id).push(Math.min(before.rows[i].loss, baseline.rows[i].loss) - row.loss); });
+  after.rows.forEach((row, i) => { const id = row.meaningId || row.id; if (!grouped.has(id)) grouped.set(id, []); grouped.get(id).push(Math.min(before.rows[i].loss, baseline.rows[i].loss, semanticBaseline.rows[i].loss) - row.loss); });
   const deltas = [...grouped.values()].map(xs => xs.reduce((a, b) => a + b, 0) / xs.length);
   if (deltas.length < 4) return { accepted: false, reason: 'More independent later meanings are needed.', before, after, baseline };
   let seed = 81273; const samples = [];
   for (let b = 0; b < bootstrapSamples; b++) { let sum = 0; for (let j = 0; j < deltas.length; j++) { seed = Math.imul(seed, 1664525) + 1013904223 | 0; sum += deltas[(seed >>> 0) % deltas.length]; } samples.push(sum / deltas.length); }
   samples.sort((a, b) => a - b); const lowerBound = samples[Math.floor(samples.length * .05)];
-  const accepted = lowerBound > .001 && after.loss < Math.min(before.loss, baseline.loss) - .005 && after.accuracy >= before.accuracy && after.accuracy >= baseline.accuracy
-    && after.rejectedAboveThreshold <= Math.min(before.rejectedAboveThreshold, baseline.rejectedAboveThreshold);
-  return { accepted, lowerBound, before, after, baseline, reason: accepted ? 'Improved independent later choices.' : 'Current ranking retained; improvement was not reliable.' };
+  const accepted = lowerBound > .001 && after.loss < Math.min(before.loss, baseline.loss, semanticBaseline.loss) - .005 && after.accuracy >= before.accuracy && after.accuracy >= baseline.accuracy && after.accuracy >= semanticBaseline.accuracy
+    && after.rejectedAboveThreshold <= Math.min(before.rejectedAboveThreshold, baseline.rejectedAboveThreshold, semanticBaseline.rejectedAboveThreshold);
+  return { accepted, lowerBound, before, after, baseline, semanticBaseline, reason: accepted ? 'Improved independent later choices.' : 'Current ranking retained; improvement was not reliable.' };
 }
 function backward(weights, activations, outputGradient, gradient) {
   let delta = new Float32Array([outputGradient]);
@@ -150,15 +202,29 @@ function backward(weights, activations, outputGradient, gradient) {
     delta = previous;
   }
 }
-export function trainImagePersonalizer(records, incumbent = null, { epochs = 20, batchSize = 8, maxMilliseconds = 20000, initialization = null, outputOnly = Boolean(incumbent?.pretrained || initialization?.pretrained), returnCandidate = false, progress = () => {} } = {}) {
-  const split = splitImageDecisions(records);
-  const report = { version: PERSONALIZER_VERSION, partitionUnit: split.partitionUnit, decisions: split.decisions, meanings: split.meanings };
+export function trainImagePersonalizer(records, incumbent = null, { epochs = 20, batchSize = 8, maxMilliseconds = 20000, initialization = null, outputOnly = null, task = 'preference', datasetPartitions = null, returnCandidate = false, progress = () => {} } = {}) {
+  if (!['semantic', 'preference'].includes(task)) throw new Error('Unknown image training task.');
+  if (datasetPartitions != null && task !== 'semantic') throw new Error('Explicit dataset partitions are available only for semantic training.');
+  if (incumbent?.role && incumbent.role !== task) return { accepted: false, reason: 'Semantic and personal training models must remain separate.' };
+  // Public semantic annotations never become personal taste observations. Older
+  // user records had no task field and retain their original preference meaning.
+  const taskRecords = records.filter(record => (record.task || 'preference') === task);
+  const split = datasetPartitions == null ? splitImageDecisions(taskRecords) : semanticDatasetPartitions(taskRecords, datasetPartitions);
+  const report = { version: PERSONALIZER_VERSION, task, partitionUnit: split.partitionUnit, decisions: split.decisions, meanings: split.meanings };
   if (split.train.length < 24 || split.validation.length < 8 || split.test.length < 12) return { ...report, accepted: false, reason: 'Waiting for enough independent saved choices for validation.' };
   const heldIds = new Set([...split.validation, ...split.test].map(d => d.id));
   if ([...(incumbent?.trainingDecisionIds || []), ...(incumbent?.validationDecisionIds || []), ...(incumbent?.testDecisionIds || [])].some(id => heldIds.has(id))) return { ...report, accepted: false, reason: 'Waiting for later choices unseen by the current model.' };
-  const model = validPersonalizer(incumbent) ? clone(incumbent) : validPersonalizer(initialization) ? clone(initialization) : createPersonalizer(); model.weights = Float32Array.from(model.weights);
+  let seed = initialization;
+  if (task === 'preference' && seed?.role === 'semantic') seed = createPreferencePersonalizer(seed);
+  if (seed?.genericValidation?.accepted === false || seed?.role && seed.role !== task) seed = null;
+  const model = validPersonalizer(incumbent) ? clone(incumbent) : validPersonalizer(seed) ? clone(seed) : createPersonalizer();
+  model.role = task;
+  if (task === 'semantic') { delete model.semanticBase; delete model.pretrained; }
+  model.weights = Float32Array.from(model.weights);
+  const trainOutputOnly = outputOnly ?? (task === 'preference' && Boolean(model.pretrained));
+  const limit = residualLimit(model);
   const initial = Float32Array.from(model.weights), momentum = new Float32Array(initial.length), variance = new Float32Array(initial.length);
-  const training = split.train.map(d => ({ ...d, observations: observations(d).map(row => ({ ...row, a: personalizerInput(row.winner || row.rejected, row.meaning), b: row.loser ? personalizerInput(row.loser, row.meaning) : null })) })).filter(d => d.observations.length);
+  const training = split.train.map(d => ({ ...d, observations: observations(d).map(row => ({ ...row, a: personalizerInput(row.winner || row.rejected, row.meaning), b: row.loser ? personalizerInput(row.loser, row.meaning) : null, baseA: frozenBaseScore(model, row.winner || row.rejected, row.meaning), baseB: row.loser ? frozenBaseScore(model, row.loser, row.meaning) : null })) })).filter(d => d.observations.length);
   const start = performance.now(); let step = 0, best = evaluatePersonalizer(model, split.validation).loss, bestWeights = Float32Array.from(initial), stale = 0;
   for (let epoch = 0; epoch < epochs && performance.now() - start < maxMilliseconds; epoch++) {
     // Rotate through the full training history; batch size never limits retention.
@@ -170,13 +236,13 @@ export function trainImagePersonalizer(records, incumbent = null, { epochs = 20,
         const rawA = Math.tanh(a[3][0]), rawB = b ? Math.tanh(b[3][0]) : 0;
         const clampA = row.a[1537] < 0 && rawA > 0, clampB = b && row.b[1537] < 0 && rawB > 0;
         const ra = clampA ? 0 : rawA, rb = clampB ? 0 : rawB;
-        const difference = b ? baseScore(row.winner) + PERSONALIZER_LIMIT * ra - baseScore(row.loser) - PERSONALIZER_LIMIT * rb : .3 - baseScore(row.rejected) - PERSONALIZER_LIMIT * ra;
+        const difference = b ? row.baseA + limit * ra - row.baseB - limit * rb : .3 - row.baseA - limit * ra;
         const error = (sigmoid(difference * 8) - 1) * 8 * row.weight / batch.length;
-        backward(model.weights, a, clampA ? 0 : error * PERSONALIZER_LIMIT * (1 - ra * ra) * (b ? 1 : -1), gradient);
-        if (b) backward(model.weights, b, clampB ? 0 : -error * PERSONALIZER_LIMIT * (1 - rb * rb), gradient);
+        backward(model.weights, a, clampA ? 0 : error * limit * (1 - ra * ra) * (b ? 1 : -1), gradient);
+        if (b) backward(model.weights, b, clampB ? 0 : -error * limit * (1 - rb * rb), gradient);
       }
       step++;
-      for (let i = outputOnly ? offsets[2] : 0; i < gradient.length; i++) {
+      for (let i = trainOutputOnly ? offsets[2] : 0; i < gradient.length; i++) {
         const g = Math.max(-1, Math.min(1, gradient[i] + .001 * (model.weights[i] - initial[i])));
         momentum[i] = .9 * momentum[i] + .1 * g; variance[i] = .999 * variance[i] + .001 * g * g;
         model.weights[i] -= .002 * (momentum[i] / (1 - .9 ** step)) / (Math.sqrt(variance[i] / (1 - .999 ** step)) + 1e-8);
@@ -191,6 +257,6 @@ export function trainImagePersonalizer(records, incumbent = null, { epochs = 20,
   const result = imageModelAcceptance(model, incumbent, split.test);
   if (!result.accepted) return { ...report, ...result, ...(returnCandidate ? { candidate: { ...model, trainingDecisionIds: split.train.map(d => d.id) } } : {}) };
   Object.assign(model, { revision: (incumbent?.revision || 0) + 1, trainedAt: new Date().toISOString(), trainingDecisionIds: split.train.map(d => d.id),
-    validationDecisionIds: split.validation.map(d => d.id), testDecisionIds: split.test.map(d => d.id), personalizationMode: outputOnly ? 'output-only' : 'full-head', validation: { ...result, before: { ...result.before, rows: undefined }, after: { ...result.after, rows: undefined }, baseline: { ...result.baseline, rows: undefined } } });
+    validationDecisionIds: split.validation.map(d => d.id), testDecisionIds: split.test.map(d => d.id), personalizationMode: trainOutputOnly ? 'output-only' : 'full-head', validation: { ...result, before: { ...result.before, rows: undefined }, after: { ...result.after, rows: undefined }, baseline: { ...result.baseline, rows: undefined }, semanticBaseline: { ...result.semanticBaseline, rows: undefined } } });
   return { ...report, ...result, model };
 }

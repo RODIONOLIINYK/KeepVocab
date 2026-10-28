@@ -10,3 +10,6 @@ dist/*.apk
 dist/release/
 dist/macos/
 work/
+
+__pycache__/
+*.pyc

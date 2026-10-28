@@ -1,0 +1,349 @@
+{
+  "reviewer": "root independent visual spot-check",
+  "pages": [
+    "train-040.jpg",
+    "validation-012.jpg",
+    "test-001.jpg"
+  ],
+  "reviews": [
+    {
+      "id": "semantic-v2-trash-can-0",
+      "fits": [
+        "551304"
+      ],
+      "wrong": [
+        "210299",
+        "356125",
+        "485802"
+      ],
+      "uncertain": [
+        "6818"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-trash-can-1",
+      "fits": [],
+      "wrong": [
+        "152465",
+        "230983",
+        "273715",
+        "312340"
+      ],
+      "uncertain": [
+        "124277"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-trash-can-2",
+      "fits": [
+        "190923"
+      ],
+      "wrong": [
+        "189698",
+        "249180",
+        "308430",
+        "313562"
+      ],
+      "uncertain": [],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-trash-can-3",
+      "fits": [
+        "206271"
+      ],
+      "wrong": [
+        "186980",
+        "391144",
+        "519338",
+        "540466"
+      ],
+      "uncertain": [],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-tennis-racket-0",
+      "fits": [
+        "200421"
+      ],
+      "wrong": [
+        "109976",
+        "223188",
+        "231747",
+        "486479"
+      ],
+      "uncertain": [],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-tennis-racket-1",
+      "fits": [],
+      "wrong": [
+        "156278",
+        "226662",
+        "262587",
+        "578967"
+      ],
+      "uncertain": [
+        "248112"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-tennis-racket-2",
+      "fits": [
+        "316404"
+      ],
+      "wrong": [
+        "187271",
+        "414261",
+        "460967",
+        "474021"
+      ],
+      "uncertain": [],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-tennis-racket-3",
+      "fits": [
+        "216296"
+      ],
+      "wrong": [
+        "196843",
+        "197796",
+        "473219",
+        "485424"
+      ],
+      "uncertain": [],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-spoon-0",
+      "fits": [],
+      "wrong": [
+        "133819",
+        "263463",
+        "376478",
+        "516871"
+      ],
+      "uncertain": [
+        "521540"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-spoon-1",
+      "fits": [
+        "196009"
+      ],
+      "wrong": [
+        "166747",
+        "410496",
+        "475904"
+      ],
+      "uncertain": [
+        "240250"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-spoon-2",
+      "fits": [],
+      "wrong": [
+        "200252",
+        "275727",
+        "506656"
+      ],
+      "uncertain": [
+        "346703",
+        "419974"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-spoon-3",
+      "fits": [],
+      "wrong": [
+        "130386",
+        "209222",
+        "217219",
+        "441586"
+      ],
+      "uncertain": [
+        "139260"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-shop-0",
+      "fits": [
+        "535253"
+      ],
+      "wrong": [
+        "119516",
+        "210099",
+        "427034"
+      ],
+      "uncertain": [
+        "435208"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-shop-1",
+      "fits": [],
+      "wrong": [
+        "231549",
+        "249643",
+        "4395",
+        "503823"
+      ],
+      "uncertain": [
+        "43737"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-shop-2",
+      "fits": [],
+      "wrong": [
+        "18737",
+        "325527",
+        "338191",
+        "357430"
+      ],
+      "uncertain": [
+        "130386"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-shop-3",
+      "fits": [],
+      "wrong": [
+        "129756",
+        "308394",
+        "365207",
+        "409268",
+        "507042"
+      ],
+      "uncertain": [],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-metal-0",
+      "fits": [
+        "205542",
+        "25986"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "218997",
+        "292060",
+        "576566"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-metal-1",
+      "fits": [
+        "231125",
+        "429718"
+      ],
+      "wrong": [
+        "415741"
+      ],
+      "uncertain": [
+        "529966",
+        "93717"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-metal-2",
+      "fits": [
+        "310072",
+        "335800"
+      ],
+      "wrong": [
+        "317999"
+      ],
+      "uncertain": [
+        "194471",
+        "383842"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-metal-3",
+      "fits": [
+        "446005",
+        "502732"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "155154",
+        "284282",
+        "331604"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-airplane-0",
+      "fits": [
+        "579158"
+      ],
+      "wrong": [
+        "160666",
+        "172571",
+        "223182",
+        "514508"
+      ],
+      "uncertain": [],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-airplane-1",
+      "fits": [
+        "161044"
+      ],
+      "wrong": [
+        "19742",
+        "419098",
+        "514914",
+        "519522"
+      ],
+      "uncertain": [],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-airplane-2",
+      "fits": [],
+      "wrong": [
+        "155154",
+        "177893",
+        "2261",
+        "474881"
+      ],
+      "uncertain": [
+        "296231"
+      ],
+      "reviewer": "root independent visual spot-check"
+    },
+    {
+      "id": "semantic-v2-airplane-3",
+      "fits": [],
+      "wrong": [
+        "169169",
+        "207538",
+        "502168",
+        "553788",
+        "87038"
+      ],
+      "uncertain": [],
+      "reviewer": "root independent visual spot-check"
+    }
+  ]
+}

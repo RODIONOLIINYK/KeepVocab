@@ -1,7 +1,7 @@
 import { replayWordFsrsHistory } from './srsEngine.js?v=18900';
 import { ReviewHistoryStore, mergeReviewEvents } from './reviewHistory.js';
 import { ImageLearningHistoryStore, mergeImageEvents, IMAGE_HISTORY_CHUNK } from './imageLearningHistory.js';
-import { CLIP_TAG } from '../ml/clipConfig.js';
+import { CLIP_TAG, LEGACY_CLIP_TAG } from '../ml/clipConfig.js';
 import { mergeFsrsConfig } from './fsrsConfig.js';
 import { mergeImageLearning } from './imagePreferences.js';
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
@@ -284,7 +284,7 @@ export class DriveSyncService {
     const signature = JSON.stringify(data || {});
     if (signature === this.imageMigrationSignature) return;
     const records = (data?.records || []).map(record => ({ ...record, id: `legacy:${record.id}:${record.updatedAt}`, key: record.id,
-      decisionId: `legacy:${record.id}`, encoder: CLIP_TAG, deviceId: this.deviceId }));
+      decisionId: `legacy:${record.id}`, encoder: record.model?.replace(/:pairwise-v1$/, '') || LEGACY_CLIP_TAG, deviceId: this.deviceId }));
     await this.imageHistory.merge(records, data?.resetAt || '');
     this.imageMigrationSignature = signature;
   }

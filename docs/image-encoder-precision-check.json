@@ -1,0 +1,112 @@
+{
+  "model": "Xenova/mobileclip_s0",
+  "revision": "757d59c9c6870a76a4b0306f05f5061bca15c39f",
+  "weights": {
+    "text_model_quantized.onnx": {
+      "bytes": 42799238,
+      "sha256": "b8557b10e5c23a0126c6d2e6eba48d240484979007917d128953b31618a04211"
+    },
+    "vision_model_quantized.onnx": {
+      "bytes": 11846843,
+      "sha256": "fcbd153d1aa1314fb72ea39b20c37e0572e7e7b05359b51f3efee5d682658472"
+    },
+    "vision_model.onnx": {
+      "bytes": 45543630,
+      "sha256": "17d3c037b1d488c10c50e09f6009ea5a198caef4e0e8f4ea5617b7cb2d067ac0"
+    }
+  },
+  "textDtype": "q8",
+  "visionDtypes": [
+    "q8",
+    "fp32"
+  ],
+  "prompts": [
+    "a photo of a cat",
+    "a photo of an airplane",
+    "a photo of a bus",
+    "a photo of a cow"
+  ],
+  "preprocessing": "app thumbnail JPEG, full-frame 256 padding, pinned processor",
+  "source": {
+    "modelConfig": "https://huggingface.co/Xenova/mobileclip_s0/blob/757d59c9c6870a76a4b0306f05f5061bca15c39f/config.json",
+    "quantizationNote": "https://huggingface.co/Xenova/mobileclip_s0/discussions/3/files"
+  },
+  "results": [
+    {
+      "id": "245576",
+      "caseId": "semantic-v2-fence-3",
+      "description": "cat on keyboard",
+      "sourceSha256": "06a29c981a65c55c1ec621ca326937f7207890f2d062806c2d093b0e9e5a66be",
+      "q8VsFp32VisionCosine": 0.18853671634203348,
+      "q8Scores": [
+        0.12553112472227612,
+        0.09118733410213405,
+        0.07556365567154297,
+        0.11716142897072933
+      ],
+      "fp32Scores": [
+        0.2273493662854462,
+        0.0776271299163877,
+        0.06529696356082411,
+        0.15931751455646007
+      ]
+    },
+    {
+      "id": "137950",
+      "caseId": "semantic-v2-blue-1",
+      "description": "airplane in flight",
+      "sourceSha256": "1fc4a87fd3da8adf9a8c53e580cc68f1fad8e0e175d500095f5b38cc1f588eb7",
+      "q8VsFp32VisionCosine": 0.1573705316105332,
+      "q8Scores": [
+        0.12309663518875597,
+        0.09119196588814159,
+        0.10614063241443239,
+        0.08830364338949953
+      ],
+      "fp32Scores": [
+        0.10774788377643588,
+        0.23095995548163695,
+        0.11255386213623447,
+        0.11938306356054505
+      ]
+    },
+    {
+      "id": "114884",
+      "caseId": "semantic-v2-street-0",
+      "description": "buses at terminal",
+      "sourceSha256": "f4b8351984bceef7b96b22f66f12d0bc463b0118be5b9d8493ae1e432908e044",
+      "q8VsFp32VisionCosine": 0.05397435801516354,
+      "q8Scores": [
+        0.09103712229324969,
+        0.06985129676680135,
+        0.05735609683203478,
+        0.09198642923010218
+      ],
+      "fp32Scores": [
+        0.1131713523842881,
+        0.15649590695672413,
+        0.21730067599736227,
+        0.10916734278777858
+      ]
+    },
+    {
+      "id": "535094",
+      "caseId": "semantic-v2-curtain-3",
+      "description": "cow being bottle-fed",
+      "sourceSha256": "b55eca29ace3b322af2234d958edcde4e69d91c320053a568d86eb6767231f6c",
+      "q8VsFp32VisionCosine": 0.00865713286307955,
+      "q8Scores": [
+        0.11113300468608765,
+        0.09057717481052299,
+        0.056057627488985205,
+        0.10932405893600755
+      ],
+      "fp32Scores": [
+        0.11877100461588862,
+        0.08805268017428686,
+        0.0859735612715983,
+        0.28154537422163234
+      ]
+    }
+  ]
+}

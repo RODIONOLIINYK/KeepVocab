@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 import { MemoryStorage } from '../js/services/driveSync.js?v=18900';
 import { initializeImageLearning, hasDownloadedImageModel, imageLearningEnabled, enableImageLearning, disableImageLearning } from '../js/services/imageLearning.js?v=18900';
-import { CLIP_CACHE, CLIP_DOWNLOAD_URLS, CLIP_RUNTIME_URLS } from '../js/ml/clipConfig.js';
+import { CLIP_CACHE, CLIP_DOWNLOAD_URLS, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE } from '../js/ml/clipConfig.js';
 
 const CONFIG_KEY = 'keepvocab_image_learning_device_v1';
 function cacheStorage(urls = []) {
@@ -102,8 +102,9 @@ test('the worker loads a cached runtime offline and rejects missing files withou
   const makeContext = urls => {
     const env = { fetch: async url => { calls.push(url); return new Response('runtime'); }, backends: { onnx: { wasm: {} } } };
     const factory = { from_pretrained: async (_, options) => { assert.equal(options.local_files_only, false); return {}; } };
+    const tower = expected => ({ from_pretrained: async (_, options) => { assert.equal(options.dtype, expected); assert.equal(options.local_files_only, false); return {}; } });
     const self = { caches: cacheStorage(urls), postMessage: message => messages.push(message), navigator: {} };
-    const context = vm.createContext({ env, self, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, CLIPTextModelWithProjection: factory, CLIPVisionModelWithProjection: factory, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise });
+    const context = vm.createContext({ env, self, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, CLIPTextModelWithProjection: tower('q8'), CLIPVisionModelWithProjection: tower('fp32'), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise });
     vm.runInContext(source, context);
     return { context, self, env };
   };

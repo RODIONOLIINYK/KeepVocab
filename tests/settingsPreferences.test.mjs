@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { MODEL_DOWNLOAD_MB } from '../js/ml/clipConfig.js';
 import assert from 'node:assert/strict';
 import { renderSettingsView } from '../js/components/SettingsView.js';
 import { MemoryStorage } from '../js/services/driveSync.js?v=18900';
@@ -35,7 +36,7 @@ test('Settings keeps useful image and review preferences without technical diagn
   renderSettingsView(container);
   const visibleCopy = container.innerHTML.replace(/<[^>]*>/g, ' ');
   assert.match(visibleCopy, /Image suggestions/);
-  assert.match(visibleCopy, /one-time download of about 115 MB/);
+  assert.ok(visibleCopy.includes(`one-time download of about ${MODEL_DOWNLOAD_MB} MB`));
   assert.match(visibleCopy, /private Drive backup/);
   assert.match(visibleCopy, /Reset photo preferences/);
   assert.match(visibleCopy, /Recall target/);

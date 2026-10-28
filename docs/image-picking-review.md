@@ -11,11 +11,11 @@ requires no extra image search or AI request.
 On startup the app checks for all pinned MobileCLIP and runtime files in its
 separate device cache without downloading or starting inference. Complete installs
 are enabled by default unless the user previously turned learning off. If files
-are missing, a one-time prompt offers an approximately 115 MB download (including
+are missing, a one-time prompt offers an approximately 150 MB download (including
 the runtime). Skipping, dismissing, or closing the prompt prevents repeat prompts.
 Settings → Image suggestions can install or re-enable it later. Every remote
 model/runtime fetch requires saved consent; scoring can load a complete cache
-without network permission. The small pretrained personalization layers are bundled; the large CLIP encoders still require the optional download.
+without network permission. The current generic MLP failed its comparison check and is disabled. The optional CLIP encoders use q8 text and full-precision vision as prescribed by the model author.
 Model files survive app-shell cache upgrades and stay on this device.
 
 ## Choosing and changing images
@@ -90,128 +90,73 @@ are ignored. Corrections remain in the archive; the latest direction for a
 meaning/photo pair is used during fitting. Missing pixels do not fabricate
 examples. When local suggestions are off, hiding still updates search exclusions.
 
-## Meaning-aware personalization (1.11.0)
+## Meaning-aware personalization (1.12.0)
 
-The production ranker uses a 1,539 → 32 → 16 → 1 MLP with 49,825 parameters.
-Its input contains the image embedding, exact word/meaning embedding, their
-coordinate-wise products, and CLIP's selected-meaning, contrast-margin and
-unwanted-content scores. Saved Gemini scene descriptions and the actual custom
-search query reach CLIP, including when an empty scenes array is passed.
-Optional Gemini contrast descriptions depict the same subject with a different
-action or attribute; they are comparison texts, not alternative search requests.
+The ranker can use a 1,539→32→16→1 MLP with 49,825 parameters. It receives
+image and exact-meaning embeddings, their coordinate-wise products, and three
+CLIP semantic scores. Public semantic correctness and private photo preferences
+are separate tasks and cannot silently train one another's weights.
 
-Each candidate is scored separately with the same meaning. A normal choice
-trains the difference between those two resulting scores using a pairwise
-logistic loss. It does not require either candidate's individual score to be 0
-or 1. For example, preferring scores 0.46 over 0.41 is consistent with both
-photos fitting. The comparison record's legacy `label: 0` field identifies a
-losing side; `kind: comparison` selects this relative loss. Only a deliberate
-hide is an absolute negative. A saved positive alone is retained but does not
-inflate every candidate's score through positive-only classification.
+A future accepted semantic head remains frozen; personal learning adds a separate
+bounded correction. Generic influence is at most ±0.08, personal influence at most
+±0.04, and neither can positively boost a competing-sense match. These ranking
+values are not calibrated correctness probabilities. The generic head from this
+experiment is disabled, including its rejected hidden-layer initialization.
 
-The network adds at most ±0.08 to the semantic score. It cannot positively boost
-an image whose competing-meaning margin is negative. A new output layer starts
-at zero, so installing it leaves the semantic ranking exactly unchanged. This
-score is a ranking value, not a calibrated probability of correctness.
+The corrected MobileCLIP configuration uses full-precision vision and q8 text.
+Forcing q8 vision in earlier releases damaged the representation; see the linked
+precision diagnostic and experiment below. The worker and evaluator use the same
+pinned files and explicit tower precision. Model file URLs and encoder-tagged
+cache keys prevent reuse of incompatible q8 vision vectors. Older feedback stays
+archived under its original encoder identity, excluded from current training.
 
-CLIP processes a proportional thumbnail of the complete available photo,
-letterboxed to 256×256 with neutral gray padding. It never enlarges small source
-photos or intentionally crops away edges. Full candidate URLs are tried before
-provider previews, with download and pixel budgets and preview fallback.
-Some provider URLs already represent resized/cropped photos; absent original
-pixels cannot be restored. Cache keys identify the preprocessing version.
-Legacy cropped/meaning-less records remain archived but do not train this head.
+Saved scene descriptions, actual search queries and optional scene contrasts
+reach CLIP. CLIP processes a proportional thumbnail of the complete available
+photo, letterboxed to 256×256 with neutral gray padding. Provider originals are
+tried before previews, within mobile download/pixel budgets; absent pixels cannot
+be restored. Tiny inputs are not enlarged and edges are not intentionally cropped.
 
-## History, background training and acceptance
+A saved choice scores the preferred and alternative images separately for the
+same meaning, then trains their relative ranking. A comparison's legacy numeric
+zero does not mean the alternative is an absolute unsuitable image. Only an
+explicit hide supplies that user judgment. Positive-only saves are retained
+without pushing all photos toward suitable.
 
-Image choices live in IndexedDB without the old 256-record archive cap. Startup
-reads counts, not the whole history. A chunked localStorage fallback preserves
-all acknowledged records until storage is exhausted; failed writes do not delete
-older choices. Reset markers prevent old backup records resurrecting a reset.
-When Google Drive backup is connected, separate versioned per-device files hold
-100 events per chunk, merge by event ID, and preserve offline choices/corrections.
-The full history stays out of the regular settings snapshot. Derived weights
-stay local. Old clients safely ignore the new archive format.
+## History and guarded background updates
 
-After 30 seconds without new photo feedback a background worker can fit a
-candidate, with a 20-second compute budget and 45-second controller timeout.
-Fitting uses decision-weighted minibatches and validation early stopping. It
-needs at least 24 training, 8 validation and 12 test decisions. Whole meanings,
-with all their photos/pairs/corrections, stay in one chronological 60/20/20
-partition. At least four independent test meanings are required. Sparse or
-repeated same-meaning feedback therefore cannot force activation.
+IndexedDB retains complete image feedback without the old 256-record archive
+cap; startup reads counts, not all records. A chunked fallback preserves prior
+acknowledged history on quota failure. Connected Google Drive backup uses
+separate versioned per-device files with 100 events per chunk, merging by event
+ID. Reset markers block resurrection of old records. Derived personal weights
+remain local.
 
-A candidate must improve held-out pairwise loss over both the current model and
-plain CLIP, without worsening choice agreement or explicit-rejection errors.
-A bootstrap resamples whole meanings. Training, validation and test IDs already
-used by an accepted model cannot serve as its later evaluation answers again.
-New choices arriving during fitting discard the stale candidate. Turning the
-feature off or resetting cancels its worker. Prequential scores are stored before
-new labels are used, allowing later evaluation against real user decisions.
+After 30 seconds of inactivity a worker may fit personal preferences, with a
+20-second compute budget and 45-second controller timeout. Training needs at
+least 24 training, 8 validation and 12 test decisions, with whole meanings kept
+in chronological partitions and at least four test meanings. New updates require
+fresh later evidence; answers used to select prior models cannot be recycled as
+unseen evaluation data. New feedback during fitting invalidates a stale candidate.
 
-The pretrained hidden layers initialize personal learning. With these layers,
-personal fitting changes only the final 17 parameters, reducing the capacity to
-overfit a small personal history. A worse candidate never replaces the active
-ranker. There are no training counters, confidence warnings, manual fitting
-buttons, or new questionnaires in regular screens.
+Personal candidates must improve independent loss over the current model, CLIP,
+and any accepted semantic base, without worsening choice agreement or explicit
+rejection errors. Generic pretraining also requires a reliable first-choice
+advantage over raw CLIP and the app's CLIP ranker. Failed candidates do not replace
+an active model.
 
-## Real-photo pretraining and evaluation
+## Real-photo results
 
-I visually inspected COCO128 photographs and curated 90 two-photo choices over
-30 meanings: 54 training choices/18 meanings, 18 validation choices/6 meanings,
-and 18 test choices/6 meanings. Photos, SHA-256 hashes and meaning groups are
-disjoint across partitions. Three choices for one meaning share their preferred
-photo, so they are correlated. Several alternatives also fit; their labels are
-relative preferences, not fabricated negative suitability labels. The dataset
-includes action distinctions such as flying versus parked and sitting versus
-standing. It contains no fox photos.
+The expanded dataset contains 2,390 visually reviewed comparisons across 237
+meanings, 638 galleries and 1,736 photos, with frozen disjoint source/meaning
+partitions. Luna performed blind image classification; Terra and the root agent
+independently checked 104 galleries. Ambiguities and disagreements were excluded.
 
-The same pinned quantized MobileCLIP text/image encoders, thumbnail bounds,
-full-frame preprocessing, semantic scoring and MLP ranking ran on actual pixels.
-Search-provider retrieval and paid Gemini calls were not evaluated. Node's Sharp
-resize/native CPU backend can differ slightly from browser canvas/WASM.
+On 120 corrected-encoder test galleries, raw CLIP matched 101, the app CLIP ranker
+matched 107, and the semantic MLP matched 105. This does not demonstrate an MLP
+improvement; its generic head stays disabled. The earlier small q8-vision scores
+are superseded by the precision diagnosis, not evidence of a useful initializer.
 
-| Partition | Choices | CLIP first-choice matches | Trained MLP matches |
-| --- | ---: | ---: | ---: |
-| Training | 54 | 20 | 53 |
-| Validation | 18 | 5 | 12 |
-| Test | 18 | 13 (72%) | 9 (50%) |
-
-The fixed 30-epoch recipe overfit this small dataset. Test loss worsened from
-0.6650 to 0.7610 and its bootstrap improvement lower bound was negative. The
-acceptance check rejected this head. The shipped initialization retains its
-trained hidden layers but zeroes the final layer; the generic ranking head is
-**disabled**, leaving CLIP's ranking active until personal learning passes its
-own acceptance check. No real-photo improvement from this MLP is claimed.
-
-The initial test was excluded from fitting/early stopping. It has now been
-inspected; subsequent implementation checks are not new independent benchmarks.
-On the same test photos, full-frame CLIP matched 13/18 choices versus 11/18 with
-center cropping. Validation favored cropping (8/18 versus 5/18); this small result
-does not establish universal preprocessing superiority.
-
-I also used the actual picker component to save 12 visually chosen photos in an
-isolated browser origin: 24 persisted events, including 12 comparisons and zero
-implicit explicit negatives. Its real browser worker correctly declined to
-activate a model from insufficient history. Automated tests additionally exercise
-real worker training/promotion, stale-candidate rejection, resets, full history
-backup/restoration, preprocessing and opposite meaning-conditioned preferences.
-Synthetic controlled tests prove mechanics, not recommendation quality.
-
-The personalization weights occupy 199,300 bytes. A Mac arm64 Node benchmark of
-1,000 images took about 1.02 ms/image for this head including decoding and model
-checks; it excludes CLIP, image fetching and physical-phone measurement.
-
-Reproduce without shipping raw photographs:
-
-```sh
-python3 scripts/prepare-image-pretraining.py
-node scripts/evaluate-image-pipeline.mjs work/image-pretraining/cases.json --download-model --output=work/image-pretraining/encoded-report.json
-node scripts/pretrain-image-personalizer.mjs work/image-pretraining/encoded-report.json
-```
-
-The initial encoder download is explicit; subsequent runs use the pinned local
-cache. `tests/fixtures/image-pretraining` contains the reviewed manifest and real
-embeddings, with source URLs and photo hashes. Raw photos remain under ignored
-`work/`. See `image-pretraining-report.json`, `image-pipeline-evaluation.json`,
-and `image-personalizer-benchmark.json` for machine-readable results.
+Read [the detailed experiment and limits](image-pretraining-v2.md),
+[dataset reproduction instructions](../tests/fixtures/image-pretraining-v2/README.md),
+and [encoder precision proof](image-encoder-precision-check.json). No physical-phone
+performance, real-user taste, or population-wide accuracy improvement is claimed.

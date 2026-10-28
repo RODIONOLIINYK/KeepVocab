@@ -1,0 +1,1127 @@
+{
+  "reviewer": "Terra independent blind check",
+  "reviews": [
+    {
+      "id": "semantic-v2-bus-0",
+      "fits": [
+        "446206"
+      ],
+      "wrong": [
+        "340697",
+        "158660",
+        "60507",
+        "82715"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-bus-1",
+      "fits": [
+        "114884"
+      ],
+      "wrong": [
+        "391375",
+        "262227",
+        "40083",
+        "224093"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-bus-2",
+      "fits": [
+        "463730"
+      ],
+      "wrong": [
+        "570756",
+        "450075",
+        "182611",
+        "539143"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-bus-3",
+      "fits": [
+        "543043"
+      ],
+      "wrong": [
+        "525286",
+        "347370",
+        "466339",
+        "231747"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-curtain-0",
+      "fits": [
+        "357567"
+      ],
+      "wrong": [
+        "218439",
+        "147223",
+        "67315",
+        "118367"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-curtain-1",
+      "fits": [
+        "23023"
+      ],
+      "wrong": [
+        "172935",
+        "389812",
+        "456496",
+        "513041"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-curtain-2",
+      "fits": [],
+      "wrong": [
+        "89880",
+        "492937",
+        "518326",
+        "345941"
+      ],
+      "uncertain": [
+        "252294"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-curtain-3",
+      "fits": [
+        "446574"
+      ],
+      "wrong": [
+        "479732",
+        "13177",
+        "535094",
+        "384513"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-snowboard-action-0",
+      "fits": [
+        "343937"
+      ],
+      "wrong": [
+        "6213",
+        "217285",
+        "184400"
+      ],
+      "uncertain": [
+        "2532"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-snowboard-action-1",
+      "fits": [
+        "37689"
+      ],
+      "wrong": [
+        "206831",
+        "396863",
+        "273715",
+        "130465"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-snowboard-action-2",
+      "fits": [],
+      "wrong": [
+        "349678",
+        "395903",
+        "227491",
+        "572956"
+      ],
+      "uncertain": [
+        "364884"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-snowboard-action-3",
+      "fits": [],
+      "wrong": [
+        "294163",
+        "384527",
+        "275058",
+        "466602"
+      ],
+      "uncertain": [
+        "94944"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-vase-0",
+      "fits": [
+        "550426"
+      ],
+      "wrong": [
+        "12639",
+        "268000",
+        "206271",
+        "375493"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-vase-1",
+      "fits": [
+        "97585"
+      ],
+      "wrong": [
+        "581781",
+        "203546",
+        "200152",
+        "300233"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-vase-2",
+      "fits": [],
+      "wrong": [
+        "226592",
+        "480021",
+        "327601",
+        "47740",
+        "174004"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-vase-3",
+      "fits": [],
+      "wrong": [
+        "506004",
+        "348488",
+        "545594",
+        "308328",
+        "413404"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-lake-0",
+      "fits": [],
+      "wrong": [
+        "255749",
+        "431140",
+        "236721",
+        "289594"
+      ],
+      "uncertain": [
+        "421757"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-lake-1",
+      "fits": [],
+      "wrong": [
+        "281754",
+        "229553",
+        "397133",
+        "559842"
+      ],
+      "uncertain": [
+        "128675"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-lake-2",
+      "fits": [],
+      "wrong": [
+        "163257",
+        "68093",
+        "341921",
+        "320743"
+      ],
+      "uncertain": [
+        "125072"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-lake-3",
+      "fits": [
+        "427649"
+      ],
+      "wrong": [
+        "162858",
+        "155571",
+        "554595",
+        "475678"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-tie-0",
+      "fits": [
+        "310862"
+      ],
+      "wrong": [
+        "60507",
+        "413552",
+        "252332",
+        "546823"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-tie-1",
+      "fits": [
+        "397303"
+      ],
+      "wrong": [
+        "229858",
+        "274272",
+        "305609",
+        "467511"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-tie-2",
+      "fits": [],
+      "wrong": [
+        "363666",
+        "571008",
+        "356427",
+        "557916"
+      ],
+      "uncertain": [
+        "450075"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-tie-3",
+      "fits": [
+        "443426"
+      ],
+      "wrong": [
+        "40083",
+        "260105",
+        "166664",
+        "491464"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-cow-0",
+      "fits": [
+        "224093"
+      ],
+      "wrong": [
+        "184611",
+        "512929",
+        "297562",
+        "256407"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-cow-1",
+      "fits": [
+        "430073"
+      ],
+      "wrong": [
+        "276285",
+        "135410",
+        "429598"
+      ],
+      "uncertain": [
+        "560880"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-cow-2",
+      "fits": [
+        "535094"
+      ],
+      "wrong": [
+        "294163",
+        "466339",
+        "545100",
+        "47571"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-cow-3",
+      "fits": [
+        "114907"
+      ],
+      "wrong": [
+        "212559",
+        "489014",
+        "421757",
+        "292005"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-black-0",
+      "fits": [
+        "525155",
+        "222118"
+      ],
+      "wrong": [
+        "185472",
+        "31620",
+        "335954"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-black-1",
+      "fits": [
+        "481159"
+      ],
+      "wrong": [
+        "464786"
+      ],
+      "uncertain": [
+        "47828",
+        "555597",
+        "166664"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-black-2",
+      "fits": [
+        "289702",
+        "377497",
+        "337055"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "196843",
+        "155451"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-black-3",
+      "fits": [
+        "176847",
+        "60347",
+        "35279"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "459437",
+        "378873"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-couch-0",
+      "fits": [
+        "171740"
+      ],
+      "wrong": [
+        "530624",
+        "381639",
+        "51326",
+        "523229"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-couch-1",
+      "fits": [
+        "226058"
+      ],
+      "wrong": [
+        "147415",
+        "519569",
+        "34257",
+        "134886"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-couch-2",
+      "fits": [],
+      "wrong": [
+        "389109",
+        "400573",
+        "264535",
+        "220764"
+      ],
+      "uncertain": [
+        "399655"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-couch-3",
+      "fits": [
+        "560911"
+      ],
+      "wrong": [
+        "396274",
+        "462904",
+        "512564",
+        "492878"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-duck-0",
+      "fits": [],
+      "wrong": [
+        "105249",
+        "8629",
+        "384661",
+        "181666"
+      ],
+      "uncertain": [
+        "145020"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-duck-1",
+      "fits": [
+        "166259"
+      ],
+      "wrong": [
+        "297830",
+        "286507",
+        "260657",
+        "55528"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-duck-2",
+      "fits": [],
+      "wrong": [
+        "283785",
+        "488166",
+        "323202",
+        "40471"
+      ],
+      "uncertain": [
+        "473015"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-duck-3",
+      "fits": [],
+      "wrong": [
+        "335081",
+        "369757",
+        "198510",
+        "371699",
+        "94157"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-read-0",
+      "fits": [
+        "264535"
+      ],
+      "wrong": [
+        "139684",
+        "235064",
+        "448263",
+        "345469"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-read-1",
+      "fits": [],
+      "wrong": [
+        "448263",
+        "128051",
+        "169169",
+        "42178",
+        "365385"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-read-2",
+      "fits": [],
+      "wrong": [
+        "121591",
+        "322352",
+        "448263",
+        "269866"
+      ],
+      "uncertain": [
+        "283785"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-read-3",
+      "fits": [
+        "317999"
+      ],
+      "wrong": [
+        "448263",
+        "568147",
+        "437898",
+        "459396"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-bathroom-0",
+      "fits": [
+        "129322"
+      ],
+      "wrong": [
+        "144984",
+        "412531",
+        "239627",
+        "334767"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-bathroom-1",
+      "fits": [],
+      "wrong": [
+        "474167",
+        "64495",
+        "77460",
+        "292155"
+      ],
+      "uncertain": [
+        "492878"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-bathroom-2",
+      "fits": [
+        "557501"
+      ],
+      "wrong": [
+        "541123",
+        "89271",
+        "230450",
+        "504439"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-bathroom-3",
+      "fits": [
+        "393569"
+      ],
+      "wrong": [
+        "534041",
+        "130579",
+        "534673",
+        "453166"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-park-0",
+      "fits": [
+        "152771"
+      ],
+      "wrong": [
+        "4765",
+        "70739",
+        "523229",
+        "87038"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-park-1",
+      "fits": [
+        "190753"
+      ],
+      "wrong": [
+        "244750",
+        "354072",
+        "464089"
+      ],
+      "uncertain": [
+        "30494"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-park-2",
+      "fits": [
+        "374545"
+      ],
+      "wrong": [
+        "568147",
+        "293071",
+        "144984"
+      ],
+      "uncertain": [
+        "351530"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-park-3",
+      "fits": [],
+      "wrong": [
+        "457848",
+        "8629",
+        "180560",
+        "2261"
+      ],
+      "uncertain": [
+        "94157"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-goat-0",
+      "fits": [],
+      "wrong": [
+        "264968",
+        "135872",
+        "8762",
+        "384661",
+        "66561"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-goat-1",
+      "fits": [
+        "181666"
+      ],
+      "wrong": [
+        "178028",
+        "111609",
+        "272049",
+        "84241"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-goat-2",
+      "fits": [],
+      "wrong": [
+        "579158",
+        "453166",
+        "133343",
+        "537672"
+      ],
+      "uncertain": [
+        "474881"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-goat-3",
+      "fits": [
+        "8690"
+      ],
+      "wrong": [
+        "400573",
+        "265108",
+        "509131",
+        "187249"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-flag-0",
+      "fits": [
+        "293071"
+      ],
+      "wrong": [
+        "6040",
+        "458992",
+        "179174",
+        "106881"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-flag-1",
+      "fits": [
+        "154087"
+      ],
+      "wrong": [
+        "154705",
+        "113235",
+        "212226",
+        "286507"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-flag-2",
+      "fits": [
+        "335800"
+      ],
+      "wrong": [
+        "556765",
+        "437898",
+        "481404",
+        "260657"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-flag-3",
+      "fits": [
+        "457848"
+      ],
+      "wrong": [
+        "398652",
+        "514914",
+        "220732",
+        "164883"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-bathtub-0",
+      "fits": [],
+      "wrong": [
+        "345469",
+        "331604",
+        "239627",
+        "429718"
+      ],
+      "uncertain": [
+        "555012"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-bathtub-1",
+      "fits": [
+        "383443"
+      ],
+      "wrong": [
+        "113403",
+        "511647",
+        "548555",
+        "514508"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-bathtub-2",
+      "fits": [
+        "514914"
+      ],
+      "wrong": [
+        "110211",
+        "38829",
+        "40471",
+        "284282"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-bathtub-3",
+      "fits": [
+        "442009"
+      ],
+      "wrong": [
+        "38048",
+        "121506",
+        "335081",
+        "235064"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-television-0",
+      "fits": [
+        "296231"
+      ],
+      "wrong": [
+        "381639",
+        "211069",
+        "276804",
+        "93717"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-television-1",
+      "fits": [],
+      "wrong": [
+        "569917",
+        "322844",
+        "71756",
+        "459396"
+      ],
+      "uncertain": [
+        "514508"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-television-2",
+      "fits": [
+        "139684"
+      ],
+      "wrong": [
+        "474167",
+        "504439",
+        "106881",
+        "5600"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-television-3",
+      "fits": [
+        "187249"
+      ],
+      "wrong": [
+        "449432",
+        "388258",
+        "38048",
+        "272212"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-skateboard-action-0",
+      "fits": [
+        "192964"
+      ],
+      "wrong": [
+        "55299",
+        "575187",
+        "569917",
+        "144984"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-skateboard-action-1",
+      "fits": [
+        "121591"
+      ],
+      "wrong": [
+        "519569",
+        "154705",
+        "492878",
+        "391140"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-skateboard-action-2",
+      "fits": [],
+      "wrong": [
+        "286507",
+        "38829",
+        "17436",
+        "311002"
+      ],
+      "uncertain": [
+        "122217"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-skateboard-action-3",
+      "fits": [
+        "523957"
+      ],
+      "wrong": [
+        "556765",
+        "113235",
+        "322352",
+        "63602"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-dirty-0",
+      "fits": [],
+      "wrong": [
+        "177893",
+        "178028",
+        "135872",
+        "6040"
+      ],
+      "uncertain": [
+        "523229"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-dirty-1",
+      "fits": [
+        "297830"
+      ],
+      "wrong": [
+        "502168",
+        "419098",
+        "552883"
+      ],
+      "uncertain": [
+        "25096"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-dirty-2",
+      "fits": [
+        "239627"
+      ],
+      "wrong": [
+        "399205",
+        "429718",
+        "8629",
+        "502732"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-dirty-3",
+      "fits": [
+        "541291",
+        "264968"
+      ],
+      "wrong": [
+        "1761",
+        "450202"
+      ],
+      "uncertain": [
+        "320554"
+      ],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-palm-tree-0",
+      "fits": [
+        "206025"
+      ],
+      "wrong": [
+        "240940",
+        "511647",
+        "243204",
+        "66561"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-palm-tree-1",
+      "fits": [
+        "292155"
+      ],
+      "wrong": [
+        "25394",
+        "255747",
+        "152771",
+        "207844"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-palm-tree-2",
+      "fits": [
+        "177893"
+      ],
+      "wrong": [
+        "481404",
+        "317999",
+        "2685",
+        "194471"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    },
+    {
+      "id": "semantic-v2-palm-tree-3",
+      "fits": [
+        "550939"
+      ],
+      "wrong": [
+        "251824",
+        "335800",
+        "129945",
+        "61108"
+      ],
+      "uncertain": [],
+      "reviewer": "Terra independent blind check"
+    }
+  ]
+}

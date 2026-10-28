@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {execFileSync} from 'node:child_process';
+const script=new URL('../scripts/review-image-pretraining.py',import.meta.url).pathname;
+async function fixture(t){const directory=await mkdtemp(join(tmpdir(),'keepvocab-review-'));t.after(()=>rm(directory,{recursive:true,force:true}));await mkdir(join(directory,'reviews'));const source={construction:{},cases:[{id:'one',candidates:[{id:'correct'},{id:'also-valid'},{id:'wrong'},{id:'unclear'}],feedback:{selected:['correct'],wrong:[]},annotation:{},meaningId:'meaning'}]};const review={reviewer:'blind',reviews:[{id:'one',fits:['correct','also-valid'],wrong:['wrong'],uncertain:['unclear'],reviewer:'blind'}]};await writeFile(join(directory,'review-source.json'),JSON.stringify(source));await writeFile(join(directory,'reviews/primary.json'),JSON.stringify(review));return{directory,source,review};}
+const apply=directory=>execFileSync('python3',[script,'apply','--directory',directory],{stdio:'pipe'});
+test('visual review excludes other valid and ambiguous photos instead of inventing negatives',async t=>{const {directory}=await fixture(t);apply(directory);const result=JSON.parse(await readFile(join(directory,'cases.json')));assert.deepEqual(result.cases[0].candidates.map(p=>p.id),['correct','wrong']);assert.deepEqual(result.cases[0].feedback.wrong,['wrong']);assert.equal(result.construction.retainedComparisons,1);});
+test('an independent reviewer disagreement makes a reference uncertain and excludes its gallery',async t=>{const {directory}=await fixture(t);await writeFile(join(directory,'terra-independent-check.json'),JSON.stringify({reviews:[{id:'one',fits:['also-valid'],wrong:['correct','wrong'],uncertain:['unclear']}]}));apply(directory);const result=JSON.parse(await readFile(join(directory,'cases.json')));assert.equal(result.cases.length,0);assert.equal(result.reviewAudit.secondarySpotCheck.cases.length,1);});
+test('missing, duplicate and foreign review labels stop curation before a dataset is written',async t=>{const {directory,review}=await fixture(t);for(const row of [{...review,reviews:[]},{...review,reviews:[{...review.reviews[0],fits:['correct','correct','also-valid']}]},{...review,reviews:[...review.reviews,{id:'unknown',fits:[],wrong:[],uncertain:[]}]}]){await writeFile(join(directory,'reviews/primary.json'),JSON.stringify(row));assert.throws(()=>apply(directory));}});

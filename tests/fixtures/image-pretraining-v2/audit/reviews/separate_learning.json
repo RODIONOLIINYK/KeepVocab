@@ -1,0 +1,1932 @@
+{
+  "reviewer": "agent separate_learning",
+  "reviews": [
+    {
+      "id": "semantic-v2-kitten-0",
+      "fits": [
+        "118515"
+      ],
+      "wrong": [
+        "513181",
+        "303653",
+        "57232",
+        "133819"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-kitten-1",
+      "fits": [],
+      "wrong": [
+        "29984",
+        "516708",
+        "257624",
+        "482719"
+      ],
+      "uncertain": [
+        "478393"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-kitten-2",
+      "fits": [
+        "411665"
+      ],
+      "wrong": [
+        "478721",
+        "506656",
+        "130386",
+        "271471"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-kitten-3",
+      "fits": [],
+      "wrong": [
+        "256941",
+        "19221",
+        "64718",
+        "516708"
+      ],
+      "uncertain": [
+        "554291"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-dress-0",
+      "fits": [],
+      "wrong": [
+        "355677",
+        "388903",
+        "10092"
+      ],
+      "uncertain": [
+        "203639",
+        "79969"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-dress-1",
+      "fits": [
+        "478420"
+      ],
+      "wrong": [
+        "389381",
+        "389532",
+        "65074",
+        "2923"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-dress-2",
+      "fits": [
+        "39551",
+        "350002"
+      ],
+      "wrong": [
+        "219578",
+        "276284",
+        "308394"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-dress-3",
+      "fits": [
+        "22705"
+      ],
+      "wrong": [
+        "94185",
+        "303653",
+        "6471",
+        "217425"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-brown-0",
+      "fits": [
+        "235857"
+      ],
+      "wrong": [
+        "6614",
+        "85665"
+      ],
+      "uncertain": [
+        "535156",
+        "21604"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-brown-1",
+      "fits": [
+        "307658",
+        "459195"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "108503",
+        "155051",
+        "170099"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-brown-2",
+      "fits": [
+        "367082"
+      ],
+      "wrong": [
+        "528314"
+      ],
+      "uncertain": [
+        "11051",
+        "400161",
+        "569700"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-brown-3",
+      "fits": [
+        "130566",
+        "151516"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "420472",
+        "15497",
+        "48153"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-jump-0",
+      "fits": [
+        "79969"
+      ],
+      "wrong": [
+        "74200",
+        "257624",
+        "469174",
+        "378284"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-jump-1",
+      "fits": [],
+      "wrong": [
+        "425702",
+        "396729",
+        "223130",
+        "549167"
+      ],
+      "uncertain": [
+        "342397"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-jump-2",
+      "fits": [
+        "357459"
+      ],
+      "wrong": [
+        "32941",
+        "359135",
+        "529762",
+        "581317"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-jump-3",
+      "fits": [
+        "242678"
+      ],
+      "wrong": [
+        "547816",
+        "286503",
+        "116479"
+      ],
+      "uncertain": [
+        "395801"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-carry-0",
+      "fits": [
+        "147740"
+      ],
+      "wrong": [
+        "398377",
+        "162130"
+      ],
+      "uncertain": [
+        "377575",
+        "194716"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-carry-1",
+      "fits": [],
+      "wrong": [
+        "526103",
+        "61960",
+        "407574",
+        "453302"
+      ],
+      "uncertain": [
+        "417249"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-carry-2",
+      "fits": [
+        "478721"
+      ],
+      "wrong": [
+        "433374",
+        "473821",
+        "18575"
+      ],
+      "uncertain": [
+        "37670"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-carry-3",
+      "fits": [
+        "425702"
+      ],
+      "wrong": [
+        "374052",
+        "92660",
+        "255917"
+      ],
+      "uncertain": [
+        "370375"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-baseball-bat-0",
+      "fits": [],
+      "wrong": [
+        "553511",
+        "171298",
+        "343076",
+        "279714",
+        "420281"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-baseball-bat-1",
+      "fits": [
+        "6471"
+      ],
+      "wrong": [
+        "24021",
+        "323151",
+        "20333",
+        "321118"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-baseball-bat-2",
+      "fits": [
+        "414673"
+      ],
+      "wrong": [
+        "284296",
+        "377635",
+        "139260",
+        "502229"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-baseball-bat-3",
+      "fits": [],
+      "wrong": [
+        "188592",
+        "452784",
+        "164115",
+        "254016",
+        "57232"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-cat-0",
+      "fits": [
+        "131131"
+      ],
+      "wrong": [
+        "96825",
+        "346968",
+        "56127",
+        "486046"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-cat-1",
+      "fits": [
+        "413395"
+      ],
+      "wrong": [
+        "146498",
+        "248631",
+        "568814",
+        "214703"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-cat-2",
+      "fits": [
+        "343076"
+      ],
+      "wrong": [
+        "151820",
+        "481567",
+        "1818"
+      ],
+      "uncertain": [
+        "540962"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-cat-3",
+      "fits": [
+        "318238"
+      ],
+      "wrong": [
+        "386352",
+        "491613",
+        "145597",
+        "130613"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-blanket-0",
+      "fits": [
+        "65074"
+      ],
+      "wrong": [
+        "17714",
+        "215245",
+        "384670",
+        "6723"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-blanket-1",
+      "fits": [],
+      "wrong": [
+        "19924",
+        "336209",
+        "221754",
+        "252216"
+      ],
+      "uncertain": [
+        "39769"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-blanket-2",
+      "fits": [
+        "188592",
+        "41872"
+      ],
+      "wrong": [
+        "315219",
+        "473869"
+      ],
+      "uncertain": [
+        "29984"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-blanket-3",
+      "fits": [
+        "145597"
+      ],
+      "wrong": [
+        "344611",
+        "196009",
+        "579321"
+      ],
+      "uncertain": [
+        "351810"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-spoon-0",
+      "fits": [],
+      "wrong": [
+        "521540",
+        "516871",
+        "263463",
+        "133819"
+      ],
+      "uncertain": [
+        "376478"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-spoon-1",
+      "fits": [
+        "196009"
+      ],
+      "wrong": [
+        "166747",
+        "410496",
+        "475904"
+      ],
+      "uncertain": [
+        "240250"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-spoon-2",
+      "fits": [],
+      "wrong": [
+        "506656",
+        "200252",
+        "275727"
+      ],
+      "uncertain": [
+        "419974",
+        "346703"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-spoon-3",
+      "fits": [],
+      "wrong": [
+        "441586",
+        "209222",
+        "217219",
+        "130386"
+      ],
+      "uncertain": [
+        "139260"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-shop-0",
+      "fits": [
+        "535253"
+      ],
+      "wrong": [
+        "427034",
+        "119516",
+        "210099"
+      ],
+      "uncertain": [
+        "435208"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-shop-1",
+      "fits": [],
+      "wrong": [
+        "249643",
+        "43737",
+        "4395",
+        "503823",
+        "231549"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-shop-2",
+      "fits": [],
+      "wrong": [
+        "18737",
+        "130386",
+        "325527",
+        "338191",
+        "357430"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-shop-3",
+      "fits": [],
+      "wrong": [
+        "507042",
+        "129756",
+        "308394",
+        "365207",
+        "409268"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-parked-motorcycle-0",
+      "fits": [],
+      "wrong": [
+        "291664",
+        "315257",
+        "427338",
+        "145665"
+      ],
+      "uncertain": [
+        "488385"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-parked-motorcycle-1",
+      "fits": [
+        "291791"
+      ],
+      "wrong": [
+        "562243",
+        "513181",
+        "177935"
+      ],
+      "uncertain": [
+        "102411"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-parked-motorcycle-2",
+      "fits": [
+        "18737"
+      ],
+      "wrong": [
+        "416837",
+        "433204",
+        "16439",
+        "357060"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-parked-motorcycle-3",
+      "fits": [
+        "276284"
+      ],
+      "wrong": [
+        "494759",
+        "157046",
+        "27932",
+        "578792"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-fish-0",
+      "fits": [
+        "130613"
+      ],
+      "wrong": [
+        "127476",
+        "230819",
+        "60090",
+        "422706"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-fish-1",
+      "fits": [],
+      "wrong": [
+        "542073",
+        "309467",
+        "166478",
+        "85665"
+      ],
+      "uncertain": [
+        "404568"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-fish-2",
+      "fits": [],
+      "wrong": [
+        "410221",
+        "563604",
+        "148783",
+        "56127",
+        "31248"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-fish-3",
+      "fits": [
+        "125245"
+      ],
+      "wrong": [
+        "400922",
+        "471789",
+        "455872",
+        "207728"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-sidewalk-0",
+      "fits": [
+        "395801"
+      ],
+      "wrong": [
+        "556873",
+        "549220",
+        "370270"
+      ],
+      "uncertain": [
+        "127092"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-sidewalk-1",
+      "fits": [],
+      "wrong": [
+        "208423",
+        "525600",
+        "482477",
+        "231822"
+      ],
+      "uncertain": [
+        "53994"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-sidewalk-2",
+      "fits": [],
+      "wrong": [
+        "502347",
+        "304545",
+        "46872",
+        "67534"
+      ],
+      "uncertain": [
+        "344611"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-sidewalk-3",
+      "fits": [],
+      "wrong": [
+        "254516",
+        "377575",
+        "169076",
+        "318455"
+      ],
+      "uncertain": [
+        "453841"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-flower-0",
+      "fits": [
+        "376478"
+      ],
+      "wrong": [
+        "18833",
+        "339823"
+      ],
+      "uncertain": [
+        "578236",
+        "27768"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-flower-1",
+      "fits": [
+        "556873"
+      ],
+      "wrong": [
+        "407960",
+        "45550",
+        "389315",
+        "175443"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-flower-2",
+      "fits": [],
+      "wrong": [
+        "497344",
+        "345361",
+        "205647",
+        "193181"
+      ],
+      "uncertain": [
+        "11051"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-flower-3",
+      "fits": [
+        "50638"
+      ],
+      "wrong": [
+        "85478",
+        "386879",
+        "472678",
+        "11760"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bed-0",
+      "fits": [
+        "10092"
+      ],
+      "wrong": [
+        "301135",
+        "309938",
+        "9914",
+        "490515"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bed-1",
+      "fits": [],
+      "wrong": [
+        "64574",
+        "95786",
+        "493905",
+        "383606",
+        "242724"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bed-2",
+      "fits": [
+        "61960"
+      ],
+      "wrong": [
+        "205514",
+        "157601",
+        "9378",
+        "447522"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bed-3",
+      "fits": [
+        "217219"
+      ],
+      "wrong": [
+        "147498",
+        "231508",
+        "560011",
+        "564280"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-yellow-0",
+      "fits": [
+        "60090",
+        "101420"
+      ],
+      "wrong": [
+        "153782",
+        "180878"
+      ],
+      "uncertain": [
+        "356428"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-yellow-1",
+      "fits": [
+        "32941"
+      ],
+      "wrong": [
+        "277051",
+        "187734",
+        "297022"
+      ],
+      "uncertain": [
+        "535608"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-yellow-2",
+      "fits": [
+        "271471",
+        "384670",
+        "187055"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "225757",
+        "468332"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-yellow-3",
+      "fits": [
+        "466256"
+      ],
+      "wrong": [
+        "44590",
+        "574823"
+      ],
+      "uncertain": [
+        "9378",
+        "243495"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-lamp-0",
+      "fits": [
+        "16439"
+      ],
+      "wrong": [
+        "31269",
+        "482719",
+        "28993"
+      ],
+      "uncertain": [
+        "26204"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-lamp-1",
+      "fits": [
+        "31248"
+      ],
+      "wrong": [
+        "577539",
+        "357060"
+      ],
+      "uncertain": [
+        "280918",
+        "208423"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-lamp-2",
+      "fits": [
+        "315219",
+        "231549"
+      ],
+      "wrong": [
+        "46872",
+        "513580",
+        "95786"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-lamp-3",
+      "fits": [
+        "153782"
+      ],
+      "wrong": [
+        "146498",
+        "528314"
+      ],
+      "uncertain": [
+        "370270",
+        "374052"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-elephant-0",
+      "fits": [
+        "433374",
+        "226883"
+      ],
+      "wrong": [
+        "22623",
+        "468332",
+        "205647"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-elephant-1",
+      "fits": [
+        "535156"
+      ],
+      "wrong": [
+        "175443",
+        "221754",
+        "231822",
+        "37670"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-elephant-2",
+      "fits": [
+        "526103"
+      ],
+      "wrong": [
+        "291664",
+        "475904",
+        "493905",
+        "323151"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-elephant-3",
+      "fits": [
+        "286503"
+      ],
+      "wrong": [
+        "563604",
+        "407960",
+        "321118",
+        "147498"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-talk-0",
+      "fits": [
+        "497344"
+      ],
+      "wrong": [
+        "254016",
+        "147740",
+        "318238"
+      ],
+      "uncertain": [
+        "529762"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-talk-1",
+      "fits": [
+        "257624",
+        "151820"
+      ],
+      "wrong": [
+        "17714",
+        "284296",
+        "453841"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-talk-2",
+      "fits": [
+        "170099"
+      ],
+      "wrong": [
+        "153217",
+        "357459",
+        "553511",
+        "389315"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-talk-3",
+      "fits": [
+        "388903"
+      ],
+      "wrong": [
+        "377635",
+        "292024",
+        "309938"
+      ],
+      "uncertain": [
+        "459195"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-swim-0",
+      "fits": [],
+      "wrong": [
+        "359135",
+        "133819",
+        "389532",
+        "466256"
+      ],
+      "uncertain": [
+        "29984"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-swim-1",
+      "fits": [
+        "85478"
+      ],
+      "wrong": [
+        "420472",
+        "579321",
+        "491613",
+        "94185"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-swim-2",
+      "fits": [
+        "475904"
+      ],
+      "wrong": [
+        "155051",
+        "367082",
+        "342397",
+        "581317"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-swim-3",
+      "fits": [],
+      "wrong": [
+        "31269",
+        "378284",
+        "400161",
+        "355677",
+        "339823"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bowl-0",
+      "fits": [
+        "482719"
+      ],
+      "wrong": [
+        "137294",
+        "469174",
+        "525600",
+        "145665"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bowl-1",
+      "fits": [
+        "452784",
+        "346703"
+      ],
+      "wrong": [
+        "402433",
+        "502347",
+        "255917"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bowl-2",
+      "fits": [],
+      "wrong": [
+        "325527",
+        "127092",
+        "171298",
+        "243495"
+      ],
+      "uncertain": [
+        "315257"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bowl-3",
+      "fits": [],
+      "wrong": [
+        "547816",
+        "219578",
+        "11760",
+        "417249"
+      ],
+      "uncertain": [
+        "20333"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-ship-0",
+      "fits": [],
+      "wrong": [
+        "125245",
+        "357430",
+        "6723",
+        "410496"
+      ],
+      "uncertain": [
+        "422706"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-ship-1",
+      "fits": [],
+      "wrong": [
+        "530099",
+        "166478",
+        "275727",
+        "318455"
+      ],
+      "uncertain": [
+        "2923"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-ship-2",
+      "fits": [
+        "455872"
+      ],
+      "wrong": [
+        "516708",
+        "164115",
+        "386352",
+        "200252"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-ship-3",
+      "fits": [
+        "513181"
+      ],
+      "wrong": [
+        "256941",
+        "187055",
+        "130566",
+        "409268"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-surfboard-0",
+      "fits": [
+        "230819"
+      ],
+      "wrong": [
+        "414673",
+        "19924",
+        "279887",
+        "549220"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-surfboard-1",
+      "fits": [],
+      "wrong": [
+        "420281",
+        "336209",
+        "217425",
+        "22705"
+      ],
+      "uncertain": [
+        "108503"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-surfboard-2",
+      "fits": [
+        "74200"
+      ],
+      "wrong": [
+        "416837",
+        "577539",
+        "41872",
+        "254516"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-surfboard-3",
+      "fits": [
+        "164115"
+      ],
+      "wrong": [
+        "249643",
+        "148783",
+        "15497",
+        "21604"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-shoe-0",
+      "fits": [],
+      "wrong": [
+        "569700",
+        "478393",
+        "351810"
+      ],
+      "uncertain": [
+        "572900",
+        "180878"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-shoe-1",
+      "fits": [
+        "200252"
+      ],
+      "wrong": [
+        "473869",
+        "179765",
+        "482477",
+        "214703"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-shoe-2",
+      "fits": [
+        "18833"
+      ],
+      "wrong": [
+        "223130",
+        "535608",
+        "225757"
+      ],
+      "uncertain": [
+        "96825"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-shoe-3",
+      "fits": [
+        "48153"
+      ],
+      "wrong": [
+        "87875",
+        "562243"
+      ],
+      "uncertain": [
+        "44590",
+        "441586"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-reflection-0",
+      "fits": [
+        "151000"
+      ],
+      "wrong": [
+        "303653",
+        "210099",
+        "18575"
+      ],
+      "uncertain": [
+        "177935"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-reflection-1",
+      "fits": [
+        "383606"
+      ],
+      "wrong": [
+        "304545",
+        "478721",
+        "1818",
+        "560011"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-reflection-2",
+      "fits": [
+        "491613"
+      ],
+      "wrong": [
+        "129756",
+        "386879",
+        "521540"
+      ],
+      "uncertain": [
+        "28993"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-reflection-3",
+      "fits": [
+        "171298"
+      ],
+      "wrong": [
+        "366178",
+        "252216",
+        "24021"
+      ],
+      "uncertain": [
+        "346968"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-branch-0",
+      "fits": [
+        "482477"
+      ],
+      "wrong": [
+        "131131",
+        "435208",
+        "64574"
+      ],
+      "uncertain": [
+        "490515"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-branch-1",
+      "fits": [
+        "148783"
+      ],
+      "wrong": [
+        "194716",
+        "127476"
+      ],
+      "uncertain": [
+        "307658",
+        "481567"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-branch-2",
+      "fits": [
+        "420472"
+      ],
+      "wrong": [
+        "45550",
+        "6614",
+        "116479"
+      ],
+      "uncertain": [
+        "507042"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-branch-3",
+      "fits": [
+        "223130"
+      ],
+      "wrong": [
+        "157046",
+        "297022"
+      ],
+      "uncertain": [
+        "101420",
+        "486046"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-hill-0",
+      "fits": [
+        "242724"
+      ],
+      "wrong": [
+        "64718",
+        "215245",
+        "473821",
+        "127092"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-hill-1",
+      "fits": [],
+      "wrong": [
+        "447522",
+        "162130",
+        "453302",
+        "433204"
+      ],
+      "uncertain": [
+        "309467"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-hill-2",
+      "fits": [],
+      "wrong": [
+        "39551",
+        "400922",
+        "494759",
+        "419974"
+      ],
+      "uncertain": [
+        "416837"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-hill-3",
+      "fits": [
+        "205647"
+      ],
+      "wrong": [
+        "207728",
+        "118515",
+        "151516",
+        "205514"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-sand-0",
+      "fits": [
+        "357060"
+      ],
+      "wrong": [
+        "248631",
+        "43737",
+        "169076",
+        "345361"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-sand-1",
+      "fits": [
+        "503823"
+      ],
+      "wrong": [
+        "291791",
+        "253695",
+        "502229",
+        "549167"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-sand-2",
+      "fits": [
+        "441586"
+      ],
+      "wrong": [
+        "410221",
+        "338191",
+        "398377",
+        "9914"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-sand-3",
+      "fits": [
+        "102411"
+      ],
+      "wrong": [
+        "535253",
+        "409268",
+        "564280",
+        "370375"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-mirror-0",
+      "fits": [
+        "178028"
+      ],
+      "wrong": [
+        "135872",
+        "529966",
+        "556765"
+      ],
+      "uncertain": [
+        "537672"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-mirror-1",
+      "fits": [],
+      "wrong": [
+        "161044",
+        "572303",
+        "530975",
+        "38048",
+        "116439"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-mirror-2",
+      "fits": [
+        "421455"
+      ],
+      "wrong": [
+        "210789",
+        "61108",
+        "25096",
+        "221017"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-mirror-3",
+      "fits": [
+        "212226"
+      ],
+      "wrong": [
+        "144706",
+        "313783",
+        "555012",
+        "81594"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-play-baseball-0",
+      "fits": [
+        "276804"
+      ],
+      "wrong": [
+        "324715",
+        "142971",
+        "202339"
+      ],
+      "uncertain": [
+        "374545"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-play-baseball-1",
+      "fits": [
+        "264968"
+      ],
+      "wrong": [
+        "190753",
+        "481404",
+        "500565",
+        "240940"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-play-baseball-2",
+      "fits": [
+        "311002"
+      ],
+      "wrong": [
+        "113403",
+        "442009",
+        "164883",
+        "231097"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-play-baseball-3",
+      "fits": [
+        "448263"
+      ],
+      "wrong": [
+        "575970",
+        "311180",
+        "306136",
+        "364636"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-metal-0",
+      "fits": [
+        "25986"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "292060",
+        "218997",
+        "576566",
+        "205542"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-metal-1",
+      "fits": [
+        "231125",
+        "429718",
+        "529966"
+      ],
+      "wrong": [
+        "415741"
+      ],
+      "uncertain": [
+        "93717"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-metal-2",
+      "fits": [
+        "310072",
+        "383842"
+      ],
+      "wrong": [
+        "317999"
+      ],
+      "uncertain": [
+        "335800",
+        "194471"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-metal-3",
+      "fits": [
+        "502732",
+        "446005",
+        "155154"
+      ],
+      "wrong": [],
+      "uncertain": [
+        "284282",
+        "331604"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-airplane-0",
+      "fits": [
+        "579158"
+      ],
+      "wrong": [
+        "514508",
+        "160666",
+        "223182",
+        "172571"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-airplane-1",
+      "fits": [
+        "161044"
+      ],
+      "wrong": [
+        "419098",
+        "514914",
+        "19742",
+        "519522"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-airplane-2",
+      "fits": [],
+      "wrong": [
+        "2261",
+        "296231",
+        "177893",
+        "474881",
+        "155154"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-airplane-3",
+      "fits": [],
+      "wrong": [
+        "87038",
+        "169169",
+        "553788",
+        "502168",
+        "207538"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bench-0",
+      "fits": [
+        "320554"
+      ],
+      "wrong": [
+        "397354",
+        "450686",
+        "464522",
+        "293071"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bench-1",
+      "fits": [
+        "453584"
+      ],
+      "wrong": [
+        "405691",
+        "129945",
+        "222235",
+        "4765"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bench-2",
+      "fits": [],
+      "wrong": [
+        "435205",
+        "570448",
+        "293324",
+        "189310"
+      ],
+      "uncertain": [
+        "322844"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-bench-3",
+      "fits": [],
+      "wrong": [
+        "272049",
+        "575187",
+        "407825",
+        "119677"
+      ],
+      "uncertain": [
+        "223182"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-skateboard-0",
+      "fits": [
+        "576566"
+      ],
+      "wrong": [
+        "179642",
+        "145020",
+        "25393",
+        "129322"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-skateboard-1",
+      "fits": [],
+      "wrong": [
+        "36844",
+        "55299",
+        "462756",
+        "85576"
+      ],
+      "uncertain": [
+        "544052"
+      ],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-skateboard-2",
+      "fits": [],
+      "wrong": [
+        "11197",
+        "25096",
+        "575205",
+        "151938",
+        "141597"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    },
+    {
+      "id": "semantic-v2-skateboard-3",
+      "fits": [
+        "146831"
+      ],
+      "wrong": [
+        "398652",
+        "17436",
+        "25394",
+        "194832"
+      ],
+      "uncertain": [],
+      "reviewer": "agent separate_learning"
+    }
+  ]
+}

@@ -1,27 +1,33 @@
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+// Package the single, frozen semantic benchmark run. Never tune on its test set.
+import { readJsonFile } from './lib/json-files.mjs';
+import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { trainImagePersonalizer, splitImageDecisions } from '../js/services/imagePersonalizer.js';
-const file=process.argv[2];
-if(!file)throw new Error('Usage: node scripts/pretrain-image-personalizer.mjs encoded-report.json [--reuse-result=result.json]');
-const raw=await readFile(file,'utf8'),input=JSON.parse(raw),split=splitImageDecisions(input.events);
-const reuse=process.argv.find(a=>a.startsWith('--reuse-result='))?.slice(15);
-const result=reuse?JSON.parse(await readFile(reuse,'utf8')):trainImagePersonalizer(input.events,null,{epochs:30,returnCandidate:true,progress:p=>process.stderr.write(`${JSON.stringify(p)}\n`)});
-const model=result.model||result.candidate;
-if(!model)throw new Error(result.reason||'No training candidate produced.');
-const weights=Float32Array.from(model.weights), bytes=Buffer.alloc(weights.length*4);
-weights.forEach((value,i)=>bytes.writeFloatLE(value,i*4));
-const summary={dataset:'assistant-visually-reviewed-coco128-v1',kind:input.kind,encoder:input.encoder,preprocessing:input.preprocessing,
-  trainingChoices:split.train.length,validationChoices:split.validation.length,testChoices:split.test.length,
-  trainingMeanings:new Set(split.train.map(d=>d.meaningId)).size,validationMeanings:new Set(split.validation.map(d=>d.meaningId)).size,testMeanings:new Set(split.test.map(d=>d.meaningId)).size,
-  accepted:result.accepted,baselineTestAgreement:result.before?.accuracy,candidateTestAgreement:result.after?.accuracy,
-  baselineTestLoss:result.before?.loss,candidateTestLoss:result.after?.loss,improvementLowerBound:result.lowerBound,
-  use:result.accepted?'validated-generic-head':'hidden-layer-initialization-only',parameters:weights.length,
-  dataSha256:createHash('sha256').update(JSON.stringify(input.events)).digest('hex'),weightsSha256:createHash('sha256').update(bytes).digest('hex'),
-  note:'Small agent-curated development dataset. Repeated choices within each meaning are correlated. This is not a measurement of the user’s preferences or population-wide accuracy.'};
+import { validPersonalizer } from '../js/services/imagePersonalizer.js';
+const args=process.argv.slice(2),file=args.find(a=>!a.startsWith('--'));
+const flag=name=>args.find(a=>a.startsWith(`--${name}=`))?.slice(name.length+3);
+if(!file||!flag('benchmark')||!flag('candidate'))throw new Error('Usage: node scripts/pretrain-image-personalizer.mjs encoded-report.json --benchmark=benchmark.json --candidate=candidate.json');
+const input=await readJsonFile(file),benchmark=await readJsonFile(flag('benchmark')),saved=await readJsonFile(flag('candidate'));
+const model=saved.model;
+const dataSha256=createHash('sha256').update(JSON.stringify(input.events)).digest('hex');
+if(input.targetTask!=='semantic'||!input.events?.length||input.events.some(e=>e.task!=='semantic')||benchmark.dataSha256!==dataSha256||benchmark.targetTask!=='semantic')throw new Error('Semantic data and benchmark provenance do not match.');
+if(!validPersonalizer(model)||model.role!=='semantic'||saved.accepted!==benchmark.accepted)throw new Error('Candidate is not the semantic model from the benchmark.');
+const weights=Float32Array.from(model.weights),bytes=Buffer.alloc(weights.length*4);weights.forEach((v,i)=>bytes.writeFloatLE(v,i*4));
+const weightsSha256=createHash('sha256').update(bytes).digest('hex');
+if(weightsSha256!==benchmark.candidateWeightsSha256||weightsSha256!==saved.candidateWeightsSha256)throw new Error('Candidate weights differ from the frozen benchmark.');
+const {datasetPartitions:_partitions,...recipe}=benchmark.recipe;
+const summary={dataset:benchmark.dataset,kind:input.kind,targetTask:'semantic',encoder:input.encoder,preprocessing:input.preprocessing,
+  trainingChoices:benchmark.splits.train.baseline.choices,validationChoices:benchmark.splits.validation.baseline.choices,testChoices:benchmark.splits.test.baseline.choices,
+  diversity:benchmark.diversity,accepted:benchmark.accepted,
+  baselineTestAgreement:benchmark.splits.test.baseline.chosenAt1/benchmark.splits.test.baseline.choices,
+  rawClipTestAgreement:benchmark.splits.test.rawClip.chosenAt1/benchmark.splits.test.rawClip.choices,
+  candidateTestAgreement:benchmark.splits.test.mlp.chosenAt1/benchmark.splits.test.mlp.choices,
+  baselineTestLoss:benchmark.splits.test.baseline.meanPairwiseLoss,candidateTestLoss:benchmark.splits.test.mlp.meanPairwiseLoss,
+  use:benchmark.accepted?'validated-semantic-head':'disabled; no rejected layers used for personal initialization',parameters:weights.length,
+  dataSha256,weightsSha256,recipe,
+  note:'Public-photo semantic correctness benchmark, independently visually reviewed before scoring. It does not measure any individual user’s taste.'};
 const {weights:_weights,...metadata}=model;
-const source=`// Generated by scripts/pretrain-image-personalizer.mjs from inspected real photographs.\n// This candidate ${result.accepted?'passed':'FAILED'} independent test acceptance; see docs/image-pretraining-report.json.\nimport { base64ToBytes } from '../utils/base64.js';\nexport const PRETRAINED_IMAGE_REPORT = ${JSON.stringify(summary)};\nconst metadata = ${JSON.stringify({...metadata,pretrained:true,genericValidation:summary})};\nconst encoded = '${bytes.toString('base64')}';\nfunction decode() { const bytes = base64ToBytes(encoded); const view = new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength); return { ...metadata, weights: Float32Array.from({ length: ${weights.length} }, (_,i) => view.getFloat32(i*4,true)) }; }\nexport function getPretrainedImageModel() { return PRETRAINED_IMAGE_REPORT.accepted ? decode() : null; }\nexport function getImagePersonalizerInitialization() { const model=decode(); if(!PRETRAINED_IMAGE_REPORT.accepted) model.weights.fill(0,${weights.length-17}); return model; }\n`;
-await writeFile('js/ml/pretrainedImagePersonalizer.js',source);
-await writeFile('docs/image-pretraining-report.json',JSON.stringify({...summary,testDecisions:result.after?.rows,baselineDecisions:result.before?.rows},null,2)+'\n');
-await mkdir('tests/fixtures/image-pretraining',{recursive:true});
-await writeFile('tests/fixtures/image-pretraining/embeddings.json',JSON.stringify({kind:input.kind,encoder:input.encoder,preprocessing:input.preprocessing,events:input.events})+'\n');
+const header=`// Generated from a frozen semantic benchmark; see docs/image-pretraining-v2-report.json.\nimport { base64ToBytes } from '../utils/base64.js';\nimport { createPreferencePersonalizer } from '../services/imagePersonalizer.js';\nexport const PRETRAINED_IMAGE_REPORT = ${JSON.stringify(summary)};\n`;
+const body=benchmark.accepted?`const metadata=${JSON.stringify({...metadata,genericValidation:summary})};\nconst encoded='${bytes.toString('base64')}';\nfunction decode(){const bytes=base64ToBytes(encoded),view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);return {...metadata,weights:Float32Array.from({length:${weights.length}},(_,i)=>view.getFloat32(i*4,true))};}\nexport function getPretrainedImageModel(){return decode();}\nexport function getImagePersonalizerInitialization(){return createPreferencePersonalizer(decode());}\n`:`// The rejected candidate is retained only in the offline experiment, not shipped.\nexport function getPretrainedImageModel(){return null;}\nexport function getImagePersonalizerInitialization(){return null;}\n`;
+await writeFile('js/ml/pretrainedImagePersonalizer.js',header+body);
+await writeFile('docs/image-pretraining-v2-summary.json',JSON.stringify(summary,null,2)+'\n');
 console.log(JSON.stringify(summary,null,2));

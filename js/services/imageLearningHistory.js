@@ -1,4 +1,4 @@
-import { CLIP_TAG } from '../ml/clipConfig.js';
+import { CLIP_TAG, LEGACY_CLIP_TAG } from '../ml/clipConfig.js';
 import { decodeFeatures, COMPARISON_RECORD_MODEL } from './imagePreferences.js';
 
 export const IMAGE_HISTORY_DB = 'keepvocab-image-history-v2';
@@ -10,11 +10,13 @@ const cleanUrl = value => { try { const u = new URL(value); return ['http:', 'ht
 export function normalizeImageEvent(input) {
   if (!input || typeof input.id !== 'string' || !input.id || input.id.length > 3000 || !iso(input.updatedAt) || ![0, 1].includes(input.label)) return null;
   try { decodeFeatures(input.features); if (input.kind === 'comparison') decodeFeatures(input.preferredFeatures); if (input.meaningFeatures) decodeFeatures(input.meaningFeatures); } catch { return null; }
-  if (input.encoder && input.encoder !== CLIP_TAG || input.model && ![CLIP_TAG, COMPARISON_RECORD_MODEL].includes(input.model) || input.kind && input.kind !== 'comparison') return null;
-  return { version: 2, id: input.id, key: String(input.key || input.id).slice(0, 3000), deviceId: String(input.deviceId || '').slice(0, 150),
+  const encoder = input.encoder || input.model?.replace(/:pairwise-v1$/, '') || LEGACY_CLIP_TAG;
+  if (input.model && input.model.replace(/:pairwise-v1$/, '') !== encoder) return null;
+  if (![CLIP_TAG, LEGACY_CLIP_TAG].includes(encoder) || input.model && ![CLIP_TAG, LEGACY_CLIP_TAG, COMPARISON_RECORD_MODEL, `${LEGACY_CLIP_TAG}:pairwise-v1`].includes(input.model) || input.kind && input.kind !== 'comparison') return null;
+  return { version: 2, task: input.task === 'semantic' ? 'semantic' : 'preference', id: input.id, key: String(input.key || input.id).slice(0, 3000), deviceId: String(input.deviceId || '').slice(0, 150),
     decisionId: String(input.decisionId || input.id).slice(0, 3000), meaningId: String(input.meaningId || '').slice(0, 1000), updatedAt: iso(input.updatedAt),
     label: input.label, features: input.features, ...(input.kind === 'comparison' ? { kind: 'comparison', preferredFeatures: input.preferredFeatures } : {}),
-    ...(input.meaningFeatures ? { meaningFeatures: input.meaningFeatures } : {}), encoder: CLIP_TAG,
+    ...(input.meaningFeatures ? { meaningFeatures: input.meaningFeatures } : {}), encoder,
     preprocessing: String(input.preprocessing || 'legacy-center-crop').slice(0, 100),
     context: { word: String(input.context?.word || '').slice(0, 160), definition: String(input.context?.definition || '').slice(0, 2000),
       scenes: (Array.isArray(input.context?.scenes) ? input.context.scenes : []).slice(0, 8).map(s => String(s).slice(0, 500)),

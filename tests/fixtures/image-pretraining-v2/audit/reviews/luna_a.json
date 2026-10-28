@@ -1,0 +1,2530 @@
+{
+  "reviewer": "Luna blind visual reviewer A",
+  "reviews": [
+    {
+      "id": "semantic-v2-pan-0",
+      "fits": [
+        "256916"
+      ],
+      "wrong": [
+        "181969",
+        "348045",
+        "475223",
+        "192904"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-pan-1",
+      "fits": [
+        "308430"
+      ],
+      "wrong": [
+        "114907",
+        "255165",
+        "218362",
+        "258541"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-pan-2",
+      "fits": [
+        "109916"
+      ],
+      "wrong": [
+        "227898",
+        "325483",
+        "511398",
+        "187513"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-pan-3",
+      "fits": [
+        "465585"
+      ],
+      "wrong": [
+        "469067",
+        "135410",
+        "233567",
+        "330554"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-white-0",
+      "fits": [],
+      "wrong": [
+        "327601",
+        "479126",
+        "365208"
+      ],
+      "uncertain": [
+        "101884",
+        "527750"
+      ],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-white-1",
+      "fits": [
+        "512194"
+      ],
+      "wrong": [
+        "217400",
+        "84270",
+        "155291",
+        "465179"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-white-2",
+      "fits": [],
+      "wrong": [
+        "54654",
+        "253835",
+        "144932",
+        "149406",
+        "289594"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-white-3",
+      "fits": [],
+      "wrong": [
+        "17029",
+        "338325",
+        "47828",
+        "19109",
+        "540928"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-surf-0",
+      "fits": [
+        "381360"
+      ],
+      "wrong": [
+        "376625",
+        "13004",
+        "250137",
+        "288391"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-surf-1",
+      "fits": [
+        "377113"
+      ],
+      "wrong": [
+        "540466",
+        "347693",
+        "21503"
+      ],
+      "uncertain": [
+        "383339"
+      ],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-surf-2",
+      "fits": [],
+      "wrong": [
+        "468505",
+        "347163",
+        "326174",
+        "292005",
+        "413552"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-surf-3",
+      "fits": [],
+      "wrong": [
+        "481413",
+        "529568",
+        "107851",
+        "225532"
+      ],
+      "uncertain": [
+        "404805"
+      ],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cook-0",
+      "fits": [],
+      "wrong": [
+        "236592",
+        "101762",
+        "148662",
+        "290293",
+        "465836"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cook-1",
+      "fits": [
+        "83531"
+      ],
+      "wrong": [
+        "474095",
+        "76416",
+        "68933",
+        "130599"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cook-2",
+      "fits": [
+        "66231"
+      ],
+      "wrong": [
+        "163746",
+        "458054",
+        "267670",
+        "224807"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cook-3",
+      "fits": [
+        "512929"
+      ],
+      "wrong": [
+        "440475",
+        "110042",
+        "424776",
+        "25386"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-bus-0",
+      "fits": [
+        "446206"
+      ],
+      "wrong": [
+        "340697",
+        "158660",
+        "60507",
+        "82715"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-bus-1",
+      "fits": [],
+      "wrong": [
+        "391375",
+        "262227",
+        "40083",
+        "224093",
+        "114884"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-bus-2",
+      "fits": [
+        "463730"
+      ],
+      "wrong": [
+        "570756",
+        "450075",
+        "182611",
+        "539143"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-bus-3",
+      "fits": [],
+      "wrong": [
+        "525286",
+        "347370",
+        "466339",
+        "231747",
+        "543043"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-curtain-0",
+      "fits": [
+        "357567"
+      ],
+      "wrong": [
+        "218439",
+        "147223",
+        "67315",
+        "118367"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-curtain-1",
+      "fits": [
+        "23023"
+      ],
+      "wrong": [
+        "172935",
+        "389812",
+        "456496",
+        "513041"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-curtain-2",
+      "fits": [
+        "252294"
+      ],
+      "wrong": [
+        "89880",
+        "492937",
+        "518326",
+        "345941"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-curtain-3",
+      "fits": [
+        "446574"
+      ],
+      "wrong": [
+        "479732",
+        "13177",
+        "535094",
+        "384513"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sleep-0",
+      "fits": [],
+      "wrong": [
+        "330818",
+        "302107",
+        "428867",
+        "104666"
+      ],
+      "uncertain": [
+        "394677"
+      ],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sleep-1",
+      "fits": [
+        "223747"
+      ],
+      "wrong": [
+        "286708",
+        "520264",
+        "323709",
+        "331075"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sleep-2",
+      "fits": [],
+      "wrong": [
+        "205776",
+        "126107",
+        "571008",
+        "312340",
+        "407403"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sleep-3",
+      "fits": [],
+      "wrong": [
+        "519208",
+        "425221",
+        "414034",
+        "307172"
+      ],
+      "uncertain": [
+        "35062"
+      ],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sign-0",
+      "fits": [],
+      "wrong": [
+        "186637",
+        "218091",
+        "253002",
+        "163314",
+        "328286"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sign-1",
+      "fits": [
+        "322864"
+      ],
+      "wrong": [
+        "58655",
+        "281754",
+        "138492",
+        "226662"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sign-2",
+      "fits": [
+        "214224"
+      ],
+      "wrong": [
+        "104424",
+        "571718",
+        "414261",
+        "246308"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sign-3",
+      "fits": [
+        "210388"
+      ],
+      "wrong": [
+        "241297",
+        "231831",
+        "314264",
+        "329219"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cooking-pot-0",
+      "fits": [
+        "54654"
+      ],
+      "wrong": [
+        "298904",
+        "388056",
+        "532901",
+        "21903"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cooking-pot-1",
+      "fits": [],
+      "wrong": [
+        "147518",
+        "361103",
+        "322429",
+        "445999",
+        "436315"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cooking-pot-2",
+      "fits": [
+        "156278"
+      ],
+      "wrong": [
+        "484351",
+        "416256",
+        "356125",
+        "456865"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cooking-pot-3",
+      "fits": [
+        "465129"
+      ],
+      "wrong": [
+        "568290",
+        "71451",
+        "491464",
+        "210520"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-refrigerator-0",
+      "fits": [
+        "170116"
+      ],
+      "wrong": [
+        "498919",
+        "157418",
+        "151962",
+        "221872"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-refrigerator-1",
+      "fits": [
+        "7574"
+      ],
+      "wrong": [
+        "61471",
+        "498857",
+        "482585",
+        "548339"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-refrigerator-2",
+      "fits": [
+        "462629"
+      ],
+      "wrong": [
+        "559348",
+        "289702",
+        "213033",
+        "378116"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-refrigerator-3",
+      "fits": [
+        "425226",
+        "306437"
+      ],
+      "wrong": [
+        "376307",
+        "319696",
+        "124442"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-table-0",
+      "fits": [
+        "396526"
+      ],
+      "wrong": [
+        "16228",
+        "331352",
+        "438862",
+        "472623"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-table-1",
+      "fits": [
+        "150638",
+        "172595"
+      ],
+      "wrong": [
+        "36539",
+        "192607",
+        "6818"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-table-2",
+      "fits": [
+        "224807"
+      ],
+      "wrong": [
+        "563281",
+        "127135",
+        "379533",
+        "551660"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-table-3",
+      "fits": [
+        "206579",
+        "248314",
+        "307172"
+      ],
+      "wrong": [
+        "385997",
+        "255749"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-kick-0",
+      "fits": [
+        "438862"
+      ],
+      "wrong": [
+        "802",
+        "314709",
+        "12062",
+        "434548"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-kick-1",
+      "fits": [
+        "566282"
+      ],
+      "wrong": [
+        "116825",
+        "140286",
+        "283520",
+        "167898"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-kick-2",
+      "fits": [
+        "365095"
+      ],
+      "wrong": [
+        "515579",
+        "295420",
+        "223188",
+        "485802"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-kick-3",
+      "fits": [
+        "214539"
+      ],
+      "wrong": [
+        "572408",
+        "263966",
+        "456143",
+        "37988"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-stairs-0",
+      "fits": [
+        "249180"
+      ],
+      "wrong": [
+        "458223",
+        "397303",
+        "391144",
+        "409358"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-stairs-1",
+      "fits": [],
+      "wrong": [
+        "269314",
+        "187271",
+        "95843",
+        "575081",
+        "505573"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-stairs-2",
+      "fits": [
+        "464689"
+      ],
+      "wrong": [
+        "504580",
+        "220584",
+        "537802",
+        "551304"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-stairs-3",
+      "fits": [
+        "68628"
+      ],
+      "wrong": [
+        "190923",
+        "37689",
+        "464358",
+        "215778"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-towel-0",
+      "fits": [],
+      "wrong": [
+        "501368",
+        "229553",
+        "344268",
+        "140987",
+        "91921"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-towel-1",
+      "fits": [
+        "71451"
+      ],
+      "wrong": [
+        "214200",
+        "12670",
+        "377497",
+        "270705"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-towel-2",
+      "fits": [],
+      "wrong": [
+        "356427",
+        "174123",
+        "298697",
+        "472375",
+        "53505"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-towel-3",
+      "fits": [],
+      "wrong": [
+        "336587",
+        "279769",
+        "363207",
+        "578545",
+        "564127"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-helmet-0",
+      "fits": [
+        "210299",
+        "94944"
+      ],
+      "wrong": [
+        "375278",
+        "395180",
+        "157847"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-helmet-1",
+      "fits": [
+        "68093"
+      ],
+      "wrong": [
+        "69106",
+        "227686",
+        "512330",
+        "398810"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-helmet-2",
+      "fits": [
+        "467511"
+      ],
+      "wrong": [
+        "255536",
+        "341921",
+        "550426",
+        "411817"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-helmet-3",
+      "fits": [
+        "472375"
+      ],
+      "wrong": [
+        "463690",
+        "347335",
+        "316404",
+        "135902"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-carriage-0",
+      "fits": [
+        "508639"
+      ],
+      "wrong": [
+        "97585",
+        "537506",
+        "520077",
+        "517523"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-carriage-1",
+      "fits": [
+        "261116"
+      ],
+      "wrong": [
+        "519611",
+        "367680",
+        "552902",
+        "480275"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-carriage-2",
+      "fits": [],
+      "wrong": [
+        "155571",
+        "463522",
+        "374727",
+        "327769"
+      ],
+      "uncertain": [
+        "45090"
+      ],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-carriage-3",
+      "fits": [
+        "400815"
+      ],
+      "wrong": [
+        "15746",
+        "47571",
+        "12576",
+        "143998"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-blue-0",
+      "fits": [
+        "32735",
+        "545958"
+      ],
+      "wrong": [
+        "189698",
+        "517056",
+        "39956"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-blue-1",
+      "fits": [
+        "357816",
+        "21465"
+      ],
+      "wrong": [
+        "137950",
+        "81061",
+        "492077"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-blue-2",
+      "fits": [
+        "382743"
+      ],
+      "wrong": [
+        "124277",
+        "357742",
+        "294831"
+      ],
+      "uncertain": [
+        "197796"
+      ],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-blue-3",
+      "fits": [],
+      "wrong": [
+        "75393",
+        "488664",
+        "59635",
+        "297562",
+        "329447"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-brush-teeth-0",
+      "fits": [
+        "465179"
+      ],
+      "wrong": [
+        "475678",
+        "230983",
+        "1993",
+        "553731"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-brush-teeth-1",
+      "fits": [],
+      "wrong": [
+        "334483",
+        "218439",
+        "341094",
+        "538364",
+        "345385"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-brush-teeth-2",
+      "fits": [
+        "324614"
+      ],
+      "wrong": [
+        "526728",
+        "189451",
+        "352584",
+        "92839"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-brush-teeth-3",
+      "fits": [
+        "175251"
+      ],
+      "wrong": [
+        "102707",
+        "275392",
+        "426166",
+        "496571"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-bridge-0",
+      "fits": [
+        "344816"
+      ],
+      "wrong": [
+        "486112",
+        "44279",
+        "443969",
+        "63552"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-bridge-1",
+      "fits": [
+        "528578"
+      ],
+      "wrong": [
+        "109976",
+        "376856",
+        "428454",
+        "525155"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-bridge-2",
+      "fits": [],
+      "wrong": [
+        "522156",
+        "534270",
+        "121242",
+        "343149",
+        "101780"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-bridge-3",
+      "fits": [
+        "47828"
+      ],
+      "wrong": [
+        "451435",
+        "135561",
+        "238866",
+        "170278"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sink-0",
+      "fits": [
+        "327769"
+      ],
+      "wrong": [
+        "337055",
+        "336232",
+        "548267",
+        "551820"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sink-1",
+      "fits": [],
+      "wrong": [
+        "148707",
+        "313562",
+        "572620",
+        "181542"
+      ],
+      "uncertain": [
+        "135561"
+      ],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sink-2",
+      "fits": [
+        "104572"
+      ],
+      "wrong": [
+        "161879",
+        "377882",
+        "136772",
+        "336628"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-sink-3",
+      "fits": [],
+      "wrong": [
+        "196843",
+        "572517",
+        "331352",
+        "442993",
+        "165713"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cart-0",
+      "fits": [
+        "29187"
+      ],
+      "wrong": [
+        "255824",
+        "402473",
+        "521719",
+        "500826"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cart-1",
+      "fits": [
+        "289938"
+      ],
+      "wrong": [
+        "74733",
+        "286994",
+        "197528",
+        "336309"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cart-2",
+      "fits": [
+        "480275"
+      ],
+      "wrong": [
+        "367818",
+        "388846",
+        "580410",
+        "423229"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cart-3",
+      "fits": [
+        "500257"
+      ],
+      "wrong": [
+        "311789",
+        "302536",
+        "450439",
+        "360097"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-beer-0",
+      "fits": [],
+      "wrong": [
+        "145781",
+        "515266",
+        "128675",
+        "75456",
+        "491497"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-beer-1",
+      "fits": [
+        "331317",
+        "74733"
+      ],
+      "wrong": [
+        "567886",
+        "289343",
+        "223959"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-beer-2",
+      "fits": [
+        "474095"
+      ],
+      "wrong": [
+        "535858",
+        "413247",
+        "208208",
+        "23126"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-beer-3",
+      "fits": [],
+      "wrong": [
+        "304817",
+        "268378",
+        "169996",
+        "576654"
+      ],
+      "uncertain": [
+        "416104"
+      ],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-suit-0",
+      "fits": [
+        "9483"
+      ],
+      "wrong": [
+        "65736",
+        "481159",
+        "183437",
+        "458755"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-suit-1",
+      "fits": [
+        "69213"
+      ],
+      "wrong": [
+        "130586",
+        "326542",
+        "371472",
+        "195842"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-suit-2",
+      "fits": [],
+      "wrong": [
+        "126216",
+        "183965",
+        "382088",
+        "484351",
+        "355257"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-suit-3",
+      "fits": [],
+      "wrong": [
+        "51738",
+        "451308",
+        "445722",
+        "110282",
+        "358923"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-drink-0",
+      "fits": [
+        "146155"
+      ],
+      "wrong": [
+        "463849",
+        "438876",
+        "284106",
+        "321214"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-drink-1",
+      "fits": [
+        "235057"
+      ],
+      "wrong": [
+        "45728",
+        "492110",
+        "377239"
+      ],
+      "uncertain": [
+        "118594"
+      ],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-drink-2",
+      "fits": [],
+      "wrong": [
+        "102820",
+        "277689",
+        "215723",
+        "431140",
+        "35279"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-drink-3",
+      "fits": [
+        "100238",
+        "267169"
+      ],
+      "wrong": [
+        "186632",
+        "176847",
+        "550084"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cracker-0",
+      "fits": [],
+      "wrong": [
+        "21503",
+        "164602",
+        "473219",
+        "471756",
+        "199681"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cracker-1",
+      "fits": [],
+      "wrong": [
+        "13348",
+        "109827",
+        "342295",
+        "520301",
+        "522156"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cracker-2",
+      "fits": [
+        "314182"
+      ],
+      "wrong": [
+        "534664",
+        "117645",
+        "76417",
+        "25057"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cracker-3",
+      "fits": [],
+      "wrong": [
+        "185802",
+        "222118",
+        "267191",
+        "236412"
+      ],
+      "uncertain": [
+        "276285"
+      ],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-open-0",
+      "fits": [
+        "407614",
+        "512330"
+      ],
+      "wrong": [
+        "140420",
+        "540414",
+        "51938"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-open-1",
+      "fits": [
+        "565045"
+      ],
+      "wrong": [
+        "248112",
+        "2592",
+        "180296",
+        "425227"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-open-2",
+      "fits": [
+        "55002"
+      ],
+      "wrong": [
+        "18491",
+        "480985",
+        "546829",
+        "421757"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-open-3",
+      "fits": [],
+      "wrong": [
+        "226171",
+        "57725",
+        "263299",
+        "133244",
+        "413247"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-truck-0",
+      "fits": [
+        "467848"
+      ],
+      "wrong": [
+        "508482",
+        "79408",
+        "106389",
+        "438304"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-truck-1",
+      "fits": [
+        "153011"
+      ],
+      "wrong": [
+        "252332",
+        "24567",
+        "103548",
+        "140929"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-truck-2",
+      "fits": [
+        "295420"
+      ],
+      "wrong": [
+        "376900",
+        "205333",
+        "36660",
+        "404678"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-truck-3",
+      "fits": [],
+      "wrong": [
+        "577932",
+        "128658",
+        "64523",
+        "400815",
+        "528399"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-door-0",
+      "fits": [
+        "466339"
+      ],
+      "wrong": [
+        "23034",
+        "94871",
+        "500211",
+        "139871"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-door-1",
+      "fits": [
+        "559842"
+      ],
+      "wrong": [
+        "308793",
+        "508602",
+        "508482",
+        "356248"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-door-2",
+      "fits": [
+        "149406"
+      ],
+      "wrong": [
+        "459500",
+        "152465",
+        "470773",
+        "248616"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-door-3",
+      "fits": [
+        "187513",
+        "235399"
+      ],
+      "wrong": [
+        "287667",
+        "479099",
+        "160772"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-boat-0",
+      "fits": [
+        "396518"
+      ],
+      "wrong": [
+        "200421",
+        "377670",
+        "61333",
+        "335954"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-boat-1",
+      "fits": [
+        "78565"
+      ],
+      "wrong": [
+        "184611",
+        "568710",
+        "58111",
+        "348012"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-boat-2",
+      "fits": [],
+      "wrong": [
+        "398905",
+        "238039",
+        "438226",
+        "323263",
+        "445722"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-boat-3",
+      "fits": [
+        "328286"
+      ],
+      "wrong": [
+        "297396",
+        "406570",
+        "430073",
+        "89761"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-box-0",
+      "fits": [
+        "351096"
+      ],
+      "wrong": [
+        "213171",
+        "378453",
+        "343496",
+        "494427"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-box-1",
+      "fits": [],
+      "wrong": [
+        "401862",
+        "11149",
+        "253433",
+        "579307",
+        "322211"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-box-2",
+      "fits": [],
+      "wrong": [
+        "496722",
+        "519338",
+        "174371",
+        "108026",
+        "541634"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-box-3",
+      "fits": [],
+      "wrong": [
+        "573391",
+        "346707",
+        "320743",
+        "453001",
+        "479732"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-snowboard-action-0",
+      "fits": [],
+      "wrong": [
+        "6213",
+        "217285",
+        "184400",
+        "2532",
+        "343937"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-snowboard-action-1",
+      "fits": [
+        "37689"
+      ],
+      "wrong": [
+        "206831",
+        "396863",
+        "273715",
+        "130465"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-snowboard-action-2",
+      "fits": [
+        "364884"
+      ],
+      "wrong": [
+        "349678",
+        "395903",
+        "227491",
+        "572956"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-snowboard-action-3",
+      "fits": [],
+      "wrong": [
+        "294163",
+        "94944",
+        "384527",
+        "275058",
+        "466602"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-vase-0",
+      "fits": [
+        "550426"
+      ],
+      "wrong": [
+        "12639",
+        "268000",
+        "206271",
+        "375493"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-vase-1",
+      "fits": [
+        "97585"
+      ],
+      "wrong": [
+        "581781",
+        "203546",
+        "200152",
+        "300233"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-vase-2",
+      "fits": [],
+      "wrong": [
+        "226592",
+        "480021",
+        "327601",
+        "47740",
+        "174004"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-vase-3",
+      "fits": [],
+      "wrong": [
+        "506004",
+        "348488",
+        "545594",
+        "308328",
+        "413404"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cake-0",
+      "fits": [],
+      "wrong": [
+        "201148",
+        "261116",
+        "75612",
+        "5503",
+        "83540"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cake-1",
+      "fits": [
+        "363207"
+      ],
+      "wrong": [
+        "52591",
+        "262587",
+        "236914",
+        "180011"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cake-2",
+      "fits": [
+        "493334"
+      ],
+      "wrong": [
+        "227482",
+        "160864",
+        "28452",
+        "427649"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cake-3",
+      "fits": [
+        "125952"
+      ],
+      "wrong": [
+        "32817",
+        "128476",
+        "491470",
+        "80057"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-egg-0",
+      "fits": [],
+      "wrong": [
+        "447465",
+        "495448",
+        "256518",
+        "275791",
+        "310980"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-egg-1",
+      "fits": [],
+      "wrong": [
+        "429761",
+        "460967",
+        "28452",
+        "356505",
+        "112798"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-egg-2",
+      "fits": [
+        "221872"
+      ],
+      "wrong": [
+        "6460",
+        "127987",
+        "26926",
+        "10977"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-egg-3",
+      "fits": [
+        "357903"
+      ],
+      "wrong": [
+        "370208",
+        "370818",
+        "157390",
+        "266892"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-rock-0",
+      "fits": [
+        "308753"
+      ],
+      "wrong": [
+        "464786",
+        "229858",
+        "476215",
+        "290163"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-rock-1",
+      "fits": [],
+      "wrong": [
+        "251572",
+        "33707",
+        "206218",
+        "22755",
+        "555597"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-rock-2",
+      "fits": [
+        "519611"
+      ],
+      "wrong": [
+        "299609",
+        "394510",
+        "255483",
+        "489014"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-rock-3",
+      "fits": [],
+      "wrong": [
+        "108440",
+        "150417",
+        "578500",
+        "298904",
+        "170613"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-coffee-0",
+      "fits": [
+        "265518"
+      ],
+      "wrong": [
+        "292997",
+        "383838",
+        "123321",
+        "153343"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-coffee-1",
+      "fits": [
+        "236721"
+      ],
+      "wrong": [
+        "492110",
+        "239318",
+        "578967",
+        "247838"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-coffee-2",
+      "fits": [
+        "248111"
+      ],
+      "wrong": [
+        "2592",
+        "510095",
+        "390555",
+        "274272"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-coffee-3",
+      "fits": [
+        "572388"
+      ],
+      "wrong": [
+        "271402",
+        "486479",
+        "192904",
+        "388927"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cut-0",
+      "fits": [],
+      "wrong": [
+        "96427",
+        "297084",
+        "517056",
+        "2006",
+        "204871"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cut-1",
+      "fits": [],
+      "wrong": [
+        "562818",
+        "560178",
+        "504000",
+        "285349",
+        "551660"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cut-2",
+      "fits": [],
+      "wrong": [
+        "255483",
+        "395575",
+        "180135",
+        "290843",
+        "408830"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-cut-3",
+      "fits": [],
+      "wrong": [
+        "354307",
+        "516173",
+        "154213",
+        "404484",
+        "42528"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-skirt-0",
+      "fits": [
+        "375493"
+      ],
+      "wrong": [
+        "328117",
+        "341828",
+        "182417",
+        "181816"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-skirt-1",
+      "fits": [
+        "578489"
+      ],
+      "wrong": [
+        "134096",
+        "42102",
+        "458790",
+        "112110"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-skirt-2",
+      "fits": [
+        "401446"
+      ],
+      "wrong": [
+        "254368",
+        "509008",
+        "298396",
+        "444275"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-skirt-3",
+      "fits": [],
+      "wrong": [
+        "65736",
+        "94751",
+        "521282",
+        "426203",
+        "60347"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-plate-0",
+      "fits": [
+        "297084"
+      ],
+      "wrong": [
+        "248284",
+        "382734",
+        "443844",
+        "505789"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-plate-1",
+      "fits": [
+        "434230"
+      ],
+      "wrong": [
+        "97278",
+        "389566",
+        "163257",
+        "144798"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-plate-2",
+      "fits": [
+        "537506"
+      ],
+      "wrong": [
+        "565962",
+        "485237",
+        "312586",
+        "350679"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-plate-3",
+      "fits": [
+        "468925"
+      ],
+      "wrong": [
+        "79651",
+        "489339",
+        "210273",
+        "437392"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-mountain-0",
+      "fits": [
+        "326542"
+      ],
+      "wrong": [
+        "281179",
+        "371529",
+        "574297",
+        "429598"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-mountain-1",
+      "fits": [
+        "548267"
+      ],
+      "wrong": [
+        "228214",
+        "397133",
+        "294855",
+        "463199"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-mountain-2",
+      "fits": [
+        "133233"
+      ],
+      "wrong": [
+        "31620",
+        "475484",
+        "233139",
+        "28285"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-mountain-3",
+      "fits": [
+        "208208"
+      ],
+      "wrong": [
+        "25560",
+        "486573",
+        "363666",
+        "186345"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-knife-0",
+      "fits": [
+        "15079"
+      ],
+      "wrong": [
+        "417911",
+        "447200",
+        "336265",
+        "442306"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-knife-1",
+      "fits": [
+        "451571"
+      ],
+      "wrong": [
+        "116825",
+        "310862",
+        "132796",
+        "335450"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-knife-2",
+      "fits": [
+        "143998"
+      ],
+      "wrong": [
+        "245915",
+        "384651",
+        "537153",
+        "345027"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-knife-3",
+      "fits": [
+        "189451"
+      ],
+      "wrong": [
+        "554595",
+        "294783",
+        "313588",
+        "76261"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-teddy-bear-0",
+      "fits": [],
+      "wrong": [
+        "182441",
+        "162858",
+        "557916",
+        "63047",
+        "367195"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-teddy-bear-1",
+      "fits": [
+        "428867"
+      ],
+      "wrong": [
+        "1490",
+        "205324",
+        "186980",
+        "300913"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-teddy-bear-2",
+      "fits": [],
+      "wrong": [
+        "245576",
+        "256407",
+        "326128",
+        "567886",
+        "19042"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-teddy-bear-3",
+      "fits": [],
+      "wrong": [
+        "348481",
+        "167486",
+        "12670",
+        "31735",
+        "442463"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-shelf-0",
+      "fits": [],
+      "wrong": [
+        "534664",
+        "101787",
+        "567011",
+        "410712",
+        "320632"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-shelf-1",
+      "fits": [],
+      "wrong": [
+        "527220",
+        "474028",
+        "54967",
+        "322574",
+        "529568"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-shelf-2",
+      "fits": [],
+      "wrong": [
+        "308545",
+        "328238",
+        "419312",
+        "580410",
+        "415536"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-shelf-3",
+      "fits": [],
+      "wrong": [
+        "177357",
+        "260105",
+        "556000",
+        "404601",
+        "25560"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-window-0",
+      "fits": [
+        "474164"
+      ],
+      "wrong": [
+        "151962",
+        "166664",
+        "378873",
+        "125806"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-window-1",
+      "fits": [
+        "331317",
+        "261535"
+      ],
+      "wrong": [
+        "97924",
+        "485424",
+        "139099"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-window-2",
+      "fits": [
+        "520264"
+      ],
+      "wrong": [
+        "200839",
+        "443426",
+        "134034",
+        "554838"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-window-3",
+      "fits": [
+        "31735"
+      ],
+      "wrong": [
+        "42889",
+        "224675",
+        "425906",
+        "62355"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-ocean-0",
+      "fits": [],
+      "wrong": [
+        "427500",
+        "496597",
+        "577584",
+        "321790",
+        "247806"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-ocean-1",
+      "fits": [],
+      "wrong": [
+        "155451",
+        "186345",
+        "541773",
+        "144333",
+        "134689"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-ocean-2",
+      "fits": [],
+      "wrong": [
+        "408112",
+        "94751",
+        "216296",
+        "507667",
+        "142620"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-ocean-3",
+      "fits": [],
+      "wrong": [
+        "355610",
+        "395903",
+        "301376",
+        "480212",
+        "126137"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-wave-0",
+      "fits": [
+        "417911"
+      ],
+      "wrong": [
+        "154358",
+        "545100",
+        "166642",
+        "427655"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-wave-1",
+      "fits": [
+        "160772"
+      ],
+      "wrong": [
+        "185472",
+        "166391",
+        "326248",
+        "212559"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-wave-2",
+      "fits": [
+        "59635"
+      ],
+      "wrong": [
+        "526197",
+        "576031",
+        "113354",
+        "189226"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    },
+    {
+      "id": "semantic-v2-wave-3",
+      "fits": [
+        "535858"
+      ],
+      "wrong": [
+        "180188",
+        "474021",
+        "500464",
+        "459437"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual reviewer A"
+    }
+  ]
+}

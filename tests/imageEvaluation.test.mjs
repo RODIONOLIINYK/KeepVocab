@@ -22,11 +22,14 @@ test('the real-photo pretraining fixture keeps files, hashes and meanings out of
   const sets=Object.fromEntries(['train','validation','test'].map(name=>[name,new Set(fixture.cases.filter(c=>c.split===name).flatMap(c=>c.candidates.map(p=>p.sha256)))]));
   for(const [a,b]of[['train','validation'],['train','test'],['validation','test']])assert.equal([...sets[a]].some(h=>sets[b].has(h)),false);
   const encoded=JSON.parse(await readFile(new URL('./fixtures/image-pretraining/embeddings.json',import.meta.url),'utf8'));
-  const split=splitImageDecisions(encoded.events);assert.equal(split.train.length,54);assert.equal(split.validation.length,18);assert.equal(split.test.length,18);
+  const split=splitImageDecisions(encoded.events);assert.equal(split.decisions,0,'Historical q8-vision features are archived but excluded from the corrected encoder training.');
 });
-test('the poorer generic head stays disabled while its trained hidden layers can initialize user learning without changing CLIP',async()=>{
-  assert.equal(PRETRAINED_IMAGE_REPORT.accepted,false);assert.equal(getPretrainedImageModel(),null);
-  const seed=getImagePersonalizerInitialization();assert.ok(seed.pretrained);assert.ok([...seed.weights.slice(0,-17)].some(w=>w!==0));assert.ok([...seed.weights.slice(-17)].every(w=>w===0));
+test('a bundled semantic head must pass its benchmark and rejected layers never initialize personal learning',async()=>{
+  assert.equal(PRETRAINED_IMAGE_REPORT.targetTask,'semantic');
+  const semantic=getPretrainedImageModel(),seed=getImagePersonalizerInitialization();
+  if(!PRETRAINED_IMAGE_REPORT.accepted){assert.equal(semantic,null);assert.equal(seed,null);return;}
+  assert.equal(semantic.role,'semantic');assert.equal(seed.role,'preference');assert.equal(seed.semanticBase.genericValidation.accepted,true);
+  assert.deepEqual(seed.semanticBase.weights,semantic.weights);assert.ok([...seed.weights.slice(-17)].every(w=>w===0));
   const encoded=JSON.parse(await readFile(new URL('./fixtures/image-pretraining/embeddings.json',import.meta.url),'utf8')),row=encoded.events[0];
-  assert.equal(personalizerScore(seed,row.features,row.meaningFeatures),personalizerScore(null,row.features,row.meaningFeatures));
+  assert.equal(personalizerScore(seed,row.features,row.meaningFeatures),personalizerScore(semantic,row.features,row.meaningFeatures));
 });

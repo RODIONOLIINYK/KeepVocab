@@ -184,7 +184,7 @@ export function rankEmbeddedImages(items, model = null) {
     const features = preferenceFeatures(item.vector, item.semantic);
     const neural = validPersonalizer(model) && item.meaningFeatures;
     const adjustment = neural ? personalizerScore(model, encodeFullFeatures(features), item.meaningFeatures) - personalizerScore(null, encodeFullFeatures(features), item.meaningFeatures) : 0;
-    const probability = neural ? 0.5 + adjustment / .16 : preferenceProbability(model, features);
+    const probability = neural ? Math.max(0, Math.min(1, 0.5 + adjustment / .16)) : preferenceProbability(model, features);
     // Early feedback should have little influence. A visual preference must not
     // positively reward an image that matches another supplied sense better.
     const strength = 0.12 * Math.min(1, (model?.trainedLabels || 0) / 64);
@@ -251,10 +251,10 @@ export function recordImagePreference(word, action, image, { preferredImage, dec
       const existingMl = candidate.ml?.model === CLIP_TAG && candidate.ml.sense === fingerprint(word) ? candidate.ml : null;
       if (existingMl?.preprocessing === IMAGE_PREPROCESSING && existingMl.meaningFeatures) return existingMl;
       const previous = await driveSync.imageHistory.latest(keys[0]);
-      if (previous?.meaningFeatures && previous.preprocessing === IMAGE_PREPROCESSING) return { ...previous, model: CLIP_TAG };
+      if (previous?.encoder === CLIP_TAG && previous.meaningFeatures && previous.preprocessing === IMAGE_PREPROCESSING) return { ...previous, model: CLIP_TAG };
       candidate = (await rankImagesLocally(word, [photo]))[0];
       if (candidate?.ml?.model === CLIP_TAG && candidate.ml.sense === fingerprint(word)) return candidate.ml;
-      return previous?.features ? previous : existingMl;
+      return previous?.encoder === CLIP_TAG && previous.features ? previous : existingMl;
     };
     const ml = await featuresFor(image, ids);
     try { decodeFeatures(ml?.features); } catch { return { recorded: false, reason: 'Image pixels were unavailable; choice was not fabricated.' }; }
@@ -271,7 +271,7 @@ export function recordImagePreference(word, action, image, { preferredImage, dec
     const model = await training().current();
     const meaningId = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fingerprint(word)))), b => b.toString(16).padStart(2, '0')).join('');
     const updatedAt = new Date(Math.max(Date.now(), Date.parse(previous?.updatedAt || '') + 1 || 0, Date.parse(driveSync.imageHistory.resetAt || '') + 1 || 0)).toISOString();
-    const record = { id: crypto.randomUUID(), key, decisionId: decisionId || crypto.randomUUID(), meaningId, updatedAt, label,
+    const record = { task: 'preference', id: crypto.randomUUID(), key, decisionId: decisionId || crypto.randomUUID(), meaningId, updatedAt, label,
       features: ml.features, ...(preferred ? { kind: 'comparison', preferredFeatures: preferred.features } : {}),
       encoder: CLIP_TAG, preprocessing: ml.preprocessing || 'legacy-center-crop', ...(ml.meaningFeatures ? { meaningFeatures: ml.meaningFeatures } : {}),
       context: { word: word.word, definition: word.sourceDefinition || word.definition, scenes: ml.scenes || word.imageScenes?.scenes || [],

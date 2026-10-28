@@ -1,0 +1,1299 @@
+{
+  "reviewer": "Luna blind visual extension",
+  "reviews": [
+    {
+      "id": "semantic-v2-extra-french-fries-0",
+      "fits": [
+        "322574"
+      ],
+      "wrong": [
+        "360137",
+        "201426",
+        "359540",
+        "78748"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-french-fries-1",
+      "fits": [
+        "400082"
+      ],
+      "wrong": [
+        "284743",
+        "390301",
+        "234779",
+        "213445"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-french-fries-2",
+      "fits": [
+        "511453"
+      ],
+      "wrong": [
+        "439426",
+        "477227",
+        "10583",
+        "232244"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-noodle-0",
+      "fits": [
+        "45728"
+      ],
+      "wrong": [
+        "469652",
+        "290179",
+        "192191",
+        "140840"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-noodle-1",
+      "fits": [
+        "104612"
+      ],
+      "wrong": [
+        "148957",
+        "452084",
+        "117492",
+        "65485"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-noodle-2",
+      "fits": [
+        "91654"
+      ],
+      "wrong": [
+        "547519",
+        "221693",
+        "365098",
+        "245173"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-noodle-3",
+      "fits": [
+        "99053"
+      ],
+      "wrong": [
+        "570782",
+        "158227",
+        "120584",
+        "125405"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-juice-0",
+      "fits": [],
+      "wrong": [
+        "249129",
+        "155145",
+        "251119",
+        "492362",
+        "456662"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-juice-1",
+      "fits": [
+        "463283"
+      ],
+      "wrong": [
+        "356612",
+        "475732",
+        "534827",
+        "245651"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-juice-2",
+      "fits": [
+        "462576"
+      ],
+      "wrong": [
+        "317433",
+        "439854",
+        "395343",
+        "369310"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-juice-3",
+      "fits": [
+        "318114"
+      ],
+      "wrong": [
+        "266206",
+        "459954",
+        "79034",
+        "122046"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-hamburger-0",
+      "fits": [
+        "297427"
+      ],
+      "wrong": [
+        "291619",
+        "91406",
+        "334371",
+        "473121"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-hamburger-1",
+      "fits": [
+        "120777"
+      ],
+      "wrong": [
+        "117197",
+        "113051",
+        "349837",
+        "300276"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-hamburger-2",
+      "fits": [
+        "218249"
+      ],
+      "wrong": [
+        "295797",
+        "412362",
+        "152120",
+        "90003"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-hamburger-3",
+      "fits": [
+        "567825"
+      ],
+      "wrong": [
+        "393093",
+        "114049",
+        "491216"
+      ],
+      "uncertain": [
+        "311303"
+      ],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-milk-0",
+      "fits": [
+        "532058"
+      ],
+      "wrong": [
+        "31050",
+        "329455",
+        "210502",
+        "349302"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-milk-1",
+      "fits": [],
+      "wrong": [
+        "564091",
+        "315187",
+        "491008",
+        "495732",
+        "526706"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-milk-2",
+      "fits": [],
+      "wrong": [
+        "352582",
+        "500423",
+        "10995",
+        "302452",
+        "268729"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-milk-3",
+      "fits": [
+        "376365"
+      ],
+      "wrong": [
+        "91500",
+        "437331",
+        "97337",
+        "273232"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-bread-0",
+      "fits": [],
+      "wrong": [
+        "7108",
+        "391722",
+        "93353",
+        "51598",
+        "279541"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-bread-1",
+      "fits": [
+        "322959"
+      ],
+      "wrong": [
+        "577959",
+        "6894",
+        "538067",
+        "320696"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-bread-2",
+      "fits": [
+        "138856"
+      ],
+      "wrong": [
+        "46252",
+        "528977",
+        "167159",
+        "420840"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-bread-3",
+      "fits": [
+        "426795"
+      ],
+      "wrong": [
+        "99114",
+        "568439",
+        "323496",
+        "502910"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-salad-0",
+      "fits": [
+        "248980"
+      ],
+      "wrong": [
+        "153797",
+        "270402",
+        "515025",
+        "183709"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-salad-1",
+      "fits": [
+        "255912"
+      ],
+      "wrong": [
+        "201025",
+        "529122",
+        "570834",
+        "282298"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-salad-2",
+      "fits": [
+        "562197"
+      ],
+      "wrong": [
+        "136915",
+        "240767",
+        "346905",
+        "192871"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-salad-3",
+      "fits": [],
+      "wrong": [
+        "298738",
+        "571943",
+        "415990",
+        "267933"
+      ],
+      "uncertain": [
+        "189752"
+      ],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-orange-fruit-0",
+      "fits": [
+        "128598"
+      ],
+      "wrong": [
+        "52017",
+        "368038",
+        "523033",
+        "115245"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-orange-fruit-1",
+      "fits": [
+        "119452"
+      ],
+      "wrong": [
+        "252716",
+        "488592",
+        "281414",
+        "460682"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-orange-fruit-2",
+      "fits": [
+        "351609"
+      ],
+      "wrong": [
+        "372307",
+        "140640",
+        "83113",
+        "35770"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-orange-fruit-3",
+      "fits": [
+        "191761"
+      ],
+      "wrong": [
+        "509451",
+        "57238",
+        "392481",
+        "559160"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-carrot-0",
+      "fits": [
+        "434297"
+      ],
+      "wrong": [
+        "424642",
+        "236730",
+        "32610",
+        "529148"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-carrot-1",
+      "fits": [
+        "424721"
+      ],
+      "wrong": [
+        "439525",
+        "2473",
+        "50145",
+        "79229"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-carrot-2",
+      "fits": [],
+      "wrong": [
+        "208901",
+        "552842",
+        "227044",
+        "249025"
+      ],
+      "uncertain": [
+        "118367"
+      ],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-carrot-3",
+      "fits": [
+        "293044",
+        "368212"
+      ],
+      "wrong": [
+        "90208",
+        "99242",
+        "233771"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-meat-0",
+      "fits": [
+        "104669"
+      ],
+      "wrong": [
+        "82807",
+        "440336",
+        "239843",
+        "276707"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-meat-1",
+      "fits": [
+        "153632"
+      ],
+      "wrong": [
+        "511321",
+        "314251",
+        "48564",
+        "200162"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-meat-2",
+      "fits": [
+        "561465"
+      ],
+      "wrong": [
+        "53529",
+        "350405",
+        "368940",
+        "67896"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-meat-3",
+      "fits": [
+        "17959"
+      ],
+      "wrong": [
+        "494634",
+        "108864",
+        "48924",
+        "203095"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-hot-dog-0",
+      "fits": [
+        "444879"
+      ],
+      "wrong": [
+        "194875",
+        "35197",
+        "513567",
+        "52996"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-hot-dog-1",
+      "fits": [
+        "393838"
+      ],
+      "wrong": [
+        "514376",
+        "119038",
+        "548506",
+        "464786"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-hot-dog-2",
+      "fits": [
+        "232348"
+      ],
+      "wrong": [
+        "429011",
+        "91779",
+        "570688",
+        "217753"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-hot-dog-3",
+      "fits": [
+        "136033"
+      ],
+      "wrong": [
+        "483999",
+        "523807",
+        "189806",
+        "237864"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-sandwich-0",
+      "fits": [
+        "117374"
+      ],
+      "wrong": [
+        "78823",
+        "180798",
+        "64462",
+        "350148"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-sandwich-1",
+      "fits": [
+        "275749"
+      ],
+      "wrong": [
+        "125211",
+        "417608",
+        "412894",
+        "193162"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-sandwich-2",
+      "fits": [
+        "117525"
+      ],
+      "wrong": [
+        "419882",
+        "209530",
+        "493284",
+        "279730"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-sandwich-3",
+      "fits": [
+        "129492"
+      ],
+      "wrong": [
+        "156643",
+        "441442",
+        "85195",
+        "527784"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-banana-0",
+      "fits": [
+        "210394",
+        "309484"
+      ],
+      "wrong": [
+        "165351",
+        "410878",
+        "162732"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-banana-1",
+      "fits": [],
+      "wrong": [
+        "359855",
+        "389812",
+        "212166",
+        "39480",
+        "561366"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-banana-2",
+      "fits": [],
+      "wrong": [
+        "243867",
+        "34452",
+        "131556",
+        "321333",
+        "128658"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-banana-3",
+      "fits": [
+        "276055",
+        "12667"
+      ],
+      "wrong": [
+        "384468",
+        "163562",
+        "167240"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pizza-0",
+      "fits": [
+        "75456"
+      ],
+      "wrong": [
+        "106563",
+        "551794",
+        "80340",
+        "476258"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pizza-1",
+      "fits": [
+        "43581"
+      ],
+      "wrong": [
+        "38678",
+        "488710",
+        "422998",
+        "579818"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pizza-2",
+      "fits": [
+        "276285"
+      ],
+      "wrong": [
+        "10363",
+        "326462",
+        "307145",
+        "269316"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pizza-3",
+      "fits": [
+        "294831"
+      ],
+      "wrong": [
+        "255718",
+        "210915",
+        "229997",
+        "180487"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-tea-0",
+      "fits": [],
+      "wrong": [
+        "148508",
+        "269682",
+        "79588",
+        "49761"
+      ],
+      "uncertain": [
+        "417285"
+      ],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-tea-1",
+      "fits": [],
+      "wrong": [
+        "436617",
+        "127530",
+        "256868",
+        "31322",
+        "376264"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-tea-2",
+      "fits": [],
+      "wrong": [
+        "569700",
+        "64084",
+        "522713",
+        "309678",
+        "374369"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-tea-3",
+      "fits": [],
+      "wrong": [
+        "450100",
+        "304812",
+        "489764",
+        "136466",
+        "286182"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pasta-0",
+      "fits": [
+        "407524"
+      ],
+      "wrong": [
+        "189436",
+        "181753",
+        "461275",
+        "559956"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pasta-1",
+      "fits": [
+        "141328"
+      ],
+      "wrong": [
+        "357737",
+        "122606",
+        "306733",
+        "189475"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pasta-2",
+      "fits": [
+        "559707"
+      ],
+      "wrong": [
+        "560266",
+        "463618",
+        "464872",
+        "391290"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pasta-3",
+      "fits": [
+        "352900"
+      ],
+      "wrong": [
+        "184384",
+        "205289",
+        "174231",
+        "470924"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-cupcake-0",
+      "fits": [],
+      "wrong": [
+        "255965",
+        "509014",
+        "259854",
+        "249550"
+      ],
+      "uncertain": [
+        "117425"
+      ],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-cupcake-1",
+      "fits": [
+        "329542"
+      ],
+      "wrong": [
+        "477955",
+        "84752",
+        "288042",
+        "193245"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-cupcake-2",
+      "fits": [
+        "318455"
+      ],
+      "wrong": [
+        "485130",
+        "14888",
+        "151657",
+        "402334"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-cupcake-3",
+      "fits": [
+        "455448"
+      ],
+      "wrong": [
+        "447169",
+        "131444",
+        "193494",
+        "100510"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-ceiling-0",
+      "fits": [
+        "161609"
+      ],
+      "wrong": [
+        "263068",
+        "193494",
+        "325306",
+        "49269"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-ceiling-1",
+      "fits": [
+        "502599"
+      ],
+      "wrong": [
+        "370042",
+        "280710",
+        "405432",
+        "328430"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-tomato-0",
+      "fits": [
+        "170595"
+      ],
+      "wrong": [
+        "488673",
+        "515077",
+        "177383"
+      ],
+      "uncertain": [
+        "287347"
+      ],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-tomato-1",
+      "fits": [
+        "499109"
+      ],
+      "wrong": [
+        "409867",
+        "189775",
+        "292908",
+        "500477"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-tomato-2",
+      "fits": [
+        "340015"
+      ],
+      "wrong": [
+        "213935",
+        "223090",
+        "314177",
+        "329041"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-tomato-3",
+      "fits": [
+        "430056"
+      ],
+      "wrong": [
+        "547886",
+        "79144",
+        "58393",
+        "507235"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-chocolate-0",
+      "fits": [],
+      "wrong": [
+        "384350",
+        "290833",
+        "284725",
+        "506279"
+      ],
+      "uncertain": [
+        "405249"
+      ],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-chocolate-1",
+      "fits": [
+        "54605"
+      ],
+      "wrong": [
+        "358525",
+        "363875",
+        "82688",
+        "477118"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-chocolate-2",
+      "fits": [],
+      "wrong": [
+        "128148",
+        "222455",
+        "331817",
+        "300659"
+      ],
+      "uncertain": [
+        "502737"
+      ],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-chocolate-3",
+      "fits": [
+        "544565"
+      ],
+      "wrong": [
+        "462614",
+        "532129",
+        "273617",
+        "127624"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-soup-0",
+      "fits": [
+        "70048"
+      ],
+      "wrong": [
+        "179653",
+        "312406",
+        "78404",
+        "476810"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-soup-1",
+      "fits": [
+        "523175"
+      ],
+      "wrong": [
+        "326082",
+        "183127",
+        "229849",
+        "399462"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-soup-2",
+      "fits": [
+        "88269"
+      ],
+      "wrong": [
+        "328601",
+        "118921",
+        "23272",
+        "98839"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-soup-3",
+      "fits": [],
+      "wrong": [
+        "496409",
+        "441286",
+        "60835",
+        "335427",
+        "301867"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pastry-0",
+      "fits": [
+        "310200"
+      ],
+      "wrong": [
+        "228436",
+        "284762",
+        "128699",
+        "58384"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pastry-1",
+      "fits": [
+        "537241"
+      ],
+      "wrong": [
+        "293200",
+        "546659",
+        "193884",
+        "106912"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pastry-2",
+      "fits": [
+        "260470"
+      ],
+      "wrong": [
+        "257896",
+        "180751",
+        "117719",
+        "475779"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-pastry-3",
+      "fits": [
+        "478136"
+      ],
+      "wrong": [
+        "205834",
+        "563470",
+        "78426",
+        "458702"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-cheese-0",
+      "fits": [
+        "431568"
+      ],
+      "wrong": [
+        "371552",
+        "364297",
+        "561223",
+        "428218"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-cheese-1",
+      "fits": [
+        "142092"
+      ],
+      "wrong": [
+        "70254",
+        "250901",
+        "459153"
+      ],
+      "uncertain": [
+        "167572"
+      ],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-cheese-2",
+      "fits": [
+        "24144"
+      ],
+      "wrong": [
+        "174482",
+        "533145",
+        "237984",
+        "140076"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-cheese-3",
+      "fits": [],
+      "wrong": [
+        "119995",
+        "176901",
+        "225946",
+        "283318"
+      ],
+      "uncertain": [
+        "320664"
+      ],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-doughnut-0",
+      "fits": [
+        "405195"
+      ],
+      "wrong": [
+        "190236",
+        "360325",
+        "477623",
+        "165831"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-doughnut-1",
+      "fits": [
+        "533855"
+      ],
+      "wrong": [
+        "246883",
+        "187243",
+        "44652",
+        "447789"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-doughnut-2",
+      "fits": [],
+      "wrong": [
+        "535523",
+        "416451",
+        "399560",
+        "231169",
+        "158956"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    },
+    {
+      "id": "semantic-v2-extra-doughnut-3",
+      "fits": [
+        "66926"
+      ],
+      "wrong": [
+        "199442",
+        "98018",
+        "204186",
+        "503755"
+      ],
+      "uncertain": [],
+      "reviewer": "Luna blind visual extension"
+    }
+  ]
+}
