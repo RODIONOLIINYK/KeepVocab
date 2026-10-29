@@ -1,0 +1,254 @@
+{
+  "reviewer": "root independent visual spotcheck",
+  "expectedLabelsHidden": true,
+  "note": "Agent uncertainty summaries were available; expected references and model outcomes were not read.",
+  "reviews": [
+    {
+      "id": "semantic-v2-bicycle-0",
+      "fits": [
+        "492937"
+      ],
+      "wrong": [
+        "100238",
+        "298904",
+        "539143",
+        "255749"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-sign-1",
+      "fits": [
+        "322864"
+      ],
+      "wrong": [
+        "58655",
+        "281754",
+        "138492",
+        "226662"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-snow-3",
+      "fits": [
+        "292997"
+      ],
+      "wrong": [
+        "490936",
+        "150638",
+        "346707",
+        "47740"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-extra-bread-1",
+      "fits": [
+        "322959"
+      ],
+      "wrong": [
+        "577959",
+        "6894",
+        "538067",
+        "320696"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-microwave-2",
+      "fits": [
+        "444275"
+      ],
+      "wrong": [
+        "469067",
+        "64523",
+        "220584"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-laptop-3",
+      "fits": [
+        "206218"
+      ],
+      "wrong": [
+        "396863",
+        "128658",
+        "185472",
+        "76417"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-cook-1",
+      "fits": [
+        "83531"
+      ],
+      "wrong": [
+        "474095",
+        "76416",
+        "68933",
+        "130599"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-drink-3",
+      "fits": [],
+      "wrong": [
+        "186632",
+        "176847",
+        "550084"
+      ],
+      "uncertain": [
+        "267169"
+      ],
+      "note": "Liquid intake not clear in still image."
+    },
+    {
+      "id": "semantic-v2-sign-3",
+      "fits": [
+        "210388"
+      ],
+      "wrong": [
+        "241297",
+        "231831",
+        "314264",
+        "329219"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-snow-1",
+      "fits": [
+        "51938"
+      ],
+      "wrong": [
+        "374727",
+        "443969",
+        "205324",
+        "440475"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-extra-bread-3",
+      "fits": [
+        "426795"
+      ],
+      "wrong": [
+        "99114",
+        "568439",
+        "323496",
+        "502910"
+      ],
+      "uncertain": [],
+      "note": "Visible reference checked; corrected transcribed row/photo ID before fitting."
+    },
+    {
+      "id": "semantic-v2-bear-0",
+      "fits": [
+        "312586"
+      ],
+      "wrong": [
+        "395575",
+        "463690",
+        "314182",
+        "101884"
+      ],
+      "uncertain": [],
+      "note": "Visible reference checked; corrected transcribed row/photo ID before fitting."
+    },
+    {
+      "id": "semantic-v2-laptop-1",
+      "fits": [
+        "35279"
+      ],
+      "wrong": [
+        "382743",
+        "545594",
+        "495448",
+        "164602"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-cook-3",
+      "fits": [
+        "512929"
+      ],
+      "wrong": [
+        "440475",
+        "110042",
+        "424776",
+        "25386"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-drink-1",
+      "fits": [],
+      "wrong": [
+        "235057",
+        "45728",
+        "377239"
+      ],
+      "uncertain": [
+        "492110"
+      ],
+      "note": "Liquid intake not clear in still image."
+    },
+    {
+      "id": "semantic-v2-red-0",
+      "fits": [
+        "15746"
+      ],
+      "wrong": [
+        "308328",
+        "238866"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-helmet-3",
+      "fits": [
+        "472375"
+      ],
+      "wrong": [
+        "463690",
+        "347335",
+        "316404",
+        "135902"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    },
+    {
+      "id": "semantic-v2-truck-2",
+      "fits": [
+        "295420"
+      ],
+      "wrong": [
+        "376900",
+        "205333",
+        "36660",
+        "404678"
+      ],
+      "uncertain": [],
+      "note": "Visible object/action checked against definition."
+    }
+  ]
+}

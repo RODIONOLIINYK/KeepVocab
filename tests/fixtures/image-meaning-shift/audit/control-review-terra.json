@@ -1,0 +1,186 @@
+{
+  "reviewer": "gpt-6.1-terra",
+  "task": "semantic",
+  "blind": true,
+  "reviews": [
+    {
+      "id": "semantic-v2-extra-cupcake-1",
+      "fits": [
+        "329542"
+      ],
+      "wrong": [
+        "477955",
+        "84752",
+        "288042",
+        "193245"
+      ],
+      "uncertain": [],
+      "note": "Decorated cupcakes visible."
+    },
+    {
+      "id": "semantic-v2-extra-doughnut-0",
+      "fits": [
+        "405195"
+      ],
+      "wrong": [
+        "190236",
+        "360325",
+        "477623",
+        "165831"
+      ],
+      "uncertain": [],
+      "note": "Doughnuts in display case."
+    },
+    {
+      "id": "semantic-v2-extra-milk-0",
+      "fits": [],
+      "wrong": [
+        "31050",
+        "329455",
+        "210502",
+        "349302"
+      ],
+      "uncertain": [
+        "532058"
+      ],
+      "note": "Baby bottle contents appear white but cannot confirm milk."
+    },
+    {
+      "id": "semantic-v2-blue-1",
+      "fits": [
+        "81061",
+        "21465"
+      ],
+      "wrong": [
+        "137950",
+        "492077"
+      ],
+      "uncertain": [],
+      "note": "Blue bag and blue furniture."
+    },
+    {
+      "id": "semantic-v2-blanket-0",
+      "fits": [
+        "65074"
+      ],
+      "wrong": [
+        "17714",
+        "215245",
+        "384670",
+        "6723"
+      ],
+      "uncertain": [],
+      "note": "Bed covering."
+    },
+    {
+      "id": "semantic-v2-extra-pasta-0",
+      "fits": [
+        "407524"
+      ],
+      "wrong": [
+        "189436",
+        "181753",
+        "461275",
+        "559956"
+      ],
+      "uncertain": [],
+      "note": "Pasta dish."
+    },
+    {
+      "id": "semantic-v2-cart-0",
+      "fits": [],
+      "wrong": [
+        "255824",
+        "402473",
+        "521719",
+        "500826",
+        "29187"
+      ],
+      "uncertain": [],
+      "note": "Racing sulky carries a rider, not goods."
+    },
+    {
+      "id": "semantic-v2-puppy-2",
+      "fits": [
+        "251572"
+      ],
+      "wrong": [
+        "334483",
+        "19042",
+        "227686",
+        "15079"
+      ],
+      "uncertain": [],
+      "note": "Young dog."
+    },
+    {
+      "id": "semantic-v2-glove-2",
+      "fits": [
+        "574823"
+      ],
+      "wrong": [
+        "459195",
+        "407960",
+        "46872"
+      ],
+      "uncertain": [],
+      "note": "Baseball glove held by player."
+    },
+    {
+      "id": "semantic-v2-rain-1",
+      "fits": [
+        "144706"
+      ],
+      "wrong": [
+        "192964",
+        "354072",
+        "27186",
+        "449432"
+      ],
+      "uncertain": [],
+      "note": "Rain on window and street."
+    },
+    {
+      "id": "semantic-v2-bowl-0",
+      "fits": [
+        "482719"
+      ],
+      "wrong": [
+        "137294",
+        "469174",
+        "525600",
+        "145665"
+      ],
+      "uncertain": [],
+      "note": "Fruit in bowl."
+    },
+    {
+      "id": "semantic-v2-hat-1",
+      "fits": [
+        "345361"
+      ],
+      "wrong": [
+        "568814",
+        "513580",
+        "400922",
+        "569700"
+      ],
+      "uncertain": [],
+      "note": "Children wearing party hats."
+    },
+    {
+      "id": "semantic-v2-hill-3",
+      "fits": [],
+      "wrong": [
+        "207728",
+        "118515",
+        "151516",
+        "205514"
+      ],
+      "uncertain": [
+        "205647"
+      ],
+      "note": "Raised land in background; scale does not establish hill versus mountain."
+    }
+  ]
+}

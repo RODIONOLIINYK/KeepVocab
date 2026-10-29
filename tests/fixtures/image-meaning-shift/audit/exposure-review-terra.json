@@ -1,0 +1,242 @@
+{
+  "reviewer": "gpt-6.1-terra",
+  "task": "semantic",
+  "blind": true,
+  "reviews": [
+    {
+      "id": "semantic-v2-painting-2",
+      "fits": [],
+      "wrong": [
+        "564127",
+        "144333",
+        "467848",
+        "236914"
+      ],
+      "uncertain": [
+        "407403"
+      ],
+      "note": "Still life could be a painting or a stylized photograph."
+    },
+    {
+      "id": "semantic-v2-extra-pizza-2",
+      "fits": [
+        "276285"
+      ],
+      "wrong": [
+        "10363",
+        "326462",
+        "307145",
+        "269316"
+      ],
+      "uncertain": [],
+      "note": "Pizza on table."
+    },
+    {
+      "id": "semantic-v2-red-2",
+      "fits": [
+        "568290"
+      ],
+      "wrong": [
+        "431727",
+        "89880",
+        "118209"
+      ],
+      "uncertain": [],
+      "note": "Red bus."
+    },
+    {
+      "id": "semantic-v2-refrigerator-2",
+      "fits": [
+        "462629"
+      ],
+      "wrong": [
+        "559348",
+        "289702",
+        "213033",
+        "378116"
+      ],
+      "uncertain": [],
+      "note": "Refrigerators."
+    },
+    {
+      "id": "semantic-v2-extra-salad-1",
+      "fits": [
+        "255912"
+      ],
+      "wrong": [
+        "201025",
+        "529122",
+        "570834",
+        "282298"
+      ],
+      "uncertain": [],
+      "note": "Leaf salad beside sandwich."
+    },
+    {
+      "id": "semantic-v2-scooter-1",
+      "fits": [
+        "292456"
+      ],
+      "wrong": [
+        "404805",
+        "525286",
+        "71451",
+        "215723"
+      ],
+      "uncertain": [],
+      "note": "Scooter beneath riders."
+    },
+    {
+      "id": "semantic-v2-sheep-0",
+      "fits": [
+        "290592"
+      ],
+      "wrong": [
+        "396526",
+        "330554",
+        "367818",
+        "377670"
+      ],
+      "uncertain": [],
+      "note": "Flock of sheep."
+    },
+    {
+      "id": "semantic-v2-shirt-3",
+      "fits": [
+        "13177"
+      ],
+      "wrong": [
+        "210520",
+        "400367",
+        "223747"
+      ],
+      "uncertain": [],
+      "note": "Man wearing a shirt."
+    },
+    {
+      "id": "semantic-v2-sign-2",
+      "fits": [
+        "214224",
+        "571718"
+      ],
+      "wrong": [
+        "104424",
+        "414261",
+        "246308"
+      ],
+      "uncertain": [],
+      "note": "Pub lettering and price signs convey information."
+    },
+    {
+      "id": "semantic-v2-snow-0",
+      "fits": [
+        "248284"
+      ],
+      "wrong": [
+        "321214",
+        "214224",
+        "388846"
+      ],
+      "uncertain": [],
+      "note": "Snow on sidewalk."
+    },
+    {
+      "id": "semantic-v2-tennis-court-3",
+      "fits": [],
+      "wrong": [
+        "466602",
+        "508639",
+        "166642",
+        "53505"
+      ],
+      "uncertain": [
+        "292225"
+      ],
+      "note": "Tennis players visible behind fence but court surface and markings obscured."
+    },
+    {
+      "id": "semantic-v2-toilet-3",
+      "fits": [
+        "371529"
+      ],
+      "wrong": [
+        "276285",
+        "214200",
+        "347693",
+        "486112"
+      ],
+      "uncertain": [],
+      "note": "Toilet."
+    },
+    {
+      "id": "semantic-v2-uniform-1",
+      "fits": [
+        "231747"
+      ],
+      "wrong": [
+        "13004",
+        "391375",
+        "302536",
+        "463849"
+      ],
+      "uncertain": [],
+      "note": "Displayed baseball uniforms."
+    },
+    {
+      "id": "semantic-v2-wave-0",
+      "fits": [
+        "417911"
+      ],
+      "wrong": [
+        "154358",
+        "545100",
+        "166642",
+        "427655"
+      ],
+      "uncertain": [],
+      "note": "Breaking water wave."
+    },
+    {
+      "id": "semantic-v2-window-2",
+      "fits": [
+        "200839",
+        "520264"
+      ],
+      "wrong": [
+        "443426",
+        "134034",
+        "554838"
+      ],
+      "uncertain": [],
+      "note": "Glazed windows in buildings."
+    },
+    {
+      "id": "semantic-v2-bear-2",
+      "fits": [
+        "431727"
+      ],
+      "wrong": [
+        "53505",
+        "279769",
+        "489339",
+        "467848"
+      ],
+      "uncertain": [],
+      "note": "Two living bears in tree; other photos show unrelated subjects."
+    },
+    {
+      "id": "semantic-v2-extra-bread-2",
+      "fits": [
+        "138856"
+      ],
+      "wrong": [
+        "46252",
+        "528977",
+        "167159",
+        "420840"
+      ],
+      "uncertain": [],
+      "note": "A loaf of bread on a rack; remaining images do not clearly show bread."
+    }
+  ]
+}

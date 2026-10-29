@@ -1,0 +1,811 @@
+[
+  {
+    "page": 0,
+    "file": "work/meaning-shift/exposure-review/page-00.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-airport-1",
+        "word": {
+          "word": "airport",
+          "partOfSpeech": "noun",
+          "definition": "A place where airplanes take off, land and are serviced.",
+          "imageScenes": {
+            "scenes": [
+              "an airport with airplanes"
+            ]
+          }
+        },
+        "candidateIds": [
+          "126107",
+          "128476",
+          "408112",
+          "398905",
+          "357816"
+        ]
+      },
+      {
+        "id": "semantic-v2-boat-0",
+        "word": {
+          "word": "boat",
+          "partOfSpeech": "noun",
+          "definition": "A vessel used to travel on water.",
+          "imageScenes": {
+            "scenes": [
+              "a boat on water"
+            ]
+          }
+        },
+        "candidateIds": [
+          "200421",
+          "377670",
+          "396518",
+          "61333",
+          "335954"
+        ]
+      },
+      {
+        "id": "semantic-v2-brush-teeth-0",
+        "word": {
+          "word": "brush teeth",
+          "partOfSpeech": "verb",
+          "definition": "To clean the teeth using a toothbrush.",
+          "imageScenes": {
+            "scenes": [
+              "a person brushing their teeth"
+            ]
+          }
+        },
+        "candidateIds": [
+          "475678",
+          "230983",
+          "1993",
+          "465179",
+          "553731"
+        ]
+      },
+      {
+        "id": "semantic-v2-cabinet-1",
+        "word": {
+          "word": "cabinet",
+          "partOfSpeech": "noun",
+          "definition": "A storage unit with doors and shelves.",
+          "imageScenes": {
+            "scenes": [
+              "a storage cabinet"
+            ]
+          }
+        },
+        "candidateIds": [
+          "463647",
+          "415716",
+          "336628",
+          "323709"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 1,
+    "file": "work/meaning-shift/exposure-review/page-01.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-extra-carrot-3",
+        "word": {
+          "word": "carrot",
+          "partOfSpeech": "noun",
+          "definition": "A long orange root vegetable.",
+          "imageScenes": {
+            "scenes": [
+              "a carrot"
+            ]
+          }
+        },
+        "candidateIds": [
+          "293044",
+          "90208",
+          "99242",
+          "233771"
+        ]
+      },
+      {
+        "id": "semantic-v2-computer-keyboard-0",
+        "word": {
+          "word": "keyboard",
+          "partOfSpeech": "noun",
+          "definition": "A panel of keys used to enter text into a computer.",
+          "imageScenes": {
+            "scenes": [
+              "a computer keyboard"
+            ]
+          }
+        },
+        "candidateIds": [
+          "565962",
+          "170613",
+          "245576",
+          "2532",
+          "410712"
+        ]
+      },
+      {
+        "id": "semantic-v2-cook-2",
+        "word": {
+          "word": "cook",
+          "partOfSpeech": "verb",
+          "definition": "To prepare food using heat or kitchen equipment.",
+          "imageScenes": {
+            "scenes": [
+              "a person cooking food"
+            ]
+          }
+        },
+        "candidateIds": [
+          "163746",
+          "458054",
+          "267670",
+          "224807",
+          "66231"
+        ]
+      },
+      {
+        "id": "semantic-v2-dessert-3",
+        "word": {
+          "word": "dessert",
+          "partOfSpeech": "noun",
+          "definition": "A sweet course eaten after the main part of a meal.",
+          "imageScenes": {
+            "scenes": [
+              "a sweet dessert"
+            ]
+          }
+        },
+        "candidateIds": [
+          "485237",
+          "342295",
+          "174371",
+          "516173",
+          "182417"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 2,
+    "file": "work/meaning-shift/exposure-review/page-02.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-forest-1",
+        "word": {
+          "word": "forest",
+          "partOfSpeech": "noun",
+          "definition": "A large area densely covered with trees.",
+          "imageScenes": {
+            "scenes": [
+              "a forest with many trees"
+            ]
+          }
+        },
+        "candidateIds": [
+          "356094",
+          "500826",
+          "31620",
+          "442306",
+          "185802"
+        ]
+      },
+      {
+        "id": "semantic-v2-extra-french-fries-2",
+        "word": {
+          "word": "French fries",
+          "partOfSpeech": "noun",
+          "definition": "Long thin pieces of potato fried in oil.",
+          "imageScenes": {
+            "scenes": [
+              "French fries on a plate"
+            ]
+          }
+        },
+        "candidateIds": [
+          "439426",
+          "477227",
+          "10583",
+          "511453",
+          "232244"
+        ]
+      },
+      {
+        "id": "semantic-v2-extra-hamburger-0",
+        "word": {
+          "word": "hamburger",
+          "partOfSpeech": "noun",
+          "definition": "A cooked patty served inside a split bread bun.",
+          "imageScenes": {
+            "scenes": [
+              "a hamburger in a bun"
+            ]
+          }
+        },
+        "candidateIds": [
+          "291619",
+          "297427",
+          "91406",
+          "334371",
+          "473121"
+        ]
+      },
+      {
+        "id": "semantic-v2-hold-0",
+        "word": {
+          "word": "hold",
+          "partOfSpeech": "verb",
+          "definition": "To support or grasp something with the hand or another body part.",
+          "imageScenes": {
+            "scenes": [
+              "a person holding an object"
+            ]
+          }
+        },
+        "candidateIds": [
+          "356248",
+          "109827",
+          "270705",
+          "334483"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 3,
+    "file": "work/meaning-shift/exposure-review/page-03.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-knife-0",
+        "word": {
+          "word": "knife",
+          "partOfSpeech": "noun",
+          "definition": "A cutting tool with a sharp blade and a handle.",
+          "imageScenes": {
+            "scenes": [
+              "a kitchen knife"
+            ]
+          }
+        },
+        "candidateIds": [
+          "417911",
+          "15079",
+          "447200",
+          "336265",
+          "442306"
+        ]
+      },
+      {
+        "id": "semantic-v2-laptop-0",
+        "word": {
+          "word": "laptop",
+          "partOfSpeech": "noun",
+          "definition": "A portable computer with a screen attached to a keyboard.",
+          "imageScenes": {
+            "scenes": [
+              "a laptop computer"
+            ]
+          }
+        },
+        "candidateIds": [
+          "471991",
+          "13177",
+          "248314",
+          "396518",
+          "206271"
+        ]
+      },
+      {
+        "id": "semantic-v2-extra-meat-2",
+        "word": {
+          "word": "meat",
+          "partOfSpeech": "noun",
+          "definition": "Animal flesh eaten as food.",
+          "imageScenes": {
+            "scenes": [
+              "meat served as food"
+            ]
+          }
+        },
+        "candidateIds": [
+          "561465",
+          "53529",
+          "350405",
+          "368940",
+          "67896"
+        ]
+      },
+      {
+        "id": "semantic-v2-microwave-1",
+        "word": {
+          "word": "microwave",
+          "partOfSpeech": "noun",
+          "definition": "An appliance that heats food using microwave energy.",
+          "imageScenes": {
+            "scenes": [
+              "a microwave oven"
+            ]
+          }
+        },
+        "candidateIds": [
+          "118367",
+          "199681",
+          "378116",
+          "18491",
+          "348045"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 4,
+    "file": "work/meaning-shift/exposure-review/page-04.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-monitor-3",
+        "word": {
+          "word": "monitor",
+          "partOfSpeech": "noun",
+          "definition": "A screen used to display a computer output.",
+          "imageScenes": {
+            "scenes": [
+              "a computer monitor"
+            ]
+          }
+        },
+        "candidateIds": [
+          "555009",
+          "559348",
+          "225532",
+          "155291",
+          "157390"
+        ]
+      },
+      {
+        "id": "semantic-v2-mountain-2",
+        "word": {
+          "word": "mountain",
+          "partOfSpeech": "noun",
+          "definition": "A very high natural elevation of the ground.",
+          "imageScenes": {
+            "scenes": [
+              "a mountain landscape"
+            ]
+          }
+        },
+        "candidateIds": [
+          "31620",
+          "475484",
+          "233139",
+          "28285",
+          "133233"
+        ]
+      },
+      {
+        "id": "semantic-v2-extra-noodle-1",
+        "word": {
+          "word": "noodle",
+          "partOfSpeech": "noun",
+          "definition": "A long thin strip of pasta or similar dough.",
+          "imageScenes": {
+            "scenes": [
+              "noodles in a dish"
+            ]
+          }
+        },
+        "candidateIds": [
+          "148957",
+          "452084",
+          "117492",
+          "104612",
+          "65485"
+        ]
+      },
+      {
+        "id": "semantic-v2-extra-orange-fruit-0",
+        "word": {
+          "word": "orange",
+          "partOfSpeech": "noun",
+          "definition": "A round citrus fruit with orange peel.",
+          "imageScenes": {
+            "scenes": [
+              "an orange citrus fruit"
+            ]
+          }
+        },
+        "candidateIds": [
+          "128598",
+          "52017",
+          "368038",
+          "523033",
+          "115245"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 5,
+    "file": "work/meaning-shift/exposure-review/page-05.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-painting-2",
+        "word": {
+          "word": "painting",
+          "partOfSpeech": "noun",
+          "definition": "A picture made by applying paint to a surface.",
+          "imageScenes": {
+            "scenes": [
+              "a painting displayed on a wall"
+            ]
+          }
+        },
+        "candidateIds": [
+          "564127",
+          "144333",
+          "407403",
+          "467848",
+          "236914"
+        ]
+      },
+      {
+        "id": "semantic-v2-extra-pizza-2",
+        "word": {
+          "word": "pizza",
+          "partOfSpeech": "noun",
+          "definition": "A flat baked base topped with tomato, cheese and other food.",
+          "imageScenes": {
+            "scenes": [
+              "a pizza"
+            ]
+          }
+        },
+        "candidateIds": [
+          "10363",
+          "326462",
+          "276285",
+          "307145",
+          "269316"
+        ]
+      },
+      {
+        "id": "semantic-v2-red-2",
+        "word": {
+          "word": "red",
+          "partOfSpeech": "adjective",
+          "definition": "Having the colour of blood or a ripe tomato.",
+          "imageScenes": {
+            "scenes": [
+              "a clearly red object"
+            ]
+          }
+        },
+        "candidateIds": [
+          "431727",
+          "89880",
+          "118209",
+          "568290"
+        ]
+      },
+      {
+        "id": "semantic-v2-refrigerator-2",
+        "word": {
+          "word": "refrigerator",
+          "partOfSpeech": "noun",
+          "definition": "A large appliance that keeps food cold.",
+          "imageScenes": {
+            "scenes": [
+              "a refrigerator"
+            ]
+          }
+        },
+        "candidateIds": [
+          "559348",
+          "289702",
+          "213033",
+          "378116",
+          "462629"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 6,
+    "file": "work/meaning-shift/exposure-review/page-06.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-extra-salad-1",
+        "word": {
+          "word": "salad",
+          "partOfSpeech": "noun",
+          "definition": "A dish made from mixed vegetables or other cold ingredients.",
+          "imageScenes": {
+            "scenes": [
+              "a vegetable salad"
+            ]
+          }
+        },
+        "candidateIds": [
+          "255912",
+          "201025",
+          "529122",
+          "570834",
+          "282298"
+        ]
+      },
+      {
+        "id": "semantic-v2-scooter-1",
+        "word": {
+          "word": "scooter",
+          "partOfSpeech": "noun",
+          "definition": "A small two-wheeled vehicle ridden standing or sitting.",
+          "imageScenes": {
+            "scenes": [
+              "a scooter"
+            ]
+          }
+        },
+        "candidateIds": [
+          "404805",
+          "525286",
+          "71451",
+          "292456",
+          "215723"
+        ]
+      },
+      {
+        "id": "semantic-v2-sheep-0",
+        "word": {
+          "word": "sheep",
+          "partOfSpeech": "noun",
+          "definition": "A farm animal with a woolly coat.",
+          "imageScenes": {
+            "scenes": [
+              "a sheep"
+            ]
+          }
+        },
+        "candidateIds": [
+          "396526",
+          "290592",
+          "330554",
+          "367818",
+          "377670"
+        ]
+      },
+      {
+        "id": "semantic-v2-shirt-3",
+        "word": {
+          "word": "shirt",
+          "partOfSpeech": "noun",
+          "definition": "A garment covering the upper body, usually with sleeves.",
+          "imageScenes": {
+            "scenes": [
+              "a shirt"
+            ]
+          }
+        },
+        "candidateIds": [
+          "210520",
+          "13177",
+          "400367",
+          "223747"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 7,
+    "file": "work/meaning-shift/exposure-review/page-07.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-sign-2",
+        "word": {
+          "word": "sign",
+          "partOfSpeech": "noun",
+          "definition": "A board or notice showing information or instructions.",
+          "imageScenes": {
+            "scenes": [
+              "an information sign"
+            ]
+          }
+        },
+        "candidateIds": [
+          "104424",
+          "214224",
+          "571718",
+          "414261",
+          "246308"
+        ]
+      },
+      {
+        "id": "semantic-v2-snow-0",
+        "word": {
+          "word": "snow",
+          "partOfSpeech": "noun",
+          "definition": "Soft white frozen water falling from clouds or lying on the ground.",
+          "imageScenes": {
+            "scenes": [
+              "snow on the ground"
+            ]
+          }
+        },
+        "candidateIds": [
+          "321214",
+          "214224",
+          "388846",
+          "248284"
+        ]
+      },
+      {
+        "id": "semantic-v2-tennis-court-3",
+        "word": {
+          "word": "tennis court",
+          "partOfSpeech": "noun",
+          "definition": "A marked area on which tennis is played.",
+          "imageScenes": {
+            "scenes": [
+              "a tennis court with a net"
+            ]
+          }
+        },
+        "candidateIds": [
+          "466602",
+          "508639",
+          "166642",
+          "292225",
+          "53505"
+        ]
+      },
+      {
+        "id": "semantic-v2-toilet-3",
+        "word": {
+          "word": "toilet",
+          "partOfSpeech": "noun",
+          "definition": "A bathroom fixture with a bowl for bodily waste.",
+          "imageScenes": {
+            "scenes": [
+              "a toilet"
+            ]
+          }
+        },
+        "candidateIds": [
+          "276285",
+          "214200",
+          "347693",
+          "371529",
+          "486112"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 8,
+    "file": "work/meaning-shift/exposure-review/page-08.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-uniform-1",
+        "word": {
+          "word": "uniform",
+          "partOfSpeech": "noun",
+          "definition": "A standard set of clothing worn by members of a group.",
+          "imageScenes": {
+            "scenes": [
+              "a uniform worn by a person"
+            ]
+          }
+        },
+        "candidateIds": [
+          "13004",
+          "391375",
+          "302536",
+          "231747",
+          "463849"
+        ]
+      },
+      {
+        "id": "semantic-v2-wave-0",
+        "word": {
+          "word": "wave",
+          "partOfSpeech": "noun",
+          "definition": "A moving ridge on the surface of water.",
+          "imageScenes": {
+            "scenes": [
+              "an ocean wave"
+            ]
+          }
+        },
+        "candidateIds": [
+          "154358",
+          "545100",
+          "166642",
+          "417911",
+          "427655"
+        ]
+      },
+      {
+        "id": "semantic-v2-window-2",
+        "word": {
+          "word": "window",
+          "partOfSpeech": "noun",
+          "definition": "An opening with glass in a wall allowing light and a view.",
+          "imageScenes": {
+            "scenes": [
+              "a window"
+            ]
+          }
+        },
+        "candidateIds": [
+          "200839",
+          "443426",
+          "134034",
+          "554838",
+          "520264"
+        ]
+      }
+    ]
+  },
+  {
+    "page": "additional-originals",
+    "file": null,
+    "method": "Ten original photos inspected individually by Terra",
+    "cases": [
+      {
+        "id": "semantic-v2-bear-2",
+        "word": {
+          "word": "bear",
+          "partOfSpeech": "noun",
+          "definition": "A large living mammal with thick fur.",
+          "imageScenes": {
+            "scenes": [
+              "a living bear"
+            ]
+          }
+        },
+        "candidateIds": [
+          "53505",
+          "279769",
+          "431727",
+          "489339",
+          "467848"
+        ],
+        "files": [
+          "work/mlp-fp16-retrain/photos/images/000000053505.jpg",
+          "work/mlp-fp16-retrain/photos/images/000000279769.jpg",
+          "work/mlp-fp16-retrain/photos/images/000000431727.jpg",
+          "work/mlp-fp16-retrain/photos/images/000000489339.jpg",
+          "work/mlp-fp16-retrain/photos/images/000000467848.jpg"
+        ]
+      },
+      {
+        "id": "semantic-v2-extra-bread-2",
+        "word": {
+          "word": "bread",
+          "partOfSpeech": "noun",
+          "definition": "A baked food made from flour and water.",
+          "imageScenes": {
+            "scenes": [
+              "a loaf or slice of bread"
+            ]
+          }
+        },
+        "candidateIds": [
+          "138856",
+          "46252",
+          "528977",
+          "167159",
+          "420840"
+        ],
+        "files": [
+          "work/mlp-fp16-retrain/photos/images/000000138856.jpg",
+          "work/mlp-fp16-retrain/photos/images/000000046252.jpg",
+          "work/mlp-fp16-retrain/photos/images/000000528977.jpg",
+          "work/mlp-fp16-retrain/photos/images/000000167159.jpg",
+          "work/mlp-fp16-retrain/photos/images/000000420840.jpg"
+        ]
+      }
+    ]
+  }
+]

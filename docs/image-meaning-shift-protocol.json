@@ -1,0 +1,16 @@
+{
+  "experiment": "paired-same-versus-unseen-meaning-photo-disjoint-regression",
+  "split": "tests/fixtures/image-meaning-shift/split.json",
+  "seeds": [78123, 78124, 78125],
+  "recipe": "Exact shared IMAGE_TRAINING_RECIPE from v1.12.6; no retuning using this test.",
+  "encoder": "Frozen FP16 text / FP32 vision MobileCLIP-S0; existing pixel-verified embeddings, no CLIP training.",
+  "model": "1539 -> 32 ReLU -> 16 ReLU -> 1 linear; unrestricted 50/50 CLIP-MLP fusion.",
+  "arms": "Identical common training background plus one gallery per target meaning (seen) versus one metadata-matched gallery from a distinct other family (unseen). Same training gallery/meaning counts. Identical validation and test galleries for both arms; all photos disjoint across experiment partitions.",
+  "labels": "Luna/Terra blind visible semantic review of all proposed validation/test galleries, surviving seen-meaning exposure galleries and matched other-meaning controls; root spotcheck. Exclude any target triple/control group with uncertain or conflicting labels. The identical background uses historical labels. Preserve original data unchanged.",
+  "checkpoint": "Select maximum validation first-choice accuracy, then minimum validation pairwise loss, including epoch zero. Stop using validation loss patience 20. Selected and final checkpoints both reported.",
+  "primary": "Mean paired test first-choice difference seen-minus-unseen across the three seeds, with whole-meaning bootstrap interval. Compare each arm with CLIP on the identical test galleries.",
+  "secondary": "Pairwise loss/Brier, final fitted checkpoint, seed variation, complete train/validation/test metrics. No test-driven changes after results.",
+  "testUse": "Freeze split, reviewed labels, recipe, seeds and selected weights before test scoring. Retrospective heldout regression, not a new blind test: source photos and labels have appeared in historical experiments, but not in these models' training partitions.",
+  "limits": "Single/few-example target exposure, small heldout sample, one public photo source, semantic correctness rather than taste, incomplete metadata matching and photo-count differences. Cannot establish that meaning shift is the main cause of real-app failures.",
+  "activation": "Offline diagnostic only; do not activate or ship experimental trained heads. Preserve old benchmark and features for future training."
+}

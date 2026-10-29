@@ -1,0 +1,281 @@
+{
+  "reviewer": "gpt-6-luna",
+  "task": "semantic",
+  "blind": true,
+  "reviews": [
+    {
+      "id": "semantic-v2-airport-1",
+      "fits": [
+        "408112"
+      ],
+      "wrong": [
+        "126107",
+        "128476",
+        "357816",
+        "398905"
+      ],
+      "uncertain": [],
+      "note": "Airplanes are on the airport tarmac; other photos show birds, cakes, a musician, and baseball."
+    },
+    {
+      "id": "semantic-v2-boat-0",
+      "fits": [
+        "377670",
+        "396518"
+      ],
+      "wrong": [
+        "200421",
+        "61333",
+        "335954"
+      ],
+      "uncertain": [],
+      "note": "Boat hull and people aboard/working on it; canoe on water."
+    },
+    {
+      "id": "semantic-v2-brush-teeth-0",
+      "fits": [
+        "465179"
+      ],
+      "wrong": [
+        "475678",
+        "230983",
+        "1993",
+        "553731"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-cabinet-1",
+      "fits": [
+        "415716"
+      ],
+      "wrong": [
+        "463647",
+        "336628",
+        "323709"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-extra-carrot-3",
+      "fits": [
+        "293044"
+      ],
+      "wrong": [
+        "90208",
+        "99242",
+        "233771"
+      ],
+      "uncertain": [],
+      "note": "Orange carrot pieces are visible in the lunch tray."
+    },
+    {
+      "id": "semantic-v2-computer-keyboard-0",
+      "fits": [
+        "245576"
+      ],
+      "wrong": [
+        "565962",
+        "170613",
+        "2532",
+        "410712"
+      ],
+      "uncertain": [],
+      "note": "Cat is standing on a computer keyboard; keys are clearly visible."
+    },
+    {
+      "id": "semantic-v2-cook-2",
+      "fits": [
+        "66231"
+      ],
+      "wrong": [
+        "163746",
+        "458054",
+        "267670",
+        "224807"
+      ],
+      "uncertain": [],
+      "note": "Kitchen staff visibly prepare food."
+    },
+    {
+      "id": "semantic-v2-dessert-3",
+      "fits": [
+        "182417"
+      ],
+      "wrong": [
+        "485237",
+        "342295",
+        "174371",
+        "516173"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-forest-1",
+      "fits": [],
+      "wrong": [
+        "356094",
+        "500826",
+        "31620",
+        "442306",
+        "185802"
+      ],
+      "uncertain": [],
+      "note": "No image shows a large densely forested area; woodland background in 442306 is only a small patch."
+    },
+    {
+      "id": "semantic-v2-extra-french-fries-2",
+      "fits": [
+        "511453"
+      ],
+      "wrong": [
+        "439426",
+        "477227",
+        "10583",
+        "232244"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-extra-hamburger-0",
+      "fits": [
+        "297427"
+      ],
+      "wrong": [
+        "291619",
+        "91406",
+        "334371",
+        "473121"
+      ],
+      "uncertain": [],
+      "note": "Patty and split bread bun are clearly visible, despite unusual donut-like buns."
+    },
+    {
+      "id": "semantic-v2-hold-0",
+      "fits": [
+        "356248"
+      ],
+      "wrong": [
+        "109827",
+        "270705",
+        "334483"
+      ],
+      "uncertain": [],
+      "note": "Adult supports the child with an arm."
+    },
+    {
+      "id": "semantic-v2-knife-0",
+      "fits": [],
+      "wrong": [
+        "417911",
+        "15079",
+        "447200",
+        "336265",
+        "442306"
+      ],
+      "uncertain": [],
+      "note": "No cutting knife is visible."
+    },
+    {
+      "id": "semantic-v2-laptop-0",
+      "fits": [],
+      "wrong": [
+        "471991",
+        "13177",
+        "248314",
+        "396518",
+        "206271"
+      ],
+      "uncertain": [],
+      "note": "248314 shows a desktop computer setup, not a portable laptop."
+    },
+    {
+      "id": "semantic-v2-extra-meat-2",
+      "fits": [
+        "561465"
+      ],
+      "wrong": [
+        "53529",
+        "350405",
+        "368940",
+        "67896"
+      ],
+      "uncertain": [],
+      "note": "Cooked meat is visible on the plate."
+    },
+    {
+      "id": "semantic-v2-microwave-1",
+      "fits": [
+        "199681"
+      ],
+      "wrong": [
+        "118367",
+        "378116",
+        "18491",
+        "348045"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-monitor-3",
+      "fits": [
+        "555009"
+      ],
+      "wrong": [
+        "559348",
+        "225532",
+        "155291",
+        "157390"
+      ],
+      "uncertain": [],
+      "note": "Computer output displayed on desktop monitors."
+    },
+    {
+      "id": "semantic-v2-mountain-2",
+      "fits": [
+        "133233"
+      ],
+      "wrong": [
+        "31620",
+        "475484",
+        "233139",
+        "28285"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-extra-noodle-1",
+      "fits": [
+        "104612"
+      ],
+      "wrong": [
+        "148957",
+        "452084",
+        "117492",
+        "65485"
+      ],
+      "uncertain": [],
+      "note": "Long noodles visible in the dish."
+    },
+    {
+      "id": "semantic-v2-extra-orange-fruit-0",
+      "fits": [
+        "128598"
+      ],
+      "wrong": [
+        "52017",
+        "368038",
+        "523033",
+        "115245"
+      ],
+      "uncertain": [],
+      "note": ""
+    }
+  ]
+}

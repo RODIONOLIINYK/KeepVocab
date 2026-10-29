@@ -1,0 +1,721 @@
+{
+  "reviewer": "gpt-6-luna",
+  "task": "semantic",
+  "blind": true,
+  "reviews": [
+    {
+      "id": "semantic-v2-bicycle-0",
+      "fits": [
+        "492937"
+      ],
+      "wrong": [
+        "100238",
+        "298904",
+        "539143",
+        "255749"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-sign-1",
+      "fits": [
+        "322864"
+      ],
+      "wrong": [
+        "58655",
+        "281754",
+        "138492",
+        "226662"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-snow-3",
+      "fits": [
+        "292997"
+      ],
+      "wrong": [
+        "490936",
+        "150638",
+        "346707",
+        "47740"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-extra-bread-1",
+      "fits": [
+        "322959"
+      ],
+      "wrong": [
+        "577959",
+        "6894",
+        "538067",
+        "320696"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-bear-1",
+      "fits": [
+        "572517"
+      ],
+      "wrong": [
+        "23034",
+        "289594",
+        "348012",
+        "12062"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-extra-french-fries-1",
+      "fits": [
+        "400082"
+      ],
+      "wrong": [
+        "284743",
+        "390301",
+        "234779",
+        "213445"
+      ],
+      "uncertain": [],
+      "note": "Fries visible with the takeout meal."
+    },
+    {
+      "id": "semantic-v2-dessert-1",
+      "fits": [
+        "345941"
+      ],
+      "wrong": [
+        "572517",
+        "344816",
+        "322864"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-scooter-2",
+      "fits": [
+        "271402"
+      ],
+      "wrong": [
+        "515266",
+        "76625",
+        "475223",
+        "218439"
+      ],
+      "uncertain": [],
+      "note": "Children riding kick scooters."
+    },
+    {
+      "id": "semantic-v2-brush-teeth-3",
+      "fits": [
+        "175251"
+      ],
+      "wrong": [
+        "102707",
+        "275392",
+        "426166",
+        "496571"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-giraffe-0",
+      "fits": [],
+      "wrong": [
+        "80057",
+        "464689",
+        "310862",
+        "130599",
+        "510095"
+      ],
+      "uncertain": [],
+      "note": "Giraffe is a statue in 130599, not a living animal."
+    },
+    {
+      "id": "semantic-v2-toilet-2",
+      "fits": [
+        "5503"
+      ],
+      "wrong": [
+        "463730",
+        "223959",
+        "578500",
+        "474164"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-knife-2",
+      "fits": [
+        "143998"
+      ],
+      "wrong": [
+        "245915",
+        "384651",
+        "537153",
+        "345027"
+      ],
+      "uncertain": [],
+      "note": "Knife visibly lies beside carrots."
+    },
+    {
+      "id": "semantic-v2-computer-keyboard-3",
+      "fits": [
+        "56344"
+      ],
+      "wrong": [
+        "537153",
+        "548339",
+        "436315",
+        "126216"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-extra-salad-0",
+      "fits": [
+        "248980"
+      ],
+      "wrong": [
+        "153797",
+        "270402",
+        "515025",
+        "183709"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-ball-0",
+      "fits": [],
+      "wrong": [
+        "381360",
+        "534664",
+        "256518"
+      ],
+      "uncertain": [
+        "60507"
+      ],
+      "note": "A baseball game is visible, but the ball is too small to verify."
+    },
+    {
+      "id": "semantic-v2-shirt-0",
+      "fits": [
+        "223959"
+      ],
+      "wrong": [
+        "539143",
+        "572956",
+        "7574"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-boat-1",
+      "fits": [
+        "78565"
+      ],
+      "wrong": [
+        "184611",
+        "568710",
+        "58111",
+        "348012"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-kick-1",
+      "fits": [
+        "566282"
+      ],
+      "wrong": [
+        "116825",
+        "140286",
+        "167898"
+      ],
+      "uncertain": [
+        "283520"
+      ],
+      "note": "Person and foot are visible, but contact with an object is unclear."
+    },
+    {
+      "id": "semantic-v2-forest-3",
+      "fits": [
+        "192607"
+      ],
+      "wrong": [
+        "93437",
+        "155451",
+        "292005",
+        "489014"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-tennis-court-1",
+      "fits": [
+        "64523"
+      ],
+      "wrong": [
+        "409358",
+        "567011",
+        "58655",
+        "181542"
+      ],
+      "uncertain": [],
+      "note": "Team is posed on a marked tennis court."
+    },
+    {
+      "id": "semantic-v2-wave-1",
+      "fits": [
+        "160772"
+      ],
+      "wrong": [
+        "185472",
+        "166391",
+        "326248",
+        "212559"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-wooden-0",
+      "fits": [
+        "546829"
+      ],
+      "wrong": [
+        "263860",
+        "250619"
+      ],
+      "uncertain": [
+        "414340"
+      ],
+      "note": "Bench looks wooden; 414340 shows distant structures whose material is not clear."
+    },
+    {
+      "id": "semantic-v2-painting-0",
+      "fits": [
+        "104666"
+      ],
+      "wrong": [
+        "450439",
+        "343937",
+        "512194"
+      ],
+      "uncertain": [],
+      "note": "A painting is visible in the room."
+    },
+    {
+      "id": "semantic-v2-mountain-3",
+      "fits": [
+        "208208"
+      ],
+      "wrong": [
+        "25560",
+        "486573",
+        "363666",
+        "186345"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-microwave-2",
+      "fits": [
+        "444275"
+      ],
+      "wrong": [
+        "469067",
+        "64523",
+        "220584"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-laptop-3",
+      "fits": [
+        "206218"
+      ],
+      "wrong": [
+        "396863",
+        "128658",
+        "185472",
+        "76417"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-cook-1",
+      "fits": [
+        "83531"
+      ],
+      "wrong": [
+        "474095",
+        "76416",
+        "68933",
+        "130599"
+      ],
+      "uncertain": [],
+      "note": "Sausages are visibly cooking on a grill."
+    },
+    {
+      "id": "semantic-v2-drink-3",
+      "fits": [],
+      "wrong": [
+        "186632",
+        "176847",
+        "550084"
+      ],
+      "uncertain": [
+        "267169"
+      ],
+      "note": "Elephant is being sprayed or watered; drinking action is not clear."
+    },
+    {
+      "id": "semantic-v2-red-3",
+      "fits": [
+        "383838"
+      ],
+      "wrong": [
+        "229553",
+        "409358",
+        "310980"
+      ],
+      "uncertain": [],
+      "note": "Red garment is clearly visible."
+    },
+    {
+      "id": "semantic-v2-extra-carrot-1",
+      "fits": [
+        "424721"
+      ],
+      "wrong": [
+        "439525",
+        "2473",
+        "50145",
+        "79229"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-extra-noodle-2",
+      "fits": [
+        "91654"
+      ],
+      "wrong": [
+        "547519",
+        "221693",
+        "365098",
+        "245173"
+      ],
+      "uncertain": [],
+      "note": "Noodle soup with visible long strands."
+    },
+    {
+      "id": "semantic-v2-market-3",
+      "fits": [
+        "313562"
+      ],
+      "wrong": [
+        "351096",
+        "416330"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-brick-0",
+      "fits": [],
+      "wrong": [
+        "42889",
+        "465129",
+        "201148",
+        "345385",
+        "174123"
+      ],
+      "uncertain": [],
+      "note": "No rectangular clay bricks are visible."
+    },
+    {
+      "id": "semantic-v2-fence-0",
+      "fits": [
+        "21903",
+        "341094"
+      ],
+      "wrong": [
+        "186632"
+      ],
+      "uncertain": [],
+      "note": "Elephant is behind a fence; other image shows a warning barrier."
+    },
+    {
+      "id": "semantic-v2-uniform-0",
+      "fits": [
+        "213171"
+      ],
+      "wrong": [
+        "187513",
+        "465549",
+        "140929",
+        "488664"
+      ],
+      "uncertain": [],
+      "note": "Baseball player wears a team uniform."
+    },
+    {
+      "id": "semantic-v2-refrigerator-0",
+      "fits": [
+        "170116"
+      ],
+      "wrong": [
+        "498919",
+        "157418",
+        "151962",
+        "221872"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-extra-orange-fruit-2",
+      "fits": [
+        "351609"
+      ],
+      "wrong": [
+        "372307",
+        "140640",
+        "83113",
+        "35770"
+      ],
+      "uncertain": [],
+      "note": "Peeled citrus segments are visibly orange fruit."
+    },
+    {
+      "id": "semantic-v2-extra-meat-1",
+      "fits": [
+        "153632"
+      ],
+      "wrong": [
+        "511321",
+        "314251",
+        "48564",
+        "200162"
+      ],
+      "uncertain": [],
+      "note": "Cooked meat pieces on a plate."
+    },
+    {
+      "id": "semantic-v2-sheep-3",
+      "fits": [
+        "12062"
+      ],
+      "wrong": [
+        "285349",
+        "416330",
+        "568710",
+        "57725"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-extra-pizza-0",
+      "fits": [
+        "75456"
+      ],
+      "wrong": [
+        "106563",
+        "551794",
+        "80340",
+        "476258"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-extra-hamburger-2",
+      "fits": [
+        "218249"
+      ],
+      "wrong": [
+        "295797",
+        "412362",
+        "152120",
+        "90003"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-extra-juice-2",
+      "fits": [
+        "462576"
+      ],
+      "wrong": [
+        "317433",
+        "439854",
+        "395343",
+        "369310"
+      ],
+      "uncertain": [],
+      "note": "Glass of orange juice beside meal."
+    },
+    {
+      "id": "semantic-v2-purple-3",
+      "fits": [],
+      "wrong": [
+        "347370",
+        "154213",
+        "404484",
+        "172595",
+        "201148"
+      ],
+      "uncertain": [],
+      "note": "No clearly purple object."
+    },
+    {
+      "id": "semantic-v2-cabinet-3",
+      "fits": [
+        "370818"
+      ],
+      "wrong": [
+        "140929",
+        "348488",
+        "290163",
+        "56344"
+      ],
+      "uncertain": [],
+      "note": "Open storage cabinet with shelves."
+    },
+    {
+      "id": "semantic-v2-hold-3",
+      "fits": [
+        "96427"
+      ],
+      "wrong": [
+        "324818",
+        "331075",
+        "493334",
+        "84270"
+      ],
+      "uncertain": [],
+      "note": "Child grasps tennis racket."
+    },
+    {
+      "id": "semantic-v2-window-3",
+      "fits": [
+        "31735"
+      ],
+      "wrong": [
+        "42889",
+        "224675",
+        "425906",
+        "62355"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-airport-0",
+      "fits": [
+        "84270"
+      ],
+      "wrong": [
+        "297343",
+        "470773",
+        "540414",
+        "302107"
+      ],
+      "uncertain": [],
+      "note": "Airport terminal interior."
+    },
+    {
+      "id": "semantic-v2-monitor-2",
+      "fits": [
+        "310980"
+      ],
+      "wrong": [
+        "456496",
+        "24567",
+        "577932",
+        "247838"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-living-room-3",
+      "fits": [],
+      "wrong": [
+        "456865",
+        "210273",
+        "112110",
+        "468505"
+      ],
+      "uncertain": [
+        "491497"
+      ],
+      "note": "Interior has a daybed and living-room furnishings, but may be a bedroom."
+    },
+    {
+      "id": "semantic-v2-helmet-2",
+      "fits": [
+        "467511"
+      ],
+      "wrong": [
+        "255536",
+        "341921",
+        "550426",
+        "411817"
+      ],
+      "uncertain": [],
+      "note": "Motorcyclists visibly wear helmets."
+    },
+    {
+      "id": "semantic-v2-truck-1",
+      "fits": [],
+      "wrong": [
+        "153011",
+        "252332",
+        "24567",
+        "103548",
+        "140929"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-bicycle-3",
+      "fits": [
+        "167486",
+        "68628"
+      ],
+      "wrong": [
+        "147223",
+        "23023",
+        "434230"
+      ],
+      "uncertain": [],
+      "note": "One person rides a bicycle on stage; another rides a BMX."
+    }
+  ]
+}

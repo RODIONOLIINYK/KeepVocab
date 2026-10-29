@@ -1,0 +1,227 @@
+{
+  "reviewer": "gpt-6-luna",
+  "task": "semantic",
+  "blind": true,
+  "reviews": [
+    {
+      "id": "semantic-v2-bathroom-2",
+      "fits": [
+        "557501"
+      ],
+      "wrong": [
+        "541123",
+        "89271",
+        "230450",
+        "504439"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-cat-0",
+      "fits": [
+        "131131"
+      ],
+      "wrong": [
+        "96825",
+        "346968",
+        "56127",
+        "486046"
+      ],
+      "uncertain": [],
+      "note": "Cat visible on a monitor."
+    },
+    {
+      "id": "semantic-v2-apple-1",
+      "fits": [
+        "2149"
+      ],
+      "wrong": [
+        "272212",
+        "102331",
+        "523957",
+        "569917"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-play-baseball-1",
+      "fits": [
+        "264968"
+      ],
+      "wrong": [
+        "190753",
+        "481404",
+        "500565",
+        "240940"
+      ],
+      "uncertain": [],
+      "note": "Baseball player in uniform holding a bat."
+    },
+    {
+      "id": "semantic-v2-chair-0",
+      "fits": [
+        "15335"
+      ],
+      "wrong": [
+        "71756",
+        "519569",
+        "550939"
+      ],
+      "uncertain": [],
+      "note": "Restaurant seating includes backed chairs; kitchen island seats in 519569 appear to be backless stools."
+    },
+    {
+      "id": "semantic-v2-extra-banana-3",
+      "fits": [
+        "12667"
+      ],
+      "wrong": [
+        "384468",
+        "163562",
+        "167240"
+      ],
+      "uncertain": [],
+      "note": "Banana is clearly visible beside the phone."
+    },
+    {
+      "id": "semantic-v2-computer-mouse-0",
+      "fits": [
+        "560011"
+      ],
+      "wrong": [
+        "85478",
+        "130613",
+        "32941",
+        "65074"
+      ],
+      "uncertain": [],
+      "note": "Computer mouse and keyboard visible."
+    },
+    {
+      "id": "semantic-v2-lie-down-0",
+      "fits": [
+        "254368"
+      ],
+      "wrong": [
+        "290592",
+        "125072",
+        "546823",
+        "73118"
+      ],
+      "uncertain": [],
+      "note": "Person is stretched out horizontally in bed."
+    },
+    {
+      "id": "semantic-v2-bag-0",
+      "fits": [
+        "198510"
+      ],
+      "wrong": [
+        "105014",
+        "111609",
+        "410456",
+        "245311"
+      ],
+      "uncertain": [],
+      "note": "Person walking carries a backpack."
+    },
+    {
+      "id": "semantic-v2-broccoli-0",
+      "fits": [
+        "92660"
+      ],
+      "wrong": [
+        "48153",
+        "277051",
+        "490515",
+        "187734"
+      ],
+      "uncertain": [],
+      "note": "Broccoli florets are visible on the pizza."
+    },
+    {
+      "id": "semantic-v2-cake-1",
+      "fits": [
+        "363207"
+      ],
+      "wrong": [
+        "52591",
+        "262587",
+        "236914",
+        "180011"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-catch-1",
+      "fits": [
+        "328238"
+      ],
+      "wrong": [
+        "442161",
+        "253433",
+        "370478"
+      ],
+      "uncertain": [],
+      "note": "Person reaches to catch the visible flying disc."
+    },
+    {
+      "id": "semantic-v2-extra-chocolate-1",
+      "fits": [],
+      "wrong": [
+        "358525",
+        "363875",
+        "82688",
+        "477118"
+      ],
+      "uncertain": [
+        "54605"
+      ],
+      "note": "Brown milkshake could be chocolate flavored, but the image does not identify its ingredients."
+    },
+    {
+      "id": "semantic-v2-bathtub-1",
+      "fits": [
+        "383443"
+      ],
+      "wrong": [
+        "113403",
+        "511647",
+        "548555",
+        "514508"
+      ],
+      "uncertain": [],
+      "note": ""
+    },
+    {
+      "id": "semantic-v2-phone-0",
+      "fits": [],
+      "wrong": [
+        "453841",
+        "151000",
+        "127476",
+        "64718",
+        "309467"
+      ],
+      "uncertain": [],
+      "note": "No handheld phone used for calls is visible."
+    },
+    {
+      "id": "semantic-v2-flower-1",
+      "fits": [
+        "556873",
+        "175443"
+      ],
+      "wrong": [
+        "407960",
+        "45550",
+        "389315"
+      ],
+      "uncertain": [],
+      "note": "White blossoms and purple blossoms are clearly visible."
+    }
+  ]
+}

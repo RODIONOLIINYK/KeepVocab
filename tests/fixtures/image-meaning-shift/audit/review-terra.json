@@ -1,0 +1,697 @@
+{
+  "reviewer": "gpt-6.1-terra",
+  "task": "semantic",
+  "blind": true,
+  "reviews": [
+    {
+      "id": "semantic-v2-sign-3",
+      "fits": [
+        "210388"
+      ],
+      "wrong": [
+        "241297",
+        "231831",
+        "314264",
+        "329219"
+      ],
+      "uncertain": [],
+      "note": "Information sign visible."
+    },
+    {
+      "id": "semantic-v2-snow-1",
+      "fits": [
+        "51938"
+      ],
+      "wrong": [
+        "374727",
+        "443969",
+        "205324",
+        "440475"
+      ],
+      "uncertain": [],
+      "note": "Snow-covered ground."
+    },
+    {
+      "id": "semantic-v2-extra-bread-3",
+      "fits": [
+        "426795"
+      ],
+      "wrong": [
+        "99114",
+        "568439",
+        "323496",
+        "502910"
+      ],
+      "uncertain": [],
+      "note": "Large bread roll visible."
+    },
+    {
+      "id": "semantic-v2-bear-0",
+      "fits": [
+        "312586"
+      ],
+      "wrong": [
+        "395575",
+        "463690",
+        "314182",
+        "101884"
+      ],
+      "uncertain": [],
+      "note": "Living bear."
+    },
+    {
+      "id": "semantic-v2-extra-french-fries-0",
+      "fits": [
+        "322574"
+      ],
+      "wrong": [
+        "360137",
+        "201426",
+        "359540",
+        "78748"
+      ],
+      "uncertain": [],
+      "note": "Fries beside sandwich."
+    },
+    {
+      "id": "semantic-v2-dessert-2",
+      "fits": [
+        "297396"
+      ],
+      "wrong": [
+        "206831",
+        "480985",
+        "480212",
+        "144798"
+      ],
+      "uncertain": [],
+      "note": "Cakes."
+    },
+    {
+      "id": "semantic-v2-scooter-3",
+      "fits": [
+        "19109"
+      ],
+      "wrong": [
+        "348481",
+        "152465",
+        "92839",
+        "537802"
+      ],
+      "uncertain": [],
+      "note": "Parked scooters."
+    },
+    {
+      "id": "semantic-v2-brush-teeth-2",
+      "fits": [
+        "324614"
+      ],
+      "wrong": [
+        "526728",
+        "189451",
+        "352584",
+        "92839"
+      ],
+      "uncertain": [],
+      "note": "Person brushing teeth."
+    },
+    {
+      "id": "semantic-v2-giraffe-2",
+      "fits": [
+        "64359"
+      ],
+      "wrong": [
+        "336232",
+        "551820",
+        "537802",
+        "26926"
+      ],
+      "uncertain": [],
+      "note": "Giraffes behind zebras."
+    },
+    {
+      "id": "semantic-v2-toilet-1",
+      "fits": [
+        "482100"
+      ],
+      "wrong": [
+        "401446",
+        "147223",
+        "161879",
+        "299609"
+      ],
+      "uncertain": [],
+      "note": "Toilets used as planters."
+    },
+    {
+      "id": "semantic-v2-knife-3",
+      "fits": [
+        "189451"
+      ],
+      "wrong": [
+        "554595",
+        "294783",
+        "313588",
+        "76261"
+      ],
+      "uncertain": [],
+      "note": "Knife on cake plate."
+    },
+    {
+      "id": "semantic-v2-computer-keyboard-1",
+      "fits": [
+        "108026"
+      ],
+      "wrong": [
+        "322574",
+        "407614",
+        "509008",
+        "425227"
+      ],
+      "uncertain": [],
+      "note": "Computer keyboard."
+    },
+    {
+      "id": "semantic-v2-extra-salad-2",
+      "fits": [
+        "562197"
+      ],
+      "wrong": [
+        "136915",
+        "240767",
+        "346905",
+        "192871"
+      ],
+      "uncertain": [],
+      "note": "Mixed vegetables on plate."
+    },
+    {
+      "id": "semantic-v2-ball-2",
+      "fits": [
+        "515579"
+      ],
+      "wrong": [
+        "299609",
+        "136772",
+        "140987",
+        "482585"
+      ],
+      "uncertain": [],
+      "note": "Ball held by player."
+    },
+    {
+      "id": "semantic-v2-shirt-2",
+      "fits": [
+        "443844"
+      ],
+      "wrong": [
+        "528399",
+        "545958",
+        "92839",
+        "294831"
+      ],
+      "uncertain": [],
+      "note": "Person wearing shirt."
+    },
+    {
+      "id": "semantic-v2-boat-3",
+      "fits": [
+        "328286"
+      ],
+      "wrong": [
+        "297396",
+        "406570",
+        "430073",
+        "89761"
+      ],
+      "uncertain": [],
+      "note": "Boats at dock."
+    },
+    {
+      "id": "semantic-v2-kick-2",
+      "fits": [],
+      "wrong": [
+        "515579",
+        "295420",
+        "223188",
+        "485802"
+      ],
+      "uncertain": [
+        "365095"
+      ],
+      "note": "Player with ball at feet; contact and kick unclear."
+    },
+    {
+      "id": "semantic-v2-forest-2",
+      "fits": [
+        "263299"
+      ],
+      "wrong": [
+        "130465",
+        "261712",
+        "451571",
+        "19109"
+      ],
+      "uncertain": [],
+      "note": "Dense trees along railway."
+    },
+    {
+      "id": "semantic-v2-tennis-court-0",
+      "fits": [
+        "451435"
+      ],
+      "wrong": [
+        "472623",
+        "313588",
+        "174004",
+        "322211"
+      ],
+      "uncertain": [],
+      "note": "Marked tennis courts and net."
+    },
+    {
+      "id": "semantic-v2-wave-2",
+      "fits": [
+        "59635"
+      ],
+      "wrong": [
+        "526197",
+        "576031",
+        "113354",
+        "189226"
+      ],
+      "uncertain": [],
+      "note": "Visible water waves."
+    },
+    {
+      "id": "semantic-v2-wooden-1",
+      "fits": [
+        "287667"
+      ],
+      "wrong": [
+        "244181",
+        "302165",
+        "153229",
+        "439715"
+      ],
+      "uncertain": [],
+      "note": "Wooden tabletop."
+    },
+    {
+      "id": "semantic-v2-painting-3",
+      "fits": [
+        "480021"
+      ],
+      "wrong": [
+        "314709",
+        "236412",
+        "474028",
+        "377239"
+      ],
+      "uncertain": [],
+      "note": "Painted mural behind motorcycle."
+    },
+    {
+      "id": "semantic-v2-mountain-1",
+      "fits": [
+        "548267"
+      ],
+      "wrong": [
+        "228214",
+        "397133",
+        "294855",
+        "463199"
+      ],
+      "uncertain": [],
+      "note": "Mountain ridge."
+    },
+    {
+      "id": "semantic-v2-microwave-0",
+      "fits": [
+        "319696"
+      ],
+      "wrong": [
+        "578967",
+        "197528",
+        "7281",
+        "357567"
+      ],
+      "uncertain": [],
+      "note": "Microwave oven."
+    },
+    {
+      "id": "semantic-v2-laptop-1",
+      "fits": [
+        "35279"
+      ],
+      "wrong": [
+        "382743",
+        "545594",
+        "495448",
+        "164602"
+      ],
+      "uncertain": [],
+      "note": "Laptop visible."
+    },
+    {
+      "id": "semantic-v2-cook-3",
+      "fits": [
+        "512929"
+      ],
+      "wrong": [
+        "440475",
+        "110042",
+        "424776",
+        "25386"
+      ],
+      "uncertain": [],
+      "note": "People preparing food in pan."
+    },
+    {
+      "id": "semantic-v2-drink-1",
+      "fits": [],
+      "wrong": [
+        "45728",
+        "492110",
+        "377239"
+      ],
+      "uncertain": [
+        "235057"
+      ],
+      "note": "Giraffe has head near water, mouth contact unclear."
+    },
+    {
+      "id": "semantic-v2-red-0",
+      "fits": [
+        "15746"
+      ],
+      "wrong": [
+        "308328",
+        "238866"
+      ],
+      "uncertain": [],
+      "note": "Red hydrant."
+    },
+    {
+      "id": "semantic-v2-extra-carrot-0",
+      "fits": [
+        "434297"
+      ],
+      "wrong": [
+        "424642",
+        "236730",
+        "32610",
+        "529148"
+      ],
+      "uncertain": [],
+      "note": "Carrot slices on plate."
+    },
+    {
+      "id": "semantic-v2-extra-noodle-0",
+      "fits": [
+        "45728"
+      ],
+      "wrong": [
+        "469652",
+        "290179",
+        "192191",
+        "140840"
+      ],
+      "uncertain": [],
+      "note": "Noodles in dish."
+    },
+    {
+      "id": "semantic-v2-market-2",
+      "fits": [],
+      "wrong": [
+        "438226",
+        "55002",
+        "365095"
+      ],
+      "uncertain": [
+        "371472"
+      ],
+      "note": "Pineapple display suggests stall, wider market context unclear."
+    },
+    {
+      "id": "semantic-v2-brick-2",
+      "fits": [
+        "429598"
+      ],
+      "wrong": [
+        "465836",
+        "506004",
+        "228214"
+      ],
+      "uncertain": [],
+      "note": "Brick structure under counter."
+    },
+    {
+      "id": "semantic-v2-fence-2",
+      "fits": [
+        "505789"
+      ],
+      "wrong": [
+        "451308",
+        "120777",
+        "443844"
+      ],
+      "uncertain": [],
+      "note": "Metal fence."
+    },
+    {
+      "id": "semantic-v2-uniform-3",
+      "fits": [
+        "439715"
+      ],
+      "wrong": [
+        "311789",
+        "401446",
+        "474021",
+        "94751"
+      ],
+      "uncertain": [],
+      "note": "Rider wears ceremonial uniform."
+    },
+    {
+      "id": "semantic-v2-refrigerator-3",
+      "fits": [
+        "425226"
+      ],
+      "wrong": [
+        "376307",
+        "319696",
+        "124442"
+      ],
+      "uncertain": [],
+      "note": "Open refrigerator."
+    },
+    {
+      "id": "semantic-v2-extra-orange-fruit-1",
+      "fits": [
+        "119452"
+      ],
+      "wrong": [
+        "252716",
+        "488592",
+        "281414",
+        "460682"
+      ],
+      "uncertain": [],
+      "note": "Oranges among fruit."
+    },
+    {
+      "id": "semantic-v2-extra-meat-0",
+      "fits": [
+        "104669"
+      ],
+      "wrong": [
+        "82807",
+        "440336",
+        "239843",
+        "276707"
+      ],
+      "uncertain": [],
+      "note": "Cooked meat."
+    },
+    {
+      "id": "semantic-v2-sheep-2",
+      "fits": [
+        "238039"
+      ],
+      "wrong": [
+        "139099",
+        "42102",
+        "227482",
+        "63047"
+      ],
+      "uncertain": [],
+      "note": "Sheep on path."
+    },
+    {
+      "id": "semantic-v2-extra-pizza-1",
+      "fits": [
+        "43581"
+      ],
+      "wrong": [
+        "38678",
+        "488710",
+        "422998",
+        "579818"
+      ],
+      "uncertain": [],
+      "note": "Pizza."
+    },
+    {
+      "id": "semantic-v2-extra-hamburger-3",
+      "fits": [
+        "567825"
+      ],
+      "wrong": [
+        "393093",
+        "114049",
+        "491216"
+      ],
+      "uncertain": [],
+      "note": "Patty in bun."
+    },
+    {
+      "id": "semantic-v2-extra-juice-1",
+      "fits": [],
+      "wrong": [
+        "356612",
+        "475732",
+        "534827",
+        "245651"
+      ],
+      "uncertain": [
+        "463283"
+      ],
+      "note": "Orange-garnished drink may contain juice but composition cannot be confirmed."
+    },
+    {
+      "id": "semantic-v2-purple-1",
+      "fits": [
+        "2006"
+      ],
+      "wrong": [
+        "32817",
+        "434230",
+        "51938",
+        "416256"
+      ],
+      "uncertain": [],
+      "note": "Purple bus."
+    },
+    {
+      "id": "semantic-v2-cabinet-2",
+      "fits": [
+        "187271"
+      ],
+      "wrong": [
+        "438226",
+        "69213",
+        "395575",
+        "42528"
+      ],
+      "uncertain": [],
+      "note": "Cabinet doors surrounding refrigerator."
+    },
+    {
+      "id": "semantic-v2-hold-2",
+      "fits": [
+        "275058"
+      ],
+      "wrong": [
+        "413404",
+        "269314",
+        "322211"
+      ],
+      "uncertain": [],
+      "note": "Kitesurfer holds control bar."
+    },
+    {
+      "id": "semantic-v2-window-1",
+      "fits": [
+        "331317"
+      ],
+      "wrong": [
+        "97924",
+        "485424",
+        "139099"
+      ],
+      "uncertain": [],
+      "note": "Large glazed window."
+    },
+    {
+      "id": "semantic-v2-airport-3",
+      "fits": [
+        "425221"
+      ],
+      "wrong": [
+        "358923",
+        "182441",
+        "126137",
+        "314264"
+      ],
+      "uncertain": [],
+      "note": "Airport terminal and aircraft visible."
+    },
+    {
+      "id": "semantic-v2-monitor-0",
+      "fits": [
+        "186282"
+      ],
+      "wrong": [
+        "121242",
+        "222118",
+        "577584",
+        "54967"
+      ],
+      "uncertain": [],
+      "note": "Computer monitor."
+    },
+    {
+      "id": "semantic-v2-living-room-0",
+      "fits": [
+        "385997"
+      ],
+      "wrong": [
+        "425226",
+        "64359",
+        "397303",
+        "376900"
+      ],
+      "uncertain": [],
+      "note": "Furnished sitting room."
+    },
+    {
+      "id": "semantic-v2-helmet-3",
+      "fits": [],
+      "wrong": [
+        "463690",
+        "347335",
+        "316404",
+        "135902"
+      ],
+      "uncertain": [
+        "472375"
+      ],
+      "note": "Possible helmet-shaped item near motorcycle, unclear."
+    },
+    {
+      "id": "semantic-v2-truck-2",
+      "fits": [
+        "295420"
+      ],
+      "wrong": [
+        "376900",
+        "205333",
+        "36660",
+        "404678"
+      ],
+      "uncertain": [],
+      "note": "Goods truck."
+    }
+  ]
+}

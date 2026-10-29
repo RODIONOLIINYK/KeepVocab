@@ -1,0 +1,1438 @@
+{
+  "version": 1,
+  "kind": "same-meaning-photo-disjoint-controlled-regression",
+  "sourceManifest": "tests/fixtures/image-pretraining-v2/cases.json",
+  "sourceFeatures": "tests/fixtures/image-pretraining-fp16/embeddings.json.gz",
+  "originalSplitPreserved": true,
+  "construction": "Heldout IDs frozen from proposal.json. Filter candidate galleries by all heldout photo identities. One seen gallery per target meaning and one unseen gallery from each distinct non-target family, minimizing domain mismatches then candidate-count differences using linear assignment; matching uses only metadata. Common background contains every compatible gallery outside target and selected alternate families. Id, hash, URL, source URL and duplicate group identities are checked. No model scores used.",
+  "allocationSeed": 1573,
+  "allocationAttempts": 3000,
+  "reviewRule": "Keep a whole target triple and its matched control only when every reviewed gallery has exactly the original single reference fitting, every other photo wrong, and no uncertain labels. Any disagreement excludes the target triple and its matched control exposure; no vote or relabeling. No model outcomes used.",
+  "validationIds": [
+    "semantic-v2-snow-3",
+    "semantic-v2-extra-bread-1",
+    "semantic-v2-bear-1",
+    "semantic-v2-extra-french-fries-1",
+    "semantic-v2-dessert-1",
+    "semantic-v2-brush-teeth-3",
+    "semantic-v2-toilet-2",
+    "semantic-v2-computer-keyboard-3",
+    "semantic-v2-extra-salad-0",
+    "semantic-v2-shirt-0",
+    "semantic-v2-microwave-2",
+    "semantic-v2-cook-1",
+    "semantic-v2-extra-carrot-1",
+    "semantic-v2-extra-noodle-2",
+    "semantic-v2-uniform-0",
+    "semantic-v2-refrigerator-0",
+    "semantic-v2-extra-orange-fruit-2",
+    "semantic-v2-sheep-3",
+    "semantic-v2-extra-hamburger-2",
+    "semantic-v2-hold-3",
+    "semantic-v2-airport-0"
+  ],
+  "testIds": [
+    "semantic-v2-snow-1",
+    "semantic-v2-extra-bread-3",
+    "semantic-v2-bear-0",
+    "semantic-v2-extra-french-fries-0",
+    "semantic-v2-dessert-2",
+    "semantic-v2-brush-teeth-2",
+    "semantic-v2-toilet-1",
+    "semantic-v2-computer-keyboard-1",
+    "semantic-v2-extra-salad-2",
+    "semantic-v2-shirt-2",
+    "semantic-v2-microwave-0",
+    "semantic-v2-cook-3",
+    "semantic-v2-extra-carrot-0",
+    "semantic-v2-extra-noodle-0",
+    "semantic-v2-uniform-3",
+    "semantic-v2-refrigerator-3",
+    "semantic-v2-extra-orange-fruit-1",
+    "semantic-v2-sheep-2",
+    "semantic-v2-extra-hamburger-3",
+    "semantic-v2-hold-2",
+    "semantic-v2-airport-3"
+  ],
+  "commonIds": [
+    "semantic-v2-pan-1",
+    "semantic-v2-curtain-3",
+    "semantic-v2-table-2",
+    "semantic-v2-towel-1",
+    "semantic-v2-suit-0",
+    "semantic-v2-vase-1",
+    "semantic-v2-skirt-0",
+    "semantic-v2-wall-0",
+    "semantic-v2-wall-1",
+    "semantic-v2-shower-1",
+    "semantic-v2-jacket-3",
+    "semantic-v2-snowboard-3",
+    "semantic-v2-tie-3",
+    "semantic-v2-stop-sign-2",
+    "semantic-v2-book-1",
+    "semantic-v2-suitcase-2",
+    "semantic-v2-pink-1",
+    "semantic-v2-statue-3",
+    "semantic-v2-cup-3",
+    "semantic-v2-tree-1",
+    "semantic-v2-remote-control-0",
+    "semantic-v2-remote-control-1",
+    "semantic-v2-remote-control-2",
+    "semantic-v2-remote-control-3",
+    "semantic-v2-sky-0",
+    "semantic-v2-sky-1",
+    "semantic-v2-sky-2",
+    "semantic-v2-sky-3",
+    "semantic-v2-train-0",
+    "semantic-v2-train-2",
+    "semantic-v2-rice-0",
+    "semantic-v2-rice-3",
+    "semantic-v2-ride-motorcycle-0",
+    "semantic-v2-ride-motorcycle-3",
+    "semantic-v2-glasses-0",
+    "semantic-v2-glasses-3",
+    "semantic-v2-motorcycle-0",
+    "semantic-v2-motorcycle-1",
+    "semantic-v2-motorcycle-2",
+    "semantic-v2-motorcycle-3",
+    "semantic-v2-oven-0",
+    "semantic-v2-oven-1",
+    "semantic-v2-oven-3",
+    "semantic-v2-brown-0",
+    "semantic-v2-brown-2",
+    "semantic-v2-jump-0",
+    "semantic-v2-jump-2",
+    "semantic-v2-jump-3",
+    "semantic-v2-carry-0",
+    "semantic-v2-carry-2",
+    "semantic-v2-carry-3",
+    "semantic-v2-spoon-1",
+    "semantic-v2-shop-0",
+    "semantic-v2-parked-motorcycle-1",
+    "semantic-v2-parked-motorcycle-2",
+    "semantic-v2-parked-motorcycle-3",
+    "semantic-v2-fish-0",
+    "semantic-v2-fish-3",
+    "semantic-v2-sidewalk-0",
+    "semantic-v2-bed-0",
+    "semantic-v2-bed-2",
+    "semantic-v2-bed-3",
+    "semantic-v2-yellow-0",
+    "semantic-v2-yellow-1",
+    "semantic-v2-lamp-0",
+    "semantic-v2-lamp-1",
+    "semantic-v2-lamp-2",
+    "semantic-v2-lamp-3",
+    "semantic-v2-elephant-0",
+    "semantic-v2-elephant-1",
+    "semantic-v2-elephant-2",
+    "semantic-v2-elephant-3",
+    "semantic-v2-talk-0",
+    "semantic-v2-talk-1",
+    "semantic-v2-talk-2",
+    "semantic-v2-talk-3",
+    "semantic-v2-swim-1",
+    "semantic-v2-swim-2",
+    "semantic-v2-ship-2",
+    "semantic-v2-ship-3",
+    "semantic-v2-surfboard-0",
+    "semantic-v2-surfboard-2",
+    "semantic-v2-surfboard-3",
+    "semantic-v2-shoe-1",
+    "semantic-v2-shoe-2",
+    "semantic-v2-shoe-3",
+    "semantic-v2-branch-0",
+    "semantic-v2-branch-1",
+    "semantic-v2-branch-2",
+    "semantic-v2-branch-3",
+    "semantic-v2-sand-0",
+    "semantic-v2-sand-1",
+    "semantic-v2-sand-2",
+    "semantic-v2-mirror-0",
+    "semantic-v2-mirror-2",
+    "semantic-v2-mirror-3",
+    "semantic-v2-metal-2",
+    "semantic-v2-bench-0",
+    "semantic-v2-bench-1",
+    "semantic-v2-skateboard-0",
+    "semantic-v2-skateboard-3",
+    "semantic-v2-umbrella-0",
+    "semantic-v2-umbrella-2",
+    "semantic-v2-couch-0",
+    "semantic-v2-couch-1",
+    "semantic-v2-couch-3",
+    "semantic-v2-duck-1",
+    "semantic-v2-wine-2",
+    "semantic-v2-read-0",
+    "semantic-v2-scissors-0",
+    "semantic-v2-scissors-1",
+    "semantic-v2-scissors-2",
+    "semantic-v2-scissors-3",
+    "semantic-v2-desk-0",
+    "semantic-v2-desk-1",
+    "semantic-v2-desk-3",
+    "semantic-v2-park-1",
+    "semantic-v2-park-2",
+    "semantic-v2-goat-1",
+    "semantic-v2-wine-glass-0",
+    "semantic-v2-wine-glass-1",
+    "semantic-v2-wine-glass-3",
+    "semantic-v2-stove-0",
+    "semantic-v2-stove-1",
+    "semantic-v2-stove-3",
+    "semantic-v2-parking-meter-0",
+    "semantic-v2-parking-meter-1",
+    "semantic-v2-parking-meter-2",
+    "semantic-v2-parking-meter-3",
+    "semantic-v2-flag-0",
+    "semantic-v2-flag-1",
+    "semantic-v2-flag-2",
+    "semantic-v2-toothbrush-0",
+    "semantic-v2-toothbrush-2",
+    "semantic-v2-plant-0",
+    "semantic-v2-plant-1",
+    "semantic-v2-plant-2",
+    "semantic-v2-plant-3",
+    "semantic-v2-van-0",
+    "semantic-v2-television-0",
+    "semantic-v2-television-2",
+    "semantic-v2-television-3",
+    "semantic-v2-skateboard-action-0",
+    "semantic-v2-skateboard-action-1",
+    "semantic-v2-skateboard-action-3",
+    "semantic-v2-printer-0",
+    "semantic-v2-printer-1",
+    "semantic-v2-printer-2",
+    "semantic-v2-printer-3",
+    "semantic-v2-palm-tree-0",
+    "semantic-v2-palm-tree-1",
+    "semantic-v2-palm-tree-3",
+    "semantic-v2-fan-1",
+    "semantic-v2-fan-2",
+    "semantic-v2-fan-3",
+    "semantic-v2-counter-0",
+    "semantic-v2-counter-1",
+    "semantic-v2-counter-3",
+    "semantic-v2-extra-ceiling-1",
+    "semantic-v2-extra-soup-0",
+    "semantic-v2-extra-soup-1",
+    "semantic-v2-extra-soup-2",
+    "semantic-v2-extra-tomato-0",
+    "semantic-v2-extra-tomato-1",
+    "semantic-v2-extra-tomato-2",
+    "semantic-v2-extra-tomato-3",
+    "semantic-v2-extra-pastry-0",
+    "semantic-v2-extra-pastry-1",
+    "semantic-v2-extra-pastry-2",
+    "semantic-v2-extra-pastry-3"
+  ],
+  "seenExposureIds": [
+    "semantic-v2-airport-1",
+    "semantic-v2-bear-2",
+    "semantic-v2-extra-bread-2",
+    "semantic-v2-brush-teeth-0",
+    "semantic-v2-extra-carrot-3",
+    "semantic-v2-computer-keyboard-0",
+    "semantic-v2-cook-2",
+    "semantic-v2-dessert-3",
+    "semantic-v2-extra-french-fries-2",
+    "semantic-v2-extra-hamburger-0",
+    "semantic-v2-hold-0",
+    "semantic-v2-microwave-1",
+    "semantic-v2-extra-noodle-1",
+    "semantic-v2-extra-orange-fruit-0",
+    "semantic-v2-refrigerator-2",
+    "semantic-v2-extra-salad-1",
+    "semantic-v2-sheep-0",
+    "semantic-v2-shirt-3",
+    "semantic-v2-snow-0",
+    "semantic-v2-toilet-3",
+    "semantic-v2-uniform-1"
+  ],
+  "unseenExposureIds": [
+    "semantic-v2-bathroom-2",
+    "semantic-v2-cat-0",
+    "semantic-v2-apple-1",
+    "semantic-v2-play-baseball-1",
+    "semantic-v2-extra-banana-3",
+    "semantic-v2-computer-mouse-0",
+    "semantic-v2-lie-down-0",
+    "semantic-v2-bag-0",
+    "semantic-v2-broccoli-0",
+    "semantic-v2-cake-1",
+    "semantic-v2-catch-1",
+    "semantic-v2-bathtub-1",
+    "semantic-v2-extra-cupcake-1",
+    "semantic-v2-extra-doughnut-0",
+    "semantic-v2-blanket-0",
+    "semantic-v2-extra-pasta-0",
+    "semantic-v2-puppy-2",
+    "semantic-v2-glove-2",
+    "semantic-v2-rain-1",
+    "semantic-v2-bowl-0",
+    "semantic-v2-hat-1"
+  ],
+  "pairs": [
+    {
+      "meaningId": "semantic-v2:airport",
+      "seenId": "semantic-v2-airport-1",
+      "unseenId": "semantic-v2-bathroom-2",
+      "unseenMeaningId": "semantic-v2:bathroom",
+      "unseenFamilyId": "bathroom",
+      "seenDomain": "scenes",
+      "unseenDomain": "scenes",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:bear",
+      "seenId": "semantic-v2-bear-2",
+      "unseenId": "semantic-v2-cat-0",
+      "unseenMeaningId": "semantic-v2:cat",
+      "unseenFamilyId": "cat",
+      "seenDomain": "animals",
+      "unseenDomain": "animals",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:bread",
+      "seenId": "semantic-v2-extra-bread-2",
+      "unseenId": "semantic-v2-apple-1",
+      "unseenMeaningId": "semantic-v2:apple",
+      "unseenFamilyId": "apple",
+      "seenDomain": "food",
+      "unseenDomain": "food",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:brush-teeth",
+      "seenId": "semantic-v2-brush-teeth-0",
+      "unseenId": "semantic-v2-play-baseball-1",
+      "unseenMeaningId": "semantic-v2:play-baseball",
+      "unseenFamilyId": "baseball",
+      "seenDomain": "actions",
+      "unseenDomain": "actions",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:carrot",
+      "seenId": "semantic-v2-extra-carrot-3",
+      "unseenId": "semantic-v2-extra-banana-3",
+      "unseenMeaningId": "semantic-v2:banana",
+      "unseenFamilyId": "banana",
+      "seenDomain": "food",
+      "unseenDomain": "food",
+      "seenCandidateCount": 4,
+      "unseenCandidateCount": 4,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:computer-keyboard",
+      "seenId": "semantic-v2-computer-keyboard-0",
+      "unseenId": "semantic-v2-computer-mouse-0",
+      "unseenMeaningId": "semantic-v2:computer-mouse",
+      "unseenFamilyId": "computer-mouse",
+      "seenDomain": "electronics",
+      "unseenDomain": "electronics",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:cook",
+      "seenId": "semantic-v2-cook-2",
+      "unseenId": "semantic-v2-lie-down-0",
+      "unseenMeaningId": "semantic-v2:lie-down",
+      "unseenFamilyId": "body-position",
+      "seenDomain": "actions",
+      "unseenDomain": "actions",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:dessert",
+      "seenId": "semantic-v2-dessert-3",
+      "unseenId": "semantic-v2-bag-0",
+      "unseenMeaningId": "semantic-v2:bag",
+      "unseenFamilyId": "bag",
+      "seenDomain": "meals",
+      "unseenDomain": "accessories",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 100
+    },
+    {
+      "meaningId": "semantic-v2:french-fries",
+      "seenId": "semantic-v2-extra-french-fries-2",
+      "unseenId": "semantic-v2-broccoli-0",
+      "unseenMeaningId": "semantic-v2:broccoli",
+      "unseenFamilyId": "broccoli",
+      "seenDomain": "food",
+      "unseenDomain": "food",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:hamburger",
+      "seenId": "semantic-v2-extra-hamburger-0",
+      "unseenId": "semantic-v2-cake-1",
+      "unseenMeaningId": "semantic-v2:cake",
+      "unseenFamilyId": "cake",
+      "seenDomain": "food",
+      "unseenDomain": "food",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:hold",
+      "seenId": "semantic-v2-hold-0",
+      "unseenId": "semantic-v2-catch-1",
+      "unseenMeaningId": "semantic-v2:catch",
+      "unseenFamilyId": "ball-action",
+      "seenDomain": "actions",
+      "unseenDomain": "actions",
+      "seenCandidateCount": 4,
+      "unseenCandidateCount": 4,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:microwave",
+      "seenId": "semantic-v2-microwave-1",
+      "unseenId": "semantic-v2-bathtub-1",
+      "unseenMeaningId": "semantic-v2:bathtub",
+      "unseenFamilyId": "bathtub",
+      "seenDomain": "household",
+      "unseenDomain": "household",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:noodle",
+      "seenId": "semantic-v2-extra-noodle-1",
+      "unseenId": "semantic-v2-extra-cupcake-1",
+      "unseenMeaningId": "semantic-v2:cupcake",
+      "unseenFamilyId": "cupcake",
+      "seenDomain": "food",
+      "unseenDomain": "food",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:orange-fruit",
+      "seenId": "semantic-v2-extra-orange-fruit-0",
+      "unseenId": "semantic-v2-extra-doughnut-0",
+      "unseenMeaningId": "semantic-v2:doughnut",
+      "unseenFamilyId": "doughnut",
+      "seenDomain": "food",
+      "unseenDomain": "food",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:refrigerator",
+      "seenId": "semantic-v2-refrigerator-2",
+      "unseenId": "semantic-v2-blanket-0",
+      "unseenMeaningId": "semantic-v2:blanket",
+      "unseenFamilyId": "blanket",
+      "seenDomain": "household",
+      "unseenDomain": "household",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:salad",
+      "seenId": "semantic-v2-extra-salad-1",
+      "unseenId": "semantic-v2-extra-pasta-0",
+      "unseenMeaningId": "semantic-v2:pasta",
+      "unseenFamilyId": "pasta",
+      "seenDomain": "food",
+      "unseenDomain": "food",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:sheep",
+      "seenId": "semantic-v2-sheep-0",
+      "unseenId": "semantic-v2-puppy-2",
+      "unseenMeaningId": "semantic-v2:puppy",
+      "unseenFamilyId": "dog",
+      "seenDomain": "animals",
+      "unseenDomain": "animals",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:shirt",
+      "seenId": "semantic-v2-shirt-3",
+      "unseenId": "semantic-v2-glove-2",
+      "unseenMeaningId": "semantic-v2:glove",
+      "unseenFamilyId": "glove",
+      "seenDomain": "clothing",
+      "unseenDomain": "clothing",
+      "seenCandidateCount": 4,
+      "unseenCandidateCount": 4,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:snow",
+      "seenId": "semantic-v2-snow-0",
+      "unseenId": "semantic-v2-rain-1",
+      "unseenMeaningId": "semantic-v2:rain",
+      "unseenFamilyId": "rain",
+      "seenDomain": "weather",
+      "unseenDomain": "weather",
+      "seenCandidateCount": 4,
+      "unseenCandidateCount": 5,
+      "cost": 10
+    },
+    {
+      "meaningId": "semantic-v2:toilet",
+      "seenId": "semantic-v2-toilet-3",
+      "unseenId": "semantic-v2-bowl-0",
+      "unseenMeaningId": "semantic-v2:bowl",
+      "unseenFamilyId": "bowl",
+      "seenDomain": "household",
+      "unseenDomain": "household",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    },
+    {
+      "meaningId": "semantic-v2:uniform",
+      "seenId": "semantic-v2-uniform-1",
+      "unseenId": "semantic-v2-hat-1",
+      "unseenMeaningId": "semantic-v2:hat",
+      "unseenFamilyId": "hat",
+      "seenDomain": "clothing",
+      "unseenDomain": "clothing",
+      "seenCandidateCount": 5,
+      "unseenCandidateCount": 5,
+      "cost": 0
+    }
+  ],
+  "excludedTargets": [
+    {
+      "meaningId": "semantic-v2:giraffe",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-giraffe-0",
+          "review": "review/luna.json",
+          "note": "Giraffe is a statue in 130599, not a living animal.",
+          "fits": [],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:ball",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-ball-0",
+          "review": "review/luna.json",
+          "note": "A baseball game is visible, but the ball is too small to verify.",
+          "fits": [],
+          "uncertain": [
+            "60507"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:kick",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-kick-1",
+          "review": "review/luna.json",
+          "note": "Person and foot are visible, but contact with an object is unclear.",
+          "fits": [
+            "566282"
+          ],
+          "uncertain": [
+            "283520"
+          ]
+        },
+        {
+          "caseId": "semantic-v2-kick-2",
+          "review": "review/terra.json",
+          "note": "Player with ball at feet; contact and kick unclear.",
+          "fits": [],
+          "uncertain": [
+            "365095"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:wooden",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-wooden-0",
+          "review": "review/luna.json",
+          "note": "Bench looks wooden; 414340 shows distant structures whose material is not clear.",
+          "fits": [
+            "546829"
+          ],
+          "uncertain": [
+            "414340"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:drink",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-drink-3",
+          "review": "review/luna.json",
+          "note": "Elephant is being sprayed or watered; drinking action is not clear.",
+          "fits": [],
+          "uncertain": [
+            "267169"
+          ]
+        },
+        {
+          "caseId": "semantic-v2-drink-1",
+          "review": "review/terra.json",
+          "note": "Giraffe has head near water, mouth contact unclear.",
+          "fits": [],
+          "uncertain": [
+            "235057"
+          ]
+        },
+        {
+          "caseId": "semantic-v2-drink-3",
+          "review": "review/root-spotcheck.json",
+          "note": "Liquid intake not clear in still image.",
+          "fits": [],
+          "uncertain": [
+            "267169"
+          ]
+        },
+        {
+          "caseId": "semantic-v2-drink-1",
+          "review": "review/root-spotcheck.json",
+          "note": "Liquid intake not clear in still image.",
+          "fits": [],
+          "uncertain": [
+            "492110"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:brick",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-brick-0",
+          "review": "review/luna.json",
+          "note": "No rectangular clay bricks are visible.",
+          "fits": [],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:fence",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-fence-0",
+          "review": "review/luna.json",
+          "note": "Elephant is behind a fence; other image shows a warning barrier.",
+          "fits": [
+            "21903",
+            "341094"
+          ],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:purple",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-purple-3",
+          "review": "review/luna.json",
+          "note": "No clearly purple object.",
+          "fits": [],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:living-room",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-living-room-3",
+          "review": "review/luna.json",
+          "note": "Interior has a daybed and living-room furnishings, but may be a bedroom.",
+          "fits": [],
+          "uncertain": [
+            "491497"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:truck",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-truck-1",
+          "review": "review/luna.json",
+          "note": "",
+          "fits": [],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:bicycle",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-bicycle-3",
+          "review": "review/luna.json",
+          "note": "One person rides a bicycle on stage; another rides a BMX.",
+          "fits": [
+            "167486",
+            "68628"
+          ],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:market",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-market-2",
+          "review": "review/terra.json",
+          "note": "Pineapple display suggests stall, wider market context unclear.",
+          "fits": [],
+          "uncertain": [
+            "371472"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:juice",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-extra-juice-1",
+          "review": "review/terra.json",
+          "note": "Orange-garnished drink may contain juice but composition cannot be confirmed.",
+          "fits": [],
+          "uncertain": [
+            "463283"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:helmet",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-helmet-3",
+          "review": "review/terra.json",
+          "note": "Possible helmet-shaped item near motorcycle, unclear.",
+          "fits": [],
+          "uncertain": [
+            "472375"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:boat",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-boat-0",
+          "review": "exposure-review/luna.json",
+          "note": "Boat hull and people aboard/working on it; canoe on water.",
+          "fits": [
+            "377670",
+            "396518"
+          ],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:forest",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-forest-1",
+          "review": "exposure-review/luna.json",
+          "note": "No image shows a large densely forested area; woodland background in 442306 is only a small patch.",
+          "fits": [],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:knife",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-knife-0",
+          "review": "exposure-review/luna.json",
+          "note": "No cutting knife is visible.",
+          "fits": [],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:laptop",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-laptop-0",
+          "review": "exposure-review/luna.json",
+          "note": "248314 shows a desktop computer setup, not a portable laptop.",
+          "fits": [],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:painting",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-painting-2",
+          "review": "exposure-review/terra.json",
+          "note": "Still life could be a painting or a stylized photograph.",
+          "fits": [],
+          "uncertain": [
+            "407403"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:sign",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-sign-2",
+          "review": "exposure-review/terra.json",
+          "note": "Pub lettering and price signs convey information.",
+          "fits": [
+            "214224",
+            "571718"
+          ],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:tennis-court",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-tennis-court-3",
+          "review": "exposure-review/terra.json",
+          "note": "Tennis players visible behind fence but court surface and markings obscured.",
+          "fits": [],
+          "uncertain": [
+            "292225"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:window",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-window-2",
+          "review": "exposure-review/terra.json",
+          "note": "Glazed windows in buildings.",
+          "fits": [
+            "200839",
+            "520264"
+          ],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:cabinet",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-chair-0",
+          "review": "control-review/luna.json",
+          "note": "Restaurant seating includes backed chairs; kitchen island seats in 519569 appear to be backless stools.",
+          "fits": [
+            "15335"
+          ],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:meat",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-extra-chocolate-1",
+          "review": "control-review/luna.json",
+          "note": "Brown milkshake could be chocolate flavored, but the image does not identify its ingredients.",
+          "fits": [],
+          "uncertain": [
+            "54605"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:monitor",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-phone-0",
+          "review": "control-review/luna.json",
+          "note": "No handheld phone used for calls is visible.",
+          "fits": [],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:mountain",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-flower-1",
+          "review": "control-review/luna.json",
+          "note": "White blossoms and purple blossoms are clearly visible.",
+          "fits": [
+            "556873",
+            "175443"
+          ],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:pizza",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-extra-milk-0",
+          "review": "control-review/terra.json",
+          "note": "Baby bottle contents appear white but cannot confirm milk.",
+          "fits": [],
+          "uncertain": [
+            "532058"
+          ]
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:red",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-blue-1",
+          "review": "control-review/terra.json",
+          "note": "Blue bag and blue furniture.",
+          "fits": [
+            "81061",
+            "21465"
+          ],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:scooter",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-cart-0",
+          "review": "control-review/terra.json",
+          "note": "Racing sulky carries a rider, not goods.",
+          "fits": [],
+          "uncertain": []
+        }
+      ]
+    },
+    {
+      "meaningId": "semantic-v2:wave",
+      "reasons": [
+        {
+          "caseId": "semantic-v2-hill-3",
+          "review": "control-review/terra.json",
+          "note": "Raised land in background; scale does not establish hill versus mountain.",
+          "fits": [],
+          "uncertain": [
+            "205647"
+          ]
+        }
+      ]
+    }
+  ],
+  "primaryReviewedHeldoutGalleries": 102,
+  "candidateTargets": 51,
+  "retainedTargets": 21,
+  "alternateAllocation": {
+    "targets": 78,
+    "trainingGalleries": 79,
+    "backgroundGalleries": 1,
+    "domainMismatches": 17,
+    "use": "Rejected before fitting: larger heldout pool would sacrifice the common background and metadata matching."
+  },
+  "summary": {
+    "seen": {
+      "train": {
+        "galleries": 191,
+        "comparisons": 697,
+        "meanings": 97,
+        "families": 95,
+        "uniquePhotos": 678
+      },
+      "validation": {
+        "galleries": 21,
+        "comparisons": 81,
+        "meanings": 21,
+        "families": 21,
+        "uniquePhotos": 98
+      },
+      "test": {
+        "galleries": 21,
+        "comparisons": 81,
+        "meanings": 21,
+        "families": 21,
+        "uniquePhotos": 97
+      }
+    },
+    "unseen": {
+      "train": {
+        "galleries": 191,
+        "comparisons": 698,
+        "meanings": 97,
+        "families": 95,
+        "uniquePhotos": 645
+      },
+      "validation": {
+        "galleries": 21,
+        "comparisons": 81,
+        "meanings": 21,
+        "families": 21,
+        "uniquePhotos": 98
+      },
+      "test": {
+        "galleries": 21,
+        "comparisons": 81,
+        "meanings": 21,
+        "families": 21,
+        "uniquePhotos": 97
+      }
+    }
+  },
+  "preservedOutsideExperimentIds": [
+    "semantic-v2-pan-0",
+    "semantic-v2-pan-2",
+    "semantic-v2-pan-3",
+    "semantic-v2-white-1",
+    "semantic-v2-surf-0",
+    "semantic-v2-bus-0",
+    "semantic-v2-bus-2",
+    "semantic-v2-curtain-0",
+    "semantic-v2-curtain-1",
+    "semantic-v2-sleep-1",
+    "semantic-v2-sign-1",
+    "semantic-v2-sign-2",
+    "semantic-v2-sign-3",
+    "semantic-v2-cooking-pot-0",
+    "semantic-v2-cooking-pot-2",
+    "semantic-v2-cooking-pot-3",
+    "semantic-v2-refrigerator-1",
+    "semantic-v2-table-0",
+    "semantic-v2-table-1",
+    "semantic-v2-table-3",
+    "semantic-v2-kick-0",
+    "semantic-v2-kick-1",
+    "semantic-v2-kick-2",
+    "semantic-v2-kick-3",
+    "semantic-v2-stairs-0",
+    "semantic-v2-stairs-2",
+    "semantic-v2-stairs-3",
+    "semantic-v2-helmet-0",
+    "semantic-v2-helmet-1",
+    "semantic-v2-helmet-2",
+    "semantic-v2-helmet-3",
+    "semantic-v2-carriage-0",
+    "semantic-v2-blue-0",
+    "semantic-v2-blue-1",
+    "semantic-v2-blue-2",
+    "semantic-v2-bridge-0",
+    "semantic-v2-bridge-1",
+    "semantic-v2-bridge-3",
+    "semantic-v2-sink-0",
+    "semantic-v2-sink-2",
+    "semantic-v2-cart-0",
+    "semantic-v2-cart-1",
+    "semantic-v2-cart-2",
+    "semantic-v2-cart-3",
+    "semantic-v2-beer-1",
+    "semantic-v2-beer-2",
+    "semantic-v2-suit-1",
+    "semantic-v2-drink-0",
+    "semantic-v2-drink-1",
+    "semantic-v2-drink-3",
+    "semantic-v2-cracker-2",
+    "semantic-v2-open-0",
+    "semantic-v2-open-2",
+    "semantic-v2-truck-0",
+    "semantic-v2-truck-1",
+    "semantic-v2-truck-2",
+    "semantic-v2-door-0",
+    "semantic-v2-door-2",
+    "semantic-v2-door-3",
+    "semantic-v2-boat-0",
+    "semantic-v2-boat-1",
+    "semantic-v2-boat-3",
+    "semantic-v2-box-0",
+    "semantic-v2-snowboard-action-1",
+    "semantic-v2-vase-0",
+    "semantic-v2-cake-2",
+    "semantic-v2-egg-2",
+    "semantic-v2-egg-3",
+    "semantic-v2-rock-0",
+    "semantic-v2-rock-2",
+    "semantic-v2-coffee-0",
+    "semantic-v2-skirt-2",
+    "semantic-v2-plate-0",
+    "semantic-v2-plate-1",
+    "semantic-v2-plate-2",
+    "semantic-v2-plate-3",
+    "semantic-v2-mountain-0",
+    "semantic-v2-mountain-1",
+    "semantic-v2-mountain-2",
+    "semantic-v2-mountain-3",
+    "semantic-v2-knife-0",
+    "semantic-v2-knife-2",
+    "semantic-v2-knife-3",
+    "semantic-v2-teddy-bear-1",
+    "semantic-v2-window-1",
+    "semantic-v2-window-2",
+    "semantic-v2-window-3",
+    "semantic-v2-wave-0",
+    "semantic-v2-wave-1",
+    "semantic-v2-wave-2",
+    "semantic-v2-wave-3",
+    "semantic-v2-wooden-0",
+    "semantic-v2-wooden-1",
+    "semantic-v2-wooden-2",
+    "semantic-v2-wooden-3",
+    "semantic-v2-shower-3",
+    "semantic-v2-wet-1",
+    "semantic-v2-wet-2",
+    "semantic-v2-lie-down-1",
+    "semantic-v2-lie-down-3",
+    "semantic-v2-sit-1",
+    "semantic-v2-sit-2",
+    "semantic-v2-snowboard-0",
+    "semantic-v2-snowboard-1",
+    "semantic-v2-sheep-1",
+    "semantic-v2-tennis-court-0",
+    "semantic-v2-tennis-court-1",
+    "semantic-v2-tennis-court-2",
+    "semantic-v2-tennis-court-3",
+    "semantic-v2-laptop-0",
+    "semantic-v2-laptop-1",
+    "semantic-v2-laptop-2",
+    "semantic-v2-laptop-3",
+    "semantic-v2-river-0",
+    "semantic-v2-river-2",
+    "semantic-v2-river-3",
+    "semantic-v2-street-0",
+    "semantic-v2-street-2",
+    "semantic-v2-forest-1",
+    "semantic-v2-forest-2",
+    "semantic-v2-forest-3",
+    "semantic-v2-puppy-0",
+    "semantic-v2-puppy-1",
+    "semantic-v2-puppy-3",
+    "semantic-v2-zebra-0",
+    "semantic-v2-zebra-1",
+    "semantic-v2-zebra-2",
+    "semantic-v2-giraffe-0",
+    "semantic-v2-giraffe-1",
+    "semantic-v2-giraffe-2",
+    "semantic-v2-giraffe-3",
+    "semantic-v2-lake-3",
+    "semantic-v2-tie-0",
+    "semantic-v2-toilet-0",
+    "semantic-v2-bird-0",
+    "semantic-v2-bird-1",
+    "semantic-v2-bird-3",
+    "semantic-v2-walk-2",
+    "semantic-v2-throw-0",
+    "semantic-v2-throw-1",
+    "semantic-v2-throw-2",
+    "semantic-v2-breakfast-1",
+    "semantic-v2-breakfast-2",
+    "semantic-v2-monitor-0",
+    "semantic-v2-monitor-2",
+    "semantic-v2-monitor-3",
+    "semantic-v2-bottle-1",
+    "semantic-v2-bottle-3",
+    "semantic-v2-stop-sign-0",
+    "semantic-v2-stop-sign-1",
+    "semantic-v2-stop-sign-3",
+    "semantic-v2-fence-0",
+    "semantic-v2-fence-2",
+    "semantic-v2-fence-3",
+    "semantic-v2-traffic-light-0",
+    "semantic-v2-traffic-light-1",
+    "semantic-v2-traffic-light-2",
+    "semantic-v2-purple-1",
+    "semantic-v2-purple-2",
+    "semantic-v2-purple-3",
+    "semantic-v2-book-0",
+    "semantic-v2-suitcase-0",
+    "semantic-v2-suitcase-3",
+    "semantic-v2-snowy-0",
+    "semantic-v2-snowy-1",
+    "semantic-v2-snowy-2",
+    "semantic-v2-snowy-3",
+    "semantic-v2-trash-can-0",
+    "semantic-v2-trash-can-2",
+    "semantic-v2-tennis-racket-0",
+    "semantic-v2-tennis-racket-2",
+    "semantic-v2-subway-1",
+    "semantic-v2-subway-3",
+    "semantic-v2-leaf-0",
+    "semantic-v2-catch-0",
+    "semantic-v2-catch-3",
+    "semantic-v2-bedroom-1",
+    "semantic-v2-bedroom-2",
+    "semantic-v2-floor-1",
+    "semantic-v2-painting-0",
+    "semantic-v2-painting-1",
+    "semantic-v2-painting-2",
+    "semantic-v2-painting-3",
+    "semantic-v2-pink-0",
+    "semantic-v2-pink-2",
+    "semantic-v2-pink-3",
+    "semantic-v2-cabinet-0",
+    "semantic-v2-cabinet-1",
+    "semantic-v2-cabinet-2",
+    "semantic-v2-cabinet-3",
+    "semantic-v2-ride-bicycle-0",
+    "semantic-v2-ride-bicycle-1",
+    "semantic-v2-ride-bicycle-3",
+    "semantic-v2-beach-0",
+    "semantic-v2-beach-1",
+    "semantic-v2-run-0",
+    "semantic-v2-run-1",
+    "semantic-v2-tower-0",
+    "semantic-v2-tower-2",
+    "semantic-v2-tower-3",
+    "semantic-v2-tray-0",
+    "semantic-v2-tray-1",
+    "semantic-v2-tray-2",
+    "semantic-v2-tray-3",
+    "semantic-v2-red-0",
+    "semantic-v2-red-1",
+    "semantic-v2-red-2",
+    "semantic-v2-red-3",
+    "semantic-v2-scooter-1",
+    "semantic-v2-scooter-2",
+    "semantic-v2-scooter-3",
+    "semantic-v2-bear-3",
+    "semantic-v2-cow-1",
+    "semantic-v2-cow-2",
+    "semantic-v2-cow-3",
+    "semantic-v2-black-0",
+    "semantic-v2-field-0",
+    "semantic-v2-field-2",
+    "semantic-v2-field-3",
+    "semantic-v2-statue-1",
+    "semantic-v2-cup-0",
+    "semantic-v2-brick-0",
+    "semantic-v2-brick-1",
+    "semantic-v2-brick-2",
+    "semantic-v2-brick-3",
+    "semantic-v2-living-room-0",
+    "semantic-v2-living-room-1",
+    "semantic-v2-living-room-2",
+    "semantic-v2-living-room-3",
+    "semantic-v2-parked-bicycle-0",
+    "semantic-v2-parked-bicycle-2",
+    "semantic-v2-parked-bicycle-3",
+    "semantic-v2-play-tennis-0",
+    "semantic-v2-play-tennis-3",
+    "semantic-v2-airport-2",
+    "semantic-v2-dog-0",
+    "semantic-v2-dog-1",
+    "semantic-v2-dog-2",
+    "semantic-v2-ski-1",
+    "semantic-v2-roof-1",
+    "semantic-v2-roof-2",
+    "semantic-v2-bicycle-0",
+    "semantic-v2-bicycle-1",
+    "semantic-v2-bicycle-3",
+    "semantic-v2-microwave-3",
+    "semantic-v2-stand-0",
+    "semantic-v2-stand-1",
+    "semantic-v2-stand-2",
+    "semantic-v2-stand-3",
+    "semantic-v2-microphone-0",
+    "semantic-v2-microphone-2",
+    "semantic-v2-microphone-3",
+    "semantic-v2-clock-0",
+    "semantic-v2-clock-1",
+    "semantic-v2-tree-0",
+    "semantic-v2-tree-3",
+    "semantic-v2-stream-2",
+    "semantic-v2-railway-0",
+    "semantic-v2-railway-1",
+    "semantic-v2-railway-3",
+    "semantic-v2-market-0",
+    "semantic-v2-market-1",
+    "semantic-v2-market-2",
+    "semantic-v2-market-3",
+    "semantic-v2-eat-2",
+    "semantic-v2-hold-1",
+    "semantic-v2-ball-0",
+    "semantic-v2-ball-2",
+    "semantic-v2-ball-3",
+    "semantic-v2-uniform-2",
+    "semantic-v2-fly-bird-1",
+    "semantic-v2-fly-bird-2",
+    "semantic-v2-fly-bird-3",
+    "semantic-v2-broken-0",
+    "semantic-v2-broken-1",
+    "semantic-v2-smile-0",
+    "semantic-v2-smile-1",
+    "semantic-v2-skis-0",
+    "semantic-v2-skis-2",
+    "semantic-v2-horse-0",
+    "semantic-v2-horse-2",
+    "semantic-v2-horse-3",
+    "semantic-v2-broccoli-1",
+    "semantic-v2-broccoli-2",
+    "semantic-v2-computer-mouse-1",
+    "semantic-v2-hat-2",
+    "semantic-v2-hat-3",
+    "semantic-v2-fire-hydrant-0",
+    "semantic-v2-fire-hydrant-1",
+    "semantic-v2-fire-hydrant-2",
+    "semantic-v2-fire-hydrant-3",
+    "semantic-v2-car-1",
+    "semantic-v2-phone-0",
+    "semantic-v2-phone-3",
+    "semantic-v2-glove-0",
+    "semantic-v2-glove-1",
+    "semantic-v2-glove-3",
+    "semantic-v2-building-0",
+    "semantic-v2-building-1",
+    "semantic-v2-building-2",
+    "semantic-v2-building-3",
+    "semantic-v2-kitten-0",
+    "semantic-v2-kitten-2",
+    "semantic-v2-dress-1",
+    "semantic-v2-dress-2",
+    "semantic-v2-dress-3",
+    "semantic-v2-baseball-bat-1",
+    "semantic-v2-baseball-bat-2",
+    "semantic-v2-cat-1",
+    "semantic-v2-cat-2",
+    "semantic-v2-cat-3",
+    "semantic-v2-blanket-2",
+    "semantic-v2-blanket-3",
+    "semantic-v2-flower-0",
+    "semantic-v2-flower-1",
+    "semantic-v2-flower-3",
+    "semantic-v2-bowl-1",
+    "semantic-v2-reflection-1",
+    "semantic-v2-reflection-2",
+    "semantic-v2-reflection-3",
+    "semantic-v2-hill-3",
+    "semantic-v2-play-baseball-0",
+    "semantic-v2-play-baseball-2",
+    "semantic-v2-play-baseball-3",
+    "semantic-v2-airplane-0",
+    "semantic-v2-airplane-1",
+    "semantic-v2-fly-airplane-0",
+    "semantic-v2-fly-airplane-1",
+    "semantic-v2-fly-airplane-2",
+    "semantic-v2-fly-airplane-3",
+    "semantic-v2-empty-2",
+    "semantic-v2-empty-3",
+    "semantic-v2-kitchen-0",
+    "semantic-v2-kitchen-1",
+    "semantic-v2-kitchen-3",
+    "semantic-v2-bathroom-0",
+    "semantic-v2-bathroom-3",
+    "semantic-v2-apple-2",
+    "semantic-v2-chair-0",
+    "semantic-v2-chair-2",
+    "semantic-v2-chair-3",
+    "semantic-v2-parked-airplane-0",
+    "semantic-v2-parked-airplane-1",
+    "semantic-v2-parked-airplane-3",
+    "semantic-v2-bathtub-2",
+    "semantic-v2-bathtub-3",
+    "semantic-v2-fork-0",
+    "semantic-v2-fork-1",
+    "semantic-v2-green-1",
+    "semantic-v2-bag-1",
+    "semantic-v2-feed-1",
+    "semantic-v2-feed-2",
+    "semantic-v2-feed-3",
+    "semantic-v2-restaurant-0",
+    "semantic-v2-restaurant-2",
+    "semantic-v2-restaurant-3",
+    "semantic-v2-basket-0",
+    "semantic-v2-extra-pasta-1",
+    "semantic-v2-extra-pasta-2",
+    "semantic-v2-extra-pasta-3",
+    "semantic-v2-extra-noodle-3",
+    "semantic-v2-extra-juice-1",
+    "semantic-v2-extra-juice-2",
+    "semantic-v2-extra-juice-3",
+    "semantic-v2-extra-cupcake-2",
+    "semantic-v2-extra-cupcake-3",
+    "semantic-v2-extra-hamburger-1",
+    "semantic-v2-extra-milk-0",
+    "semantic-v2-extra-milk-3",
+    "semantic-v2-extra-chocolate-1",
+    "semantic-v2-extra-chocolate-3",
+    "semantic-v2-extra-cheese-0",
+    "semantic-v2-extra-cheese-1",
+    "semantic-v2-extra-cheese-2",
+    "semantic-v2-extra-orange-fruit-3",
+    "semantic-v2-extra-meat-0",
+    "semantic-v2-extra-meat-1",
+    "semantic-v2-extra-meat-2",
+    "semantic-v2-extra-doughnut-1",
+    "semantic-v2-extra-doughnut-3",
+    "semantic-v2-extra-pizza-0",
+    "semantic-v2-extra-pizza-1",
+    "semantic-v2-extra-pizza-2",
+    "semantic-v2-extra-pizza-3"
+  ],
+  "preservation": [
+    {
+      "path": "tests/fixtures/image-pretraining-v2/cases.json",
+      "sha256": "d5d70ecd14fd49fd76fa344e125bbf2331ad3c90f915e5cf25584ddbddc6bff7"
+    },
+    {
+      "path": "tests/fixtures/image-pretraining-fp16/embeddings.json.gz",
+      "sha256": "2ae53c17352c1381d29b71060d6e7624b63a2e8335f5325d7b853f0efa778b1e"
+    },
+    {
+      "path": "tests/fixtures/image-pretraining-v2/embeddings.json.gz",
+      "sha256": "858822dd4b59479e35f101f7f180fbca7f3827182adcedd5c89dcbd12724b576"
+    }
+  ]
+}

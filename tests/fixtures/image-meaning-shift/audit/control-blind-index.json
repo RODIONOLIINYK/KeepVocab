@@ -1,0 +1,625 @@
+[
+  {
+    "page": 0,
+    "file": "work/meaning-shift/control-review/page-00.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-bathroom-2",
+        "word": {
+          "word": "bathroom",
+          "partOfSpeech": "noun",
+          "definition": "A room containing washing or toilet facilities.",
+          "imageScenes": {
+            "scenes": [
+              "the inside of a bathroom"
+            ]
+          }
+        },
+        "candidateIds": [
+          "541123",
+          "89271",
+          "230450",
+          "557501",
+          "504439"
+        ]
+      },
+      {
+        "id": "semantic-v2-cat-0",
+        "word": {
+          "word": "cat",
+          "partOfSpeech": "noun",
+          "definition": "A small domesticated feline animal.",
+          "imageScenes": {
+            "scenes": [
+              "a domestic cat"
+            ]
+          }
+        },
+        "candidateIds": [
+          "96825",
+          "131131",
+          "346968",
+          "56127",
+          "486046"
+        ]
+      },
+      {
+        "id": "semantic-v2-apple-1",
+        "word": {
+          "word": "apple",
+          "partOfSpeech": "noun",
+          "definition": "A round edible fruit with a firm skin.",
+          "imageScenes": {
+            "scenes": [
+              "an apple fruit"
+            ]
+          }
+        },
+        "candidateIds": [
+          "2149",
+          "272212",
+          "102331",
+          "523957",
+          "569917"
+        ]
+      },
+      {
+        "id": "semantic-v2-play-baseball-1",
+        "word": {
+          "word": "play baseball",
+          "partOfSpeech": "verb",
+          "definition": "To take part in a bat-and-ball team game.",
+          "imageScenes": {
+            "scenes": [
+              "a person playing baseball"
+            ]
+          }
+        },
+        "candidateIds": [
+          "264968",
+          "190753",
+          "481404",
+          "500565",
+          "240940"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 1,
+    "file": "work/meaning-shift/control-review/page-01.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-chair-0",
+        "word": {
+          "word": "chair",
+          "partOfSpeech": "noun",
+          "definition": "A seat for one person with a back.",
+          "imageScenes": {
+            "scenes": [
+              "a chair"
+            ]
+          }
+        },
+        "candidateIds": [
+          "15335",
+          "71756",
+          "519569",
+          "550939"
+        ]
+      },
+      {
+        "id": "semantic-v2-extra-banana-3",
+        "word": {
+          "word": "banana",
+          "partOfSpeech": "noun",
+          "definition": "A long curved fruit with a peel.",
+          "imageScenes": {
+            "scenes": [
+              "a banana"
+            ]
+          }
+        },
+        "candidateIds": [
+          "384468",
+          "163562",
+          "167240",
+          "12667"
+        ]
+      },
+      {
+        "id": "semantic-v2-computer-mouse-0",
+        "word": {
+          "word": "computer mouse",
+          "partOfSpeech": "noun",
+          "definition": "A hand-operated device used to move a pointer on a screen.",
+          "imageScenes": {
+            "scenes": [
+              "a computer mouse beside a keyboard"
+            ]
+          }
+        },
+        "candidateIds": [
+          "85478",
+          "130613",
+          "32941",
+          "65074",
+          "560011"
+        ]
+      },
+      {
+        "id": "semantic-v2-lie-down-0",
+        "word": {
+          "word": "lie down",
+          "partOfSpeech": "verb",
+          "definition": "To rest with the body stretched out horizontally.",
+          "imageScenes": {
+            "scenes": [
+              "a person or animal lying down"
+            ]
+          }
+        },
+        "candidateIds": [
+          "290592",
+          "125072",
+          "546823",
+          "73118",
+          "254368"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 2,
+    "file": "work/meaning-shift/control-review/page-02.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-bag-0",
+        "word": {
+          "word": "bag",
+          "partOfSpeech": "noun",
+          "definition": "A flexible container used for carrying things.",
+          "imageScenes": {
+            "scenes": [
+              "a carrying bag"
+            ]
+          }
+        },
+        "candidateIds": [
+          "105014",
+          "198510",
+          "111609",
+          "410456",
+          "245311"
+        ]
+      },
+      {
+        "id": "semantic-v2-broccoli-0",
+        "word": {
+          "word": "broccoli",
+          "partOfSpeech": "noun",
+          "definition": "A green vegetable with branching flower heads.",
+          "imageScenes": {
+            "scenes": [
+              "broccoli florets"
+            ]
+          }
+        },
+        "candidateIds": [
+          "48153",
+          "277051",
+          "92660",
+          "490515",
+          "187734"
+        ]
+      },
+      {
+        "id": "semantic-v2-cake-1",
+        "word": {
+          "word": "cake",
+          "partOfSpeech": "noun",
+          "definition": "A sweet baked food often served in slices.",
+          "imageScenes": {
+            "scenes": [
+              "a cake"
+            ]
+          }
+        },
+        "candidateIds": [
+          "363207",
+          "52591",
+          "262587",
+          "236914",
+          "180011"
+        ]
+      },
+      {
+        "id": "semantic-v2-catch-1",
+        "word": {
+          "word": "catch",
+          "partOfSpeech": "verb",
+          "definition": "To stop and take hold of a moving object.",
+          "imageScenes": {
+            "scenes": [
+              "a person catching a ball"
+            ]
+          }
+        },
+        "candidateIds": [
+          "442161",
+          "328238",
+          "253433",
+          "370478"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 3,
+    "file": "work/meaning-shift/control-review/page-03.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-extra-chocolate-1",
+        "word": {
+          "word": "chocolate",
+          "partOfSpeech": "noun",
+          "definition": "A sweet brown food made from cacao.",
+          "imageScenes": {
+            "scenes": [
+              "chocolate"
+            ]
+          }
+        },
+        "candidateIds": [
+          "358525",
+          "363875",
+          "54605",
+          "82688",
+          "477118"
+        ]
+      },
+      {
+        "id": "semantic-v2-bathtub-1",
+        "word": {
+          "word": "bathtub",
+          "partOfSpeech": "noun",
+          "definition": "A large basin used for bathing the body.",
+          "imageScenes": {
+            "scenes": [
+              "a bathtub"
+            ]
+          }
+        },
+        "candidateIds": [
+          "113403",
+          "383443",
+          "511647",
+          "548555",
+          "514508"
+        ]
+      },
+      {
+        "id": "semantic-v2-phone-0",
+        "word": {
+          "word": "phone",
+          "partOfSpeech": "noun",
+          "definition": "A handheld device used to make calls.",
+          "imageScenes": {
+            "scenes": [
+              "a mobile phone"
+            ]
+          }
+        },
+        "candidateIds": [
+          "453841",
+          "151000",
+          "127476",
+          "64718",
+          "309467"
+        ]
+      },
+      {
+        "id": "semantic-v2-flower-1",
+        "word": {
+          "word": "flower",
+          "partOfSpeech": "noun",
+          "definition": "The colourful blossom of a flowering plant.",
+          "imageScenes": {
+            "scenes": [
+              "flowers in bloom"
+            ]
+          }
+        },
+        "candidateIds": [
+          "407960",
+          "45550",
+          "556873",
+          "389315",
+          "175443"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 4,
+    "file": "work/meaning-shift/control-review/page-04.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-extra-cupcake-1",
+        "word": {
+          "word": "cupcake",
+          "partOfSpeech": "noun",
+          "definition": "A small individual cake baked in a cup-shaped mould.",
+          "imageScenes": {
+            "scenes": [
+              "a cupcake"
+            ]
+          }
+        },
+        "candidateIds": [
+          "477955",
+          "84752",
+          "329542",
+          "288042",
+          "193245"
+        ]
+      },
+      {
+        "id": "semantic-v2-extra-doughnut-0",
+        "word": {
+          "word": "doughnut",
+          "partOfSpeech": "noun",
+          "definition": "A small sweet fried cake, often shaped like a ring.",
+          "imageScenes": {
+            "scenes": [
+              "a doughnut"
+            ]
+          }
+        },
+        "candidateIds": [
+          "190236",
+          "360325",
+          "477623",
+          "165831",
+          "405195"
+        ]
+      },
+      {
+        "id": "semantic-v2-extra-milk-0",
+        "word": {
+          "word": "milk",
+          "partOfSpeech": "noun",
+          "definition": "A white liquid produced by mammals and used as a drink.",
+          "imageScenes": {
+            "scenes": [
+              "milk in a container"
+            ]
+          }
+        },
+        "candidateIds": [
+          "31050",
+          "329455",
+          "210502",
+          "349302",
+          "532058"
+        ]
+      },
+      {
+        "id": "semantic-v2-blue-1",
+        "word": {
+          "word": "blue",
+          "partOfSpeech": "adjective",
+          "definition": "Having the colour of a clear daytime sky.",
+          "imageScenes": {
+            "scenes": [
+              "a clearly blue object"
+            ]
+          }
+        },
+        "candidateIds": [
+          "137950",
+          "81061",
+          "21465",
+          "492077"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 5,
+    "file": "work/meaning-shift/control-review/page-05.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-blanket-0",
+        "word": {
+          "word": "blanket",
+          "partOfSpeech": "noun",
+          "definition": "A large piece of warm cloth used as a covering.",
+          "imageScenes": {
+            "scenes": [
+              "a blanket"
+            ]
+          }
+        },
+        "candidateIds": [
+          "17714",
+          "215245",
+          "384670",
+          "65074",
+          "6723"
+        ]
+      },
+      {
+        "id": "semantic-v2-extra-pasta-0",
+        "word": {
+          "word": "pasta",
+          "partOfSpeech": "noun",
+          "definition": "Food made from flour and water shaped into pieces and cooked.",
+          "imageScenes": {
+            "scenes": [
+              "cooked pasta"
+            ]
+          }
+        },
+        "candidateIds": [
+          "189436",
+          "181753",
+          "407524",
+          "461275",
+          "559956"
+        ]
+      },
+      {
+        "id": "semantic-v2-cart-0",
+        "word": {
+          "word": "cart",
+          "partOfSpeech": "noun",
+          "definition": "A wheeled container or small vehicle used to carry goods.",
+          "imageScenes": {
+            "scenes": [
+              "a wheeled cart"
+            ]
+          }
+        },
+        "candidateIds": [
+          "255824",
+          "402473",
+          "521719",
+          "500826",
+          "29187"
+        ]
+      },
+      {
+        "id": "semantic-v2-puppy-2",
+        "word": {
+          "word": "puppy",
+          "partOfSpeech": "noun",
+          "definition": "A young dog.",
+          "imageScenes": {
+            "scenes": [
+              "a puppy"
+            ]
+          }
+        },
+        "candidateIds": [
+          "334483",
+          "19042",
+          "251572",
+          "227686",
+          "15079"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 6,
+    "file": "work/meaning-shift/control-review/page-06.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-glove-2",
+        "word": {
+          "word": "glove",
+          "partOfSpeech": "noun",
+          "definition": "A covering for a hand with sections for the fingers.",
+          "imageScenes": {
+            "scenes": [
+              "a glove"
+            ]
+          }
+        },
+        "candidateIds": [
+          "459195",
+          "407960",
+          "46872",
+          "574823"
+        ]
+      },
+      {
+        "id": "semantic-v2-rain-1",
+        "word": {
+          "word": "rain",
+          "partOfSpeech": "noun",
+          "definition": "Water falling from clouds in drops.",
+          "imageScenes": {
+            "scenes": [
+              "rain falling outdoors"
+            ]
+          }
+        },
+        "candidateIds": [
+          "144706",
+          "192964",
+          "354072",
+          "27186",
+          "449432"
+        ]
+      },
+      {
+        "id": "semantic-v2-bowl-0",
+        "word": {
+          "word": "bowl",
+          "partOfSpeech": "noun",
+          "definition": "A deep round container used for food.",
+          "imageScenes": {
+            "scenes": [
+              "a food bowl"
+            ]
+          }
+        },
+        "candidateIds": [
+          "137294",
+          "469174",
+          "525600",
+          "482719",
+          "145665"
+        ]
+      },
+      {
+        "id": "semantic-v2-hat-1",
+        "word": {
+          "word": "hat",
+          "partOfSpeech": "noun",
+          "definition": "A covering worn on the head.",
+          "imageScenes": {
+            "scenes": [
+              "a hat"
+            ]
+          }
+        },
+        "candidateIds": [
+          "568814",
+          "513580",
+          "400922",
+          "345361",
+          "569700"
+        ]
+      }
+    ]
+  },
+  {
+    "page": 7,
+    "file": "work/meaning-shift/control-review/page-07.jpg",
+    "cases": [
+      {
+        "id": "semantic-v2-hill-3",
+        "word": {
+          "word": "hill",
+          "partOfSpeech": "noun",
+          "definition": "A raised area of land smaller than a mountain.",
+          "imageScenes": {
+            "scenes": [
+              "a grassy hill"
+            ]
+          }
+        },
+        "candidateIds": [
+          "205647",
+          "207728",
+          "118515",
+          "151516",
+          "205514"
+        ]
+      }
+    ]
+  }
+]
