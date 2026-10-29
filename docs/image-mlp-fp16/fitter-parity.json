@@ -1,0 +1,10 @@
+{
+  "reference": "Unmodified v1.12.4 trainer, same fresh FP16 data and fixed recipe",
+  "referenceTag": "v1.12.4",
+  "parameters": 49825,
+  "changedParameters": 0,
+  "maximumAbsoluteWeightDifference": 0,
+  "referenceEpochsRun": 16,
+  "newEpochsRun": 16,
+  "passed": true
+}

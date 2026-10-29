@@ -1,0 +1,72 @@
+{
+  "encoder": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+  "targetTask": "semantic",
+  "protocolSha256": "04a5bfa460dcd7588397761898e8754ece50a52eb43d7e77df24a1f611c7ecf5",
+  "manifestSha256": "d5d70ecd14fd49fd76fa344e125bbf2331ad3c90f915e5cf25584ddbddc6bff7",
+  "eventsSha256": "8897995f7129727dadc8e3eab1eb696df5da19f5f03d7424512b90ff18a80875",
+  "nodeVersion": "v22.23.1",
+  "sourceSha256": {
+    "js/services/imagePersonalizer.js": "553a9c965626bcccfdd21a3954b602ff0d6178b5afa6ce3813a6f00d64f32a58",
+    "scripts/retrain-image-personalizer.mjs": "74e5d1b3bbe47b013e28c767dc567c99410ea07421750e3e4c966d81bc949227",
+    "scripts/lib/image-training-diagnostics.mjs": "fd951f1de4291fedc3ef5b80560514339f5456537eea7199285d73e47fde954e"
+  },
+  "comparisons": 2390,
+  "diversity": {
+    "train": {
+      "choices": 385,
+      "meanings": 141,
+      "families": 131,
+      "sourcePhotos": 1036,
+      "candidateCounts": [
+        3,
+        4,
+        5
+      ],
+      "preferredPositions": {
+        "0": 75,
+        "1": 80,
+        "2": 70,
+        "3": 96,
+        "4": 64
+      }
+    },
+    "validation": {
+      "choices": 133,
+      "meanings": 49,
+      "families": 46,
+      "sourcePhotos": 355,
+      "candidateCounts": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "preferredPositions": {
+        "0": 24,
+        "1": 30,
+        "2": 32,
+        "3": 29,
+        "4": 18
+      }
+    },
+    "test": {
+      "choices": 120,
+      "meanings": 47,
+      "families": 45,
+      "sourcePhotos": 345,
+      "candidateCounts": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "preferredPositions": {
+        "0": 29,
+        "1": 27,
+        "2": 29,
+        "3": 16,
+        "4": 19
+      }
+    }
+  }
+}

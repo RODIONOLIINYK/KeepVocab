@@ -1,0 +1,40 @@
+{
+  "encoder": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+  "sourcePhotos": 1736,
+  "sourceBytes": 282541479,
+  "allPhotoHashesMatched": true,
+  "sourceManifest": "tests/fixtures/image-pretraining-v2/cases.json",
+  "modelFiles": [
+    {
+      "name": "config.json",
+      "bytes": 344,
+      "sha256": "8e33c1f2634a33de3e38715f9809ef86742aacbe31c310c66fc2636755458d56"
+    },
+    {
+      "name": "preprocessor_config.json",
+      "bytes": 382,
+      "sha256": "b031f09fbd69e22a605b6cc7433993249ee893b7fc1b79321f669cd015493dd4"
+    },
+    {
+      "name": "tokenizer.json",
+      "bytes": 2224081,
+      "sha256": "72ed5c96db5729294468543e4bc75fce14ca63f58e37300290189ba1c1e52b85"
+    },
+    {
+      "name": "tokenizer_config.json",
+      "bytes": 763,
+      "sha256": "a7d9d24f248071b792e4a3b56ab0539c2f40eec8da56d6fd91fb3a50058acebd"
+    },
+    {
+      "name": "onnx/text_model_fp16.onnx",
+      "bytes": 84971030,
+      "sha256": "2f74b7b3abd9f3a70dcc60115f627bbadb9534606ac841400f9841f49bf980cc"
+    },
+    {
+      "name": "onnx/vision_model.onnx",
+      "bytes": 45543630,
+      "sha256": "17d3c037b1d488c10c50e09f6009ea5a198caef4e0e8f4ea5617b7cb2d067ac0"
+    }
+  ],
+  "photoReuse": "All original split assignments and labels preserved; no label changed from model predictions."
+}

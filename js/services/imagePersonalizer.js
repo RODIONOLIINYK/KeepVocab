@@ -8,6 +8,8 @@ export const PERSONALIZER_LAYERS = [PERSONALIZER_INPUTS, 32, 16, 1];
 export const PERSONALIZER_PARAMETERS = 49825;
 export const PERSONALIZER_LIMIT = .08;
 export const PERSONAL_PREFERENCE_LIMIT = .04;
+export const PERSONALIZER_FIT_DEFAULTS = Object.freeze({ learningRate: .002, regularization: .001, beta1: .9, beta2: .999,
+  epsilon: 1e-8, gradientClip: 1, patience: 4, minimumImprovement: .0001 });
 const layers = [[PERSONALIZER_INPUTS, 32], [32, 16], [16, 1]];
 const offsets = [];
 let end = 0;
@@ -85,12 +87,22 @@ function frozenBaseScore(model, features, meaningFeatures) {
 }
 export function personalizerScore(model, features, meaningFeatures) {
   if (!validPersonalizer(model) || !meaningFeatures) return baseScore(features);
+  return scoreValidPersonalizer(model, features, meaningFeatures);
+}
+function scoreValidPersonalizer(model, features, meaningFeatures) {
   const base = frozenBaseScore(model, features, meaningFeatures);
   const x = personalizerInput(features, meaningFeatures);
   let residual = residualLimit(model) * Math.tanh(forward(model.weights, x)[3][0]);
   // Preference never boosts an image toward a competing dictionary sense.
   if (decodeFeatures(features)[513] < 0) residual = Math.min(0, residual);
   return base + residual;
+}
+// A fixed evaluation pass validates weights once, rather than scanning all
+// 49,825 parameters for every photo. Callers must not mutate the model mid-pass.
+export function createPersonalizerScorer(model) {
+  const valid = validPersonalizer(model);
+  return (features, meaningFeatures) => valid && meaningFeatures
+    ? scoreValidPersonalizer(model, features, meaningFeatures) : baseScore(features);
 }
 export function activeImageExamples(records = [], resetAt = '') {
   const latest = new Map();
@@ -156,11 +168,11 @@ function observations(decision) {
   if (pairs.length) return pairs.map(r => ({ winner: r.preferredFeatures, loser: r.features, meaning: r.meaningFeatures, weight: 1 / pairs.length }));
   return decision.records.filter(r => r.label === 0).map(r => ({ rejected: r.features, meaning: r.meaningFeatures, weight: 1 }));
 }
-function evaluateDecision(model, decision) {
+function evaluateDecision(score, decision) {
   const rows = observations(decision); let loss = 0, wins = 0, rejectedAboveThreshold = 0;
   for (const row of rows) {
-    const difference = row.rejected ? .3 - personalizerScore(model, row.rejected, row.meaning)
-      : personalizerScore(model, row.winner, row.meaning) - personalizerScore(model, row.loser, row.meaning);
+    const difference = row.rejected ? .3 - score(row.rejected, row.meaning)
+      : score(row.winner, row.meaning) - score(row.loser, row.meaning);
     if (row.rejected && difference <= 0) rejectedAboveThreshold++;
     const probability = sigmoid(difference * 8);
     loss -= Math.log(Math.max(1e-8, probability)) * row.weight;
@@ -169,7 +181,8 @@ function evaluateDecision(model, decision) {
   return { loss, accuracy: wins, rejectedAboveThreshold, eligible: rows.length > 0 };
 }
 export function evaluatePersonalizer(model, decisions) {
-  const rows = decisions.map(d => ({ id: d.id, meaningId: d.meaningId, ...evaluateDecision(model, d) })).filter(r => r.eligible);
+  const score = createPersonalizerScorer(model);
+  const rows = decisions.map(d => ({ id: d.id, meaningId: d.meaningId, ...evaluateDecision(score, d) })).filter(r => r.eligible);
   return { decisions: rows.length, rejectedAboveThreshold: rows.reduce((n, r) => n + r.rejectedAboveThreshold, 0), loss: rows.length ? rows.reduce((s, r) => s + r.loss, 0) / rows.length : null,
     accuracy: rows.length ? rows.reduce((s, r) => s + r.accuracy, 0) / rows.length : null, rows };
 }
@@ -202,7 +215,89 @@ function backward(weights, activations, outputGradient, gradient) {
     delta = previous;
   }
 }
-export function trainImagePersonalizer(records, incumbent = null, { epochs = 20, batchSize = 8, maxMilliseconds = 20000, initialization = null, outputOnly = null, task = 'preference', datasetPartitions = null, returnCandidate = false, progress = () => {} } = {}) {
+function preparedDecisions(model, decisions) {
+  return decisions.map(d => ({ ...d, observations: observations(d).map(row => ({ ...row,
+    a: personalizerInput(row.winner || row.rejected, row.meaning), b: row.loser ? personalizerInput(row.loser, row.meaning) : null,
+    baseA: frozenBaseScore(model, row.winner || row.rejected, row.meaning), baseB: row.loser ? frozenBaseScore(model, row.loser, row.meaning) : null
+  })) })).filter(d => d.observations.length);
+}
+function batchGradient(model, batch) {
+  const gradient = new Float32Array(PERSONALIZER_PARAMETERS), limit = residualLimit(model);
+  for (const decision of batch) for (const row of decision.observations) {
+    const a = forward(model.weights, row.a), b = row.b ? forward(model.weights, row.b) : null;
+    const rawA = Math.tanh(a[3][0]), rawB = b ? Math.tanh(b[3][0]) : 0;
+    const clampA = row.a[1537] < 0 && rawA > 0, clampB = b && row.b[1537] < 0 && rawB > 0;
+    const ra = clampA ? 0 : rawA, rb = clampB ? 0 : rawB;
+    const difference = b ? row.baseA + limit * ra - row.baseB - limit * rb : .3 - row.baseA - limit * ra;
+    const error = (sigmoid(difference * 8) - 1) * 8 * row.weight / batch.length;
+    backward(model.weights, a, clampA ? 0 : error * limit * (1 - ra * ra) * (b ? 1 : -1), gradient);
+    if (b) backward(model.weights, b, clampB ? 0 : -error * limit * (1 - rb * rb), gradient);
+  }
+  return gradient;
+}
+// Offline diagnostics use the exact gradient and objective used by app fitting.
+// This helper does not authorize or activate a model.
+export function personalizerLossAndGradient(model, decisions) {
+  if (!validPersonalizer(model) || !decisions.length) throw new Error('A current model and nonempty decisions are required.');
+  const batch = preparedDecisions(model, decisions);
+  if (!batch.length) throw new Error('No usable observations.');
+  return { loss: evaluatePersonalizer(model, decisions).loss, gradient: batchGradient(model, batch) };
+}
+export function personalizerActivationSignature(model, decisions) {
+  if (!validPersonalizer(model)) throw new Error('A current model is required.');
+  const parts = [];
+  for (const decision of preparedDecisions(model, decisions)) for (const row of decision.observations) {
+    for (const input of [row.a, row.b].filter(Boolean)) {
+      const state = forward(model.weights, input);
+      parts.push(...state[1].map(value => Number(value > 0)), ...state[2].map(value => Number(value > 0)),
+        Number(input[1537] < 0 && state[3][0] > 0));
+    }
+  }
+  return parts.join('');
+}
+// Shared numerical fitting core. The public trainer below owns split validation,
+// minimum-data requirements and acceptance; fitting alone never activates a head.
+export function fitImagePersonalizer(initialModel, train, validation, { epochs = 20, batchSize = 8, maxMilliseconds = 20000,
+  outputOnly = false, learningRate = PERSONALIZER_FIT_DEFAULTS.learningRate, regularization = PERSONALIZER_FIT_DEFAULTS.regularization,
+  patience = PERSONALIZER_FIT_DEFAULTS.patience, minimumImprovement = PERSONALIZER_FIT_DEFAULTS.minimumImprovement,
+  progress = () => {}, observeEpoch = () => {} } = {}) {
+  if (!validPersonalizer(initialModel) || !train.length || !validation.length) throw new Error('Fitting requires a current model and nonempty training/validation decisions.');
+  if (!Number.isInteger(epochs) || epochs < 1 || !Number.isInteger(batchSize) || batchSize < 1 || !(learningRate > 0)
+    || !(regularization >= 0) || !(maxMilliseconds > 0) || !(patience > 0)) throw new Error('Invalid fitting hyperparameters.');
+  const model = clone(initialModel); model.weights = Float32Array.from(model.weights);
+  const initial = Float32Array.from(model.weights), momentum = new Float32Array(initial.length), variance = new Float32Array(initial.length);
+  const training = preparedDecisions(model, train);
+  if (!training.length) throw new Error('No usable training observations.');
+  const { beta1, beta2, epsilon, gradientClip } = PERSONALIZER_FIT_DEFAULTS;
+  const start = performance.now(); let step = 0, best = evaluatePersonalizer(model, validation).loss, bestWeights = Float32Array.from(initial), stale = 0;
+  let bestEpoch = 0, epochsRun = 0;
+  observeEpoch(model, { epoch: 0, validationLoss: best, selectedEpoch: bestEpoch });
+  for (let epoch = 0; epoch < epochs && performance.now() - start < maxMilliseconds; epoch++) {
+    // Rotate through the full training history; batch size never limits retention.
+    const ordered = [...training.slice(epoch % training.length), ...training.slice(0, epoch % training.length)];
+    for (let offset = 0; offset < ordered.length && performance.now() - start < maxMilliseconds; offset += batchSize) {
+      const batch = ordered.slice(offset, offset + batchSize), gradient = batchGradient(model, batch);
+      step++;
+      for (let i = outputOnly ? offsets[2] : 0; i < gradient.length; i++) {
+        const g = Math.max(-gradientClip, Math.min(gradientClip, gradient[i] + regularization * (model.weights[i] - initial[i])));
+        // Preserve the original decimal update coefficients exactly. Computing
+        // 1 - beta in binary changes Float32 rounding and can alter later steps.
+        momentum[i] = beta1 * momentum[i] + .1 * g; variance[i] = beta2 * variance[i] + .001 * g * g;
+        model.weights[i] -= learningRate * (momentum[i] / (1 - beta1 ** step)) / (Math.sqrt(variance[i] / (1 - beta2 ** step)) + epsilon);
+      }
+    }
+    const validationLoss = evaluatePersonalizer(model, validation).loss;
+    if (validationLoss < best - minimumImprovement) { best = validationLoss; bestWeights = Float32Array.from(model.weights); bestEpoch = epoch + 1; stale = 0; } else stale++;
+    epochsRun = epoch + 1;
+    progress({ epoch: epochsRun, epochs, validationLoss });
+    observeEpoch(model, { epoch: epochsRun, validationLoss, selectedEpoch: bestEpoch });
+    if (stale >= patience) break;
+  }
+  model.weights = bestWeights;
+  return { model, bestEpoch, epochsRun, steps: step, elapsedMs: performance.now() - start,
+    stoppedBy: stale >= patience ? 'early-stopping' : epochsRun >= epochs ? 'epochs' : 'time-budget' };
+}
+export function trainImagePersonalizer(records, incumbent = null, { epochs = 20, batchSize = 8, maxMilliseconds = 20000, initialization = null, outputOnly = null, task = 'preference', datasetPartitions = null, returnCandidate = false, progress = () => {}, observeEpoch = () => {} } = {}) {
   if (!['semantic', 'preference'].includes(task)) throw new Error('Unknown image training task.');
   if (datasetPartitions != null && task !== 'semantic') throw new Error('Explicit dataset partitions are available only for semantic training.');
   if (incumbent?.role && incumbent.role !== task) return { accepted: false, reason: 'Semantic and personal training models must remain separate.' };
@@ -217,43 +312,12 @@ export function trainImagePersonalizer(records, incumbent = null, { epochs = 20,
   let seed = initialization;
   if (task === 'preference' && seed?.role === 'semantic') seed = createPreferencePersonalizer(seed);
   if (seed?.genericValidation?.accepted === false || seed?.role && seed.role !== task) seed = null;
-  const model = validPersonalizer(incumbent) ? clone(incumbent) : validPersonalizer(seed) ? clone(seed) : createPersonalizer();
+  let model = validPersonalizer(incumbent) ? clone(incumbent) : validPersonalizer(seed) ? clone(seed) : createPersonalizer();
   model.role = task;
   if (task === 'semantic') { delete model.semanticBase; delete model.pretrained; }
   model.weights = Float32Array.from(model.weights);
   const trainOutputOnly = outputOnly ?? (task === 'preference' && Boolean(model.pretrained));
-  const limit = residualLimit(model);
-  const initial = Float32Array.from(model.weights), momentum = new Float32Array(initial.length), variance = new Float32Array(initial.length);
-  const training = split.train.map(d => ({ ...d, observations: observations(d).map(row => ({ ...row, a: personalizerInput(row.winner || row.rejected, row.meaning), b: row.loser ? personalizerInput(row.loser, row.meaning) : null, baseA: frozenBaseScore(model, row.winner || row.rejected, row.meaning), baseB: row.loser ? frozenBaseScore(model, row.loser, row.meaning) : null })) })).filter(d => d.observations.length);
-  const start = performance.now(); let step = 0, best = evaluatePersonalizer(model, split.validation).loss, bestWeights = Float32Array.from(initial), stale = 0;
-  for (let epoch = 0; epoch < epochs && performance.now() - start < maxMilliseconds; epoch++) {
-    // Rotate through the full training history; batch size never limits retention.
-    const ordered = [...training.slice(epoch % training.length), ...training.slice(0, epoch % training.length)];
-    for (let offset = 0; offset < ordered.length && performance.now() - start < maxMilliseconds; offset += batchSize) {
-      const batch = ordered.slice(offset, offset + batchSize), gradient = new Float32Array(initial.length);
-      for (const decision of batch) for (const row of decision.observations) {
-        const a = forward(model.weights, row.a), b = row.b ? forward(model.weights, row.b) : null;
-        const rawA = Math.tanh(a[3][0]), rawB = b ? Math.tanh(b[3][0]) : 0;
-        const clampA = row.a[1537] < 0 && rawA > 0, clampB = b && row.b[1537] < 0 && rawB > 0;
-        const ra = clampA ? 0 : rawA, rb = clampB ? 0 : rawB;
-        const difference = b ? row.baseA + limit * ra - row.baseB - limit * rb : .3 - row.baseA - limit * ra;
-        const error = (sigmoid(difference * 8) - 1) * 8 * row.weight / batch.length;
-        backward(model.weights, a, clampA ? 0 : error * limit * (1 - ra * ra) * (b ? 1 : -1), gradient);
-        if (b) backward(model.weights, b, clampB ? 0 : -error * limit * (1 - rb * rb), gradient);
-      }
-      step++;
-      for (let i = trainOutputOnly ? offsets[2] : 0; i < gradient.length; i++) {
-        const g = Math.max(-1, Math.min(1, gradient[i] + .001 * (model.weights[i] - initial[i])));
-        momentum[i] = .9 * momentum[i] + .1 * g; variance[i] = .999 * variance[i] + .001 * g * g;
-        model.weights[i] -= .002 * (momentum[i] / (1 - .9 ** step)) / (Math.sqrt(variance[i] / (1 - .999 ** step)) + 1e-8);
-      }
-    }
-    const validation = evaluatePersonalizer(model, split.validation).loss;
-    if (validation < best - .0001) { best = validation; bestWeights = Float32Array.from(model.weights); stale = 0; } else stale++;
-    progress({ epoch: epoch + 1, epochs, validationLoss: validation });
-    if (stale >= 4) break;
-  }
-  model.weights = bestWeights;
+  model = fitImagePersonalizer(model, split.train, split.validation, { epochs, batchSize, maxMilliseconds, outputOnly: trainOutputOnly, progress, observeEpoch }).model;
   const result = imageModelAcceptance(model, incumbent, split.test);
   if (!result.accepted) return { ...report, ...result, ...(returnCandidate ? { candidate: { ...model, trainingDecisionIds: split.train.map(d => d.id) } } : {}) };
   Object.assign(model, { revision: (incumbent?.revision || 0) + 1, trainedAt: new Date().toISOString(), trainingDecisionIds: split.train.map(d => d.id),

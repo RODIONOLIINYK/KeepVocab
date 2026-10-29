@@ -1,0 +1,163 @@
+{
+  "loss": 0.39181648079826953,
+  "epsilon": 0.0001,
+  "absoluteTolerance": 0.00002,
+  "checks": [
+    {
+      "layer": 0,
+      "index": 49276,
+      "analytic": -0.0016370229423046112,
+      "numeric": -0.0016366691135562138,
+      "absoluteError": 3.538287483974105e-7,
+      "relativeError": 0.00010808247763070995
+    },
+    {
+      "layer": 0,
+      "index": 49255,
+      "analytic": -0.0015510957455262542,
+      "numeric": -0.001550901765631251,
+      "absoluteError": 1.9397989500314142e-7,
+      "relativeError": 0.00006253386545457226
+    },
+    {
+      "layer": 0,
+      "index": 49269,
+      "analytic": 0.001503279898315668,
+      "numeric": 0.0015035013300806713,
+      "absoluteError": 2.2143176500320945e-7,
+      "relativeError": 0.00007364412246291348
+    },
+    {
+      "layer": 0,
+      "index": 49266,
+      "analytic": 0.0013847798109054565,
+      "numeric": 0.0013850449151280655,
+      "absoluteError": 2.651042226090028e-7,
+      "relativeError": 0.00009571155175173865
+    },
+    {
+      "layer": 0,
+      "index": 49262,
+      "analytic": 0.0012558283051475883,
+      "numeric": 0.0012551257635389924,
+      "absoluteError": 7.02541608595857e-7,
+      "relativeError": 0.0002797907047990485
+    },
+    {
+      "layer": 0,
+      "index": 49275,
+      "analytic": -0.0012413527583703399,
+      "numeric": -0.0012413195938597466,
+      "absoluteError": 3.316451059327645e-8,
+      "relativeError": 0.000013358392042142043
+    },
+    {
+      "layer": 1,
+      "index": 49802,
+      "analytic": -0.002490670420229435,
+      "numeric": -0.0024907467805446865,
+      "absoluteError": 7.636031525148912e-8,
+      "relativeError": 0.000015329034323730722
+    },
+    {
+      "layer": 1,
+      "index": 49806,
+      "analytic": -0.0012150933034718037,
+      "numeric": -0.001214790784608992,
+      "absoluteError": 3.0251886281164146e-7,
+      "relativeError": 0.00012449929784534745
+    },
+    {
+      "layer": 1,
+      "index": 49803,
+      "analytic": 0.001212197239510715,
+      "numeric": 0.001212839228763133,
+      "absoluteError": 6.41989252418056e-7,
+      "relativeError": 0.00026473385485828465
+    },
+    {
+      "layer": 1,
+      "index": 49799,
+      "analytic": -0.0011729924008250237,
+      "numeric": -0.0011731730767973448,
+      "absoluteError": 1.8067597232110204e-7,
+      "relativeError": 0.00007700904903954225
+    },
+    {
+      "layer": 1,
+      "index": 49804,
+      "analytic": 0.0011018641525879502,
+      "numeric": 0.0011031515897014235,
+      "absoluteError": 0.000001287437113473228,
+      "relativeError": 0.0005838675383498792
+    },
+    {
+      "layer": 1,
+      "index": 49796,
+      "analytic": 0.0007360606105066836,
+      "numeric": 0.0007348822816169155,
+      "absoluteError": 0.0000011783288897680754,
+      "relativeError": 0.0008010704535693584
+    },
+    {
+      "layer": 2,
+      "index": 49822,
+      "analytic": -0.00608969759196043,
+      "numeric": -0.006089515132654652,
+      "absoluteError": 1.8245930577791974e-7,
+      "relativeError": 0.000014981206905858218
+    },
+    {
+      "layer": 2,
+      "index": 49816,
+      "analytic": 0.0034626354463398457,
+      "numeric": 0.0034639962500622777,
+      "absoluteError": 0.000001360803722432087,
+      "relativeError": 0.00019645966208062205
+    },
+    {
+      "layer": 2,
+      "index": 49808,
+      "analytic": -0.00341752334497869,
+      "numeric": -0.0034186146190830465,
+      "absoluteError": 0.0000010912741043563393,
+      "relativeError": 0.0001596331305911725
+    },
+    {
+      "layer": 2,
+      "index": 49812,
+      "analytic": -0.0024669195991009474,
+      "numeric": -0.0024673064812327297,
+      "absoluteError": 3.868821317823401e-7,
+      "relativeError": 0.00007840786487760147
+    },
+    {
+      "layer": 2,
+      "index": 49819,
+      "analytic": -0.0019168321741744876,
+      "numeric": -0.0019169447657928177,
+      "absoluteError": 1.1259161833009242e-7,
+      "relativeError": 0.000029368327916087005
+    },
+    {
+      "layer": 2,
+      "index": 49820,
+      "analytic": 0.0014130175113677979,
+      "numeric": 0.0014131915291305103,
+      "absoluteError": 1.7401776271244555e-7,
+      "relativeError": 0.00006157285615425082
+    }
+  ],
+  "skippedBoundaries": [
+    {
+      "layer": 0,
+      "index": 49254,
+      "analytic": -0.002129030181095004,
+      "numeric": -0.002272591288766945,
+      "reason": "Perturbation crosses a ReLU or score-clamp boundary; a central derivative is not defined across that interval."
+    }
+  ],
+  "passed": true,
+  "maximumAbsoluteError": 0.000001360803722432087,
+  "maximumRelativeError": 0.0008010704535693584
+}

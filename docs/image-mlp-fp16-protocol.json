@@ -1,0 +1,19 @@
+{
+  "experiment": "fp16-text-fp32-vision-mlp-fixed-retraining-2026-10-29",
+  "encoder": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+  "targetTask": "semantic",
+  "architecture": [1539, 32, 16, 1],
+  "parameters": 49825,
+  "initializationSeed": 78123,
+  "training": {"epochs": 30, "batchSize": 8, "maxMilliseconds": 600000, "outputOnly": false, "learningRate": 0.002, "regularization": 0.001, "patience": 4, "minimumImprovement": 0.0001},
+  "optimizer": {"name": "Adam", "beta1": 0.9, "beta2": 0.999, "epsilon": 1e-8, "componentGradientClip": 1, "regularizationTarget": "initial weights"},
+  "objective": "Mean over galleries of mean preferred-versus-wrong logistic cross-entropy; sigmoid(8 * (preferredScore - alternativeScore)).",
+  "selection": "Minimum validation loss with a 0.0001 improvement threshold; test trajectories computed only after checkpoint selection.",
+  "residual": {"semanticLimit": 0.08, "preferenceLimit": 0.04, "activation": "tanh", "competingSensePositiveBoost": false},
+  "smallBatch": {"galleries": 8, "epochs": 600, "batchSize": 8, "maxMilliseconds": 120000, "regularization": 0, "patience": null, "minimumImprovement": 0,
+    "selection": "First eight sorted baseline-misranked training galleries from distinct meaning families whose comparisons can theoretically be corrected within the existing residual bound; no validation/test examples.",
+    "success": "All eight galleries and every preferred-versus-wrong pair rank correctly; loss need not reach zero under the bounded production score."},
+  "biasVariance": {"bootstrapModels": 24, "bootstrapSeed": 20261029, "resamplingUnit": "training meaning family", "initialization": "fixed seed 78123", "validation": "fixed original validation partition for each resample", "evaluation": "fixed original test partition, gallery-weighted pairwise Brier error", "varianceDivisor": "number of bootstrap models (ddof=0)", "irreducibleNoise": "not identifiable from single reviewed labels"},
+  "testStatus": "Previously inspected regression benchmark; not a new blind generalization or personal-taste study.",
+  "deployment": "Save candidate and metrics without activating it based on this reused evaluation set."
+}
