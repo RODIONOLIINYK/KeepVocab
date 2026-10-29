@@ -114,10 +114,17 @@ async function initialize(devicePreference = 'auto') {
     for (const device of devices) {
       try {
         backend = device;
-        [textModel, visionModel] = await Promise.all([
+        const towers = await Promise.allSettled([
           CLIPTextModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_TEXT_DTYPE }),
           CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_VISION_DTYPE })
         ]);
+        // A rejected Promise.all loses both assignments, including a tower
+        // that finishes later. Keep ownership until both settle so failures
+        // release every loaded graph before a retry or CPU fallback.
+        textModel = towers[0].status === 'fulfilled' ? towers[0].value : null;
+        visionModel = towers[1].status === 'fulfilled' ? towers[1].value : null;
+        const failed = towers.find(result => result.status === 'rejected');
+        if (failed) throw failed.reason;
         backend = device; break;
       } catch (error) {
         await textModel?.dispose().catch(() => {}); await visionModel?.dispose().catch(() => {});

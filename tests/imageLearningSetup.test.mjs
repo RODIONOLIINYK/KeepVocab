@@ -121,3 +121,41 @@ test('the worker loads a cached runtime offline and rejects missing files withou
   assert.match(messages.at(-1).error, /runtime is missing/);
   assert.equal(calls.length, 0);
 });
+
+test('parallel tower failure releases a late successful tower before reporting failure and allows retry', async () => {
+  const source = readFileSync(new URL('../scripts/clip-worker.js', import.meta.url), 'utf8').replace(/^import .*;\n/gm, '');
+  for (const failing of ['text', 'vision']) {
+    const gates = {}, calls = {}, disposed = [], messages = [];
+    const factory = { from_pretrained: async () => ({}) };
+    const tower = name => ({ from_pretrained: async () => {
+      calls[name] = (calls[name] || 0) + 1;
+      if (calls[name] > 1) return { dispose: async () => disposed.push(`retry-${name}`) };
+      return new Promise((resolve, reject) => { gates[name] = { resolve, reject }; });
+    } });
+    const self = { caches: cacheStorage(CLIP_RUNTIME_URLS), postMessage: message => messages.push(message), navigator: {} };
+    const context = vm.createContext({
+      env: { fetch: async () => { throw Error('Unexpected download'); }, backends: { onnx: { wasm: {} } } },
+      self, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS,
+      AutoTokenizer: factory, AutoProcessor: factory,
+      CLIPTextModelWithProjection: tower('text'), CLIPVisionModelWithProjection: tower('vision'),
+      CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise
+    });
+    vm.runInContext(source, context);
+    self.onmessage({ data: { id: 1, type: 'initialize', payload: {}, allowDownloads: false } });
+    for (let turn = 0; turn < 20 && (!gates.text || !gates.vision); turn++) await new Promise(setImmediate);
+    assert.ok(gates.text && gates.vision, 'both towers start in parallel');
+    gates[failing].reject(Error(`${failing} unavailable`));
+    await new Promise(setImmediate);
+    assert.equal(messages.some(message => message.id === 1), false, 'cleanup waits for the other tower to settle');
+    const surviving = failing === 'text' ? 'vision' : 'text';
+    gates[surviving].resolve({ dispose: async () => disposed.push(surviving) });
+    await vm.runInContext('queue', context);
+    assert.deepEqual(disposed, [surviving]);
+    assert.equal(messages.at(-1).error, `${failing} unavailable`);
+    self.onmessage({ data: { id: 2, type: 'initialize', payload: {}, allowDownloads: false } });
+    await vm.runInContext('queue', context);
+    assert.equal(messages.at(-1).result.backend, 'wasm');
+    assert.deepEqual(calls, { text: 2, vision: 2 });
+    assert.deepEqual(disposed, [surviving], 'successful retry models remain available for the session');
+  }
+});
