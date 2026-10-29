@@ -39,6 +39,10 @@ function downloadConsent(storage = globalThis.localStorage) {
   // Before consent was explicit, the only way to enable was Settings' download button.
   return config.downloadConsent === 'accepted' || (config.downloadConsent === undefined && config.enabled === true);
 }
+function startupDownloadAllowed(storage) {
+  const connection = globalThis.navigator?.connection;
+  return downloadConsent(storage) && globalThis.navigator?.onLine !== false && !connection?.saveData && connection?.type !== 'cellular';
+}
 export async function hasDownloadedImageModel(cacheStorage = globalThis.caches) {
   try {
     if (!cacheStorage || !(await cacheStorage.keys()).includes(CLIP_CACHE)) return false;
@@ -55,13 +59,16 @@ export async function initializeImageLearning({ requestDownload, storage = globa
     if (config.enabled !== false) {
       saveDeviceConfig({ enabled: true, prompted: true, downloadConsent: downloadConsent(storage) ? 'accepted' : 'not-requested' }, storage);
       if (!worker) { phase = 'idle'; message = 'Installed. Image suggestions will be scored locally.'; }
-      queueCachedModelWarmup({ storage }, scheduleWarmup);
+      queueModelWarmup({ storage }, scheduleWarmup);
     }
     emit();
     return { installed: true, prompted: false, enabled: imageLearningEnabled(storage) };
   }
   if (config.enabled === true && downloadConsent(storage)) {
     saveDeviceConfig({ prompted: true, downloadConsent: 'accepted' }, storage);
+    // An approved installation can be missing a newly pinned tower after an
+    // upgrade. Prepare it after paint/idle, under the same network policy.
+    if (startupDownloadAllowed(storage)) queueModelWarmup({ storage, cachedOnly: false }, scheduleWarmup);
     return { installed: false, prompted: false, enabled: true };
   }
   if (config.prompted || typeof config.enabled === 'boolean' || !requestDownload) return { installed: false, prompted: false, enabled: false };
@@ -99,12 +106,13 @@ export async function trainPersonalImageModel(options = {}) {
 function cancelScheduledWarmup() {
   cancelStartupWarmup?.(); cancelStartupWarmup = null;
 }
-function queueCachedModelWarmup(options, schedule) {
+function queueModelWarmup(options, schedule) {
   if (worker || cancelStartupWarmup || typeof Worker === 'undefined') return;
   const generation = workerGeneration;
   cancelStartupWarmup = schedule(() => {
     cancelStartupWarmup = null;
     if (generation !== workerGeneration || !imageLearningEnabled(options.storage) || worker) return;
+    if (options.cachedOnly === false && !startupDownloadAllowed(options.storage)) return;
     // The callback only posts work. Graph loading/compilation stays in the worker.
     void warmImageLearning(options).catch(() => {});
   });
@@ -117,7 +125,7 @@ export function warmImageLearning(options = {}) {
   const lifecycle = {};
   const current = () => generation === featureGeneration && (lifecycle.workerGeneration === undefined || lifecycle.workerGeneration === workerGeneration) && imageLearningEnabled(options.storage);
   phase = 'loading'; message = 'Preparing image suggestions…'; emit();
-  const operation = rpc('initialize', {}, { ...options, cachedOnly: true, lifecycle }).then(async result => {
+  const operation = rpc('initialize', {}, { ...options, cachedOnly: options.cachedOnly !== false, lifecycle }).then(async result => {
     if (!current() || !workerReady) return getImageLearningStatus();
     const model = await training().current();
     if (!current() || !workerReady) return getImageLearningStatus();

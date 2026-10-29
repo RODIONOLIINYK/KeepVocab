@@ -11,11 +11,11 @@ requires no extra image search or AI request.
 On startup the app checks for all pinned MobileCLIP and runtime files in its
 separate device cache without downloading. Complete installs
 are enabled by default unless the user previously turned learning off. If files
-are missing, a one-time prompt offers an approximately 150 MB download (including
+are missing, a one-time prompt offers an approximately 180 MB download (including
 the runtime). Skipping, dismissing, or closing the prompt prevents repeat prompts.
 Settings → Image suggestions can install or re-enable it later. Every remote
 model/runtime fetch requires saved consent; scoring can load a complete cache
-without network permission. The current generic MLP failed its comparison check and is disabled. The optional CLIP encoders use q8 text and full-precision vision as prescribed by the model author.
+without network permission. The current generic MLP failed its comparison check and is disabled. The encoders use FP16 text and FP32 vision; text precision passed a separate controlled CPU/WASM/WebGPU comparison.
 Model files survive app-shell cache upgrades and stay on this device.
 
 For an enabled, complete install, startup schedules cached-only model preparation
@@ -26,7 +26,12 @@ loading, ONNX graph compilation and inference stay off the UI thread, with one
 WASM thread. Startup does not await preparation. Foreground searches reuse the
 same worker, including a worker that is still loading. There is no two-minute
 idle eviction; disabling suggestions, clearing downloads, backend changes,
-worker failure or closing/reloading the app can release it. Browser/OS memory
+worker failure or closing/reloading the app can release it. An enabled install
+with prior download approval can prepare missing upgrade files on the same idle
+schedule. Existing cached files are reused. Offline, cellular and data-saver
+states skip optional background downloads; the network policy is checked again
+when idle work starts. A complete cache warms without network permission.
+Browser/OS memory
 pressure can still discard the app. This design reduces main-thread work; it is
 not a measured guarantee of responsiveness on physical phones.
 
@@ -120,12 +125,13 @@ bounded correction. Generic influence is at most ±0.08, personal influence at m
 values are not calibrated correctness probabilities. The generic head from this
 experiment is disabled, including its rejected hidden-layer initialization.
 
-The corrected MobileCLIP configuration uses full-precision vision and q8 text.
+The current MobileCLIP configuration uses FP32 vision and FP16 text.
 Forcing q8 vision in earlier releases damaged the representation; see the linked
 precision diagnostic and experiment below. The worker and evaluator use the same
 pinned files and explicit tower precision. Model file URLs and encoder-tagged
-cache keys prevent reuse of incompatible q8 vision vectors. Older feedback stays
-archived under its original encoder identity, excluded from current training.
+cache keys prevent reuse of incompatible representations. Earlier Q8-vision and
+Q8-text feedback stay archived under their original encoder identities, excluded
+from current training. Their saved models cannot initialize the new head.
 
 Saved scene descriptions, actual search queries and optional scene contrasts
 reach CLIP. CLIP processes a proportional thumbnail of the complete available

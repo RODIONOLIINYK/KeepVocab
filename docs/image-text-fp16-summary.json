@@ -1,0 +1,294 @@
+{
+  "native": {
+    "q8": {
+      "splits": {
+        "validation": {
+          "n": 133,
+          "appCorrect": 117,
+          "rawCorrect": 113,
+          "pairs": 475,
+          "pairwiseCorrect": 458
+        },
+        "test": {
+          "n": 120,
+          "appCorrect": 107,
+          "rawCorrect": 101,
+          "pairs": 456,
+          "pairwiseCorrect": 438
+        }
+      },
+      "textInference": {
+        "n": 193,
+        "p50": 9.116667000000234,
+        "p95": 13.43212500000027
+      }
+    },
+    "fp16": {
+      "splits": {
+        "validation": {
+          "n": 133,
+          "appCorrect": 126,
+          "rawCorrect": 126,
+          "pairs": 475,
+          "pairwiseCorrect": 467
+        },
+        "test": {
+          "n": 120,
+          "appCorrect": 113,
+          "rawCorrect": 108,
+          "pairs": 456,
+          "pairwiseCorrect": 446
+        }
+      },
+      "textInference": {
+        "n": 193,
+        "p50": 6.041999999999462,
+        "p95": 6.427000000000589
+      }
+    },
+    "fp32": {
+      "splits": {
+        "validation": {
+          "n": 133,
+          "appCorrect": 126,
+          "rawCorrect": 126,
+          "pairs": 475,
+          "pairwiseCorrect": 467
+        },
+        "test": {
+          "n": 120,
+          "appCorrect": 113,
+          "rawCorrect": 108,
+          "pairs": 456,
+          "pairwiseCorrect": 446
+        }
+      },
+      "textInference": {
+        "n": 193,
+        "p50": 5.449833000000581,
+        "p95": 5.6999590000013995
+      }
+    }
+  },
+  "browser": {
+    "webgpu-wasm-q8": {
+      "id": "webgpu-wasm-q8",
+      "visionDevice": "webgpu",
+      "visionDtype": "fp32",
+      "textDevice": "wasm",
+      "textDtype": "q8",
+      "imageLoadMs": 392.30000000447035,
+      "textLoadMs": 84.70000000298023,
+      "imageInference": {
+        "n": 345,
+        "p50": 9,
+        "p95": 9.800000004470348
+      },
+      "textInference": {
+        "n": 95,
+        "p50": 50.599999994039536,
+        "p95": 51.100000001490116
+      },
+      "cases": 120,
+      "appCorrect": 106,
+      "rawCorrect": 102
+    },
+    "webgpu-wasm-fp16": {
+      "id": "webgpu-wasm-fp16",
+      "visionDevice": "webgpu",
+      "visionDtype": "fp32",
+      "textDevice": "wasm",
+      "textDtype": "fp16",
+      "imageLoadMs": 392.30000000447035,
+      "textLoadMs": 139.79999999701977,
+      "imageInference": {
+        "n": 345,
+        "p50": 9,
+        "p95": 9.800000004470348
+      },
+      "textInference": {
+        "n": 95,
+        "p50": 48.20000000298023,
+        "p95": 51.5
+      },
+      "cases": 120,
+      "appCorrect": 113,
+      "rawCorrect": 108
+    },
+    "webgpu-wasm-fp32": {
+      "id": "webgpu-wasm-fp32",
+      "visionDevice": "webgpu",
+      "visionDtype": "fp32",
+      "textDevice": "wasm",
+      "textDtype": "fp32",
+      "imageLoadMs": 392.30000000447035,
+      "textLoadMs": 147.20000000298023,
+      "imageInference": {
+        "n": 345,
+        "p50": 9,
+        "p95": 9.800000004470348
+      },
+      "textInference": {
+        "n": 95,
+        "p50": 47.80000000447035,
+        "p95": 50.19999999552965
+      },
+      "cases": 120,
+      "appCorrect": 113,
+      "rawCorrect": 108
+    },
+    "webgpu-webgpu-q8": {
+      "id": "webgpu-webgpu-q8",
+      "visionDevice": "webgpu",
+      "visionDtype": "fp32",
+      "textDevice": "webgpu",
+      "textDtype": "q8",
+      "imageLoadMs": 392.30000000447035,
+      "textLoadMs": 73.19999999552965,
+      "imageInference": {
+        "n": 345,
+        "p50": 9,
+        "p95": 9.800000004470348
+      },
+      "textInference": {
+        "n": 95,
+        "p50": 65.70000000298023,
+        "p95": 67.20000000298023
+      },
+      "cases": 120,
+      "appCorrect": 107,
+      "rawCorrect": 101
+    },
+    "webgpu-webgpu-fp16": {
+      "id": "webgpu-webgpu-fp16",
+      "visionDevice": "webgpu",
+      "visionDtype": "fp32",
+      "textDevice": "webgpu",
+      "textDtype": "fp16",
+      "imageLoadMs": 392.30000000447035,
+      "textLoadMs": 85.5,
+      "imageInference": {
+        "n": 345,
+        "p50": 9,
+        "p95": 9.800000004470348
+      },
+      "textInference": {
+        "n": 95,
+        "p50": 3.399999998509884,
+        "p95": 4.700000002980232
+      },
+      "cases": 120,
+      "appCorrect": 113,
+      "rawCorrect": 108
+    },
+    "webgpu-webgpu-fp32": {
+      "id": "webgpu-webgpu-fp32",
+      "visionDevice": "webgpu",
+      "visionDtype": "fp32",
+      "textDevice": "webgpu",
+      "textDtype": "fp32",
+      "imageLoadMs": 392.30000000447035,
+      "textLoadMs": 191.70000000298023,
+      "imageInference": {
+        "n": 345,
+        "p50": 9,
+        "p95": 9.800000004470348
+      },
+      "textInference": {
+        "n": 95,
+        "p50": 4,
+        "p95": 4.5
+      },
+      "cases": 120,
+      "appCorrect": 113,
+      "rawCorrect": 108
+    },
+    "wasm-wasm-q8": {
+      "id": "wasm-wasm-q8",
+      "visionDevice": "wasm",
+      "visionDtype": "fp32",
+      "textDevice": "wasm",
+      "textDtype": "q8",
+      "imageLoadMs": 286,
+      "textLoadMs": 74,
+      "imageInference": {
+        "n": 345,
+        "p50": 117,
+        "p95": 126.5
+      },
+      "textInference": {
+        "n": 95,
+        "p50": 50.5,
+        "p95": 51.5
+      },
+      "cases": 120,
+      "appCorrect": 106,
+      "rawCorrect": 102
+    },
+    "wasm-wasm-fp16": {
+      "id": "wasm-wasm-fp16",
+      "visionDevice": "wasm",
+      "visionDtype": "fp32",
+      "textDevice": "wasm",
+      "textDtype": "fp16",
+      "imageLoadMs": 286,
+      "textLoadMs": 147.39999999850988,
+      "imageInference": {
+        "n": 345,
+        "p50": 117,
+        "p95": 126.5
+      },
+      "textInference": {
+        "n": 95,
+        "p50": 48.30000000447035,
+        "p95": 50.600000001490116
+      },
+      "cases": 120,
+      "appCorrect": 113,
+      "rawCorrect": 108
+    },
+    "wasm-wasm-fp32": {
+      "id": "wasm-wasm-fp32",
+      "visionDevice": "wasm",
+      "visionDtype": "fp32",
+      "textDevice": "wasm",
+      "textDtype": "fp32",
+      "imageLoadMs": 286,
+      "textLoadMs": 181.19999999552965,
+      "imageInference": {
+        "n": 345,
+        "p50": 117,
+        "p95": 126.5
+      },
+      "textInference": {
+        "n": 95,
+        "p50": 47.899999998509884,
+        "p95": 48.79999999701977
+      },
+      "cases": 120,
+      "appCorrect": 113,
+      "rawCorrect": 108
+    }
+  },
+  "fp16VsFp32": {
+    "webgpu-vision/wasm-text": {
+      "firstChoiceMatches": 120,
+      "galleries": 120,
+      "meanCosine": 0.9999998118210246,
+      "minimumCosine": 0.9999996493284833
+    },
+    "webgpu-vision/webgpu-text": {
+      "firstChoiceMatches": 120,
+      "galleries": 120,
+      "meanCosine": 0.9999746303034419,
+      "minimumCosine": 0.9999400515437048
+    },
+    "wasm-vision/wasm-text": {
+      "firstChoiceMatches": 120,
+      "galleries": 120,
+      "meanCosine": 0.9999998118210246,
+      "minimumCosine": 0.9999996493284833
+    }
+  },
+  "nativeFirstChoiceParity": 253
+}

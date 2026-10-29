@@ -104,7 +104,7 @@ test('the worker loads a cached runtime offline and rejects missing files withou
     const factory = { from_pretrained: async (_, options) => { assert.equal(options.local_files_only, false); return {}; } };
     const tower = expected => ({ from_pretrained: async (_, options) => { assert.equal(options.dtype, expected); assert.equal(options.local_files_only, false); return {}; } });
     const self = { caches: cacheStorage(urls), postMessage: message => messages.push(message), navigator: {} };
-    const context = vm.createContext({ env, self, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, CLIPTextModelWithProjection: tower('q8'), CLIPVisionModelWithProjection: tower('fp32'), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise });
+    const context = vm.createContext({ env, self, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, CLIPTextModelWithProjection: tower('fp16'), CLIPVisionModelWithProjection: tower('fp32'), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise });
     vm.runInContext(source, context);
     return { context, self, env };
   };

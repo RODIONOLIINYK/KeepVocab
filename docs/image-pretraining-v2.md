@@ -1,5 +1,11 @@
 # Image dataset expansion and CLIP/MLP comparison — 28 October 2026
 
+This is the historical Q8-text/FP32-vision experiment from 1.12.0. Since 1.12.2,
+the app uses FP16 text. The archived vectors and rejected head retain their old
+encoder identity and cannot train or initialize the current model. Reproduce the
+historical encoded comparison from tag `v1.12.0`; current pixel evaluation produces
+new FP16 representations. See [the current text-precision comparison](image-text-fp16.md).
+
 The larger experiment does **not establish that adding the MLP improves the app's
 image choices**. After fixing an encoder precision bug, the app's CLIP ranker
 picked a verified matching photo in 107/120 unseen test galleries; adding the

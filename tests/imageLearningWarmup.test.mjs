@@ -134,14 +134,14 @@ test('the warmed worker scores later images and stays loaded beyond the former t
   assert.equal(env.workers[0].terminated, false);
 });
 
-test('explicit off, absent cache, and download refusal never schedule a startup warmup', async context => {
+test('explicit off, absent cache without permission, and download refusal never schedule a startup warmup', async context => {
   const env = setup(context, { config: { enabled: false } });
   assert.equal((await env.initialize()).enabled, false);
   assert.equal(env.scheduled.length, 0);
 
-  env.storage.setItem(CONFIG_KEY, JSON.stringify({ enabled: true, downloadConsent: 'accepted' }));
+  env.storage.setItem(CONFIG_KEY, JSON.stringify({ enabled: true, downloadConsent: 'not-requested' }));
   await env.initialize({ cacheStorage: cachedFiles([]) });
-  assert.equal(env.scheduled.length, 0, 'missing cached files are not downloaded for warmup');
+  assert.equal(env.scheduled.length, 0, 'missing files without consent are not downloaded for warmup');
 
   env.storage.setItem(CONFIG_KEY, '{}');
   let prompts = 0;
@@ -345,4 +345,37 @@ test('a picker overlapping GPU warmup waits through CPU fallback and uses the re
   assert.equal(cpu.terminated, false);
   assert.equal(getImageLearningStatus().phase, 'ready');
   assert.equal(getImageLearningStatus().backend, 'wasm');
+});
+
+test('an enabled approved upgrade prepares a missing tower only after scheduled idle and reuses its worker', async context => {
+  const env = setup(context, { config: { enabled: true, downloadConsent: 'accepted' } });
+  const result = await env.initialize({ cacheStorage: cachedFiles(CLIP_DOWNLOAD_URLS.filter(url => !url.endsWith('/text_model_fp16.onnx'))) });
+  assert.equal(result.installed, false);
+  assert.equal(result.prompted, false);
+  assert.equal(env.workers.length, 0, 'opening the app does not wait for a worker');
+  assert.equal(env.scheduled.length, 1);
+  env.scheduled[0].callback();
+  await warmImageLearning({ storage: env.storage });
+  assert.equal(env.workers.length, 1);
+  assert.equal(env.workers[0].messages[0].allowDownloads, true, 'prior approval covers the missing upgrade file');
+  assert.equal(getImageLearningStatus().phase, 'ready');
+  await warmImageLearning({ storage: env.storage });
+  assert.equal(env.workers.length, 1);
+});
+
+test('background upgrade respects offline, data-saver, cellular and a network change before idle', async context => {
+  const env = setup(context, { config: { enabled: true, downloadConsent: 'accepted' } });
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  context.after(() => { if (previous) Object.defineProperty(globalThis, 'navigator', previous); else delete globalThis.navigator; });
+  for (const navigator of [{ onLine: false }, { connection: { saveData: true } }, { connection: { type: 'cellular' } }]) {
+    Object.defineProperty(globalThis, 'navigator', { configurable: true, value: navigator });
+    await env.initialize({ cacheStorage: cachedFiles([]) });
+    assert.equal(env.scheduled.length, 0);
+  }
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { onLine: true } });
+  await env.initialize({ cacheStorage: cachedFiles([]) });
+  assert.equal(env.scheduled.length, 1);
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { connection: { saveData: true } } });
+  env.scheduled[0].callback();
+  assert.equal(env.workers.length, 0);
 });

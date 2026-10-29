@@ -92,7 +92,8 @@ async function initialize(devicePreference = 'auto') {
     const tokenizer = await AutoTokenizer.from_pretrained(CLIP_MODEL, config);
     const processor = await AutoProcessor.from_pretrained(CLIP_MODEL, config);
     let textModel, visionModel;
-    // WASM with fp32 vision and q8 text is the model-author configuration; WebGPU is attempted only on a supported adapter.
+    // FP16 text and FP32 vision passed the fixed CPU/WASM/WebGPU benchmark.
+    // WebGPU is attempted only on a supported adapter.
     const gpu = self.navigator?.gpu && await navigator.gpu.requestAdapter().catch(() => null);
     const devices = devicePreference === 'wasm' || !gpu ? ['wasm'] : ['webgpu'];
     gpu?.destroy?.();
@@ -124,7 +125,7 @@ async function run({ type, payload, device }) {
       const inputs = model.tokenizer([text], { padding: 'max_length', truncation: true });
       const output = await model.textModel(inputs);
       const vector = Array.from(output.text_embeds.data);
-      for (const tensor of Object.values(output)) tensor?.dispose?.();
+      for (const tensor of [...Object.values(inputs), ...Object.values(output)]) tensor?.dispose?.();
       return vector;
     }));
     return result;

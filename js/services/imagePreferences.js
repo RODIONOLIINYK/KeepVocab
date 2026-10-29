@@ -1,4 +1,4 @@
-import { CLIP_TAG, LEGACY_CLIP_TAG, CLIP_DIMENSION } from '../ml/clipConfig.js';
+import { CLIP_TAG, ARCHIVED_CLIP_TAGS, CLIP_DIMENSION } from '../ml/clipConfig.js';
 import { bytesToBase64, base64ToBytes } from '../utils/base64.js';
 
 export const PREFERENCE_DIMENSION = CLIP_DIMENSION + 3;
@@ -61,7 +61,7 @@ export function mergeImageLearning(left = {}, right = {}) {
   const resetAt = time(left.resetAt) >= time(right.resetAt) ? left.resetAt || '' : right.resetAt || '';
   const records = new Map();
   for (const item of [...(Array.isArray(left.records) ? left.records : []), ...(Array.isArray(right.records) ? right.records : [])]) {
-    if (!item || typeof item.id !== 'string' || item.id.length > 3000 || ![CLIP_TAG, LEGACY_CLIP_TAG].map(tag => item.kind === 'comparison' ? `${tag}:pairwise-v1` : tag).includes(item.model) || ![0, 1].includes(item.label)
+    if (!item || typeof item.id !== 'string' || item.id.length > 3000 || ![CLIP_TAG, ...ARCHIVED_CLIP_TAGS].map(tag => item.kind === 'comparison' ? `${tag}:pairwise-v1` : tag).includes(item.model) || ![0, 1].includes(item.label)
       || time(item.updatedAt) <= time(resetAt) || !time(item.updatedAt)) continue;
     try {
       decodeFeatures(item.features);

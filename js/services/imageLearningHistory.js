@@ -1,5 +1,5 @@
-import { CLIP_TAG, LEGACY_CLIP_TAG } from '../ml/clipConfig.js';
-import { decodeFeatures, COMPARISON_RECORD_MODEL } from './imagePreferences.js';
+import { CLIP_TAG, LEGACY_CLIP_TAG, ARCHIVED_CLIP_TAGS } from '../ml/clipConfig.js';
+import { decodeFeatures } from './imagePreferences.js';
 
 export const IMAGE_HISTORY_DB = 'keepvocab-image-history-v2';
 export const IMAGE_HISTORY_CHUNK = 100;
@@ -12,7 +12,8 @@ export function normalizeImageEvent(input) {
   try { decodeFeatures(input.features); if (input.kind === 'comparison') decodeFeatures(input.preferredFeatures); if (input.meaningFeatures) decodeFeatures(input.meaningFeatures); } catch { return null; }
   const encoder = input.encoder || input.model?.replace(/:pairwise-v1$/, '') || LEGACY_CLIP_TAG;
   if (input.model && input.model.replace(/:pairwise-v1$/, '') !== encoder) return null;
-  if (![CLIP_TAG, LEGACY_CLIP_TAG].includes(encoder) || input.model && ![CLIP_TAG, LEGACY_CLIP_TAG, COMPARISON_RECORD_MODEL, `${LEGACY_CLIP_TAG}:pairwise-v1`].includes(input.model) || input.kind && input.kind !== 'comparison') return null;
+  const encoders = [CLIP_TAG, ...ARCHIVED_CLIP_TAGS];
+  if (!encoders.includes(encoder) || input.model && !encoders.flatMap(tag => [tag, `${tag}:pairwise-v1`]).includes(input.model) || input.kind && input.kind !== 'comparison') return null;
   return { version: 2, task: input.task === 'semantic' ? 'semantic' : 'preference', id: input.id, key: String(input.key || input.id).slice(0, 3000), deviceId: String(input.deviceId || '').slice(0, 150),
     decisionId: String(input.decisionId || input.id).slice(0, 3000), meaningId: String(input.meaningId || '').slice(0, 1000), updatedAt: iso(input.updatedAt),
     label: input.label, features: input.features, ...(input.kind === 'comparison' ? { kind: 'comparison', preferredFeatures: input.preferredFeatures } : {}),

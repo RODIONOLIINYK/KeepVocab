@@ -1,5 +1,10 @@
 # Diverse semantic image dataset, version 2
 
+The encoded features and rejected candidate below use the historical 1.12.0
+Q8-text/FP32-vision encoder. Current FP16-text training rejects them rather than
+relabeling their vectors. Run the historical encoded benchmark commands from tag
+`v1.12.0`. Running the current pixel evaluator generates fresh FP16 features.
+
 This fixture measures whether a photograph visibly depicts a fixed word meaning.
 It does not represent a user's personal taste.
 
