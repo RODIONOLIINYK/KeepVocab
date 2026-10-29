@@ -2,7 +2,7 @@
 import { readJsonFile } from './lib/json-files.mjs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { validPersonalizer } from '../js/services/imagePersonalizer.js';
+import { isCurrentPersonalizer } from '../js/services/imagePersonalizer.js';
 const args=process.argv.slice(2),file=args.find(a=>!a.startsWith('--'));
 const flag=name=>args.find(a=>a.startsWith(`--${name}=`))?.slice(name.length+3);
 if(!file||!flag('benchmark')||!flag('candidate'))throw new Error('Usage: node scripts/pretrain-image-personalizer.mjs encoded-report.json --benchmark=benchmark.json --candidate=candidate.json');
@@ -10,7 +10,7 @@ const input=await readJsonFile(file),benchmark=await readJsonFile(flag('benchmar
 const model=saved.model;
 const dataSha256=createHash('sha256').update(JSON.stringify(input.events)).digest('hex');
 if(input.targetTask!=='semantic'||!input.events?.length||input.events.some(e=>e.task!=='semantic')||benchmark.dataSha256!==dataSha256||benchmark.targetTask!=='semantic')throw new Error('Semantic data and benchmark provenance do not match.');
-if(!validPersonalizer(model)||model.role!=='semantic'||saved.accepted!==benchmark.accepted)throw new Error('Candidate is not the semantic model from the benchmark.');
+if(!isCurrentPersonalizer(model)||model.role!=='semantic'||saved.accepted!==benchmark.accepted)throw new Error('Candidate is not a current semantic model from the benchmark.');
 const weights=Float32Array.from(model.weights),bytes=Buffer.alloc(weights.length*4);weights.forEach((v,i)=>bytes.writeFloatLE(v,i*4));
 const weightsSha256=createHash('sha256').update(bytes).digest('hex');
 if(weightsSha256!==benchmark.candidateWeightsSha256||weightsSha256!==saved.candidateWeightsSha256)throw new Error('Candidate weights differ from the frozen benchmark.');

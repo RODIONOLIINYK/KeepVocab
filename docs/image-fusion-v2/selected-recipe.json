@@ -1,0 +1,12 @@
+{
+  "epochs": 600,
+  "maxMilliseconds": 1800000,
+  "regularization": 0,
+  "maximumGradientNorm": 1,
+  "patience": 20,
+  "minimumImprovement": 0.00001,
+  "outputOnly": false,
+  "checkpoint": "last",
+  "learningRate": 0.0002,
+  "batchSize": 8
+}

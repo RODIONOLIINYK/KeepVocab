@@ -1,5 +1,10 @@
 # Current-encoder retraining snapshot
 
+The saved candidate uses the bounded scoring architecture from **v1.12.5**.
+Reproduce the commands below from that tag. Current source keeps the old head
+readable for offline metric checks but cannot activate or continue training it
+as an unrestricted fusion head. The encoder features remain usable unchanged.
+
 `embeddings.json.gz` contains freshly computed FP16-text / FP32-vision MobileCLIP
 features from the 1,736 SHA-256-verified photographs in
 [`../image-pretraining-v2/cases.json`](../image-pretraining-v2/cases.json).

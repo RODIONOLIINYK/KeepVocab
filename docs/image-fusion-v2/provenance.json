@@ -1,0 +1,73 @@
+{
+  "encoder": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+  "personalizerVersion": "meaning-mlp-32-16-fusion-v2",
+  "protocolSha256": "1a86241e2a6c16564d3b4f1acee3f1f226e266f722bc6244029447e885ef6abb",
+  "manifestSha256": "d5d70ecd14fd49fd76fa344e125bbf2331ad3c90f915e5cf25584ddbddc6bff7",
+  "eventsSha256": "8897995f7129727dadc8e3eab1eb696df5da19f5f03d7424512b90ff18a80875",
+  "sourceSha256": {
+    "js/services/imagePersonalizer.js": "7b924002f4228ba9be1b9c22b2ac06cba9b74096bf1f72287c5ca54bf10c1ac8",
+    "scripts/tune-image-fusion.mjs": "b1b4bfa4d1630ca62b5dad55ae3fcf3b32e659d8ee4c8e971ba5e566ec120a37",
+    "scripts/lib/image-training-diagnostics.mjs": "f56469b2e177a5b7596bfa31dda44f7484d7fc2af64402be95daa5014e0aa4b6"
+  },
+  "nodeVersion": "v22.23.1",
+  "diversity": {
+    "train": {
+      "choices": 385,
+      "meanings": 141,
+      "families": 131,
+      "sourcePhotos": 1036,
+      "candidateCounts": [
+        3,
+        4,
+        5
+      ],
+      "preferredPositions": {
+        "0": 75,
+        "1": 80,
+        "2": 70,
+        "3": 96,
+        "4": 64
+      }
+    },
+    "validation": {
+      "choices": 133,
+      "meanings": 49,
+      "families": 46,
+      "sourcePhotos": 355,
+      "candidateCounts": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "preferredPositions": {
+        "0": 24,
+        "1": 30,
+        "2": 32,
+        "3": 29,
+        "4": 18
+      }
+    },
+    "test": {
+      "choices": 120,
+      "meanings": 47,
+      "families": 45,
+      "sourcePhotos": 345,
+      "candidateCounts": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "preferredPositions": {
+        "0": 29,
+        "1": 27,
+        "2": 29,
+        "3": 16,
+        "4": 19
+      }
+    }
+  },
+  "resumedPilotTrials": 4,
+  "priorDriverSha256": "9003037c7e36fb568418b6d025a1a38b823a93d8f22ca08fca69a66bec4943ad"
+}

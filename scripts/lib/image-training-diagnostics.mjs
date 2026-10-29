@@ -1,11 +1,14 @@
-import { createPersonalizerScorer, personalizerLossAndGradient, personalizerActivationSignature, evaluatePersonalizer, PERSONALIZER_LIMIT } from '../../js/services/imagePersonalizer.js';
+import { createPersonalizerScorer, personalizerLossAndGradient, personalizerActivationSignature, evaluatePersonalizer, PERSONALIZER_LIMIT, PERSONALIZER_VERSION, LEGACY_PERSONALIZER_VERSION, isCurrentPersonalizer } from '../../js/services/imagePersonalizer.js';
 import { decodeFeatures, sigmoid } from '../../js/services/imagePreferences.js';
 
 const mean = xs => xs.reduce((a, b) => a + b, 0) / xs.length;
 
 /** Gallery-weighted loss and Brier error: one decision, not one pair, is a unit. */
-export function trainingMetrics(model, decisions, cases, { predictions = false, rows = false } = {}) {
-  const score = createPersonalizerScorer(model), details = [], probabilities = [], predictionWeights = [];
+export function trainingMetrics(model, decisions, cases, { predictions = false, rows = false, branch = 'fused' } = {}) {
+  if (!['fused', 'mlp', 'clip'].includes(branch) || branch === 'mlp' && !isCurrentPersonalizer(model)) throw Error('Unsupported scoring branch.');
+  const fused = createPersonalizerScorer(model), base = createPersonalizerScorer(null);
+  const score = branch === 'clip' ? base : branch === 'mlp' ? (features, meaning) => 2 * fused(features, meaning) - base(features, meaning) : fused;
+  const details = [], probabilities = [], predictionWeights = [];
   let comparisons = 0, correctPairs = 0;
   for (const decision of decisions) {
     const item = cases.get(decision.id), pairs = decision.records.filter(row => row.kind === 'comparison');
@@ -34,7 +37,10 @@ export function trainingMetrics(model, decisions, cases, { predictions = false, 
 }
 
 /** Optimistic lower bound imposed by the production residual/clamp, not a fitted model. */
-export function residualCapacity(decisions, cases) {
+export function residualCapacity(decisions, cases, { version = PERSONALIZER_VERSION } = {}) {
+  if (version === PERSONALIZER_VERSION) return { optimisticLossLowerBound: 0, uncorrectableGalleries: 0,
+    rows: decisions.map(row => ({ id: row.id, lossFloor: 0, allCorrectable: true })), note: 'Unrestricted fusion has no artificial residual-bound loss floor.' };
+  if (version !== LEGACY_PERSONALIZER_VERSION) throw Error('Unsupported score architecture.');
   const base = createPersonalizerScorer(null), perDecision = [];
   for (const decision of decisions) {
     const item = cases.get(decision.id), pairs = decision.records.filter(row => row.kind === 'comparison');

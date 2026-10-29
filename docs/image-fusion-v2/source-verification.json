@@ -1,0 +1,16 @@
+{
+  "numericalCoreUnchanged": true,
+  "recordedSourceMatchesSnapshot": true,
+  "numericalCoreSha256": "9ebd4e33de7eb2d91796aac334f6c48eb4c1ed942945f3a3823d2ceede40a466",
+  "trainingSourceSha256": "7b924002f4228ba9be1b9c22b2ac06cba9b74096bf1f72287c5ca54bf10c1ac8",
+  "publishedSourceSha256": "50dd9e410a9ea751d6e8fe26d4c864a64aaf81ce753be71d59ce1b0ad09dab7d",
+  "sharedProfileMatches": true,
+  "driverTrainingLogicUnchanged": true,
+  "gradientDiagnosticChange": {
+    "originalEpsilon": 0.0001,
+    "verifiedEpsilon": 0.001,
+    "absoluteTolerance": 0.00002,
+    "trainingHyperparametersChanged": false
+  },
+  "note": "The published wrapper loads the shared recipe; public-entry replay reproduces selected and last weights. Numerical scoring/fitting code is byte-identical to the experimental source after imports are removed. The driver changed only its finite-difference perturbation after model selection."
+}

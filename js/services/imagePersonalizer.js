@@ -1,15 +1,19 @@
 import { CLIP_TAG, CLIP_DIMENSION } from '../ml/clipConfig.js';
 import { decodeFeatures, encodeFullFeatures, normalizedVector, sigmoid } from './imagePreferences.js';
+import { IMAGE_TRAINING_RECIPE } from '../ml/imageTrainingRecipe.js';
 
-export const PERSONALIZER_VERSION = 'meaning-mlp-32-16-v1';
+export const LEGACY_PERSONALIZER_VERSION = 'meaning-mlp-32-16-v1';
+export const PERSONALIZER_VERSION = 'meaning-mlp-32-16-fusion-v2';
 export const IMAGE_PREPROCESSING = 'full-frame-letterbox-256-v1';
 export const PERSONALIZER_INPUTS = CLIP_DIMENSION * 3 + 3;
 export const PERSONALIZER_LAYERS = [PERSONALIZER_INPUTS, 32, 16, 1];
 export const PERSONALIZER_PARAMETERS = 49825;
 export const PERSONALIZER_LIMIT = .08;
 export const PERSONAL_PREFERENCE_LIMIT = .04;
+export const CLIP_FUSION_WEIGHT = .5;
+export const MLP_FUSION_WEIGHT = .5;
 export const PERSONALIZER_FIT_DEFAULTS = Object.freeze({ learningRate: .002, regularization: .001, beta1: .9, beta2: .999,
-  epsilon: 1e-8, gradientClip: 1, patience: 4, minimumImprovement: .0001 });
+  epsilon: 1e-8, gradientClip: 1, maximumGradientNorm: 1, patience: 4, minimumImprovement: .0001 });
 const layers = [[PERSONALIZER_INPUTS, 32], [32, 16], [16, 1]];
 const offsets = [];
 let end = 0;
@@ -28,7 +32,7 @@ export function personalizerInput(features, meaningFeatures) {
   return result;
 }
 function validHead(model) {
-  return Boolean(model?.version === PERSONALIZER_VERSION && model.encoder === CLIP_TAG && model.preprocessing === IMAGE_PREPROCESSING
+  return Boolean([PERSONALIZER_VERSION, LEGACY_PERSONALIZER_VERSION].includes(model?.version) && model.encoder === CLIP_TAG && model.preprocessing === IMAGE_PREPROCESSING
     && model.weights?.length === PERSONALIZER_PARAMETERS && Array.from(model.weights).every(Number.isFinite));
 }
 export function validPersonalizer(model) {
@@ -39,14 +43,19 @@ export function validPersonalizer(model) {
     && model.semanticBase.role === 'semantic' && !model.semanticBase.semanticBase
     && (model.semanticBase.genericValidation?.accepted ?? model.semanticBase.validation?.accepted) === true;
 }
+export function isCurrentPersonalizer(model) {
+  return model?.version === PERSONALIZER_VERSION && validPersonalizer(model)
+    && (!model.semanticBase || model.semanticBase.version === PERSONALIZER_VERSION);
+}
 export function isValidatedSemanticModel(model) {
-  return validPersonalizer(model) && model.role === 'semantic'
+  return isCurrentPersonalizer(model) && model.role === 'semantic'
     && (model.genericValidation?.accepted ?? model.validation?.accepted) === true;
 }
 export function createPreferencePersonalizer(semanticModel) {
   if (!isValidatedSemanticModel(semanticModel)) return null;
   const model = createPersonalizer(); model.weights = Float32Array.from(semanticModel.weights);
-  model.weights.fill(0, offsets[2]);
+  // The personal branch starts at the exact validated semantic model. Its
+  // immutable semantic copy is an acceptance comparator, not another fusion.
   return { ...model, role: 'preference', pretrained: true, semanticBase: clone(semanticModel),
     featureInitialization: { source: 'validated-semantic-head', dataset: semanticModel.genericValidation?.dataset || '',
       weightsSha256: semanticModel.genericValidation?.weightsSha256 || '' } };
@@ -59,7 +68,18 @@ export function createPersonalizer(seed = 78123) {
     for (let i = 0; i < inputs * outputs; i++) weights[start + i] = random() * Math.sqrt(6 / inputs);
     for (let i = 0; i < outputs; i++) weights[start + inputs * outputs + i] = .01;
   }
-  // A new residual is exactly zero: installing the head cannot change CLIP's ranking.
+  // Initialize five trainable routes to reproduce CLIP's three scalar signals:
+  // selected +/-; competing-meaning margin +/-; max(0, unwanted). The MLP
+  // initially agrees with CLIP, then all routes and nonlinear units can learn.
+  for (let j = 0; j < 5; j++) {
+    weights.fill(0, offsets[0] + j * PERSONALIZER_INPUTS, offsets[0] + (j + 1) * PERSONALIZER_INPUTS);
+    weights[offsets[0] + PERSONALIZER_INPUTS * 32 + j] = 0;
+    weights[offsets[0] + j * PERSONALIZER_INPUTS + 1536 + Math.floor(j / 2)] = j % 2 ? -1 : 1;
+    weights.fill(0, offsets[1] + j * 32, offsets[1] + (j + 1) * 32);
+    weights[offsets[1] + j * 32 + j] = 1;
+    weights[offsets[1] + 32 * 16 + j] = 0;
+  }
+  weights.set([1, -1, .6, -.6, -.25], offsets[2]);
   return { version: PERSONALIZER_VERSION, encoder: CLIP_TAG, preprocessing: IMAGE_PREPROCESSING,
     layers: [...PERSONALIZER_LAYERS], weights, role: 'preference', revision: 0, trainingDecisionIds: [] };
 }
@@ -82,7 +102,10 @@ function baseScore(features) {
 }
 const residualLimit = model => model?.role === 'preference' ? PERSONAL_PREFERENCE_LIMIT : PERSONALIZER_LIMIT;
 function frozenBaseScore(model, features, meaningFeatures) {
-  return model?.role === 'preference' && isValidatedSemanticModel(model.semanticBase)
+  if (model?.version === PERSONALIZER_VERSION) return baseScore(features);
+  const archivedBase = model?.semanticBase;
+  return model?.role === 'preference' && validPersonalizer(archivedBase) && archivedBase.role === 'semantic'
+    && (archivedBase.genericValidation?.accepted ?? archivedBase.validation?.accepted) === true
     ? personalizerScore(model.semanticBase, features, meaningFeatures) : baseScore(features);
 }
 export function personalizerScore(model, features, meaningFeatures) {
@@ -90,6 +113,10 @@ export function personalizerScore(model, features, meaningFeatures) {
   return scoreValidPersonalizer(model, features, meaningFeatures);
 }
 function scoreValidPersonalizer(model, features, meaningFeatures) {
+  if (model.version === PERSONALIZER_VERSION) {
+    const learned = forward(model.weights, personalizerInput(features, meaningFeatures))[3][0];
+    return CLIP_FUSION_WEIGHT * baseScore(features) + MLP_FUSION_WEIGHT * learned;
+  }
   const base = frozenBaseScore(model, features, meaningFeatures);
   const x = personalizerInput(features, meaningFeatures);
   let residual = residualLimit(model) * Math.tanh(forward(model.weights, x)[3][0]);
@@ -225,6 +252,15 @@ function batchGradient(model, batch) {
   const gradient = new Float32Array(PERSONALIZER_PARAMETERS), limit = residualLimit(model);
   for (const decision of batch) for (const row of decision.observations) {
     const a = forward(model.weights, row.a), b = row.b ? forward(model.weights, row.b) : null;
+    if (model.version === PERSONALIZER_VERSION) {
+      const scoreA = CLIP_FUSION_WEIGHT * row.baseA + MLP_FUSION_WEIGHT * a[3][0];
+      const scoreB = b ? CLIP_FUSION_WEIGHT * row.baseB + MLP_FUSION_WEIGHT * b[3][0] : .3;
+      const difference = b ? scoreA - scoreB : .3 - scoreA;
+      const error = (sigmoid(difference * 8) - 1) * 8 * row.weight / batch.length;
+      backward(model.weights, a, error * MLP_FUSION_WEIGHT * (b ? 1 : -1), gradient);
+      if (b) backward(model.weights, b, -error * MLP_FUSION_WEIGHT, gradient);
+      continue;
+    }
     const rawA = Math.tanh(a[3][0]), rawB = b ? Math.tanh(b[3][0]) : 0;
     const clampA = row.a[1537] < 0 && rawA > 0, clampB = b && row.b[1537] < 0 && rawB > 0;
     const ra = clampA ? 0 : rawA, rb = clampB ? 0 : rawB;
@@ -250,7 +286,7 @@ export function personalizerActivationSignature(model, decisions) {
     for (const input of [row.a, row.b].filter(Boolean)) {
       const state = forward(model.weights, input);
       parts.push(...state[1].map(value => Number(value > 0)), ...state[2].map(value => Number(value > 0)),
-        Number(input[1537] < 0 && state[3][0] > 0));
+        Number(model.version === LEGACY_PERSONALIZER_VERSION && input[1537] < 0 && state[3][0] > 0));
     }
   }
   return parts.join('');
@@ -260,26 +296,44 @@ export function personalizerActivationSignature(model, decisions) {
 export function fitImagePersonalizer(initialModel, train, validation, { epochs = 20, batchSize = 8, maxMilliseconds = 20000,
   outputOnly = false, learningRate = PERSONALIZER_FIT_DEFAULTS.learningRate, regularization = PERSONALIZER_FIT_DEFAULTS.regularization,
   patience = PERSONALIZER_FIT_DEFAULTS.patience, minimumImprovement = PERSONALIZER_FIT_DEFAULTS.minimumImprovement,
+  maximumGradientNorm = PERSONALIZER_FIT_DEFAULTS.maximumGradientNorm, checkpoint = 'validation',
   progress = () => {}, observeEpoch = () => {} } = {}) {
-  if (!validPersonalizer(initialModel) || !train.length || !validation.length) throw new Error('Fitting requires a current model and nonempty training/validation decisions.');
+  if (!isCurrentPersonalizer(initialModel) || !train.length || !validation.length) throw new Error('Fitting requires a current model and nonempty training/validation decisions.');
   if (!Number.isInteger(epochs) || epochs < 1 || !Number.isInteger(batchSize) || batchSize < 1 || !(learningRate > 0)
-    || !(regularization >= 0) || !(maxMilliseconds > 0) || !(patience > 0)) throw new Error('Invalid fitting hyperparameters.');
+    || !Number.isFinite(learningRate) || !(regularization >= 0) || !Number.isFinite(regularization) || !(maxMilliseconds > 0) || !(patience > 0)
+    || !(maximumGradientNorm > 0) || !Number.isFinite(maximumGradientNorm) || !['validation', 'last'].includes(checkpoint)) throw new Error('Invalid fitting hyperparameters.');
   const model = clone(initialModel); model.weights = Float32Array.from(model.weights);
   const initial = Float32Array.from(model.weights), momentum = new Float32Array(initial.length), variance = new Float32Array(initial.length);
   const training = preparedDecisions(model, train);
   if (!training.length) throw new Error('No usable training observations.');
-  const { beta1, beta2, epsilon, gradientClip } = PERSONALIZER_FIT_DEFAULTS;
+  const { beta1, beta2, epsilon } = PERSONALIZER_FIT_DEFAULTS;
   const start = performance.now(); let step = 0, best = evaluatePersonalizer(model, validation).loss, bestWeights = Float32Array.from(initial), stale = 0;
-  let bestEpoch = 0, epochsRun = 0;
+  let bestEpoch = 0, epochsRun = 0, clippedSteps = 0, maximumObservedGradientNorm = 0;
   observeEpoch(model, { epoch: 0, validationLoss: best, selectedEpoch: bestEpoch });
   for (let epoch = 0; epoch < epochs && performance.now() - start < maxMilliseconds; epoch++) {
+    let epochMaximumNorm = 0, epochClippedSteps = 0;
     // Rotate through the full training history; batch size never limits retention.
     const ordered = [...training.slice(epoch % training.length), ...training.slice(0, epoch % training.length)];
-    for (let offset = 0; offset < ordered.length && performance.now() - start < maxMilliseconds; offset += batchSize) {
-      const batch = ordered.slice(offset, offset + batchSize), gradient = batchGradient(model, batch);
+    for (let offset = 0; offset < ordered.length && performance.now() - start < maxMilliseconds;) {
+      // Fold a tiny tail into the preceding batch instead of giving one final
+      // gallery a full Adam update. No observations are dropped or duplicated.
+      const remaining = ordered.length - offset;
+      const end = remaining > batchSize && remaining < batchSize + Math.ceil(batchSize / 2) ? ordered.length : Math.min(ordered.length, offset + batchSize);
+      const batch = ordered.slice(offset, end), gradient = batchGradient(model, batch);
+      offset = end;
+      let squaredNorm = 0;
+      for (let i = outputOnly ? offsets[2] : 0; i < gradient.length; i++) {
+        gradient[i] += regularization * (model.weights[i] - initial[i]);
+        squaredNorm += gradient[i] * gradient[i];
+      }
+      const norm = Math.sqrt(squaredNorm);
+      if (!Number.isFinite(norm)) throw new Error('Nonfinite gradient; candidate discarded.');
+      maximumObservedGradientNorm = Math.max(maximumObservedGradientNorm, norm); epochMaximumNorm = Math.max(epochMaximumNorm, norm);
+      const scale = norm > maximumGradientNorm ? maximumGradientNorm / norm : 1;
+      if (scale < 1) { clippedSteps++; epochClippedSteps++; }
       step++;
       for (let i = outputOnly ? offsets[2] : 0; i < gradient.length; i++) {
-        const g = Math.max(-gradientClip, Math.min(gradientClip, gradient[i] + regularization * (model.weights[i] - initial[i])));
+        const g = gradient[i] * scale;
         // Preserve the original decimal update coefficients exactly. Computing
         // 1 - beta in binary changes Float32 rounding and can alter later steps.
         momentum[i] = beta1 * momentum[i] + .1 * g; variance[i] = beta2 * variance[i] + .001 * g * g;
@@ -289,18 +343,28 @@ export function fitImagePersonalizer(initialModel, train, validation, { epochs =
     const validationLoss = evaluatePersonalizer(model, validation).loss;
     if (validationLoss < best - minimumImprovement) { best = validationLoss; bestWeights = Float32Array.from(model.weights); bestEpoch = epoch + 1; stale = 0; } else stale++;
     epochsRun = epoch + 1;
-    progress({ epoch: epochsRun, epochs, validationLoss });
-    observeEpoch(model, { epoch: epochsRun, validationLoss, selectedEpoch: bestEpoch });
+    const state = { epoch: epochsRun, epochs, validationLoss, selectedEpoch: bestEpoch, maximumGradientNorm: epochMaximumNorm, clippedSteps: epochClippedSteps };
+    progress(state);
+    observeEpoch(model, state);
     if (stale >= patience) break;
   }
-  model.weights = bestWeights;
+  if (checkpoint === 'validation') model.weights = bestWeights;
   return { model, bestEpoch, epochsRun, steps: step, elapsedMs: performance.now() - start,
+    checkpoint, maximumObservedGradientNorm, clippedSteps,
     stoppedBy: stale >= patience ? 'early-stopping' : epochsRun >= epochs ? 'epochs' : 'time-budget' };
 }
-export function trainImagePersonalizer(records, incumbent = null, { epochs = 20, batchSize = 8, maxMilliseconds = 20000, initialization = null, outputOnly = null, task = 'preference', datasetPartitions = null, returnCandidate = false, progress = () => {}, observeEpoch = () => {} } = {}) {
+export function trainImagePersonalizer(records, incumbent = null, {
+  epochs = IMAGE_TRAINING_RECIPE.epochs, batchSize = IMAGE_TRAINING_RECIPE.batchSize, maxMilliseconds = IMAGE_TRAINING_RECIPE.maxMilliseconds,
+  learningRate = IMAGE_TRAINING_RECIPE.learningRate, regularization = IMAGE_TRAINING_RECIPE.regularization,
+  maximumGradientNorm = IMAGE_TRAINING_RECIPE.maximumGradientNorm, patience = IMAGE_TRAINING_RECIPE.patience,
+  minimumImprovement = IMAGE_TRAINING_RECIPE.minimumImprovement, checkpoint = IMAGE_TRAINING_RECIPE.checkpoint,
+  initialization = null, outputOnly = IMAGE_TRAINING_RECIPE.outputOnly, task = 'preference', datasetPartitions = null,
+  returnCandidate = false, progress = () => {}, observeEpoch = () => {}
+} = {}) {
   if (!['semantic', 'preference'].includes(task)) throw new Error('Unknown image training task.');
   if (datasetPartitions != null && task !== 'semantic') throw new Error('Explicit dataset partitions are available only for semantic training.');
   if (incumbent?.role && incumbent.role !== task) return { accepted: false, reason: 'Semantic and personal training models must remain separate.' };
+  if (incumbent && !isCurrentPersonalizer(incumbent)) return { accepted: false, reason: 'Previous scoring architecture cannot initialize a current model.' };
   // Public semantic annotations never become personal taste observations. Older
   // user records had no task field and retain their original preference meaning.
   const taskRecords = records.filter(record => (record.task || 'preference') === task);
@@ -312,15 +376,31 @@ export function trainImagePersonalizer(records, incumbent = null, { epochs = 20,
   let seed = initialization;
   if (task === 'preference' && seed?.role === 'semantic') seed = createPreferencePersonalizer(seed);
   if (seed?.genericValidation?.accepted === false || seed?.role && seed.role !== task) seed = null;
-  let model = validPersonalizer(incumbent) ? clone(incumbent) : validPersonalizer(seed) ? clone(seed) : createPersonalizer();
+  let model = isCurrentPersonalizer(incumbent) ? clone(incumbent) : isCurrentPersonalizer(seed) ? clone(seed) : createPersonalizer();
   model.role = task;
   if (task === 'semantic') { delete model.semanticBase; delete model.pretrained; }
   model.weights = Float32Array.from(model.weights);
   const trainOutputOnly = outputOnly ?? (task === 'preference' && Boolean(model.pretrained));
-  model = fitImagePersonalizer(model, split.train, split.validation, { epochs, batchSize, maxMilliseconds, outputOnly: trainOutputOnly, progress, observeEpoch }).model;
+  const recipe = { epochs, batchSize, maxMilliseconds, learningRate, regularization, maximumGradientNorm, patience, minimumImprovement, checkpoint, outputOnly: trainOutputOnly };
+  let selected = null, selectedEpoch = 0, bestMatches = -1, bestSelectionLoss = Infinity;
+  const fitted = fitImagePersonalizer(model, split.train, split.validation, { ...recipe, progress, observeEpoch: (current, state) => {
+    // Generic galleries contain every labeled alternative; personal decisions
+    // contain the shown comparisons. Rank success means all recorded orders
+    // are correct (or all explicit rejections lie below their threshold).
+    const validation = evaluatePersonalizer(current, split.validation);
+    const matches = validation.rows.filter(row => row.accuracy >= 1 - 1e-12 && row.rejectedAboveThreshold === 0).length;
+    if (matches > bestMatches || matches === bestMatches && validation.loss < bestSelectionLoss - 1e-12) {
+      selected = { ...current, weights: Float32Array.from(current.weights) }; selectedEpoch = state.epoch;
+      bestMatches = matches; bestSelectionLoss = validation.loss;
+    }
+    observeEpoch(current, { ...state, rankingSelectedEpoch: selectedEpoch });
+  } });
+  model = selected || fitted.model;
+  Object.assign(model, { trainingRecipe: recipe, selectedEpoch, epochsRun: fitted.epochsRun,
+    checkpointSelection: 'validation-ranking-then-loss', maximumObservedGradientNorm: fitted.maximumObservedGradientNorm, clippedSteps: fitted.clippedSteps });
   const result = imageModelAcceptance(model, incumbent, split.test);
-  if (!result.accepted) return { ...report, ...result, ...(returnCandidate ? { candidate: { ...model, trainingDecisionIds: split.train.map(d => d.id) } } : {}) };
+  if (!result.accepted) return { ...report, ...result, ...(returnCandidate ? { candidate: { ...model, trainingDecisionIds: split.train.map(d => d.id) }, lastCandidate: fitted.model } : {}) };
   Object.assign(model, { revision: (incumbent?.revision || 0) + 1, trainedAt: new Date().toISOString(), trainingDecisionIds: split.train.map(d => d.id),
     validationDecisionIds: split.validation.map(d => d.id), testDecisionIds: split.test.map(d => d.id), personalizationMode: trainOutputOnly ? 'output-only' : 'full-head', validation: { ...result, before: { ...result.before, rows: undefined }, after: { ...result.after, rows: undefined }, baseline: { ...result.baseline, rows: undefined }, semanticBaseline: { ...result.semanticBaseline, rows: undefined } } });
-  return { ...report, ...result, model };
+  return { ...report, ...result, model, ...(returnCandidate ? { lastCandidate: fitted.model } : {}) };
 }

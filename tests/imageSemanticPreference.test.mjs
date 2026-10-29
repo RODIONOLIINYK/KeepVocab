@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPersonalizer, createPreferencePersonalizer, isValidatedSemanticModel, personalizerScore, trainImagePersonalizer, imageModelAcceptance, splitImageDecisions, semanticDatasetPartitions, PERSONAL_PREFERENCE_LIMIT } from '../js/services/imagePersonalizer.js';
+import { createPersonalizer, createPreferencePersonalizer, isValidatedSemanticModel, personalizerScore, trainImagePersonalizer, imageModelAcceptance, splitImageDecisions, semanticDatasetPartitions } from '../js/services/imagePersonalizer.js';
 import { ImagePersonalizerTraining } from '../js/services/imagePersonalizerTraining.js';
 import { imageChoiceHistory } from './fixtures/imageChoices.mjs';
+import { IMAGE_TRAINING_RECIPE, MOBILE_IMAGE_TRAINING_BUDGET_MS } from '../js/ml/imageTrainingRecipe.js';
 
 function semanticSeed() {
   const model=createPersonalizer(); model.role='semantic'; model.weights[model.weights.length-1]=.2;
@@ -34,16 +35,16 @@ test('semantic and personal training records remain different targets',()=>{
 test('a new personal correction starts exactly at validated semantic scores',()=>{
   const semantic=semanticSeed(),personal=createPreferencePersonalizer(semantic),row=imageChoiceHistory(1)[0];
   assert.equal(isValidatedSemanticModel(semantic),true);assert.equal(personal.role,'preference');
-  assert.ok([...personal.weights.slice(-17)].every(w=>w===0));
+  assert.deepEqual(personal.weights,semantic.weights);
   assert.equal(personalizerScore(personal,row.features,row.meaningFeatures),personalizerScore(semantic,row.features,row.meaningFeatures));
   assert.notEqual(personalizerScore(semantic,row.features,row.meaningFeatures),personalizerScore(null,row.features,row.meaningFeatures));
   personal.weights[personal.weights.length-1]=100;
-  assert.ok(Math.abs(personalizerScore(personal,row.features,row.meaningFeatures)-personalizerScore(semantic,row.features,row.meaningFeatures))<=PERSONAL_PREFERENCE_LIMIT+1e-8);
+  assert.ok(personalizerScore(personal,row.features,row.meaningFeatures)-personalizerScore(semantic,row.features,row.meaningFeatures)>40,'The personal MLP is no longer capped to a small residual');
 });
 
 test('personal fitting never changes the semantic head or its reused hidden layers',()=>{
   const semantic=semanticSeed(),before=Float32Array.from(semantic.weights),initialization=createPreferencePersonalizer(semantic);
-  const result=trainImagePersonalizer(imageChoiceHistory(),null,{initialization,epochs:24,returnCandidate:true});
+  const result=trainImagePersonalizer(imageChoiceHistory(),null,{initialization,epochs:200,outputOnly:true,returnCandidate:true});
   const model=result.model||result.candidate;assert.ok(model);
   assert.deepEqual(semantic.weights,before);assert.deepEqual(model.semanticBase.weights,before);
   assert.deepEqual(model.weights.slice(0,-17),initialization.weights.slice(0,-17));
@@ -71,6 +72,8 @@ test('production training passes a separate personal initializer while retaining
   const trainer=new ImagePersonalizerTraining(store,{pretrained:async()=>({getPretrainedImageModel:()=>semantic})});t.after(()=>trainer.stop());
   assert.equal(await trainer.current(),semantic);await trainer.train({task:'semantic'});
   const message=capture();assert.equal(message.model,null);assert.equal(message.options.task,'preference');
+  for(const [key,value]of Object.entries(IMAGE_TRAINING_RECIPE))if(key!=='maxMilliseconds')assert.deepEqual(message.options[key],value);
+  assert.equal(message.options.maxMilliseconds,MOBILE_IMAGE_TRAINING_BUDGET_MS);
   assert.equal(message.initialization.role,'preference');assert.deepEqual(message.initialization.semanticBase.weights,semantic.weights);
   assert.equal(await store.imageHistory.model(),null);assert.equal(await trainer.current(),semantic);
 });

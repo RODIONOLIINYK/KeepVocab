@@ -1,0 +1,78 @@
+{
+  "passed": true,
+  "method": "Independent NumPy forward pass, ranking/loss aggregation and empirical Brier decomposition",
+  "numpyVersion": "2.5.4",
+  "metrics": {
+    "train": {
+      "clip": {
+        "loss": 0.375426105413057,
+        "brier": 0.10274189426827218,
+        "pairwiseAccuracy": 0.974891774891775,
+        "chosenAt1": 357
+      },
+      "mlp": {
+        "loss": 0.35662770388003157,
+        "brier": 0.09534431366762346,
+        "pairwiseAccuracy": 0.9759740259740259,
+        "chosenAt1": 360
+      },
+      "fusion": {
+        "loss": 0.36584080994243023,
+        "brier": 0.09893285956004197,
+        "pairwiseAccuracy": 0.9753246753246754,
+        "chosenAt1": 359
+      }
+    },
+    "validation": {
+      "clip": {
+        "loss": 0.37996832272054776,
+        "brier": 0.10419547751153,
+        "pairwiseAccuracy": 0.9824561403508774,
+        "chosenAt1": 126
+      },
+      "mlp": {
+        "loss": 0.36498865864871194,
+        "brier": 0.09835820727613152,
+        "pairwiseAccuracy": 0.9786967418546367,
+        "chosenAt1": 125
+      },
+      "fusion": {
+        "loss": 0.37233554879513814,
+        "brier": 0.10119085266156251,
+        "pairwiseAccuracy": 0.9824561403508774,
+        "chosenAt1": 126
+      }
+    },
+    "test": {
+      "clip": {
+        "loss": 0.3539136847005472,
+        "brier": 0.09405874301195082,
+        "pairwiseAccuracy": 0.9763888888888889,
+        "chosenAt1": 113
+      },
+      "mlp": {
+        "loss": 0.3368436381637664,
+        "brier": 0.08764486299676678,
+        "pairwiseAccuracy": 0.9763888888888889,
+        "chosenAt1": 113
+      },
+      "fusion": {
+        "loss": 0.345199922823128,
+        "brier": 0.09074873037621664,
+        "pairwiseAccuracy": 0.9763888888888889,
+        "chosenAt1": 113
+      }
+    }
+  },
+  "biasVariance": {
+    "squaredBiasToFixedLabels": 0.08683693924593441,
+    "predictionVariance": 0.0009397755981333986,
+    "expectedBrierError": 0.08777671484406781,
+    "identityResidual": -4.7704895589362195e-18
+  },
+  "lastCheckpointBiasVariance": {
+    "squaredBiasToFixedLabels": 0.030515589342554297,
+    "predictionVariance": 0.01163389570164825,
+    "expectedBrierError": 0.042149485044202545
+  }
+}

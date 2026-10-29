@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
-import { createPersonalizer, createPersonalizerScorer, personalizerScore, imageDecisions, evaluatePersonalizer, fitImagePersonalizer, trainImagePersonalizer } from '../js/services/imagePersonalizer.js';
+import { createPersonalizer, createPersonalizerScorer, personalizerScore, imageDecisions, evaluatePersonalizer, fitImagePersonalizer, trainImagePersonalizer, validPersonalizer, isCurrentPersonalizer } from '../js/services/imagePersonalizer.js';
 import { gradientDiagnostic, fixedLabelBiasVariance } from '../scripts/lib/image-training-diagnostics.mjs';
 import { imageChoiceHistory } from './fixtures/imageChoices.mjs';
+import { readJsonFile } from '../scripts/lib/json-files.mjs';
 
 test('the shared fitting core memorizes a tiny batch without weakening production acceptance', () => {
   const history = imageChoiceHistory(4), decisions = imageDecisions(history), initial = createPersonalizer(), before = Float32Array.from(initial.weights);
@@ -18,11 +18,28 @@ test('the shared fitting core memorizes a tiny batch without weakening productio
   assert.equal(trainImagePersonalizer(history).accepted, false, 'a memorization run cannot activate a production head');
 });
 
-test('default fitting reproduces the pre-refactor v1.12.4 weight snapshot', () => {
-  const result = trainImagePersonalizer(imageChoiceHistory(), null, { epochs: 8, returnCandidate: true, maxMilliseconds: 60000 });
-  const model = result.model || result.candidate, bytes = Buffer.alloc(model.weights.length * 4);
-  model.weights.forEach((value, index) => bytes.writeFloatLE(value, index * 4));
-  assert.equal(createHash('sha256').update(bytes).digest('hex'), '5651a8559a85346e8615d620ba12535eae43d5a6017c451c0bc73adb2fcbf03a');
+test('historical bounded weights remain reproducible but cannot initialize current fusion training', async () => {
+  const saved = await readJsonFile(new URL('./fixtures/image-pretraining-fp16/candidate.json.gz', import.meta.url));
+  assert.equal(validPersonalizer(saved.model), true);
+  assert.equal(isCurrentPersonalizer(saved.model), false);
+  assert.throws(() => fitImagePersonalizer(saved.model, imageDecisions(imageChoiceHistory(4)), imageDecisions(imageChoiceHistory(4))), /current model/);
+});
+
+test('global norm clipping records clipping and merges a tiny final batch without discarding records', () => {
+  const decisions = imageDecisions(imageChoiceHistory(17)), epochs = [];
+  const result = fitImagePersonalizer(createPersonalizer(), decisions, decisions, { epochs: 1, batchSize: 8, regularization: 0,
+    maximumGradientNorm: .000001, checkpoint: 'last', observeEpoch: (_model, row) => epochs.push(row) });
+  assert.equal(result.steps, 2, 'eight galleries then nine; no one-gallery tail update');
+  assert.ok(result.maximumObservedGradientNorm > .000001);
+  assert.ok(result.clippedSteps > 0); assert.ok(epochs.at(-1).clippedSteps > 0);
+  assert.ok(result.model.weights.every(Number.isFinite));
+});
+
+test('the new model is a 50/50 score fusion with no output magnitude cap', () => {
+  const model = createPersonalizer(), row = imageChoiceHistory(1)[0];
+  model.weights.fill(0); model.weights[model.weights.length - 1] = 20;
+  const base = personalizerScore(null, row.features, row.meaningFeatures);
+  assert.equal(personalizerScore(model, row.features, row.meaningFeatures), .5 * base + .5 * 20);
 });
 
 test('all three backpropagation layers agree with finite differences', () => {

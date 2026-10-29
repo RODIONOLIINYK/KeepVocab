@@ -1,0 +1,78 @@
+{
+  "passed": true,
+  "method": "Independent NumPy forward pass, ranking/loss aggregation and empirical Brier decomposition",
+  "numpyVersion": "2.5.4",
+  "metrics": {
+    "train": {
+      "clip": {
+        "loss": 0.375426105413057,
+        "brier": 0.10274189426827218,
+        "pairwiseAccuracy": 0.974891774891775,
+        "chosenAt1": 357
+      },
+      "mlp": {
+        "loss": 4.1148442391026215e-06,
+        "brier": 2.988857672225155e-10,
+        "pairwiseAccuracy": 1.0,
+        "chosenAt1": 385
+      },
+      "fusion": {
+        "loss": 0.0007876889447537594,
+        "brier": 3.082286861084889e-06,
+        "pairwiseAccuracy": 1.0,
+        "chosenAt1": 385
+      }
+    },
+    "validation": {
+      "clip": {
+        "loss": 0.37996832272054776,
+        "brier": 0.10419547751153,
+        "pairwiseAccuracy": 0.9824561403508774,
+        "chosenAt1": 126
+      },
+      "mlp": {
+        "loss": 0.1453453567195539,
+        "brier": 0.04144876890091716,
+        "pairwiseAccuracy": 0.9511278195488722,
+        "chosenAt1": 118
+      },
+      "fusion": {
+        "loss": 0.10478790130542943,
+        "brier": 0.033484381858496635,
+        "pairwiseAccuracy": 0.9536340852130326,
+        "chosenAt1": 118
+      }
+    },
+    "test": {
+      "clip": {
+        "loss": 0.3539136847005472,
+        "brier": 0.09405874301195082,
+        "pairwiseAccuracy": 0.9763888888888889,
+        "chosenAt1": 113
+      },
+      "mlp": {
+        "loss": 0.13477101053888693,
+        "brier": 0.02957784324667788,
+        "pairwiseAccuracy": 0.96875,
+        "chosenAt1": 111
+      },
+      "fusion": {
+        "loss": 0.09166828032054802,
+        "brier": 0.026339565037136598,
+        "pairwiseAccuracy": 0.96875,
+        "chosenAt1": 111
+      }
+    }
+  },
+  "biasVariance": {
+    "squaredBiasToFixedLabels": 0.08683693924593441,
+    "predictionVariance": 0.0009397755981333986,
+    "expectedBrierError": 0.08777671484406781,
+    "identityResidual": -4.7704895589362195e-18
+  },
+  "lastCheckpointBiasVariance": {
+    "squaredBiasToFixedLabels": 0.030515589342554297,
+    "predictionVariance": 0.01163389570164825,
+    "expectedBrierError": 0.042149485044202545
+  }
+}

@@ -1,4 +1,6 @@
-import { validPersonalizer, activeImageExamples, isValidatedSemanticModel, createPreferencePersonalizer } from './imagePersonalizer.js';
+import { isCurrentPersonalizer, activeImageExamples, isValidatedSemanticModel, createPreferencePersonalizer } from './imagePersonalizer.js';
+import { IMAGE_TRAINING_RECIPE, MOBILE_IMAGE_TRAINING_BUDGET_MS } from '../ml/imageTrainingRecipe.js';
+import { imageRankingAcceptance } from './imageChoicePolicy.js';
 
 const signature = records => JSON.stringify(activeImageExamples(records).map(r => [r.id, r.updatedAt]).sort());
 export class ImagePersonalizerTraining {
@@ -6,7 +8,7 @@ export class ImagePersonalizerTraining {
   async personal() {
     const history = this.persistence.imageHistory; await history.ready;
     const model = await history.model();
-    return validPersonalizer(model) && model.role !== 'semantic' && (model.resetAt || '') === history.resetAt ? model : null;
+    return isCurrentPersonalizer(model) && model.role !== 'semantic' && (model.resetAt || '') === history.resetAt ? model : null;
   }
   async semantic() {
     const generic = await this.pretrained(), model = generic?.getPretrainedImageModel?.();
@@ -28,8 +30,8 @@ export class ImagePersonalizerTraining {
     const operation = async () => {
       const requestedGeneration = this.generation;
       const records = await this.persistence.getImageEvents(), before = signature(records), model = await this.personal();
-      // A public semantic head is immutable. Only its validated hidden features
-      // may initialize a separate zero-output personal preference correction.
+      // A public semantic head stays immutable. Personal fitting starts as an
+      // exact copy; the frozen copy remains an acceptance comparator.
       const initialization = model ? null : createPreferencePersonalizer(await this.semantic());
       if (requestedGeneration !== this.generation) return { accepted: false, reason: 'Training cancelled.' };
       const generation = this.generation, resetAt = this.persistence.imageHistory.resetAt;
@@ -40,10 +42,11 @@ export class ImagePersonalizerTraining {
         this.cancel = () => { finish(); resolve({ accepted: false, reason: 'Training cancelled.' }); };
         worker.onmessage = ({ data }) => { if (data.progress) return; finish(); if (data.error) reject(new Error(data.error)); else resolve(data.result); };
         worker.onerror = () => { finish(); reject(new Error('Photo preferences could not be updated.')); };
-        worker.postMessage({ records, model, options: { ...options, task: 'preference' }, initialization });
+        worker.postMessage({ records, model, options: { ...IMAGE_TRAINING_RECIPE, ...options,
+          maxMilliseconds: Math.min(Number(options.maxMilliseconds) || MOBILE_IMAGE_TRAINING_BUDGET_MS, MOBILE_IMAGE_TRAINING_BUDGET_MS), task: 'preference' }, initialization });
       });
       this.report = result;
-      if (result.accepted && (!validPersonalizer(result.model) || result.model.role !== 'preference')) {
+      if (result.accepted && (!isCurrentPersonalizer(result.model) || result.model.role !== 'preference')) {
         return { accepted: false, reason: 'Only a separately validated personal preference model can replace personal weights.' };
       }
       if (result.accepted) {
@@ -51,6 +54,8 @@ export class ImagePersonalizerTraining {
         if (generation !== this.generation || resetAt !== this.persistence.imageHistory.resetAt || before !== signature(latest) || (active?.revision || 0) !== (model?.revision || 0)) {
           this.request(); return { accepted: false, reason: 'Photo choices changed during training; candidate discarded.' };
         }
+        const ranking = imageRankingAcceptance(result);
+        if (!ranking.accepted) return this.report = { ...result, accepted: false, reason: ranking.reason, ranking };
         await this.persistence.imageHistory.saveModel({ ...result.model, resetAt });
       }
       return result;

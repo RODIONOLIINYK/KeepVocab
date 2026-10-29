@@ -1,6 +1,20 @@
 import { CLIP_TAG } from '../ml/clipConfig.js';
 
-// Suggest a clear semantic match. Learned preference affects the bounded rank
+// A better average pairwise result must not hide fewer complete correct choices.
+export function imageRankingAcceptance(result) {
+  const agreement = metric => Array.isArray(metric?.rows) && metric.rows.length
+    ? metric.rows.filter(row => row.accuracy >= 1 - 1e-12 && row.rejectedAboveThreshold === 0).length / metric.rows.length : null;
+  const after = agreement(result?.after);
+  const comparators = [result?.before, result?.baseline, result?.semanticBaseline].filter(Boolean).map(agreement);
+  if (after === null || !comparators.length || comparators.some(value => value === null)) {
+    return { accepted: false, reason: 'Complete held-out image choices are required before promoting a model.' };
+  }
+  const accepted = comparators.every(value => after >= value - 1e-12);
+  return { accepted, afterAgreement: after, comparatorAgreements: comparators,
+    reason: accepted ? 'Held-out first-choice ranking did not regress.' : 'Current model retained because held-out first-choice ranking regressed.' };
+}
+
+// Suggest a clear semantic match. Learned preference affects the fused rank
 // score, but its sigmoid output is not calibrated confidence in correctness.
 export function canAutoSelectImage(candidates) {
   const [first, ...others] = candidates || [];

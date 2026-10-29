@@ -1,0 +1,155 @@
+{
+  "loss": 0.38976993781179303,
+  "epsilon": 0.001,
+  "absoluteTolerance": 0.00002,
+  "checks": [
+    {
+      "layer": 0,
+      "index": 233,
+      "analytic": -0.19923356175422668,
+      "numeric": -0.19923380380151753,
+      "absoluteError": 2.420472908493121e-7,
+      "relativeError": 6.074457076597167e-7
+    },
+    {
+      "layer": 0,
+      "index": 178,
+      "analytic": -0.19508883357048035,
+      "numeric": -0.19508608591594803,
+      "absoluteError": 0.000002747654532314625,
+      "relativeError": 0.000007042109564426265
+    },
+    {
+      "layer": 0,
+      "index": 287,
+      "analytic": -0.11180072277784348,
+      "numeric": -0.11180384919461807,
+      "absoluteError": 0.0000031264167745931326,
+      "relativeError": 0.000013981900043520455
+    },
+    {
+      "layer": 0,
+      "index": 271,
+      "analytic": 0.10946835577487946,
+      "numeric": 0.1094746197204873,
+      "absoluteError": 0.000006263945607848376,
+      "relativeError": 0.00002860994098429494
+    },
+    {
+      "layer": 0,
+      "index": 198,
+      "analytic": 0.10896094888448715,
+      "numeric": 0.10896555513728193,
+      "absoluteError": 0.000004606252794775445,
+      "relativeError": 0.000021136725959295515
+    },
+    {
+      "layer": 0,
+      "index": 125,
+      "analytic": 0.10642561316490173,
+      "numeric": 0.10642414876224374,
+      "absoluteError": 0.000001464402657996855,
+      "relativeError": 0.000006879982597763454
+    },
+    {
+      "layer": 1,
+      "index": 49280,
+      "analytic": -0.10421226918697357,
+      "numeric": -0.10421185554300104,
+      "absoluteError": 4.136439725327401e-7,
+      "relativeError": 0.000001984626170644303
+    },
+    {
+      "layer": 1,
+      "index": 49408,
+      "analytic": 0.028048276901245117,
+      "numeric": 0.028047301583242895,
+      "absoluteError": 9.753180022220587e-7,
+      "relativeError": 0.000017386717965512403
+    },
+    {
+      "layer": 1,
+      "index": 49299,
+      "analytic": -0.02682715468108654,
+      "numeric": -0.026827771657058557,
+      "absoluteError": 6.169759720169032e-7,
+      "relativeError": 0.000011498962241203827
+    },
+    {
+      "layer": 1,
+      "index": 49293,
+      "analytic": 0.018264327198266983,
+      "numeric": 0.0182597600332099,
+      "absoluteError": 0.000004567165057083045,
+      "relativeError": 0.0001250452893767872
+    },
+    {
+      "layer": 1,
+      "index": 49301,
+      "analytic": -0.016856007277965546,
+      "numeric": -0.016854821178684212,
+      "absoluteError": 0.000001186099281333397,
+      "relativeError": 0.000035184518910849505
+    },
+    {
+      "layer": 1,
+      "index": 49288,
+      "analytic": -0.015392889268696308,
+      "numeric": -0.015395891794150445,
+      "absoluteError": 0.0000030025254541370117,
+      "relativeError": 0.00009752011448612367
+    },
+    {
+      "layer": 2,
+      "index": 49808,
+      "analytic": -0.10138839483261108,
+      "numeric": -0.10139096497465025,
+      "absoluteError": 0.0000025701420391655017,
+      "relativeError": 0.000012674574185500843
+    },
+    {
+      "layer": 2,
+      "index": 49822,
+      "analytic": -0.07301699370145798,
+      "numeric": -0.07301956295394449,
+      "absoluteError": 0.0000025692524865117417,
+      "relativeError": 0.000017593214639909103
+    },
+    {
+      "layer": 2,
+      "index": 49816,
+      "analytic": 0.044194240123033524,
+      "numeric": 0.044197017972091114,
+      "absoluteError": 0.0000027778490575905423,
+      "relativeError": 0.00003142673967374789
+    },
+    {
+      "layer": 2,
+      "index": 49819,
+      "analytic": -0.04373142868280411,
+      "numeric": -0.04373191519592908,
+      "absoluteError": 4.865131249739973e-7,
+      "relativeError": 0.000005562480273433652
+    },
+    {
+      "layer": 2,
+      "index": 49823,
+      "analytic": -0.03380611911416054,
+      "numeric": -0.03380549978365442,
+      "absoluteError": 6.19330506115845e-7,
+      "relativeError": 0.000009160119461891189
+    },
+    {
+      "layer": 2,
+      "index": 49820,
+      "analytic": 0.028007416054606438,
+      "numeric": 0.028007870639870047,
+      "absoluteError": 4.5458526360883655e-7,
+      "relativeError": 0.000008115378683827427
+    }
+  ],
+  "skippedBoundaries": [],
+  "passed": true,
+  "maximumAbsoluteError": 0.000006263945607848376,
+  "maximumRelativeError": 0.0001250452893767872
+}

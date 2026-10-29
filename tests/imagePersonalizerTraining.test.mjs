@@ -6,6 +6,16 @@ import { ImageLearningHistoryStore } from '../js/services/imageLearningHistory.j
 import { MemoryStorage } from '../js/services/driveSync.js';
 import { createPersonalizer } from '../js/services/imagePersonalizer.js';
 import { imageChoiceHistory } from './fixtures/imageChoices.mjs';
+import { readJsonFile } from '../scripts/lib/json-files.mjs';
+import { imageRankingAcceptance } from '../js/services/imageChoicePolicy.js';
+
+test('improved average pairwise accuracy cannot promote fewer correct complete choices', () => {
+  const metric = accuracies => ({ rows: accuracies.map(accuracy => ({ accuracy, rejectedAboveThreshold: 0 })) });
+  const before = metric([1, .25]), after = metric([.75, .75]);
+  assert.equal(imageRankingAcceptance({ before, baseline: before, after }).accepted, false);
+  assert.equal(imageRankingAcceptance({ before, baseline: before, after: before }).accepted, true);
+  assert.equal(imageRankingAcceptance({}).accepted, false);
+});
 const persistence=async()=>{const imageHistory=new ImageLearningHistoryStore(new MemoryStorage(),undefined);await imageHistory.merge(imageChoiceHistory());return {imageHistory,getImageEvents:()=>imageHistory.all()};};
 const noPretrained=async()=>({getPretrainedImageModel:()=>null});
 function replaceWorker(t,Worker){const previous=globalThis.Worker;globalThis.Worker=Worker;t.after(()=>{if(previous===undefined)delete globalThis.Worker;else globalThis.Worker=previous;});}
@@ -16,7 +26,7 @@ test('a real background worker trains and promotes only its held-out-accepted ca
     postMessage(data){this.worker.postMessage(data);} terminate(){return this.worker.terminate();}
   }
   replaceWorker(t,BrowserWorker);const p=await persistence(),trainer=new ImagePersonalizerTraining(p,{pretrained:noPretrained});t.after(()=>trainer.stop());
-  const operation=trainer.train({epochs:24});assert.equal((await p.imageHistory.model())??null,null);
+  const operation=trainer.train();assert.equal((await p.imageHistory.model())??null,null);
   const result=await operation;assert.equal(result.accepted,true,result.reason);assert.equal((await trainer.current()).revision,1);
 });
 test('new feedback arriving during worker training prevents a stale candidate from replacing the current model',async t=>{
@@ -32,4 +42,13 @@ test('reset or turning suggestions off cancels background training',async t=>{
   replaceWorker(t,DeferredWorker);const p=await persistence(),trainer=new ImagePersonalizerTraining(p,{pretrained:noPretrained});
   const operation=trainer.train();while(!worker)await new Promise(resolve=>setImmediate(resolve));trainer.stop();
   assert.equal((await operation).accepted,false);assert.equal(worker.terminated,true);assert.equal((await p.imageHistory.model())??null,null);
+});
+
+test('retired bounded-head weights are not used as current preferences and saved choices remain intact',async t=>{
+  const saved=await readJsonFile(new URL('./fixtures/image-pretraining-fp16/candidate.json.gz',import.meta.url));
+  const old={...saved.model,role:'preference'},records=imageChoiceHistory();
+  const store={imageHistory:{ready:Promise.resolve(),resetAt:'',model:async()=>old},getImageEvents:async()=>records};
+  const trainer=new ImagePersonalizerTraining(store,{pretrained:noPretrained});t.after(()=>trainer.stop());
+  assert.equal(await trainer.personal(),null);assert.equal(await trainer.current(),null);
+  assert.equal(await store.imageHistory.model(),old);assert.equal((await store.getImageEvents()).length,records.length);
 });

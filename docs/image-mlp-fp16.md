@@ -1,5 +1,8 @@
 # Current-CLIP MLP retraining — 29 October 2026
 
+This is the frozen **v1.12.5 bounded-head experiment**. Subsequent unrestricted
+fusion uses a new scoring version; reproduce this experiment from tag v1.12.5.
+
 The retrained MLP **does not improve first-choice image selection**. The current
 app CLIP ranker matches 113/120 reviewed test galleries (94.17%); adding the MLP
 matches 110/120 (91.67%). Its weights are saved for inspection and remain disabled.

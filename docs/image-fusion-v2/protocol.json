@@ -1,0 +1,82 @@
+{
+  "experiment": "unrestricted-equal-fusion-learning-rate-batch-study",
+  "personalizerVersion": "meaning-mlp-32-16-fusion-v2",
+  "encoder": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+  "architecture": [
+    1539,
+    32,
+    16,
+    1
+  ],
+  "initializationSeed": 78123,
+  "fusion": {
+    "clipWeight": 0.5,
+    "mlpWeight": 0.5,
+    "mlpActivation": "linear, unrestricted",
+    "residualCap": null,
+    "competingSenseClamp": false,
+    "initialization": "Trainable signed scalar routes initially reproduce CLIP's score; all 49,825 weights can learn."
+  },
+  "pilot": {
+    "learningRates": [
+      0.002,
+      0.0005,
+      0.0002
+    ],
+    "batchSizes": [
+      8,
+      32,
+      64
+    ],
+    "epochs": 100,
+    "regularization": 0,
+    "regularizedControls": [
+      {
+        "learningRate": 0.0005,
+        "batchSize": 32,
+        "regularization": 0.001
+      },
+      {
+        "learningRate": 0.0002,
+        "batchSize": 64,
+        "regularization": 0.001
+      }
+    ],
+    "selection": "Among unregularized trials, maximize validation first-choice matches, then minimize validation pairwise loss; ties prefer lower learning rate then larger batch. Include epoch zero and select only using training/validation."
+  },
+  "sharedFinalRecipe": {
+    "epochs": 600,
+    "maxMilliseconds": 1800000,
+    "regularization": 0,
+    "maximumGradientNorm": 1,
+    "patience": 20,
+    "minimumImprovement": 0.00001,
+    "outputOnly": false,
+    "checkpoint": "last"
+  },
+  "optimizer": {
+    "name": "Adam",
+    "beta1": 0.9,
+    "beta2": 0.999,
+    "epsilon": 1e-8
+  },
+  "objective": "Mean gallery-weighted pairwise logistic loss, sigmoid(8 * (0.5*CLIP difference + 0.5*MLP difference)); no hard MLP score cap.",
+  "checkpointSelection": "The identical runner selects maximum selection-data first-choice matches with pairwise loss as tie-breaker; optimizer stopping uses selection-data loss with patience 20. Real selection data is held-out validation; overfit selection data is the same training-only batch, explicitly diagnostic.",
+  "batchRemainder": "A final remainder smaller than half the configured batch is merged into the preceding batch. No observations are dropped or duplicated.",
+  "smallBatch": {
+    "size": "Exactly the selected batch size",
+    "selection": "Training-only galleries from distinct meaning families; initially misranked galleries first, then other galleries by stable ID. No validation/test images.",
+    "success": "Every gallery and pair correct and mean pairwise loss below 0.01; report actual loss rather than equating correct ordering with zero cross-entropy."
+  },
+  "samePipeline": "Small-batch and full-data final runs call the identical runner with byte-identical recipe JSON, initialization seed, architecture, loss, clipping, regularization, stopping and checkpoint rules; only the supplied datasets differ.",
+  "testUse": "Choose all hyperparameters and final checkpoint before test evaluation. Post-hoc test curves at every tenth epoch plus the selected checkpoint; no test-dependent retuning.",
+  "biasVariance": {
+    "bootstrapModels": 16,
+    "bootstrapSeed": 20261030,
+    "resamplingUnit": "training meaning family",
+    "configuration": "Same selected final recipe and runner; original validation/test fixed, initialization fixed.",
+    "metric": "gallery-weighted pairwise Brier error; empirical fixed-label identity, not identifiable Bayes bias/noise"
+  },
+  "evaluationStatus": "Previously inspected semantic regression fixture, not a new blind test or personal-taste evaluation.",
+  "activation": "Retain guarded acceptance; do not activate a weaker or unvalidated generic head."
+}

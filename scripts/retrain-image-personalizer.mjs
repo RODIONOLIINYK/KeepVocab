@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { readJsonFile } from './lib/json-files.mjs';
 import { validatePretrainingBenchmark, validateSemanticSupervision, comparePretrainingModels } from './lib/image-pretraining-benchmark.mjs';
 import { trainingMetrics, residualCapacity, gradientDiagnostic, fixedLabelBiasVariance } from './lib/image-training-diagnostics.mjs';
-import { createPersonalizer, trainImagePersonalizer, fitImagePersonalizer, PERSONALIZER_FIT_DEFAULTS } from '../js/services/imagePersonalizer.js';
+import { createPersonalizer, trainImagePersonalizer, fitImagePersonalizer, PERSONALIZER_FIT_DEFAULTS, PERSONALIZER_VERSION, LEGACY_PERSONALIZER_VERSION } from '../js/services/imagePersonalizer.js';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
 
 const args = process.argv.slice(2), file = args.find(value => !value.startsWith('--'));
@@ -21,6 +21,7 @@ const save = async (name, value) => writeFile(resolve(directory, name), serializ
 const compressed = async (name, value) => writeFile(resolve(directory, name), gzipSync(serialize(value)));
 const log = (phase, detail = {}) => process.stderr.write(JSON.stringify({ phase, ...detail }) + '\n');
 const protocolText = await readFile(flag('protocol') || 'docs/image-mlp-fp16-protocol.json', 'utf8'), protocol = JSON.parse(protocolText);
+if ((protocol.personalizerVersion || LEGACY_PERSONALIZER_VERSION) !== PERSONALIZER_VERSION) throw Error('This is a historical scoring protocol. Reproduce it from tag v1.12.5; use tune-image-fusion.mjs for current fusion training.');
 if (protocol.encoder !== CLIP_TAG || protocol.training.learningRate !== PERSONALIZER_FIT_DEFAULTS.learningRate
   || protocol.training.regularization !== PERSONALIZER_FIT_DEFAULTS.regularization) throw Error('Protocol does not describe the current production fitter.');
 const encoded = await readJsonFile(file), manifestText = await readFile(flag('manifest'), 'utf8'), manifest = JSON.parse(manifestText);

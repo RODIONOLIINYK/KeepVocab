@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "selectedWeightsSha256": "d06c2e22584f6855a7c3fce292b6257fb68f40990ac00a4d753811e8591be1d2",
+  "lastWeightsSha256": "d56d12fce02f06a67c356e90e90526b1cc5db5c351a18b294cc8ba43630706ab",
+  "recipeSha256": "d53b2cf002224352a858633302c48a6f5b4ed55cae7fdd56e36f85ceb494adac",
+  "note": "The current production training entry point reproduced both recorded offline checkpoints with the same shared recipe."
+}

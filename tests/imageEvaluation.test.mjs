@@ -29,7 +29,7 @@ test('a bundled semantic head must pass its benchmark and rejected layers never 
   const semantic=getPretrainedImageModel(),seed=getImagePersonalizerInitialization();
   if(!PRETRAINED_IMAGE_REPORT.accepted){assert.equal(semantic,null);assert.equal(seed,null);return;}
   assert.equal(semantic.role,'semantic');assert.equal(seed.role,'preference');assert.equal(seed.semanticBase.genericValidation.accepted,true);
-  assert.deepEqual(seed.semanticBase.weights,semantic.weights);assert.ok([...seed.weights.slice(-17)].every(w=>w===0));
+  assert.deepEqual(seed.semanticBase.weights,semantic.weights);assert.deepEqual(seed.weights,semantic.weights);
   const encoded=JSON.parse(await readFile(new URL('./fixtures/image-pretraining/embeddings.json',import.meta.url),'utf8')),row=encoded.events[0];
   assert.equal(personalizerScore(seed,row.features,row.meaningFeatures),personalizerScore(semantic,row.features,row.meaningFeatures));
 });

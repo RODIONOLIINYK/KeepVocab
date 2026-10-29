@@ -25,16 +25,19 @@ def vector(value):
 
 def main():
     encoded_path, candidate_path, manifest_path, directory, output = sys.argv[1:]
-    encoded, candidate, manifest = read(encoded_path), read(candidate_path)['model'], read(manifest_path)
+    encoded, saved, manifest = read(encoded_path), read(candidate_path), read(manifest_path)
+    candidate = saved['model']
     directory = Path(directory)
     report = read(directory / 'training-report.json')
     weights = np.asarray(candidate['weights'], dtype='<f4')
-    assert hashlib.sha256(weights.tobytes()).hexdigest() == report['candidateWeightsSha256']
+    last_checkpoint = saved.get('checkpoint') == 'last'
+    assert hashlib.sha256(weights.tobytes()).hexdigest() == report['lastCandidateWeightsSha256' if last_checkpoint else 'candidateWeightsSha256']
     assert encoded['encoder'] == candidate['encoder'] == report['encoder']
     events = {}
     for row in encoded['events']:
         events.setdefault(row['decisionId'], []).append(row)
-    results = {split: {name: [] for name in ['baseline', 'mlp']} for split in ['train', 'validation', 'test']}
+    names = ['clip', 'mlp', 'fusion'] if candidate['version'] == 'meaning-mlp-32-16-fusion-v2' else ['baseline', 'mlp']
+    results = {split: {name: [] for name in names} for split in ['train', 'validation', 'test']}
     for case in manifest['cases']:
         pairs = events[case['id']]
         features = {row['context']['imageUrl']: vector(row['features']) for row in pairs}
@@ -51,10 +54,14 @@ def main():
                 a = np.maximum(a, 0)
             offset += nin * nout + nout
         base = image[:, 512].astype(float) + .6 * image[:, 513].astype(float) - .25 * np.maximum(0, image[:, 514].astype(float))
-        residual = .08 * np.tanh(a[:, 0].astype(float))
-        residual = np.where(image[:, 513] < 0, np.minimum(residual, 0), residual)
+        if candidate['version'] == 'meaning-mlp-32-16-fusion-v2':
+            scores_by_model = [('clip', base), ('mlp', a[:, 0].astype(float)), ('fusion', .5 * base + .5 * a[:, 0].astype(float))]
+        else:
+            residual = .08 * np.tanh(a[:, 0].astype(float))
+            residual = np.where(image[:, 513] < 0, np.minimum(residual, 0), residual)
+            scores_by_model = [('baseline', base), ('mlp', base + residual)]
         preferred = next(i for i, photo in enumerate(case['candidates']) if photo['id'] == case['feedback']['selected'][0])
-        for name, scores in [('baseline', base), ('mlp', base + residual)]:
+        for name, scores in scores_by_model:
             other = [i for i in range(len(image)) if i != preferred]
             difference = scores[preferred] - scores[other]
             probability = 1 / (1 + np.exp(-8 * difference))
@@ -67,7 +74,7 @@ def main():
         for name, rows in models.items():
             computed = {key: float(np.mean([row[key] for row in rows])) for key in ['loss', 'brier', 'pairwiseAccuracy']}
             computed['chosenAt1'] = sum(row['chosenAt1'] for row in rows)
-            expected = report['finalMetrics'][split][name]
+            expected = (report['lastMetrics'] if last_checkpoint else report.get('finalMetrics', report.get('metrics')))[split][name]
             assert computed['chosenAt1'] == expected['chosenAt1'], (split, name, computed, expected)
             for key in ['loss', 'brier', 'pairwiseAccuracy']:
                 assert abs(computed[key] - expected[key]) < 2e-6, (split, name, key, computed[key], expected[key])
@@ -81,9 +88,23 @@ def main():
     assert abs(error-bias-variance) < 1e-12
     for key, value in [('squaredBiasToFixedLabels', bias), ('predictionVariance', variance), ('expectedBrierError', error)]:
         assert abs(value - decomposition[key]) < 1e-12
+    last_decomposition = None
+    if 'lastCheckpoint' in decomposition:
+        last = decomposition['lastCheckpoint']
+        p_last = np.asarray(last['predictionRuns'])
+        last_decomposition = {
+            'squaredBiasToFixedLabels': float(np.sum(mass * (1-p_last.mean(axis=0))**2)),
+            'predictionVariance': float(np.sum(mass * p_last.var(axis=0, ddof=0))),
+            'expectedBrierError': float(np.sum(mass * ((1-p_last)**2).mean(axis=0)))
+        }
+        for key, value in last_decomposition.items():
+            assert abs(value - last[key]) < 1e-12
+        assert abs(last_decomposition['expectedBrierError']-last_decomposition['squaredBiasToFixedLabels']-last_decomposition['predictionVariance']) < 1e-12
     result = {'passed': True, 'method': 'Independent NumPy forward pass, ranking/loss aggregation and empirical Brier decomposition',
               'numpyVersion': np.__version__, 'metrics': verified, 'biasVariance': {'squaredBiasToFixedLabels': bias,
                   'predictionVariance': variance, 'expectedBrierError': error, 'identityResidual': error-bias-variance}}
+    if last_decomposition is not None:
+        result['lastCheckpointBiasVariance'] = last_decomposition
     Path(output).write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps(result, indent=2))
 

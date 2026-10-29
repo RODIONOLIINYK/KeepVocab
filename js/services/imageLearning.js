@@ -6,7 +6,7 @@ import { cosine, preferenceFeatures, encodeFullFeatures, decodeFeatures, mergeIm
 
 const CONFIG_KEY = 'keepvocab_image_learning_device_v1';
 const MODEL_KEY = 'keepvocab_image_preference_model_v1';
-import { IMAGE_PREPROCESSING, encodeMeaning, personalizerScore, validPersonalizer } from './imagePersonalizer.js';
+import { IMAGE_PREPROCESSING, encodeMeaning, personalizerScore, isCurrentPersonalizer } from './imagePersonalizer.js';
 import { ImagePersonalizerTraining } from './imagePersonalizerTraining.js';
 import { scheduleImageModelWarmup } from './imageModelStartup.js';
 let trainingInstance;
@@ -254,14 +254,14 @@ export function semanticScores(image, texts, sceneCount, alternativeCount) {
 export function rankEmbeddedImages(items, model = null) {
   const scored = items.map((item, index) => {
     const features = preferenceFeatures(item.vector, item.semantic);
-    const neural = validPersonalizer(model) && item.meaningFeatures;
+    const neural = isCurrentPersonalizer(model) && item.meaningFeatures;
     const adjustment = neural ? personalizerScore(model, encodeFullFeatures(features), item.meaningFeatures) - personalizerScore(null, encodeFullFeatures(features), item.meaningFeatures) : 0;
-    const probability = neural ? Math.max(0, Math.min(1, 0.5 + adjustment / .16)) : preferenceProbability(model, features);
+    const probability = neural ? 1 / (1 + Math.exp(-8 * adjustment)) : preferenceProbability(model, features);
     // Early feedback should have little influence. A visual preference must not
     // positively reward an image that matches another supplied sense better.
     const strength = 0.12 * Math.min(1, (model?.trainedLabels || 0) / 64);
     const preference = item.semantic.margin < 0 ? Math.min(0, probability - 0.5) : probability - 0.5;
-    return { ...item, index, features, probability, score: item.semantic.score + (neural ? adjustment : strength * preference) };
+    return { ...item, index, features, probability, score: neural ? personalizerScore(model, encodeFullFeatures(features), item.meaningFeatures) : item.semantic.score + strength * preference };
   });
   const selected = [];
   while (scored.length) {
