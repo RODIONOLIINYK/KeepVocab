@@ -58,13 +58,23 @@ export async function prepareWordsForLibrary(words, { existingWords = [], onProg
   // Saving never makes another paid explanation request or requires an example.
   // Keep trustworthy dictionary examples; missing/unsuitable ones can be added later.
   const explained = await withLearnerExplanations({ senses: checked }, { ...translationOptions, learnerExplanations: false });
-  const translated = await withEntryTranslations(explained, translationOptions);
   const imageOptions = { ...translationOptions };
+  const withOtherDefinitions = word => ({ ...word, otherDefinitions: [...new Set([
+    ...(word.otherDefinitions || []),
+    ...existingWords.filter(item => String(item.word || '').toLowerCase() === word.word.toLowerCase()).map(item => item.sourceDefinition || item.definition)
+  ].filter(definition => definition && definition !== (word.sourceDefinition || word.definition)))] });
+  const scenesPromise = imageOptions.skipImagesSignal?.aborted
+    ? Promise.resolve(null)
+    : prepareImageScenes(explained.senses.map(withOtherDefinitions), imageOptions).catch(() => null);
+  const translated = await withEntryTranslations(explained, translationOptions);
   return withSkippableImages(translated.senses, async () => {
-    const visualWords = await prepareImageScenes(translated.senses.map(word => ({ ...word, otherDefinitions: [...new Set([
-      ...(word.otherDefinitions || []),
-      ...existingWords.filter(item => String(item.word || '').toLowerCase() === word.word.toLowerCase()).map(item => item.sourceDefinition || item.definition)
-    ].filter(definition => definition && definition !== (word.sourceDefinition || word.definition)))] })), imageOptions);
+    const preparedScenes = await scenesPromise;
+    const visualWords = translated.senses.map((word, index) => {
+      const item = withOtherDefinitions(word);
+      if (preparedScenes?.[index]?.imageScenes) item.imageScenes = preparedScenes[index].imageScenes;
+      else delete item.imageScenes;
+      return item;
+    });
     if (imageOptions.skipImagesSignal?.aborted) return translated.senses;
     // Scenes are prepared together above. Image providers reuse those exact
     // meaning prompts without starting another paid generation for each word.

@@ -108,8 +108,18 @@ test('a Q8-text cache is not an FP16 installation and unchanged assets retain th
   assert.ok(!CLIP_DOWNLOAD_URLS.some(url => url.includes('text_model_quantized')));
   const files = new Set(CLIP_DOWNLOAD_URLS.filter(url => url !== fp16));
   files.add(fp16.replace('text_model_fp16.onnx', 'text_model_quantized.onnx'));
-  const cacheStorage = { keys: async () => [CLIP_CACHE], open: async () => ({ match: async url => files.has(url) ? { ok: true, headers: { get: () => null } } : undefined }) };
+  const deleted = [];
+  const cacheStorage = {
+    keys: async () => [CLIP_CACHE],
+    open: async () => ({
+      keys: async () => [...files].map(url => ({ url })),
+      delete: async req => { deleted.push(req.url || req); files.delete(req.url || req); },
+      match: async url => files.has(url) ? { ok: true, headers: { get: () => null } } : undefined
+    })
+  };
   assert.equal(await hasDownloadedImageModel(cacheStorage), false);
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.deepEqual(deleted, [fp16.replace('text_model_fp16.onnx', 'text_model_quantized.onnx')]);
   files.add(fp16);
   assert.equal(await hasDownloadedImageModel(cacheStorage), true);
 });

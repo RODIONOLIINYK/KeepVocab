@@ -18,6 +18,13 @@ const PROFILES = {
   error: [
     { frequency: 311.13, duration: 0.09, volume: 0.15, type: 'triangle' },
     { frequency: 233.08, duration: 0.13, volume: 0.16, type: 'triangle', delay: 0.075 }
+  ],
+  streak: [
+    { frequency: 392, duration: 0.09, volume: 0.13, type: 'triangle' },
+    { frequency: 523.25, duration: 0.09, volume: 0.15, type: 'triangle', delay: 0.09 },
+    { frequency: 659.25, duration: 0.1, volume: 0.17, type: 'sine', delay: 0.18 },
+    { frequency: 783.99, duration: 0.11, volume: 0.18, type: 'sine', delay: 0.27 },
+    { frequency: 1046.5, duration: 0.26, volume: 0.17, type: 'sine', delay: 0.38 }
   ]
 };
 
@@ -68,7 +75,7 @@ export function playInteractionHaptic(kind = 'tap') {
   const haptics = globalThis.Capacitor?.Plugins?.Haptics;
   if (!haptics) return false;
   try {
-    if (['correct', 'success'].includes(kind) && haptics.notification) haptics.notification({ type: 'SUCCESS' }).catch?.(() => {});
+    if (['correct', 'success', 'streak'].includes(kind) && haptics.notification) haptics.notification({ type: 'SUCCESS' }).catch?.(() => {});
     else if (['wrong', 'error'].includes(kind) && haptics.notification) haptics.notification({ type: 'WARNING' }).catch?.(() => {});
     else haptics.impact?.({ style: 'LIGHT' }).catch?.(() => {});
     return true;

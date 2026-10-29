@@ -14,7 +14,6 @@ const MODES = [
   ['match', 'fa-stopwatch', 'Match Sprint', 'Contrast words quickly'],
   ['context', 'fa-book-open-reader', 'Context', 'Complete real situations'],
   ['useit', 'fa-pen-nib', 'Use It', 'Create your own sentence'],
-  ['speaking', 'fa-microphone-lines', 'AI Speaking', 'Activate words with Mira'],
   ['weak', 'fa-heart-pulse', 'Weak Words', 'Recover recent mistakes']
 ];
 

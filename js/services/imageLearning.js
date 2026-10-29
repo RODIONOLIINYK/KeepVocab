@@ -47,6 +47,11 @@ export async function hasDownloadedImageModel(cacheStorage = globalThis.caches) 
   try {
     if (!cacheStorage || !(await cacheStorage.keys()).includes(CLIP_CACHE)) return false;
     const cache = await cacheStorage.open(CLIP_CACHE);
+    const activeUrls = new Set(CLIP_DOWNLOAD_URLS);
+    void Promise.resolve(cache.keys?.()).then(keys => keys?.forEach(req => {
+      const url = typeof req === 'string' ? req : req?.url;
+      if (url && !activeUrls.has(url)) void cache.delete?.(req);
+    })).catch(() => {});
     const files = await Promise.all(CLIP_DOWNLOAD_URLS.map(url => cache.match(url)));
     return files.every(response => response?.ok && response.headers?.get('content-length') !== '0');
   } catch { return false; }
@@ -289,10 +294,16 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     const meaningFeatures = encodeMeaning(texts[0]);
     const items = [];
     // A six-photo chooser needs a small shortlist, not forty serial inferences.
-    const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(40, Number(options.localCandidateLimit) || 12)));
+    const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(40, Number(options.localCandidateLimit) || 8)));
+    const prepareBatch = start => start < scoringLimit
+      ? prepareImageThumbnails(candidates.slice(start, Math.min(start + 4, scoringLimit)), { ...options, preferOriginal: true, timeoutMs: options.timeoutMs || 2800 })
+      : null;
+    let nextBatch = prepareBatch(0);
     for (let offset = 0; offset < scoringLimit; offset += 4) {
       if (!current()) return candidates;
-      const thumbnails = await prepareImageThumbnails(candidates.slice(offset, Math.min(offset + 4, scoringLimit)), { ...options, preferOriginal: true });
+      const currentBatch = nextBatch;
+      nextBatch = prepareBatch(offset + 4);
+      const thumbnails = await currentBatch;
       if (!current()) return candidates;
       for (const thumbnail of thumbnails) {
         if (!current()) return candidates;

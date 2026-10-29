@@ -927,6 +927,9 @@ export class DriveSyncService {
     const key = localDateKey(date);
     const settings = this.getSettings();
     const exerciseActivityByDevice = activityByDevice(settings);
+    const previousActivity = aggregateActivity(exerciseActivityByDevice);
+    const previousStreak = streakFromActivity(previousActivity, date);
+    const firstActivityToday = !(Number(previousActivity[key]) > 0);
     const deviceActivity = { ...(exerciseActivityByDevice[this.deviceId] || {}) };
     deviceActivity[key] = Number(deviceActivity[key] || 0) + 1;
     exerciseActivityByDevice[this.deviceId] = normalizedActivity(deviceActivity);
@@ -939,6 +942,13 @@ export class DriveSyncService {
       lastReviewDate: key,
       dailyStreak: streakFromActivity(reviewActivity, date)
     });
+    // The first exercise of a local day extends (or starts) the streak once.
+    // Synced activity from another device never reaches this path.
+    const streak = streakFromActivity(reviewActivity, date);
+    if (firstActivityToday && streak > previousStreak && localDateKey(date) === localDateKey(new Date())
+        && typeof globalThis.dispatchEvent === 'function' && typeof globalThis.CustomEvent === 'function') {
+      globalThis.dispatchEvent(new CustomEvent('keepvocab:streak-extended', { detail: { streak, previousStreak, date: key } }));
+    }
     return Number(reviewActivity[key] || 0);
   }
 

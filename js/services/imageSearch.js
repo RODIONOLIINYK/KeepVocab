@@ -58,7 +58,7 @@ function browserImageLoader(url, options = {}) {
       image.onerror = null;
       resolve(Boolean(loaded && image.naturalWidth));
     };
-    const timer = setTimeout(() => finish(false), Math.max(1000, Number(options.timeoutMs) || 6000));
+    const timer = setTimeout(() => finish(false), Math.max(1000, Number(options.timeoutMs) || 3000));
     image.decoding = 'async';
     image.onload = () => finish(true);
     image.onerror = () => finish(false);
@@ -82,6 +82,12 @@ export async function filterLoadableImages(images, options = {}) {
     while (!options.signal?.aborted && nextIndex < candidates.length && successful < limit) {
       const index = nextIndex;
       nextIndex += 1;
+      // Local CLIP scoring already downloaded and decoded this image's bytes.
+      if (loadImage === browserImageLoader && candidates[index]?.ml) {
+        loaded[index] = true;
+        successful += 1;
+        continue;
+      }
       for (let attempt = 0; attempt <= retries; attempt += 1) {
         if (options.signal?.aborted) return;
         if (attempt) await wait(retryDelayMs * attempt);
@@ -371,7 +377,7 @@ Senses: ${JSON.stringify(missing.map(item => {
           otherDefinitions: word.otherDefinitions || [], avoidScenes: scenesForOtherSenses(item) };
       }))}
 ${missing.length === 1 ? `Target word: ${missing[0].word.word}\nExact selected definition: ${missing[0].word.sourceDefinition || missing[0].word.definition}` : ''}`,
-      { ...requestOptions, json: true, maxOutputTokens: Math.min(4096, Math.max(240, missing.length * 180)), timeoutMs: options.timeoutMs || 10000 });
+      { ...requestOptions, json: true, maxOutputTokens: Math.min(4096, Math.max(600, missing.length * 220)), timeoutMs: options.timeoutMs || 6500 });
       const rows = Array.isArray(result?.items) ? result.items : missing.length === 1 && Array.isArray(result?.scenes)
         ? [{ id: missing[0].id, scenes: result.scenes }] : [];
       const byId = new Map(); const duplicates = new Set();
@@ -543,7 +549,7 @@ export async function findOpenverseImages(concept, fetchImpl = globalThis.fetch?
   request.searchParams.set('page', String(page));
   request.searchParams.set('mature', 'false'); request.searchParams.set('category', 'photograph');
   try {
-    const response = await fetchImpl(request.toString(), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(6000) });
+    const response = await fetchImpl(request.toString(), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(3500) });
     if (!response.ok) throw new Error(`Openverse image search failed (${response.status}).`);
     const payload = await response.json();
     const result = (payload?.results || []).slice(0, 40).filter(item => item?.thumbnail && item?.foreign_landing_url).map(item => ({
@@ -573,7 +579,7 @@ export async function findWikimediaImages(concept, fetchImpl = globalThis.fetch?
     gsrnamespace: '6', gsrlimit: '40', gsroffset: String((page - 1) * 40), prop: 'imageinfo', iiprop: 'url|mime|extmetadata', iiurlwidth: '640'
   }).forEach(([key, value]) => request.searchParams.set(key, value));
   try {
-    const response = await fetchImpl(request.toString(), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(6000) });
+    const response = await fetchImpl(request.toString(), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(3500) });
     if (!response.ok) throw new Error(`Wikimedia Commons image search failed (${response.status}).`);
     const payload = await response.json();
     const result = Object.values(payload?.query?.pages || {}).flatMap(page => {
@@ -611,7 +617,7 @@ export async function findLibraryOfCongressImages(concept, fetchImpl = globalThi
   request.searchParams.set('at', 'results');
   request.searchParams.set('sp', String(page));
   try {
-    const response = await fetchImpl(request.toString(), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(6000) });
+    const response = await fetchImpl(request.toString(), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(3500) });
     if (!response.ok) throw new Error(`Library of Congress image search failed (${response.status}).`);
     const payload = await response.json();
     const result = (payload?.results || []).flatMap(item => {
@@ -648,7 +654,7 @@ export async function findNasaImages(concept, fetchImpl = globalThis.fetch?.bind
   request.searchParams.set('page_size', '40');
   request.searchParams.set('page', String(page));
   try {
-    const response = await fetchImpl(request.toString(), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(6000) });
+    const response = await fetchImpl(request.toString(), { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(3500) });
     if (!response.ok) throw new Error(`NASA image search failed (${response.status}).`);
     const payload = await response.json();
     const result = (payload?.collection?.items || []).flatMap(item => {
@@ -691,7 +697,7 @@ export async function findPexelsImages(concept, apiKey, fetchImpl = globalThis.f
   request.searchParams.set('size', 'medium'); request.searchParams.set('per_page', '30');
   request.searchParams.set('page', String(page));
   try {
-    const response = await fetchImpl(request.toString(), { headers: { Accept: 'application/json', Authorization: apiKey }, signal: AbortSignal.timeout(8000) });
+    const response = await fetchImpl(request.toString(), { headers: { Accept: 'application/json', Authorization: apiKey }, signal: AbortSignal.timeout(4500) });
     if (!response.ok) throw new Error(`Pexels image search failed (${response.status}).`);
     const payload = await response.json();
     const result = (payload?.photos || []).slice(0, 40).filter(photo => (photo?.src?.medium || photo?.src?.small || photo?.src?.large) && photo?.url).map(photo => ({
@@ -895,7 +901,9 @@ export async function findRelevantImages(word, options = {}) {
   const validateImages = options.validateImages !== false && (options.loadImage || typeof globalThis.document?.createElement === 'function');
   if (!validateImages) return reviewed.slice(0, limit);
   return filterLoadableImages(reviewed, {
-    signal: options.signal, limit, loadImage: options.loadImage, concurrency: options.imageLoadConcurrency,
-    retries: options.imageLoadRetries, retryDelayMs: options.imageRetryDelayMs, timeoutMs: options.imageLoadTimeoutMs
+    signal: options.signal, limit, loadImage: options.loadImage,
+    concurrency: options.imageLoadConcurrency ?? (options.loadImage ? 2 : 3),
+    retries: options.imageLoadRetries ?? (options.loadImage ? 1 : 0),
+    retryDelayMs: options.imageRetryDelayMs, timeoutMs: options.imageLoadTimeoutMs
   });
 }

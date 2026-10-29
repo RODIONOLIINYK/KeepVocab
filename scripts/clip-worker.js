@@ -25,8 +25,7 @@ let runtimeReady;
 async function prepareRuntime() {
   if (!runtimeReady) runtimeReady = (async () => {
     const cache = await self.caches?.open(CLIP_CACHE);
-    const blobs = [];
-    for (const url of CLIP_RUNTIME_URLS) {
+    const blobs = await Promise.all(CLIP_RUNTIME_URLS.map(async url => {
       let response = await cache?.match(url);
       if (!response) {
         if (!allowDownloads) throw new Error('The local runtime is missing. Download the image model in Settings.');
@@ -34,8 +33,8 @@ async function prepareRuntime() {
         if (!response.ok) throw new Error('The local image runtime could not be downloaded.');
         await cache?.put(url, response.clone());
       }
-      blobs.push(URL.createObjectURL(await response.blob()));
-    }
+      return URL.createObjectURL(await response.blob());
+    }));
     // Both files are cached under the same consent as the model. Object URLs
     // prevent ONNX Runtime from silently fetching its runtime from a CDN.
     env.backends.onnx.wasm.wasmPaths = { mjs: blobs[0], wasm: blobs[1] };
@@ -43,6 +42,7 @@ async function prepareRuntime() {
   return runtimeReady;
 }
 let database;
+let vectorWrites = 0;
 const memory = new Map();
 const cancelled = new Set();
 const status = detail => self.postMessage({ type: 'status', ...detail });
@@ -51,7 +51,17 @@ async function db() {
   if (!database) database = new Promise(resolve => {
     const request = indexedDB.open(VECTOR_DB, 1);
     request.onupgradeneeded = () => request.result.createObjectStore('vectors', { keyPath: 'key' });
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      const conn = request.result;
+      try {
+        const store = conn.transaction('vectors', 'readwrite').objectStore('vectors');
+        const all = store.getAll();
+        all.onsuccess = () => all.result.forEach(item => {
+          if (typeof item?.key === 'string' && !item.key.startsWith(`${CLIP_TAG}:`)) store.delete(item.key);
+        });
+      } catch { /* Pruning retired encoder vectors is best-effort. */ }
+      resolve(conn);
+    };
     request.onerror = () => resolve(null);
   });
   return database;
@@ -73,8 +83,10 @@ async function cached(key, compute) {
     try {
       const store = database.transaction('vectors', 'readwrite').objectStore('vectors');
       store.put({ key, vector: Float32Array.from(vector), accessedAt: Date.now() });
-      const request = store.getAll();
-      request.onsuccess = () => request.result.sort((a, b) => b.accessedAt - a.accessedAt).slice(600).forEach(item => store.delete(item.key));
+      if ((++vectorWrites & 31) === 0) {
+        const request = store.getAll();
+        request.onsuccess = () => request.result.sort((a, b) => b.accessedAt - a.accessedAt).slice(600).forEach(item => store.delete(item.key));
+      }
     } catch { /* Inference remains available when storage is full. */ }
   }
   return vector;
@@ -89,19 +101,23 @@ async function initialize(devicePreference = 'auto') {
     // runtime, even with a complete browser cache. Cache misses are protected
     // by the explicit consent-enforcing env.fetch wrapper above instead.
     const config = { revision: CLIP_REVISION, progress_callback, local_files_only: false };
-    const tokenizer = await AutoTokenizer.from_pretrained(CLIP_MODEL, config);
-    const processor = await AutoProcessor.from_pretrained(CLIP_MODEL, config);
-    let textModel, visionModel;
     // FP16 text and FP32 vision passed the fixed CPU/WASM/WebGPU benchmark.
     // WebGPU is attempted only on a supported adapter.
-    const gpu = self.navigator?.gpu && await navigator.gpu.requestAdapter().catch(() => null);
+    const [tokenizer, processor, gpu] = await Promise.all([
+      AutoTokenizer.from_pretrained(CLIP_MODEL, config),
+      AutoProcessor.from_pretrained(CLIP_MODEL, config),
+      self.navigator?.gpu ? navigator.gpu.requestAdapter().catch(() => null) : Promise.resolve(null)
+    ]);
+    let textModel, visionModel;
     const devices = devicePreference === 'wasm' || !gpu ? ['wasm'] : ['webgpu'];
     gpu?.destroy?.();
     for (const device of devices) {
       try {
         backend = device;
-        textModel = await CLIPTextModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_TEXT_DTYPE });
-        visionModel = await CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_VISION_DTYPE });
+        [textModel, visionModel] = await Promise.all([
+          CLIPTextModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_TEXT_DTYPE }),
+          CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_VISION_DTYPE })
+        ]);
         backend = device; break;
       } catch (error) {
         await textModel?.dispose().catch(() => {}); await visionModel?.dispose().catch(() => {});

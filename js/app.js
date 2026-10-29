@@ -26,6 +26,7 @@ import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18900';
 import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18900';
 import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18900';
 import { renderSettingsView } from './components/SettingsView.js?v=18900';
+import { setupStreakCelebration } from './components/StreakCelebration.js?v=18900';
 
 function repairContradictoryExamples() {
   for (const word of driveSync.getWords()) {
@@ -74,6 +75,11 @@ function initApp() {
     queueSmartReminderRefresh({ requestPermission: true });
   } });
   setupEngagementSystem();
+  setupStreakCelebration({
+    getSettings: () => driveSync.getSettings(),
+    isPracticeView: () => !['dashboard', 'library', 'stats', 'settings'].includes(currentView)
+  });
+  window.addEventListener('keepvocab:streak-extended', () => updateDashboardDerivedState());
   setupReminderNavigation().catch(error => console.warn('Reminder navigation setup failed.', error));
   setupMonthDropdown();
   setupKeyboardShortcuts();

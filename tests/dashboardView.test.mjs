@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { dashboardWorkoutState } from '../js/components/DashboardView.js';
+import { dashboardWorkoutState, renderDashboardView } from '../js/components/DashboardView.js';
+import { renderStreakCelebration, streakMessage, streakWeek } from '../js/components/StreakCelebration.js';
+import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js';
+import { localDateKey } from '../js/utils/dates.js';
 import { buildScheduledPracticeSession } from '../js/services/dailySession.js';
 import { evaluateDailyStudyPlan } from '../js/services/wordSelection.js';
 import { applyExerciseResultToWord } from '../js/services/exerciseResult.js';
@@ -120,4 +123,53 @@ test('a successful first FSRS answer moves Today from ready to waiting, then bac
   const workout = dashboardWorkoutState(retry, retry.dailyPlan, true);
   assert.equal(workout.state, 'ready');
   assert.equal(workout.action, 'Continue practice');
+});
+
+test('Today practice launchpad excludes the AI Speaking button while keeping vocabulary modes', () => {
+  const container = { innerHTML: '', querySelector: () => ({ addEventListener: () => {} }), querySelectorAll: () => [] };
+  renderDashboardView(container, () => {});
+  assert.match(container.innerHTML, /Practice your way/);
+  assert.doesNotMatch(container.innerHTML, /data-practice-view="speaking"|AI Speaking/);
+  assert.match(container.innerHTML, /data-practice-view="useit"/);
+  assert.match(container.innerHTML, /data-practice-view="weak"/);
+});
+
+test('first exercise of the day emits streak-extended once and renders Duolingo-style streak celebration', () => {
+  const storage = new MemoryStorage();
+  const service = new DriveSyncService(storage);
+  const events = [];
+  const originalDispatch = globalThis.dispatchEvent;
+  globalThis.dispatchEvent = event => { if (event?.type === 'keepvocab:streak-extended') events.push(event.detail); return true; };
+  try {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    service.recordReview(yesterday);
+    assert.equal(events.length, 0);
+
+    const today = new Date();
+    service.recordReview(today);
+    assert.equal(events.length, 1);
+    assert.equal(events[0].streak, 2);
+    assert.equal(events[0].previousStreak, 1);
+    assert.equal(events[0].date, localDateKey(today));
+
+    service.recordReview(today);
+    assert.equal(events.length, 1, 'second exercise on the same day does not re-trigger streak celebration');
+
+    const markup = renderStreakCelebration({
+      streak: events[0].streak,
+      previousStreak: events[0].previousStreak,
+      activity: service.getSettings().reviewActivity,
+      now: today
+    });
+    assert.match(markup, /streak-flame-svg/);
+    assert.match(markup, /streak-digit is-rolling/);
+    assert.match(markup, /day streak!/);
+    assert.equal(streakWeek(service.getSettings().reviewActivity, today).filter(day => day.done).length >= 1, true);
+    assert.match(streakMessage(1), /started a new streak/i);
+    assert.match(streakMessage(7), /1 week/i);
+  } finally {
+    if (originalDispatch === undefined) delete globalThis.dispatchEvent;
+    else globalThis.dispatchEvent = originalDispatch;
+  }
 });

@@ -5,7 +5,7 @@ import { mountImageReview } from './ImageReview.js?v=18900';
 import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18900';
 import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18900';
 import { canAutoSelectImage } from '../services/imageChoicePolicy.js';
-import { recordImagePreference } from '../services/imageLearning.js?v=18900';
+import { recordImagePreference, warmImageLearning } from '../services/imageLearning.js?v=18900';
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
   <div class="modal-backdrop" id="add-word-modal">
@@ -216,6 +216,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
     editorSubtitle.textContent = 'Type a custom meaning or find dictionary meanings above';
     modal.classList.add('active');
+    void warmImageLearning().catch(() => {});
     window.setTimeout(() => input.focus(), 0);
   };
 
