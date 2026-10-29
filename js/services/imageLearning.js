@@ -8,6 +8,7 @@ const CONFIG_KEY = 'keepvocab_image_learning_device_v1';
 const MODEL_KEY = 'keepvocab_image_preference_model_v1';
 import { IMAGE_PREPROCESSING, encodeMeaning, personalizerScore, validPersonalizer } from './imagePersonalizer.js';
 import { ImagePersonalizerTraining } from './imagePersonalizerTraining.js';
+import { scheduleImageModelWarmup } from './imageModelStartup.js';
 let trainingInstance;
 function training() { return trainingInstance ||= new ImagePersonalizerTraining(driveSync); }
 let cachedModel = null;
@@ -15,7 +16,11 @@ const recentRecords = new Map();
 let worker;
 let preferCPU = false;
 let nextId = 0;
-let idleTimer;
+let cancelStartupWarmup = null;
+let warmupPromise = null;
+let workerReady = false;
+let workerGeneration = 0;
+let featureGeneration = 0;
 let phase = 'off';
 let message = '';
 let backend = '';
@@ -42,14 +47,15 @@ export async function hasDownloadedImageModel(cacheStorage = globalThis.caches) 
     return files.every(response => response?.ok && response.headers?.get('content-length') !== '0');
   } catch { return false; }
 }
-// Check cached files without starting the worker or making a network request.
-export async function initializeImageLearning({ requestDownload, storage = globalThis.localStorage, cacheStorage = globalThis.caches, enable = enableImageLearning } = {}) {
+// Check cached files first; defer optional model initialization until after paint/idle.
+export async function initializeImageLearning({ requestDownload, storage = globalThis.localStorage, cacheStorage = globalThis.caches, enable = enableImageLearning, scheduleWarmup = scheduleImageModelWarmup } = {}) {
   installed = await hasDownloadedImageModel(cacheStorage);
   const config = deviceConfig(storage);
   if (installed) {
     if (config.enabled !== false) {
       saveDeviceConfig({ enabled: true, prompted: true, downloadConsent: downloadConsent(storage) ? 'accepted' : 'not-requested' }, storage);
-      phase = 'idle'; message = 'Installed. Image suggestions will be scored locally.';
+      if (!worker) { phase = 'idle'; message = 'Installed. Image suggestions will be scored locally.'; }
+      queueCachedModelWarmup({ storage }, scheduleWarmup);
     }
     emit();
     return { installed: true, prompted: false, enabled: imageLearningEnabled(storage) };
@@ -90,32 +96,73 @@ export async function getImageLearningTrainingData() {
 export async function trainPersonalImageModel(options = {}) {
   const result = await training().train(options); cachedModel = await training().current(); emit(); return result;
 }
+function cancelScheduledWarmup() {
+  cancelStartupWarmup?.(); cancelStartupWarmup = null;
+}
+function queueCachedModelWarmup(options, schedule) {
+  if (worker || cancelStartupWarmup || typeof Worker === 'undefined') return;
+  const generation = workerGeneration;
+  cancelStartupWarmup = schedule(() => {
+    cancelStartupWarmup = null;
+    if (generation !== workerGeneration || !imageLearningEnabled(options.storage) || worker) return;
+    // The callback only posts work. Graph loading/compilation stays in the worker.
+    void warmImageLearning(options).catch(() => {});
+  });
+}
+export function warmImageLearning(options = {}) {
+  if (!imageLearningEnabled(options.storage) || typeof Worker === 'undefined') return Promise.resolve(getImageLearningStatus());
+  if (warmupPromise) return warmupPromise;
+  if (worker && workerReady) return Promise.resolve(getImageLearningStatus());
+  const generation = featureGeneration;
+  const lifecycle = {};
+  const current = () => generation === featureGeneration && (lifecycle.workerGeneration === undefined || lifecycle.workerGeneration === workerGeneration) && imageLearningEnabled(options.storage);
+  phase = 'loading'; message = 'Preparing image suggestions…'; emit();
+  const operation = rpc('initialize', {}, { ...options, cachedOnly: true, lifecycle }).then(async result => {
+    if (!current() || !workerReady) return getImageLearningStatus();
+    const model = await training().current();
+    if (!current() || !workerReady) return getImageLearningStatus();
+    cachedModel = model;
+    installed = true; workerReady = true; phase = 'ready'; message = 'Local image scoring is ready.'; backend = result.backend; emit();
+    return getImageLearningStatus();
+  }).catch(error => {
+    if (current()) { phase = 'error'; message = error.message; emit(); }
+    throw error;
+  }).finally(() => { if (warmupPromise === operation) warmupPromise = null; });
+  warmupPromise = operation; return operation;
+}
 function stopWorker(reason = 'The local image model was stopped.') {
-  clearTimeout(idleTimer);worker?.terminate();worker = null;
-  for (const item of pending.values()) { clearTimeout(item.timer); item.cleanup();item.reject(new Error(reason)); }
+  cancelScheduledWarmup(); workerGeneration++; workerReady = false; warmupPromise = null;
+  worker?.terminate(); worker = null;
+  for (const item of pending.values()) { clearTimeout(item.timer); item.cleanup(); item.reject(new Error(reason)); }
   pending.clear();
 }
-function rpc(type, payload = {}, { signal, allowMetered = false, storage } = {}) {
+function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = false, storage, lifecycle } = {}) {
   if (typeof Worker === 'undefined') return Promise.reject(new Error('This browser cannot run the local image model.'));
   if (signal?.aborted) return Promise.reject(new Error('Image scoring was cancelled.'));
-  clearTimeout(idleTimer);
+  const generation = featureGeneration;
+  cancelScheduledWarmup();
   if (!worker) {
-    worker = new Worker(new URL('../ml/clipWorker.bundle.js', import.meta.url), { type: 'module' });
-    worker.onmessage = ({ data }) => {
+    const activeWorker = worker = new Worker(new URL('../ml/clipWorker.bundle.js', import.meta.url), { type: 'module' });
+    activeWorker.onmessage = ({ data }) => {
+      if (worker !== activeWorker) return;
       if (data.type === 'status') {
         phase = data.phase || phase;message = data.message || message;backend = data.backend || backend;
         // Searches can initialize the model lazily, without the Settings enable
         // action. A ready worker is stronger evidence than an earlier cache check.
-        if (data.phase === 'ready') installed = true;
+        if (data.phase === 'ready') { installed = true; workerReady = true; }
         emit(data);return;
       }
       const item = pending.get(data.id);if (!item) return;
       pending.delete(data.id);clearTimeout(item.timer);item.cleanup();
-      if (data.error) item.reject(Object.assign(new Error(data.error), { backendFailure: data.backendFailure })); else item.resolve(data.result);
-      if (!pending.size) idleTimer = setTimeout(() => { stopWorker(); phase = 'idle'; emit(); }, 120_000);
+      if (data.error) item.reject(Object.assign(new Error(data.error), { backendFailure: data.backendFailure }));
+      else { workerReady = true; item.resolve(data.result); }
+      // Retain the worker and loaded graphs for this app session. Idle is not teardown.
     };
-    worker.onerror = () => { phase = 'error';message = 'Local image inference failed. Metadata search is still available.';stopWorker(message);emit(); };
+    activeWorker.onerror = () => { if (worker !== activeWorker) return; phase = 'error';message = 'Local image inference failed. Metadata search is still available.';stopWorker(message);emit(); };
   }
+  // The same request may move to a CPU worker. Its caller must follow that
+  // replacement, while ignoring unrelated workers created after it was stopped.
+  if (lifecycle) lifecycle.workerGeneration = workerGeneration;
   return new Promise((resolve, reject) => {
     const id = ++nextId;
     const abort = () => { worker?.postMessage({ type: 'cancel', id }); const item = pending.get(id);if (!item) return; pending.delete(id);clearTimeout(item.timer);item.cleanup();reject(new Error('Image scoring was cancelled.')); };
@@ -123,24 +170,36 @@ function rpc(type, payload = {}, { signal, allowMetered = false, storage } = {})
     const connection = globalThis.navigator?.connection;
     pending.set(id, { resolve, reject, timer, cleanup: () => signal?.removeEventListener('abort', abort) });
     signal?.addEventListener('abort', abort, { once: true });
-    worker.postMessage({ id, type, payload, device: preferCPU ? 'wasm' : 'auto', allowDownloads: downloadConsent(storage) && (allowMetered || !(connection?.saveData || connection?.type === 'cellular')) });
+    worker.postMessage({ id, type, payload, device: preferCPU ? 'wasm' : 'auto', allowDownloads: !cachedOnly && downloadConsent(storage) && (allowMetered || !(connection?.saveData || connection?.type === 'cellular')) });
   }).catch(error => {
-    if (error.backendFailure && !preferCPU) { preferCPU = true; stopWorker('Switching to CPU inference.'); return rpc(type, payload, { signal, allowMetered, storage }); }
+    if (generation === featureGeneration && error.backendFailure && !preferCPU) { preferCPU = true; stopWorker('Switching to CPU inference.'); return rpc(type, payload, { signal, allowMetered, cachedOnly, storage, lifecycle }); }
     throw error;
   });
 }
 export async function enableImageLearning(options = {}) {
   if (options.device) {
     if (!['auto', 'wasm'].includes(options.device)) throw new Error('Unsupported inference backend.');
-    stopWorker(); preferCPU = options.device === 'wasm';
+    featureGeneration++; stopWorker(); preferCPU = options.device === 'wasm';
   }
   saveDeviceConfig({ enabled: true, prompted: true, downloadConsent: options.download === false && !downloadConsent(options.storage) ? 'not-requested' : 'accepted' }, options.storage);
   phase = 'loading';message = installed ? 'Loading the installed image model…' : 'Downloading the local image model…';emit();
-  try { const result = await rpc('initialize', {}, options);installed = true;cachedModel = await training().current();phase = 'ready';message = 'Local image scoring is ready.';backend = result.backend;emit();return getImageLearningStatus(); }
-  catch (error) { phase = 'error';message = error.message;emit();throw error; }
+  const generation = featureGeneration;
+  const lifecycle = {};
+  const current = () => generation === featureGeneration && (lifecycle.workerGeneration === undefined || lifecycle.workerGeneration === workerGeneration) && imageLearningEnabled(options.storage);
+  try {
+    const result = await rpc('initialize', {}, { ...options, lifecycle });
+    if (!current() || !workerReady) return getImageLearningStatus();
+    const model = await training().current();
+    if (!current() || !workerReady) return getImageLearningStatus();
+    installed = true; workerReady = true; cachedModel = model;
+    phase = 'ready'; message = 'Local image scoring is ready.'; backend = result.backend; emit(); return getImageLearningStatus();
+  } catch (error) {
+    if (current()) { phase = 'error'; message = error.message; emit(); }
+    throw error;
+  }
 }
 export function disableImageLearning() {
-  training().stop(); saveDeviceConfig({ enabled: false, prompted: true });stopWorker();phase = 'off';message = 'Local image scoring is off. You can enable it again in Settings.';emit();
+  featureGeneration++; training().stop(); saveDeviceConfig({ enabled: false, prompted: true });stopWorker();phase = 'off';message = 'Local image scoring is off. You can enable it again in Settings.';emit();
 }
 export async function clearImageModelDownloads() {
   disableImageLearning();
@@ -204,23 +263,40 @@ export function rankEmbeddedImages(items, model = null) {
 }
 export async function rankImagesLocally(word, candidates, options = {}) {
   if (!imageLearningEnabled(options.storage) || !candidates.length) return candidates;
+  const generation = featureGeneration;
+  const lifecycle = {};
+  const current = () => generation === featureGeneration && imageLearningEnabled(options.storage) && !options.signal?.aborted
+    && (lifecycle.workerGeneration === undefined || lifecycle.workerGeneration === workerGeneration);
+  const inference = { ...options, lifecycle };
   try {
+    // Let startup finish its GPU-to-CPU recovery before adding picker requests
+    // to the worker queue: replacing a failed worker rejects its pending RPCs.
+    if (warmupPromise) {
+      try { await warmupPromise; } catch { return candidates; }
+      if (!current() || !workerReady) return candidates;
+    }
     const prompt = imageClipPrompts(word, options);
-    const texts = await rpc('texts', { texts: prompt.texts }, options);
+    const texts = await rpc('texts', { texts: prompt.texts }, inference);
+    if (!current() || !workerReady) return candidates;
     const meaningFeatures = encodeMeaning(texts[0]);
     const items = [];
     // A six-photo chooser needs a small shortlist, not forty serial inferences.
     const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(40, Number(options.localCandidateLimit) || 12)));
     for (let offset = 0; offset < scoringLimit; offset += 4) {
-      if (options.signal?.aborted || !imageLearningEnabled()) return candidates;
+      if (!current()) return candidates;
       const thumbnails = await prepareImageThumbnails(candidates.slice(offset, Math.min(offset + 4, scoringLimit)), { ...options, preferOriginal: true });
+      if (!current()) return candidates;
       for (const thumbnail of thumbnails) {
-        const vector = await rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }) }, options);
+        if (!current()) return candidates;
+        const vector = await rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }) }, inference);
+        if (!current() || !workerReady) return candidates;
         items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, semantic: semanticScores(vector, texts, prompt.sceneCount, prompt.alternativeCount) });
       }
       phase = 'scoring';message = `Scored ${items.length} of ${candidates.length} image suggestions locally.`;emit();
     }
-    const model = cachedModel = await training().current();
+    const model = await training().current();
+    if (!current() || !workerReady) return candidates;
+    cachedModel = model;
     const scored = rankEmbeddedImages(items, model);
     const scoredImages = new Set(items.map(item => item.candidate));
     phase = 'ready';message = `${items.length} image suggestions scored locally.`;emit();
@@ -228,7 +304,7 @@ export async function rankImagesLocally(word, candidates, options = {}) {
       selected: item.semantic.selected, contrast: item.semantic.contrast, margin: item.semantic.margin, unwanted: item.semantic.unwanted, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
       trainedComparisons: model?.trainedComparisons || 0, trainedPositiveLabels: model?.trainedPositiveLabels || 0, trainedNegativeLabels: model?.trainedNegativeLabels || 0, score: item.score } })),
       ...candidates.filter(item => !scoredImages.has(item))];
-  } catch (error) { phase = 'error';message = `${error.message} Metadata search is still available.`;emit();return candidates; }
+  } catch (error) { if (current()) { phase = 'error';message = `${error.message} Metadata search is still available.`;emit(); } return candidates; }
 }
 let feedbackQueue = Promise.resolve();
 async function imageRecordIds(word, image) {

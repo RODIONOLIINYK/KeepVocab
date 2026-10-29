@@ -9,7 +9,7 @@ requires no extra image search or AI request.
 ## Installation
 
 On startup the app checks for all pinned MobileCLIP and runtime files in its
-separate device cache without downloading or starting inference. Complete installs
+separate device cache without downloading. Complete installs
 are enabled by default unless the user previously turned learning off. If files
 are missing, a one-time prompt offers an approximately 150 MB download (including
 the runtime). Skipping, dismissing, or closing the prompt prevents repeat prompts.
@@ -17,6 +17,23 @@ Settings → Image suggestions can install or re-enable it later. Every remote
 model/runtime fetch requires saved consent; scoring can load a complete cache
 without network permission. The current generic MLP failed its comparison check and is disabled. The optional CLIP encoders use q8 text and full-precision vision as prescribed by the model author.
 Model files survive app-shell cache upgrades and stay on this device.
+
+For an enabled, complete install, startup schedules cached-only model preparation
+after two animation frames and an idle callback. Hidden pages defer that start
+until visible. Browsers without idle callbacks use a background scheduler task
+or a short timer fallback. The callback only starts the dedicated worker; model
+loading, ONNX graph compilation and inference stay off the UI thread, with one
+WASM thread. Startup does not await preparation. Foreground searches reuse the
+same worker, including a worker that is still loading. There is no two-minute
+idle eviction; disabling suggestions, clearing downloads, backend changes,
+worker failure or closing/reloading the app can release it. Browser/OS memory
+pressure can still discard the app. This design reduces main-thread work; it is
+not a measured guarantee of responsiveness on physical phones.
+
+The bundled software notice is separate from Apple's model-weight license.
+Current upstream model cards identify the weights as Apple AMLR; the research-only
+model notice is included separately. See [the research review](image-model-next-steps.md)
+for the deployment implications and pending alternatives.
 
 ## Choosing and changing images
 
