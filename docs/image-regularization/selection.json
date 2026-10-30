@@ -1,0 +1,103 @@
+{
+  "provenance": {
+    "sourceSha256": {
+      "scripts/lib/image_regularization.py": "3ceea8f2008e3fcb1eae2b50865e3b4319def41926c367be46bda5ef68adf56c",
+      "scripts/benchmark-image-regularization.py": "0a829655fd2550b3c0e4ec516225a829c686342a5934c4dcdffe5e935d76531f",
+      "docs/image-regularization-protocol.json": "bf9350259b6f141ddbe126289b1a1bbacf491a1a38b456fab131c79c742ff375",
+      "tests/fixtures/image-meaning-shift/split.json": "0a8c9d413453704f28d1329512b946a5749bd72d3423bfbfb8d3895069ac7520"
+    },
+    "preparedSha256": "eaa4d3ff00abaa94dd8e1752cb6e22beb136618b12019868b1d7c58f373c1522",
+    "encoder": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+    "preflightSha256": "731271eb4a17af9d044afb58db91284ce6b6b005b4ce8b3d4469a2135c1b89e7",
+    "dataPreserved": [
+      {
+        "path": "tests/fixtures/image-pretraining-v2/cases.json",
+        "sha256": "d5d70ecd14fd49fd76fa344e125bbf2331ad3c90f915e5cf25584ddbddc6bff7"
+      },
+      {
+        "path": "tests/fixtures/image-pretraining-fp16/embeddings.json.gz",
+        "sha256": "2ae53c17352c1381d29b71060d6e7624b63a2e8335f5325d7b853f0efa778b1e"
+      },
+      {
+        "path": "tests/fixtures/image-pretraining-v2/embeddings.json.gz",
+        "sha256": "858822dd4b59479e35f101f7f180fbca7f3827182adcedd5c89dcbd12724b576"
+      }
+    ]
+  },
+  "families": {
+    "baseline": {
+      "family": "baseline",
+      "strength": 0,
+      "validationCorrect": 42,
+      "validationLoss": 0.29358057959233874
+    },
+    "l2": {
+      "family": "l2",
+      "strength": 0.0001,
+      "validationCorrect": 42,
+      "validationLoss": 0.027463112214772496
+    },
+    "batchnorm": {
+      "family": "batchnorm",
+      "strength": 0,
+      "validationCorrect": 42,
+      "validationLoss": 0.03431773856175496
+    },
+    "batchnorm-l2": {
+      "family": "batchnorm-l2",
+      "strength": 0.0001,
+      "validationCorrect": 42,
+      "validationLoss": 0.009444199091699695
+    }
+  },
+  "pilotSummaries": [
+    {
+      "family": "baseline",
+      "strength": 0,
+      "validationCorrect": 42,
+      "validationLoss": 0.29358057959233874
+    },
+    {
+      "family": "l2",
+      "strength": 1e-05,
+      "validationCorrect": 42,
+      "validationLoss": 0.1606505917372878
+    },
+    {
+      "family": "l2",
+      "strength": 0.0001,
+      "validationCorrect": 42,
+      "validationLoss": 0.027463112214772496
+    },
+    {
+      "family": "l2",
+      "strength": 0.001,
+      "validationCorrect": 42,
+      "validationLoss": 0.16135790758097757
+    },
+    {
+      "family": "batchnorm",
+      "strength": 0,
+      "validationCorrect": 42,
+      "validationLoss": 0.03431773856175496
+    },
+    {
+      "family": "batchnorm-l2",
+      "strength": 1e-05,
+      "validationCorrect": 42,
+      "validationLoss": 0.017550777916745065
+    },
+    {
+      "family": "batchnorm-l2",
+      "strength": 0.0001,
+      "validationCorrect": 42,
+      "validationLoss": 0.009444199091699695
+    },
+    {
+      "family": "batchnorm-l2",
+      "strength": 0.001,
+      "validationCorrect": 42,
+      "validationLoss": 0.020120061067038078
+    }
+  ]
+}

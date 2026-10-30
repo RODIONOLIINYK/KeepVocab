@@ -1,0 +1,56 @@
+{
+  "originals": [
+    {
+      "path": "tests/fixtures/image-pretraining-v2/cases.json",
+      "sha256": "d5d70ecd14fd49fd76fa344e125bbf2331ad3c90f915e5cf25584ddbddc6bff7"
+    },
+    {
+      "path": "tests/fixtures/image-pretraining-fp16/embeddings.json.gz",
+      "sha256": "2ae53c17352c1381d29b71060d6e7624b63a2e8335f5325d7b853f0efa778b1e"
+    },
+    {
+      "path": "tests/fixtures/image-pretraining-v2/embeddings.json.gz",
+      "sha256": "858822dd4b59479e35f101f7f180fbca7f3827182adcedd5c89dcbd12724b576"
+    }
+  ],
+  "legacyReplay": [
+    {
+      "name": "78123-seen-baseline-0",
+      "epoch": 51,
+      "maximumWeightError": 0.0,
+      "note": "Historical early-stop time sampled without stopping this600epoch run."
+    },
+    {
+      "name": "78123-unseen-baseline-0",
+      "epoch": 158,
+      "maximumWeightError": 0.0,
+      "note": "Historical early-stop time sampled without stopping this600epoch run."
+    },
+    {
+      "name": "78124-seen-baseline-0",
+      "epoch": 52,
+      "maximumWeightError": 0.0,
+      "note": "Historical early-stop time sampled without stopping this600epoch run."
+    },
+    {
+      "name": "78124-unseen-baseline-0",
+      "epoch": 278,
+      "maximumWeightError": 0.0,
+      "note": "Historical early-stop time sampled without stopping this600epoch run."
+    },
+    {
+      "name": "78125-seen-baseline-0",
+      "epoch": 51,
+      "maximumWeightError": 0.0,
+      "note": "Historical early-stop time sampled without stopping this600epoch run."
+    },
+    {
+      "name": "78125-unseen-baseline-0",
+      "epoch": 600,
+      "maximumWeightError": 0.0,
+      "note": "Historical early-stop time sampled without stopping this600epoch run."
+    }
+  ],
+  "allHistoricalWeightsMatch": true,
+  "productionSourceUnchanged": true
+}

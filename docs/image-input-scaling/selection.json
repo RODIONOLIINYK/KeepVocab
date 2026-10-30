@@ -1,0 +1,65 @@
+{
+  "provenance": {
+    "sourceSha256": {
+      "scripts/lib/image_regularization.py": "3ceea8f2008e3fcb1eae2b50865e3b4319def41926c367be46bda5ef68adf56c",
+      "scripts/lib/image_input_scaling.py": "caa8fa1dcccf42531855bd355a522cdeb280efb30fb24711221d2ff678138c04",
+      "scripts/benchmark-image-input-scaling.py": "eea76c4a9cbffeb75cb73a4e1c301834e3cd1718f1ad37cb5df1ade71ad4a81f",
+      "docs/image-input-scaling-protocol.json": "f9041b25205c09f569294c795e2db32e6763cd4fb2ab3ff3070ee36401d41795",
+      "tests/fixtures/image-meaning-shift/split.json": "0a8c9d413453704f28d1329512b946a5749bd72d3423bfbfb8d3895069ac7520"
+    },
+    "parentReportSha256": "bbf8c1d83750c2777ac64e73dd481b671fe67275b87b6194fb15f4668d1c90b1",
+    "preparedSha256": "eaa4d3ff00abaa94dd8e1752cb6e22beb136618b12019868b1d7c58f373c1522"
+  },
+  "selected": {
+    "scaled": {
+      "family": "scaled",
+      "learningRate": 2e-05,
+      "correct": 42,
+      "loss": 0.2129873306605679
+    },
+    "scaled-l2": {
+      "family": "scaled-l2",
+      "learningRate": 0.0001,
+      "correct": 42,
+      "loss": 0.13588045916013333
+    }
+  },
+  "pilots": [
+    {
+      "family": "scaled",
+      "learningRate": 2e-05,
+      "correct": 42,
+      "loss": 0.2129873306605679
+    },
+    {
+      "family": "scaled",
+      "learningRate": 0.0001,
+      "correct": 42,
+      "loss": 0.23236508777080905
+    },
+    {
+      "family": "scaled",
+      "learningRate": 0.0002,
+      "correct": 42,
+      "loss": 0.32922288878993267
+    },
+    {
+      "family": "scaled-l2",
+      "learningRate": 2e-05,
+      "correct": 42,
+      "loss": 0.2129411583315333
+    },
+    {
+      "family": "scaled-l2",
+      "learningRate": 0.0001,
+      "correct": 42,
+      "loss": 0.13588045916013333
+    },
+    {
+      "family": "scaled-l2",
+      "learningRate": 0.0002,
+      "correct": 42,
+      "loss": 0.17112981976911334
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "experiment":"remove-explicit-image-meaning-product-features",
+  "parent":"docs/image-regularization-protocol.json",
+  "status":"User-requested exploratory follow-up after parent results were inspected; no fresh blind-test claim.",
+  "dataSplit":"tests/fixtures/image-meaning-shift/split.json",
+  "seeds":[78123,78124,78125],"arms":["seen","unseen"],
+  "families":["baseline","l2","batchnorm","batchnorm-l2"],
+  "features":"512image +512meaning +3CLIPsignals =1027. Physically remove the512image×meaning product coordinates. Meanings remain supplied; the MLP can still learn interactions through hidden nonlinearities.",
+  "architecture":[1027,32,16,1],"denseParameters":33441,"batchNormAdditionalParameters":96,
+  "recipe":{"epochs":600,"learningRate":0.0002,"batchSize":8,"maximumGradientNorm":1,"earlyStopping":false,"outputOnly":false,"beta1":0.9,"beta2":0.999,"epsilon":1e-8},
+  "l2":0.0001,
+  "controls":"Reuse parent seed weights with only product-input columns removed; initial CLIP-matching inference scores must remain unchanged. BN identity calibration, momentum0.1, epsilon1e-5 and frozen evaluation statistics match the parent. No input standardization is mixed into this isolated ablation.",
+  "selection":"No new hyperparameter selection. Keep parent validation-selected lambda0.0001. Save best validation first-choice checkpoint, pairwise loss tie-break, and final600epoch model.",
+  "testUse":"Freeze all24fits/checkpoints before scoring this ablation's test outcomes. Test curves post-hoc every10epochs plus selected/final. Existing parent test results were already seen; not a blind acceptance study.",
+  "checks":"Finite differences with/withoutBNandL2, initial-function preservation, same-kernel eight-gallery overfit, independent JS native1027input and expanded-zero-column runtime inference. Original data unchanged.",
+  "limits":"Removing inputs also reduces dense parameter count by16384; this is a feature/capacity ablation, not a pure fixed-parameter comparison. No new architecture depth/width or CLIP training."
+}

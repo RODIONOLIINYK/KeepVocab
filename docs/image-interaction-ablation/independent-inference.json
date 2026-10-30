@@ -1,0 +1,1452 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "78123-seen-baseline",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 186,
+      "loss": 0.31746620501023676,
+      "galleryCrossEntropy": 0.8342409172562096,
+      "brier": 0.07960072348958408,
+      "pairwiseAccuracy": 0.9930191972076788
+    },
+    {
+      "name": "78123-seen-baseline",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.30311689476809367,
+      "galleryCrossEntropy": 0.8351736192167856,
+      "brier": 0.07581122956316196,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-baseline",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.3003631356157053,
+      "galleryCrossEntropy": 0.8319618347707438,
+      "brier": 0.07478286650260703,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78123-seen-baseline",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 4.308235746685665e-7,
+      "galleryCrossEntropy": 0.0000015785395399866117,
+      "brier": 9.571092916902982e-13,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-baseline",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 18,
+      "loss": 0.5077448501852471,
+      "galleryCrossEntropy": 0.7949784825905679,
+      "brier": 0.0979771747883098,
+      "pairwiseAccuracy": 0.8928571428571429
+    },
+    {
+      "name": "78123-seen-baseline",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.25820734528644257,
+      "galleryCrossEntropy": 0.8790742938935525,
+      "brier": 0.04241705242537746,
+      "pairwiseAccuracy": 0.9603174603174602
+    },
+    {
+      "name": "78123-unseen-baseline",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 186,
+      "loss": 0.3092520723953488,
+      "galleryCrossEntropy": 0.8177401910628616,
+      "brier": 0.07656059302538924,
+      "pairwiseAccuracy": 0.9890924956369982
+    },
+    {
+      "name": "78123-unseen-baseline",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.2975814110810446,
+      "galleryCrossEntropy": 0.8236302678062205,
+      "brier": 0.07366325011105694,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-baseline",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.2985828018209829,
+      "galleryCrossEntropy": 0.8281446412360025,
+      "brier": 0.07428872732790018,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78123-unseen-baseline",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 4.5747316485097633e-7,
+      "galleryCrossEntropy": 0.0000016888342489755822,
+      "brier": 9.615972884449908e-13,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-baseline",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.20976692332008848,
+      "galleryCrossEntropy": 0.31892653431646983,
+      "brier": 0.04702953020800508,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78123-unseen-baseline",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.2746103163768676,
+      "galleryCrossEntropy": 0.9445218246407631,
+      "brier": 0.0406149290789119,
+      "pairwiseAccuracy": 0.9603174603174602
+    },
+    {
+      "name": "78123-seen-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00013077632516415876,
+      "galleryCrossEntropy": 0.0004648228651359452,
+      "brier": 8.982504528206401e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.033228610494427345,
+      "galleryCrossEntropy": 0.09741058099441985,
+      "brier": 0.008099028001311927,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.09523396130503821,
+      "galleryCrossEntropy": 0.21880108580565796,
+      "brier": 0.03446036240687757,
+      "pairwiseAccuracy": 0.9404761904761905
+    },
+    {
+      "name": "78123-seen-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00012654434792392283,
+      "galleryCrossEntropy": 0.00044915507279907554,
+      "brier": 8.346785590823544e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.03541930818389366,
+      "galleryCrossEntropy": 0.10164229823875329,
+      "brier": 0.009187364904878197,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78123-seen-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.10159996593471232,
+      "galleryCrossEntropy": 0.22754360433524243,
+      "brier": 0.03671652872091208,
+      "pairwiseAccuracy": 0.9404761904761905
+    },
+    {
+      "name": "78123-unseen-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00012907717813144607,
+      "galleryCrossEntropy": 0.00046304336173762635,
+      "brier": 8.418196723381915e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.024182857093085076,
+      "galleryCrossEntropy": 0.0743402943515777,
+      "brier": 0.005437487197947797,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.13611661379962425,
+      "galleryCrossEntropy": 0.28030690707047584,
+      "brier": 0.046626164199165474,
+      "pairwiseAccuracy": 0.9365079365079364
+    },
+    {
+      "name": "78123-unseen-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00012692781950066566,
+      "galleryCrossEntropy": 0.00045401740232536776,
+      "brier": 8.348756517558686e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.025270709718736805,
+      "galleryCrossEntropy": 0.07593546651113489,
+      "brier": 0.005905295462534023,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.14011015762469486,
+      "galleryCrossEntropy": 0.285779103990491,
+      "brier": 0.047549355690515646,
+      "pairwiseAccuracy": 0.9365079365079364
+    },
+    {
+      "name": "78123-seen-batchnorm",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0026252251753434183,
+      "galleryCrossEntropy": 0.009628247059763596,
+      "brier": 0.000013820386594905428,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-batchnorm",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.04631453651397762,
+      "galleryCrossEntropy": 0.1379917278190264,
+      "brier": 0.0091883422360388,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-batchnorm",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.035815638198781155,
+      "galleryCrossEntropy": 0.11400870895931604,
+      "brier": 0.00790930856290152,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78123-seen-batchnorm",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0000013177780231495283,
+      "galleryCrossEntropy": 0.000004877315099854285,
+      "brier": 2.3096519474747537e-11,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-batchnorm",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.05937111339288598,
+      "galleryCrossEntropy": 0.16656793782566723,
+      "brier": 0.017553469662370376,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78123-seen-batchnorm",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 21,
+      "loss": 0.009304422821480482,
+      "galleryCrossEntropy": 0.03420728794388276,
+      "brier": 0.0019003383453161386,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-batchnorm",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000002833043142314535,
+      "galleryCrossEntropy": 0.000010590981688175742,
+      "brier": 9.434634467068852e-11,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-batchnorm",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.029844665923635865,
+      "galleryCrossEntropy": 0.08953841820757986,
+      "brier": 0.006642521186064273,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-batchnorm",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.06287590106468373,
+      "galleryCrossEntropy": 0.14318668136099083,
+      "brier": 0.022304644606787584,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78123-unseen-batchnorm",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 9.071122940268661e-7,
+      "galleryCrossEntropy": 0.0000033451616751701996,
+      "brier": 9.017553125781141e-12,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-batchnorm",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 19,
+      "loss": 0.05379856293066087,
+      "galleryCrossEntropy": 0.14852313902032094,
+      "brier": 0.01699199472981776,
+      "pairwiseAccuracy": 0.9563492063492065
+    },
+    {
+      "name": "78123-unseen-batchnorm",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.06999409696647753,
+      "galleryCrossEntropy": 0.1569209300149935,
+      "brier": 0.023927905515462516,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78123-seen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000035576643127666485,
+      "galleryCrossEntropy": 0.00013169551614822307,
+      "brier": 1.4329042395057818e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.008917895919995459,
+      "galleryCrossEntropy": 0.0320215723714185,
+      "brier": 0.0005618899355085108,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.08789359920900164,
+      "galleryCrossEntropy": 0.18085354942782897,
+      "brier": 0.02792907587483068,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78123-seen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00001866576948828072,
+      "galleryCrossEntropy": 0.00006901481245141696,
+      "brier": 3.4399974408641075e-9,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.03441820501981775,
+      "galleryCrossEntropy": 0.09959391582247853,
+      "brier": 0.008569248525353228,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.09700300871301847,
+      "galleryCrossEntropy": 0.1980537122596984,
+      "brier": 0.03022855443086496,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78123-unseen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0008158322327895176,
+      "galleryCrossEntropy": 0.0029091132253935372,
+      "brier": 0.0000271127359829307,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.013369620132790713,
+      "galleryCrossEntropy": 0.046764413048854175,
+      "brier": 0.0012577780253179502,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.14768474022710376,
+      "galleryCrossEntropy": 0.2580138740193676,
+      "brier": 0.03828826963291727,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78123-unseen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000017806353185886924,
+      "galleryCrossEntropy": 0.00006567440967489727,
+      "brier": 3.993677213258414e-9,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 19,
+      "loss": 0.10159678928617388,
+      "galleryCrossEntropy": 0.308586820283304,
+      "brier": 0.029980630580756194,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78123-unseen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.12049968620436301,
+      "galleryCrossEntropy": 0.2707555184255527,
+      "brier": 0.03054399881325754,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78124-seen-baseline",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.3152060046006811,
+      "galleryCrossEntropy": 0.8296102435012335,
+      "brier": 0.0787107533458561,
+      "pairwiseAccuracy": 0.9912739965095985
+    },
+    {
+      "name": "78124-seen-baseline",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.30179145024138415,
+      "galleryCrossEntropy": 0.8325473529713008,
+      "brier": 0.07528376297795054,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-baseline",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.3006017138527198,
+      "galleryCrossEntropy": 0.8328083479714365,
+      "brier": 0.07483984202588491,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78124-seen-baseline",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 4.1225468675884264e-7,
+      "galleryCrossEntropy": 0.0000015173104066954385,
+      "brier": 8.836055995568639e-13,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-baseline",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 18,
+      "loss": 0.48918141217487476,
+      "galleryCrossEntropy": 0.7651488121455969,
+      "brier": 0.10429744176024998,
+      "pairwiseAccuracy": 0.8690476190476191
+    },
+    {
+      "name": "78124-seen-baseline",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 17,
+      "loss": 0.32600693208632114,
+      "galleryCrossEntropy": 1.1021724270829,
+      "brier": 0.04676274092507987,
+      "pairwiseAccuracy": 0.9484126984126983
+    },
+    {
+      "name": "78124-unseen-baseline",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.2920273168774459,
+      "galleryCrossEntropy": 0.780098055611502,
+      "brier": 0.07050752792603232,
+      "pairwiseAccuracy": 0.987783595113438
+    },
+    {
+      "name": "78124-unseen-baseline",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.2910186758127623,
+      "galleryCrossEntropy": 0.8068072410335396,
+      "brier": 0.07199303197770994,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-baseline",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.2944131414655148,
+      "galleryCrossEntropy": 0.8179427429498348,
+      "brier": 0.07336378481269579,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78124-unseen-baseline",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 4.2861312113430757e-7,
+      "galleryCrossEntropy": 0.0000015887936647284808,
+      "brier": 9.261119827312009e-13,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-baseline",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 19,
+      "loss": 0.2224721189158098,
+      "galleryCrossEntropy": 0.39195403520579847,
+      "brier": 0.05781468542394691,
+      "pairwiseAccuracy": 0.9404761904761905
+    },
+    {
+      "name": "78124-unseen-baseline",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 17,
+      "loss": 0.33362913329065436,
+      "galleryCrossEntropy": 1.1299579737319525,
+      "brier": 0.04738389750635829,
+      "pairwiseAccuracy": 0.9484126984126983
+    },
+    {
+      "name": "78124-seen-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0001315928737517839,
+      "galleryCrossEntropy": 0.0004683781485209503,
+      "brier": 9.447342851283998e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.03265672569112042,
+      "galleryCrossEntropy": 0.0950323699159822,
+      "brier": 0.0073897765691910795,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.10492389709119336,
+      "galleryCrossEntropy": 0.2475150811944491,
+      "brier": 0.038852911673384685,
+      "pairwiseAccuracy": 0.9246031746031745
+    },
+    {
+      "name": "78124-seen-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00012848806674821024,
+      "galleryCrossEntropy": 0.0004567208351684013,
+      "brier": 8.714628813722873e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.03503359866531564,
+      "galleryCrossEntropy": 0.09973015599672949,
+      "brier": 0.00843998611971242,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.11047462545879405,
+      "galleryCrossEntropy": 0.25641440821191214,
+      "brier": 0.04074185323725532,
+      "pairwiseAccuracy": 0.9246031746031745
+    },
+    {
+      "name": "78124-unseen-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00013129596241857628,
+      "galleryCrossEntropy": 0.00047089711276549916,
+      "brier": 9.417864199966432e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.019591694790002747,
+      "galleryCrossEntropy": 0.06063366861964967,
+      "brier": 0.00394420709472285,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.11991888849758821,
+      "galleryCrossEntropy": 0.2650729534922197,
+      "brier": 0.04345053745484315,
+      "pairwiseAccuracy": 0.9246031746031745
+    },
+    {
+      "name": "78124-unseen-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00012735548176093944,
+      "galleryCrossEntropy": 0.00045701176990349686,
+      "brier": 8.468886758573545e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.02010027154682265,
+      "galleryCrossEntropy": 0.062391395102885085,
+      "brier": 0.004103925117247197,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.12243232956083386,
+      "galleryCrossEntropy": 0.2677314681389056,
+      "brier": 0.04420102830441988,
+      "pairwiseAccuracy": 0.9246031746031745
+    },
+    {
+      "name": "78124-seen-batchnorm",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0014050485953179368,
+      "galleryCrossEntropy": 0.0049883265585083944,
+      "brier": 0.0000044450514925768724,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-batchnorm",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.03520283396256132,
+      "galleryCrossEntropy": 0.11406141627985548,
+      "brier": 0.006248951354988245,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-batchnorm",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.036646025820174066,
+      "galleryCrossEntropy": 0.10955653652107562,
+      "brier": 0.009042681173869329,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78124-seen-batchnorm",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0000017166991328620649,
+      "galleryCrossEntropy": 0.000005945214389603148,
+      "brier": 8.613677605316172e-11,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-batchnorm",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.0428073364659041,
+      "galleryCrossEntropy": 0.11716655127284174,
+      "brier": 0.012760349648390415,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78124-seen-batchnorm",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.023839398429553495,
+      "galleryCrossEntropy": 0.07061668375790496,
+      "brier": 0.008080988757144377,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78124-unseen-batchnorm",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0023501470803725943,
+      "galleryCrossEntropy": 0.008385076004892899,
+      "brier": 0.000011845684054825282,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-batchnorm",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.04397046811589277,
+      "galleryCrossEntropy": 0.14514677455624506,
+      "brier": 0.007710835883045525,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-batchnorm",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.054282670555062244,
+      "galleryCrossEntropy": 0.1551972923118115,
+      "brier": 0.014592195816378753,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78124-unseen-batchnorm",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0000018954547523741458,
+      "galleryCrossEntropy": 0.000006582539467611539,
+      "brier": 5.7026453441677874e-11,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-batchnorm",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.0386296471726021,
+      "galleryCrossEntropy": 0.1343600662889637,
+      "brier": 0.011603642377586524,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78124-unseen-batchnorm",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.05221284698434122,
+      "galleryCrossEntropy": 0.13748366675268722,
+      "brier": 0.017493150715107188,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78124-seen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0010688292436022413,
+      "galleryCrossEntropy": 0.0026453060792933076,
+      "brier": 0.00008037716804639675,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.005187417138753029,
+      "galleryCrossEntropy": 0.019409639566192502,
+      "brier": 0.0002678455221735698,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.10578142340127113,
+      "galleryCrossEntropy": 0.28573330519210705,
+      "brier": 0.03253520217204241,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78124-seen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00002712668400705529,
+      "galleryCrossEntropy": 0.00010055801666470759,
+      "brier": 2.8014330445887803e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.011386313208785805,
+      "galleryCrossEntropy": 0.038725376257600065,
+      "brier": 0.0012857159951204407,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.16660902483361456,
+      "galleryCrossEntropy": 0.34432938453160494,
+      "brier": 0.049930998702137644,
+      "pairwiseAccuracy": 0.9404761904761905
+    },
+    {
+      "name": "78124-unseen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000026224065971692798,
+      "galleryCrossEntropy": 0.00009501678011948164,
+      "brier": 2.9492057444288582e-9,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.011232318127023643,
+      "galleryCrossEntropy": 0.041294484441720014,
+      "brier": 0.0014337890764936296,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.0668258489490338,
+      "galleryCrossEntropy": 0.14725202502384177,
+      "brier": 0.023258827400566128,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78124-unseen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000014806806499248189,
+      "galleryCrossEntropy": 0.00005256453049441207,
+      "brier": 1.403849882416952e-9,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.04374640785259245,
+      "galleryCrossEntropy": 0.15186592596621293,
+      "brier": 0.011338009917516802,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78124-unseen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.11315780200776522,
+      "galleryCrossEntropy": 0.23743252134604717,
+      "brier": 0.028908487065895237,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78125-seen-baseline",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 186,
+      "loss": 0.3267453305912975,
+      "galleryCrossEntropy": 0.8542190638028221,
+      "brier": 0.08300559768863844,
+      "pairwiseAccuracy": 0.9930191972076788
+    },
+    {
+      "name": "78125-seen-baseline",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.3069692669814869,
+      "galleryCrossEntropy": 0.8464473546842891,
+      "brier": 0.07661089741328408,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-baseline",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.3054430468536089,
+      "galleryCrossEntropy": 0.8447089402202802,
+      "brier": 0.07626474209661714,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78125-seen-baseline",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 4.524788080181791e-7,
+      "galleryCrossEntropy": 0.0000016567946420406178,
+      "brier": 1.0549547263087356e-12,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-baseline",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 18,
+      "loss": 0.5093865958125685,
+      "galleryCrossEntropy": 0.8863360686396613,
+      "brier": 0.10353367842593826,
+      "pairwiseAccuracy": 0.8690476190476191
+    },
+    {
+      "name": "78125-seen-baseline",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 17,
+      "loss": 0.27859964364228984,
+      "galleryCrossEntropy": 0.942018153464317,
+      "brier": 0.04936948891727054,
+      "pairwiseAccuracy": 0.9484126984126983
+    },
+    {
+      "name": "78125-unseen-baseline",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 186,
+      "loss": 0.3183888479781071,
+      "galleryCrossEntropy": 0.8374367614249523,
+      "brier": 0.07989384083062506,
+      "pairwiseAccuracy": 0.9890924956369982
+    },
+    {
+      "name": "78125-unseen-baseline",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.30247017794553976,
+      "galleryCrossEntropy": 0.8366255293580397,
+      "brier": 0.07499761691123623,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-baseline",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.3031009892997407,
+      "galleryCrossEntropy": 0.8396829234796785,
+      "brier": 0.07556056781730838,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78125-unseen-baseline",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 4.684011161696876e-7,
+      "galleryCrossEntropy": 0.000001723921833170311,
+      "brier": 1.0032314317243614e-12,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-baseline",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 17,
+      "loss": 0.21216195180629094,
+      "galleryCrossEntropy": 0.4443336549022273,
+      "brier": 0.06527618812460968,
+      "pairwiseAccuracy": 0.9166666666666666
+    },
+    {
+      "name": "78125-unseen-baseline",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 17,
+      "loss": 0.30292345474819143,
+      "galleryCrossEntropy": 0.9974703162843314,
+      "brier": 0.0454025786353578,
+      "pairwiseAccuracy": 0.9365079365079364
+    },
+    {
+      "name": "78125-seen-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 186,
+      "loss": 0.3274441904711667,
+      "galleryCrossEntropy": 0.8556343131843928,
+      "brier": 0.08328351821757962,
+      "pairwiseAccuracy": 0.9930191972076788
+    },
+    {
+      "name": "78125-seen-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.30699212283238647,
+      "galleryCrossEntropy": 0.8466023771845906,
+      "brier": 0.07658887832170708,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.3059745238065651,
+      "galleryCrossEntropy": 0.8458581758845156,
+      "brier": 0.07646385224400115,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78125-seen-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00012918355525545885,
+      "galleryCrossEntropy": 0.00045927190803471277,
+      "brier": 9.830269318398167e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.05368189919856433,
+      "galleryCrossEntropy": 0.14633558540248354,
+      "brier": 0.016218602408794778,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78125-seen-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.10563548068348073,
+      "galleryCrossEntropy": 0.2410439638241583,
+      "brier": 0.03718229551824877,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78125-unseen-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00012960063006020651,
+      "galleryCrossEntropy": 0.0004651101544180843,
+      "brier": 9.001095887020783e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.02870833923162038,
+      "galleryCrossEntropy": 0.09340732223862916,
+      "brier": 0.0070700234036423296,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.11723771537554602,
+      "galleryCrossEntropy": 0.2728308993769308,
+      "brier": 0.04279581393702149,
+      "pairwiseAccuracy": 0.9365079365079364
+    },
+    {
+      "name": "78125-unseen-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00012815485735525478,
+      "galleryCrossEntropy": 0.0004593070218144547,
+      "brier": 9.087211432997628e-8,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.029122029249398863,
+      "galleryCrossEntropy": 0.09401566815709614,
+      "brier": 0.007209537595827413,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.12104396959711125,
+      "galleryCrossEntropy": 0.2773969075309127,
+      "brier": 0.04393495941498359,
+      "pairwiseAccuracy": 0.9365079365079364
+    },
+    {
+      "name": "78125-seen-batchnorm",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0020862743006961324,
+      "galleryCrossEntropy": 0.007589319878801031,
+      "brier": 0.0000074329202342239775,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-batchnorm",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.0405579837025012,
+      "galleryCrossEntropy": 0.12166202454354905,
+      "brier": 0.008201301069906783,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-batchnorm",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.03935417990184552,
+      "galleryCrossEntropy": 0.11642972767532431,
+      "brier": 0.011003924696336242,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78125-seen-batchnorm",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0000010669582892251898,
+      "galleryCrossEntropy": 0.000003825191595432713,
+      "brier": 4.3264391084383075e-12,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-batchnorm",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.06155016738782454,
+      "galleryCrossEntropy": 0.13825113912177486,
+      "brier": 0.02183348291151688,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78125-seen-batchnorm",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.038486421168224434,
+      "galleryCrossEntropy": 0.10884231890228625,
+      "brier": 0.01345746330694632,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78125-unseen-batchnorm",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.02027051455016875,
+      "galleryCrossEntropy": 0.0718528382450918,
+      "brier": 0.0006434740068954587,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-batchnorm",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.07833771166324616,
+      "galleryCrossEntropy": 0.24664287649793912,
+      "brier": 0.014408264603542506,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-batchnorm",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 21,
+      "loss": 0.059697872150928616,
+      "galleryCrossEntropy": 0.18963154727842593,
+      "brier": 0.011118810284403046,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-batchnorm",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000001107239740366985,
+      "galleryCrossEntropy": 0.000003985696789531666,
+      "brier": 4.175226278404177e-12,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-batchnorm",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 19,
+      "loss": 0.1955525098189531,
+      "galleryCrossEntropy": 0.3861369022011647,
+      "brier": 0.04707539691628994,
+      "pairwiseAccuracy": 0.9404761904761905
+    },
+    {
+      "name": "78125-unseen-batchnorm",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 21,
+      "loss": 0.017880070879519244,
+      "galleryCrossEntropy": 0.06181388025537927,
+      "brier": 0.003828013801452196,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000021571763349733176,
+      "galleryCrossEntropy": 0.00007732109881169345,
+      "brier": 4.888794247521433e-9,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.025943896355465106,
+      "galleryCrossEntropy": 0.07786547252505746,
+      "brier": 0.005541431436714005,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.11452221243449949,
+      "galleryCrossEntropy": 0.26666369760502506,
+      "brier": 0.03468545855604691,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78125-seen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00002043670319294193,
+      "galleryCrossEntropy": 0.00007435456967397917,
+      "brier": 4.2742791055101855e-9,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.0394979769551037,
+      "galleryCrossEntropy": 0.10927153061958664,
+      "brier": 0.010499436176853555,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78125-seen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.10935728141075637,
+      "galleryCrossEntropy": 0.25953237933439177,
+      "brier": 0.0346810989944533,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78125-unseen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.018074440071943892,
+      "galleryCrossEntropy": 0.06423272213005722,
+      "brier": 0.0005064579546180671,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.08048768484612016,
+      "galleryCrossEntropy": 0.25025693192267623,
+      "brier": 0.01566254428645007,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-batchnorm-l2",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 21,
+      "loss": 0.05807938429576257,
+      "galleryCrossEntropy": 0.18503183229527914,
+      "brier": 0.011063946700414287,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000016822619587453513,
+      "galleryCrossEntropy": 0.00006042986239042086,
+      "brier": 1.940925148657754e-9,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 19,
+      "loss": 0.13077720246707744,
+      "galleryCrossEntropy": 0.3783650024000861,
+      "brier": 0.033931204562838595,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78125-unseen-batchnorm-l2",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.1388537450032178,
+      "galleryCrossEntropy": 0.2683751334459657,
+      "brier": 0.03412345156981458,
+      "pairwiseAccuracy": 0.9642857142857143
+    }
+  ],
+  "splitCheckpointChecks": 144,
+  "maximumFoldScoreError": 4.76837158203125e-7,
+  "foldScoreTolerance": 0.00005,
+  "maximumMetricError": 8.881784197001252e-16,
+  "metricTolerance": 0.000002,
+  "originalDataPreserved": true,
+  "note": "Independent JS native BN inference and ordinary folded runtime weights. All rankings must agree. No training/evaluation statistic updates."
+}

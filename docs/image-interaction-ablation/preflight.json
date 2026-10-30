@@ -1,0 +1,352 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "batchNorm": false,
+      "l2": 0,
+      "initialRawScoreError": 0.0,
+      "gradient": {
+        "passed": true,
+        "loss": 0.39142616690376314,
+        "checks": [
+          {
+            "parameter": "w0",
+            "index": 62,
+            "analytic": -0.15820841279100076,
+            "numeric": -0.15820841279268194,
+            "absoluteError": 1.681182970614259e-12
+          },
+          {
+            "parameter": "w0",
+            "index": 34,
+            "analytic": 0.12381273827506178,
+            "numeric": 0.12381273827855031,
+            "absoluteError": 3.488528910189359e-12
+          },
+          {
+            "parameter": "w1",
+            "index": 0,
+            "analytic": -0.10567024260723712,
+            "numeric": -0.10567024260887957,
+            "absoluteError": 1.6424500648426488e-12
+          },
+          {
+            "parameter": "w1",
+            "index": 6,
+            "analytic": 0.043863485911826185,
+            "numeric": 0.04386348591289834,
+            "absoluteError": 1.0721562526683215e-12
+          },
+          {
+            "parameter": "w2",
+            "index": 0,
+            "analytic": -0.10567024260723712,
+            "numeric": -0.10567024260887957,
+            "absoluteError": 1.6424500648426488e-12
+          },
+          {
+            "parameter": "w2",
+            "index": 15,
+            "analytic": -0.04925150945291405,
+            "numeric": -0.04925150945689349,
+            "absoluteError": 3.979434837209084e-12
+          }
+        ],
+        "epsilon": 1e-05,
+        "absoluteTolerance": 2e-05,
+        "maximumAbsoluteError": 3.979434837209084e-12,
+        "skippedBoundaries": 0,
+        "note": "Float64 shadow checks differentiability; actual training uses Float32 parameters/activations."
+      }
+    },
+    {
+      "batchNorm": false,
+      "l2": 0.0001,
+      "initialRawScoreError": 0.0,
+      "gradient": {
+        "passed": true,
+        "loss": 0.3949894887337905,
+        "checks": [
+          {
+            "parameter": "w0",
+            "index": 62,
+            "analytic": -0.15820841279100076,
+            "numeric": -0.15820841279268194,
+            "absoluteError": 1.681182970614259e-12
+          },
+          {
+            "parameter": "w0",
+            "index": 34,
+            "analytic": 0.12381273827506178,
+            "numeric": 0.12381273827855031,
+            "absoluteError": 3.488528910189359e-12
+          },
+          {
+            "parameter": "w1",
+            "index": 0,
+            "analytic": -0.10557024260723712,
+            "numeric": -0.1055702426089322,
+            "absoluteError": 1.695088513997689e-12
+          },
+          {
+            "parameter": "w1",
+            "index": 6,
+            "analytic": 0.043863485911826185,
+            "numeric": 0.04386348591289834,
+            "absoluteError": 1.0721562526683215e-12
+          },
+          {
+            "parameter": "w2",
+            "index": 0,
+            "analytic": -0.10557024260723712,
+            "numeric": -0.1055702426089322,
+            "absoluteError": 1.695088513997689e-12
+          },
+          {
+            "parameter": "w2",
+            "index": 15,
+            "analytic": -0.04925150945291405,
+            "numeric": -0.04925150945689349,
+            "absoluteError": 3.979434837209084e-12
+          }
+        ],
+        "epsilon": 1e-05,
+        "absoluteTolerance": 2e-05,
+        "maximumAbsoluteError": 3.979434837209084e-12,
+        "skippedBoundaries": 0,
+        "note": "Float64 shadow checks differentiability; actual training uses Float32 parameters/activations."
+      }
+    },
+    {
+      "batchNorm": true,
+      "l2": 0,
+      "initialRawScoreError": 0.0,
+      "gradient": {
+        "passed": true,
+        "loss": 0.3690477000311555,
+        "checks": [
+          {
+            "parameter": "w0",
+            "index": 62,
+            "analytic": -0.12575060531908352,
+            "numeric": -0.1257506053231605,
+            "absoluteError": 4.0769887466041155e-12
+          },
+          {
+            "parameter": "w0",
+            "index": 34,
+            "analytic": 0.1224572541648545,
+            "numeric": 0.1224572541536073,
+            "absoluteError": 1.1247211495479803e-11
+          },
+          {
+            "parameter": "w1",
+            "index": 128,
+            "analytic": 0.02671841555137279,
+            "numeric": 0.026718415546689297,
+            "absoluteError": 4.683493176615983e-12
+          },
+          {
+            "parameter": "w1",
+            "index": 29,
+            "analytic": -0.022465079976714566,
+            "numeric": -0.02246507997683,
+            "absoluteError": 1.1543543898540065e-13
+          },
+          {
+            "parameter": "w2",
+            "index": 0,
+            "analytic": -0.12010518028087505,
+            "numeric": -0.12010518028182647,
+            "absoluteError": 9.514194987403357e-13
+          },
+          {
+            "parameter": "w2",
+            "index": 15,
+            "analytic": -0.05301810264152051,
+            "numeric": -0.05301810263591555,
+            "absoluteError": 5.604960939820103e-12
+          },
+          {
+            "parameter": "g0",
+            "index": 0,
+            "analytic": -0.005963936636484972,
+            "numeric": -0.0059639369803798905,
+            "absoluteError": 3.438949186182483e-10
+          },
+          {
+            "parameter": "g0",
+            "index": 29,
+            "analytic": 0.0,
+            "numeric": 0.0,
+            "absoluteError": 0.0
+          },
+          {
+            "parameter": "t0",
+            "index": 4,
+            "analytic": 1.717376241217039e-16,
+            "numeric": 5.551115123125782e-12,
+            "absoluteError": 5.55094338550166e-12
+          },
+          {
+            "parameter": "t0",
+            "index": 0,
+            "analytic": -1.1102230246251565e-16,
+            "numeric": 0.0,
+            "absoluteError": 1.1102230246251565e-16
+          },
+          {
+            "parameter": "g1",
+            "index": 0,
+            "analytic": -2.0480929162380117,
+            "numeric": -2.0480929175670237,
+            "absoluteError": 1.329012011552777e-09
+          },
+          {
+            "parameter": "g1",
+            "index": 4,
+            "analytic": -0.1306467689795257,
+            "numeric": -0.1306467689893287,
+            "absoluteError": 9.802991751683976e-12
+          },
+          {
+            "parameter": "t1",
+            "index": 0,
+            "analytic": -1.3877787807814457e-17,
+            "numeric": -2.775557561562891e-12,
+            "absoluteError": 2.775543683775083e-12
+          },
+          {
+            "parameter": "t1",
+            "index": 4,
+            "analytic": 3.469446951953614e-18,
+            "numeric": -2.775557561562891e-12,
+            "absoluteError": 2.775561031009843e-12
+          }
+        ],
+        "epsilon": 1e-05,
+        "absoluteTolerance": 2e-05,
+        "maximumAbsoluteError": 1.329012011552777e-09,
+        "skippedBoundaries": 1,
+        "note": "Float64 shadow checks differentiability; actual training uses Float32 parameters/activations."
+      }
+    },
+    {
+      "batchNorm": true,
+      "l2": 0.0001,
+      "initialRawScoreError": 0.0,
+      "gradient": {
+        "passed": true,
+        "loss": 0.37261102186118283,
+        "checks": [
+          {
+            "parameter": "w0",
+            "index": 62,
+            "analytic": -0.12575060531908352,
+            "numeric": -0.1257506053231605,
+            "absoluteError": 4.0769887466041155e-12
+          },
+          {
+            "parameter": "w0",
+            "index": 34,
+            "analytic": 0.1224572541648545,
+            "numeric": 0.1224572541536073,
+            "absoluteError": 1.1247211495479803e-11
+          },
+          {
+            "parameter": "w1",
+            "index": 128,
+            "analytic": 0.02671841555137279,
+            "numeric": 0.026718415546689297,
+            "absoluteError": 4.683493176615983e-12
+          },
+          {
+            "parameter": "w1",
+            "index": 29,
+            "analytic": -0.022465079976714566,
+            "numeric": -0.02246507997683,
+            "absoluteError": 1.1543543898540065e-13
+          },
+          {
+            "parameter": "w2",
+            "index": 0,
+            "analytic": -0.12000518028087505,
+            "numeric": -0.1200051802818791,
+            "absoluteError": 1.004057947895376e-12
+          },
+          {
+            "parameter": "w2",
+            "index": 15,
+            "analytic": -0.05301810264152051,
+            "numeric": -0.05301810263591555,
+            "absoluteError": 5.604960939820103e-12
+          },
+          {
+            "parameter": "g0",
+            "index": 0,
+            "analytic": -0.005963936636484972,
+            "numeric": -0.0059639369803798905,
+            "absoluteError": 3.438949186182483e-10
+          },
+          {
+            "parameter": "g0",
+            "index": 29,
+            "analytic": 0.0,
+            "numeric": 0.0,
+            "absoluteError": 0.0
+          },
+          {
+            "parameter": "t0",
+            "index": 4,
+            "analytic": 1.717376241217039e-16,
+            "numeric": 5.551115123125782e-12,
+            "absoluteError": 5.55094338550166e-12
+          },
+          {
+            "parameter": "t0",
+            "index": 0,
+            "analytic": -1.1102230246251565e-16,
+            "numeric": 0.0,
+            "absoluteError": 1.1102230246251565e-16
+          },
+          {
+            "parameter": "g1",
+            "index": 0,
+            "analytic": -2.0480929162380117,
+            "numeric": -2.0480929175670237,
+            "absoluteError": 1.329012011552777e-09
+          },
+          {
+            "parameter": "g1",
+            "index": 4,
+            "analytic": -0.1306467689795257,
+            "numeric": -0.1306467689893287,
+            "absoluteError": 9.802991751683976e-12
+          },
+          {
+            "parameter": "t1",
+            "index": 0,
+            "analytic": -1.3877787807814457e-17,
+            "numeric": -2.775557561562891e-12,
+            "absoluteError": 2.775543683775083e-12
+          },
+          {
+            "parameter": "t1",
+            "index": 4,
+            "analytic": 3.469446951953614e-18,
+            "numeric": -2.775557561562891e-12,
+            "absoluteError": 2.775561031009843e-12
+          }
+        ],
+        "epsilon": 1e-05,
+        "absoluteTolerance": 2e-05,
+        "maximumAbsoluteError": 1.329012011552777e-09,
+        "skippedBoundaries": 1,
+        "note": "Float64 shadow checks differentiability; actual training uses Float32 parameters/activations."
+      }
+    }
+  ],
+  "protocolSha256": "d9f723c81be773b734388e932ad90719ba594b83375181103079ff845bb95793",
+  "kernelSha256": "8746bc2f29cf2dc7ac2e8e76997bac35f5b6d138449020651faab497f4a94c0b",
+  "baseKernelSha256": "3ceea8f2008e3fcb1eae2b50865e3b4319def41926c367be46bda5ef68adf56c"
+}

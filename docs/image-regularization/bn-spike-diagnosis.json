@@ -1,0 +1,401 @@
+{
+  "method": "Compare frozen inference statistics with actual eight-gallery training-mode statistics, no parameter/statistic updates. Training data only; no test-driven intervention. Peaks selected from sampled training-loss jumps.",
+  "results": [
+    {
+      "seed": 78123,
+      "peakSnapshotEpoch": 230,
+      "rows": [
+        {
+          "epoch": 220,
+          "family": "batchnorm",
+          "inferenceDataLoss": 0.00011415439162267619,
+          "minibatchTrainingDataLoss": 4.9835953474679595e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.001507104515230121,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 1.551775464287449,
+              "minimumKernelRowNorm": 1.0,
+              "maximumEffectiveGain": 3.1489927675950415
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 1.3214618402629985,
+              "minimumKernelRowNorm": 0.8207598819737484,
+              "maximumEffectiveGain": 14.601908757494908
+            }
+          ]
+        },
+        {
+          "epoch": 220,
+          "family": "batchnorm-l2",
+          "inferenceDataLoss": 0.00011187596147982353,
+          "minibatchTrainingDataLoss": 5.342963803387566e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.0021116264750304344,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 0.22469371826669865,
+              "minimumKernelRowNorm": 0.0498149747107002,
+              "maximumEffectiveGain": 10.852682349382412
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 0.26987432948978723,
+              "minimumKernelRowNorm": 0.14842046797275543,
+              "maximumEffectiveGain": 18.09390101899023
+            }
+          ]
+        },
+        {
+          "epoch": 230,
+          "family": "batchnorm",
+          "inferenceDataLoss": 9.16879194717251e-05,
+          "minibatchTrainingDataLoss": 4.281031225219528e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.0012038751371615457,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 1.5532055835623442,
+              "minimumKernelRowNorm": 1.0,
+              "maximumEffectiveGain": 3.141229518198705
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 1.321160088336316,
+              "minimumKernelRowNorm": 0.8189511311005784,
+              "maximumEffectiveGain": 14.76080271511192
+            }
+          ]
+        },
+        {
+          "epoch": 230,
+          "family": "batchnorm-l2",
+          "inferenceDataLoss": 0.0009816008386415657,
+          "minibatchTrainingDataLoss": 0.0003403881000538142,
+          "maximumBatchGradientNormAtCheckpoint": 1.610927284021056,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 0.20883744570971366,
+              "minimumKernelRowNorm": 0.04831924929750208,
+              "maximumEffectiveGain": 9.50486686161499
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 0.2387352882597034,
+              "minimumKernelRowNorm": 0.12513823807239532,
+              "maximumEffectiveGain": 20.254984896671942
+            }
+          ]
+        },
+        {
+          "epoch": 240,
+          "family": "batchnorm",
+          "inferenceDataLoss": 7.431668173066898e-05,
+          "minibatchTrainingDataLoss": 3.6385971242312546e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.0010423792986625677,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 1.5543827946470878,
+              "minimumKernelRowNorm": 1.0,
+              "maximumEffectiveGain": 3.192557578390153
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 1.3209236026235613,
+              "minimumKernelRowNorm": 0.817196071799053,
+              "maximumEffectiveGain": 14.976421006871238
+            }
+          ]
+        },
+        {
+          "epoch": 240,
+          "family": "batchnorm-l2",
+          "inferenceDataLoss": 0.00016940871012608789,
+          "minibatchTrainingDataLoss": 7.896327015344802e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.020916869494007097,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 0.29598583053604627,
+              "minimumKernelRowNorm": 0.10384175181388855,
+              "maximumEffectiveGain": 7.053262090931477
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 0.23762495414027857,
+              "minimumKernelRowNorm": 0.10384175181388855,
+              "maximumEffectiveGain": 18.89500379135878
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 78124,
+      "peakSnapshotEpoch": 440,
+      "rows": [
+        {
+          "epoch": 430,
+          "family": "batchnorm",
+          "inferenceDataLoss": 8.095010601540451e-06,
+          "minibatchTrainingDataLoss": 2.2310539125522856e-06,
+          "maximumBatchGradientNormAtCheckpoint": 9.413343925413129e-05,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 1.5812177040634814,
+              "minimumKernelRowNorm": 1.0,
+              "maximumEffectiveGain": 3.2718860169361084
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 1.2272059637440282,
+              "minimumKernelRowNorm": 0.8020163850255791,
+              "maximumEffectiveGain": 15.65133082756198
+            }
+          ]
+        },
+        {
+          "epoch": 430,
+          "family": "batchnorm-l2",
+          "inferenceDataLoss": 1.5599204156882474e-05,
+          "minibatchTrainingDataLoss": 6.732610066119129e-06,
+          "maximumBatchGradientNormAtCheckpoint": 0.0007681898873750006,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 0.06277289872474626,
+              "minimumKernelRowNorm": 9.075036899730549e-08,
+              "maximumEffectiveGain": 18.25081090364318
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 0.10687257982152261,
+              "minimumKernelRowNorm": 9.075036899730549e-08,
+              "maximumEffectiveGain": 59.209554144119956
+            }
+          ]
+        },
+        {
+          "epoch": 440,
+          "family": "batchnorm",
+          "inferenceDataLoss": 6.293668425174996e-06,
+          "minibatchTrainingDataLoss": 1.94444026983617e-06,
+          "maximumBatchGradientNormAtCheckpoint": 9.888130976502664e-05,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 1.5817459391545896,
+              "minimumKernelRowNorm": 1.0,
+              "maximumEffectiveGain": 3.2539157355393553
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 1.2267944161940054,
+              "minimumKernelRowNorm": 0.8008644739665222,
+              "maximumEffectiveGain": 15.902540523879454
+            }
+          ]
+        },
+        {
+          "epoch": 440,
+          "family": "batchnorm-l2",
+          "inferenceDataLoss": 0.00018071402660616817,
+          "minibatchTrainingDataLoss": 4.2721735336277295e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.021170035859903336,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 0.25143597440123494,
+              "minimumKernelRowNorm": 1.2011915906384729e-08,
+              "maximumEffectiveGain": 17.846601464764113
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 0.11664918276767555,
+              "minimumKernelRowNorm": 1.2011915906384729e-08,
+              "maximumEffectiveGain": 46.657500701193655
+            }
+          ]
+        },
+        {
+          "epoch": 450,
+          "family": "batchnorm",
+          "inferenceDataLoss": 5.377745964057599e-06,
+          "minibatchTrainingDataLoss": 1.7180146506369718e-06,
+          "maximumBatchGradientNormAtCheckpoint": 6.674171925361124e-05,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 1.5822336520077374,
+              "minimumKernelRowNorm": 1.0,
+              "maximumEffectiveGain": 3.3009603138649557
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 1.2264240093076701,
+              "minimumKernelRowNorm": 0.7997134005662057,
+              "maximumEffectiveGain": 15.770664393834073
+            }
+          ]
+        },
+        {
+          "epoch": 450,
+          "family": "batchnorm-l2",
+          "inferenceDataLoss": 5.854070402056058e-05,
+          "minibatchTrainingDataLoss": 1.56100896160979e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.004626685479140163,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 0.21793888365834058,
+              "minimumKernelRowNorm": 1.1459727611295989e-09,
+              "maximumEffectiveGain": 17.846601464849968
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 0.11650768805521391,
+              "minimumKernelRowNorm": 1.1459727611295989e-09,
+              "maximumEffectiveGain": 46.83087566779552
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seed": 78125,
+      "peakSnapshotEpoch": 260,
+      "rows": [
+        {
+          "epoch": 250,
+          "family": "batchnorm",
+          "inferenceDataLoss": 5.43521877897027e-05,
+          "minibatchTrainingDataLoss": 2.8611504732971687e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.0012613114402157356,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 1.5883953244911975,
+              "minimumKernelRowNorm": 1.0,
+              "maximumEffectiveGain": 3.1869544506742833
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 1.2794951612866796,
+              "minimumKernelRowNorm": 0.8413520257613133,
+              "maximumEffectiveGain": 15.19438712114792
+            }
+          ]
+        },
+        {
+          "epoch": 250,
+          "family": "batchnorm-l2",
+          "inferenceDataLoss": 6.31984270417233e-05,
+          "minibatchTrainingDataLoss": 3.357600413118208e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.002982712429674876,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 0.19260629188752426,
+              "minimumKernelRowNorm": 0.0077765360636219685,
+              "maximumEffectiveGain": 17.018149630156586
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 0.18546705462297486,
+              "minimumKernelRowNorm": 0.0840769112110138,
+              "maximumEffectiveGain": 34.35862150664273
+            }
+          ]
+        },
+        {
+          "epoch": 260,
+          "family": "batchnorm",
+          "inferenceDataLoss": 4.826962710250333e-05,
+          "minibatchTrainingDataLoss": 2.457717720533214e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.001026859261757995,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 1.5894820552277422,
+              "minimumKernelRowNorm": 1.0,
+              "maximumEffectiveGain": 3.2448060139746326
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 1.2794788690938086,
+              "minimumKernelRowNorm": 0.8401998525078331,
+              "maximumEffectiveGain": 14.885755303267059
+            }
+          ]
+        },
+        {
+          "epoch": 260,
+          "family": "batchnorm-l2",
+          "inferenceDataLoss": 0.00020733255405015427,
+          "minibatchTrainingDataLoss": 0.00010615641007798583,
+          "maximumBatchGradientNormAtCheckpoint": 0.029615575881959257,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 0.33252556050583376,
+              "minimumKernelRowNorm": 0.0018853262973227748,
+              "maximumEffectiveGain": 17.286290096336412
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 0.18443456531628438,
+              "minimumKernelRowNorm": 0.06700772792100906,
+              "maximumEffectiveGain": 26.314785779708156
+            }
+          ]
+        },
+        {
+          "epoch": 270,
+          "family": "batchnorm",
+          "inferenceDataLoss": 4.0480712778465853e-05,
+          "minibatchTrainingDataLoss": 2.096824763593039e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.0008902972844504263,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 1.5905873981108638,
+              "minimumKernelRowNorm": 1.0,
+              "maximumEffectiveGain": 3.2118396118508246
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 1.2794204119792405,
+              "minimumKernelRowNorm": 0.8390990866510091,
+              "maximumEffectiveGain": 14.955195323532159
+            }
+          ]
+        },
+        {
+          "epoch": 270,
+          "family": "batchnorm-l2",
+          "inferenceDataLoss": 0.00010917666550597724,
+          "minibatchTrainingDataLoss": 5.323020934647373e-05,
+          "maximumBatchGradientNormAtCheckpoint": 0.010322967379108363,
+          "layers": [
+            {
+              "layer": 0,
+              "medianKernelRowNorm": 0.3081068793886528,
+              "minimumKernelRowNorm": 0.0006021948571102081,
+              "maximumEffectiveGain": 17.30958768324036
+            },
+            {
+              "layer": 1,
+              "medianKernelRowNorm": 0.18333694963657876,
+              "minimumKernelRowNorm": 0.051839884370565414,
+              "maximumEffectiveGain": 27.951745368146835
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "experiment":"input-standardization-without-BatchNorm-followup",
+  "parent":"docs/image-regularization-protocol.json",
+  "status":"Exploratory follow-up explicitly requested after four-way test results were inspected. Parent artifacts preserved. No fresh blind-test claim.",
+  "dataSplit":"tests/fixtures/image-meaning-shift/split.json",
+  "seeds":[78123,78124,78125],"arms":["seen","unseen"],
+  "families":["scaled","scaled-l2"],
+  "normalization":{"method":"Per-feature training-only mean/std over unique photo-target rows. Same transform applied to train/validation/test. Minimum std0.001. Preserve the original CLIP branch.","initialization":"First dense weights/biases reparameterized to retain initial unscaled inference scores. No LayerNorm or BatchNorm.","l2":"True zero-centered L2 on transformed dense kernels, excluding biases. Coordinate scaling therefore changes the regularization prior; document that interaction."},
+  "fixed":{"learningRate":0.0002,"scaledL2":0.0001},
+  "learningRateGrid":[0.00002,0.0001,0.0002],
+  "selection":"Seed78123 across both arms: maximize sum of validation-selected first-choice counts, then minimize mean validation pairwise loss. Exact ties prefer smaller learning rate. L2 remains0.0001, isolating the learning-rate search; no new lambda sweep.",
+  "recipe":{"epochs":600,"batchSize":8,"maximumGradientNorm":1,"earlyStopping":false,"outputOnly":false,"beta1":0.9,"beta2":0.999,"epsilon":1e-8},
+  "checkpoints":"Complete600epochs. Save final and best validation first-choice checkpoint, then loss tie-break. No test-dependent retuning.",
+  "cohorts":"Fixed and validation-tuned learning rates for each family, three seeds, both arms. Reuse identical config fits. All fixed/tuned fits and settings frozen before scoring their test outcomes.",
+  "checks":"Same dense fitting/optimizer kernel as parent study. Finite differences on normalized parameters, initial-function preservation, frozen train-only transform, same-kernel eight-gallery overfit, independent JS native/folded inference. Original data unchanged.",
+  "acceptance":"Offline diagnostic only. Compare first-choice results as primary; lower pairwise loss alone is not evidence of better image selection. Same21testmeanings acrossseeds, not independent datasets."
+}

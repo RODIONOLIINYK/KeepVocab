@@ -1,0 +1,1001 @@
+{
+  "summaries": [
+    {
+      "arm": "seen",
+      "family": "baseline",
+      "strength": 0,
+      "selectedEpochs": [
+        6,
+        6,
+        5
+      ],
+      "selected": {
+        "train": {
+          "chosenAt1": 185.66666666666666,
+          "loss": 0.3198058467340719,
+          "galleryCrossEntropy": 0.8393567415200888,
+          "pairwiseAccuracy": 0.9924374636416523,
+          "brier": 0.08043902484135955
+        },
+        "validation": {
+          "chosenAt1": 21,
+          "loss": 0.3039592039969882,
+          "galleryCrossEntropy": 0.8380561089574585,
+          "pairwiseAccuracy": 1,
+          "brier": 0.0759019633181322
+        },
+        "test": {
+          "chosenAt1": 20,
+          "loss": 0.30213596544067806,
+          "galleryCrossEntropy": 0.8364930409874868,
+          "pairwiseAccuracy": 0.9880952380952381,
+          "brier": 0.07529581687503635
+        }
+      },
+      "last": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 4.3185235648186266e-7,
+          "galleryCrossEntropy": 0.000001584214862907556,
+          "pairwiseAccuracy": 1,
+          "brier": 9.652232058519654e-13
+        },
+        "validation": {
+          "chosenAt1": 18,
+          "loss": 0.5021042860575634,
+          "galleryCrossEntropy": 0.8154877877919421,
+          "pairwiseAccuracy": 0.876984126984127,
+          "brier": 0.10193609832483268
+        },
+        "test": {
+          "chosenAt1": 17.333333333333332,
+          "loss": 0.28760464033835115,
+          "galleryCrossEntropy": 0.9744216248135898,
+          "pairwiseAccuracy": 0.9523809523809522,
+          "brier": 0.04618309408924263
+        }
+      },
+      "selectedTestCounts": [
+        20,
+        20,
+        20
+      ],
+      "lastTestCounts": [
+        18,
+        17,
+        17
+      ]
+    },
+    {
+      "arm": "seen",
+      "family": "l2",
+      "strength": 0.0001,
+      "selectedEpochs": [
+        564,
+        569,
+        5
+      ],
+      "selected": {
+        "train": {
+          "chosenAt1": 189.33333333333334,
+          "loss": 0.10923551989002761,
+          "galleryCrossEntropy": 0.2855225047326832,
+          "pairwiseAccuracy": 0.997673065735893,
+          "brier": 0.027761234172017802
+        },
+        "validation": {
+          "chosenAt1": 21,
+          "loss": 0.1242924863393114,
+          "galleryCrossEntropy": 0.3463484426983309,
+          "pairwiseAccuracy": 1,
+          "brier": 0.03069256096407003
+        },
+        "test": {
+          "chosenAt1": 19,
+          "loss": 0.1687107940675989,
+          "galleryCrossEntropy": 0.43739144762820753,
+          "pairwiseAccuracy": 0.951058201058201,
+          "brier": 0.049925708774754475
+        }
+      },
+      "last": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 0.00012807198997586393,
+          "galleryCrossEntropy": 0.00045504927200072984,
+          "pairwiseAccuracy": 1,
+          "brier": 8.963894574314862e-8
+        },
+        "validation": {
+          "chosenAt1": 20.333333333333332,
+          "loss": 0.04137826868259122,
+          "galleryCrossEntropy": 0.11590267987932211,
+          "pairwiseAccuracy": 0.9894179894179893,
+          "brier": 0.011281984477795132
+        },
+        "test": {
+          "chosenAt1": 18.666666666666668,
+          "loss": 0.10590335735899571,
+          "galleryCrossEntropy": 0.24166732545710426,
+          "pairwiseAccuracy": 0.9391534391534391,
+          "brier": 0.038213559158805394
+        }
+      },
+      "selectedTestCounts": [
+        19,
+        18,
+        20
+      ],
+      "lastTestCounts": [
+        19,
+        18,
+        19
+      ]
+    },
+    {
+      "arm": "seen",
+      "family": "batchnorm",
+      "strength": 0,
+      "selectedEpochs": [
+        57,
+        74,
+        61
+      ],
+      "selected": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 0.0020388493571191634,
+          "galleryCrossEntropy": 0.00740196449902434,
+          "pairwiseAccuracy": 1,
+          "brier": 0.00000856611944056876
+        },
+        "validation": {
+          "chosenAt1": 21,
+          "loss": 0.04069178472634672,
+          "galleryCrossEntropy": 0.12457172288081031,
+          "pairwiseAccuracy": 1,
+          "brier": 0.00787953155364461
+        },
+        "test": {
+          "chosenAt1": 20,
+          "loss": 0.03727194797360024,
+          "galleryCrossEntropy": 0.113331657718572,
+          "pairwiseAccuracy": 0.9880952380952381,
+          "brier": 0.009318638144369031
+        }
+      },
+      "last": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 0.0000013671451484122612,
+          "galleryCrossEntropy": 0.000004882573694963382,
+          "pairwiseAccuracy": 1,
+          "brier": 3.7853244878782507e-11
+        },
+        "validation": {
+          "chosenAt1": 20,
+          "loss": 0.05457620574887154,
+          "galleryCrossEntropy": 0.14066187607342795,
+          "pairwiseAccuracy": 0.9722222222222223,
+          "brier": 0.017382434074092557
+        },
+        "test": {
+          "chosenAt1": 20.333333333333332,
+          "loss": 0.02387674747308614,
+          "galleryCrossEntropy": 0.07122209686802466,
+          "pairwiseAccuracy": 0.9841269841269842,
+          "brier": 0.007812930136468945
+        }
+      },
+      "selectedTestCounts": [
+        20,
+        20,
+        20
+      ],
+      "lastTestCounts": [
+        21,
+        20,
+        20
+      ]
+    },
+    {
+      "arm": "seen",
+      "family": "batchnorm-l2",
+      "strength": 0.0001,
+      "selectedEpochs": [
+        364,
+        491,
+        560
+      ],
+      "selected": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 0.00037532588335988023,
+          "galleryCrossEntropy": 0.0009514408980844081,
+          "pairwiseAccuracy": 1,
+          "brier": 0.00002679879529434646
+        },
+        "validation": {
+          "chosenAt1": 21,
+          "loss": 0.01334973647140453,
+          "galleryCrossEntropy": 0.04309889482088949,
+          "pairwiseAccuracy": 1,
+          "brier": 0.002123722298132028
+        },
+        "test": {
+          "chosenAt1": 19.333333333333332,
+          "loss": 0.10273241168159075,
+          "galleryCrossEntropy": 0.24441685074165367,
+          "pairwiseAccuracy": 0.9603174603174603,
+          "brier": 0.03171657886764
+        }
+      },
+      "last": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 0.000022076385562759298,
+          "galleryCrossEntropy": 0.00008130913293003456,
+          "pairwiseAccuracy": 1,
+          "brier": 1.1909535664087368e-8
+        },
+        "validation": {
+          "chosenAt1": 20.666666666666668,
+          "loss": 0.028434165061235753,
+          "galleryCrossEntropy": 0.08253027423322175,
+          "pairwiseAccuracy": 0.996031746031746,
+          "brier": 0.006784800232442409
+        },
+        "test": {
+          "chosenAt1": 19.333333333333332,
+          "loss": 0.12432310498579646,
+          "galleryCrossEntropy": 0.267305158708565,
+          "pairwiseAccuracy": 0.9523809523809522,
+          "brier": 0.03828021737581863
+        }
+      },
+      "selectedTestCounts": [
+        20,
+        19,
+        19
+      ],
+      "lastTestCounts": [
+        20,
+        19,
+        19
+      ]
+    },
+    {
+      "arm": "unseen",
+      "family": "baseline",
+      "strength": 0,
+      "selectedEpochs": [
+        7,
+        8,
+        6
+      ],
+      "selected": {
+        "train": {
+          "chosenAt1": 185.66666666666666,
+          "loss": 0.3065560790836338,
+          "galleryCrossEntropy": 0.8117583360331054,
+          "pairwiseAccuracy": 0.9886561954624783,
+          "brier": 0.07565398726068219
+        },
+        "validation": {
+          "chosenAt1": 21,
+          "loss": 0.2970234216131155,
+          "galleryCrossEntropy": 0.8223543460659334,
+          "pairwiseAccuracy": 1,
+          "brier": 0.07355129966666772
+        },
+        "test": {
+          "chosenAt1": 20,
+          "loss": 0.29869897752874613,
+          "galleryCrossEntropy": 0.828590102555172,
+          "pairwiseAccuracy": 0.9880952380952381,
+          "brier": 0.07440435998596812
+        }
+      },
+      "last": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 4.514958007183238e-7,
+          "galleryCrossEntropy": 0.0000016671832489581246,
+          "pairwiseAccuracy": 1,
+          "brier": 9.636469009668504e-13
+        },
+        "validation": {
+          "chosenAt1": 18.666666666666668,
+          "loss": 0.2148003313473964,
+          "galleryCrossEntropy": 0.38507140814149854,
+          "pairwiseAccuracy": 0.9365079365079364,
+          "brier": 0.056706801252187224
+        },
+        "test": {
+          "chosenAt1": 17.333333333333332,
+          "loss": 0.30372096813857113,
+          "galleryCrossEntropy": 1.023983371552349,
+          "pairwiseAccuracy": 0.9484126984126983,
+          "brier": 0.044467135073542656
+        }
+      },
+      "selectedTestCounts": [
+        20,
+        20,
+        20
+      ],
+      "lastTestCounts": [
+        18,
+        17,
+        17
+      ]
+    },
+    {
+      "arm": "unseen",
+      "family": "l2",
+      "strength": 0.0001,
+      "selectedEpochs": [
+        577,
+        597,
+        578
+      ],
+      "selected": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 0.0001299912568700763,
+          "galleryCrossEntropy": 0.00046635020964040327,
+          "pairwiseAccuracy": 1,
+          "brier": 8.945718936789713e-8
+        },
+        "validation": {
+          "chosenAt1": 21,
+          "loss": 0.024160963704902737,
+          "galleryCrossEntropy": 0.07612709506995217,
+          "pairwiseAccuracy": 1,
+          "brier": 0.005483905898770992
+        },
+        "test": {
+          "chosenAt1": 18.333333333333332,
+          "loss": 0.12442440589091948,
+          "galleryCrossEntropy": 0.2727369199798755,
+          "pairwiseAccuracy": 0.9325396825396824,
+          "brier": 0.04429083853034336
+        }
+      },
+      "last": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 0.00012747938620561998,
+          "galleryCrossEntropy": 0.0004567787313477731,
+          "pairwiseAccuracy": 1,
+          "brier": 8.634951569709952e-8
+        },
+        "validation": {
+          "chosenAt1": 21,
+          "loss": 0.02483100350498611,
+          "galleryCrossEntropy": 0.07744750992370537,
+          "pairwiseAccuracy": 1,
+          "brier": 0.005739586058536211
+        },
+        "test": {
+          "chosenAt1": 18.333333333333332,
+          "loss": 0.12786215226088,
+          "galleryCrossEntropy": 0.2769691598867698,
+          "pairwiseAccuracy": 0.9325396825396824,
+          "brier": 0.04522844780330637
+        }
+      },
+      "selectedTestCounts": [
+        19,
+        18,
+        18
+      ],
+      "lastTestCounts": [
+        19,
+        18,
+        18
+      ]
+    },
+    {
+      "arm": "unseen",
+      "family": "batchnorm",
+      "strength": 0,
+      "selectedEpochs": [
+        512,
+        57,
+        23
+      ],
+      "selected": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 0.007541164891227889,
+          "galleryCrossEntropy": 0.026749501743890954,
+          "pairwiseAccuracy": 1,
+          "brier": 0.00021843992843220954
+        },
+        "validation": {
+          "chosenAt1": 21,
+          "loss": 0.050717615234258266,
+          "galleryCrossEntropy": 0.16044268975392137,
+          "pairwiseAccuracy": 1,
+          "brier": 0.009587207224217435
+        },
+        "test": {
+          "chosenAt1": 20.333333333333332,
+          "loss": 0.05895214792355819,
+          "galleryCrossEntropy": 0.1626718403170761,
+          "pairwiseAccuracy": 0.9801587301587302,
+          "brier": 0.01600521690252313
+        }
+      },
+      "last": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 0.000001303268928922666,
+          "galleryCrossEntropy": 0.0000046377993107711355,
+          "pairwiseAccuracy": 1,
+          "brier": 2.3406410948621075e-11
+        },
+        "validation": {
+          "chosenAt1": 19.333333333333332,
+          "loss": 0.09599357330740536,
+          "galleryCrossEntropy": 0.22300670250348312,
+          "pairwiseAccuracy": 0.9616402116402116,
+          "brier": 0.02522367800789807
+        },
+        "test": {
+          "chosenAt1": 20.333333333333332,
+          "loss": 0.04669567161011268,
+          "galleryCrossEntropy": 0.11873949234101999,
+          "pairwiseAccuracy": 0.9801587301587302,
+          "brier": 0.015083023344007298
+        }
+      },
+      "selectedTestCounts": [
+        20,
+        20,
+        21
+      ],
+      "lastTestCounts": [
+        20,
+        20,
+        21
+      ]
+    },
+    {
+      "arm": "unseen",
+      "family": "batchnorm-l2",
+      "strength": 0.0001,
+      "selectedEpochs": [
+        277,
+        367,
+        24
+      ],
+      "selected": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 0.006305498790235037,
+          "galleryCrossEntropy": 0.022412284045190068,
+          "pairwiseAccuracy": 1,
+          "brier": 0.00017785787993558077
+        },
+        "validation": {
+          "chosenAt1": 21,
+          "loss": 0.035029874368644846,
+          "galleryCrossEntropy": 0.11277194313775012,
+          "pairwiseAccuracy": 1,
+          "brier": 0.00611803712942055
+        },
+        "test": {
+          "chosenAt1": 20.333333333333332,
+          "loss": 0.09086332449063339,
+          "galleryCrossEntropy": 0.19676591044616287,
+          "pairwiseAccuracy": 0.9722222222222222,
+          "brier": 0.02420368124463256
+        }
+      },
+      "last": {
+        "train": {
+          "chosenAt1": 191,
+          "loss": 0.000016478593090862877,
+          "galleryCrossEntropy": 0.000059556267519910064,
+          "pairwiseAccuracy": 1,
+          "brier": 2.4461507481110393e-9
+        },
+        "validation": {
+          "chosenAt1": 19.333333333333332,
+          "loss": 0.09204013320194794,
+          "galleryCrossEntropy": 0.27960591621653436,
+          "pairwiseAccuracy": 0.9682539682539684,
+          "brier": 0.0250832816870372
+        },
+        "test": {
+          "chosenAt1": 20,
+          "loss": 0.12417041107178202,
+          "galleryCrossEntropy": 0.25885439107252184,
+          "pairwiseAccuracy": 0.9642857142857143,
+          "brier": 0.031191979149655786
+        }
+      },
+      "selectedTestCounts": [
+        20,
+        20,
+        21
+      ],
+      "lastTestCounts": [
+        20,
+        20,
+        20
+      ]
+    }
+  ],
+  "paired": [
+    {
+      "arm": "seen",
+      "family": "baseline",
+      "checkpoint": "selected",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 0,
+      "worsened": 0,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0,
+          "lower95": 0,
+          "upper95": 0
+        },
+        "loss": {
+          "meanDifference": 0,
+          "lower95": 0,
+          "upper95": 0
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "seen",
+      "family": "baseline",
+      "checkpoint": "last",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 0,
+      "worsened": 0,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0,
+          "lower95": 0,
+          "upper95": 0
+        },
+        "loss": {
+          "meanDifference": 0,
+          "lower95": 0,
+          "upper95": 0
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "seen",
+      "family": "l2",
+      "checkpoint": "selected",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 0,
+      "worsened": 2,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": -0.047619047619047616,
+          "lower95": -0.126984126984127,
+          "upper95": 0
+        },
+        "loss": {
+          "meanDifference": 0.13342517137307913,
+          "lower95": 0.04531338427531154,
+          "upper95": 0.19265314958250887
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "seen",
+      "family": "l2",
+      "checkpoint": "last",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 3,
+      "worsened": 1,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0.0634920634920635,
+          "lower95": -0.09523809523809523,
+          "upper95": 0.22222222222222224
+        },
+        "loss": {
+          "meanDifference": 0.1817012829793555,
+          "lower95": -0.12737083598979795,
+          "upper95": 0.5447393853320874
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "seen",
+      "family": "batchnorm",
+      "checkpoint": "selected",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 1,
+      "worsened": 1,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0,
+          "lower95": -0.14285714285714285,
+          "upper95": 0.14285714285714285
+        },
+        "loss": {
+          "meanDifference": 0.26486401746707783,
+          "lower95": 0.21985688978519508,
+          "upper95": 0.31137797132409667
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "seen",
+      "family": "batchnorm",
+      "checkpoint": "last",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 4,
+      "worsened": 1,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0.14285714285714285,
+          "lower95": -0.01587301587301588,
+          "upper95": 0.3174603174603175
+        },
+        "loss": {
+          "meanDifference": 0.263727892865265,
+          "lower95": 0.00408434039921253,
+          "upper95": 0.6298391448116863
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "seen",
+      "family": "batchnorm-l2",
+      "checkpoint": "selected",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 1,
+      "worsened": 2,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": -0.03174603174603176,
+          "lower95": -0.15873015873015875,
+          "upper95": 0.07936507936507936
+        },
+        "loss": {
+          "meanDifference": 0.19940355375908728,
+          "lower95": 0.03745887133697545,
+          "upper95": 0.30243098612284325
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "seen",
+      "family": "batchnorm-l2",
+      "checkpoint": "last",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 4,
+      "worsened": 1,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0.09523809523809523,
+          "lower95": -0.07936507936507937,
+          "upper95": 0.2698412698412698
+        },
+        "loss": {
+          "meanDifference": 0.16328153535255474,
+          "lower95": -0.18842872027241725,
+          "upper95": 0.569673516546186
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "unseen",
+      "family": "baseline",
+      "checkpoint": "selected",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 0,
+      "worsened": 0,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0,
+          "lower95": 0,
+          "upper95": 0
+        },
+        "loss": {
+          "meanDifference": 0,
+          "lower95": 0,
+          "upper95": 0
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "unseen",
+      "family": "baseline",
+      "checkpoint": "last",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 0,
+      "worsened": 0,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0,
+          "lower95": 0,
+          "upper95": 0
+        },
+        "loss": {
+          "meanDifference": 0,
+          "lower95": 0,
+          "upper95": 0
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "unseen",
+      "family": "l2",
+      "checkpoint": "selected",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 1,
+      "worsened": 2,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": -0.07936507936507937,
+          "lower95": -0.22222222222222224,
+          "upper95": 0.031746031746031744
+        },
+        "loss": {
+          "meanDifference": 0.17427457163782661,
+          "lower95": -0.002254140065707196,
+          "upper95": 0.2876696888708729
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "unseen",
+      "family": "l2",
+      "checkpoint": "last",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 3,
+      "worsened": 1,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0.047619047619047616,
+          "lower95": -0.06349206349206349,
+          "upper95": 0.17460317460317462
+        },
+        "loss": {
+          "meanDifference": 0.17585881587769112,
+          "lower95": -0.16645065155158778,
+          "upper95": 0.5531776946248402
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "unseen",
+      "family": "batchnorm",
+      "checkpoint": "selected",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 1,
+      "worsened": 1,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0.01587301587301587,
+          "lower95": -0.09523809523809523,
+          "upper95": 0.14285714285714285
+        },
+        "loss": {
+          "meanDifference": 0.23974682960518792,
+          "lower95": 0.17315563680060328,
+          "upper95": 0.297184465615062
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "unseen",
+      "family": "batchnorm",
+      "checkpoint": "last",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 4,
+      "worsened": 1,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0.14285714285714285,
+          "lower95": 2.64338815386942e-18,
+          "upper95": 0.3015873015873016
+        },
+        "loss": {
+          "meanDifference": 0.25702529652845846,
+          "lower95": -0.03503497428224076,
+          "upper95": 0.6539651350157712
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "unseen",
+      "family": "batchnorm-l2",
+      "checkpoint": "selected",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 1,
+      "worsened": 1,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0.01587301587301587,
+          "lower95": -0.09523809523809523,
+          "upper95": 0.14285714285714285
+        },
+        "loss": {
+          "meanDifference": 0.20783565303811274,
+          "lower95": 0.0607235770492694,
+          "upper95": 0.3035601965439377
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    },
+    {
+      "arm": "unseen",
+      "family": "batchnorm-l2",
+      "checkpoint": "last",
+      "meanings": 21,
+      "galleries": 21,
+      "improved": 4,
+      "worsened": 1,
+      "exactDiscordanceP": null,
+      "metrics": {
+        "accuracy": {
+          "meanDifference": 0.126984126984127,
+          "lower95": -0.03174603174603174,
+          "upper95": 0.30158730158730157
+        },
+        "loss": {
+          "meanDifference": 0.17955055706678905,
+          "lower95": -0.21811759184346025,
+          "upper95": 0.618699903437872
+        }
+      },
+      "bootstrapSamples": 10000,
+      "positiveDifferenceFavors": "after",
+      "unit": "meaning",
+      "noObservedDiscordance": null,
+      "zeroDiscordanceUpper95": null,
+      "zeroDiscordanceCaveat": "The bound assumes independent sampled meanings and concerns an unseen discordance rate; it is not a population guarantee for this curated dataset. A degenerate bootstrap interval does not establish equivalence.",
+      "note": "Conditional paired regression comparison, not proof of population causality. Seed-averaged rows; same21meanings acrossseeds, not63independentexamples. Degenerate intervals do not prove equivalence."
+    }
+  ],
+  "clipCorrect": 20,
+  "testGalleries": 21,
+  "activated": false
+}

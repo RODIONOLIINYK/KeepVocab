@@ -1,0 +1,254 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "arm": "seen",
+      "strength": 0,
+      "gradient": {
+        "passed": true,
+        "loss": 0.3914261678321038,
+        "checks": [
+          {
+            "parameter": "w0",
+            "index": 1467,
+            "analytic": -2.761372466719546,
+            "numeric": -2.761372476231538,
+            "absoluteError": 9.511992082877896e-09
+          },
+          {
+            "parameter": "w0",
+            "index": 1385,
+            "analytic": -2.1217972718792444,
+            "numeric": -2.1217972758780235,
+            "absoluteError": 3.998779085634396e-09
+          },
+          {
+            "parameter": "w1",
+            "index": 0,
+            "analytic": -0.10567024197058476,
+            "numeric": -0.10567024197050133,
+            "absoluteError": 8.343326030058051e-14
+          },
+          {
+            "parameter": "w1",
+            "index": 6,
+            "analytic": 0.04388182667985474,
+            "numeric": 0.043881826686242846,
+            "absoluteError": 6.388105322496784e-12
+          },
+          {
+            "parameter": "w2",
+            "index": 0,
+            "analytic": -0.10567024197058476,
+            "numeric": -0.10567024197050133,
+            "absoluteError": 8.343326030058051e-14
+          },
+          {
+            "parameter": "w2",
+            "index": 15,
+            "analytic": -0.0503311635540491,
+            "numeric": -0.05033116355079858,
+            "absoluteError": 3.250524849285341e-12
+          }
+        ],
+        "epsilon": 1e-05,
+        "absoluteTolerance": 2e-05,
+        "maximumAbsoluteError": 9.511992082877896e-09,
+        "skippedBoundaries": 0,
+        "note": "Float64 shadow checks differentiability; actual training uses Float32 parameters/activations."
+      }
+    },
+    {
+      "arm": "seen",
+      "strength": 0.0001,
+      "gradient": {
+        "passed": true,
+        "loss": 0.3929419617296984,
+        "checks": [
+          {
+            "parameter": "w0",
+            "index": 1467,
+            "analytic": -2.761372466719546,
+            "numeric": -2.761372476231538,
+            "absoluteError": 9.511992082877896e-09
+          },
+          {
+            "parameter": "w0",
+            "index": 1385,
+            "analytic": -2.1217972718792444,
+            "numeric": -2.1217972758780235,
+            "absoluteError": 3.998779085634396e-09
+          },
+          {
+            "parameter": "w1",
+            "index": 0,
+            "analytic": -0.10557024197058476,
+            "numeric": -0.10557024197055397,
+            "absoluteError": 3.079481114554028e-14
+          },
+          {
+            "parameter": "w1",
+            "index": 6,
+            "analytic": 0.04388182667985474,
+            "numeric": 0.043881826686242846,
+            "absoluteError": 6.388105322496784e-12
+          },
+          {
+            "parameter": "w2",
+            "index": 0,
+            "analytic": -0.10557024197058476,
+            "numeric": -0.10557024197055397,
+            "absoluteError": 3.079481114554028e-14
+          },
+          {
+            "parameter": "w2",
+            "index": 15,
+            "analytic": -0.0503311635540491,
+            "numeric": -0.05033116355079858,
+            "absoluteError": 3.250524849285341e-12
+          }
+        ],
+        "epsilon": 1e-05,
+        "absoluteTolerance": 2e-05,
+        "maximumAbsoluteError": 9.511992082877896e-09,
+        "skippedBoundaries": 0,
+        "note": "Float64 shadow checks differentiability; actual training uses Float32 parameters/activations."
+      }
+    },
+    {
+      "arm": "seen",
+      "initialRawScoreError": 1.4901161193847656e-08,
+      "initialFoldError": 1.4901161193847656e-08,
+      "fitPhotoMeanings": 888,
+      "minimumScale": 0.001,
+      "maximumScale": 0.11482849328526246,
+      "floorCoordinates": 352
+    },
+    {
+      "arm": "unseen",
+      "strength": 0,
+      "gradient": {
+        "passed": true,
+        "loss": 0.39142616717999434,
+        "checks": [
+          {
+            "parameter": "w0",
+            "index": 1467,
+            "analytic": -2.6685865797682964,
+            "numeric": -2.66858658835023,
+            "absoluteError": 8.58193383024286e-09
+          },
+          {
+            "parameter": "w0",
+            "index": 1385,
+            "analytic": -2.182174143205018,
+            "numeric": -2.182174147558058,
+            "absoluteError": 4.3530401505620375e-09
+          },
+          {
+            "parameter": "w1",
+            "index": 0,
+            "analytic": -0.10567024241886984,
+            "numeric": -0.10567024242291721,
+            "absoluteError": 4.0473735474222394e-12
+          },
+          {
+            "parameter": "w1",
+            "index": 6,
+            "analytic": 0.043881827057821676,
+            "numeric": 0.043881827055392,
+            "absoluteError": 2.4296745171348277e-12
+          },
+          {
+            "parameter": "w2",
+            "index": 0,
+            "analytic": -0.10567024241886984,
+            "numeric": -0.10567024242291721,
+            "absoluteError": 4.0473735474222394e-12
+          },
+          {
+            "parameter": "w2",
+            "index": 15,
+            "analytic": -0.0503311641960777,
+            "numeric": -0.05033116419750349,
+            "absoluteError": 1.4257900415870495e-12
+          }
+        ],
+        "epsilon": 1e-05,
+        "absoluteTolerance": 2e-05,
+        "maximumAbsoluteError": 8.58193383024286e-09,
+        "skippedBoundaries": 0,
+        "note": "Float64 shadow checks differentiability; actual training uses Float32 parameters/activations."
+      }
+    },
+    {
+      "arm": "unseen",
+      "strength": 0.0001,
+      "gradient": {
+        "passed": true,
+        "loss": 0.39294195348753214,
+        "checks": [
+          {
+            "parameter": "w0",
+            "index": 1467,
+            "analytic": -2.6685865797682964,
+            "numeric": -2.66858658835023,
+            "absoluteError": 8.58193383024286e-09
+          },
+          {
+            "parameter": "w0",
+            "index": 1385,
+            "analytic": -2.182174143205018,
+            "numeric": -2.182174147558058,
+            "absoluteError": 4.3530401505620375e-09
+          },
+          {
+            "parameter": "w1",
+            "index": 0,
+            "analytic": -0.10557024241886984,
+            "numeric": -0.10557024242296985,
+            "absoluteError": 4.10001199657728e-12
+          },
+          {
+            "parameter": "w1",
+            "index": 6,
+            "analytic": 0.043881827057821676,
+            "numeric": 0.043881827055392,
+            "absoluteError": 2.4296745171348277e-12
+          },
+          {
+            "parameter": "w2",
+            "index": 0,
+            "analytic": -0.10557024241886984,
+            "numeric": -0.10557024242296985,
+            "absoluteError": 4.10001199657728e-12
+          },
+          {
+            "parameter": "w2",
+            "index": 15,
+            "analytic": -0.0503311641960777,
+            "numeric": -0.05033116419750349,
+            "absoluteError": 1.4257900415870495e-12
+          }
+        ],
+        "epsilon": 1e-05,
+        "absoluteTolerance": 2e-05,
+        "maximumAbsoluteError": 8.58193383024286e-09,
+        "skippedBoundaries": 0,
+        "note": "Float64 shadow checks differentiability; actual training uses Float32 parameters/activations."
+      }
+    },
+    {
+      "arm": "unseen",
+      "initialRawScoreError": 7.450580596923828e-09,
+      "initialFoldError": 7.450580596923828e-09,
+      "fitPhotoMeanings": 889,
+      "minimumScale": 0.001,
+      "maximumScale": 0.11544943881043818,
+      "floorCoordinates": 351
+    }
+  ],
+  "protocolSha256": "f9041b25205c09f569294c795e2db32e6763cd4fb2ab3ff3070ee36401d41795",
+  "kernelSha256": "caa8fa1dcccf42531855bd355a522cdeb280efb30fb24711221d2ff678138c04",
+  "baseKernelSha256": "3ceea8f2008e3fcb1eae2b50865e3b4319def41926c367be46bda5ef68adf56c"
+}

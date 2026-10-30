@@ -1,0 +1,1452 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "78123-seen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.3660736426727392,
+      "galleryCrossEntropy": 0.9352912047168218,
+      "brier": 0.0986033395510879,
+      "pairwiseAccuracy": 0.9890924956369982
+    },
+    {
+      "name": "78123-seen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.3292228884270604,
+      "galleryCrossEntropy": 0.9005815495969747,
+      "brier": 0.0836219025875603,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.3261901315296773,
+      "galleryCrossEntropy": 0.8935979458022396,
+      "brier": 0.08299034578006122,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78123-seen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 3.5855825397100183e-9,
+      "galleryCrossEntropy": 1.3123017804481848e-8,
+      "brier": 4.793406310638548e-17,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 19,
+      "loss": 0.12261462717990539,
+      "galleryCrossEntropy": 0.31647586401014777,
+      "brier": 0.03404992871761713,
+      "pairwiseAccuracy": 0.9603174603174602
+    },
+    {
+      "name": "78123-seen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.12448327820735076,
+      "galleryCrossEntropy": 0.47884768469162386,
+      "brier": 0.028503145867743013,
+      "pairwiseAccuracy": 0.9603174603174602
+    },
+    {
+      "name": "78123-unseen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.3677927601094962,
+      "galleryCrossEntropy": 0.9402617569049367,
+      "brier": 0.09922032486168199,
+      "pairwiseAccuracy": 0.9856020942408377
+    },
+    {
+      "name": "78123-unseen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.3292228891528049,
+      "galleryCrossEntropy": 0.9005815509682992,
+      "brier": 0.08362190288617406,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.32619013170082684,
+      "galleryCrossEntropy": 0.8935979464554131,
+      "brier": 0.0829903457600836,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78123-unseen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 1.4804823110833882e-9,
+      "galleryCrossEntropy": 5.342479956972456e-9,
+      "brier": 9.053929354909288e-18,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.04468411186012816,
+      "galleryCrossEntropy": 0.126086876595536,
+      "brier": 0.013817292700568005,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78123-unseen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.19519409727281967,
+      "galleryCrossEntropy": 0.6651848804223389,
+      "brier": 0.043554184468394874,
+      "pairwiseAccuracy": 0.9484126984126983
+    },
+    {
+      "name": "78124-seen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.3660736426727392,
+      "galleryCrossEntropy": 0.9352912047168218,
+      "brier": 0.0986033395510879,
+      "pairwiseAccuracy": 0.9890924956369982
+    },
+    {
+      "name": "78124-seen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.3292228884270604,
+      "galleryCrossEntropy": 0.9005815495969747,
+      "brier": 0.0836219025875603,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.3261901315296773,
+      "galleryCrossEntropy": 0.8935979458022396,
+      "brier": 0.08299034578006122,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78124-seen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 2.7761665110285084e-9,
+      "galleryCrossEntropy": 1.0143351485100457e-8,
+      "brier": 4.1721935940919126e-17,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 19,
+      "loss": 0.06402702274845333,
+      "galleryCrossEntropy": 0.19052396018810133,
+      "brier": 0.020356898642922644,
+      "pairwiseAccuracy": 0.9722222222222221
+    },
+    {
+      "name": "78124-seen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.1137500637950857,
+      "galleryCrossEntropy": 0.4234308115237249,
+      "brier": 0.026224103824558125,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78124-unseen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.3677927601094962,
+      "galleryCrossEntropy": 0.9402617569049367,
+      "brier": 0.09922032486168199,
+      "pairwiseAccuracy": 0.9856020942408377
+    },
+    {
+      "name": "78124-unseen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.3292228891528049,
+      "galleryCrossEntropy": 0.9005815509682992,
+      "brier": 0.08362190288617406,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.32619013170082684,
+      "galleryCrossEntropy": 0.8935979464554131,
+      "brier": 0.0829903457600836,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78124-unseen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 2.733944850743785e-9,
+      "galleryCrossEntropy": 1.0039457163217195e-8,
+      "brier": 3.484748912166999e-17,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.04277182668062466,
+      "galleryCrossEntropy": 0.12089135601720426,
+      "brier": 0.013419477326294962,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78124-unseen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.15418488640899186,
+      "galleryCrossEntropy": 0.5158329864743894,
+      "brier": 0.03729508830498799,
+      "pairwiseAccuracy": 0.9365079365079364
+    },
+    {
+      "name": "78125-seen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.3660736426727392,
+      "galleryCrossEntropy": 0.9352912047168218,
+      "brier": 0.0986033395510879,
+      "pairwiseAccuracy": 0.9890924956369982
+    },
+    {
+      "name": "78125-seen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.3292228884270604,
+      "galleryCrossEntropy": 0.9005815495969747,
+      "brier": 0.0836219025875603,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.3261901315296773,
+      "galleryCrossEntropy": 0.8935979458022396,
+      "brier": 0.08299034578006122,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78125-seen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 6.075618727484703e-10,
+      "galleryCrossEntropy": 2.3680575173833555e-9,
+      "brier": 1.088012853060998e-17,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.07185203253879964,
+      "galleryCrossEntropy": 0.21289558132208836,
+      "brier": 0.01634040766285355,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78125-seen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.07983748216624689,
+      "galleryCrossEntropy": 0.3129067561099821,
+      "brier": 0.022725126728788063,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78125-unseen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.20409856154686568,
+      "galleryCrossEntropy": 0.5728992520828868,
+      "brier": 0.04255943996011994,
+      "pairwiseAccuracy": 0.9882198952879581
+    },
+    {
+      "name": "78125-unseen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.2180601978185363,
+      "galleryCrossEntropy": 0.6260165472226702,
+      "brier": 0.04912594855577008,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-scaled-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.20896689467431562,
+      "galleryCrossEntropy": 0.6137929544196238,
+      "brier": 0.0456482984962906,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78125-unseen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 3.0949889212090833e-9,
+      "galleryCrossEntropy": 1.1300594521809629e-8,
+      "brier": 3.557553919180788e-17,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.05362517385041543,
+      "galleryCrossEntropy": 0.157212895692607,
+      "brier": 0.014898156431842316,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78125-unseen-scaled-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.14845633580276174,
+      "galleryCrossEntropy": 0.5151502789578165,
+      "brier": 0.03241068055085939,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78123-seen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 186,
+      "loss": 0.23679290758393254,
+      "galleryCrossEntropy": 0.6505947213829029,
+      "brier": 0.051907090739433816,
+      "pairwiseAccuracy": 0.9930191972076788
+    },
+    {
+      "name": "78123-seen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.23581403040389232,
+      "galleryCrossEntropy": 0.6683765754179424,
+      "brier": 0.054853915826576054,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.23009166770695785,
+      "galleryCrossEntropy": 0.6616755283895127,
+      "brier": 0.052526183952421354,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78123-seen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 3.9936875675100656e-7,
+      "galleryCrossEntropy": 0.0000014724363036767596,
+      "brier": 6.348337156886427e-13,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 19,
+      "loss": 0.10165115564791538,
+      "galleryCrossEntropy": 0.26395156937639375,
+      "brier": 0.026728040182447656,
+      "pairwiseAccuracy": 0.9722222222222221
+    },
+    {
+      "name": "78123-seen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.11473744953750935,
+      "galleryCrossEntropy": 0.3904967135121443,
+      "brier": 0.029461343206411635,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78123-unseen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 186,
+      "loss": 0.17279633546672218,
+      "galleryCrossEntropy": 0.49648823150928717,
+      "brier": 0.03286750046096067,
+      "pairwiseAccuracy": 0.993455497382199
+    },
+    {
+      "name": "78123-unseen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.19016063091724358,
+      "galleryCrossEntropy": 0.5544836451896713,
+      "brier": 0.040925093603370204,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.18942189013406546,
+      "galleryCrossEntropy": 0.5572070987534496,
+      "brier": 0.04138269542858476,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78123-unseen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 4.023055249972965e-7,
+      "galleryCrossEntropy": 0.0000014840960085014365,
+      "brier": 5.102427528565749e-13,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.06439515625040282,
+      "galleryCrossEntropy": 0.15903436294222323,
+      "brier": 0.01833297232099735,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78123-unseen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.12136576914055297,
+      "galleryCrossEntropy": 0.3993174304654899,
+      "brier": 0.03333572552750337,
+      "pairwiseAccuracy": 0.9484126984126983
+    },
+    {
+      "name": "78124-seen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 186,
+      "loss": 0.23634830150960126,
+      "galleryCrossEntropy": 0.6493270919221917,
+      "brier": 0.051798136135531685,
+      "pairwiseAccuracy": 0.9930191972076788
+    },
+    {
+      "name": "78124-seen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.23476425599504716,
+      "galleryCrossEntropy": 0.6659696143669633,
+      "brier": 0.05447292906652482,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.22963201646240722,
+      "galleryCrossEntropy": 0.6603848324554092,
+      "brier": 0.05242837253713453,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78124-seen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 3.1385813882438604e-7,
+      "galleryCrossEntropy": 0.0000011432364605845218,
+      "brier": 6.49794066766238e-13,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.07516483548537624,
+      "galleryCrossEntropy": 0.20301404556938346,
+      "brier": 0.02181977161153905,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78124-seen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.10068022351591138,
+      "galleryCrossEntropy": 0.3606021218086537,
+      "brier": 0.027120194969306056,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78124-unseen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 188,
+      "loss": 0.14837941283999578,
+      "galleryCrossEntropy": 0.43270401781065815,
+      "brier": 0.02668297305501155,
+      "pairwiseAccuracy": 0.9960732984293194
+    },
+    {
+      "name": "78124-unseen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.1725237749326626,
+      "galleryCrossEntropy": 0.5055238401541187,
+      "brier": 0.03664544916887629,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.1730322773800054,
+      "galleryCrossEntropy": 0.5111514968306017,
+      "brier": 0.03791529076603641,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78124-unseen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 3.055739097583071e-7,
+      "galleryCrossEntropy": 0.0000011168907446557133,
+      "brier": 4.4855214296428067e-13,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.04328129717557729,
+      "galleryCrossEntropy": 0.12679228157950673,
+      "brier": 0.013202198677080144,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78124-unseen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 18,
+      "loss": 0.12485886050485331,
+      "galleryCrossEntropy": 0.3975610598879247,
+      "brier": 0.03645419712932631,
+      "pairwiseAccuracy": 0.9365079365079364
+    },
+    {
+      "name": "78125-seen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 186,
+      "loss": 0.23549989197800675,
+      "galleryCrossEntropy": 0.6474114337793986,
+      "brier": 0.05152666984640536,
+      "pairwiseAccuracy": 0.9930191972076788
+    },
+    {
+      "name": "78125-seen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.2343990863862318,
+      "galleryCrossEntropy": 0.6647333071335388,
+      "brier": 0.05445850543536056,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.22886099885241434,
+      "galleryCrossEntropy": 0.6585622035946259,
+      "brier": 0.052187822714309634,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78125-seen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 3.530166384159212e-7,
+      "galleryCrossEntropy": 0.0000012986786063898845,
+      "brier": 8.267105261079382e-13,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.08919624467690866,
+      "galleryCrossEntropy": 0.24046667581411413,
+      "brier": 0.0226102802125814,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78125-seen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.10539329662006199,
+      "galleryCrossEntropy": 0.39814650322763956,
+      "brier": 0.025569254284132086,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78125-unseen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 186,
+      "loss": 0.157851495221375,
+      "galleryCrossEntropy": 0.4576504768992936,
+      "brier": 0.029034851586151857,
+      "pairwiseAccuracy": 0.993455497382199
+    },
+    {
+      "name": "78125-unseen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.17828154599763477,
+      "galleryCrossEntropy": 0.5215001478065655,
+      "brier": 0.038044874560335305,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-scaled-2e-05",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.1777514098220664,
+      "galleryCrossEntropy": 0.5252969247166475,
+      "brier": 0.03867060424177504,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78125-unseen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 3.529454503355803e-7,
+      "galleryCrossEntropy": 0.000001298886222647985,
+      "brier": 7.491242519789781e-13,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.05860722192205853,
+      "galleryCrossEntropy": 0.15668618610160673,
+      "brier": 0.016881201147594033,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78125-unseen-scaled-2e-05",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.1318034951097764,
+      "galleryCrossEntropy": 0.4400736132260772,
+      "brier": 0.03332633927232682,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.3660736426727392,
+      "galleryCrossEntropy": 0.9352912047168218,
+      "brier": 0.0986033395510879,
+      "pairwiseAccuracy": 0.9890924956369982
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.3292228884270604,
+      "galleryCrossEntropy": 0.9005815495969747,
+      "brier": 0.0836219025875603,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.3261901315296773,
+      "galleryCrossEntropy": 0.8935979458022396,
+      "brier": 0.08299034578006122,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000008684121202482816,
+      "galleryCrossEntropy": 0.00003061679280000035,
+      "brier": 3.526584846495821e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.032695699752720846,
+      "galleryCrossEntropy": 0.0947274562912491,
+      "brier": 0.010557458554250608,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.08397709366093938,
+      "galleryCrossEntropy": 0.25279830646509854,
+      "brier": 0.023991942165864817,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000010696233643581696,
+      "galleryCrossEntropy": 0.00003902807491301122,
+      "brier": 7.574065740588581e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.01303675111116629,
+      "galleryCrossEntropy": 0.04231881751517232,
+      "brier": 0.002390451826468759,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.08718171047875409,
+      "galleryCrossEntropy": 0.24594804838142995,
+      "brier": 0.02845129616573703,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000009180456958293385,
+      "galleryCrossEntropy": 0.000032694382999936666,
+      "brier": 3.498848643813024e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.014931570037858928,
+      "galleryCrossEntropy": 0.04902531330840597,
+      "brier": 0.0031263890130797025,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.07374261933527301,
+      "galleryCrossEntropy": 0.20794473499244123,
+      "brier": 0.023996716556139382,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00006098000327868334,
+      "galleryCrossEntropy": 0.00023851867531898772,
+      "brier": 0.0000013500393484674874,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.027188672383548284,
+      "galleryCrossEntropy": 0.08017990879978412,
+      "brier": 0.006754682633260564,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.06891162873725376,
+      "galleryCrossEntropy": 0.2286339546846426,
+      "brier": 0.02170425018319569,
+      "pairwiseAccuracy": 0.9761904761904762
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000009244581187897408,
+      "galleryCrossEntropy": 0.000032769190901064566,
+      "brier": 3.7821265349442625e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.03623046286309517,
+      "galleryCrossEntropy": 0.10456326671463645,
+      "brier": 0.011611475763326433,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.07814214051826554,
+      "galleryCrossEntropy": 0.25222122730075763,
+      "brier": 0.02313456387671353,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000011300155756175303,
+      "galleryCrossEntropy": 0.000040944179863835285,
+      "brier": 7.434015616357751e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.014118849189248732,
+      "galleryCrossEntropy": 0.04683569429476709,
+      "brier": 0.002695022048717314,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.08192155091413236,
+      "galleryCrossEntropy": 0.2275735903832022,
+      "brier": 0.026619795821713303,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000008747822455205382,
+      "galleryCrossEntropy": 0.00003116595419166543,
+      "brier": 3.5052958175745194e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.014321905422438733,
+      "galleryCrossEntropy": 0.046970624837463205,
+      "brier": 0.003407008917499738,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.0866433697326372,
+      "galleryCrossEntropy": 0.2158691604274904,
+      "brier": 0.028867331941125028,
+      "pairwiseAccuracy": 0.9404761904761905
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.3660736426727392,
+      "galleryCrossEntropy": 0.9352912047168218,
+      "brier": 0.0986033395510879,
+      "pairwiseAccuracy": 0.9890924956369982
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.3292228884270604,
+      "galleryCrossEntropy": 0.9005815495969747,
+      "brier": 0.0836219025875603,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.3261901315296773,
+      "galleryCrossEntropy": 0.8935979458022396,
+      "brier": 0.08299034578006122,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00000937226571905329,
+      "galleryCrossEntropy": 0.00003320652383052084,
+      "brier": 3.802106798466673e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.036363200597799634,
+      "galleryCrossEntropy": 0.10569255336154965,
+      "brier": 0.011565454126111032,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.08471958258579969,
+      "galleryCrossEntropy": 0.2599834286350199,
+      "brier": 0.025818142376781827,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000010292231341099034,
+      "galleryCrossEntropy": 0.000036984116904742956,
+      "brier": 5.065012511022693e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.012337354504201106,
+      "galleryCrossEntropy": 0.04068589197884971,
+      "brier": 0.002054994672110031,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0002",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.09072712667166659,
+      "galleryCrossEntropy": 0.25295363678256455,
+      "brier": 0.029725275678983046,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000008795163067052269,
+      "galleryCrossEntropy": 0.000031197293683123454,
+      "brier": 3.878207819680318e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.01689955623238708,
+      "galleryCrossEntropy": 0.05388286418365206,
+      "brier": 0.004890170485626201,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0002",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.1012693434382929,
+      "galleryCrossEntropy": 0.24488801534074675,
+      "brier": 0.03373641569669963,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.261785582682635,
+      "galleryCrossEntropy": 0.7094388727126933,
+      "brier": 0.060068459630733276,
+      "pairwiseAccuracy": 0.9917102966841186
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.2597392039722572,
+      "galleryCrossEntropy": 0.733134960482135,
+      "brier": 0.060993865140514636,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.2542673001764087,
+      "galleryCrossEntropy": 0.7250641562877745,
+      "brier": 0.05914018882388955,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000009032011392158168,
+      "galleryCrossEntropy": 0.000032001312760859326,
+      "brier": 3.615424374060403e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.03142764675123504,
+      "galleryCrossEntropy": 0.09224286312878835,
+      "brier": 0.00979395678980874,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78123-seen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.08713415150966611,
+      "galleryCrossEntropy": 0.24498034590809914,
+      "brier": 0.027039275325550352,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000012196768158951485,
+      "galleryCrossEntropy": 0.000044792563364422896,
+      "brier": 3.949557818685572e-9,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.012021714348009364,
+      "galleryCrossEntropy": 0.041350172393329596,
+      "brier": 0.0016776568139330885,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.07719042718876033,
+      "galleryCrossEntropy": 0.23614417161356863,
+      "brier": 0.02575106715563899,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000009599282063555823,
+      "galleryCrossEntropy": 0.000034157907607027394,
+      "brier": 3.8224560632184854e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.013469129482000929,
+      "galleryCrossEntropy": 0.044848018886044894,
+      "brier": 0.002664018466718706,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78123-unseen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.07288292934615279,
+      "galleryCrossEntropy": 0.20894573791949975,
+      "brier": 0.02377683153278843,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.26185101852335513,
+      "galleryCrossEntropy": 0.710199460289747,
+      "brier": 0.06000373328041561,
+      "pairwiseAccuracy": 0.9917102966841186
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.2599949130672948,
+      "galleryCrossEntropy": 0.7340072549126465,
+      "brier": 0.060999123047027426,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.254497762594777,
+      "galleryCrossEntropy": 0.7257805895336468,
+      "brier": 0.05915362392979227,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000008957835441552646,
+      "galleryCrossEntropy": 0.00003175247189099494,
+      "brier": 3.761067185495008e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.03381240832281288,
+      "galleryCrossEntropy": 0.09856024699090517,
+      "brier": 0.010817272401412805,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78124-seen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.07850854735961141,
+      "galleryCrossEntropy": 0.2363640736831592,
+      "brier": 0.023938879189734467,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.0006157510126067982,
+      "galleryCrossEntropy": 0.002458298760162571,
+      "brier": 0.00015913751135083893,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.011353671906653241,
+      "galleryCrossEntropy": 0.03854538536089006,
+      "brier": 0.001533242042075312,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.06261634768026372,
+      "galleryCrossEntropy": 0.18125358084157883,
+      "brier": 0.020072610103230693,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000009428091220205853,
+      "galleryCrossEntropy": 0.000033421208418152166,
+      "brier": 3.850441372017998e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.015135133798564212,
+      "galleryCrossEntropy": 0.04876770160183914,
+      "brier": 0.003790447804777831,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78124-unseen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.07472276802707231,
+      "galleryCrossEntropy": 0.2064460239712799,
+      "brier": 0.024692795399132637,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 185,
+      "loss": 0.2615941470892194,
+      "galleryCrossEntropy": 0.70933484263489,
+      "brier": 0.059973426774095985,
+      "pairwiseAccuracy": 0.9917102966841186
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.25906973574434616,
+      "galleryCrossEntropy": 0.7313878303733633,
+      "brier": 0.06076354246786148,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 20,
+      "loss": 0.2536883833289813,
+      "galleryCrossEntropy": 0.7238924209166152,
+      "brier": 0.05894350781975561,
+      "pairwiseAccuracy": 0.9880952380952381
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.00000890518790766827,
+      "galleryCrossEntropy": 0.000031558486022090986,
+      "brier": 3.996925166786401e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 20,
+      "loss": 0.03500647974085654,
+      "galleryCrossEntropy": 0.10316150646053612,
+      "brier": 0.011439507160549745,
+      "pairwiseAccuracy": 0.984126984126984
+    },
+    {
+      "name": "78125-seen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.0841712585720111,
+      "galleryCrossEntropy": 0.24312224156403964,
+      "brier": 0.025549052169227395,
+      "pairwiseAccuracy": 0.9642857142857143
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000008917392372712673,
+      "galleryCrossEntropy": 0.00003173675684655757,
+      "brier": 3.519375996941221e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.012742733212706006,
+      "galleryCrossEntropy": 0.04262122501530222,
+      "brier": 0.0026818584775240768,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0001",
+      "checkpoint": "selected",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.07988928338449656,
+      "galleryCrossEntropy": 0.20162984179104212,
+      "brier": 0.0262114769425833,
+      "pairwiseAccuracy": 0.9523809523809523
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "train",
+      "chosenAt1": 191,
+      "loss": 0.000008917392372712673,
+      "galleryCrossEntropy": 0.00003173675684655757,
+      "brier": 3.519375996941221e-10,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "validation",
+      "chosenAt1": 21,
+      "loss": 0.012742733212706006,
+      "galleryCrossEntropy": 0.04262122501530222,
+      "brier": 0.0026818584775240768,
+      "pairwiseAccuracy": 1
+    },
+    {
+      "name": "78125-unseen-scaled-l2-0.0001",
+      "checkpoint": "last",
+      "split": "test",
+      "chosenAt1": 19,
+      "loss": 0.07988928338449656,
+      "galleryCrossEntropy": 0.20162984179104212,
+      "brier": 0.0262114769425833,
+      "pairwiseAccuracy": 0.9523809523809523
+    }
+  ],
+  "splitCheckpointChecks": 144,
+  "maximumFoldScoreError": 2.384185791015625e-7,
+  "foldScoreTolerance": 0.00005,
+  "maximumMetricError": 7.771561172376096e-16,
+  "metricTolerance": 0.000002,
+  "originalDataPreserved": true,
+  "note": "Independent JS native BN inference and ordinary folded runtime weights. All rankings must agree. No training/evaluation statistic updates."
+}

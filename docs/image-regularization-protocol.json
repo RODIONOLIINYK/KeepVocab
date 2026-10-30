@@ -1,0 +1,22 @@
+{
+  "experiment": "fixed-epoch-L2-BatchNorm-factorial-study",
+  "dataSplit": "tests/fixtures/image-meaning-shift/split.json",
+  "seeds": [78123, 78124, 78125],
+  "arms": ["seen", "unseen"],
+  "families": ["baseline", "l2", "batchnorm", "batchnorm-l2"],
+  "l2PilotGrid": [0.00001, 0.0001, 0.001],
+  "pilotSeed": 78123,
+  "l2Selection": "For each regularized family select one strength using seed78123 validation across both arms: maximize sum of selected first-choice matches, then minimize average selected pairwise loss; exact ties prefer smaller strength. No test metrics. Reuse the frozen pilot run for the final seed78123 result.",
+  "recipe": {"epochs":600,"learningRate":0.0002,"batchSize":8,"maximumGradientNorm":1,"earlyStopping":false,"outputOnly":false,"beta1":0.9,"beta2":0.999,"epsilon":1e-8},
+  "architecture": [1539,32,16,1],
+  "fusion": {"clip":0.5,"mlp":0.5,"output":"unrestricted linear"},
+  "loss": "Unchanged gallery-weighted pairwise logistic cross-entropy, sigmoid(8*score difference). Report data loss separately from added L2 penalty.",
+  "l2": "0.5*strength*sum of squared dense kernel weights, centered at zero. Exclude dense biases and BatchNorm gain/bias. Coupled L2 in Adam, not AdamW or the historical initial-weight anchor.",
+  "batchNorm": {"location":"after each hidden dense layer and before ReLU; never on output score","epsilon":0.00001,"momentum":0.1,"trainingVariance":"population, ddof0","runningVariance":"EMA of unbiased per-batch variance, ddof1","rows":"unique photo plus target meaning within each batch; repeated preferred comparisons never duplicate a photo's normalization weight","initialization":"Train-only calibration. Gain=sqrt(running variance+epsilon), bias=training mean, initially matching the non-BN inference function. All gains/biases then train.","evaluation":"Frozen running means/variances; never update from validation/test."},
+  "numerics": "Vectorized NumPy research fitter; Float32 parameters/activations, double dot accumulation and Adam arithmetic. Baseline parity against production JS and sampled finite-difference gradients required. Not claimed bit-identical to JS or enabled for personal fitting.",
+  "checkpoint": "Train every run for600epochs. Separately save final model and best validation first-choice checkpoint, pairwise loss tie-break, includes epoch0. Checkpoint selection never stops training.",
+  "smallBatch": "For the four final families run the same kernel/recipe for600epochs on8distinct training families (training-only reused for selection). Require all gallery/pair orders correct and finite gradients; report actual loss including any irreducible regularization tradeoff.",
+  "testUse": "Freeze pilot strengths and all24final fit/checkpoint states before test scoring. Post-hoc test curves every10epochs plus selected/final; no test-driven retuning. Preserve historical datasets and models byte-for-byte.",
+  "acceptance": "Offline diagnostic only on the existing small retrospective set. No automatic app activation. BN can be algebraically folded into ordinary dense weights for independent JS inference checks.",
+  "limitations": "21heldoutmeaninggalleries, easy/curated and previously inspected; not a new blind test. Same21examples acrossseeds are not independent repetitions. Hyperparameter/grid/epoch conclusions limited to this setup."
+}

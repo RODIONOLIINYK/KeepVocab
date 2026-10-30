@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "batchNorm": false,
+      "l2GradientMaximumError": 1.979060471057892e-09,
+      "l2Penalty": 0.04454342903501623,
+      "evaluationBatchIndependenceMaximumError": 0.0,
+      "evaluationRunningStatsUnchanged": true,
+      "uniquePhotoMeaningRows": 40,
+      "galleryCandidateOccurrences": 40
+    },
+    {
+      "batchNorm": true,
+      "l2GradientMaximumError": 1.979060471057892e-09,
+      "l2Penalty": 0.04454342903501623,
+      "evaluationBatchIndependenceMaximumError": 0.0,
+      "evaluationRunningStatsUnchanged": true,
+      "uniquePhotoMeaningRows": 40,
+      "galleryCandidateOccurrences": 40
+    }
+  ],
+  "kernelSha256": "3ceea8f2008e3fcb1eae2b50865e3b4319def41926c367be46bda5ef68adf56c"
+}
