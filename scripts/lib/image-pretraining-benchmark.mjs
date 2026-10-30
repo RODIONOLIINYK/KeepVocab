@@ -3,10 +3,20 @@ import { cosine, decodeFeatures, normalizedVector, sigmoid } from '../../js/serv
 import { CLIP_TAG } from '../../js/ml/clipConfig.js';
 import { IMAGE_PREPROCESSING, activeImageExamples, splitImageDecisions, semanticDatasetPartitions, evaluatePersonalizer,
   personalizerScore, validPersonalizer } from '../../js/services/imagePersonalizer.js';
+import { PERSONALIZER_VERSION as V2_PERSONALIZER_VERSION, LEGACY_PERSONALIZER_VERSION as V2_LEGACY_VERSION, validPersonalizer as validV2Personalizer,
+  personalizerScore as v2PersonalizerScore, evaluatePersonalizer as evaluateV2Personalizer } from './image-personalizer-v2.mjs';
 
 const partitions = ['train', 'validation', 'test'];
 const normalized = value => String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
 function requireCondition(condition, message) { if (!condition) throw new Error(message); }
+function modelValid(model) {
+  return [V2_PERSONALIZER_VERSION, V2_LEGACY_VERSION].includes(model?.version) ? validV2Personalizer(model) : validPersonalizer(model);
+}
+function modelScore(model, features, meaningFeatures) {
+  return [V2_PERSONALIZER_VERSION, V2_LEGACY_VERSION].includes(model?.version)
+    ? v2PersonalizerScore(model, features, meaningFeatures)
+    : personalizerScore(model, features, meaningFeatures);
+}
 function photoUrl(value) {
   try { const url = new URL(value); url.hash = ''; url.search = ''; return url.href; }
   catch { throw new Error(`A source photo URL is missing or invalid: ${value || '(empty)'}`); }
@@ -129,7 +139,7 @@ function evaluateRawClip(decisions) {
 function choiceResults(model, decisions, cases, rawClip = false) {
   return decisions.map(decision => {
     const item = cases.get(decision.id), scored = item.candidates.map((photo, index) => ({ id: photo.id, index,
-      score: rawClip ? rawClipScore(item.features.get(photo.id), item.meaningFeatures) : personalizerScore(model, item.features.get(photo.id), item.meaningFeatures) }));
+      score: rawClip ? rawClipScore(item.features.get(photo.id), item.meaningFeatures) : modelScore(model, item.features.get(photo.id), item.meaningFeatures) }));
     scored.sort((a, b) => b.score - a.score || a.index - b.index);
     const topScore = scored[0].score, tied = scored.filter(row => row.score === topScore);
     return { id: item.id, meaningId: item.meaningId, familyId: item.familyId || null, domain: item.domain || 'unspecified', preferredPosition: item.candidates.findIndex(photo => photo.id === item.reference), candidateCount: item.candidates.length, topPhotoId: scored[0].id,
@@ -139,7 +149,8 @@ function choiceResults(model, decisions, cases, rawClip = false) {
   });
 }
 function summarize(model, decisions, cases, rawClip = false) {
-  const metric = rawClip ? evaluateRawClip(decisions) : evaluatePersonalizer(model, decisions), choiceRows = choiceResults(model, decisions, cases, rawClip);
+  const legacy = [V2_PERSONALIZER_VERSION, V2_LEGACY_VERSION].includes(model?.version);
+  const metric = rawClip ? evaluateRawClip(decisions) : legacy ? evaluateV2Personalizer(model, decisions) : evaluatePersonalizer(model, decisions), choiceRows = choiceResults(model, decisions, cases, rawClip);
   return { choices: choiceRows.length, meanPairwiseLoss: metric.loss, pairwiseAgreement: metric.accuracy,
     chosenAt1: choiceRows.reduce((n, row) => n + row.chosenAt1, 0), chosenAt1Rate: choiceRows.length ? choiceRows.reduce((n, row) => n + row.chosenAt1, 0) / choiceRows.length : null,
     tiedAt1: choiceRows.filter(row => row.tiedAt1).length, tieAwareAgreement: choiceRows.length ? choiceRows.reduce((n, row) => n + row.fractionalTieCredit, 0) / choiceRows.length : null,
@@ -174,7 +185,7 @@ export function pairedMeaningBootstrap(before, after, { bootstrapSamples = 1000,
 }
 
 export function comparePretrainingModels(validated, candidate, options = {}) {
-  requireCondition(validPersonalizer(candidate), 'Candidate model is invalid.');
+  requireCondition(modelValid(candidate), 'Candidate model is invalid.');
   return Object.fromEntries(partitions.map(name => {
     const rawClip = summarize(null, validated.split[name], validated.cases, true),
       baseline = summarize(null, validated.split[name], validated.cases), mlp = summarize(candidate, validated.split[name], validated.cases);

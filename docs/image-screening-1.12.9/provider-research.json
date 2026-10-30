@@ -1,0 +1,61 @@
+{
+  "environment": {
+    "app": "http://127.0.0.1:8098",
+    "test": "isolated browser page at http://127.0.0.1:8123/smoke.html; no app, personal profile, account, or API key used",
+    "date": "2026-10-30",
+    "method": "Browser fetch from a local test page, 7-second per-request abort, requests sequential; sample titles/metadata inspected, image pixels not individually reviewed"
+  },
+  "queries": ["running fox", "carrying bag", "river bank", "baseball bat"],
+  "smoke": {
+    "Openverse": {
+      "endpoint": "https://api.openverse.org/v1/images/",
+      "anonymous": true,
+      "results": [
+        {"query":"running fox","status":"aborted after 7000 ms","note":"AbortError"},
+        {"query":"carrying bag","status":"aborted after 7000 ms","note":"AbortError"},
+        {"query":"river bank","status":"aborted after 7000 ms","note":"AbortError"},
+        {"query":"baseball bat","status":"aborted after 7000 ms","note":"AbortError"}
+      ],
+      "assessment": "No browser availability evidence from this environment; existing app timeout is even shorter (3.5s), so the current integration appears unusable here. This does not establish that Openverse is globally unavailable."
+    },
+    "Wikimedia Commons": {
+      "endpoint": "https://commons.wikimedia.org/w/api.php",
+      "anonymous": true,
+      "results": [
+        {"query":"running fox","status":200,"ms":267,"examples":[["File:Paul de Vos - Running fox.jpg","Public domain"],["File:Corsac Fox Running (6785200071).jpg","CC BY 2.0"],["File:On Running Fox Walks - geograph.org.uk - 2838659.jpg","CC BY-SA 2.0"]]},
+        {"query":"carrying bag","status":200,"ms":42,"examples":[["File:Women carrying 50kg bag of grains-South Sudan.jpg","CC BY-SA 4.0"],["File:Man On Bicycle Carrying a Bag of Maize.jpg","CC BY-SA 4.0"],["File:Ankara Anatolian Civilizations Carchemish orthostats Water Gate Man carrying bag in 2011 02.jpg","CC BY-SA 4.0"]]},
+        {"query":"river bank","status":200,"ms":50,"examples":[["File:River Bank, Grassendale.jpg","CC BY-SA 3.0"],["File:Children playing at sunset on a Mekong bank in Si Phan Don.jpg","CC BY-SA 4.0"],["File:Water reflection of a river bank in Laos.jpg","CC BY-SA 4.0"]]},
+        {"query":"baseball bat","status":200,"ms":42,"examples":[["File:Derek Jeter batting stance allison.jpg","CC BY-SA 2.0"],["File:Custom wood bat 01.webp","CC0"],["File:Japanese-style baseball bat.png","CC0"]]}
+      ],
+      "assessment":"Verified keyless cross-origin browser API responses with result metadata including license; all four result lists have plausible semantic hits. Search is keyword-oriented and metadata/title relevance is not proof of pixel content."
+    },
+    "Flickr public feed": {
+      "endpoint":"https://www.flickr.com/services/feeds/photos_public.gne",
+      "anonymous":true,
+      "results":[{"query":"running fox","error":"TypeError: Failed to fetch"},{"query":"carrying bag","error":"TypeError: Failed to fetch"},{"query":"river bank","error":"TypeError: Failed to fetch"},{"query":"baseball bat","error":"TypeError: Failed to fetch"}],
+      "assessment":"Keyless public-feed route failed browser fetch for all samples (consistent with CORS/access restrictions). Flickr REST search is separately documented as requiring an API key."
+    },
+    "iNaturalist": {
+      "endpoint":"https://api.inaturalist.org/v1/observations",
+      "anonymous":true,
+      "results":[{"query":"fox","status":200,"ms":601,"total":956068,"sampleTaxa":["Elaphe","Passerella iliaca","Sciurus niger","Canidae","Alopecosa albofasciata"],"licenses":["cc-by-nc"]}],
+      "assessment":"API and CORS work, but free-text q=fox returned unrelated taxa in the five-item sample. It is an animal-specific source and would need taxon ID/autocomplete-based queries; photo licenses may be noncommercial (sample cc-by-nc), unsuitable if app use is commercial."
+    }
+  },
+  "provider_policy_and_official_docs": [
+    {"provider":"Openverse","url":"https://api.openverse.org/v1/","notes":"Official API documentation; anonymous access, registered OAuth client credentials, pagination and rate-limit response guidance. Keep client secret private; do not embed it in web app."},
+    {"provider":"Openverse JS client","url":"https://docs.openverse.org/packages/js/api_client/index.html","notes":"Official JS client docs; unauthenticated use and rate-limit/backoff guidance."},
+    {"provider":"Wikimedia APIs access policy","url":"https://www.mediawiki.org/wiki/Wikimedia_APIs/Access_policy","notes":"Official access policy; identify API client with User-Agent."},
+    {"provider":"Wikimedia CORS","url":"https://www.mediawiki.org/wiki/API:Cross-site_requests","notes":"Official browser cross-origin API guidance; use origin=* for anonymous requests."},
+    {"provider":"Wikimedia rate limits","url":"https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits","notes":"Official rate-limit guidance; limits vary by client and can change; respect Retry-After and throttle requests."},
+    {"provider":"iNaturalist API","url":"https://www.inaturalist.org/api","notes":"Official API docs include observation search query, photos and per_page."},
+    {"provider":"iNaturalist developers","url":"https://www.inaturalist.org/pages/developers","notes":"Official developer guidance and request rate limits."},
+    {"provider":"iNaturalist best practices","url":"https://www.inaturalist.org/pages/api+recommended+practices","notes":"Official recommendations include conservative request frequency."},
+    {"provider":"Flickr public feed","url":"https://www.flickr.com/services/feeds/docs/photos_public/","notes":"Official keyless public-feed documentation; smoke call failed from browser. Feed response did not establish an adequate license/rights workflow."},
+    {"provider":"Flickr REST overview","url":"https://www.flickr.com/services/api/","notes":"Official REST API overview; API key required for Flickr API access."},
+    {"provider":"Unsplash API","url":"https://unsplash.com/documentation","notes":"Official API requires registered app/access key; guidelines require key confidentiality and attribution."},
+    {"provider":"Unsplash guidelines","url":"https://unsplash.com/documentation#guidelines","notes":"Official API use/attribution guidelines."},
+    {"provider":"Smithsonian Open Access FAQ","url":"https://www.si.edu/openaccess/faq","notes":"Official FAQ uses api.data.gov API key; not keyless. CC0 coverage is not a broad stock-photo corpus."}
+  ],
+  "recommendation": "No verified new broad stock-photo provider surfaced. Wikimedia Commons was the only broad candidate with successful, relevant keyless browser results, and the app already integrates it; focus on improving query expansion, relevancy, image verification, and license attribution there. Openverse remains the strongest broad openly licensed aggregator on paper, but current browser requests stalled in this environment and its existing implementation returns 401 per prior pilot evidence. iNaturalist is a supplementary animal-only source after taxon resolution, with license filtering. Do not claim Unsplash/Pixabay/Flickr REST/Smithsonian are keyless; if chosen, use a server-side proxy with a private key, but that conflicts with no backend deployment."
+}

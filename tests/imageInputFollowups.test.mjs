@@ -6,7 +6,7 @@ import {readJsonFile} from '../scripts/lib/json-files.mjs';
 import {validatePretrainingBenchmark} from '../scripts/lib/image-pretraining-benchmark.mjs';
 import {auditMeaningShiftSplit} from '../scripts/lib/image-meaning-shift.mjs';
 import {trainingMetrics} from '../scripts/lib/image-training-diagnostics.mjs';
-import {isValidatedSemanticModel} from '../js/services/imagePersonalizer.js';
+import {isValidatedSemanticModel} from '../scripts/lib/image-personalizer-v2.mjs';
 const plan=await readJsonFile('tests/fixtures/image-meaning-shift/split.json');
 const validated=validatePretrainingBenchmark(await readJsonFile(plan.sourceFeatures),await readJsonFile(plan.sourceManifest));
 for(const study of ['image-input-scaling','image-interaction-ablation']){

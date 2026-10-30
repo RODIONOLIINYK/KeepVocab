@@ -1,17 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
-import { encodeFeatures, preferenceFeatures } from '../js/services/imagePreferences.js';
+import { encodeFeatures, preferenceFeatures, decodeFeatures } from '../js/services/imagePreferences.js';
 import { IMAGE_PREPROCESSING, createPersonalizer, personalizerInput, personalizerScore, encodeMeaning, trainImagePersonalizer, splitImageDecisions, imageModelAcceptance, activeImageExamples, validPersonalizer } from '../js/services/imagePersonalizer.js';
 
 import { rankEmbeddedImages } from '../js/services/imageLearning.js';
 import { imageChoiceHistory } from './fixtures/imageChoices.mjs';
 const vector = axis => Array.from({ length: 512 }, (_, i) => Number(i === axis));
 const features = axis => encodeFeatures(preferenceFeatures(vector(axis), { selected: .4, margin: .1, unwanted: .05 }));
-test('32/16 fusion head has the declared size, initially matches CLIP, and receives both embeddings and interactions', () => {
-  const model = createPersonalizer(); assert.equal(model.weights.length, 49825); assert.equal(validPersonalizer(model), true);
+test('compact 32/16 preference head receives both embeddings and three signals without product features', () => {
+  const model = createPersonalizer(); assert.equal(model.weights.length, 33441); assert.equal(validPersonalizer(model), true);
   const input = personalizerInput(features(0), encodeMeaning(vector(1)));
-  assert.equal(input.length, 1539); assert.equal(input[0], 1); assert.equal(input[513], 1); assert.equal(input[1024], 0);
+  assert.equal(input.length, 1027); assert.equal(input[0], 1); assert.equal(input[513], 1);
+  assert.deepEqual(Array.from(input), Array.from(Float32Array.from([...decodeFeatures(features(0)).slice(0,512), ...vector(1), ...decodeFeatures(features(0)).slice(512)])));
   assert.ok(Math.abs(personalizerScore(model, features(0), encodeMeaning(vector(1))) - personalizerScore(null, features(0), encodeMeaning(vector(1)))) < 2e-8);
 });
 test('all pairs and decisions for one meaning stay in one chronological partition', () => {
@@ -64,9 +65,9 @@ test('a model cannot keep reusing answers that already chose its earlier weights
   }
 });
 
-test('a learned fusion branch can overturn a CLIP score gap larger than the retired residual cap', () => {
+test('a personal head ranks eligible photos without a residual magnitude cap', () => {
   const model=createPersonalizer();model.weights.fill(0);
-  model.weights[1536]=1;model.weights[49280]=1;model.weights[49808]=-3;
+  model.weights[1024]=1;model.weights[32896]=1;model.weights[33424]=-3;
   const items=[.7,.4].map((selected,index)=>({candidate:{id:index},vector:vector(index),meaningFeatures:encodeMeaning(vector(2)),
     semantic:{selected,margin:0,unwanted:0,contrast:null,score:selected}}));
   assert.equal(rankEmbeddedImages(items,null)[0].candidate.id,0);

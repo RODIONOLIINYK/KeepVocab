@@ -1,0 +1,227 @@
+{
+  "task": "Frozen MobileCLIP gate evaluation on fresh, independently adjudicated actual UI candidates; no training, no threshold retuning.",
+  "candidateCount": 60,
+  "galleryCount": 8,
+  "sourceCounts": {
+    "primaryReviewed": 60,
+    "crossReviewed": 60,
+    "sourceURLsObservedInActualUI": 60,
+    "rawPixelsDownloaded": 60,
+    "downloadFailures": 0,
+    "labelAgreement": {
+      "consensus_fit": 19,
+      "consensus_wrong": 21,
+      "consensus_excluded": 20
+    },
+    "primaryLabels": {
+      "fits": 21,
+      "wrong": 30,
+      "uncertain": 9
+    },
+    "crossReviewLabels": {
+      "fits": 22,
+      "wrong": 24,
+      "uncertain": 14
+    }
+  },
+  "labelRule": {
+    "1": "both reviewers said the image clearly fits the exact visible definition",
+    "0": "both reviewers said the image clearly does not fit the exact visible definition",
+    "null": "uncertain or reviewer disagreement; excluded from binary evaluation/training"
+  },
+  "model": {
+    "tag": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+    "revision": "757d59c9c6870a76a4b0306f05f5061bca15c39f",
+    "textDtype": "fp16",
+    "visionDtype": "fp32",
+    "preprocessing": "full-frame-letterbox-256-v1"
+  },
+  "thresholds": {
+    "selectedMinimumInclusive": 0.19,
+    "unwantedMaximumExclusive": 0.2,
+    "source": "frozen app semantic gate in imageSemanticGate.js; not tuned on this evaluation"
+  },
+  "evaluatedConsensusCount": 40,
+  "excludedUncertainOrDisagreement": 20,
+  "confusion": {
+    "tp": 16,
+    "fp": 6,
+    "tn": 15,
+    "fn": 3,
+    "precision": 0.7272727272727273,
+    "recall": 0.8421052631578947,
+    "specificity": 0.7142857142857143,
+    "accuracy": 0.775
+  },
+  "auroc": {
+    "score": "app selected semantic score (continuous, uncalibrated)",
+    "value": 0.7994987468671679,
+    "positiveCount": 19,
+    "negativeCount": 21
+  },
+  "perGallery": [
+    {
+      "galleryId": "pexels-a-run-01",
+      "word": "run",
+      "definition": "Of an animal, to move swiftly on foot by taking quick steps, as a fox does.",
+      "candidateCount": 6,
+      "consensusFits": 2,
+      "consensusWrong": 3,
+      "excluded": 1,
+      "gate": {
+        "TP": 1,
+        "FP": 1,
+        "FN": 1,
+        "TN": 2
+      },
+      "accepted": 2
+    },
+    {
+      "galleryId": "pexels-a-stand-01",
+      "word": "stand",
+      "definition": "Of an animal, to remain upright on its feet without moving, as a fox standing in a field.",
+      "candidateCount": 6,
+      "consensusFits": 3,
+      "consensusWrong": 3,
+      "excluded": 0,
+      "gate": {
+        "TP": 3,
+        "TN": 3
+      },
+      "accepted": 3
+    },
+    {
+      "galleryId": "pexels-a-carry-01",
+      "word": "carry",
+      "definition": "To hold an object while transporting it from one place to another.",
+      "candidateCount": 6,
+      "consensusFits": 3,
+      "consensusWrong": 1,
+      "excluded": 2,
+      "gate": {
+        "TP": 2,
+        "FN": 1,
+        "TN": 1
+      },
+      "accepted": 2
+    },
+    {
+      "galleryId": "pexels-a-beside-01",
+      "word": "beside",
+      "definition": "Next to or at the side of something.",
+      "candidateCount": 12,
+      "consensusFits": 3,
+      "consensusWrong": 3,
+      "excluded": 6,
+      "gate": {
+        "TN": 2,
+        "TP": 2,
+        "FP": 1,
+        "FN": 1
+      },
+      "accepted": 3
+    },
+    {
+      "galleryId": "pexels-a-pour-01",
+      "word": "pour",
+      "definition": "To cause liquid to flow in a stream from a container or into one.",
+      "candidateCount": 6,
+      "consensusFits": 2,
+      "consensusWrong": 1,
+      "excluded": 3,
+      "gate": {
+        "TP": 2,
+        "TN": 1
+      },
+      "accepted": 2
+    },
+    {
+      "galleryId": "pexels-a-drink-01",
+      "word": "drink",
+      "definition": "To consume a liquid through the mouth.",
+      "candidateCount": 6,
+      "consensusFits": 1,
+      "consensusWrong": 5,
+      "excluded": 0,
+      "gate": {
+        "TP": 1,
+        "FP": 2,
+        "TN": 3
+      },
+      "accepted": 3
+    },
+    {
+      "galleryId": "pexels-a-open-01",
+      "word": "open",
+      "definition": "A door is open when it is not shut and a passage through it is unobstructed.",
+      "candidateCount": 6,
+      "consensusFits": 4,
+      "consensusWrong": 2,
+      "excluded": 0,
+      "gate": {
+        "TP": 4,
+        "TN": 2
+      },
+      "accepted": 4
+    },
+    {
+      "galleryId": "pexels-a-closed-01",
+      "word": "closed",
+      "definition": "A door is closed when it fully covers its opening, leaving no passage through it.",
+      "candidateCount": 12,
+      "consensusFits": 1,
+      "consensusWrong": 3,
+      "excluded": 8,
+      "gate": {
+        "FP": 2,
+        "TP": 1,
+        "TN": 1
+      },
+      "accepted": 3
+    }
+  ],
+  "comparisons": {
+    "count": 21,
+    "rule": "Only actual clicked image when both reviewers agree it fits, paired against each image both reviewers agree is wrong. Ordering target 1. These are semantic clarity probes, not taste labels; not trained."
+  },
+  "integrity": {
+    "uniqueCandidateIds": 60,
+    "uniquePixelHashes": 60,
+    "allPixelHashesMatchBlindIndexAndPredictions": true,
+    "allImageAndMeaningVectorsLength512AndUnitNormTolerance1e-4": true,
+    "provenanceSha256": "2e5a414399b3a21851b01debf6dd82f5b90f6915168fc2ba686f72653fb1b684",
+    "predictionFileSha256": "302622ed767b1d92499cab87c12ef2ba223453210b7f77778a479208e2dae6f1",
+    "primaryChoicesSha256": "0cb4ec36037502c3e4f60b3cbadb9bf27fd3acf5ac6b14c6b56f33df5bb454b5",
+    "blindIndexSha256": "d185f1fbd5a7744209d90084d23844091836d752adf47af77a597cc7eda3e4f4",
+    "crossReviewSha256": "998cfee85132a3ada3900603679beed7cfdd86063a1494360506290f3f4aa647",
+    "downloadAuditSha256": "0c61917532a50476c1e09beed7035154c019efea5e33ff13afcebc851c1b72d0"
+  },
+  "trained": false,
+  "thresholdRetuned": false,
+  "photoOverlap": {
+    "oldKeylessUiOverlappingPixelHashes": 11,
+    "rawCandidateCount": 60,
+    "overlapWithThresholdCalibrationCorpus": 0,
+    "consensusAfterExcludingOldKeylessUiPhotoHashes": {
+      "count": 31,
+      "positiveCount": 18,
+      "negativeCount": 13,
+      "excludedUncertainOrDisagreed": 18,
+      "confusion": {
+        "tp": 16,
+        "fp": 6,
+        "tn": 7,
+        "fn": 2
+      },
+      "positiveRecall": 0.8888888888888888,
+      "wrongImageAcceptanceRate": 0.46153846153846156,
+      "acceptedPrecision": 0.7272727272727273,
+      "aurocSelected": 0.717948717948718
+    },
+    "sourceAudit": "docs/image-screening-1.12.9/screening-audit.json",
+    "sourceAuditSha256": "91cadb691f73964179e406e40a44311c13de634ab791d3b9187cca09b5abc513"
+  },
+  "limitations": [
+    "11 of 60 candidate pixel hashes also occur in the older keyless UI sample; none overlap the threshold-calibration corpus. Removing overlaps leaves 31 consensus-labeled records; this is a dependence check with the same frozen gate, not a retuned result."
+  ]
+}

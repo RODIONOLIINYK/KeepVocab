@@ -5,7 +5,7 @@ import { gzipSync } from 'node:zlib';
 import { readJsonFile } from './lib/json-files.mjs';
 import { validatePretrainingBenchmark, validateSemanticSupervision } from './lib/image-pretraining-benchmark.mjs';
 import { auditMeaningShiftSplit, pairedShiftDifference, shiftMetrics } from './lib/image-meaning-shift.mjs';
-import { createPersonalizer, fitImagePersonalizer } from '../js/services/imagePersonalizer.js';
+import { createPersonalizer, fitImagePersonalizer } from './lib/image-personalizer-v2.mjs';
 import { IMAGE_TRAINING_RECIPE } from '../js/ml/imageTrainingRecipe.js';
 
 const args = process.argv.slice(2), flag = name => args.find(a => a.startsWith(`--${name}=`))?.slice(name.length + 3);
@@ -21,7 +21,7 @@ validateSemanticSupervision(encoded, manifest); const original = validatePretrai
 const audits = Object.fromEntries(['seen', 'unseen'].map(arm => [arm, auditMeaningShiftSplit(original, plan, arm)]));
 const provenance = { protocolSha256: sha(await readFile(protocolPath)), splitSha256: sha(await readFile(protocol.split)),
   recipe: IMAGE_TRAINING_RECIPE, recipeSha256: sha(JSON.stringify(IMAGE_TRAINING_RECIPE)), encoder: encoded.encoder,
-  numericalSourceSha256: sha(await readFile('js/services/imagePersonalizer.js')), originalDataPreserved: true };
+  numericalSourceSha256: sha(await readFile('scripts/lib/image-personalizer-v2.mjs')), originalDataPreserved: true };
 const modelHash = model => { const bytes = Buffer.alloc(model.weights.length * 4); model.weights.forEach((value, i) => bytes.writeFloatLE(value, i * 4)); return sha(bytes); };
 
 if (args.includes('--aggregate')) {

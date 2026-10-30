@@ -6,7 +6,7 @@ import { readJsonFile } from '../scripts/lib/json-files.mjs';
 import { validatePretrainingBenchmark } from '../scripts/lib/image-pretraining-benchmark.mjs';
 import { auditMeaningShiftSplit } from '../scripts/lib/image-meaning-shift.mjs';
 import { trainingMetrics } from '../scripts/lib/image-training-diagnostics.mjs';
-import { isCurrentPersonalizer, isValidatedSemanticModel } from '../js/services/imagePersonalizer.js';
+import { isCurrentPersonalizer, isValidatedSemanticModel } from '../scripts/lib/image-personalizer-v2.mjs';
 
 const directory='docs/image-regularization/';
 test('regularization experiment passes numerical gradients and production baseline replay',async()=>{

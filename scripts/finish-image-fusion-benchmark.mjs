@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { readJsonFile } from './lib/json-files.mjs';
 import { validatePretrainingBenchmark } from './lib/image-pretraining-benchmark.mjs';
 import { trainingMetrics, gradientDiagnostic, fixedLabelBiasVariance } from './lib/image-training-diagnostics.mjs';
-import { createPersonalizer, fitImagePersonalizer, trainImagePersonalizer } from '../js/services/imagePersonalizer.js';
+import { createPersonalizer, fitImagePersonalizer, trainImagePersonalizer } from './lib/image-personalizer-v2.mjs';
 import { IMAGE_TRAINING_RECIPE } from '../js/ml/imageTrainingRecipe.js';
 
 const args=process.argv.slice(2),flag=name=>args.find(a=>a.startsWith(`--${name}=`))?.slice(name.length+3);

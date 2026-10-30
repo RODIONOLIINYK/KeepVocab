@@ -3,15 +3,16 @@ import { decodeFeatures, encodeFullFeatures, normalizedVector, sigmoid } from '.
 import { IMAGE_TRAINING_RECIPE } from '../ml/imageTrainingRecipe.js';
 
 export const LEGACY_PERSONALIZER_VERSION = 'meaning-mlp-32-16-v1';
-export const PERSONALIZER_VERSION = 'meaning-mlp-32-16-fusion-v2';
+export const PERSONALIZER_VERSION = 'meaning-preference-32-16-v3';
 export const IMAGE_PREPROCESSING = 'full-frame-letterbox-256-v1';
-export const PERSONALIZER_INPUTS = CLIP_DIMENSION * 3 + 3;
+export const PERSONALIZER_INPUTS = CLIP_DIMENSION * 2 + 3;
 export const PERSONALIZER_LAYERS = [PERSONALIZER_INPUTS, 32, 16, 1];
-export const PERSONALIZER_PARAMETERS = 49825;
+export const PERSONALIZER_PARAMETERS = 33441;
 export const PERSONALIZER_LIMIT = .08;
 export const PERSONAL_PREFERENCE_LIMIT = .04;
-export const CLIP_FUSION_WEIGHT = .5;
-export const MLP_FUSION_WEIGHT = .5;
+// CLIP screens eligibility before this separate personal ranking head is used.
+export const CLIP_FUSION_WEIGHT = 0;
+export const MLP_FUSION_WEIGHT = 1;
 export const PERSONALIZER_FIT_DEFAULTS = Object.freeze({ learningRate: .002, regularization: .001, beta1: .9, beta2: .999,
   epsilon: 1e-8, gradientClip: 1, maximumGradientNorm: 1, patience: 4, minimumImprovement: .0001 });
 const layers = [[PERSONALIZER_INPUTS, 32], [32, 16], [16, 1]];
@@ -26,13 +27,13 @@ export function personalizerInput(features, meaningFeatures) {
   const image = decodeFeatures(features), meaning = decodeFeatures(meaningFeatures);
   const result = new Float32Array(PERSONALIZER_INPUTS);
   for (let i = 0; i < CLIP_DIMENSION; i++) {
-    result[i] = image[i]; result[CLIP_DIMENSION + i] = meaning[i]; result[CLIP_DIMENSION * 2 + i] = image[i] * meaning[i];
+    result[i] = image[i]; result[CLIP_DIMENSION + i] = meaning[i];
   }
-  result.set(image.slice(CLIP_DIMENSION), CLIP_DIMENSION * 3);
+  result.set(image.slice(CLIP_DIMENSION), CLIP_DIMENSION * 2);
   return result;
 }
 function validHead(model) {
-  return Boolean([PERSONALIZER_VERSION, LEGACY_PERSONALIZER_VERSION].includes(model?.version) && model.encoder === CLIP_TAG && model.preprocessing === IMAGE_PREPROCESSING
+  return Boolean(model?.version === PERSONALIZER_VERSION && model.encoder === CLIP_TAG && model.preprocessing === IMAGE_PREPROCESSING
     && model.weights?.length === PERSONALIZER_PARAMETERS && Array.from(model.weights).every(Number.isFinite));
 }
 export function validPersonalizer(model) {
@@ -74,7 +75,7 @@ export function createPersonalizer(seed = 78123) {
   for (let j = 0; j < 5; j++) {
     weights.fill(0, offsets[0] + j * PERSONALIZER_INPUTS, offsets[0] + (j + 1) * PERSONALIZER_INPUTS);
     weights[offsets[0] + PERSONALIZER_INPUTS * 32 + j] = 0;
-    weights[offsets[0] + j * PERSONALIZER_INPUTS + 1536 + Math.floor(j / 2)] = j % 2 ? -1 : 1;
+    weights[offsets[0] + j * PERSONALIZER_INPUTS + CLIP_DIMENSION * 2 + Math.floor(j / 2)] = j % 2 ? -1 : 1;
     weights.fill(0, offsets[1] + j * 32, offsets[1] + (j + 1) * 32);
     weights[offsets[1] + j * 32 + j] = 1;
     weights[offsets[1] + 32 * 16 + j] = 0;
@@ -102,30 +103,17 @@ function baseScore(features) {
 }
 const residualLimit = model => model?.role === 'preference' ? PERSONAL_PREFERENCE_LIMIT : PERSONALIZER_LIMIT;
 function frozenBaseScore(model, features, meaningFeatures) {
-  if (model?.version === PERSONALIZER_VERSION) return baseScore(features);
-  const archivedBase = model?.semanticBase;
-  return model?.role === 'preference' && validPersonalizer(archivedBase) && archivedBase.role === 'semantic'
-    && (archivedBase.genericValidation?.accepted ?? archivedBase.validation?.accepted) === true
-    ? personalizerScore(model.semanticBase, features, meaningFeatures) : baseScore(features);
+  return baseScore(features);
 }
 export function personalizerScore(model, features, meaningFeatures) {
   if (!validPersonalizer(model) || !meaningFeatures) return baseScore(features);
   return scoreValidPersonalizer(model, features, meaningFeatures);
 }
 function scoreValidPersonalizer(model, features, meaningFeatures) {
-  if (model.version === PERSONALIZER_VERSION) {
-    const learned = forward(model.weights, personalizerInput(features, meaningFeatures))[3][0];
-    return CLIP_FUSION_WEIGHT * baseScore(features) + MLP_FUSION_WEIGHT * learned;
-  }
-  const base = frozenBaseScore(model, features, meaningFeatures);
-  const x = personalizerInput(features, meaningFeatures);
-  let residual = residualLimit(model) * Math.tanh(forward(model.weights, x)[3][0]);
-  // Preference never boosts an image toward a competing dictionary sense.
-  if (decodeFeatures(features)[513] < 0) residual = Math.min(0, residual);
-  return base + residual;
+  return forward(model.weights, personalizerInput(features, meaningFeatures))[3][0];
 }
 // A fixed evaluation pass validates weights once, rather than scanning all
-// 49,825 parameters for every photo. Callers must not mutate the model mid-pass.
+// 33,441 parameters for every photo. Callers must not mutate the model mid-pass.
 export function createPersonalizerScorer(model) {
   const valid = validPersonalizer(model);
   return (features, meaningFeatures) => valid && meaningFeatures
@@ -249,25 +237,15 @@ function preparedDecisions(model, decisions) {
   })) })).filter(d => d.observations.length);
 }
 function batchGradient(model, batch) {
-  const gradient = new Float32Array(PERSONALIZER_PARAMETERS), limit = residualLimit(model);
+  const gradient = new Float32Array(PERSONALIZER_PARAMETERS);
   for (const decision of batch) for (const row of decision.observations) {
     const a = forward(model.weights, row.a), b = row.b ? forward(model.weights, row.b) : null;
-    if (model.version === PERSONALIZER_VERSION) {
-      const scoreA = CLIP_FUSION_WEIGHT * row.baseA + MLP_FUSION_WEIGHT * a[3][0];
-      const scoreB = b ? CLIP_FUSION_WEIGHT * row.baseB + MLP_FUSION_WEIGHT * b[3][0] : .3;
+      const scoreA = a[3][0];
+      const scoreB = b ? b[3][0] : .3;
       const difference = b ? scoreA - scoreB : .3 - scoreA;
       const error = (sigmoid(difference * 8) - 1) * 8 * row.weight / batch.length;
       backward(model.weights, a, error * MLP_FUSION_WEIGHT * (b ? 1 : -1), gradient);
       if (b) backward(model.weights, b, -error * MLP_FUSION_WEIGHT, gradient);
-      continue;
-    }
-    const rawA = Math.tanh(a[3][0]), rawB = b ? Math.tanh(b[3][0]) : 0;
-    const clampA = row.a[1537] < 0 && rawA > 0, clampB = b && row.b[1537] < 0 && rawB > 0;
-    const ra = clampA ? 0 : rawA, rb = clampB ? 0 : rawB;
-    const difference = b ? row.baseA + limit * ra - row.baseB - limit * rb : .3 - row.baseA - limit * ra;
-    const error = (sigmoid(difference * 8) - 1) * 8 * row.weight / batch.length;
-    backward(model.weights, a, clampA ? 0 : error * limit * (1 - ra * ra) * (b ? 1 : -1), gradient);
-    if (b) backward(model.weights, b, clampB ? 0 : -error * limit * (1 - rb * rb), gradient);
   }
   return gradient;
 }
@@ -285,8 +263,7 @@ export function personalizerActivationSignature(model, decisions) {
   for (const decision of preparedDecisions(model, decisions)) for (const row of decision.observations) {
     for (const input of [row.a, row.b].filter(Boolean)) {
       const state = forward(model.weights, input);
-      parts.push(...state[1].map(value => Number(value > 0)), ...state[2].map(value => Number(value > 0)),
-        Number(model.version === LEGACY_PERSONALIZER_VERSION && input[1537] < 0 && state[3][0] > 0));
+      parts.push(...state[1].map(value => Number(value > 0)), ...state[2].map(value => Number(value > 0)), 0);
     }
   }
   return parts.join('');

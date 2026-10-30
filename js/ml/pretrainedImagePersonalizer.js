@@ -1,4 +1,14 @@
-// Generated experiment summary; rejected generic weights are not shipped.
-export const PRETRAINED_IMAGE_REPORT = {"dataset":"reviewed-semantic-image-fusion-v2","targetTask":"semantic","encoder":"Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32","personalizerVersion":"meaning-mlp-32-16-fusion-v2","parameters":49825,"accepted":false,"trainingChoices":385,"validationChoices":133,"testChoices":120,"trainingComparisons":1459,"validationComparisons":475,"testComparisons":456,"baselineTestAgreement":0.9416666666666667,"candidateTestAgreement":0.9416666666666667,"lastCheckpointTestAgreement":0.925,"selectedEpoch":1,"epochsRun":62,"recipe":{"epochs":600,"maxMilliseconds":1800000,"regularization":0,"maximumGradientNorm":1,"patience":20,"minimumImprovement":1e-05,"outputOnly":false,"checkpoint":"last","learningRate":0.0002,"batchSize":8},"weightsSha256":"d06c2e22584f6855a7c3fce292b6257fb68f40990ac00a4d753811e8591be1d2","use":"disabled; no first-choice improvement over CLIP; no rejected layers used for personal initialization","note":"Previously inspected semantic regression set, not personal taste or a new blind evaluation. See docs/image-fusion-v2.md."};
-export function getPretrainedImageModel(){return null;}
-export function getImagePersonalizerInitialization(){return null;}
+import { PERSONALIZER_VERSION, PERSONALIZER_PARAMETERS } from '../services/imagePersonalizer.js';
+
+// Public semantic judgments are not a user's personal taste. Historical rejected
+// semantic experiments remain in docs/image-fusion-v2.md, outside the live head.
+export const PRETRAINED_IMAGE_REPORT = Object.freeze({
+  targetTask: 'semantic',
+  personalizerVersion: PERSONALIZER_VERSION,
+  parameters: PERSONALIZER_PARAMETERS,
+  accepted: false,
+  use: 'No public personal-preference weights; validated personal learning starts from saved choices.',
+  archivedExperiment: 'docs/image-fusion-v2.md'
+});
+export function getPretrainedImageModel() { return null; }
+export function getImagePersonalizerInitialization() { return null; }

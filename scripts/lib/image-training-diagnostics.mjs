@@ -1,13 +1,20 @@
-import { createPersonalizerScorer, personalizerLossAndGradient, personalizerActivationSignature, evaluatePersonalizer, PERSONALIZER_LIMIT, PERSONALIZER_VERSION, LEGACY_PERSONALIZER_VERSION, isCurrentPersonalizer } from '../../js/services/imagePersonalizer.js';
+import { createPersonalizerScorer, personalizerLossAndGradient, personalizerActivationSignature, evaluatePersonalizer, PERSONALIZER_LIMIT, PERSONALIZER_VERSION, LEGACY_PERSONALIZER_VERSION, PERSONALIZER_LAYERS, isCurrentPersonalizer } from '../../js/services/imagePersonalizer.js';
+import { createPersonalizerScorer as createV2Scorer, personalizerLossAndGradient as v2LossAndGradient,
+  personalizerActivationSignature as v2ActivationSignature, evaluatePersonalizer as v2Evaluate,
+  PERSONALIZER_LIMIT as V2_LIMIT, PERSONALIZER_VERSION as V2_VERSION, PERSONALIZER_LAYERS as V2_LAYERS,
+  LEGACY_PERSONALIZER_VERSION as V2_LEGACY_VERSION, isCurrentPersonalizer as isCurrentV2 } from './image-personalizer-v2.mjs';
 import { decodeFeatures, sigmoid } from '../../js/services/imagePreferences.js';
 
 const mean = xs => xs.reduce((a, b) => a + b, 0) / xs.length;
 
 /** Gallery-weighted loss and Brier error: one decision, not one pair, is a unit. */
 export function trainingMetrics(model, decisions, cases, { predictions = false, rows = false, branch = 'fused' } = {}) {
-  if (!['fused', 'mlp', 'clip'].includes(branch) || branch === 'mlp' && !isCurrentPersonalizer(model)) throw Error('Unsupported scoring branch.');
-  const fused = createPersonalizerScorer(model), base = createPersonalizerScorer(null);
-  const score = branch === 'clip' ? base : branch === 'mlp' ? (features, meaning) => 2 * fused(features, meaning) - base(features, meaning) : fused;
+  const v2 = model?.version === V2_VERSION || model?.version === V2_LEGACY_VERSION;
+  const current = v2 ? isCurrentV2(model) : isCurrentPersonalizer(model);
+  if (!['fused', 'mlp', 'clip'].includes(branch) || branch === 'mlp' && !current) throw Error('Unsupported scoring branch.');
+  const fused = v2 ? createV2Scorer(model) : createPersonalizerScorer(model), base = v2 ? createV2Scorer(null) : createPersonalizerScorer(null);
+  const clipWeight = v2 ? .5 : 0, mlpWeight = v2 ? .5 : 1;
+  const score = branch === 'clip' ? base : branch === 'mlp' ? (features, meaning) => (fused(features, meaning) - clipWeight * base(features, meaning)) / mlpWeight : fused;
   const details = [], probabilities = [], predictionWeights = [];
   let comparisons = 0, correctPairs = 0;
   for (const decision of decisions) {
@@ -40,15 +47,16 @@ export function trainingMetrics(model, decisions, cases, { predictions = false, 
 export function residualCapacity(decisions, cases, { version = PERSONALIZER_VERSION } = {}) {
   if (version === PERSONALIZER_VERSION) return { optimisticLossLowerBound: 0, uncorrectableGalleries: 0,
     rows: decisions.map(row => ({ id: row.id, lossFloor: 0, allCorrectable: true })), note: 'Unrestricted fusion has no artificial residual-bound loss floor.' };
-  if (version !== LEGACY_PERSONALIZER_VERSION) throw Error('Unsupported score architecture.');
-  const base = createPersonalizerScorer(null), perDecision = [];
+  if (![LEGACY_PERSONALIZER_VERSION, V2_VERSION, V2_LEGACY_VERSION].includes(version)) throw Error('Unsupported score architecture.');
+  const v2 = version === V2_VERSION || version === V2_LEGACY_VERSION;
+  const base = v2 ? createV2Scorer(null) : createPersonalizerScorer(null), limit = v2 ? V2_LIMIT : PERSONALIZER_LIMIT, perDecision = [];
   for (const decision of decisions) {
     const item = cases.get(decision.id), pairs = decision.records.filter(row => row.kind === 'comparison');
     let lossFloor = 0, allCorrectable = true;
     for (const row of pairs) {
       const gap = base(row.preferredFeatures, row.meaningFeatures) - base(row.features, row.meaningFeatures);
-      const maximumWinner = decodeFeatures(row.preferredFeatures)[513] < 0 ? 0 : PERSONALIZER_LIMIT;
-      const bestGap = gap + maximumWinner + PERSONALIZER_LIMIT;
+      const maximumWinner = decodeFeatures(row.preferredFeatures)[513] < 0 ? 0 : limit;
+      const bestGap = gap + maximumWinner + limit;
       lossFloor -= Math.log(Math.max(1e-8, sigmoid(bestGap * 8))) / pairs.length;
       if (bestGap <= 0) allCorrectable = false;
     }
@@ -78,18 +86,29 @@ export function fixedLabelBiasVariance(runs, weights) {
 
 /** Finite differences at active coordinates in each layer, using real inputs. */
 export function gradientDiagnostic(model, decisions, { epsilon = .0001, perLayer = 6, absoluteTolerance = .00002 } = {}) {
-  const { gradient, loss } = personalizerLossAndGradient(model, decisions), checks = [], skippedBoundaries = [];
-  const signature = personalizerActivationSignature(model, decisions);
-  for (const [layer, start, end] of [[0, 0, 49280], [1, 49280, 49808], [2, 49808, 49825]]) {
+  const v2 = model?.version === V2_VERSION || model?.version === V2_LEGACY_VERSION;
+  const lossAndGradient = v2 ? v2LossAndGradient : personalizerLossAndGradient;
+  const activationSignature = v2 ? v2ActivationSignature : personalizerActivationSignature;
+  const evaluate = v2 ? v2Evaluate : evaluatePersonalizer;
+  const layerSizes = v2 ? V2_LAYERS : PERSONALIZER_LAYERS;
+  let offset = 0;
+  const ranges = layerSizes.slice(0, -1).map((inputs, index) => {
+    const outputs = layerSizes[index + 1], start = offset;
+    offset += inputs * outputs + outputs;
+    return [start, offset];
+  });
+  const { gradient, loss } = lossAndGradient(model, decisions), checks = [], skippedBoundaries = [];
+  const signature = activationSignature(model, decisions);
+  for (const [layer, [start, end]] of ranges.entries()) {
     const indices = Array.from({ length: end - start }, (_, i) => i + start)
       .sort((a,b)=>Math.abs(gradient[b])-Math.abs(gradient[a])).slice(0,perLayer * 10);
     let tested = 0;
     for (const index of indices) {
       const original = model.weights[index];
-      model.weights[index] = original + epsilon; const plusWeight = model.weights[index], plus = evaluatePersonalizer(model, decisions).loss;
-      const plusSignature = personalizerActivationSignature(model, decisions);
-      model.weights[index] = original - epsilon; const minusWeight = model.weights[index], minus = evaluatePersonalizer(model, decisions).loss;
-      const minusSignature = personalizerActivationSignature(model, decisions);
+      model.weights[index] = original + epsilon; const plusWeight = model.weights[index], plus = evaluate(model, decisions).loss;
+      const plusSignature = activationSignature(model, decisions);
+      model.weights[index] = original - epsilon; const minusWeight = model.weights[index], minus = evaluate(model, decisions).loss;
+      const minusSignature = activationSignature(model, decisions);
       model.weights[index] = original;
       const numeric = (plus - minus) / (plusWeight - minusWeight), analytic = gradient[index];
       if (plusSignature !== signature || minusSignature !== signature) {

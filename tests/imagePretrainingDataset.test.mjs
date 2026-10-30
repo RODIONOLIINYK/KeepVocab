@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {readJsonFile} from '../scripts/lib/json-files.mjs';
 import {validateSemanticSupervision,validatePretrainingBenchmark} from '../scripts/lib/image-pretraining-benchmark.mjs';
-import {activeImageExamples,validPersonalizer} from '../js/services/imagePersonalizer.js';
+import {activeImageExamples,validPersonalizer} from '../scripts/lib/image-personalizer-v2.mjs';
 import {CLIP_TAG,PREVIOUS_CLIP_TAG} from '../js/ml/clipConfig.js';
 const root=new URL('./fixtures/image-pretraining-v2/',import.meta.url);
 const sha=value=>createHash('sha256').update(value).digest('hex');

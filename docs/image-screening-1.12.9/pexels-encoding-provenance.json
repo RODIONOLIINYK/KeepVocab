@@ -1,0 +1,22 @@
+{
+  "purpose": "Frozen CLIP-only encoding of actual rendered app UI candidates. No labels, choices, thresholds, or trained preference model were read or used.",
+  "model": {
+    "tag": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+    "revision": "757d59c9c6870a76a4b0306f05f5061bca15c39f",
+    "textDtype": "fp16",
+    "visionDtype": "fp32",
+    "preprocessing": "full-frame-letterbox-256-v1"
+  },
+  "runtime": "scripts/image-evaluation-runtime.mjs; local_files_only; cached model files linked read-only from work/image-pretraining/cache/models; no model download or training.",
+  "scoring": "js/services/imageLearning.js imageClipPrompts + semanticScores; js/services/imagePreferences.js cosine. selected is app semantic score; rawTargetCosine is direct cosine against target meaning text embedding.",
+  "gateReference": {
+    "minimumSelected": 0.19,
+    "maximumUnwantedExclusive": 0.2,
+    "provenance": "frozen app gate in js/services/imageSemanticGate.js; reported only, not applied to labels or threshold selection"
+  },
+  "input": "a/blind-review/index.json file/hash inventory joined by candidate ID to a/blind-index.json exact rendered UI URLs and exact word/POS/definition.",
+  "sceneAvailability": "The six original galleries have no saved scene prompts. The open and closed galleries have the saved custom concepts \"open door\" and \"closed door\", respectively; no generated scenes or contrasts were available. Custom concepts are passed as scene prompts only for those two galleries.",
+  "candidateCount": 60,
+  "galleryCount": 8,
+  "createdAt": "2026-10-30T19:25:28.478Z"
+}

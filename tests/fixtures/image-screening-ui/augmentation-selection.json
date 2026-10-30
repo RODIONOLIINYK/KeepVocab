@@ -1,0 +1,1596 @@
+{
+  "sourceManifest": "tests/fixtures/image-pretraining-v2/cases.json",
+  "sourceSplit": "train",
+  "trainGalleryCount": 385,
+  "uniqueTrainMeanings": 141,
+  "eligibleScreen": "word/definition/image scene plus all human captions excluded weather/color/light/time/snow/etc terms; selected references only; 24 distinct meaning IDs and photo IDs; each gallery candidate hash retained",
+  "selectionIndices": [
+    0,
+    2,
+    5,
+    7,
+    9,
+    10,
+    12,
+    15,
+    16,
+    20,
+    21,
+    22,
+    23,
+    24,
+    26,
+    27,
+    28,
+    29,
+    36,
+    38,
+    39,
+    42,
+    45,
+    47
+  ],
+  "transform": "one fixed mild brightness 0.85, saturation 0.90 variant per original photo; no geometric changes",
+  "items": [
+    {
+      "meaningId": "semantic-v2:surf",
+      "galleryId": "semantic-v2-surf-0",
+      "originalSplit": "train",
+      "word": "surf",
+      "partOfSpeech": "verb",
+      "definition": "To ride ocean waves on a surfboard.",
+      "imageScene": "a person surfing a wave",
+      "parentPhotoId": "381360",
+      "parentFile": "images/000000381360.jpg",
+      "parentSha256": "8f16a69db296dc4b490c68751df1facccd067e0287e3328d9a7479e973c44e14",
+      "sourceUrl": "https://farm6.staticflickr.com/5266/5850664307_eb2c736435_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A man is surfing a big wave towards shore.",
+        "A surfer steadies his move through the waves.",
+        "A man surfing on the ways in the sea.",
+        "A young surf boarder is taking a small wave.",
+        "A man on a surfboard, surfing in the ocean."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "376625",
+          "sha256": "81267617f13de3900abfe82e0e48f5b66ca43b2092cac9b3c15e8606ebf81b72"
+        },
+        {
+          "photoId": "381360",
+          "sha256": "8f16a69db296dc4b490c68751df1facccd067e0287e3328d9a7479e973c44e14"
+        },
+        {
+          "photoId": "13004",
+          "sha256": "09d489992329d2a17186a82781c7d23d8c687ee580567babc7494f9bc8b1220a"
+        },
+        {
+          "photoId": "250137",
+          "sha256": "00b60aa56c8552f04a59da5ec1a6ba555991fa22cd8ff932f31d72a159595e8b"
+        },
+        {
+          "photoId": "288391",
+          "sha256": "9143a1cce1ad90bf5b1a4b3801e32c57a93a8ab1227e6f54fb915aecd75d2439"
+        }
+      ],
+      "originalSize": [
+        640,
+        425
+      ],
+      "variantSize": [
+        640,
+        425
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-381360",
+        "variantFile": "variants/aug-b085-s090-381360.png",
+        "variantSha256": "8ab53196683a35b5f14c33e9128b2e5e328b2e8e4d5442bb3531523924e87404",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:surf|381360",
+        "parentMeaningId": "semantic-v2:surf",
+        "parentGalleryId": "semantic-v2-surf-0",
+        "parentPhotoId": "381360"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:bus",
+      "galleryId": "semantic-v2-bus-0",
+      "originalSplit": "train",
+      "word": "bus",
+      "partOfSpeech": "noun",
+      "definition": "A large road vehicle that carries passengers.",
+      "imageScene": "a passenger bus",
+      "parentPhotoId": "446206",
+      "parentFile": "images/000000446206.jpg",
+      "parentSha256": "37f631d7cf9ff3f54abb80600fa15651061c228fb1265b95888847de72e06bae",
+      "sourceUrl": "https://farm9.staticflickr.com/8336/8079936048_15133bdb38_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "There is a train and bus in the cityscape. ",
+        "a train and a bus in the middle of a city",
+        "A passenger bus on the road with a train on the overpass",
+        "a monorail going down the track as a bus parks by the side of a road ",
+        "A bus is passing in front of big buildings and beautiful gardens."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "340697",
+          "sha256": "e8561c69704c7b6b901d95c2555dd4d8758534b94dc661f23c9dfd901013fc4c"
+        },
+        {
+          "photoId": "158660",
+          "sha256": "a33426379658d6ddc0a3b4c574e224eee02b9a26589a699e122a40c74cac9a05"
+        },
+        {
+          "photoId": "60507",
+          "sha256": "0aa436c998cd750d278170996d88b02869af323af4543ae4a8ef6349a14ca7fb"
+        },
+        {
+          "photoId": "446206",
+          "sha256": "37f631d7cf9ff3f54abb80600fa15651061c228fb1265b95888847de72e06bae"
+        },
+        {
+          "photoId": "82715",
+          "sha256": "3633367a51bb0bcff7e513f7b3d93dea749c47a1e48e9bac5381ce39697dd5d5"
+        }
+      ],
+      "originalSize": [
+        640,
+        385
+      ],
+      "variantSize": [
+        640,
+        385
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-446206",
+        "variantFile": "variants/aug-b085-s090-446206.png",
+        "variantSha256": "a5a0918b111c11f050a51cf9750d7a33c3c888450917b039d277889e434343d2",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:bus|446206",
+        "parentMeaningId": "semantic-v2:bus",
+        "parentGalleryId": "semantic-v2-bus-0",
+        "parentPhotoId": "446206"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:stairs",
+      "galleryId": "semantic-v2-stairs-0",
+      "originalSplit": "train",
+      "word": "stairs",
+      "partOfSpeech": "noun",
+      "definition": "A series of steps leading from one level to another.",
+      "imageScene": "a staircase",
+      "parentPhotoId": "249180",
+      "parentFile": "images/000000249180.jpg",
+      "parentSha256": "685bd913e0bfbbcd9d91b2368c219696308f51ba4f9428b077584d64b5a6ae83",
+      "sourceUrl": "https://farm9.staticflickr.com/8336/8144191550_2a42611445_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "Two men passing each other on the stair.s",
+        "One man traveling up a stairway and another waling down the stairway on a phone.",
+        "Two men walking opposite directions on a staircase.",
+        "a man walking down a flight of stairs holding onto a cell phone ",
+        "Men are walking up and down the stairs."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "458223",
+          "sha256": "b1dd74ccf72451429d9444fec031e55abf94038b8fcc94e4abc20f4cc74d22fa"
+        },
+        {
+          "photoId": "397303",
+          "sha256": "1c8a18f308b9febf0994c0bb26eed328c8a21cdb36a63a4432695994bb984af2"
+        },
+        {
+          "photoId": "391144",
+          "sha256": "8bdd8160c80e2f5729d9071b328773884c9b1542aa4b712c8ab9fc5df9be0bfe"
+        },
+        {
+          "photoId": "409358",
+          "sha256": "e20ee8a186a94b03a7ea3f55d4b097ec2fe7a21db29df61073c31f0e38fbb958"
+        },
+        {
+          "photoId": "249180",
+          "sha256": "685bd913e0bfbbcd9d91b2368c219696308f51ba4f9428b077584d64b5a6ae83"
+        }
+      ],
+      "originalSize": [
+        640,
+        427
+      ],
+      "variantSize": [
+        640,
+        427
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-249180",
+        "variantFile": "variants/aug-b085-s090-249180.png",
+        "variantSha256": "08b79a139168a2b1c8f73bdf44d55b54eab567ba6cbfad5d5c1a005f321974b2",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:stairs|249180",
+        "parentMeaningId": "semantic-v2:stairs",
+        "parentGalleryId": "semantic-v2-stairs-0",
+        "parentPhotoId": "249180"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:bridge",
+      "galleryId": "semantic-v2-bridge-0",
+      "originalSplit": "train",
+      "word": "bridge",
+      "partOfSpeech": "noun",
+      "definition": "A structure carrying a path over water or another obstacle.",
+      "imageScene": "a bridge",
+      "parentPhotoId": "344816",
+      "parentFile": "images/000000344816.jpg",
+      "parentSha256": "091feaf5dbb6a28c71f83d0d91756aac8d176e7c3d31b766c484252440772457",
+      "sourceUrl": "https://farm8.staticflickr.com/7412/8805703672_a7c2507144_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "The train engine is followed by a line of open cars.",
+        "A train driving down the tracks under a bridge.",
+        "A train is traveling underneath a cement bridge.",
+        "A cargo train crossing under an overpass and switching tracks. ",
+        "A train is sitting along tracks under and overpass."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "486112",
+          "sha256": "8a2918d24583f33aedc6cdc212c129176e6535102c5e87f418a4f230e9002bfb"
+        },
+        {
+          "photoId": "44279",
+          "sha256": "ec4f47bbaa7a948c06f4e748cfb9c8388facc711b1b69e98aa0dfdc656e6b95d"
+        },
+        {
+          "photoId": "344816",
+          "sha256": "091feaf5dbb6a28c71f83d0d91756aac8d176e7c3d31b766c484252440772457"
+        },
+        {
+          "photoId": "443969",
+          "sha256": "4d406247b349070eb79a47c16d299fc6285188c81241097169bb797cf921be2c"
+        },
+        {
+          "photoId": "63552",
+          "sha256": "a3a0b0e84709ed08012ed3fa37b2d6bc0d45546560c750f8e9de921c0a2de406"
+        }
+      ],
+      "originalSize": [
+        640,
+        427
+      ],
+      "variantSize": [
+        640,
+        427
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-344816",
+        "variantFile": "variants/aug-b085-s090-344816.png",
+        "variantSha256": "237b5d16873c266565108b7cd9d8297722b6345d25c399a3c7ef37e15816cec5",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:bridge|344816",
+        "parentMeaningId": "semantic-v2:bridge",
+        "parentGalleryId": "semantic-v2-bridge-0",
+        "parentPhotoId": "344816"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:beer",
+      "galleryId": "semantic-v2-beer-1",
+      "originalSplit": "train",
+      "word": "beer",
+      "partOfSpeech": "noun",
+      "definition": "An alcoholic drink made from malt and hops.",
+      "imageScene": "beer in a drinking container",
+      "parentPhotoId": "74733",
+      "parentFile": "images/000000074733.jpg",
+      "parentSha256": "d99c93fb6d22a5d51bbb6e09ca5f10c11bdcf90a711abf6cc83188df52cc456a",
+      "sourceUrl": "https://farm6.staticflickr.com/5461/9330037796_1700b955f3_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "two flatbread pieces covered with different ingredients in between a flight of beers",
+        "A table topped with three mugs of beer and two pizza's.",
+        "Two small flat breads with beer samplers on each side.",
+        "A wooden table holding multiple beers and a plate of food with pizza on it.",
+        "A view of a bunch of pizzas sitting on a table."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "567886",
+          "sha256": "a1954fe14f98e86a0808229bcc3eba011214ca82b2c3d725822b428ca2b28d2a"
+        },
+        {
+          "photoId": "289343",
+          "sha256": "3e55a91ce9257d70771eac2380332a743cb17f2220aee0c070d2d46204931e56"
+        },
+        {
+          "photoId": "74733",
+          "sha256": "d99c93fb6d22a5d51bbb6e09ca5f10c11bdcf90a711abf6cc83188df52cc456a"
+        },
+        {
+          "photoId": "223959",
+          "sha256": "40723194728d52fd499ce505353bd9e153cc453dec045795167dbabf339bdc23"
+        }
+      ],
+      "originalSize": [
+        612,
+        612
+      ],
+      "variantSize": [
+        612,
+        612
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-74733",
+        "variantFile": "variants/aug-b085-s090-74733.png",
+        "variantSha256": "040f962b5a799c7d45ada87b527405007c66e39564c063e6eb77f2298c5e409e",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:beer|74733",
+        "parentMeaningId": "semantic-v2:beer",
+        "parentGalleryId": "semantic-v2-beer-1",
+        "parentPhotoId": "74733"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:suit",
+      "galleryId": "semantic-v2-suit-0",
+      "originalSplit": "train",
+      "word": "suit",
+      "partOfSpeech": "noun",
+      "definition": "A matching jacket and trousers worn as a set.",
+      "imageScene": "a person wearing a suit",
+      "parentPhotoId": "9483",
+      "parentFile": "images/000000009483.jpg",
+      "parentSha256": "c7e6e15f4db067c3e09ab8605759be9d850e2d5c45ea4dfb9cda8f5d85308ea4",
+      "sourceUrl": "https://farm4.staticflickr.com/3179/2986591710_d76622fdf0_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A man in a suit standing next to a control board and computer.",
+        "A man standing near a table with video equipment. ",
+        "Man in suit smiling next to electronics and monitors",
+        "A man by desk with mixing equipment, a keyboard and a computer monitor.",
+        "A man in a suit stands near a table with computer equipment on it."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "65736",
+          "sha256": "2964c5da08d186b8a875c9ec2de8aa7a829da5b6bb028a70933baf7eecf8dde8"
+        },
+        {
+          "photoId": "481159",
+          "sha256": "51dc6c4511cdd2dbd999174521f6ab0b1418ed0b323a0050c0582ecea6cf2ed8"
+        },
+        {
+          "photoId": "183437",
+          "sha256": "959f995aeb1786cb09541e28f3a328a1e1a1ce421bf2851431494a6c70d65159"
+        },
+        {
+          "photoId": "9483",
+          "sha256": "c7e6e15f4db067c3e09ab8605759be9d850e2d5c45ea4dfb9cda8f5d85308ea4"
+        },
+        {
+          "photoId": "458755",
+          "sha256": "a46fe4379f6edc9e2d8652b0f929fe92851ff2b1c470c5fa355135323fa60774"
+        }
+      ],
+      "originalSize": [
+        640,
+        480
+      ],
+      "variantSize": [
+        640,
+        480
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-9483",
+        "variantFile": "variants/aug-b085-s090-9483.png",
+        "variantSha256": "8d1a1ce5ecb7a40d6d2cc396de617e69da5556da5295618868548ab67d5fd7ac",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:suit|9483",
+        "parentMeaningId": "semantic-v2:suit",
+        "parentGalleryId": "semantic-v2-suit-0",
+        "parentPhotoId": "9483"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:open",
+      "galleryId": "semantic-v2-open-0",
+      "originalSplit": "train",
+      "word": "open",
+      "partOfSpeech": "adjective",
+      "definition": "With a door, lid or cover moved aside to allow access.",
+      "imageScene": "an open door or open container",
+      "parentPhotoId": "512330",
+      "parentFile": "images/000000512330.jpg",
+      "parentSha256": "a97b7899f984d8cbb9505b659cb428c3654a4a7d3505178036e316926c73f0b6",
+      "sourceUrl": "https://farm4.staticflickr.com/3052/3004220244_392298df6c_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "An open refrigerator filled with lots of food.",
+        "The refrigerator and the inside door are full of food.",
+        "There is a refrigerator that is filled with food.",
+        "Open fridge door displaying a wide selection of food inside.",
+        "n open refrigerator door exposing all the food inside"
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "140420",
+          "sha256": "6129582d906698ca9785642983c58adc22b8e4d32a5be24396d6c4f8369dea5f"
+        },
+        {
+          "photoId": "512330",
+          "sha256": "a97b7899f984d8cbb9505b659cb428c3654a4a7d3505178036e316926c73f0b6"
+        },
+        {
+          "photoId": "540414",
+          "sha256": "fcde3d391e5ff8ca3df743484effef4c13e1cf5f3aa548af815b777a23adc365"
+        },
+        {
+          "photoId": "51938",
+          "sha256": "83af2d377338ed8dfe2608d8c8da1273b11dfb4c534b6426cdec0d93c6ed2892"
+        }
+      ],
+      "originalSize": [
+        426,
+        640
+      ],
+      "variantSize": [
+        426,
+        640
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-512330",
+        "variantFile": "variants/aug-b085-s090-512330.png",
+        "variantSha256": "7442c3ac0a94373ead1ca62d6767bdfdeb68aa7857fa66264c8d3082d6a8ed2d",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:open|512330",
+        "parentMeaningId": "semantic-v2:open",
+        "parentGalleryId": "semantic-v2-open-0",
+        "parentPhotoId": "512330"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:cake",
+      "galleryId": "semantic-v2-cake-1",
+      "originalSplit": "train",
+      "word": "cake",
+      "partOfSpeech": "noun",
+      "definition": "A sweet baked food often served in slices.",
+      "imageScene": "a cake",
+      "parentPhotoId": "363207",
+      "parentFile": "images/000000363207.jpg",
+      "parentSha256": "b07a2456f7eea2f05eb2276a00b174a4fe5863936774f501b2e76308b10bb16e",
+      "sourceUrl": "https://farm9.staticflickr.com/8441/7766680378_6621026109_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A newly married couple sharing a piece of there wedding cake.",
+        "The bride and groom stand behind a square, multi-layer wedding cake.",
+        "A newly married couple standing next to a four layer wedding cake.",
+        "A new husband and wife feeding each other wedding cake as a photographer takes pictures. ",
+        "A just married coule feed each other cake while a photographer takes photos."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "363207",
+          "sha256": "b07a2456f7eea2f05eb2276a00b174a4fe5863936774f501b2e76308b10bb16e"
+        },
+        {
+          "photoId": "52591",
+          "sha256": "f137597498947e8bdc1f81e2d72972faff7bfda12e5910392019ffd5ffaea57b"
+        },
+        {
+          "photoId": "262587",
+          "sha256": "e14247bbc942361d9b291478f9d6c32ceb5df85a937e46c83d0152b3e25202e5"
+        },
+        {
+          "photoId": "236914",
+          "sha256": "d4e1e11320ed62510aa92c6ebf23e3a45cd3f014e07cb37f27a99545be973112"
+        },
+        {
+          "photoId": "180011",
+          "sha256": "47706a6be9df4d2cdadfd08dbfc275c502e68f8a4ac9469f463e0b3bcf8f112a"
+        }
+      ],
+      "originalSize": [
+        640,
+        480
+      ],
+      "variantSize": [
+        640,
+        480
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-363207",
+        "variantFile": "variants/aug-b085-s090-363207.png",
+        "variantSha256": "db4b5bbcb87ad8b3dab3d04a7249d5b1ddc3571ea94fd4fd037cac3583677987",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:cake|363207",
+        "parentMeaningId": "semantic-v2:cake",
+        "parentGalleryId": "semantic-v2-cake-1",
+        "parentPhotoId": "363207"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:rock",
+      "galleryId": "semantic-v2-rock-0",
+      "originalSplit": "train",
+      "word": "rock",
+      "partOfSpeech": "noun",
+      "definition": "A solid natural piece of stone.",
+      "imageScene": "a natural rock",
+      "parentPhotoId": "308753",
+      "parentFile": "images/000000308753.jpg",
+      "parentSha256": "952e8f3e0a98da80843838bd3496e1ad2c6f1c26ff75558e1046215b9a8ef6d3",
+      "sourceUrl": "https://farm4.staticflickr.com/3819/9167849123_8feca959cc_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "an animal laying down on top of some rocks.",
+        "A cave on a side of a rocky hill.",
+        "A cave located on the side of a mountain side.",
+        "A cave in a rock wall near a body of water.",
+        "A cave is situated in a rocky wall."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "464786",
+          "sha256": "4b14c0aa08c422043040fa7c55eefb6d8937cd477eb0baccd248b80b20bc1002"
+        },
+        {
+          "photoId": "229858",
+          "sha256": "78782fd13f98e77b1c4f4061f850a6a1d3d8b16b948fb1e083d70c00d5f75555"
+        },
+        {
+          "photoId": "476215",
+          "sha256": "0f292f55b4658641a083ee1e443a1494f3406979426a722f4c860c1299d75b27"
+        },
+        {
+          "photoId": "290163",
+          "sha256": "0b45c8bdbbf95d6c99aa0a9eb845d1d86e46857b77be703a3dc68854d1c6bb4f"
+        },
+        {
+          "photoId": "308753",
+          "sha256": "952e8f3e0a98da80843838bd3496e1ad2c6f1c26ff75558e1046215b9a8ef6d3"
+        }
+      ],
+      "originalSize": [
+        640,
+        480
+      ],
+      "variantSize": [
+        640,
+        480
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-308753",
+        "variantFile": "variants/aug-b085-s090-308753.png",
+        "variantSha256": "587d49bb7d738ffefd9551bdb81ac0aaaa6d9baea4df67799dde7d0849ffb84d",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:rock|308753",
+        "parentMeaningId": "semantic-v2:rock",
+        "parentGalleryId": "semantic-v2-rock-0",
+        "parentPhotoId": "308753"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:laptop",
+      "galleryId": "semantic-v2-laptop-0",
+      "originalSplit": "train",
+      "word": "laptop",
+      "partOfSpeech": "noun",
+      "definition": "A portable computer with a screen attached to a keyboard.",
+      "imageScene": "a laptop computer",
+      "parentPhotoId": "248314",
+      "parentFile": "images/000000248314.jpg",
+      "parentSha256": "b6b1cf5511ed5a690b596376813360b46b180c3fa8c3c3ef9cead9b5647f87e1",
+      "sourceUrl": "https://farm1.staticflickr.com/188/428244913_382d66e2f3_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A plate of food placed next to a computer.",
+        "There is a plate full of food in front of the laptop.",
+        "An office desk with computer equipment, calculator, and work papers holds an employee's working lunch of soup, rice, and vegetables.",
+        "Portioned lunch in front of laptop in nice workspace.",
+        "desktop picture with laptop and food container full of food"
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "471991",
+          "sha256": "51288ea643006b471c953a548554822e2c5e2f6745c9dd65726458dce634907f"
+        },
+        {
+          "photoId": "13177",
+          "sha256": "f93626195530f46ed849091160f8cccce1a255ca886fd5945f5719adc12dc789"
+        },
+        {
+          "photoId": "248314",
+          "sha256": "b6b1cf5511ed5a690b596376813360b46b180c3fa8c3c3ef9cead9b5647f87e1"
+        },
+        {
+          "photoId": "396518",
+          "sha256": "99c61958bdc57c9c073bc33ac8fda6dcb8f634c73dcce369bff5612b05d85b5e"
+        },
+        {
+          "photoId": "206271",
+          "sha256": "715a4e7172e849888d18f748dd7c4217aa2543912a705cb73045707eb9e51b41"
+        }
+      ],
+      "originalSize": [
+        640,
+        480
+      ],
+      "variantSize": [
+        640,
+        480
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-248314",
+        "variantFile": "variants/aug-b085-s090-248314.png",
+        "variantSha256": "720258a80516351f4796677474634f7487573cf4a047d2363af4bdc86d5c81c8",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:laptop|248314",
+        "parentMeaningId": "semantic-v2:laptop",
+        "parentGalleryId": "semantic-v2-laptop-0",
+        "parentPhotoId": "248314"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:puppy",
+      "galleryId": "semantic-v2-puppy-0",
+      "originalSplit": "train",
+      "word": "puppy",
+      "partOfSpeech": "noun",
+      "definition": "A young dog.",
+      "imageScene": "a puppy",
+      "parentPhotoId": "329219",
+      "parentFile": "images/000000329219.jpg",
+      "parentSha256": "10dc6cd39da78d787f01a4221d6f6765d30021799f332965de18faae501587d6",
+      "sourceUrl": "https://farm9.staticflickr.com/8104/8505307842_465524a6a6_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A man standing next to a dog on the ground.",
+        "A man is at a kitchen counter by a dog.",
+        "An man standing in a kitchen with a small puppy.",
+        "there is a small puppy on the kitchen floor",
+        "A man in the kitchen standing with his dog."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "476215",
+          "sha256": "0f292f55b4658641a083ee1e443a1494f3406979426a722f4c860c1299d75b27"
+        },
+        {
+          "photoId": "167898",
+          "sha256": "fed6c4d5fc7f3b77dd7e47a2658eb8f9f1462374151dd2b335c2a54aba18a75e"
+        },
+        {
+          "photoId": "329219",
+          "sha256": "10dc6cd39da78d787f01a4221d6f6765d30021799f332965de18faae501587d6"
+        },
+        {
+          "photoId": "540414",
+          "sha256": "fcde3d391e5ff8ca3df743484effef4c13e1cf5f3aa548af815b777a23adc365"
+        },
+        {
+          "photoId": "253002",
+          "sha256": "a8fa4e0fa0d88819f851e0f4252248312cc932b93bf7124ef213a661ea5355b0"
+        }
+      ],
+      "originalSize": [
+        640,
+        427
+      ],
+      "variantSize": [
+        640,
+        427
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-329219",
+        "variantFile": "variants/aug-b085-s090-329219.png",
+        "variantSha256": "daf0c1aceb1e12ad1979e9354c3c7abaa1182c1e4856acf10433f9d83610f6ee",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:puppy|329219",
+        "parentMeaningId": "semantic-v2:puppy",
+        "parentGalleryId": "semantic-v2-puppy-0",
+        "parentPhotoId": "329219"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:giraffe",
+      "galleryId": "semantic-v2-giraffe-0",
+      "originalSplit": "train",
+      "word": "giraffe",
+      "partOfSpeech": "noun",
+      "definition": "An African animal with a very long neck.",
+      "imageScene": "a giraffe",
+      "parentPhotoId": "130599",
+      "parentFile": "images/000000130599.jpg",
+      "parentSha256": "669aa9b450c1d423c450da6a9e25cab88a9fcbc61b447028248fb748a0925e4d",
+      "sourceUrl": "https://farm4.staticflickr.com/3217/2969208664_9558945783_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A man punching an innocent giraffe in the side of it's head.",
+        "A young man is playing with a giraffe",
+        "A man pretending to punch a giraffe sculpture.",
+        "A man is miming punching a giraffe statue.",
+        "A man is pretending to hit a statue of a giraffe."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "80057",
+          "sha256": "2d7e55fd015c7b559a373070dbae412b241d2d0a67ece9304fa938474ccc93af"
+        },
+        {
+          "photoId": "464689",
+          "sha256": "cb685bf3ccf9db9df9f762422fd9ef3452dcf3f6ab7a96d329a595767ced55b5"
+        },
+        {
+          "photoId": "310862",
+          "sha256": "d308275268ce56f773ff5a8335194504089939acca75a040df20de0ed1e87582"
+        },
+        {
+          "photoId": "130599",
+          "sha256": "669aa9b450c1d423c450da6a9e25cab88a9fcbc61b447028248fb748a0925e4d"
+        },
+        {
+          "photoId": "510095",
+          "sha256": "40eea5adaa2072c80f28e81c22546c7610bfafef193732da6b4639b1bc5f1add"
+        }
+      ],
+      "originalSize": [
+        640,
+        480
+      ],
+      "variantSize": [
+        640,
+        480
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-130599",
+        "variantFile": "variants/aug-b085-s090-130599.png",
+        "variantSha256": "1b75670ad5b8a986dc101511e830fa45cdd3a4f924f691e7da44def49f61559b",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:giraffe|130599",
+        "parentMeaningId": "semantic-v2:giraffe",
+        "parentGalleryId": "semantic-v2-giraffe-0",
+        "parentPhotoId": "130599"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:toilet",
+      "galleryId": "semantic-v2-toilet-0",
+      "originalSplit": "train",
+      "word": "toilet",
+      "partOfSpeech": "noun",
+      "definition": "A bathroom fixture with a bowl for bodily waste.",
+      "imageScene": "a toilet",
+      "parentPhotoId": "147518",
+      "parentFile": "images/000000147518.jpg",
+      "parentSha256": "33ebfe94537ecdf095bf1a0119cf7ef2735d6e5c33e798b5c52eecc9bc3d23e3",
+      "sourceUrl": "https://farm6.staticflickr.com/5145/5563477304_a1c62e89a6_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A bathroom that has magazine rack and small cabinet.",
+        "Compact bathroom area, tub, toilet, magazine area and sink.",
+        "Small residential bath room decorated in wood tones",
+        "A tissue box on top of a toilet in a bathroom.",
+        "an image of a clean full bathroom "
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "147518",
+          "sha256": "33ebfe94537ecdf095bf1a0119cf7ef2735d6e5c33e798b5c52eecc9bc3d23e3"
+        },
+        {
+          "photoId": "376307",
+          "sha256": "a21b620bce393bbad0b44bfecb475a8cc9abcd7f637dca09ed657bb4bd9c6d38"
+        },
+        {
+          "photoId": "250137",
+          "sha256": "00b60aa56c8552f04a59da5ec1a6ba555991fa22cd8ff932f31d72a159595e8b"
+        },
+        {
+          "photoId": "532901",
+          "sha256": "7d6095aecac5e38f60d699e76d26ed74dc0ac4cc8d48ce42e7ef10e17048013c"
+        },
+        {
+          "photoId": "134689",
+          "sha256": "f951a4e9e970a0e2d19efc702cac3c01f08cae3dbe6080cd91c218509b008c01"
+        }
+      ],
+      "originalSize": [
+        480,
+        640
+      ],
+      "variantSize": [
+        480,
+        640
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-147518",
+        "variantFile": "variants/aug-b085-s090-147518.png",
+        "variantSha256": "6a0b6e04c10948020a5bfc04525f28ca8a2daefb5466a11cc2e364f50f6c425a",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:toilet|147518",
+        "parentMeaningId": "semantic-v2:toilet",
+        "parentGalleryId": "semantic-v2-toilet-0",
+        "parentPhotoId": "147518"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:monitor",
+      "galleryId": "semantic-v2-monitor-0",
+      "originalSplit": "train",
+      "word": "monitor",
+      "partOfSpeech": "noun",
+      "definition": "A screen used to display a computer output.",
+      "imageScene": "a computer monitor",
+      "parentPhotoId": "186282",
+      "parentFile": "images/000000186282.jpg",
+      "parentSha256": "73c0456e323cfed4d729360302c86b5a4cefca1257e2ae9e30a04deda0b35e14",
+      "sourceUrl": "https://farm3.staticflickr.com/2492/5812924771_1ec43e7a40_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A flat screen monitor shows a brightly colored image on the screen.",
+        "A desktop computer monitor sitting on top of a desk next to a mouse.",
+        "Computer setup with a multiple colored screen on it. ",
+        "An Apple computer monitor sits on a desk.",
+        "A computer screen has many colors, with a mouse and speakers next to it on the table."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "121242",
+          "sha256": "63c1eeacec4fc367dc318672c0ac8aeb487c91abfe250ddea45d8ad25582c038"
+        },
+        {
+          "photoId": "222118",
+          "sha256": "08359f1eb5dd2c5779b22aded4d4425934ee7d78574bc3a9a6d887b4a1716e2e"
+        },
+        {
+          "photoId": "577584",
+          "sha256": "9e47eaaf563d2ae9bfebcea80f2616ceb7eaf6c99a0390f0274cfb0068686d77"
+        },
+        {
+          "photoId": "186282",
+          "sha256": "73c0456e323cfed4d729360302c86b5a4cefca1257e2ae9e30a04deda0b35e14"
+        },
+        {
+          "photoId": "54967",
+          "sha256": "d40210c4e2241a0ac4de79f4cdc7a6c859dafb1b2b18469146f992c714fe9b2d"
+        }
+      ],
+      "originalSize": [
+        640,
+        427
+      ],
+      "variantSize": [
+        640,
+        427
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-186282",
+        "variantFile": "variants/aug-b085-s090-186282.png",
+        "variantSha256": "abf6b5d266de737216c849c1b0b8ede40a460d6572587d427a59e03a5ef9ad3f",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:monitor|186282",
+        "parentMeaningId": "semantic-v2:monitor",
+        "parentGalleryId": "semantic-v2-monitor-0",
+        "parentPhotoId": "186282"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:fence",
+      "galleryId": "semantic-v2-fence-0",
+      "originalSplit": "train",
+      "word": "fence",
+      "partOfSpeech": "noun",
+      "definition": "A barrier enclosing or dividing an area.",
+      "imageScene": "a fence",
+      "parentPhotoId": "21903",
+      "parentFile": "images/000000021903.jpg",
+      "parentSha256": "3fa9ccedfc3ac829c07e14b0e7ef4211b5963f7700dc6e30dde3054f704efa09",
+      "sourceUrl": "https://farm9.staticflickr.com/8088/8456686192_fccee8c5bb_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A man is leaning over a fence offering food to an elephant/",
+        "A man reaching out to an elephants trunk near a gate.",
+        "a man is feeding an elephant over a fence",
+        "a man handing an elephant a stick in an enclosure at a zoo",
+        "A man reaches out to give the elephant something. "
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "21903",
+          "sha256": "3fa9ccedfc3ac829c07e14b0e7ef4211b5963f7700dc6e30dde3054f704efa09"
+        },
+        {
+          "photoId": "186632",
+          "sha256": "a9e150a34b0f76252c2049857ed88f94368ae45ebbff65e3bfccb3a2b49ae82c"
+        },
+        {
+          "photoId": "341094",
+          "sha256": "8dd624082055c6686acb10be52b5f46e6d65f718cd8b1008f2155389a8a238cd"
+        }
+      ],
+      "originalSize": [
+        640,
+        480
+      ],
+      "variantSize": [
+        640,
+        480
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-21903",
+        "variantFile": "variants/aug-b085-s090-21903.png",
+        "variantSha256": "63954590e1f3d37c551685508654f765d356b0e466a601d71d7dd5581c17bf70",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:fence|21903",
+        "parentMeaningId": "semantic-v2:fence",
+        "parentGalleryId": "semantic-v2-fence-0",
+        "parentPhotoId": "21903"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:book",
+      "galleryId": "semantic-v2-book-0",
+      "originalSplit": "train",
+      "word": "book",
+      "partOfSpeech": "noun",
+      "definition": "Bound pages containing written or printed material.",
+      "imageScene": "a printed book",
+      "parentPhotoId": "578545",
+      "parentFile": "images/000000578545.jpg",
+      "parentSha256": "3b1e4dc0f5d15f4d74b3d2926e15d80e996a7e6fb4302808bbf7ba84213e0d2e",
+      "sourceUrl": "https://farm8.staticflickr.com/7165/6790593405_88e4050767_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A pregnant woman laying in bed reading a book.",
+        "A pregnant woman in bed reading a book",
+        "A pregnant woman is in bed reading a large book.",
+        "A pregnant woman laying in bed reading a book",
+        "a pregnant woman laying in bed reading a book "
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "114907",
+          "sha256": "1ef6feb0a8d8886de8dc4db6e6c379cdd8fad15111a8edc570eeda66bcc17dba"
+        },
+        {
+          "photoId": "2532",
+          "sha256": "fc017f5308d348bdb6011f2312b10853ccd780a4a7369f48774ef67f499f2e77"
+        },
+        {
+          "photoId": "248111",
+          "sha256": "cb5ac7d777b00669aea16772fa45f1015baf4b06d1b887e76fa6557bac2cb429"
+        },
+        {
+          "photoId": "578545",
+          "sha256": "3b1e4dc0f5d15f4d74b3d2926e15d80e996a7e6fb4302808bbf7ba84213e0d2e"
+        },
+        {
+          "photoId": "566282",
+          "sha256": "8194b9a1efda00e15ec8386d9dc78f70055d84203781625fbb17845a356efa9c"
+        }
+      ],
+      "originalSize": [
+        640,
+        474
+      ],
+      "variantSize": [
+        640,
+        474
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-578545",
+        "variantFile": "variants/aug-b085-s090-578545.png",
+        "variantSha256": "dcc177bb4352fb72513d55e323dee13ec81a7446a06ec2fff4808c02ce2016c7",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:book|578545",
+        "parentMeaningId": "semantic-v2:book",
+        "parentGalleryId": "semantic-v2-book-0",
+        "parentPhotoId": "578545"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:suitcase",
+      "galleryId": "semantic-v2-suitcase-0",
+      "originalSplit": "train",
+      "word": "suitcase",
+      "partOfSpeech": "noun",
+      "definition": "A travel bag used to carry clothes and belongings.",
+      "imageScene": "a suitcase",
+      "parentPhotoId": "453001",
+      "parentFile": "images/000000453001.jpg",
+      "parentSha256": "5a53866848c1d1eebad2df1a6d659bd699ccb52cfa89ce3bebb5105e2d81c9a5",
+      "sourceUrl": "https://farm3.staticflickr.com/2049/2036297110_8e15a84fa5_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A woman watching another woman walk with a suitcase on wheels.  ",
+        "a girl watching another girl trip while pulling her suitcase",
+        "A woman carrying a suit case and losing her balance.",
+        "A girl is having a hard time pulling a suit case.",
+        "A young beautiful woman in a short jean skirt."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "28285",
+          "sha256": "a37d71f6459efc47c22ec687945599cf4ec81c1056e6f0256eca3776834879b4"
+        },
+        {
+          "photoId": "289702",
+          "sha256": "57740f11d008af86186d9dfa0b3bf93eef6399a4cf4613ffd3c392dfc2bf3543"
+        },
+        {
+          "photoId": "453001",
+          "sha256": "5a53866848c1d1eebad2df1a6d659bd699ccb52cfa89ce3bebb5105e2d81c9a5"
+        },
+        {
+          "photoId": "335450",
+          "sha256": "c7a2792dca793ceaf05f97171d0f1c70800d6295099aebaff6dd0930382866bb"
+        },
+        {
+          "photoId": "576031",
+          "sha256": "8b8df22489ff798c9a180016fc70681388ecd8f24f77f7e2f6144b70e761354d"
+        }
+      ],
+      "originalSize": [
+        640,
+        480
+      ],
+      "variantSize": [
+        640,
+        480
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-453001",
+        "variantFile": "variants/aug-b085-s090-453001.png",
+        "variantSha256": "98823cb1ac4b12cab8243ac3beff8120d76a83d617b8c4fe55e13d3f9014cafe",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:suitcase|453001",
+        "parentMeaningId": "semantic-v2:suitcase",
+        "parentGalleryId": "semantic-v2-suitcase-0",
+        "parentPhotoId": "453001"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:tennis-racket",
+      "galleryId": "semantic-v2-tennis-racket-0",
+      "originalSplit": "train",
+      "word": "tennis racket",
+      "partOfSpeech": "noun",
+      "definition": "A handled frame with strings used to hit a tennis ball.",
+      "imageScene": "a tennis racket",
+      "parentPhotoId": "200421",
+      "parentFile": "images/000000200421.jpg",
+      "parentSha256": "5fbb7144ab7e492ed1a39dad1daa82c25ea3bc2f17bbd285693feba439dc4161",
+      "sourceUrl": "https://farm4.staticflickr.com/3647/3381904543_0d6865b9e9_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A boy in birthday hat holding a tennis racket.",
+        "A small boy with a birthday hat on holding a tennis racket.",
+        "A young boy in a birthday hat holds a tennis racquet",
+        "a little boy wearing a birthday hat and holding a tennis racket",
+        "A child holds a racket with a hat on his head."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "231747",
+          "sha256": "389e3ecbfaae1b09e918365bb46be7120c767cfdf0d59c61657b285aec6712f8"
+        },
+        {
+          "photoId": "200421",
+          "sha256": "5fbb7144ab7e492ed1a39dad1daa82c25ea3bc2f17bbd285693feba439dc4161"
+        },
+        {
+          "photoId": "109976",
+          "sha256": "cacf3729edd11a3f6f3d0c6f6b9f94479583892c877ae7d0ad03cd1b6c7c4231"
+        },
+        {
+          "photoId": "486479",
+          "sha256": "9f3bf68815b9d35646131e84d97ed6d20fd9de4d343cded54a8f726e4c167de7"
+        },
+        {
+          "photoId": "223188",
+          "sha256": "f922a1cca984ebe2f129aa3caf6067963a235de830cc5f49e4d1e23c2d77e76f"
+        }
+      ],
+      "originalSize": [
+        640,
+        480
+      ],
+      "variantSize": [
+        640,
+        480
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-200421",
+        "variantFile": "variants/aug-b085-s090-200421.png",
+        "variantSha256": "2032ad9c8556d59488f5bc11cd865226364506dfae093feea86969c8c151754e",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:tennis-racket|200421",
+        "parentMeaningId": "semantic-v2:tennis-racket",
+        "parentGalleryId": "semantic-v2-tennis-racket-0",
+        "parentPhotoId": "200421"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:parked-bicycle",
+      "galleryId": "semantic-v2-parked-bicycle-0",
+      "originalSplit": "train",
+      "word": "parked bicycle",
+      "partOfSpeech": "adjective",
+      "definition": "A bicycle left stationary rather than being ridden.",
+      "imageScene": "a bicycle parked beside a wall",
+      "parentPhotoId": "101762",
+      "parentFile": "images/000000101762.jpg",
+      "parentSha256": "8150aec4794933e1d30b565f6511a870e5721e58c72a919735eff71575fb098b",
+      "sourceUrl": "https://farm3.staticflickr.com/2068/2135673297_6c75c29c61_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A cat standing next to a bike parked against a wall.",
+        "A ca walking with its tail straight up .",
+        "A kitten is walking next to a parked bike inside.",
+        "A small cat is walking behind a bike.",
+        "A baby tabby cat walking behind a bicycle leaning against a wall"
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "116825",
+          "sha256": "5504ef709e0631da620603c50ba3f58a7d3d8290652f3cc8e64b34b21db554bb"
+        },
+        {
+          "photoId": "567886",
+          "sha256": "a1954fe14f98e86a0808229bcc3eba011214ca82b2c3d725822b428ca2b28d2a"
+        },
+        {
+          "photoId": "438862",
+          "sha256": "3689831ed23f734ebab9405f48ffbfbbefb778e9de3101a9d56e421ea45288cf"
+        },
+        {
+          "photoId": "101762",
+          "sha256": "8150aec4794933e1d30b565f6511a870e5721e58c72a919735eff71575fb098b"
+        }
+      ],
+      "originalSize": [
+        640,
+        480
+      ],
+      "variantSize": [
+        640,
+        480
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-101762",
+        "variantFile": "variants/aug-b085-s090-101762.png",
+        "variantSha256": "06faeb6be7d28dc4e25662b17ffb291658da25a0f177dd7b114d66d2d083d3a4",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:parked-bicycle|101762",
+        "parentMeaningId": "semantic-v2:parked-bicycle",
+        "parentGalleryId": "semantic-v2-parked-bicycle-0",
+        "parentPhotoId": "101762"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:airport",
+      "galleryId": "semantic-v2-airport-0",
+      "originalSplit": "train",
+      "word": "airport",
+      "partOfSpeech": "noun",
+      "definition": "A place where airplanes take off, land and are serviced.",
+      "imageScene": "an airport with airplanes",
+      "parentPhotoId": "84270",
+      "parentFile": "images/000000084270.jpg",
+      "parentSha256": "ae7ff3f09caaedb11b002d1e25ab46e5236ee62713fcf74bfaddafe6cc3e4b17",
+      "sourceUrl": "https://farm3.staticflickr.com/2422/3771300517_42208de8b2_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A crowded airport filled with people carrying luggage.",
+        "Travelers making their way through a busy transport hub.",
+        "An airport lobby in which several people stroll by with their luggage.",
+        "An airport terminal with many people carrying their luggage.",
+        "A busy airport with many people walking around."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "297343",
+          "sha256": "4a175dded2929c5a585b37c83a3d7f926f37df2d2a15bb54de019946ab477b04"
+        },
+        {
+          "photoId": "470773",
+          "sha256": "48aac88bc3071da216a2a5ebe08ea7792b825edea1f4ed5039a20d302fb16560"
+        },
+        {
+          "photoId": "540414",
+          "sha256": "fcde3d391e5ff8ca3df743484effef4c13e1cf5f3aa548af815b777a23adc365"
+        },
+        {
+          "photoId": "302107",
+          "sha256": "70cd955351742b105e1870c5d71516f7a422e71b49117bded96faca225690a1b"
+        },
+        {
+          "photoId": "84270",
+          "sha256": "ae7ff3f09caaedb11b002d1e25ab46e5236ee62713fcf74bfaddafe6cc3e4b17"
+        }
+      ],
+      "originalSize": [
+        640,
+        480
+      ],
+      "variantSize": [
+        640,
+        480
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-84270",
+        "variantFile": "variants/aug-b085-s090-84270.png",
+        "variantSha256": "5a7b278248eb809f62fa3ae24637e1923ee19a5f6811c38c5b2c75cfa55e768e",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:airport|84270",
+        "parentMeaningId": "semantic-v2:airport",
+        "parentGalleryId": "semantic-v2-airport-0",
+        "parentPhotoId": "84270"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:bicycle",
+      "galleryId": "semantic-v2-bicycle-0",
+      "originalSplit": "train",
+      "word": "bicycle",
+      "partOfSpeech": "noun",
+      "definition": "A vehicle with two wheels powered by pedals.",
+      "imageScene": "a pedal bicycle",
+      "parentPhotoId": "492937",
+      "parentFile": "images/000000492937.jpg",
+      "parentSha256": "2c1dbb9427ecfcbb98eab03ba9c65a51ae9d3d72ba6df04ec83a07a15b8d937e",
+      "sourceUrl": "https://farm9.staticflickr.com/8215/8413523703_f60308df73_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A close up of a bike brake on a bicycle.",
+        "A bicycle is chained up to a pole at a train station.",
+        "a vintage photo of a bike eith a lock on it",
+        "A close up of a bicycle  parked on a train platform.",
+        "The bicycle is locked to the metal pole as the young man waits to board the mass  transit train."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "100238",
+          "sha256": "aeebb3301d652e291323df9567bed787a7966fefbefeb0629634424b1567769b"
+        },
+        {
+          "photoId": "492937",
+          "sha256": "2c1dbb9427ecfcbb98eab03ba9c65a51ae9d3d72ba6df04ec83a07a15b8d937e"
+        },
+        {
+          "photoId": "298904",
+          "sha256": "9322af155b73aa991f85ab169a3679ab62271539a8d1dbe8af38c7912f0d1b75"
+        },
+        {
+          "photoId": "539143",
+          "sha256": "0b5fafd3202abf7bb23cde6fe1407b681fab6ff2b17c12c33b277211f927cf26"
+        },
+        {
+          "photoId": "255749",
+          "sha256": "6b7e93b3bddf3c69af9f2411c46d7b3321ca0eebb18009c8476eb8f620ebd1a6"
+        }
+      ],
+      "originalSize": [
+        612,
+        612
+      ],
+      "variantSize": [
+        612,
+        612
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-492937",
+        "variantFile": "variants/aug-b085-s090-492937.png",
+        "variantSha256": "f7958a51710c0db8c0490058feaf142dcb88f373b47a2b436c7f86be6db5b661",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:bicycle|492937",
+        "parentMeaningId": "semantic-v2:bicycle",
+        "parentGalleryId": "semantic-v2-bicycle-0",
+        "parentPhotoId": "492937"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:railway",
+      "galleryId": "semantic-v2-railway-0",
+      "originalSplit": "train",
+      "word": "railway",
+      "partOfSpeech": "noun",
+      "definition": "A track system on which trains travel.",
+      "imageScene": "a railway track",
+      "parentPhotoId": "100274",
+      "parentFile": "images/000000100274.jpg",
+      "parentSha256": "18a930e65771a5c2954229da0b448d2ab74b03a3e6179cae61c212d52f5ff3cd",
+      "sourceUrl": "https://farm8.staticflickr.com/7460/9267226612_d9df1e1d14_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A long train traveling through a train yard.",
+        "a train on a train track next to a parking lot",
+        "An outdoor train yard area with several sets of train tracks and train cars extending down one set of tracks.",
+        "A long train pulling several cars along the tracks",
+        "A landscape view of a railroad yard and train"
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "142620",
+          "sha256": "0f3dd713a8c98734879b3108ac6a160877b031831048330a0fc09cedfdf1dd80"
+        },
+        {
+          "photoId": "308793",
+          "sha256": "a11eae1711221ca28f3ad22e9c14b3fa045c1e3206eae82d754697d52902b1c7"
+        },
+        {
+          "photoId": "336309",
+          "sha256": "e596ab5e41982529cb87aaac601145764a28e08cfa8372491d3773b2320ad370"
+        },
+        {
+          "photoId": "100274",
+          "sha256": "18a930e65771a5c2954229da0b448d2ab74b03a3e6179cae61c212d52f5ff3cd"
+        },
+        {
+          "photoId": "324614",
+          "sha256": "349e8a6b5af5f7455e1ede69e260e7a664dcf12a9af328df058d5cfb260d631f"
+        }
+      ],
+      "originalSize": [
+        640,
+        427
+      ],
+      "variantSize": [
+        640,
+        427
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-100274",
+        "variantFile": "variants/aug-b085-s090-100274.png",
+        "variantSha256": "55a4d9b9c6c868a3ca3befa08eb0739cf6346d91e0003070ec63efbafadaec34",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:railway|100274",
+        "parentMeaningId": "semantic-v2:railway",
+        "parentGalleryId": "semantic-v2-railway-0",
+        "parentPhotoId": "100274"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:ball",
+      "galleryId": "semantic-v2-ball-0",
+      "originalSplit": "train",
+      "word": "ball",
+      "partOfSpeech": "noun",
+      "definition": "A round object used in games and sports.",
+      "imageScene": "a sports ball",
+      "parentPhotoId": "60507",
+      "parentFile": "images/000000060507.jpg",
+      "parentSha256": "0aa436c998cd750d278170996d88b02869af323af4543ae4a8ef6349a14ca7fb",
+      "sourceUrl": "https://farm4.staticflickr.com/3290/2705876114_885d9a7abe_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A batter at a game playing in a baseball game.",
+        "A baseball player hitting a baseball into the air.",
+        "A batter swings at a pitch during a baseball game.",
+        "there is a baseball player that has just hit the ball",
+        "Player hits ball during major league game at stadium."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "381360",
+          "sha256": "8f16a69db296dc4b490c68751df1facccd067e0287e3328d9a7479e973c44e14"
+        },
+        {
+          "photoId": "534664",
+          "sha256": "f408511d6fa665c44345c3473d7e20124aecbf2e91c0e9de34dae2263b0559d1"
+        },
+        {
+          "photoId": "256518",
+          "sha256": "2e0f61f66dcd728f9d3ca0e5898f1d8c0684f32951efe2b84607bd3b3e665764"
+        },
+        {
+          "photoId": "60507",
+          "sha256": "0aa436c998cd750d278170996d88b02869af323af4543ae4a8ef6349a14ca7fb"
+        }
+      ],
+      "originalSize": [
+        640,
+        427
+      ],
+      "variantSize": [
+        640,
+        427
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-60507",
+        "variantFile": "variants/aug-b085-s090-60507.png",
+        "variantSha256": "fa25c873aae1f007a2bdd8995c558c014fa47451c4cc77131153e22d65dc5e82",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:ball|60507",
+        "parentMeaningId": "semantic-v2:ball",
+        "parentGalleryId": "semantic-v2-ball-0",
+        "parentPhotoId": "60507"
+      }
+    },
+    {
+      "meaningId": "semantic-v2:horse",
+      "galleryId": "semantic-v2-horse-0",
+      "originalSplit": "train",
+      "word": "horse",
+      "partOfSpeech": "noun",
+      "definition": "A large four-legged animal commonly ridden by people.",
+      "imageScene": "a horse",
+      "parentPhotoId": "574297",
+      "parentFile": "images/000000574297.jpg",
+      "parentSha256": "fdf3ab0fc576b6fcea27d692fcd14c21d8c3bcd1c1a1ef66de8f0d98e6a85c75",
+      "sourceUrl": "https://farm9.staticflickr.com/8256/8699418944_2e57144c22_z.jpg",
+      "source": "COCO val2017 human annotations via pinned public mirror",
+      "captionEvidence": [
+        "A man in a helmet is riding a horse across a dirt road",
+        "a man sits on top of a horse ",
+        "The jockey is riding a horse on the beaten path.",
+        "A man that is riding a horse on a dirt road. ",
+        "A man dressed as a jockey riding a horse along a path."
+      ],
+      "galleryCandidateHashes": [
+        {
+          "photoId": "78565",
+          "sha256": "af56785c7c458a53bf642cd48f7d209073302115e5d6806db3c6fb039df7558e"
+        },
+        {
+          "photoId": "574297",
+          "sha256": "fdf3ab0fc576b6fcea27d692fcd14c21d8c3bcd1c1a1ef66de8f0d98e6a85c75"
+        },
+        {
+          "photoId": "155571",
+          "sha256": "d7f93778697b4e70e1f483cc2828a5fc0ac45c0c801122a50cd88470e2ac55d7"
+        },
+        {
+          "photoId": "393469",
+          "sha256": "a6565c9a61ad9d8793e7264bcc583954b152ab63715822d8494e35eae39aab7c"
+        },
+        {
+          "photoId": "218362",
+          "sha256": "61049627b034266483211b8563cdf6b0330644935e52b9bd314b560bd679f412"
+        }
+      ],
+      "originalSize": [
+        640,
+        427
+      ],
+      "variantSize": [
+        640,
+        427
+      ],
+      "augmentation": {
+        "variantId": "aug-b085-s090-574297",
+        "variantFile": "variants/aug-b085-s090-574297.png",
+        "variantSha256": "afec886c2295e15e8f20d6a68fc92bd2eb74180aa270e0a65587128cf5ab675c",
+        "operation": "Pillow ImageEnhance.Brightness then ImageEnhance.Color",
+        "brightnessFactor": 0.85,
+        "saturationFactor": 0.9,
+        "crop": "none",
+        "resize": "none",
+        "rotations": "none",
+        "groupId": "semantic-v2:horse|574297",
+        "parentMeaningId": "semantic-v2:horse",
+        "parentGalleryId": "semantic-v2-horse-0",
+        "parentPhotoId": "574297"
+      }
+    }
+  ]
+}

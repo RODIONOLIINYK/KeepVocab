@@ -144,7 +144,7 @@ test('the fixed offline CLI writes a separate semantic candidate and complete sp
     '--manifest='+cases,'--output='+output,'--candidate-output='+candidateOutput],{timeout:60000,maxBuffer:2_000_000,stdio:'pipe'});
   const report=JSON.parse(await readFile(output,'utf8')),saved=JSON.parse(await readFile(candidateOutput,'utf8'));
   assert.equal(report.targetTask,'semantic');assert.equal(report.recipe.epochs,30);assert.equal(report.recipe.maxMilliseconds,120000);
-  assert.equal(report.recipe.task,'semantic');assert.equal(saved.model.role,'semantic');assert.equal(saved.model.weights.length,49825);
+  assert.equal(report.recipe.task,'semantic');assert.equal(saved.model.role,'semantic');assert.equal(saved.model.weights.length,33441);
   assert.equal(report.splits.train.baseline.choices,36);assert.equal(report.splits.validation.baseline.choices,12);assert.equal(report.splits.test.baseline.choices,12);
   assert.equal(report.recipe.datasetPartitions.test.length,12);assert.equal(report.splits.test.pairedMeaningBootstrap.unit,'meaning-family');
 });

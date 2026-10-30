@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { readJsonFile } from '../scripts/lib/json-files.mjs';
 import { validatePretrainingBenchmark, validateSemanticSupervision, comparePretrainingModels } from '../scripts/lib/image-pretraining-benchmark.mjs';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
-import { validPersonalizer } from '../js/services/imagePersonalizer.js';
+import { validPersonalizer } from '../scripts/lib/image-personalizer-v2.mjs';
 import { fixedLabelBiasVariance } from '../scripts/lib/image-training-diagnostics.mjs';
 
 test('fresh FP16 features, saved candidate and all split metrics share one verified experiment', async () => {

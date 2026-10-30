@@ -33,7 +33,7 @@ test('Skip, Next, unavailable pixels and invalid features do not fabricate recor
   assert.equal((await recordImagePreference(word, 'good', { ...candidate('bad', 0), ml: { model: CLIP_TAG, sense: imageSenseFingerprint(word), features: 'bad' } })).recorded, false);
   assert.equal((await recordImagePreference(word, 'wrong', { url: 'https://example.test/no-pixels.jpg' })).recorded, false);
   assert.equal((await getImageLearningTrainingData()).records.length, 0);
-  const images = [{ url: 'https://example.test/fallback.jpg' }]; assert.strictEqual(await rankImagesLocally(word, images), images);
+  const images = [{ url: 'https://example.test/fallback.jpg' }]; assert.deepEqual(await rankImagesLocally(word, images), []);
 });
 test('replacement preserves a prior positive and groups its comparisons as one new decision', async t => {
   await isolated(t);

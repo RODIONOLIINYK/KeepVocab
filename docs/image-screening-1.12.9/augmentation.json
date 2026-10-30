@@ -1,0 +1,1083 @@
+{
+  "createdAt": "2026-10-30T19:17:14.513Z",
+  "scope": "Diagnostic only: 24 distinct selected reference photos from original train split; one deterministic variant each. No training, no validation/test photos, no accuracy claim.",
+  "model": {
+    "tag": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+    "textDtype": "fp16",
+    "visionDtype": "fp32",
+    "preprocessing": "full-frame-letterbox-256-v1",
+    "allowDownloads": false
+  },
+  "transform": {
+    "brightnessFactor": 0.85,
+    "saturationFactor": 0.9,
+    "pillowVersion": "13.0.0",
+    "order": [
+      "Pillow ImageEnhance.Brightness",
+      "Pillow ImageEnhance.Color"
+    ],
+    "crop": false,
+    "resize": false,
+    "rotation": false,
+    "grayscale": false
+  },
+  "sample": {
+    "photos": 24,
+    "uniqueMeanings": 24,
+    "uniqueParentHashes": 24,
+    "originalTrainGalleries": 385,
+    "sourceSplit": "train"
+  },
+  "metrics": {
+    "imageVectorCosine": {
+      "min": 0.9716701849216941,
+      "median": 0.9961255747581643,
+      "max": 0.9983279556025478,
+      "mean": 0.9946523337328408
+    },
+    "imageVectorL2": {
+      "min": 0.057828096933102764,
+      "median": 0.08802529620654018,
+      "max": 0.23803283419858806,
+      "mean": 0.09697748175138514
+    },
+    "targetTextSimilarity": {
+      "original": {
+        "min": 0.1422508699889043,
+        "median": 0.22832503237731003,
+        "max": 0.28330064310139846,
+        "mean": 0.21474206112963237
+      },
+      "augmented": {
+        "min": 0.14416063210195182,
+        "median": 0.23085726045309113,
+        "max": 0.28305080394964544,
+        "mean": 0.2153096748860496
+      },
+      "delta": {
+        "min": -0.006441185208592104,
+        "median": 0.00039855793602355805,
+        "max": 0.0091395688468619,
+        "mean": 0.0005676137564172012
+      }
+    },
+    "sceneTextSimilarity": {
+      "original": {
+        "min": 0.09741049043253443,
+        "median": 0.2103314952430974,
+        "max": 0.27496186507669834,
+        "mean": 0.20166064899495953
+      },
+      "augmented": {
+        "min": 0.10297000145926595,
+        "median": 0.21474600221911225,
+        "max": 0.2763731071155237,
+        "mean": 0.20387029550758148
+      },
+      "delta": {
+        "min": -0.005363255015839397,
+        "median": 0.0020857760235999667,
+        "max": 0.00990645535071974,
+        "mean": 0.0022096465126219063
+      }
+    },
+    "semanticSelected": {
+      "original": {
+        "min": 0.12879875612199332,
+        "median": 0.22419531412519866,
+        "max": 0.2807990096939884,
+        "mean": 0.21081763748923057
+      },
+      "augmented": {
+        "min": 0.13180344290914606,
+        "median": 0.22761657824509493,
+        "max": 0.28104749489940895,
+        "mean": 0.21187786107250905
+      },
+      "delta": {
+        "min": -0.006117806150766292,
+        "median": 0.0008667020349431565,
+        "max": 0.00936963479801925,
+        "mean": 0.001060223583278613
+      }
+    },
+    "semanticScore": {
+      "original": {
+        "min": 0.10291238352461127,
+        "median": 0.19584765510003346,
+        "max": 0.2538326839168851,
+        "mean": 0.18488558491416848
+      },
+      "augmented": {
+        "min": 0.10547901845700733,
+        "median": 0.19984449013542172,
+        "max": 0.2534980390076338,
+        "mean": 0.1854659670090328
+      },
+      "delta": {
+        "min": -0.00625489988123637,
+        "median": 0.00048292718223477693,
+        "max": 0.009381074744410578,
+        "mean": 0.0005803820948643776
+      }
+    },
+    "unwantedTextSimilarity": {
+      "original": {
+        "min": 0.06989858506988905,
+        "median": 0.10159312902221324,
+        "max": 0.1519458949647344,
+        "mean": 0.1037282103002482
+      },
+      "augmented": {
+        "min": 0.0720347860885128,
+        "median": 0.10402911027838371,
+        "max": 0.15309398531646962,
+        "mean": 0.10564757625390514
+      },
+      "delta": {
+        "min": -0.008457311920863617,
+        "median": 0.002613511488820941,
+        "max": 0.0057055593853854725,
+        "mean": 0.0019193659536569415
+      }
+    }
+  },
+  "rows": [
+    {
+      "meaningId": "semantic-v2:surf",
+      "galleryId": "semantic-v2-surf-0",
+      "word": "surf",
+      "definition": "To ride ocean waves on a surfboard.",
+      "parentPhotoId": "381360",
+      "parentSha256": "8f16a69db296dc4b490c68751df1facccd067e0287e3328d9a7479e973c44e14",
+      "variantId": "aug-b085-s090-381360",
+      "variantSha256": "8ab53196683a35b5f14c33e9128b2e5e328b2e8e4d5442bb3531523924e87404",
+      "vectorCosine": 0.9960700621634527,
+      "l2Distance": 0.08865593986357607,
+      "targetTextSimilarity": {
+        "original": 0.28330064310139846,
+        "augmented": 0.28305080394964544,
+        "delta": -0.0002498391517530285
+      },
+      "sceneTextSimilarity": {
+        "original": 0.27496186507669834,
+        "augmented": 0.2763731071155237,
+        "delta": 0.0014112420388253666
+      },
+      "semanticSelected": {
+        "original": 0.2807990096939884,
+        "augmented": 0.28104749489940895,
+        "delta": 0.00024848520542053443
+      },
+      "semanticScore": {
+        "original": 0.2538326839168851,
+        "augmented": 0.2534980390076338,
+        "delta": -0.00033464490925133594
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.10786530310841311,
+        "augmented": 0.11019782356710052,
+        "delta": 0.002332520458687412
+      },
+      "originalVectorSha256": "288efb8897bb60d64add7d261230f29a8147178affcbc55f8a7cbdfa89581539",
+      "variantVectorSha256": "838cde3effaa411af48740c9eeacba9acfaaa48676b84b9c53aceae5ca39531c"
+    },
+    {
+      "meaningId": "semantic-v2:bus",
+      "galleryId": "semantic-v2-bus-0",
+      "word": "bus",
+      "definition": "A large road vehicle that carries passengers.",
+      "parentPhotoId": "446206",
+      "parentSha256": "37f631d7cf9ff3f54abb80600fa15651061c228fb1265b95888847de72e06bae",
+      "variantId": "aug-b085-s090-446206",
+      "variantSha256": "a5a0918b111c11f050a51cf9750d7a33c3c888450917b039d277889e434343d2",
+      "vectorCosine": 0.996915096239403,
+      "l2Distance": 0.07854812232761928,
+      "targetTextSimilarity": {
+        "original": 0.23737520778106724,
+        "augmented": 0.23841088176392905,
+        "delta": 0.0010356739828618067
+      },
+      "sceneTextSimilarity": {
+        "original": 0.20778064017878822,
+        "augmented": 0.21032178660160608,
+        "delta": 0.002541146422817858
+      },
+      "semanticSelected": {
+        "original": 0.22849683750038352,
+        "augmented": 0.22998415321523213,
+        "delta": 0.0014873157148486138
+      },
+      "semanticScore": {
+        "original": 0.20276230468150883,
+        "augmented": 0.20311348706069826,
+        "delta": 0.0003511823791894353
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.10293813127549882,
+        "augmented": 0.1074826646181355,
+        "delta": 0.004544533342636686
+      },
+      "originalVectorSha256": "1fde4d6b90a0b66a4e9a9a0d206b7eb6bc24d524c7900953a6bee1735f5ee488",
+      "variantVectorSha256": "627af5d017072691e87816260d40ef7445dc6db714e1c39aa91f24b5a2488dc8"
+    },
+    {
+      "meaningId": "semantic-v2:stairs",
+      "galleryId": "semantic-v2-stairs-0",
+      "word": "stairs",
+      "definition": "A series of steps leading from one level to another.",
+      "parentPhotoId": "249180",
+      "parentSha256": "685bd913e0bfbbcd9d91b2368c219696308f51ba4f9428b077584d64b5a6ae83",
+      "variantId": "aug-b085-s090-249180",
+      "variantSha256": "08b79a139168a2b1c8f73bdf44d55b54eab567ba6cbfad5d5c1a005f321974b2",
+      "vectorCosine": 0.9968949365282763,
+      "l2Distance": 0.07880435865767361,
+      "targetTextSimilarity": {
+        "original": 0.2642016318998935,
+        "augmented": 0.2623652635519776,
+        "delta": -0.0018363683479158954
+      },
+      "sceneTextSimilarity": {
+        "original": 0.23529356304865898,
+        "augmented": 0.23548542542946607,
+        "delta": 0.00019186238080709517
+      },
+      "semanticSelected": {
+        "original": 0.2555292112445231,
+        "augmented": 0.2543013121152241,
+        "delta": -0.0012278991292989927
+      },
+      "semanticScore": {
+        "original": 0.22155412085177267,
+        "augmented": 0.21921774639495747,
+        "delta": -0.002336374456815199
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.13590036157100172,
+        "augmented": 0.14033426288106657,
+        "delta": 0.004433901310064853
+      },
+      "originalVectorSha256": "eefb59dcedd9a7e59a4f1a962c00aeb8d6f84be514182490ee0df2ae0441a0c9",
+      "variantVectorSha256": "76bddad95f1081925c780997fef2881613fec2d18fe6ce9519d7cdb9f44dd663"
+    },
+    {
+      "meaningId": "semantic-v2:bridge",
+      "galleryId": "semantic-v2-bridge-0",
+      "word": "bridge",
+      "definition": "A structure carrying a path over water or another obstacle.",
+      "parentPhotoId": "344816",
+      "parentSha256": "091feaf5dbb6a28c71f83d0d91756aac8d176e7c3d31b766c484252440772457",
+      "variantId": "aug-b085-s090-344816",
+      "variantSha256": "237b5d16873c266565108b7cd9d8297722b6345d25c399a3c7ef37e15816cec5",
+      "vectorCosine": 0.9975846150036102,
+      "l2Distance": 0.0695037408545763,
+      "targetTextSimilarity": {
+        "original": 0.1622672829106735,
+        "augmented": 0.15906944879323842,
+        "delta": -0.003197834117435072
+      },
+      "sceneTextSimilarity": {
+        "original": 0.15316951287982397,
+        "augmented": 0.15168725481518844,
+        "delta": -0.0014822580646355332
+      },
+      "semanticSelected": {
+        "original": 0.15953795190141862,
+        "augmented": 0.1568547905998234,
+        "delta": -0.0026831613015952105
+      },
+      "semanticScore": {
+        "original": 0.1341731855937362,
+        "augmented": 0.13163046858709596,
+        "delta": -0.002542717006640244
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.10145906523072966,
+        "augmented": 0.10089728805090976,
+        "delta": -0.0005617771798198945
+      },
+      "originalVectorSha256": "ea5b3871dbe9251d5f001e9b7cc1aa2d44171d0eec3abc88c124d1e7272c693c",
+      "variantVectorSha256": "ff46944e3c7ca543d6ee5fb4368cd383ad20af42ecfbeef43301140f422299e6"
+    },
+    {
+      "meaningId": "semantic-v2:beer",
+      "galleryId": "semantic-v2-beer-1",
+      "word": "beer",
+      "definition": "An alcoholic drink made from malt and hops.",
+      "parentPhotoId": "74733",
+      "parentSha256": "d99c93fb6d22a5d51bbb6e09ca5f10c11bdcf90a711abf6cc83188df52cc456a",
+      "variantId": "aug-b085-s090-74733",
+      "variantSha256": "040f962b5a799c7d45ada87b527405007c66e39564c063e6eb77f2298c5e409e",
+      "vectorCosine": 0.9979058223827412,
+      "l2Distance": 0.06471750330875006,
+      "targetTextSimilarity": {
+        "original": 0.22170680224201766,
+        "augmented": 0.2216884110900038,
+        "delta": -0.00001839115201385244
+      },
+      "sceneTextSimilarity": {
+        "original": 0.1957449583202106,
+        "augmented": 0.19644701656258032,
+        "delta": 0.000702058242369713
+      },
+      "semanticSelected": {
+        "original": 0.21391824906547555,
+        "augmented": 0.21411599273177673,
+        "delta": 0.00019774366630118112
+      },
+      "semanticScore": {
+        "original": 0.19377268722462335,
+        "augmented": 0.19411609101058475,
+        "delta": 0.0003434037859613992
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.08058224736340878,
+        "augmented": 0.07999960688476797,
+        "delta": -0.0005826404786408168
+      },
+      "originalVectorSha256": "0e1724d13a0803f5553f565264aed09cfc6dc9eee528b808b34f1d39e5a67120",
+      "variantVectorSha256": "fec80e4d20a79e4988d482dc3f1cffd9ad93d7fb779119007bfae496eb030a77"
+    },
+    {
+      "meaningId": "semantic-v2:suit",
+      "galleryId": "semantic-v2-suit-0",
+      "word": "suit",
+      "definition": "A matching jacket and trousers worn as a set.",
+      "parentPhotoId": "9483",
+      "parentSha256": "c7e6e15f4db067c3e09ab8605759be9d850e2d5c45ea4dfb9cda8f5d85308ea4",
+      "variantId": "aug-b085-s090-9483",
+      "variantSha256": "8d1a1ce5ecb7a40d6d2cc396de617e69da5556da5295618868548ab67d5fd7ac",
+      "vectorCosine": 0.9945332196079057,
+      "l2Distance": 0.10456366856698697,
+      "targetTextSimilarity": {
+        "original": 0.1652304082593432,
+        "augmented": 0.15929906040735614,
+        "delta": -0.005931347851987068
+      },
+      "sceneTextSimilarity": {
+        "original": 0.16340684438384395,
+        "augmented": 0.16055228206879824,
+        "delta": -0.0028545623150457167
+      },
+      "semanticSelected": {
+        "original": 0.16468333909669342,
+        "augmented": 0.15967502690578878,
+        "delta": -0.00500831219090464
+      },
+      "semanticScore": {
+        "original": 0.13436175022886868,
+        "augmented": 0.1284334008917712,
+        "delta": -0.005928349337097488
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.12128635547129896,
+        "augmented": 0.1249665040560703,
+        "delta": 0.0036801485847713367
+      },
+      "originalVectorSha256": "44cdc82543534776cef6185d98c89b888add242b93908a2071287877bfbed4d4",
+      "variantVectorSha256": "16f0d580fe38af236c560d8b900e0b889828eeb901ced34ae05cd0bff09d80f2"
+    },
+    {
+      "meaningId": "semantic-v2:open",
+      "galleryId": "semantic-v2-open-0",
+      "word": "open",
+      "definition": "With a door, lid or cover moved aside to allow access.",
+      "parentPhotoId": "512330",
+      "parentSha256": "a97b7899f984d8cbb9505b659cb428c3654a4a7d3505178036e316926c73f0b6",
+      "variantId": "aug-b085-s090-512330",
+      "variantSha256": "7442c3ac0a94373ead1ca62d6767bdfdeb68aa7857fa66264c8d3082d6a8ed2d",
+      "vectorCosine": 0.997155334357203,
+      "l2Distance": 0.07542765597309378,
+      "targetTextSimilarity": {
+        "original": 0.22963257400211284,
+        "augmented": 0.2304480810261738,
+        "delta": 0.0008155070240609685
+      },
+      "sceneTextSimilarity": {
+        "original": 0.2218200343020218,
+        "augmented": 0.22392967970198147,
+        "delta": 0.00210964539995967
+      },
+      "semanticSelected": {
+        "original": 0.2272888120920855,
+        "augmented": 0.2284925606289161,
+        "delta": 0.0012037485368305845
+      },
+      "semanticScore": {
+        "original": 0.20981416582461326,
+        "augmented": 0.2104838641067879,
+        "delta": 0.0006696982821746411
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.06989858506988905,
+        "augmented": 0.0720347860885128,
+        "delta": 0.0021362010186237457
+      },
+      "originalVectorSha256": "2b458f5a0511b53554fed2c03a28a89334583c6c86517760f1ce711f34dc71a4",
+      "variantVectorSha256": "da1558e3f82d878c8f70f419856f376e907c3883f24e9d96162defa9fe329104"
+    },
+    {
+      "meaningId": "semantic-v2:cake",
+      "galleryId": "semantic-v2-cake-1",
+      "word": "cake",
+      "definition": "A sweet baked food often served in slices.",
+      "parentPhotoId": "363207",
+      "parentSha256": "b07a2456f7eea2f05eb2276a00b174a4fe5863936774f501b2e76308b10bb16e",
+      "variantId": "aug-b085-s090-363207",
+      "variantSha256": "db4b5bbcb87ad8b3dab3d04a7249d5b1ddc3571ea94fd4fd037cac3583677987",
+      "vectorCosine": 0.9945544569651966,
+      "l2Distance": 0.10436036637348255,
+      "targetTextSimilarity": {
+        "original": 0.21341452839792188,
+        "augmented": 0.21956149000335104,
+        "delta": 0.006146961605429158
+      },
+      "sceneTextSimilarity": {
+        "original": 0.24055588401647993,
+        "augmented": 0.2448186222373199,
+        "delta": 0.004262738220839973
+      },
+      "semanticSelected": {
+        "original": 0.22155693508348928,
+        "augmented": 0.22713862967354168,
+        "delta": 0.005581694590052394
+      },
+      "semanticScore": {
+        "original": 0.19792262297544358,
+        "augmented": 0.20257509692689768,
+        "delta": 0.0046524739514541
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.09453724843218285,
+        "augmented": 0.09825413098657595,
+        "delta": 0.0037168825543931056
+      },
+      "originalVectorSha256": "660be65ab7eb3e59fd90b24ce24de3fe45269d76383c1ea557858ac7f280816a",
+      "variantVectorSha256": "1a42cbaed2dc840b94068998e867ee62e35f83161926f68825c4c314e97c41f2"
+    },
+    {
+      "meaningId": "semantic-v2:rock",
+      "galleryId": "semantic-v2-rock-0",
+      "word": "rock",
+      "definition": "A solid natural piece of stone.",
+      "parentPhotoId": "308753",
+      "parentSha256": "952e8f3e0a98da80843838bd3496e1ad2c6f1c26ff75558e1046215b9a8ef6d3",
+      "variantId": "aug-b085-s090-308753",
+      "variantSha256": "587d49bb7d738ffefd9551bdb81ac0aaaa6d9baea4df67799dde7d0849ffb84d",
+      "vectorCosine": 0.9912404430114489,
+      "l2Distance": 0.13235978988009575,
+      "targetTextSimilarity": {
+        "original": 0.23532995449220384,
+        "augmented": 0.23642418454498934,
+        "delta": 0.0010942300527854998
+      },
+      "sceneTextSimilarity": {
+        "original": 0.22363197166420465,
+        "augmented": 0.2256938783114449,
+        "delta": 0.0020619066472402636
+      },
+      "semanticSelected": {
+        "original": 0.23182055964380407,
+        "augmented": 0.233205092674926,
+        "delta": 0.0013845330311219317
+      },
+      "semanticScore": {
+        "original": 0.2039284003179798,
+        "augmented": 0.20456726146849818,
+        "delta": 0.0006388611505183939
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.11156863730329711,
+        "augmented": 0.11455132482571134,
+        "delta": 0.0029826875224142346
+      },
+      "originalVectorSha256": "b92339f5e89ea057b770ca3c5e88eb4b82cbaa8d1c6992d9dcb666f20619b78d",
+      "variantVectorSha256": "15df2ca80598f3a53a0272e483ab5bbd88af6692441fcaa902949af57bc0c783"
+    },
+    {
+      "meaningId": "semantic-v2:laptop",
+      "galleryId": "semantic-v2-laptop-0",
+      "word": "laptop",
+      "definition": "A portable computer with a screen attached to a keyboard.",
+      "parentPhotoId": "248314",
+      "parentSha256": "b6b1cf5511ed5a690b596376813360b46b180c3fa8c3c3ef9cead9b5647f87e1",
+      "variantId": "aug-b085-s090-248314",
+      "variantSha256": "720258a80516351f4796677474634f7487573cf4a047d2363af4bdc86d5c81c8",
+      "vectorCosine": 0.9953497975284951,
+      "l2Distance": 0.09643860711878112,
+      "targetTextSimilarity": {
+        "original": 0.2336675815454723,
+        "augmented": 0.23290773088121172,
+        "delta": -0.0007598506642605696
+      },
+      "sceneTextSimilarity": {
+        "original": 0.2068212418319657,
+        "augmented": 0.2093649426670191,
+        "delta": 0.0025437008350533974
+      },
+      "semanticSelected": {
+        "original": 0.22561367963142032,
+        "augmented": 0.22584489441695393,
+        "delta": 0.00023121478553361774
+      },
+      "semanticScore": {
+        "original": 0.1876272058902367,
+        "augmented": 0.18757139808783652,
+        "delta": -0.000055807802400192896
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.1519458949647344,
+        "augmented": 0.15309398531646962,
+        "delta": 0.0011480903517352148
+      },
+      "originalVectorSha256": "ceef968237ed9fa0724543c302d5c9c6d8682a3d47affe65158de43fc18eebee",
+      "variantVectorSha256": "54d6ae62c1a9572ee8d1d7845bd9211ecc93c5423aedab05f302e5157dbbe3cf"
+    },
+    {
+      "meaningId": "semantic-v2:puppy",
+      "galleryId": "semantic-v2-puppy-0",
+      "word": "puppy",
+      "definition": "A young dog.",
+      "parentPhotoId": "329219",
+      "parentSha256": "10dc6cd39da78d787f01a4221d6f6765d30021799f332965de18faae501587d6",
+      "variantId": "aug-b085-s090-329219",
+      "variantSha256": "daf0c1aceb1e12ad1979e9354c3c7abaa1182c1e4856acf10433f9d83610f6ee",
+      "vectorCosine": 0.9895757590649655,
+      "l2Distance": 0.14439003383221904,
+      "targetTextSimilarity": {
+        "original": 0.19421275726430498,
+        "augmented": 0.18777157205571288,
+        "delta": -0.006441185208592104
+      },
+      "sceneTextSimilarity": {
+        "original": 0.17938269959144917,
+        "augmented": 0.17401944457560978,
+        "delta": -0.005363255015839397
+      },
+      "semanticSelected": {
+        "original": 0.18976373996244822,
+        "augmented": 0.18364593381168193,
+        "delta": -0.006117806150766292
+      },
+      "semanticScore": {
+        "original": 0.1584793440509396,
+        "augmented": 0.15222444416970324,
+        "delta": -0.00625489988123637
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.12513758364603444,
+        "augmented": 0.12568595856791473,
+        "delta": 0.0005483749218802847
+      },
+      "originalVectorSha256": "1aea87b41f4e13728e7b7ee73f08ae122ed062eddaed46e478f5886dc329cfb2",
+      "variantVectorSha256": "546f8f0ae9d3c705be668c430d7c412f56535dfa55868d356eb8109c992d2c3f"
+    },
+    {
+      "meaningId": "semantic-v2:giraffe",
+      "galleryId": "semantic-v2-giraffe-0",
+      "word": "giraffe",
+      "definition": "An African animal with a very long neck.",
+      "parentPhotoId": "130599",
+      "parentSha256": "669aa9b450c1d423c450da6a9e25cab88a9fcbc61b447028248fb748a0925e4d",
+      "variantId": "aug-b085-s090-130599",
+      "variantSha256": "1b75670ad5b8a986dc101511e830fa45cdd3a4f924f691e7da44def49f61559b",
+      "vectorCosine": 0.9950152729741103,
+      "l2Distance": 0.09984715344855355,
+      "targetTextSimilarity": {
+        "original": 0.2313144114447292,
+        "augmented": 0.23527631091035167,
+        "delta": 0.003961899465622476
+      },
+      "sceneTextSimilarity": {
+        "original": 0.2347991837663848,
+        "augmented": 0.24016190158228035,
+        "delta": 0.005362717815895535
+      },
+      "semanticSelected": {
+        "original": 0.23235984314122587,
+        "augmented": 0.23674198811193026,
+        "delta": 0.0043821449707043825
+      },
+      "semanticScore": {
+        "original": 0.20743913934325425,
+        "augmented": 0.21252588209767576,
+        "delta": 0.005086742754421503
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.09968281519188647,
+        "augmented": 0.09686442405701802,
+        "delta": -0.002818391134868453
+      },
+      "originalVectorSha256": "baba2d9a9c640e6bd029ac12b350e11c3f3d4b34a9b28a265999e8f5b43ca753",
+      "variantVectorSha256": "d3cc19037e98f4ea21c46a117683a00d143dcf0ee156228f8266e0c36e4f0dba"
+    },
+    {
+      "meaningId": "semantic-v2:toilet",
+      "galleryId": "semantic-v2-toilet-0",
+      "word": "toilet",
+      "definition": "A bathroom fixture with a bowl for bodily waste.",
+      "parentPhotoId": "147518",
+      "parentSha256": "33ebfe94537ecdf095bf1a0119cf7ef2735d6e5c33e798b5c52eecc9bc3d23e3",
+      "variantId": "aug-b085-s090-147518",
+      "variantSha256": "6a0b6e04c10948020a5bfc04525f28ca8a2daefb5466a11cc2e364f50f6c425a",
+      "vectorCosine": 0.9961810873528759,
+      "l2Distance": 0.08739465254950426,
+      "targetTextSimilarity": {
+        "original": 0.24695509807621105,
+        "augmented": 0.24545310679005136,
+        "delta": -0.0015019912861596874
+      },
+      "sceneTextSimilarity": {
+        "original": 0.262969395639984,
+        "augmented": 0.2650062760751383,
+        "delta": 0.00203688043515432
+      },
+      "semanticSelected": {
+        "original": 0.2517593873453429,
+        "augmented": 0.25131905757557743,
+        "delta": -0.00044032976976549065
+      },
+      "semanticScore": {
+        "original": 0.23208827524550604,
+        "augmented": 0.23053967146667295,
+        "delta": -0.0015486037788330909
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.07868444839934748,
+        "augmented": 0.08311754443561796,
+        "delta": 0.004433096036270484
+      },
+      "originalVectorSha256": "03370cd37a8849f8688e0e73785368aefccc3af2a4e9636aa4db5a05402162df",
+      "variantVectorSha256": "e4a939df438ed479a19d5adda26230676a664f9b60b07a4dc5fd7fc3043f7a0e"
+    },
+    {
+      "meaningId": "semantic-v2:monitor",
+      "galleryId": "semantic-v2-monitor-0",
+      "word": "monitor",
+      "definition": "A screen used to display a computer output.",
+      "parentPhotoId": "186282",
+      "parentSha256": "73c0456e323cfed4d729360302c86b5a4cefca1257e2ae9e30a04deda0b35e14",
+      "variantId": "aug-b085-s090-186282",
+      "variantSha256": "abf6b5d266de737216c849c1b0b8ede40a460d6572587d427a59e03a5ef9ad3f",
+      "vectorCosine": 0.9983279556025478,
+      "l2Distance": 0.057828096933102764,
+      "targetTextSimilarity": {
+        "original": 0.2516471198620098,
+        "augmented": 0.2527539172112138,
+        "delta": 0.0011067973492039918
+      },
+      "sceneTextSimilarity": {
+        "original": 0.25912007261790665,
+        "augmented": 0.26163147078996657,
+        "delta": 0.00251139817205992
+      },
+      "semanticSelected": {
+        "original": 0.25388900568877887,
+        "augmented": 0.25541718328483964,
+        "delta": 0.0015281775960607757
+      },
+      "semanticScore": {
+        "original": 0.2168895472100576,
+        "augmented": 0.21752790125933447,
+        "delta": 0.000638354049276868
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.14799783391488502,
+        "augmented": 0.15155712810202066,
+        "delta": 0.003559294187135631
+      },
+      "originalVectorSha256": "34692cf522ceb1c291f627839a0e0da5a2e8c8c0e7b84dfc947a6814a8174059",
+      "variantVectorSha256": "ae78f3fe14c46407d1bd7f8ff7a3125efb1105f006d8b2f242d24982139d21c1"
+    },
+    {
+      "meaningId": "semantic-v2:fence",
+      "galleryId": "semantic-v2-fence-0",
+      "word": "fence",
+      "definition": "A barrier enclosing or dividing an area.",
+      "parentPhotoId": "21903",
+      "parentSha256": "3fa9ccedfc3ac829c07e14b0e7ef4211b5963f7700dc6e30dde3054f704efa09",
+      "variantId": "aug-b085-s090-21903",
+      "variantSha256": "63954590e1f3d37c551685508654f765d356b0e466a601d71d7dd5581c17bf70",
+      "vectorCosine": 0.997734807568088,
+      "l2Distance": 0.0673081337122471,
+      "targetTextSimilarity": {
+        "original": 0.1735210139134797,
+        "augmented": 0.17625662119828167,
+        "delta": 0.002735607284801961
+      },
+      "sceneTextSimilarity": {
+        "original": 0.10736342939130944,
+        "augmented": 0.11130927110014978,
+        "delta": 0.003945841708840339
+      },
+      "semanticSelected": {
+        "original": 0.15367373855682862,
+        "augmented": 0.15677241616884208,
+        "delta": 0.003098677612013462
+      },
+      "semanticScore": {
+        "original": 0.12741615266307882,
+        "augmented": 0.12940573272035155,
+        "delta": 0.001989580057272733
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.10503034357499914,
+        "augmented": 0.10946673379396213,
+        "delta": 0.004436390218962985
+      },
+      "originalVectorSha256": "5bb064759377de4c0ed7a72d73017f3828191075f873d11eff37b78d320ac461",
+      "variantVectorSha256": "056abca07aa0641d304332f2ba40c619ddce2d7dbddd31cb21463455e447018a"
+    },
+    {
+      "meaningId": "semantic-v2:book",
+      "galleryId": "semantic-v2-book-0",
+      "word": "book",
+      "definition": "Bound pages containing written or printed material.",
+      "parentPhotoId": "578545",
+      "parentSha256": "3b1e4dc0f5d15f4d74b3d2926e15d80e996a7e6fb4302808bbf7ba84213e0d2e",
+      "variantId": "aug-b085-s090-578545",
+      "variantSha256": "dcc177bb4352fb72513d55e323dee13ec81a7446a06ec2fff4808c02ce2016c7",
+      "vectorCosine": 0.9966443860586567,
+      "l2Distance": 0.08192208421839266,
+      "targetTextSimilarity": {
+        "original": 0.1422508699889043,
+        "augmented": 0.14416063210195182,
+        "delta": 0.001909762113047525
+      },
+      "sceneTextSimilarity": {
+        "original": 0.09741049043253443,
+        "augmented": 0.10297000145926595,
+        "delta": 0.005559511026731523
+      },
+      "semanticSelected": {
+        "original": 0.12879875612199332,
+        "augmented": 0.13180344290914606,
+        "delta": 0.0030046867871527383
+      },
+      "semanticScore": {
+        "original": 0.10291238352461127,
+        "augmented": 0.10547901845700733,
+        "delta": 0.0025666349323960613
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.10354549038952822,
+        "augmented": 0.1052976978085549,
+        "delta": 0.00175220741902668
+      },
+      "originalVectorSha256": "59bc3c4642f5f580be1b1d91b1f57d2e6dbb893b7574d041bc406d043219422a",
+      "variantVectorSha256": "c219261780c65a18502e7a13390e9acb307bf8460997dcc8f794fb1ae7a5870f"
+    },
+    {
+      "meaningId": "semantic-v2:suitcase",
+      "galleryId": "semantic-v2-suitcase-0",
+      "word": "suitcase",
+      "definition": "A travel bag used to carry clothes and belongings.",
+      "parentPhotoId": "453001",
+      "parentSha256": "5a53866848c1d1eebad2df1a6d659bd699ccb52cfa89ce3bebb5105e2d81c9a5",
+      "variantId": "aug-b085-s090-453001",
+      "variantSha256": "98823cb1ac4b12cab8243ac3beff8120d76a83d617b8c4fe55e13d3f9014cafe",
+      "vectorCosine": 0.9716701849216941,
+      "l2Distance": 0.23803283419858806,
+      "targetTextSimilarity": {
+        "original": 0.16032932508391515,
+        "augmented": 0.15897545581363764,
+        "delta": -0.0013538692702775024
+      },
+      "sceneTextSimilarity": {
+        "original": 0.14649557328685955,
+        "augmented": 0.15142012002769278,
+        "delta": 0.00492454674083323
+      },
+      "semanticSelected": {
+        "original": 0.15617919954479845,
+        "augmented": 0.15670885507785418,
+        "delta": 0.0005296555330557284
+      },
+      "semanticScore": {
+        "original": 0.13576209186519408,
+        "augmented": 0.13840607537846572,
+        "delta": 0.002643983513271636
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.08166843071841745,
+        "augmented": 0.07321111879755383,
+        "delta": -0.008457311920863617
+      },
+      "originalVectorSha256": "e9207c43b7c75ac917d049c5f0facc60fd3486f81a042a5dda83294e2b89d07b",
+      "variantVectorSha256": "c72df3960cc57dbb53a01fd15ae5e5476353cbcc753216b5256e05b1d793e22f"
+    },
+    {
+      "meaningId": "semantic-v2:tennis-racket",
+      "galleryId": "semantic-v2-tennis-racket-0",
+      "word": "tennis racket",
+      "definition": "A handled frame with strings used to hit a tennis ball.",
+      "parentPhotoId": "200421",
+      "parentSha256": "5fbb7144ab7e492ed1a39dad1daa82c25ea3bc2f17bbd285693feba439dc4161",
+      "variantId": "aug-b085-s090-200421",
+      "variantSha256": "2032ad9c8556d59488f5bc11cd865226364506dfae093feea86969c8c151754e",
+      "vectorCosine": 0.9938121538117897,
+      "l2Distance": 0.11124608926349971,
+      "targetTextSimilarity": {
+        "original": 0.19935185986949225,
+        "augmented": 0.20849142871635415,
+        "delta": 0.0091395688468619
+      },
+      "sceneTextSimilarity": {
+        "original": 0.202676440362978,
+        "augmented": 0.21258289571369773,
+        "delta": 0.00990645535071974
+      },
+      "semanticSelected": {
+        "original": 0.20034923401753796,
+        "augmented": 0.2097188688155572,
+        "delta": 0.00936963479801925
+      },
+      "semanticScore": {
+        "original": 0.1793694043997489,
+        "augmented": 0.1887504791441595,
+        "delta": 0.009381074744410578
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.08391931847115618,
+        "augmented": 0.08387355868559092,
+        "delta": -0.00004575978556525806
+      },
+      "originalVectorSha256": "63410835fe4f4b4c62442c4660fe3e9c3294a9043dbf546a36b90bb4a5b6f7db",
+      "variantVectorSha256": "0b1801b2c77fa6cb6356084c9fa1336b7008306f66711c5c399789fbdaa13f1f"
+    },
+    {
+      "meaningId": "semantic-v2:parked-bicycle",
+      "galleryId": "semantic-v2-parked-bicycle-0",
+      "word": "parked bicycle",
+      "definition": "A bicycle left stationary rather than being ridden.",
+      "parentPhotoId": "101762",
+      "parentSha256": "8150aec4794933e1d30b565f6511a870e5721e58c72a919735eff71575fb098b",
+      "variantId": "aug-b085-s090-101762",
+      "variantSha256": "06faeb6be7d28dc4e25662b17ffb291658da25a0f177dd7b114d66d2d083d3a4",
+      "vectorCosine": 0.9941145068763179,
+      "l2Distance": 0.10849417609883787,
+      "targetTextSimilarity": {
+        "original": 0.2270174907525072,
+        "augmented": 0.23126643988000842,
+        "delta": 0.004248949127501206
+      },
+      "sceneTextSimilarity": {
+        "original": 0.21288235030740663,
+        "augmented": 0.22069339633547433,
+        "delta": 0.007811046028067703
+      },
+      "semanticSelected": {
+        "original": 0.222776948618977,
+        "augmented": 0.22809452681664819,
+        "delta": 0.0053175781976711745
+      },
+      "semanticScore": {
+        "original": 0.1924606930545751,
+        "augmented": 0.19711388334394578,
+        "delta": 0.004653190289370668
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.1212650222576076,
+        "augmented": 0.12392257389080964,
+        "delta": 0.0026575516332020405
+      },
+      "originalVectorSha256": "0db9ec1b4eae955f748769c33547a3faaa51a7b893c56304811f990a0f0e933f",
+      "variantVectorSha256": "3db94286e4fdd05fa87d83dc9d6086b20ffe97fd62b0c054223a909a195dcf54"
+    },
+    {
+      "meaningId": "semantic-v2:airport",
+      "galleryId": "semantic-v2-airport-0",
+      "word": "airport",
+      "definition": "A place where airplanes take off, land and are serviced.",
+      "parentPhotoId": "84270",
+      "parentSha256": "ae7ff3f09caaedb11b002d1e25ab46e5236ee62713fcf74bfaddafe6cc3e4b17",
+      "variantId": "aug-b085-s090-84270",
+      "variantSha256": "5a7b278248eb809f62fa3ae24637e1923ee19a5f6811c38c5b2c75cfa55e768e",
+      "vectorCosine": 0.997376143128773,
+      "l2Distance": 0.0724411053370528,
+      "targetTextSimilarity": {
+        "original": 0.24310104040175604,
+        "augmented": 0.2414754843033796,
+        "delta": -0.001625556098376446
+      },
+      "sceneTextSimilarity": {
+        "original": 0.21607230266735283,
+        "augmented": 0.2172321580532693,
+        "delta": 0.0011598553859164529
+      },
+      "semanticSelected": {
+        "original": 0.2349924190814351,
+        "augmented": 0.2342024864283465,
+        "delta": -0.0007899326530885764
+      },
+      "semanticScore": {
+        "original": 0.21185043509248344,
+        "augmented": 0.2104181346032849,
+        "delta": -0.0014323004891985402
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.09256793595580663,
+        "augmented": 0.09513740730024647,
+        "delta": 0.0025694713444398415
+      },
+      "originalVectorSha256": "dee570dd2e74fe8a74d79be4f8ad5ec29a7b7ea203c78b3400b872a16a0badac",
+      "variantVectorSha256": "b28ea3bc42093f8d44214e333d6c8782edc5b8972f1eb11cb4adbada0c7a13a0"
+    },
+    {
+      "meaningId": "semantic-v2:bicycle",
+      "galleryId": "semantic-v2-bicycle-0",
+      "word": "bicycle",
+      "definition": "A vehicle with two wheels powered by pedals.",
+      "parentPhotoId": "492937",
+      "parentSha256": "2c1dbb9427ecfcbb98eab03ba9c65a51ae9d3d72ba6df04ec83a07a15b8d937e",
+      "variantId": "aug-b085-s090-492937",
+      "variantSha256": "f7958a51710c0db8c0490058feaf142dcb88f373b47a2b436c7f86be6db5b661",
+      "vectorCosine": 0.9971540767997589,
+      "l2Distance": 0.07544432649630914,
+      "targetTextSimilarity": {
+        "original": 0.23494049340536538,
+        "augmented": 0.2347686388723481,
+        "delta": -0.00017185453301726827
+      },
+      "sceneTextSimilarity": {
+        "original": 0.2418011388892057,
+        "augmented": 0.24259535741441357,
+        "delta": 0.0007942185252078626
+      },
+      "semanticSelected": {
+        "original": 0.23699868705051746,
+        "augmented": 0.2371166544349677,
+        "delta": 0.00011796738445024602
+      },
+      "semanticScore": {
+        "original": 0.21431158229306904,
+        "augmented": 0.21416339334519804,
+        "delta": -0.00014818894787099746
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.09074841902979369,
+        "augmented": 0.09181304435907864,
+        "delta": 0.0010646253292849461
+      },
+      "originalVectorSha256": "060a0dcf42461fdbbf1ecb3f2d17b0e3e72b13ea561caa6c36736c67415de83d",
+      "variantVectorSha256": "43e2272fed9b5d4f6361ce86066e16d4c5b544ba8fd6bd03d87be90acb998151"
+    },
+    {
+      "meaningId": "semantic-v2:railway",
+      "galleryId": "semantic-v2-railway-0",
+      "word": "railway",
+      "definition": "A track system on which trains travel.",
+      "parentPhotoId": "100274",
+      "parentSha256": "18a930e65771a5c2954229da0b448d2ab74b03a3e6179cae61c212d52f5ff3cd",
+      "variantId": "aug-b085-s090-100274",
+      "variantSha256": "55a4d9b9c6c868a3ca3befa08eb0739cf6346d91e0003070ec63efbafadaec34",
+      "vectorCosine": 0.9944570961020476,
+      "l2Distance": 0.10528916276571325,
+      "targetTextSimilarity": {
+        "original": 0.17893645468148922,
+        "augmented": 0.1828530464019371,
+        "delta": 0.003916591720447893
+      },
+      "sceneTextSimilarity": {
+        "original": 0.1723776137453513,
+        "augmented": 0.1747818484670458,
+        "delta": 0.002404234721694515
+      },
+      "semanticSelected": {
+        "original": 0.17696880240064783,
+        "augmented": 0.18043168702146972,
+        "delta": 0.0034628846208218933
+      },
+      "semanticScore": {
+        "original": 0.1520933274070326,
+        "augmented": 0.15473433429896566,
+        "delta": 0.0026410068919330565
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.09950189997446093,
+        "augmented": 0.1027894108900163,
+        "delta": 0.003287510915555361
+      },
+      "originalVectorSha256": "0835331012848f1051ee1cccfa0951009d646ef5127c4117a95e5f3b954a2359",
+      "variantVectorSha256": "35f1098b15bafc85252f9531b9d6132c2632c224872b62aedb7d1d8cc381bc3b"
+    },
+    {
+      "meaningId": "semantic-v2:ball",
+      "galleryId": "semantic-v2-ball-0",
+      "word": "ball",
+      "definition": "A round object used in games and sports.",
+      "parentPhotoId": "60507",
+      "parentSha256": "0aa436c998cd750d278170996d88b02869af323af4543ae4a8ef6349a14ca7fb",
+      "variantId": "aug-b085-s090-60507",
+      "variantSha256": "fa25c873aae1f007a2bdd8995c558c014fa47451c4cc77131153e22d65dc5e82",
+      "vectorCosine": 0.9966460864958598,
+      "l2Distance": 0.0819013248261538,
+      "targetTextSimilarity": {
+        "original": 0.17181012397869924,
+        "augmented": 0.17318658579842147,
+        "delta": 0.00137646181972223
+      },
+      "sceneTextSimilarity": {
+        "original": 0.16511133660336774,
+        "augmented": 0.16689984635249494,
+        "delta": 0.0017885097491271984
+      },
+      "semanticSelected": {
+        "original": 0.1698004877660998,
+        "augmented": 0.1713005639646435,
+        "delta": 0.0015000761985436983
+      },
+      "semanticScore": {
+        "original": 0.1443686895626756,
+        "augmented": 0.1449833615479557,
+        "delta": 0.0006146719852801186
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.1017271928136968,
+        "augmented": 0.10526880966675112,
+        "delta": 0.003541616853054319
+      },
+      "originalVectorSha256": "8bfcc0f9c0d0fde89130a479e0df5faaaa665b2849650b90b912fd65ffc4392d",
+      "variantVectorSha256": "f0284a83e02bc2dda01b55ff4dbd825f735006b87f5ab91f1e939babe8da828c"
+    },
+    {
+      "meaningId": "semantic-v2:horse",
+      "galleryId": "semantic-v2-horse-0",
+      "word": "horse",
+      "definition": "A large four-legged animal commonly ridden by people.",
+      "parentPhotoId": "574297",
+      "parentSha256": "fdf3ab0fc576b6fcea27d692fcd14c21d8c3bcd1c1a1ef66de8f0d98e6a85c75",
+      "variantId": "aug-b085-s090-574297",
+      "variantSha256": "afec886c2295e15e8f20d6a68fc92bd2eb74180aa270e0a65587128cf5ab675c",
+      "vectorCosine": 0.9947427090429657,
+      "l2Distance": 0.10254063542843408,
+      "targetTextSimilarity": {
+        "original": 0.2522947937562089,
+        "augmented": 0.2515176011996636,
+        "delta": -0.000777192556545292
+      },
+      "sceneTextSimilarity": {
+        "original": 0.21820703287424204,
+        "augmented": 0.21690910872452676,
+        "delta": -0.0012979241497152738
+      },
+      "semanticSelected": {
+        "original": 0.2420684654916188,
+        "augmented": 0.24113505345712252,
+        "delta": -0.0009334120344962893
+      },
+      "semanticScore": {
+        "original": 0.22206384472214818,
+        "augmented": 0.2197040428413055,
+        "delta": -0.0023598018808426713
+      },
+      "unwantedTextSimilarity": {
+        "original": 0.08001848307788251,
+        "augmented": 0.08572404246326798,
+        "delta": 0.0057055593853854725
+      },
+      "originalVectorSha256": "7b737817150fda5c52f5b5dfbeca4e1394003350ad3c06af676ae40391de968c",
+      "variantVectorSha256": "8071dfba1ff715783822fde3f24d46de144dc71aab37a28d54a72c279b255062"
+    }
+  ]
+}

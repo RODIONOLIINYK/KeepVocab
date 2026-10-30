@@ -1,0 +1,586 @@
+{
+  "pilot": "Isolated KeepVocab UI image review with Pexels configured",
+  "reviewer": "gpt-6-luna-agent-a",
+  "app": {
+    "url": "http://127.0.0.1:8098",
+    "tabId": "1676746714",
+    "session": "🧪 Pexels Labeling A",
+    "storage": "Separate test origin; initial visible library had 3 words, 6 meanings; daily goal 0/20; no practice session used. Existing records preserved."
+  },
+  "galleries": [
+    {
+      "galleryId": "pexels-a-run-01",
+      "word": "run",
+      "partOfSpeech": "verb",
+      "definition": "Of an animal, to move swiftly on foot by taking quick steps, as a fox does.",
+      "customVisualInterpretation": null,
+      "customSceneUsed": false,
+      "candidates": [
+        {
+          "imageID": "pexels-a-run-01-01",
+          "src": "https://images.pexels.com/photos/12040559/pexels-photo-12040559.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "A dog is visibly moving quickly; body and paws show motion."
+        },
+        {
+          "imageID": "pexels-a-run-01-02",
+          "src": "https://images.pexels.com/photos/4885131/pexels-photo-4885131.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "A human is running; the exact definition is about an animal."
+        },
+        {
+          "imageID": "pexels-a-run-01-03",
+          "src": "https://images.pexels.com/photos/5395265/pexels-photo-5395265.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "uncertain",
+          "reason": "A small figure is visible in the field, but the subject and running motion are too small to confirm."
+        },
+        {
+          "imageID": "pexels-a-run-01-04",
+          "src": "https://images.pexels.com/photos/28505285/pexels-photo-28505285.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "A horse is visibly running; any animal fits because fox is only an example in the definition."
+        },
+        {
+          "imageID": "pexels-a-run-01-05",
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/Jonathan%27s_Run_Falls.jpg/960px-Jonathan%27s_Run_Falls.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "label": "wrong",
+          "reason": "A waterfall; no animal running is visible."
+        },
+        {
+          "imageID": "pexels-a-run-01-06",
+          "src": "https://images-assets.nasa.gov/image/KSC-20180313-PH_FMB01_0003/KSC-20180313-PH_FMB01_0003~medium.jpg",
+          "label": "wrong",
+          "reason": "A track/field scene with no visible running animal."
+        }
+      ],
+      "selectedImageID": "pexels-a-run-01-04",
+      "stages": [
+        "Used Add Word and Find Meanings in the visible app UI; selected the first verb meaning and replaced its definition with the exact target above.",
+        "Saved the meaning and reviewed all six rendered candidates. No Find more request was needed because two clear animal-running images were present.",
+        "Selected option 4 in the image picker and used Save word. The visible attribution link named Pexels and showed Pexels License; saved toast confirmed one meaning of run."
+      ],
+      "providerNotes": "Pexels was directly observed through the selected-image attribution. Four displayed candidates had Pexels image URLs; two results came from Wikimedia and NASA fallback domains.",
+      "screenshots": [
+        "screenshots/run-page1.png",
+        "screenshots/run-selected.png",
+        "screenshots/run-saved.png"
+      ]
+    },
+    {
+      "galleryId": "pexels-a-stand-01",
+      "word": "stand",
+      "partOfSpeech": "verb",
+      "definition": "Of an animal, to remain upright on its feet without moving, as a fox standing in a field.",
+      "customVisualInterpretation": null,
+      "customSceneUsed": false,
+      "candidates": [
+        {
+          "imageID": "pexels-a-stand-01-01",
+          "src": "https://images.pexels.com/photos/33349237/pexels-photo-33349237.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "Meerkat is upright on its feet and stationary."
+        },
+        {
+          "imageID": "pexels-a-stand-01-02",
+          "src": "https://images.pexels.com/photos/34525428/pexels-photo-34525428.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "Meerkat is visibly upright and stationary."
+        },
+        {
+          "imageID": "pexels-a-stand-01-03",
+          "src": "https://images.pexels.com/photos/7103214/pexels-photo-7103214.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "Meerkat is upright on a rock; fits the animal posture."
+        },
+        {
+          "imageID": "pexels-a-stand-01-04",
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ed/23c3_by_taw_stand-up_comedians_2.jpg/960px-23c3_by_taw_stand-up_comedians_2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "label": "wrong",
+          "reason": "The visible subjects are people performing comedy, not an animal standing."
+        },
+        {
+          "imageID": "pexels-a-stand-01-05",
+          "src": "https://images-assets.nasa.gov/image/MSFC-20180606-1801005/MSFC-20180606-1801005~medium.jpg",
+          "label": "wrong",
+          "reason": "The image shows people at an engineering test stand, not an animal standing."
+        },
+        {
+          "imageID": "pexels-a-stand-01-06",
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/23c3_by_taw_stand-up_comedians_1.jpg/960px-23c3_by_taw_stand-up_comedians_1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "label": "wrong",
+          "reason": "The visible subjects are people in a comedy setting, not an animal standing."
+        }
+      ],
+      "selected": "pexels-a-stand-01-02",
+      "flowStages": [
+        "Add Word UI",
+        "Find Meanings UI for stand",
+        "selected dictionary verb sense 2; edited to exact definition",
+        "saved meaning; chooser displayed 6 candidates",
+        "selected option 2 in actual chooser",
+        "saved word; toast confirmed"
+      ],
+      "providerNotes": "Actual chooser attribution showed Jean-Paul Wettstein via Pexels and Pexels License URL. Gallery also contained Commons/NASA fallback results; provider inferred only from visible attribution and URLs.",
+      "screenshots": [
+        "screenshots/stand-editor.png",
+        "screenshots/stand-page1.png",
+        "screenshots/stand-selected.png",
+        "screenshots/stand-saved.png"
+      ]
+    },
+    {
+      "galleryId": "pexels-a-carry-01",
+      "word": "carry",
+      "partOfSpeech": "verb",
+      "definition": "To hold an object while transporting it from one place to another.",
+      "customVisualInterpretation": null,
+      "customSceneUsed": false,
+      "candidates": [
+        {
+          "imageID": "pexels-a-carry-01-01",
+          "src": "https://images.pexels.com/photos/6699423/pexels-photo-6699423.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "Visible worker holds a box in a delivery setting; the object is being transported."
+        },
+        {
+          "imageID": "pexels-a-carry-01-02",
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/50/Blind_man_carrying_a_paralysed_man.jpg/960px-Blind_man_carrying_a_paralysed_man.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "label": "fits",
+          "reason": "One person visibly supports and transports another person; carry applies to transporting a person."
+        },
+        {
+          "imageID": "pexels-a-carry-01-03",
+          "src": "https://images.pexels.com/photos/761999/pexels-photo-761999.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "uncertain",
+          "reason": "Person holds a large box, but the static studio pose does not show transport."
+        },
+        {
+          "imageID": "pexels-a-carry-01-04",
+          "src": "https://images.pexels.com/photos/7844013/pexels-photo-7844013.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "Woman is holding a package while walking along a street."
+        },
+        {
+          "imageID": "pexels-a-carry-01-05",
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2f/Suzuki_Super_Carry_front_20071114.jpg/960px-Suzuki_Super_Carry_front_20071114.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "label": "wrong",
+          "reason": "The parked van is named Carry but visibly transports no object."
+        },
+        {
+          "imageID": "pexels-a-carry-01-06",
+          "src": "https://images-assets.nasa.gov/image/EC04-0029-21/EC04-0029-21~medium.jpg",
+          "label": "fits",
+          "reason": "Aircraft is in flight with rocket carried beneath it; clear transport of an object."
+        }
+      ],
+      "selected": "pexels-a-carry-01-04",
+      "flowStages": [
+        "Add Word UI",
+        "Find Meanings UI for carry",
+        "selected dictionary verb sense 1; edited exact definition",
+        "saved meaning; chooser displayed six candidates",
+        "selected option 4 in actual chooser",
+        "saved word; toast confirmed"
+      ],
+      "providerNotes": "Actual chooser attribution after selection: Kampus Production via Pexels; Pexels License URL https://www.pexels.com/photo/a-woman-carrying-a-box-7844013/. Also visible Commons and NASA fallback candidates.",
+      "screenshots": [
+        "screenshots/carry-editor.png",
+        "screenshots/carry-page1.png",
+        "screenshots/carry-selected.png",
+        "screenshots/carry-saved.png"
+      ]
+    },
+    {
+      "galleryId": "pexels-a-beside-01",
+      "word": "beside",
+      "partOfSpeech": "preposition",
+      "definition": "Next to or at the side of something.",
+      "example": "A person stands beside a bag.",
+      "customVisualInterpretation": null,
+      "customSceneUsed": false,
+      "candidates": [
+        {
+          "imageID": "pexels-a-beside-01-01",
+          "src": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Poppies_beside_Mill_Road_-_geograph.org.uk_-_890100.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "label": "uncertain",
+          "reason": "A single poppy among vegetation is visible, but a clear beside relation between two subjects is not established from the image."
+        },
+        {
+          "imageID": "pexels-a-beside-01-02",
+          "src": "https://upload.wikimedia.org/wikipedia/commons/2/2d/The_Path_beside_Boddington_Banks_-_geograph.org.uk_-_1185772.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "label": "fits",
+          "reason": "A path is visibly alongside the trees bordering it; clearly next to."
+        },
+        {
+          "imageID": "pexels-a-beside-01-03",
+          "src": "https://images-assets.nasa.gov/image/PIA11804/PIA11804~small.jpg",
+          "label": "uncertain",
+          "reason": "A rover and rocky terrain are shown, but the specific beside relation is not visually clear."
+        },
+        {
+          "imageID": "pexels-a-beside-01-04",
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Beside_the_Tombeau_du_frere_Andree.jpg/960px-Beside_the_Tombeau_du_frere_Andree.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "label": "uncertain",
+          "reason": "The interior shows multiple structures and seating, but no clear specific beside relationship can be determined from the displayed image."
+        },
+        {
+          "imageID": "pexels-a-beside-01-05",
+          "src": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Hillside_beside_A30_-_geograph.org.uk_-_368944.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "label": "wrong",
+          "reason": "The image shows open hillside and vegetation without a clearly adjacent pair."
+        },
+        {
+          "imageID": "pexels-a-beside-01-06",
+          "src": "https://images-assets.nasa.gov/image/PIA07468/PIA07468~small.jpg",
+          "label": "wrong",
+          "reason": "The visible lunar surface has no clear beside relation between distinct subjects."
+        },
+        {
+          "imageID": "pexels-a-beside-01-07",
+          "src": "https://images.pexels.com/photos/11618231/pexels-photo-11618231.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "A person is visibly walking immediately next to a wall."
+        },
+        {
+          "imageID": "pexels-a-beside-01-08",
+          "src": "https://images-assets.nasa.gov/image/PIA12972/PIA12972~small.jpg",
+          "label": "wrong",
+          "reason": "Close view of rock/terrain with no distinct beside relation."
+        },
+        {
+          "imageID": "pexels-a-beside-01-09",
+          "src": "https://images.pexels.com/photos/38000582/pexels-photo-38000582.png?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "Two separate building facades are visibly side by side."
+        },
+        {
+          "imageID": "pexels-a-beside-01-10",
+          "src": "https://images-assets.nasa.gov/image/PIA11803/PIA11803~small.jpg",
+          "label": "uncertain",
+          "reason": "Rover and terrain are visible, but no clear specific beside relationship can be confirmed."
+        },
+        {
+          "imageID": "pexels-a-beside-01-11",
+          "src": "https://images.pexels.com/photos/9213525/pexels-photo-9213525.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "Abstract arrow graphic does not depict two subjects positioned beside one another."
+        },
+        {
+          "imageID": "pexels-a-beside-01-12",
+          "src": "https://images-assets.nasa.gov/image/s133e007799/s133e007799~medium.jpg",
+          "label": "fits",
+          "reason": "A person is visibly adjacent to an open hatch/door structure."
+        }
+      ],
+      "selected": "pexels-a-beside-01-07",
+      "flowStages": [
+        "Add Word UI",
+        "Find Meanings UI for beside",
+        "selected dictionary preposition sense 1; definition edited to exact generic beside meaning; example uses person/bag",
+        "saved meaning; first page six results, Find more once displayed six additional candidates",
+        "selected option 7 in actual chooser",
+        "saved word; toast confirmed"
+      ],
+      "providerNotes": "No bag/person pair was returned; selected Pexels photo depicts a person beside a wall, fitting exact generic definition. Second page available through visible Find more control. No title/caption used as proof; labels are based on screenshots.",
+      "screenshots": [
+        "screenshots/beside-editor.png",
+        "screenshots/beside-page1.png",
+        "screenshots/beside-page2.png",
+        "screenshots/beside-selected.png",
+        "screenshots/beside-saved.png"
+      ]
+    },
+    {
+      "galleryId": "pexels-a-pour-01",
+      "word": "pour",
+      "partOfSpeech": "verb",
+      "definition": "To cause liquid to flow in a stream from a container or into one.",
+      "example": "She poured water from a jug into a glass.",
+      "customVisualInterpretation": null,
+      "customSceneUsed": false,
+      "candidates": [
+        {
+          "imageID": "pexels-a-pour-01-01",
+          "src": "https://images.pexels.com/photos/244579/pexels-photo-244579.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "A visible stream of liquid flows from a vessel into a glass."
+        },
+        {
+          "imageID": "pexels-a-pour-01-02",
+          "src": "https://images.pexels.com/photos/416528/pexels-photo-416528.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "Water visibly flows in a stream into a glass."
+        },
+        {
+          "imageID": "pexels-a-pour-01-03",
+          "src": "https://images.pexels.com/photos/4425744/pexels-photo-4425744.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "uncertain",
+          "reason": "Coffee and a pouring vessel are visible, but a liquid stream is not clearly discernible at this image size."
+        },
+        {
+          "imageID": "pexels-a-pour-01-04",
+          "src": "https://images-assets.nasa.gov/image/MSFC-1501540/MSFC-1501540~medium.jpg",
+          "label": "uncertain",
+          "reason": "A worker and material are visible, but no clear liquid stream is discernible."
+        },
+        {
+          "imageID": "pexels-a-pour-01-05",
+          "src": "https://images-assets.nasa.gov/image/PIA13272/PIA13272~medium.jpg",
+          "label": "uncertain",
+          "reason": "Worksite activity is visible, but the frame does not clearly show liquid flowing from a container."
+        },
+        {
+          "imageID": "pexels-a-pour-01-06",
+          "src": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Pour_le_m%C3%A9rite_Neilebock.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "label": "wrong",
+          "reason": "The image is a medal; no pouring action is depicted."
+        }
+      ],
+      "selected": "pexels-a-pour-01-02",
+      "flowStages": [
+        "Add Word UI",
+        "Find Meanings UI for pour",
+        "selected dictionary transitive verb sense 1; edited exact definition",
+        "saved meaning; chooser displayed six candidates",
+        "selected option 2 in actual chooser",
+        "saved word; toast confirmed"
+      ],
+      "providerNotes": "Selected source attribution visible in UI: Pixabay via Pexels, URL https://www.pexels.com/photo/fluid-pouring-in-pint-glass-416528/. Other displayed results included NASA and Wikimedia fallback images.",
+      "screenshots": [
+        "screenshots/pour-editor.png",
+        "screenshots/pour-page1.png",
+        "screenshots/pour-selected.png",
+        "screenshots/pour-saved.png"
+      ]
+    },
+    {
+      "galleryId": "pexels-a-drink-01",
+      "word": "drink",
+      "partOfSpeech": "verb",
+      "definition": "To consume a liquid through the mouth.",
+      "example": "A woman drinks water from a glass.",
+      "customVisualInterpretation": null,
+      "customSceneUsed": false,
+      "candidates": [
+        {
+          "imageID": "pexels-a-drink-01-01",
+          "src": "https://images.pexels.com/photos/17835944/pexels-photo-17835944.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "The person holds a bottle to her mouth and visibly drinks."
+        },
+        {
+          "imageID": "pexels-a-drink-01-02",
+          "src": "https://images.pexels.com/photos/23910133/pexels-photo-23910133.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "Drinks are on a table; no person is consuming liquid."
+        },
+        {
+          "imageID": "pexels-a-drink-01-03",
+          "src": "https://images.pexels.com/photos/4397811/pexels-photo-4397811.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "A hand is placing a bottle beside a glass; no consumption is shown."
+        },
+        {
+          "imageID": "pexels-a-drink-01-04",
+          "src": "https://images-assets.nasa.gov/image/s72-50247/s72-50247~medium.jpg",
+          "label": "wrong",
+          "reason": "Drink containers are shown without a person consuming liquid."
+        },
+        {
+          "imageID": "pexels-a-drink-01-05",
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/A_drink_on_the_sand.jpg/960px-A_drink_on_the_sand.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "label": "wrong",
+          "reason": "A beverage on sand is visible; no drinking action is shown."
+        },
+        {
+          "imageID": "pexels-a-drink-01-06",
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Hot_Drink_Vendor_%287185455950%29.jpg/960px-Hot_Drink_Vendor_%287185455950%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "label": "wrong",
+          "reason": "A vendor setting is visible, but no person is consuming liquid."
+        }
+      ],
+      "selected": "pexels-a-drink-01-01",
+      "flowStages": [
+        "Add Word UI",
+        "Find Meanings UI for drink",
+        "selected dictionary transitive verb sense 1; edited exact definition",
+        "saved meaning; chooser displayed six candidates",
+        "selected option 1 in actual chooser",
+        "saved word; toast confirmed"
+      ],
+      "providerNotes": "Selected source attribution visible in UI: Mayara Klingner via Pexels; Pexels License URL https://www.pexels.com/photo/woman-drinking-coca-cola-17835944/. Other displayed results included NASA and Wikimedia.",
+      "screenshots": [
+        "screenshots/drink-editor.png",
+        "screenshots/drink-page1.png",
+        "screenshots/drink-selected.png",
+        "screenshots/drink-saved.png"
+      ]
+    },
+    {
+      "galleryId": "pexels-a-open-01",
+      "word": "open",
+      "partOfSpeech": "adjective",
+      "definition": "A door is open when it is not shut and a passage through it is unobstructed.",
+      "example": "The door is visibly open.",
+      "customVisualInterpretation": "open door",
+      "customSceneUsed": true,
+      "candidates": [
+        {
+          "imageID": "pexels-a-open-01-01",
+          "src": "https://images.pexels.com/photos/30688170/pexels-photo-30688170.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "A door stands open with a visible passage through the doorway."
+        },
+        {
+          "imageID": "pexels-a-open-01-02",
+          "src": "https://images.pexels.com/photos/8123146/pexels-photo-8123146.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "An open door leaves a visible passage into the adjoining room."
+        },
+        {
+          "imageID": "pexels-a-open-01-03",
+          "src": "https://images.pexels.com/photos/4405944/pexels-photo-4405944.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "The doorway is open and its passage is visibly unobstructed."
+        },
+        {
+          "imageID": "pexels-a-open-01-04",
+          "src": "https://images.pexels.com/photos/7215944/pexels-photo-7215944.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "fits",
+          "reason": "The open door reveals an unobstructed passage into the room."
+        },
+        {
+          "imageID": "pexels-a-open-01-05",
+          "src": "https://images-assets.nasa.gov/image/KSC-20170127-PH_KLS01_0047/KSC-20170127-PH_KLS01_0047~medium.jpg",
+          "label": "wrong",
+          "reason": "A NASA event/ceremony is shown; no open door or passage is visible."
+        },
+        {
+          "imageID": "pexels-a-open-01-06",
+          "src": "https://images-assets.nasa.gov/image/PIA10461/PIA10461~small.jpg",
+          "label": "wrong",
+          "reason": "A space image is shown; no door or passage is visible."
+        }
+      ],
+      "selected": "pexels-a-open-01-01",
+      "flowStages": [
+        "Add Word UI",
+        "Find Meanings UI for open",
+        "selected adjective sense and entered exact door definition",
+        "used Custom visual interpretation field: open door; clicked Use custom concept",
+        "chooser displayed six candidates",
+        "selected option 1 in actual chooser",
+        "saved word; toast confirmed"
+      ],
+      "providerNotes": "Candidates 1–4 were Pexels doorway images; NASA fallback images 5–6 were unrelated. Selected-source attribution visible in UI: Denys Gromov via Pexels.",
+      "screenshots": [
+        "screenshots/open-editor.png",
+        "screenshots/open-page1.png",
+        "screenshots/open-selected.png",
+        "screenshots/open-saved.png"
+      ]
+    },
+    {
+      "galleryId": "pexels-a-closed-01",
+      "word": "closed",
+      "partOfSpeech": "adjective",
+      "definition": "A door is closed when it fully covers its opening, leaving no passage through it.",
+      "example": "The door is visibly shut.",
+      "customVisualInterpretation": "closed door",
+      "customSceneUsed": true,
+      "candidates": [
+        {
+          "imageID": "pexels-a-closed-01-01",
+          "src": "https://images.pexels.com/photos/5961722/pexels-photo-5961722.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "Only a Sorry We’re Closed sign is depicted; no door covering its opening is visible."
+        },
+        {
+          "imageID": "pexels-a-closed-01-02",
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8f/Front_doors_of_Spalding_House_by_Robert_Graham%2C_from_inside.jpg/960px-Front_doors_of_Spalding_House_by_Robert_Graham%2C_from_inside.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "label": "fits",
+          "reason": "The wooden door panels are visibly shut across the doorway."
+        },
+        {
+          "imageID": "pexels-a-closed-01-03",
+          "src": "https://images.pexels.com/photos/5133463/pexels-photo-5133463.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "A closed business sign is visible, but the door’s physical state is not shown."
+        },
+        {
+          "imageID": "pexels-a-closed-01-04",
+          "src": "https://images.pexels.com/photos/942304/pexels-photo-942304.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "A hanging Closed sign is shown without a visible shut door."
+        },
+        {
+          "imageID": "pexels-a-closed-01-05",
+          "src": "https://images.pexels.com/photos/4801686/pexels-photo-4801686.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "A business-hours sign is visible; no door visibly covers its opening."
+        },
+        {
+          "imageID": "pexels-a-closed-01-06",
+          "src": "https://upload.wikimedia.org/wikipedia/commons/4/43/The_popular_and_critical_Bible_encyclop%C3%A6dia_and_Scriptural_dictionary%2C_fully_defining_and_explaining_all_religious_terms%2C_including_biographical%2C_geographical%2C_historical%2C_archaeological_and_doctrinal_%2814755979526%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+          "label": "wrong",
+          "reason": "A printed book page is shown, not a shut door."
+        },
+        {
+          "imageID": "pexels-a-closed-01-07",
+          "src": "https://images.pexels.com/photos/1793031/pexels-photo-1793031.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "A Closed sign on glass is shown; a door panel shut across its opening is not visible."
+        },
+        {
+          "imageID": "pexels-a-closed-01-08",
+          "src": "https://images.pexels.com/photos/6369702/pexels-photo-6369702.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "A Closed sign on a shop window is shown without a shut door."
+        },
+        {
+          "imageID": "pexels-a-closed-01-09",
+          "src": "https://images.pexels.com/photos/1171386/pexels-photo-1171386.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "A closed-business sign is displayed on glass; the door’s actual state is not depicted."
+        },
+        {
+          "imageID": "pexels-a-closed-01-10",
+          "src": "https://images.pexels.com/photos/2747710/pexels-photo-2747710.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "A Closed sign in a window is shown, not a visibly shut door."
+        },
+        {
+          "imageID": "pexels-a-closed-01-11",
+          "src": "https://images.pexels.com/photos/24877425/pexels-photo-24877425.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "People and a We are closed sign are visible; no closed door is shown."
+        },
+        {
+          "imageID": "pexels-a-closed-01-12",
+          "src": "https://images.pexels.com/photos/1152831/pexels-photo-1152831.jpeg?auto=compress&cs=tinysrgb&h=350",
+          "label": "wrong",
+          "reason": "A Sorry We’re Closed sign is displayed on a shop door, but the panel’s shut state is not clear."
+        }
+      ],
+      "selected": "pexels-a-closed-01-02",
+      "flowStages": [
+        "Add Word UI",
+        "Find Meanings UI for closed",
+        "selected adjective sense and entered exact door definition",
+        "used Custom visual interpretation field: closed door; clicked Use custom concept",
+        "chooser displayed six candidates",
+        "clicked Find more once; chooser displayed six additional candidates (12 total)",
+        "selected option 2 in actual chooser",
+        "saved word; toast confirmed"
+      ],
+      "providerNotes": "Pexels returned mostly business-closure signs rather than visibly shut doors; one actual closed-door candidate was from Wikimedia Commons. Selected-source attribution visible in UI: Robert Graham via Wikimedia Commons, public domain.",
+      "screenshots": [
+        "screenshots/closed-editor.png",
+        "screenshots/closed-page1.png",
+        "screenshots/closed-page2.png",
+        "screenshots/closed-selected.png",
+        "screenshots/closed-saved.png"
+      ]
+    }
+  ]
+}

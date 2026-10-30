@@ -171,7 +171,7 @@ test('disable during initialization rejects pending warmup and ignores late stat
   const oldWorker = env.workers[0];
   disableImageLearning();
   await rejection;
-  assert.equal(await ranking, candidates);
+  assert.deepEqual(await ranking, [], 'cancelled screening never returns unverified photos');
   assert.equal(oldWorker.terminated, true);
   oldWorker.status({ phase: 'ready', backend: 'webgpu', message: 'Late model ready' });
   oldWorker.answer();
@@ -202,7 +202,7 @@ test('disable during a picker RPC preserves off when the stopped request rejects
   const candidates = [photo];
   const ranking = rankImagesLocally(meaning, candidates, { storage: env.storage });
   disableImageLearning();
-  assert.equal(await ranking, candidates);
+  assert.deepEqual(await ranking, [], 'cancelled screening never returns unverified photos');
   assert.equal(getImageLearningStatus().phase, 'off');
   assert.equal(getImageLearningStatus().enabled, false);
   assert.equal(env.workers.length, 1);
@@ -223,7 +223,7 @@ test('disable while a thumbnail is decoding cannot recreate a model worker after
   await decoding;
   disableImageLearning();
   releaseDecode();
-  assert.equal(await ranking, candidates);
+  assert.deepEqual(await ranking, [], 'cancelled screening never returns unverified photos');
   assert.equal(env.workers.length, 1, 'the old picker cannot create a replacement worker');
   assert.deepEqual(env.workers[0].messages.map(message => message.type), ['texts']);
   assert.equal(env.workers[0].terminated, true);
@@ -247,7 +247,7 @@ test('disable while personal weights are loading cannot publish stale picker res
     await loading;
     disableImageLearning();
     releaseModel(null);
-    assert.equal(await ranking, candidates);
+    assert.deepEqual(await ranking, [], 'cancelled screening never returns unverified photos');
     assert.equal(getImageLearningStatus().phase, 'off');
   } finally { driveSync.imageHistory.model = originalModel; }
 });
@@ -307,10 +307,25 @@ test('a picker cancelled while waiting for startup warmup never sends scoring re
   controller.abort();
   env.workers[0].answer();
   await warmup;
-  assert.equal(await ranking, candidates);
+  assert.deepEqual(await ranking, [], 'cancelled screening never returns unverified photos');
   assert.deepEqual(env.workers[0].messages.map(message => message.type), ['initialize']);
   assert.equal(env.workers[0].terminated, false, 'cancelling a picker retains the completed startup warmup');
   assert.equal(getImageLearningStatus().phase, 'ready');
+});
+
+test('the foreground picker screens thirty photos and never appends unscored pool entries', async context => {
+  const env = setup(context, { config: { enabled: true } });
+  const candidates = Array.from({length:35},(_,i)=>({...photo,url:`https://images.example/pool-${i}.jpg`}));
+  const images = await rankImagesLocally(meaning, candidates, {
+    storage: env.storage,
+    fetchImpl: async () => new Response('image pixels', { headers: { 'content-type': 'image/jpeg' } }),
+    decode: async () => ({ width:64, height:64 }),
+    resize: () => assert.fail('Small photos need no resize')
+  });
+  assert.equal(env.workers[0].messages.filter(message=>message.type==='image').length,30);
+  assert.ok(images.length>0);
+  assert.ok(images.every(image=>image.ml?.model===CLIP_TAG));
+  assert.ok(images.every(image=>Number(/pool-(\d+)/.exec(image.url)[1])<30));
 });
 
 // Keep last: CPU fallback is intentionally remembered for this service session.

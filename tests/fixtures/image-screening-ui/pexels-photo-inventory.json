@@ -1,0 +1,463 @@
+{
+  "origin": "Actual rendered app UI candidate URLs; no newly searched candidates. Re-downloaded only for independent visual review. Unavailable photos must be uncertain. Source scores, proposed choices and labels hidden.",
+  "galleries": [
+    {
+      "galleryId": "pexels-a-run-01",
+      "word": "run",
+      "partOfSpeech": "verb",
+      "definition": "Of an animal, to move swiftly on foot by taking quick steps, as a fox does.",
+      "candidates": [
+        {
+          "id": "pexels-a-run-01-01",
+          "file": "images/d5201a704e8ba0498f1f5ccd.img",
+          "available": true,
+          "sha256": "ca401b2f7cadde1f797660632a40addc8671fc358aaf8b24dbaf3e7db5105d79"
+        },
+        {
+          "id": "pexels-a-run-01-02",
+          "file": "images/a2d2155401352d1b6a1aa0e6.img",
+          "available": true,
+          "sha256": "37827a828a82387cee59481effec084deeb41ee8feb68eae526916860ec310a0"
+        },
+        {
+          "id": "pexels-a-run-01-03",
+          "file": "images/eacb71938bd56eb4300bb537.img",
+          "available": true,
+          "sha256": "dd33d6de6ccce4219ca9b19e3fa8a681f26dc9319de810476978d4afe5bc0312"
+        },
+        {
+          "id": "pexels-a-run-01-04",
+          "file": "images/277be571232740ff3299574e.img",
+          "available": true,
+          "sha256": "4748fa0f85483e5177eb77622fd168f787270aa33650fdd8726a126f034a44da"
+        },
+        {
+          "id": "pexels-a-run-01-05",
+          "file": "images/17f262ec5d5059cfd4bef43b.img",
+          "available": true,
+          "sha256": "484939817cf89257805bf843057c270d8f43f5d3ebf43c7ae6bd985a7e3dceaa"
+        },
+        {
+          "id": "pexels-a-run-01-06",
+          "file": "images/eb19d2d4bc8100fd34da6f72.img",
+          "available": true,
+          "sha256": "a21b23b6265bd9dae5aa05e04cab0913b45ee7113526177e3c9f9c83ade82f45"
+        }
+      ],
+      "screenshots": [
+        "screenshots/run-page1.png"
+      ],
+      "sheet": "pexels-a-run-01.jpg"
+    },
+    {
+      "galleryId": "pexels-a-stand-01",
+      "word": "stand",
+      "partOfSpeech": "verb",
+      "definition": "Of an animal, to remain upright on its feet without moving, as a fox standing in a field.",
+      "candidates": [
+        {
+          "id": "pexels-a-stand-01-01",
+          "file": "images/30d263acf72b2ba49da2af83.img",
+          "available": true,
+          "sha256": "2f5bc24f5fecd6d4ab8b0e0159b539b80fef55d85ef1e8eeae214f6cf5a11cb4"
+        },
+        {
+          "id": "pexels-a-stand-01-02",
+          "file": "images/6a440ef65851988b8216880e.img",
+          "available": true,
+          "sha256": "1d39f0e61d4cb07405e7c21cd039bac752db7555947c5b73d12032f17e9f4039"
+        },
+        {
+          "id": "pexels-a-stand-01-03",
+          "file": "images/cb3414bf03bfe9272a247b0e.img",
+          "available": true,
+          "sha256": "f513a94b5178fae3ea545176697bbddd7437ce37ef08baa4dc1a18775a34273e"
+        },
+        {
+          "id": "pexels-a-stand-01-04",
+          "file": "images/dfe642815cf04299f45e546a.img",
+          "available": true,
+          "sha256": "beae089d2e9f920a7104049b66860f007addc57d9b1264c55b380c34a745c891"
+        },
+        {
+          "id": "pexels-a-stand-01-05",
+          "file": "images/d04a7b7c42e0cb10e430c99e.img",
+          "available": true,
+          "sha256": "3cd6a43438392cb04b3fe1396087d89cff1f30618b33ef78a379a127e85e0ac1"
+        },
+        {
+          "id": "pexels-a-stand-01-06",
+          "file": "images/085b295b60e84c73d4e2d337.img",
+          "available": true,
+          "sha256": "1f156666bbfd54d5513c38b5c64e28a75f5173fea0f6d5f42271f249951d2537"
+        }
+      ],
+      "screenshots": [
+        "screenshots/stand-page1.png"
+      ],
+      "sheet": "pexels-a-stand-01.jpg"
+    },
+    {
+      "galleryId": "pexels-a-carry-01",
+      "word": "carry",
+      "partOfSpeech": "verb",
+      "definition": "To hold an object while transporting it from one place to another.",
+      "candidates": [
+        {
+          "id": "pexels-a-carry-01-01",
+          "file": "images/9ef995a153dd0c1e66c13f38.img",
+          "available": true,
+          "sha256": "abfe64b37ee9424e0132d7d3dc1a06f9c12960f7ed149f467237162cc2ad00e7"
+        },
+        {
+          "id": "pexels-a-carry-01-02",
+          "file": "images/825d2c5ed0854519780849d1.img",
+          "available": true,
+          "sha256": "0700b550638b57f27a0706c1b2c50af6efc24c2a363e301621cd1b99a26b4916"
+        },
+        {
+          "id": "pexels-a-carry-01-03",
+          "file": "images/4abcbcb780a46f7651b82dc4.img",
+          "available": true,
+          "sha256": "a26f1a324f1f1197deb3fd13c05c3560773ee1c9a4af9257a6bab4028358601f"
+        },
+        {
+          "id": "pexels-a-carry-01-04",
+          "file": "images/558604546a0262b1945c7096.img",
+          "available": true,
+          "sha256": "c81ddad228b503e4f2fbfcf1b892d7e65d633d902d6ddbb22a9de34d3cabb510"
+        },
+        {
+          "id": "pexels-a-carry-01-05",
+          "file": "images/96966a586af47f335143f8c6.img",
+          "available": true,
+          "sha256": "ab868560abe90f7a5de0be0b39c0166c4f79eb9d36f09aae5270d0fa338f24a5"
+        },
+        {
+          "id": "pexels-a-carry-01-06",
+          "file": "images/24eb667dbbdbf03480e1b002.img",
+          "available": true,
+          "sha256": "0fdf09414a02fbe68677ca5e9ffd37c10dbfd995d2d01ae20b440a2c7d03ad64"
+        }
+      ],
+      "screenshots": [
+        "screenshots/carry-page1.png"
+      ],
+      "sheet": "pexels-a-carry-01.jpg"
+    },
+    {
+      "galleryId": "pexels-a-beside-01",
+      "word": "beside",
+      "partOfSpeech": "preposition",
+      "definition": "Next to or at the side of something.",
+      "candidates": [
+        {
+          "id": "pexels-a-beside-01-01",
+          "file": "images/21d7b8a3f8f8211dd4d8db5c.img",
+          "available": true,
+          "sha256": "1e97040f95ae89072342090e23e253d2a51212b89a7a329c4abc84252ec45470"
+        },
+        {
+          "id": "pexels-a-beside-01-02",
+          "file": "images/21ca499c641c9dfdbbdf40f6.img",
+          "available": true,
+          "sha256": "e87f28660b223fd4907e3c285d12ae185e4eb0ee9631588812ce1ea491b53f13"
+        },
+        {
+          "id": "pexels-a-beside-01-03",
+          "file": "images/f8821485d4d91ed70ed935f4.img",
+          "available": true,
+          "sha256": "40da16cb79c31486d785e2454a632ce8956bcdab6b9330ed675ac860837a0951"
+        },
+        {
+          "id": "pexels-a-beside-01-04",
+          "file": "images/5a95d5de98432c19e955f97a.img",
+          "available": true,
+          "sha256": "3919bee7ce551ed4ba3e0d8a033422a87a7acbdae44260c84533d077fdc160ad"
+        },
+        {
+          "id": "pexels-a-beside-01-05",
+          "file": "images/4cb87958e0efbb396a17f347.img",
+          "available": true,
+          "sha256": "6c2bb0997326380ee3b980668fee78c4119b43e0f4f13e0e2fe89907f23b5c53"
+        },
+        {
+          "id": "pexels-a-beside-01-06",
+          "file": "images/a32b2c7d027fb262bfa2c1b5.img",
+          "available": true,
+          "sha256": "77b6f5505ab4e5cbfa9de3d5197320bb8b9a895d9e8eba03ff213de9ac70581d"
+        },
+        {
+          "id": "pexels-a-beside-01-07",
+          "file": "images/9b285efac695adf8b2228846.img",
+          "available": true,
+          "sha256": "9838c0b7e8d96b11c86bc15928b577ba588f9c08aece40556dff93b529136f03"
+        },
+        {
+          "id": "pexels-a-beside-01-08",
+          "file": "images/ef0d2e3d39bd4886c152dc3c.img",
+          "available": true,
+          "sha256": "a28b42e5130f2b59984b486890ac809cddf026e1c9c392c825c0320defee250b"
+        },
+        {
+          "id": "pexels-a-beside-01-09",
+          "file": "images/9ff429271f8313cf85cadc8d.img",
+          "available": true,
+          "sha256": "02fa6b4680a3c263b5bd6014103c457a56dcdd6cbfe4de6379b62f2929552d45"
+        },
+        {
+          "id": "pexels-a-beside-01-10",
+          "file": "images/ac585bfc5f8ee182a2a2e836.img",
+          "available": true,
+          "sha256": "9fc04c0975e4b6ea506aa673c19bc9277ecfbb8dabd6ac4393287198947bd147"
+        },
+        {
+          "id": "pexels-a-beside-01-11",
+          "file": "images/3da5a3a520c90ddbad94bfb2.img",
+          "available": true,
+          "sha256": "78751a4793481fc7cbb0dfc6ccde8a0fb97191ae50b2ff0f3c6c19edfcc7b44f"
+        },
+        {
+          "id": "pexels-a-beside-01-12",
+          "file": "images/ef8ca7d14a4fc843802d48c3.img",
+          "available": true,
+          "sha256": "99dba38dfe06d21c2cf49d13cdeeb05340c07c6ce37be4f6f202d2f5f06cd250"
+        }
+      ],
+      "screenshots": [
+        "screenshots/beside-page1.png",
+        "screenshots/beside-page2.png"
+      ],
+      "sheet": "pexels-a-beside-01.jpg"
+    },
+    {
+      "galleryId": "pexels-a-pour-01",
+      "word": "pour",
+      "partOfSpeech": "verb",
+      "definition": "To cause liquid to flow in a stream from a container or into one.",
+      "candidates": [
+        {
+          "id": "pexels-a-pour-01-01",
+          "file": "images/c6df0bf944b5ac61dff02a8d.img",
+          "available": true,
+          "sha256": "ac8a0819bd4a4e12c51c23e5fb1e6e3eae5c96bdac42c3f532422cb1648a0641"
+        },
+        {
+          "id": "pexels-a-pour-01-02",
+          "file": "images/4041f8dee9823553d3c7fd72.img",
+          "available": true,
+          "sha256": "10b52345f7d2a19a2b1caef813b367535924132f9ef9445a77289771499b64d1"
+        },
+        {
+          "id": "pexels-a-pour-01-03",
+          "file": "images/d6677e8a93c21159f842c341.img",
+          "available": true,
+          "sha256": "9865492503ed0c49ed2f0c1836d716bb1760191f818169d9b479540f804fb549"
+        },
+        {
+          "id": "pexels-a-pour-01-04",
+          "file": "images/16f26b8f84ec0ab69c9ec8c5.img",
+          "available": true,
+          "sha256": "504abb29f7cc6fbe99a1fdb5a0362b49d078fdfa20520ddd0a593e3d359eff5b"
+        },
+        {
+          "id": "pexels-a-pour-01-05",
+          "file": "images/3a3a02c082ee3509b07edb38.img",
+          "available": true,
+          "sha256": "a0d00f992edecf06c8639a7579eeb41b763c5eaba118721c1491a3130614ad6c"
+        },
+        {
+          "id": "pexels-a-pour-01-06",
+          "file": "images/7fd46ac302c7d26420372f49.img",
+          "available": true,
+          "sha256": "bc24176896a13111e87ece068d0c55709543ec4f535a333c0f0b810576b743fc"
+        }
+      ],
+      "screenshots": [
+        "screenshots/pour-page1.png"
+      ],
+      "sheet": "pexels-a-pour-01.jpg"
+    },
+    {
+      "galleryId": "pexels-a-drink-01",
+      "word": "drink",
+      "partOfSpeech": "verb",
+      "definition": "To consume a liquid through the mouth.",
+      "candidates": [
+        {
+          "id": "pexels-a-drink-01-01",
+          "file": "images/feefb7798677d36fc42fbf9c.img",
+          "available": true,
+          "sha256": "2533d96e0e9f5ba6a2fc18329950911ca802ce8f9eafeb0841db6bcd712bae2b"
+        },
+        {
+          "id": "pexels-a-drink-01-02",
+          "file": "images/68799f7569ffd4b92f929c5d.img",
+          "available": true,
+          "sha256": "625cbf16b10ab6cbb4b96bce85a5c30860dc9ce49b42b6983e82787480e353f2"
+        },
+        {
+          "id": "pexels-a-drink-01-03",
+          "file": "images/e589020854c2b1d1e178c557.img",
+          "available": true,
+          "sha256": "32fa95a8dd84833e76aa0af7b44ff3b1574ae1a6d72dca1cf276ae3ac91b312a"
+        },
+        {
+          "id": "pexels-a-drink-01-04",
+          "file": "images/b67f535aa39a05ff21c49152.img",
+          "available": true,
+          "sha256": "dd2730d5258628add5b4f985d6d092f2693327a55f944a5d3912b7472ae2936b"
+        },
+        {
+          "id": "pexels-a-drink-01-05",
+          "file": "images/59de131bd1414a53ddc1d8d4.img",
+          "available": true,
+          "sha256": "d14ebd899441b836056f1cbfdf9432a0fb1f633784c2050e5a89915298f59c19"
+        },
+        {
+          "id": "pexels-a-drink-01-06",
+          "file": "images/a1ce4f6b1ec9cfa7fa93e756.img",
+          "available": true,
+          "sha256": "6cead3aaccb5d0f27de62589555f682cf202d61286cafb73fce5ddbc99e75594"
+        }
+      ],
+      "screenshots": [
+        "screenshots/drink-page1.png"
+      ],
+      "sheet": "pexels-a-drink-01.jpg"
+    },
+    {
+      "galleryId": "pexels-a-open-01",
+      "word": "open",
+      "partOfSpeech": "adjective",
+      "definition": "A door is open when it is not shut and a passage through it is unobstructed.",
+      "candidates": [
+        {
+          "id": "pexels-a-open-01-01",
+          "file": "images/099b8371dbe08c7ab720fba3.img",
+          "available": true,
+          "sha256": "912a63052b7bd73ca1f7f7ecf80cf06951ebb5983839af75ccf9121251c9b1d6"
+        },
+        {
+          "id": "pexels-a-open-01-02",
+          "file": "images/da783e7e663c15f5478896f4.img",
+          "available": true,
+          "sha256": "dd5f16544e9a7d260933a01911fa4b165d73b4589f8ead3e9cf20713a29a1844"
+        },
+        {
+          "id": "pexels-a-open-01-03",
+          "file": "images/d582bc572abfe1fbce909a24.img",
+          "available": true,
+          "sha256": "46b31fd7b83a0fdc87a2d7328ae429b48f95cd1f394a8f41fd0bd54016c658d6"
+        },
+        {
+          "id": "pexels-a-open-01-04",
+          "file": "images/d892812640dcf8b8ae363582.img",
+          "available": true,
+          "sha256": "1b7ece6edfc395a878fd5ec9f0410bec68e762140c2a8360839c1270edef72b0"
+        },
+        {
+          "id": "pexels-a-open-01-05",
+          "file": "images/efdf9aa5f2f7b996da4500fa.img",
+          "available": true,
+          "sha256": "7ca449259ee6b5d3dd0bc8aedb6819b7f869d5cfde5018ca58ed2623b3eed873"
+        },
+        {
+          "id": "pexels-a-open-01-06",
+          "file": "images/52c66cd8319cec7322cbf2e4.img",
+          "available": true,
+          "sha256": "bc280a6a192ae8bd138b80f28c4f4790f90f5034ac8e715a820f3aa386447269"
+        }
+      ],
+      "screenshots": [
+        "screenshots/open-page1.png"
+      ],
+      "sheet": "pexels-a-open-01.jpg"
+    },
+    {
+      "galleryId": "pexels-a-closed-01",
+      "word": "closed",
+      "partOfSpeech": "adjective",
+      "definition": "A door is closed when it fully covers its opening, leaving no passage through it.",
+      "candidates": [
+        {
+          "id": "pexels-a-closed-01-01",
+          "file": "images/3a84d4019ae511f8793b20c3.img",
+          "available": true,
+          "sha256": "14b77bf5624ff1f70452300e19a96a08596ef04505c7062736eac449f5170f9a"
+        },
+        {
+          "id": "pexels-a-closed-01-02",
+          "file": "images/3e69212d0b1bf58f70db0dbd.img",
+          "available": true,
+          "sha256": "ec1a3c1fe8f02acfc09cf7effface05d760a8f5a0f6af0c8a6329f167a697b1b"
+        },
+        {
+          "id": "pexels-a-closed-01-03",
+          "file": "images/031497ced247123c3f1dcd1f.img",
+          "available": true,
+          "sha256": "db660d7cc766e2e16c919de9defe837d54f236b57d9d6776bba36c15775769fc"
+        },
+        {
+          "id": "pexels-a-closed-01-04",
+          "file": "images/4c2386d48587d0ead085c9f8.img",
+          "available": true,
+          "sha256": "1a78c73a96ddfa92663515236b6055dc240c3e94a5978b2e3f678e73b6086c9e"
+        },
+        {
+          "id": "pexels-a-closed-01-05",
+          "file": "images/62ad9f1b34de15da1e2a41a3.img",
+          "available": true,
+          "sha256": "135c3c102116241648503a939c0aa10ab7651d6ef326cfbc2751585c544a9f13"
+        },
+        {
+          "id": "pexels-a-closed-01-06",
+          "file": "images/b9df3d6cfcbca0e823814548.img",
+          "available": true,
+          "sha256": "00b2444f17e7a7b91732109b8020d4e91aaedbaf5e4a41f77a9d8504f0ad92cc"
+        },
+        {
+          "id": "pexels-a-closed-01-07",
+          "file": "images/89ca83bae45ce913d0a4ef45.img",
+          "available": true,
+          "sha256": "991bb34ffab28b32df8825ebd581ad7fd3b5f89f72a6882b76073a13a98912c5"
+        },
+        {
+          "id": "pexels-a-closed-01-08",
+          "file": "images/8920cac80a9da63ee47f622c.img",
+          "available": true,
+          "sha256": "eca848453dcc662366e0e2eaee02fa827211ad5db61093203e40eb50730f480d"
+        },
+        {
+          "id": "pexels-a-closed-01-09",
+          "file": "images/171f58d8314d0919940738ef.img",
+          "available": true,
+          "sha256": "6a1e30ee0297bcc28884379d66bfae231f5a0f02009e67e625228f01194cf2ea"
+        },
+        {
+          "id": "pexels-a-closed-01-10",
+          "file": "images/7e7cf17ed4f1cf4e406f9b67.img",
+          "available": true,
+          "sha256": "77d7f85d78e12b7af8529f9ef60ac32c2531b1297bdc24cdd0cf462e397d88d3"
+        },
+        {
+          "id": "pexels-a-closed-01-11",
+          "file": "images/e1993dbe03e474f8dc23b801.img",
+          "available": true,
+          "sha256": "960fe15adbb741072c80ff33eab2f89c7b12ab9ea514a1e249673b4a76155362"
+        },
+        {
+          "id": "pexels-a-closed-01-12",
+          "file": "images/e406b18e5febbdbdc6489fe3.img",
+          "available": true,
+          "sha256": "aa7b8d75f05af296d1d0c7fe01199937e212c271ef105577aabe3813699cf100"
+        }
+      ],
+      "screenshots": [
+        "screenshots/closed-page1.png",
+        "screenshots/closed-page2.png"
+      ],
+      "sheet": "pexels-a-closed-01.jpg"
+    }
+  ]
+}

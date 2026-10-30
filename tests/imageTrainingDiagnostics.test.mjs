@@ -4,6 +4,7 @@ import { createPersonalizer, createPersonalizerScorer, personalizerScore, imageD
 import { gradientDiagnostic, fixedLabelBiasVariance } from '../scripts/lib/image-training-diagnostics.mjs';
 import { imageChoiceHistory } from './fixtures/imageChoices.mjs';
 import { readJsonFile } from '../scripts/lib/json-files.mjs';
+import { validPersonalizer as validArchivedPersonalizer } from '../scripts/lib/image-personalizer-v2.mjs';
 
 test('the shared fitting core memorizes a tiny batch without weakening production acceptance', () => {
   const history = imageChoiceHistory(4), decisions = imageDecisions(history), initial = createPersonalizer(), before = Float32Array.from(initial.weights);
@@ -20,7 +21,8 @@ test('the shared fitting core memorizes a tiny batch without weakening productio
 
 test('historical bounded weights remain reproducible but cannot initialize current fusion training', async () => {
   const saved = await readJsonFile(new URL('./fixtures/image-pretraining-fp16/candidate.json.gz', import.meta.url));
-  assert.equal(validPersonalizer(saved.model), true);
+  assert.equal(validArchivedPersonalizer(saved.model), true);
+  assert.equal(validPersonalizer(saved.model), false);
   assert.equal(isCurrentPersonalizer(saved.model), false);
   assert.throws(() => fitImagePersonalizer(saved.model, imageDecisions(imageChoiceHistory(4)), imageDecisions(imageChoiceHistory(4))), /current model/);
 });
@@ -35,17 +37,18 @@ test('global norm clipping records clipping and merges a tiny final batch withou
   assert.ok(result.model.weights.every(Number.isFinite));
 });
 
-test('the new model is a 50/50 score fusion with no output magnitude cap', () => {
+test('the personal head has an unrestricted score independent of the CLIP filtering score', () => {
   const model = createPersonalizer(), row = imageChoiceHistory(1)[0];
   model.weights.fill(0); model.weights[model.weights.length - 1] = 20;
-  const base = personalizerScore(null, row.features, row.meaningFeatures);
-  assert.equal(personalizerScore(model, row.features, row.meaningFeatures), .5 * base + .5 * 20);
+  assert.equal(personalizerScore(model, row.features, row.meaningFeatures), 20);
 });
 
 test('all three backpropagation layers agree with finite differences', () => {
   const model = createPersonalizer();
-  for (let i = 49808; i < model.weights.length; i++) model.weights[i] = .05 * Math.sin(i);
-  const result = gradientDiagnostic(model, imageDecisions(imageChoiceHistory(4)));
+  for (let i = model.weights.length - 17; i < model.weights.length; i++) model.weights[i] = .05 * Math.sin(i);
+  // Resolve Float32 activation rounding with a larger central step; boundary
+  // crossings are still excluded and the absolute error tolerance is unchanged.
+  const result = gradientDiagnostic(model, imageDecisions(imageChoiceHistory(4)), { epsilon: .001 });
   assert.equal(result.passed, true, JSON.stringify(result));
   for (const layer of [0,1,2]) assert.ok(result.checks.some(row => row.layer === layer && Math.abs(row.analytic) > 1e-6));
 });

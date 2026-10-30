@@ -9,7 +9,7 @@ android {
         applicationId "com.keepvocab.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 58
+        versionCode 59
         versionName packageJson.version
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

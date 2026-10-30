@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { readJsonFile } from './lib/json-files.mjs';
 import { validatePretrainingBenchmark } from './lib/image-pretraining-benchmark.mjs';
 import { auditMeaningShiftSplit } from './lib/image-meaning-shift.mjs';
-import { personalizerInput, createPersonalizerScorer } from '../js/services/imagePersonalizer.js';
+import { personalizerInput, createPersonalizerScorer } from './lib/image-personalizer-v2.mjs';
 import { decodeFeatures, sigmoid } from '../js/services/imagePreferences.js';
 const directory=process.argv[2]||'work/image-regularization',report=await readJsonFile(`${directory}/report.json.gz`);
 const plan=await readJsonFile(report.protocol.dataSplit);

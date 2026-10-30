@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { readJsonFile } from '../scripts/lib/json-files.mjs';
 import { validatePretrainingBenchmark } from '../scripts/lib/image-pretraining-benchmark.mjs';
 import { trainingMetrics, fixedLabelBiasVariance } from '../scripts/lib/image-training-diagnostics.mjs';
-import { isCurrentPersonalizer } from '../js/services/imagePersonalizer.js';
+import { isCurrentPersonalizer } from '../scripts/lib/image-personalizer-v2.mjs';
 import { IMAGE_TRAINING_RECIPE } from '../js/ml/imageTrainingRecipe.js';
 
 const docs = new URL('../docs/image-fusion-v2/', import.meta.url);

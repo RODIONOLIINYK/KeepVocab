@@ -1,0 +1,56 @@
+{
+  "purpose": "Separate post-filter direct-UI smoke check on the isolated 8098 origin; not part of the fresh 60-image pre-filter label set and not used to retune the gate.",
+  "origin": "http://127.0.0.1:8098",
+  "libraryState": {
+    "before": "11 words, 14 meanings",
+    "after": "12 words, 15 meanings",
+    "dailyGoal": "0 / 20",
+    "practicePerformed": false
+  },
+  "appVersion": {
+    "expectedFromRootDeployment": "1.12.9",
+    "visibleInSafeSettingsText": false,
+    "note": "The Settings view showed local image model status but no visible version text in the safely queried text nodes. No settings values or credential fields were read."
+  },
+  "model": {
+    "settingsStatusText": "Ready.",
+    "statusContext": "Local image model section in Settings",
+    "pickerStatusText": "No score/rank values shown in chooser; no error text observed.",
+    "configuredGate": { "minimumSelected": 0.19, "maximumUnwantedExclusive": 0.20 },
+    "candidatePoolCap": 30,
+    "displayedCandidateCount": 6,
+    "sceneAvailability": "No custom visual interpretation or scene prompts were added for bicycle.",
+    "errorsObserved": []
+  },
+  "flow": {
+    "stages": [
+      "Opened isolated test origin through a fresh CUA Chrome tab because the existing tab could not be rebound in this session.",
+      "Verified existing library count 11 words / 14 meanings and daily goal 0 / 20.",
+      "Add Word UI > Find meanings for bicycle; selected the first ordinary noun sense.",
+      "Visible exact saved meaning: A vehicle that has two primary wheels, one behind the other, a steering handle, and a saddle seat or seats and is usually propelled by the action of a rider’s feet upon pedals.",
+      "Actual chooser displayed six image options; candidate image URLs captured from rendered img src attributes.",
+      "Selected displayed option 5, a complete orange bicycle on a plain background; attribution shown as Rashed Paykary via Pexels.",
+      "Saved word; UI toast confirmed Saved 1 meaning of bicycle to October 2026 Vocabulary."
+    ],
+    "selectedCandidateId": "postfilter-bicycle-01-05",
+    "selectionReason": "The image clearly shows a complete bicycle, matching the visible bicycle noun definition.",
+    "selectedSourceAttribution": "Rashed Paykary via Pexels",
+    "selectedSourcePage": "https://www.pexels.com/photo/bright-orange-bicycle-against-white-background-33325122/",
+    "durationSeconds": null,
+    "durationNote": "Elapsed time was not measured."
+  },
+  "candidates": [
+    { "candidateId": "postfilter-bicycle-01-01", "displayedOption": 1, "src": "https://images.pexels.com/photos/5653090/pexels-photo-5653090.jpeg?auto=compress&cs=tinysrgb&h=350", "alt": "Two bicycles parked in the sun on a city street in Larisa, Greece." },
+    { "candidateId": "postfilter-bicycle-01-02", "displayedOption": 2, "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Rome_%28Italy%29%2C_Bicycle_--_2013_--_4368.jpg/960px-Rome_%28Italy%29%2C_Bicycle_--_2013_--_4368.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail", "alt": "Rome (Italy), Bicycle -- 2013 -- 4368.jpg" },
+    { "candidateId": "postfilter-bicycle-01-03", "displayedOption": 3, "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/96/African_boy_transporting_fodder_by_bicycle_edit.jpg/960px-African_boy_transporting_fodder_by_bicycle_edit.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail", "alt": "African boy transporting fodder by bicycle edit.jpg" },
+    { "candidateId": "postfilter-bicycle-01-04", "displayedOption": 4, "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Bicycle_reflections.jpg/960px-Bicycle_reflections.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail", "alt": "Bicycle reflections.jpg" },
+    { "candidateId": "postfilter-bicycle-01-05", "displayedOption": 5, "src": "https://images.pexels.com/photos/33325122/pexels-photo-33325122.jpeg?auto=compress&cs=tinysrgb&h=350", "alt": "Vibrant orange bicycle resting on a seamless white backdrop, showcasing minimalist design." },
+    { "candidateId": "postfilter-bicycle-01-06", "displayedOption": 6, "src": "https://images.pexels.com/photos/20310204/pexels-photo-20310204.jpeg?auto=compress&cs=tinysrgb&h=350", "alt": "Bicycles parked against a classic brick wall, showcasing urban transport." }
+  ],
+  "screenshots": [
+    "screenshots/bicycle-picker.png",
+    "screenshots/bicycle-selected.png",
+    "screenshots/bicycle-saved.png"
+  ],
+  "privacy": "Used only the isolated localhost origin. No installed app, personal browser profile data, keys, Drive login, or personal settings were accessed."
+}

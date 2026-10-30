@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { readJsonFile } from './lib/json-files.mjs';
 import { validatePretrainingBenchmark, validateSemanticSupervision, comparePretrainingModels } from './lib/image-pretraining-benchmark.mjs';
 import { trainingMetrics, gradientDiagnostic, fixedLabelBiasVariance } from './lib/image-training-diagnostics.mjs';
-import { createPersonalizer, fitImagePersonalizer, PERSONALIZER_VERSION, createPersonalizerScorer } from '../js/services/imagePersonalizer.js';
+import { createPersonalizer, fitImagePersonalizer, PERSONALIZER_VERSION, createPersonalizerScorer } from './lib/image-personalizer-v2.mjs';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
 
 const args=process.argv.slice(2), flag=name=>args.find(a=>a.startsWith(`--${name}=`))?.slice(name.length+3);
@@ -22,7 +22,7 @@ const compressed=(name,value)=>writeFile(resolve(directory,name),gzipSync(serial
 const log=(phase,details={})=>process.stderr.write(JSON.stringify({phase,...details})+'\n');
 const better=(a,b)=>!b||a.chosenAt1>b.chosenAt1||a.chosenAt1===b.chosenAt1&&a.loss<b.loss-1e-12;
 const initial=()=>({...createPersonalizer(protocol.initializationSeed),role:'semantic'});
-const sources=['js/services/imagePersonalizer.js','scripts/tune-image-fusion.mjs','scripts/lib/image-training-diagnostics.mjs'];
+const sources=['scripts/lib/image-personalizer-v2.mjs','scripts/tune-image-fusion.mjs','scripts/lib/image-training-diagnostics.mjs'];
 const provenance={encoder:CLIP_TAG,personalizerVersion:PERSONALIZER_VERSION,protocolSha256:sha(protocolText),manifestSha256:sha(manifestText),eventsSha256:sha(JSON.stringify(encoded.events)),
   sourceSha256:Object.fromEntries(await Promise.all(sources.map(async file=>[file,sha(await readFile(file))]))),nodeVersion:process.version,diversity:validated.diversity};
 let resumed=[];

@@ -1,0 +1,247 @@
+{
+  "method": "Pixel-only contact-sheet check of all 24 original selected references, with exact word/definition shown; references were previously selected human-fit references in the original train fixture. No captions used as proof and no labels changed.",
+  "reviewer": "gpt-6-luna-agent-b",
+  "contactSheet": "selected-originals-contact-sheet.jpg",
+  "reviews": [
+    {
+      "galleryId": "semantic-v2-surf-0",
+      "meaningId": "semantic-v2:surf",
+      "word": "surf",
+      "definition": "To ride ocean waves on a surfboard.",
+      "parentPhotoId": "381360",
+      "parentSha256": "8f16a69db296dc4b490c68751df1facccd067e0287e3328d9a7479e973c44e14",
+      "label": "fits",
+      "visualReason": "Person is on a surfboard riding a visible ocean wave."
+    },
+    {
+      "galleryId": "semantic-v2-bus-0",
+      "meaningId": "semantic-v2:bus",
+      "word": "bus",
+      "definition": "A large road vehicle that carries passengers.",
+      "parentPhotoId": "446206",
+      "parentSha256": "37f631d7cf9ff3f54abb80600fa15651061c228fb1265b95888847de72e06bae",
+      "label": "fits",
+      "visualReason": "Two full-size passenger buses are visible on the road."
+    },
+    {
+      "galleryId": "semantic-v2-stairs-0",
+      "meaningId": "semantic-v2:stairs",
+      "word": "stairs",
+      "definition": "A series of steps leading from one level to another.",
+      "parentPhotoId": "249180",
+      "parentSha256": "685bd913e0bfbbcd9d91b2368c219696308f51ba4f9428b077584d64b5a6ae83",
+      "label": "fits",
+      "visualReason": "Several people are walking on a visible flight of stairs."
+    },
+    {
+      "galleryId": "semantic-v2-bridge-0",
+      "meaningId": "semantic-v2:bridge",
+      "word": "bridge",
+      "definition": "A structure carrying a path over water or another obstacle.",
+      "parentPhotoId": "344816",
+      "parentSha256": "091feaf5dbb6a28c71f83d0d91756aac8d176e7c3d31b766c484252440772457",
+      "label": "fits",
+      "visualReason": "Train and tracks pass visibly beneath an overpass bridge."
+    },
+    {
+      "galleryId": "semantic-v2-beer-1",
+      "meaningId": "semantic-v2:beer",
+      "word": "beer",
+      "definition": "An alcoholic drink made from malt and hops.",
+      "parentPhotoId": "74733",
+      "parentSha256": "d99c93fb6d22a5d51bbb6e09ca5f10c11bdcf90a711abf6cc83188df52cc456a",
+      "label": "fits",
+      "visualReason": "Several transparent drinking glasses contain beer with visible foam."
+    },
+    {
+      "galleryId": "semantic-v2-suit-0",
+      "meaningId": "semantic-v2:suit",
+      "word": "suit",
+      "definition": "A matching jacket and trousers worn as a set.",
+      "parentPhotoId": "9483",
+      "parentSha256": "c7e6e15f4db067c3e09ab8605759be9d850e2d5c45ea4dfb9cda8f5d85308ea4",
+      "label": "fits",
+      "visualReason": "Person visibly wears a matching jacket and trousers."
+    },
+    {
+      "galleryId": "semantic-v2-open-0",
+      "meaningId": "semantic-v2:open",
+      "word": "open",
+      "definition": "With a door, lid or cover moved aside to allow access.",
+      "parentPhotoId": "512330",
+      "parentSha256": "a97b7899f984d8cbb9505b659cb428c3654a4a7d3505178036e316926c73f0b6",
+      "label": "fits",
+      "visualReason": "Refrigerator door is open with interior shelves exposed."
+    },
+    {
+      "galleryId": "semantic-v2-cake-1",
+      "meaningId": "semantic-v2:cake",
+      "word": "cake",
+      "definition": "A sweet baked food often served in slices.",
+      "parentPhotoId": "363207",
+      "parentSha256": "b07a2456f7eea2f05eb2276a00b174a4fe5863936774f501b2e76308b10bb16e",
+      "label": "fits",
+      "visualReason": "Large multi-tiered decorated cake is clearly visible."
+    },
+    {
+      "galleryId": "semantic-v2-rock-0",
+      "meaningId": "semantic-v2:rock",
+      "word": "rock",
+      "definition": "A solid natural piece of stone.",
+      "parentPhotoId": "308753",
+      "parentSha256": "952e8f3e0a98da80843838bd3496e1ad2c6f1c26ff75558e1046215b9a8ef6d3",
+      "label": "fits",
+      "visualReason": "Exposed natural stone face and cave-like rock wall are visible."
+    },
+    {
+      "galleryId": "semantic-v2-laptop-0",
+      "meaningId": "semantic-v2:laptop",
+      "word": "laptop",
+      "definition": "A portable computer with a screen attached to a keyboard.",
+      "parentPhotoId": "248314",
+      "parentSha256": "b6b1cf5511ed5a690b596376813360b46b180c3fa8c3c3ef9cead9b5647f87e1",
+      "label": "fits",
+      "visualReason": "Open laptop with attached screen and keyboard is prominent on desk."
+    },
+    {
+      "galleryId": "semantic-v2-puppy-0",
+      "meaningId": "semantic-v2:puppy",
+      "word": "puppy",
+      "definition": "A young dog.",
+      "parentPhotoId": "329219",
+      "parentSha256": "10dc6cd39da78d787f01a4221d6f6765d30021799f332965de18faae501587d6",
+      "label": "fits",
+      "visualReason": "Small young-looking dog is visible; scene is consistent with puppy."
+    },
+    {
+      "galleryId": "semantic-v2-giraffe-0",
+      "meaningId": "semantic-v2:giraffe",
+      "word": "giraffe",
+      "definition": "An African animal with a very long neck.",
+      "parentPhotoId": "130599",
+      "parentSha256": "669aa9b450c1d423c450da6a9e25cab88a9fcbc61b447028248fb748a0925e4d",
+      "label": "fits",
+      "visualReason": "Giraffe with distinctive long neck is prominent."
+    },
+    {
+      "galleryId": "semantic-v2-toilet-0",
+      "meaningId": "semantic-v2:toilet",
+      "word": "toilet",
+      "definition": "A bathroom fixture with a bowl for bodily waste.",
+      "parentPhotoId": "147518",
+      "parentSha256": "33ebfe94537ecdf095bf1a0119cf7ef2735d6e5c33e798b5c52eecc9bc3d23e3",
+      "label": "fits",
+      "visualReason": "Toilet bowl and tank are visible in bathroom."
+    },
+    {
+      "galleryId": "semantic-v2-monitor-0",
+      "meaningId": "semantic-v2:monitor",
+      "word": "monitor",
+      "definition": "A screen used to display a computer output.",
+      "parentPhotoId": "186282",
+      "parentSha256": "73c0456e323cfed4d729360302c86b5a4cefca1257e2ae9e30a04deda0b35e14",
+      "label": "fits",
+      "visualReason": "Computer monitor screen is prominent on desk."
+    },
+    {
+      "galleryId": "semantic-v2-fence-0",
+      "meaningId": "semantic-v2:fence",
+      "word": "fence",
+      "definition": "A barrier enclosing or dividing an area.",
+      "parentPhotoId": "21903",
+      "parentSha256": "3fa9ccedfc3ac829c07e14b0e7ef4211b5963f7700dc6e30dde3054f704efa09",
+      "label": "fits",
+      "visualReason": "A continuous fence separates the person and elephant."
+    },
+    {
+      "galleryId": "semantic-v2-book-0",
+      "meaningId": "semantic-v2:book",
+      "word": "book",
+      "definition": "Bound pages containing written or printed material.",
+      "parentPhotoId": "578545",
+      "parentSha256": "3b1e4dc0f5d15f4d74b3d2926e15d80e996a7e6fb4302808bbf7ba84213e0d2e",
+      "label": "fits",
+      "visualReason": "Open book is visible in the woman’s hands as she reads."
+    },
+    {
+      "galleryId": "semantic-v2-suitcase-0",
+      "meaningId": "semantic-v2:suitcase",
+      "word": "suitcase",
+      "definition": "A travel bag used to carry clothes and belongings.",
+      "parentPhotoId": "453001",
+      "parentSha256": "5a53866848c1d1eebad2df1a6d659bd699ccb52cfa89ce3bebb5105e2d81c9a5",
+      "label": "fits",
+      "visualReason": "Wheeled travel suitcase is visible being pulled."
+    },
+    {
+      "galleryId": "semantic-v2-tennis-racket-0",
+      "meaningId": "semantic-v2:tennis-racket",
+      "word": "tennis racket",
+      "definition": "A handled frame with strings used to hit a tennis ball.",
+      "parentPhotoId": "200421",
+      "parentSha256": "5fbb7144ab7e492ed1a39dad1daa82c25ea3bc2f17bbd285693feba439dc4161",
+      "label": "fits",
+      "visualReason": "Tennis racket with handle and strings is visible in the boy’s hand."
+    },
+    {
+      "galleryId": "semantic-v2-parked-bicycle-0",
+      "meaningId": "semantic-v2:parked-bicycle",
+      "word": "parked bicycle",
+      "definition": "A bicycle left stationary rather than being ridden.",
+      "parentPhotoId": "101762",
+      "parentSha256": "8150aec4794933e1d30b565f6511a870e5721e58c72a919735eff71575fb098b",
+      "label": "fits",
+      "visualReason": "Full bicycle is stationary indoors beside the cat."
+    },
+    {
+      "galleryId": "semantic-v2-airport-0",
+      "meaningId": "semantic-v2:airport",
+      "word": "airport",
+      "definition": "A place where airplanes take off, land and are serviced.",
+      "parentPhotoId": "84270",
+      "parentSha256": "ae7ff3f09caaedb11b002d1e25ab46e5236ee62713fcf74bfaddafe6cc3e4b17",
+      "label": "fits",
+      "visualReason": "Airport terminal interior and traveler activity are visible."
+    },
+    {
+      "galleryId": "semantic-v2-bicycle-0",
+      "meaningId": "semantic-v2:bicycle",
+      "word": "bicycle",
+      "definition": "A vehicle with two wheels powered by pedals.",
+      "parentPhotoId": "492937",
+      "parentSha256": "2c1dbb9427ecfcbb98eab03ba9c65a51ae9d3d72ba6df04ec83a07a15b8d937e",
+      "label": "fits",
+      "visualReason": "Bicycle frame, wheel, and handlebar are visible."
+    },
+    {
+      "galleryId": "semantic-v2-railway-0",
+      "meaningId": "semantic-v2:railway",
+      "word": "railway",
+      "definition": "A track system on which trains travel.",
+      "parentPhotoId": "100274",
+      "parentSha256": "18a930e65771a5c2954229da0b448d2ab74b03a3e6179cae61c212d52f5ff3cd",
+      "label": "fits",
+      "visualReason": "Train and multiple rail tracks are visible in a rail yard."
+    },
+    {
+      "galleryId": "semantic-v2-ball-0",
+      "meaningId": "semantic-v2:ball",
+      "word": "ball",
+      "definition": "A round object used in games and sports.",
+      "parentPhotoId": "60507",
+      "parentSha256": "0aa436c998cd750d278170996d88b02869af323af4543ae4a8ef6349a14ca7fb",
+      "label": "fits",
+      "visualReason": "A baseball is visible in flight during a baseball play."
+    },
+    {
+      "galleryId": "semantic-v2-horse-0",
+      "meaningId": "semantic-v2:horse",
+      "word": "horse",
+      "definition": "A large four-legged animal commonly ridden by people.",
+      "parentPhotoId": "574297",
+      "parentSha256": "fdf3ab0fc576b6fcea27d692fcd14c21d8c3bcd1c1a1ef66de8f0d98e6a85c75",
+      "label": "fits",
+      "visualReason": "Ridden horse is prominent on a path."
+    }
+  ]
+}

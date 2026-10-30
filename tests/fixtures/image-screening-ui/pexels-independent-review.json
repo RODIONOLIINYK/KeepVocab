@@ -1,0 +1,148 @@
+{
+  "reviews": [
+    {
+      "galleryId": "pexels-a-run-01",
+      "fits": [
+        "pexels-a-run-01-01",
+        "pexels-a-run-01-04"
+      ],
+      "wrong": [
+        "pexels-a-run-01-02",
+        "pexels-a-run-01-03",
+        "pexels-a-run-01-05",
+        "pexels-a-run-01-06"
+      ],
+      "uncertain": [],
+      "reason": "A dog and a galloping horse visibly move swiftly on foot. Human runners, water, and a track without a visible running animal do not fit.",
+      "reviewer": "gpt-6-luna-agent-b"
+    },
+    {
+      "galleryId": "pexels-a-stand-01",
+      "fits": [
+        "pexels-a-stand-01-01",
+        "pexels-a-stand-01-02",
+        "pexels-a-stand-01-03"
+      ],
+      "wrong": [
+        "pexels-a-stand-01-04",
+        "pexels-a-stand-01-05",
+        "pexels-a-stand-01-06"
+      ],
+      "uncertain": [],
+      "reason": "All three meerkats hold an upright standing posture. The other images show people rather than animals.",
+      "reviewer": "gpt-6-luna-agent-b"
+    },
+    {
+      "galleryId": "pexels-a-carry-01",
+      "fits": [
+        "pexels-a-carry-01-01",
+        "pexels-a-carry-01-02",
+        "pexels-a-carry-01-04"
+      ],
+      "wrong": [
+        "pexels-a-carry-01-05",
+        "pexels-a-carry-01-06"
+      ],
+      "uncertain": [
+        "pexels-a-carry-01-03"
+      ],
+      "reason": "The first, second, and fourth images show people transporting a box or person. The posed studio box image does not clearly show transport; the parked van and aircraft do not show a person carrying an object.",
+      "reviewer": "gpt-6-luna-agent-b"
+    },
+    {
+      "galleryId": "pexels-a-beside-01",
+      "fits": [
+        "pexels-a-beside-01-01",
+        "pexels-a-beside-01-05",
+        "pexels-a-beside-01-07",
+        "pexels-a-beside-01-09",
+        "pexels-a-beside-01-12"
+      ],
+      "wrong": [
+        "pexels-a-beside-01-06",
+        "pexels-a-beside-01-08",
+        "pexels-a-beside-01-11"
+      ],
+      "uncertain": [
+        "pexels-a-beside-01-02",
+        "pexels-a-beside-01-03",
+        "pexels-a-beside-01-04",
+        "pexels-a-beside-01-10"
+      ],
+      "reason": "Clear adjacent relations include flowers beside flowers, vegetation along a field, a person beside a building, neighboring buildings, and an astronaut beside equipment. Several forest/lunar/statue compositions do not make the relation clear; landscapes without a clear pair and the graphic arrow are wrong.",
+      "reviewer": "gpt-6-luna-agent-b"
+    },
+    {
+      "galleryId": "pexels-a-pour-01",
+      "fits": [
+        "pexels-a-pour-01-01",
+        "pexels-a-pour-01-02",
+        "pexels-a-pour-01-03"
+      ],
+      "wrong": [
+        "pexels-a-pour-01-05",
+        "pexels-a-pour-01-06"
+      ],
+      "uncertain": [
+        "pexels-a-pour-01-04"
+      ],
+      "reason": "The first three show liquid streaming from or through a container into a receiving vessel. The worker scene does not clearly show liquid flow; the other two do not depict pouring.",
+      "reviewer": "gpt-6-luna-agent-b"
+    },
+    {
+      "galleryId": "pexels-a-drink-01",
+      "fits": [
+        "pexels-a-drink-01-01"
+      ],
+      "wrong": [
+        "pexels-a-drink-01-02",
+        "pexels-a-drink-01-03",
+        "pexels-a-drink-01-04",
+        "pexels-a-drink-01-05",
+        "pexels-a-drink-01-06"
+      ],
+      "uncertain": [],
+      "reason": "Only the first image shows a person consuming liquid through the mouth. Drinks on a table, packaged liquids, and a meal scene do not show consumption.",
+      "reviewer": "gpt-6-luna-agent-b"
+    },
+    {
+      "galleryId": "pexels-a-open-01",
+      "fits": [
+        "pexels-a-open-01-01",
+        "pexels-a-open-01-02",
+        "pexels-a-open-01-03",
+        "pexels-a-open-01-04"
+      ],
+      "wrong": [
+        "pexels-a-open-01-05",
+        "pexels-a-open-01-06"
+      ],
+      "uncertain": [],
+      "reason": "The first four images show doorways or doors open with a visible passage. The podium and dark orbital image do not depict an open door.",
+      "reviewer": "gpt-6-luna-agent-b"
+    },
+    {
+      "galleryId": "pexels-a-closed-01",
+      "fits": [
+        "pexels-a-closed-01-02"
+      ],
+      "wrong": [
+        "pexels-a-closed-01-01",
+        "pexels-a-closed-01-04",
+        "pexels-a-closed-01-06"
+      ],
+      "uncertain": [
+        "pexels-a-closed-01-03",
+        "pexels-a-closed-01-05",
+        "pexels-a-closed-01-07",
+        "pexels-a-closed-01-08",
+        "pexels-a-closed-01-09",
+        "pexels-a-closed-01-10",
+        "pexels-a-closed-01-11",
+        "pexels-a-closed-01-12"
+      ],
+      "reason": "The pair of physical doors in image 02 visibly cover their openings. The closed signs could be attached to a door or window, but the image does not clearly establish the door itself fully blocks passage; the sign-only poster and stone marker are unrelated.",
+      "reviewer": "gpt-6-luna-agent-b"
+    }
+  ]
+}

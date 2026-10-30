@@ -1,0 +1,1309 @@
+{
+  "task": "Retrospective CLIP-only diagnostics on explicitly unsuitable UI images",
+  "model": {
+    "tag": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+    "revision": "757d59c9c6870a76a4b0306f05f5061bca15c39f",
+    "textDtype": "fp16",
+    "visionDtype": "fp32",
+    "preprocessing": "full-frame-letterbox-256-v1",
+    "localOnly": true,
+    "personalizerOrMLP": false
+  },
+  "dataset": {
+    "source": "work/app-ui-pilot/training-examples.json",
+    "inputExamples": 86,
+    "labels": {
+      "0": 81,
+      "1": 5
+    },
+    "pixelReadyConsensusCrosstab": {
+      "pixelReadyLabel0": 81,
+      "pixelReadyLabel1": 5,
+      "screenshotOnlyExcludedFromScoring": 6,
+      "uncertainExcludedFromScoring": 16
+    },
+    "meaningGroups": 10,
+    "sourceImageHashesVerified": 86,
+    "sourceTrainingExamplesSha256": "d7c7402e3ced6b6114639c237e78fd1cd1167fbe53ce6213b3f57c679946a31a",
+    "sourceFileHashes": {
+      "trainingExamples": "d7c7402e3ced6b6114639c237e78fd1cd1167fbe53ce6213b3f57c679946a31a",
+      "originalCases": "d5d70ecd14fd49fd76fa344e125bbf2331ad3c90f915e5cf25584ddbddc6bff7",
+      "fp16CorpusEvents": "2ae53c17352c1381d29b71060d6e7624b63a2e8335f5325d7b853f0efa778b1e",
+      "meaningShiftSplit": "0a8c9d413453704f28d1329512b946a5749bd72d3423bfbfb8d3895069ac7520"
+    }
+  },
+  "promptProtocol": {
+    "method": "imageClipPrompts(meaning) with default options; no generated scene prompts, no extraQueries, no other definitions/contrasts.",
+    "targetPromptTemplate": "A photo illustrating {word} ({partOfSpeech}): {exact saved definition}",
+    "unwantedPrompt": "Text, a logo, a diagram, a screenshot or a document.",
+    "sceneSource": "Source AI scenes/scene metadata were unavailable in training-examples.json; no scene text was invented. With no scene or alternatives, imageClipPrompts emits selected target plus unwanted prompt; semanticScores selected=raw target cosine and margin=0."
+  },
+  "thresholds": {
+    "currentAppThresholds": [
+      0.3,
+      0.38
+    ],
+    "unwantedCutoff": 0.2,
+    "metrics": {
+      "0.3": {
+        "threshold": 0.3,
+        "unwantedCutoff": 0.2,
+        "tp": 1,
+        "fp": 0,
+        "tn": 81,
+        "fn": 4,
+        "positiveRecall": 0.2,
+        "negativeAcceptanceRate": 0,
+        "rejectionTNR": 1,
+        "precision": 1,
+        "accepted": 1
+      },
+      "0.38": {
+        "threshold": 0.38,
+        "unwantedCutoff": 0.2,
+        "tp": 0,
+        "fp": 0,
+        "tn": 81,
+        "fn": 5,
+        "positiveRecall": 0,
+        "negativeAcceptanceRate": 0,
+        "rejectionTNR": 1,
+        "precision": null,
+        "accepted": 0
+      }
+    },
+    "clusterBootstrap95PercentCI": {
+      "0.3": {
+        "positiveRecall": {
+          "low": 0,
+          "high": 0.75,
+          "replicates": 2983
+        },
+        "negativeAcceptanceRate": {
+          "low": 0,
+          "high": 0,
+          "replicates": 3000
+        },
+        "rejectionTNR": {
+          "low": 1,
+          "high": 1,
+          "replicates": 3000
+        },
+        "aucSelected": {
+          "low": 0.2475022502250225,
+          "high": 1,
+          "replicates": 2983
+        },
+        "aucAppRankingScore": {
+          "low": 0.25,
+          "high": 1,
+          "replicates": 2983
+        }
+      },
+      "0.38": {
+        "positiveRecall": {
+          "low": 0,
+          "high": 0,
+          "replicates": 2983
+        },
+        "negativeAcceptanceRate": {
+          "low": 0,
+          "high": 0,
+          "replicates": 3000
+        },
+        "rejectionTNR": {
+          "low": 1,
+          "high": 1,
+          "replicates": 3000
+        },
+        "aucSelected": {
+          "low": 0.2475022502250225,
+          "high": 1,
+          "replicates": 2983
+        },
+        "aucAppRankingScore": {
+          "low": 0.25,
+          "high": 1,
+          "replicates": 2983
+        }
+      }
+    },
+    "auroc": {
+      "rawTargetCosine": 0.7728395061728395,
+      "selected": 0.7728395061728395,
+      "appRankingScore": 0.7777777777777778
+    },
+    "exactNoContrastAutoSelectGate": {
+      "threshold": 0.38,
+      "unwantedCutoff": 0.2,
+      "requiredRankGap": 0.04,
+      "galleries": 10,
+      "passed": [],
+      "summary": "Gallery-level diagnostic using available pixel-ready consensus examples only; screenshot-only and uncertain candidates were deliberately excluded, so this does not replay the full chooser."
+    },
+    "scoreRanges": {
+      "0": {
+        "rawTargetCosine": {
+          "min": 0.03875436151113846,
+          "max": 0.2513395376071367
+        },
+        "appRankingScore": {
+          "min": 0.014517692080152012,
+          "max": 0.22445449636854467
+        },
+        "unwanted": {
+          "min": 0.058708922047380305,
+          "max": 0.15301029835705263
+        },
+        "count": 81
+      },
+      "1": {
+        "rawTargetCosine": {
+          "min": 0.08276897655620666,
+          "max": 0.3351926861137896
+        },
+        "appRankingScore": {
+          "min": 0.0551755859244097,
+          "max": 0.3042869608162504
+        },
+        "unwanted": {
+          "min": 0.09245407966731328,
+          "max": 0.1652793312480795
+        },
+        "count": 5
+      }
+    },
+    "failuresByCutoff": {
+      "0.3": {
+        "falseNegatives": [
+          {
+            "id": "ui-a-drink-06",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/dac4a1630ccb43d501eccb30.img",
+            "selected": 0.08276897655620666,
+            "unwanted": 0.11037356252718783,
+            "appRankingScore": 0.0551755859244097,
+            "sha256": "6445bf9408659d24f3729846ec59a278083364addcd0815ec76a44fd0071cb20"
+          },
+          {
+            "id": "b-ui-bank-river-option-1",
+            "galleryId": "b-ui-bank-river",
+            "word": "bank",
+            "sourceFile": "b/blind-review/images/d5c30cb1c337f99f8c2ff22a.img",
+            "selected": 0.2899700493544822,
+            "unwanted": 0.1652793312480795,
+            "appRankingScore": 0.2486502165424623,
+            "sha256": "82dc60a4ffb039b9dbed192e8821e4ed6ae3fc0ba8c649cc4f55c2cd52277eb0"
+          },
+          {
+            "id": "b-ui-bank-river-option-2",
+            "galleryId": "b-ui-bank-river",
+            "word": "bank",
+            "sourceFile": "b/blind-review/images/1f0a7c3a7e5708e24e3084ba.img",
+            "selected": 0.20348887353589398,
+            "unwanted": 0.09245407966731328,
+            "appRankingScore": 0.18037535361906565,
+            "sha256": "4a5f4a620aa639a7be429fdfc62c27d5d53862e6f7ef92c7a8e3e598884c91dd"
+          },
+          {
+            "id": "b-ui-crane-bird-option-6",
+            "galleryId": "b-ui-crane-bird",
+            "word": "crane",
+            "sourceFile": "b/blind-review/images/7bd7d76c78f05a66dfb1a47b.img",
+            "selected": 0.1982876307052676,
+            "unwanted": 0.09265453988073566,
+            "appRankingScore": 0.17512399573508367,
+            "sha256": "a17f189723401a8f28320ae772b28c57a469f65a5c2bdb4c05f92c29620a35ad"
+          }
+        ],
+        "falsePositives": []
+      },
+      "0.38": {
+        "falseNegatives": [
+          {
+            "id": "ui-a-drink-06",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/dac4a1630ccb43d501eccb30.img",
+            "selected": 0.08276897655620666,
+            "unwanted": 0.11037356252718783,
+            "appRankingScore": 0.0551755859244097,
+            "sha256": "6445bf9408659d24f3729846ec59a278083364addcd0815ec76a44fd0071cb20"
+          },
+          {
+            "id": "b-ui-bank-river-option-1",
+            "galleryId": "b-ui-bank-river",
+            "word": "bank",
+            "sourceFile": "b/blind-review/images/d5c30cb1c337f99f8c2ff22a.img",
+            "selected": 0.2899700493544822,
+            "unwanted": 0.1652793312480795,
+            "appRankingScore": 0.2486502165424623,
+            "sha256": "82dc60a4ffb039b9dbed192e8821e4ed6ae3fc0ba8c649cc4f55c2cd52277eb0"
+          },
+          {
+            "id": "b-ui-bank-river-option-2",
+            "galleryId": "b-ui-bank-river",
+            "word": "bank",
+            "sourceFile": "b/blind-review/images/1f0a7c3a7e5708e24e3084ba.img",
+            "selected": 0.20348887353589398,
+            "unwanted": 0.09245407966731328,
+            "appRankingScore": 0.18037535361906565,
+            "sha256": "4a5f4a620aa639a7be429fdfc62c27d5d53862e6f7ef92c7a8e3e598884c91dd"
+          },
+          {
+            "id": "b-ui-bat-animal-option-1",
+            "galleryId": "b-ui-bat-animal",
+            "word": "bat",
+            "sourceFile": "b/blind-review/images/7dacf963208409d7e26b9828.img",
+            "selected": 0.3351926861137896,
+            "unwanted": 0.12362290119015693,
+            "appRankingScore": 0.3042869608162504,
+            "sha256": "234e456f0efcbed3a52e8d876a4774c42ec9ea60e258877c3c0a7d6dcedd77c4"
+          },
+          {
+            "id": "b-ui-crane-bird-option-6",
+            "galleryId": "b-ui-crane-bird",
+            "word": "crane",
+            "sourceFile": "b/blind-review/images/7bd7d76c78f05a66dfb1a47b.img",
+            "selected": 0.1982876307052676,
+            "unwanted": 0.09265453988073566,
+            "appRankingScore": 0.17512399573508367,
+            "sha256": "a17f189723401a8f28320ae772b28c57a469f65a5c2bdb4c05f92c29620a35ad"
+          }
+        ],
+        "falsePositives": []
+      },
+      "0.16": {
+        "falseNegatives": [
+          {
+            "id": "ui-a-drink-06",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/dac4a1630ccb43d501eccb30.img",
+            "selected": 0.08276897655620666,
+            "unwanted": 0.11037356252718783,
+            "appRankingScore": 0.0551755859244097,
+            "sha256": "6445bf9408659d24f3729846ec59a278083364addcd0815ec76a44fd0071cb20"
+          }
+        ],
+        "falsePositives": [
+          {
+            "id": "ui-a-beside-06",
+            "galleryId": "ui-a-4",
+            "word": "beside",
+            "sourceFile": "a/blind-review/images/a32b2c7d027fb262bfa2c1b5.img",
+            "selected": 0.16671075723508444,
+            "unwanted": 0.12345409178469958,
+            "appRankingScore": 0.13584723428890955,
+            "sha256": "77b6f5505ab4e5cbfa9de3d5197320bb8b9a895d9e8eba03ff213de9ac70581d"
+          },
+          {
+            "id": "ui-a-beside-08",
+            "galleryId": "ui-a-4",
+            "word": "beside",
+            "sourceFile": "a/blind-review/images/ac585bfc5f8ee182a2a2e836.img",
+            "selected": 0.16845043511914393,
+            "unwanted": 0.12272174106349593,
+            "appRankingScore": 0.13776999985326993,
+            "sha256": "9fc04c0975e4b6ea506aa673c19bc9277ecfbb8dabd6ac4393287198947bd147"
+          },
+          {
+            "id": "ui-a-pour-11",
+            "galleryId": "ui-a-5",
+            "word": "pour",
+            "sourceFile": "a/blind-review/images/5fb88cce98bded05f6398c86.img",
+            "selected": 0.17191422448558316,
+            "unwanted": 0.109468053276194,
+            "appRankingScore": 0.14454721116653466,
+            "sha256": "7d9b978ae9b5021360dccf62736845d8d4f34adc1e6527698d4cc9a5d9f89588"
+          },
+          {
+            "id": "ui-a-pour-12",
+            "galleryId": "ui-a-5",
+            "word": "pour",
+            "sourceFile": "a/blind-review/images/bc2b2303ac630229ab36ae58.img",
+            "selected": 0.19908253509771287,
+            "unwanted": 0.10971774807202818,
+            "appRankingScore": 0.17165309807970583,
+            "sha256": "8c464296cd519e9d0bb5fa383d59321563104714510d41d19ef9b133b3cb6569"
+          },
+          {
+            "id": "ui-a-drink-01",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/f8053386091081fb7205c1ea.img",
+            "selected": 0.2513395376071367,
+            "unwanted": 0.10754016495436798,
+            "appRankingScore": 0.22445449636854467,
+            "sha256": "310fcd4487bf5be64fc5918f19fc1ffc4803df4ff947878ca7e1e5081b6b0196"
+          },
+          {
+            "id": "ui-a-drink-02",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/2d4722a3a9f9d2400da98ffb.img",
+            "selected": 0.23575248497902174,
+            "unwanted": 0.0842807913199981,
+            "appRankingScore": 0.2146822871490222,
+            "sha256": "14619a3492dbd94d7658a4a796d4946ab19ea277c17bfdbcffd95d1ebe0d7b96"
+          },
+          {
+            "id": "ui-a-drink-03",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/b67f535aa39a05ff21c49152.img",
+            "selected": 0.18861615863986425,
+            "unwanted": 0.07864780377485647,
+            "appRankingScore": 0.16895420769615013,
+            "sha256": "dd2730d5258628add5b4f985d6d092f2693327a55f944a5d3912b7472ae2936b"
+          },
+          {
+            "id": "ui-a-drink-04",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/2a4c2c1bf2ea1f7fc86ae8e1.img",
+            "selected": 0.24150034987250896,
+            "unwanted": 0.10628209475438874,
+            "appRankingScore": 0.21492982618391177,
+            "sha256": "08e800d7424b8fb569e8b2c3b965cd8bd57a4165270a18b3b81d9896085eedf0"
+          },
+          {
+            "id": "ui-a-drink-07",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/49cbde81ad47196b79cb8372.img",
+            "selected": 0.22391457975239523,
+            "unwanted": 0.06839767604753157,
+            "appRankingScore": 0.20681516074051234,
+            "sha256": "ce37fdad4e7d78d8fc1a8989930da1bd40f30f7066577078da60730ca9b14125"
+          },
+          {
+            "id": "ui-a-drink-08",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/19d4d3ffc44ed8852ab63fd3.img",
+            "selected": 0.17086754250637878,
+            "unwanted": 0.07792334962125064,
+            "appRankingScore": 0.1513867051010661,
+            "sha256": "02f0ec50a2caaecfa5390d6822b65ed7cd12793bf37d8c70ac8421239cf6582d"
+          },
+          {
+            "id": "ui-a-drink-09",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/6c9e7d8f2418e76ef06618c2.img",
+            "selected": 0.21780542283438986,
+            "unwanted": 0.07322536150592232,
+            "appRankingScore": 0.1994990824579093,
+            "sha256": "f3801a18f3911f82626d81bf70f88415a524f649cb8c25ea034fbc2d90bdf7d7"
+          },
+          {
+            "id": "b-ui-bat-animal-option-3",
+            "galleryId": "b-ui-bat-animal",
+            "word": "bat",
+            "sourceFile": "b/blind-review/images/a80220b8ac9a1cbf73147ab8.img",
+            "selected": 0.17633522956584183,
+            "unwanted": 0.10185778073748557,
+            "appRankingScore": 0.15087078438147045,
+            "sha256": "6188ce417238fa4c2a5e2d0c183d64a1759629a15e98d1651978bb57744442ae"
+          },
+          {
+            "id": "b-ui-bat-animal-option-6",
+            "galleryId": "b-ui-bat-animal",
+            "word": "bat",
+            "sourceFile": "b/blind-review/images/d08e7403484f9a7604a9c647.img",
+            "selected": 0.175633741615502,
+            "unwanted": 0.1173039741990647,
+            "appRankingScore": 0.14630774806573582,
+            "sha256": "ea2d2f3baccc51fc9489ffbb91619d1a7c46c4ca21deef64ad3a1e71649be08e"
+          },
+          {
+            "id": "b-ui-bat-sports-option-1",
+            "galleryId": "b-ui-bat-sports",
+            "word": "bat",
+            "sourceFile": "b/blind-review/images/154d667017b3d0474ae911f9.img",
+            "selected": 0.16314633808063594,
+            "unwanted": 0.11309759247325674,
+            "appRankingScore": 0.13487193996232177,
+            "sha256": "40c5a3eb5e04f0204a5676a2f803a6105ac3729970f2ac99aa502669c2f84d46"
+          },
+          {
+            "id": "b-ui-bat-sports-option-7",
+            "galleryId": "b-ui-bat-sports",
+            "word": "bat",
+            "sourceFile": "b/blind-review/images/d938775345baa90d86b718f3.img",
+            "selected": 0.2191197507005962,
+            "unwanted": 0.10714333403861495,
+            "appRankingScore": 0.19233391719094245,
+            "sha256": "3ff5868d85641adc3d7d032e2344c50226c8e0e3ae6194c711fc78e09ac42725"
+          },
+          {
+            "id": "b-ui-bat-sports-option-9",
+            "galleryId": "b-ui-bat-sports",
+            "word": "bat",
+            "sourceFile": "b/blind-review/images/6df155721299ec016d232a26.img",
+            "selected": 0.21210792658798347,
+            "unwanted": 0.12912575033259546,
+            "appRankingScore": 0.1798264890048346,
+            "sha256": "8d88f9d59253607e1e73c4b6e9f7b9d132176aea37e35fd62f14329a6bdc37c9"
+          },
+          {
+            "id": "b-ui-bat-sports-option-10",
+            "galleryId": "b-ui-bat-sports",
+            "word": "bat",
+            "sourceFile": "b/blind-review/images/e4138d52666ec391b5ce8d44.img",
+            "selected": 0.2268733703318523,
+            "unwanted": 0.0837672511211555,
+            "appRankingScore": 0.20593155755156342,
+            "sha256": "96d263e27fe464d82d2e45ff1f2ef4d6d6e212a086f820940f29a9db109610d9"
+          }
+        ]
+      },
+      "0.19": {
+        "falseNegatives": [
+          {
+            "id": "ui-a-drink-06",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/dac4a1630ccb43d501eccb30.img",
+            "selected": 0.08276897655620666,
+            "unwanted": 0.11037356252718783,
+            "appRankingScore": 0.0551755859244097,
+            "sha256": "6445bf9408659d24f3729846ec59a278083364addcd0815ec76a44fd0071cb20"
+          }
+        ],
+        "falsePositives": [
+          {
+            "id": "ui-a-pour-12",
+            "galleryId": "ui-a-5",
+            "word": "pour",
+            "sourceFile": "a/blind-review/images/bc2b2303ac630229ab36ae58.img",
+            "selected": 0.19908253509771287,
+            "unwanted": 0.10971774807202818,
+            "appRankingScore": 0.17165309807970583,
+            "sha256": "8c464296cd519e9d0bb5fa383d59321563104714510d41d19ef9b133b3cb6569"
+          },
+          {
+            "id": "ui-a-drink-01",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/f8053386091081fb7205c1ea.img",
+            "selected": 0.2513395376071367,
+            "unwanted": 0.10754016495436798,
+            "appRankingScore": 0.22445449636854467,
+            "sha256": "310fcd4487bf5be64fc5918f19fc1ffc4803df4ff947878ca7e1e5081b6b0196"
+          },
+          {
+            "id": "ui-a-drink-02",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/2d4722a3a9f9d2400da98ffb.img",
+            "selected": 0.23575248497902174,
+            "unwanted": 0.0842807913199981,
+            "appRankingScore": 0.2146822871490222,
+            "sha256": "14619a3492dbd94d7658a4a796d4946ab19ea277c17bfdbcffd95d1ebe0d7b96"
+          },
+          {
+            "id": "ui-a-drink-04",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/2a4c2c1bf2ea1f7fc86ae8e1.img",
+            "selected": 0.24150034987250896,
+            "unwanted": 0.10628209475438874,
+            "appRankingScore": 0.21492982618391177,
+            "sha256": "08e800d7424b8fb569e8b2c3b965cd8bd57a4165270a18b3b81d9896085eedf0"
+          },
+          {
+            "id": "ui-a-drink-07",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/49cbde81ad47196b79cb8372.img",
+            "selected": 0.22391457975239523,
+            "unwanted": 0.06839767604753157,
+            "appRankingScore": 0.20681516074051234,
+            "sha256": "ce37fdad4e7d78d8fc1a8989930da1bd40f30f7066577078da60730ca9b14125"
+          },
+          {
+            "id": "ui-a-drink-09",
+            "galleryId": "ui-a-6",
+            "word": "drink",
+            "sourceFile": "a/blind-review/images/6c9e7d8f2418e76ef06618c2.img",
+            "selected": 0.21780542283438986,
+            "unwanted": 0.07322536150592232,
+            "appRankingScore": 0.1994990824579093,
+            "sha256": "f3801a18f3911f82626d81bf70f88415a524f649cb8c25ea034fbc2d90bdf7d7"
+          },
+          {
+            "id": "b-ui-bat-sports-option-7",
+            "galleryId": "b-ui-bat-sports",
+            "word": "bat",
+            "sourceFile": "b/blind-review/images/d938775345baa90d86b718f3.img",
+            "selected": 0.2191197507005962,
+            "unwanted": 0.10714333403861495,
+            "appRankingScore": 0.19233391719094245,
+            "sha256": "3ff5868d85641adc3d7d032e2344c50226c8e0e3ae6194c711fc78e09ac42725"
+          },
+          {
+            "id": "b-ui-bat-sports-option-9",
+            "galleryId": "b-ui-bat-sports",
+            "word": "bat",
+            "sourceFile": "b/blind-review/images/6df155721299ec016d232a26.img",
+            "selected": 0.21210792658798347,
+            "unwanted": 0.12912575033259546,
+            "appRankingScore": 0.1798264890048346,
+            "sha256": "8d88f9d59253607e1e73c4b6e9f7b9d132176aea37e35fd62f14329a6bdc37c9"
+          },
+          {
+            "id": "b-ui-bat-sports-option-10",
+            "galleryId": "b-ui-bat-sports",
+            "word": "bat",
+            "sourceFile": "b/blind-review/images/e4138d52666ec391b5ce8d44.img",
+            "selected": 0.2268733703318523,
+            "unwanted": 0.0837672511211555,
+            "appRankingScore": 0.20593155755156342,
+            "sha256": "96d263e27fe464d82d2e45ff1f2ef4d6d6e212a086f820940f29a9db109610d9"
+          }
+        ]
+      }
+    }
+  },
+  "corpusThresholdCalibration": {
+    "source": "tests/fixtures/image-pretraining-fp16/embeddings.json.gz",
+    "encoder": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+    "preprocessing": "full-frame-letterbox-256-v1",
+    "records": 3028,
+    "splitMetrics": {
+      "train": {
+        "count": 1844,
+        "positives": 385,
+        "negatives": 1459,
+        "at030": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 2,
+          "fp": 0,
+          "tn": 1459,
+          "fn": 383,
+          "positiveRecall": 0.005194805194805195,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": 1,
+          "accepted": 2
+        },
+        "at038": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 1459,
+          "fn": 385,
+          "positiveRecall": 0,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "aucSelected": 0.9704316245783003,
+        "aucAppRankingScore": 0.9708464256785024
+      },
+      "validation": {
+        "count": 608,
+        "positives": 133,
+        "negatives": 475,
+        "at030": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 1,
+          "fp": 0,
+          "tn": 475,
+          "fn": 132,
+          "positiveRecall": 0.007518796992481203,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": 1,
+          "accepted": 1
+        },
+        "at038": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 475,
+          "fn": 133,
+          "positiveRecall": 0,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "aucSelected": 0.9745627225959635,
+        "aucAppRankingScore": 0.9749584487534626
+      },
+      "test": {
+        "count": 576,
+        "positives": 120,
+        "negatives": 456,
+        "at030": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 1,
+          "fp": 0,
+          "tn": 456,
+          "fn": 119,
+          "positiveRecall": 0.008333333333333333,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": 1,
+          "accepted": 1
+        },
+        "at038": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 456,
+          "fn": 120,
+          "positiveRecall": 0,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "aucSelected": 0.9743238304093568,
+        "aucAppRankingScore": 0.9771747076023392
+      }
+    },
+    "thresholdGrid": {
+      "range": [
+        0.1,
+        0.6
+      ],
+      "step": 0.01,
+      "selectionRule": "On validation only, for each false-positive-rate cap choose the highest positive recall among grid thresholds satisfying selected >= t AND unwanted < .20; ties choose the larger threshold. Test set is evaluated once per frozen operating point.",
+      "validationGridRows": 51,
+      "frozenOperatingPoints": [
+        {
+          "maxValidationNegativeAcceptanceRate": 0.05,
+          "threshold": 0.16,
+          "validationMetrics": {
+            "threshold": 0.16,
+            "unwantedCutoff": 0.2,
+            "tp": 108,
+            "fp": 18,
+            "tn": 457,
+            "fn": 25,
+            "positiveRecall": 0.8120300751879699,
+            "negativeAcceptanceRate": 0.037894736842105266,
+            "rejectionTNR": 0.9621052631578947,
+            "precision": 0.8571428571428571,
+            "accepted": 126
+          },
+          "testOnce": {
+            "threshold": 0.16,
+            "unwantedCutoff": 0.2,
+            "tp": 103,
+            "fp": 23,
+            "tn": 433,
+            "fn": 17,
+            "positiveRecall": 0.8583333333333333,
+            "negativeAcceptanceRate": 0.05043859649122807,
+            "rejectionTNR": 0.9495614035087719,
+            "precision": 0.8174603174603174,
+            "accepted": 126
+          },
+          "uiDiagnostic": {
+            "threshold": 0.16,
+            "unwantedCutoff": 0.2,
+            "tp": 4,
+            "fp": 17,
+            "tn": 64,
+            "fn": 1,
+            "positiveRecall": 0.8,
+            "negativeAcceptanceRate": 0.20987654320987653,
+            "rejectionTNR": 0.7901234567901234,
+            "precision": 0.19047619047619047,
+            "accepted": 21
+          }
+        },
+        {
+          "maxValidationNegativeAcceptanceRate": 0.01,
+          "threshold": 0.19,
+          "validationMetrics": {
+            "threshold": 0.19,
+            "unwantedCutoff": 0.2,
+            "tp": 70,
+            "fp": 4,
+            "tn": 471,
+            "fn": 63,
+            "positiveRecall": 0.5263157894736842,
+            "negativeAcceptanceRate": 0.008421052631578947,
+            "rejectionTNR": 0.991578947368421,
+            "precision": 0.9459459459459459,
+            "accepted": 74
+          },
+          "testOnce": {
+            "threshold": 0.19,
+            "unwantedCutoff": 0.2,
+            "tp": 79,
+            "fp": 6,
+            "tn": 450,
+            "fn": 41,
+            "positiveRecall": 0.6583333333333333,
+            "negativeAcceptanceRate": 0.013157894736842105,
+            "rejectionTNR": 0.9868421052631579,
+            "precision": 0.9294117647058824,
+            "accepted": 85
+          },
+          "uiDiagnostic": {
+            "threshold": 0.19,
+            "unwantedCutoff": 0.2,
+            "tp": 4,
+            "fp": 9,
+            "tn": 72,
+            "fn": 1,
+            "positiveRecall": 0.8,
+            "negativeAcceptanceRate": 0.1111111111111111,
+            "rejectionTNR": 0.8888888888888888,
+            "precision": 0.3076923076923077,
+            "accepted": 13
+          }
+        }
+      ],
+      "testAuc": {
+        "selected": 0.9743238304093568,
+        "appRankingScore": 0.9771747076023392
+      },
+      "promotion": "Research candidate only; do not promote before fresh provider-specific Pexels UI data. Personalizer/MLP cannot override a failed CLIP eligibility gate."
+    },
+    "sourceFileHashes": {
+      "cases": "d5d70ecd14fd49fd76fa344e125bbf2331ad3c90f915e5cf25584ddbddc6bff7",
+      "fp16Embeddings": "2ae53c17352c1381d29b71060d6e7624b63a2e8335f5325d7b853f0efa778b1e"
+    }
+  },
+  "perMeaning": {
+    "ui-a-1": {
+      "n": 12,
+      "positive": 0,
+      "negative": 12,
+      "thresholds": {
+        "0.3": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 12,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "0.38": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 12,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        }
+      },
+      "topRank": {
+        "id": "ui-a-run-01",
+        "label": 0,
+        "selected": 0.13842916345203093,
+        "unwanted": 0.06312883918176959,
+        "score": 0.12264695365658854,
+        "scoreGap": 0.0003351068257970574,
+        "exactNoContrastAutoSelect": false
+      }
+    },
+    "ui-a-2": {
+      "n": 11,
+      "positive": 0,
+      "negative": 11,
+      "thresholds": {
+        "0.3": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 11,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "0.38": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 11,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        }
+      },
+      "topRank": {
+        "id": "ui-a-stand-02",
+        "label": 0,
+        "selected": 0.14461462384123377,
+        "unwanted": 0.1044071487181437,
+        "score": 0.11851283666169785,
+        "scoreGap": 0.022014368001019913,
+        "exactNoContrastAutoSelect": false
+      }
+    },
+    "ui-a-3": {
+      "n": 12,
+      "positive": 0,
+      "negative": 12,
+      "thresholds": {
+        "0.3": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 12,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "0.38": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 12,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        }
+      },
+      "topRank": {
+        "id": "ui-a-carry-01",
+        "label": 0,
+        "selected": 0.15883375545132647,
+        "unwanted": 0.0875358836058689,
+        "score": 0.13694978454985923,
+        "scoreGap": 0.013041260661107917,
+        "exactNoContrastAutoSelect": false
+      }
+    },
+    "ui-a-4": {
+      "n": 8,
+      "positive": 0,
+      "negative": 8,
+      "thresholds": {
+        "0.3": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 8,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "0.38": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 8,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        }
+      },
+      "topRank": {
+        "id": "ui-a-beside-08",
+        "label": 0,
+        "selected": 0.16845043511914393,
+        "unwanted": 0.12272174106349593,
+        "score": 0.13776999985326993,
+        "scoreGap": 0.0019227655643603847,
+        "exactNoContrastAutoSelect": false
+      }
+    },
+    "ui-a-5": {
+      "n": 8,
+      "positive": 0,
+      "negative": 8,
+      "thresholds": {
+        "0.3": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 8,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "0.38": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 8,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        }
+      },
+      "topRank": {
+        "id": "ui-a-pour-12",
+        "label": 0,
+        "selected": 0.19908253509771287,
+        "unwanted": 0.10971774807202818,
+        "score": 0.17165309807970583,
+        "scoreGap": 0.027105886913171173,
+        "exactNoContrastAutoSelect": false
+      }
+    },
+    "ui-a-6": {
+      "n": 11,
+      "positive": 1,
+      "negative": 10,
+      "thresholds": {
+        "0.3": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 10,
+          "fn": 1,
+          "positiveRecall": 0,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "0.38": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 10,
+          "fn": 1,
+          "positiveRecall": 0,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        }
+      },
+      "topRank": {
+        "id": "ui-a-drink-01",
+        "label": 0,
+        "selected": 0.2513395376071367,
+        "unwanted": 0.10754016495436798,
+        "score": 0.22445449636854467,
+        "scoreGap": 0.009524670184632905,
+        "exactNoContrastAutoSelect": false
+      }
+    },
+    "b-ui-bank-river": {
+      "n": 5,
+      "positive": 2,
+      "negative": 3,
+      "thresholds": {
+        "0.3": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 3,
+          "fn": 2,
+          "positiveRecall": 0,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "0.38": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 3,
+          "fn": 2,
+          "positiveRecall": 0,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        }
+      },
+      "topRank": {
+        "id": "b-ui-bank-river-option-1",
+        "label": 1,
+        "selected": 0.2899700493544822,
+        "unwanted": 0.1652793312480795,
+        "score": 0.2486502165424623,
+        "scoreGap": 0.06827486292339666,
+        "exactNoContrastAutoSelect": false
+      }
+    },
+    "b-ui-bat-animal": {
+      "n": 3,
+      "positive": 1,
+      "negative": 2,
+      "thresholds": {
+        "0.3": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 1,
+          "fp": 0,
+          "tn": 2,
+          "fn": 0,
+          "positiveRecall": 1,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": 1,
+          "accepted": 1
+        },
+        "0.38": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 2,
+          "fn": 1,
+          "positiveRecall": 0,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        }
+      },
+      "topRank": {
+        "id": "b-ui-bat-animal-option-1",
+        "label": 1,
+        "selected": 0.3351926861137896,
+        "unwanted": 0.12362290119015693,
+        "score": 0.3042869608162504,
+        "scoreGap": 0.15341617643477995,
+        "exactNoContrastAutoSelect": false
+      }
+    },
+    "b-ui-bat-sports": {
+      "n": 11,
+      "positive": 0,
+      "negative": 11,
+      "thresholds": {
+        "0.3": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 11,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "0.38": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 11,
+          "fn": 0,
+          "positiveRecall": null,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        }
+      },
+      "topRank": {
+        "id": "b-ui-bat-sports-option-10",
+        "label": 0,
+        "selected": 0.2268733703318523,
+        "unwanted": 0.0837672511211555,
+        "score": 0.20593155755156342,
+        "scoreGap": 0.013597640360620972,
+        "exactNoContrastAutoSelect": false
+      }
+    },
+    "b-ui-crane-bird": {
+      "n": 5,
+      "positive": 1,
+      "negative": 4,
+      "thresholds": {
+        "0.3": {
+          "threshold": 0.3,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 4,
+          "fn": 1,
+          "positiveRecall": 0,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        },
+        "0.38": {
+          "threshold": 0.38,
+          "unwantedCutoff": 0.2,
+          "tp": 0,
+          "fp": 0,
+          "tn": 4,
+          "fn": 1,
+          "positiveRecall": 0,
+          "negativeAcceptanceRate": 0,
+          "rejectionTNR": 1,
+          "precision": null,
+          "accepted": 0
+        }
+      },
+      "topRank": {
+        "id": "b-ui-crane-bird-option-6",
+        "label": 1,
+        "selected": 0.1982876307052676,
+        "unwanted": 0.09265453988073566,
+        "score": 0.17512399573508367,
+        "scoreGap": 0.05464920500304393,
+        "exactNoContrastAutoSelect": false
+      }
+    }
+  },
+  "limitations": [
+    "Small imbalanced UI pilot: only 5 pixel-ready positive images and 81 negative images across meaning groups.",
+    "Retrospective diagnostic, not an independent test; threshold and prompt choices were not prospectively frozen for this pilot.",
+    "Threshold metrics are per-image and can overstate evidence because images cluster within meanings; cluster bootstrap is included but remains unstable with few positive groups.",
+    "The evaluated app ranking score is the exact semanticScores formula with current prompt configuration and no personalizer contribution; it is not a calibrated probability.",
+    "Current app auto-selection also compares all gallery candidates and requires a score gap; the per-image threshold confusion matrix is not equivalent to gallery-level safe auto-selection.",
+    "No user settings, installed application, keys, study statistics, or personal data were accessed."
+  ],
+  "sourceHashes": {
+    "a/blind-review/images/bdd5ad3ed7e6786011c6cb2e.img": "2905493cd49e92e3845775581ff35b4eeb8a5d2bd0d18a773ec1ef1a3f135ee7",
+    "a/blind-review/images/eb19d2d4bc8100fd34da6f72.img": "a21b23b6265bd9dae5aa05e04cab0913b45ee7113526177e3c9f9c83ade82f45",
+    "a/blind-review/images/17f262ec5d5059cfd4bef43b.img": "484939817cf89257805bf843057c270d8f43f5d3ebf43c7ae6bd985a7e3dceaa",
+    "a/blind-review/images/f7dcdc6fe9e97db7e974a87c.img": "955a16889ef9c91fe6475cc610122ce129ca94912e3632c6147dc477bc9cfb24",
+    "a/blind-review/images/e81c2497f7d3f82af6ebe5be.img": "81297a9c5ea842d666c89609392a040aa9829b6451034ea717e93e4e0a8191f6",
+    "a/blind-review/images/bf3f401e524aa83d69294fc7.img": "cda320a1651427c4bf39d3414db7bf5b9b3539188653e9f97f66f158a2278131",
+    "a/blind-review/images/ae1430541557f565f10406a1.img": "bd16399d127a4395f0f261a1a826dce3c3361914fc36611171f614bb029ca463",
+    "a/blind-review/images/de7c5663043528080be92c34.img": "ce74524706833c6fbfab84d314b19cf499518f6dda49dc5d730d1bc0a86ba406",
+    "a/blind-review/images/af238aef7cb76f90751fca27.img": "504e461d7ba65511285f6a4bee35bae84cfefd7d2e676dcf8c57479ed7c9c821",
+    "a/blind-review/images/f63e918a93f245d14787da53.img": "9a75069519b50ad256a85c4ab3167bf568d190a362977610aaee2e9e44a7a700",
+    "a/blind-review/images/4c33deceee97579537a7830a.img": "25e2f795045cf589f50dc4cb3fb8e4dcf316196f3968b49bc64dbc12fa45fdcd",
+    "a/blind-review/images/c13281ce4cdb7ffb928400f1.img": "caf3a1260c8a516a6240667968cbe89f5e5857f3b2e4a8924d1e8927c4359a57",
+    "a/blind-review/images/ea15d9b052598a7a99d5d548.img": "79c3c5798b8dd439965a95d98fa16a396d373220dcc0ada9106728cd7b338405",
+    "a/blind-review/images/aee953209874ebe5c2756fcb.img": "ba4f81db6d0b303ccc5f0f7358bc961abe0951d99032b63917cef78b9e7499f3",
+    "a/blind-review/images/65213434b4b2c2f06c18d4f0.img": "45519cc99ef3f826d5e527c586f0057f27a1a99186458bcf070583c19076fbca",
+    "a/blind-review/images/d04a7b7c42e0cb10e430c99e.img": "3cd6a43438392cb04b3fe1396087d89cff1f30618b33ef78a379a127e85e0ac1",
+    "a/blind-review/images/7ecbc1841538bb0be2a5240c.img": "19ee7991f91c333cfce1cb1e14a17c2f30ada61684eea5c4527d4260a789227f",
+    "a/blind-review/images/5fb44d98b8c1dcaf36eb2452.img": "852a4e69f5cd7622e8feff5faced25b2013f2cc7eee85360dc140ea203acd545",
+    "a/blind-review/images/3c397d81df9204238bc7c45d.img": "cb2db00a23db575e12c1ee125cde71d0e30c6498b41d82e6db564dc4fd43a9b3",
+    "a/blind-review/images/2b3c57d3722bb90db5ee8da2.img": "f2893e972bd4e700ab24c3352f24802ea3b56cc8eac9b94b5bd32a5059a122db",
+    "a/blind-review/images/b9ba17cade43d9a91dc5273a.img": "d0633df326c33ab219f21ba91f6cfb80482521521f82bf8965dd94f4c486ae65",
+    "a/blind-review/images/2c76e1abf3ef6911b20bb41b.img": "59e8edc713c66c421b03edc16b04f95eca0954c9955670b7c245652910029f32",
+    "a/blind-review/images/54abf3629e2870479a1e2d90.img": "9a0609fbfde9bfd0ea0055532d33a34e2a675f4ee03cc9a405ad74fc4c606b16",
+    "a/blind-review/images/825d2c5ed0854519780849d1.img": "0700b550638b57f27a0706c1b2c50af6efc24c2a363e301621cd1b99a26b4916",
+    "a/blind-review/images/433a2df247a2655819ccbf01.img": "ce5685d1d8d94481187a208f3ff34d6792deabe1b4dd35e69c3d73bb68deef48",
+    "a/blind-review/images/24eb667dbbdbf03480e1b002.img": "0fdf09414a02fbe68677ca5e9ffd37c10dbfd995d2d01ae20b440a2c7d03ad64",
+    "a/blind-review/images/96966a586af47f335143f8c6.img": "ab868560abe90f7a5de0be0b39c0166c4f79eb9d36f09aae5270d0fa338f24a5",
+    "a/blind-review/images/46db20ef55495ac12dce3f7c.img": "75d3981d32dcdb8d8bb3df6c837ff3c959fd193a742afb1040179e2476e18bb3",
+    "a/blind-review/images/4580eb30d21e4cfc0f81c5a4.img": "32edc2b4ee8925df6f87816336de26613f30c1be5e96fe5be0e3eb9c29e6cee9",
+    "a/blind-review/images/a938857287766604c3e8620c.img": "17ef7ef3b4875f89b84a21fa90d1520b03888b9fdc66d697a7d9800b9a64e9e1",
+    "a/blind-review/images/d914706c4b966b96ba030904.img": "db16c0fc7d0a990da862d092522d39ecc839ff0a12ed19ecdc41e6e632a668c5",
+    "a/blind-review/images/246dad50f29a5a5b2f02f54a.img": "3a0868381d9dabf223010d1b8b390d79d0e12f4d4eb2e1a20b58c47e4c50f658",
+    "a/blind-review/images/bb8fd9381895277884f6d3bc.img": "676ede1e8527587c08c718bad463ee91d71e976f08f90bfaffeb5fcd586747db",
+    "a/blind-review/images/f5ae4f4b63b4cd1518e37fde.img": "8f62b4c3cbb514a5091b1b36c11a2631cefcfabe28f53e7abb9e8bc3b54d6109",
+    "a/blind-review/images/5099ea7d84184a2e3aa1bc17.img": "eb9979b4a381fedf967fbce18894bd417a3803730a604f55493533de3c571f62",
+    "a/blind-review/images/a6ad413952d0a9d82d827606.img": "ec50b1442507b8ca560fdb4a02c0a9b837afe2f43117e5fe11dbe05ba7a98cf1",
+    "a/blind-review/images/5f3817c2d1e47af879561e42.img": "83c3b1cb1307015608fd965295f9e9da9b0c783c0eb54a57cc52f49aeca41739",
+    "a/blind-review/images/ea7ba0a6c847218d44c56a11.img": "ef73ed3a498035710c222d2fbd97e1012bb5aabdfb859946fc04c1b776c1d143",
+    "a/blind-review/images/a32b2c7d027fb262bfa2c1b5.img": "77b6f5505ab4e5cbfa9de3d5197320bb8b9a895d9e8eba03ff213de9ac70581d",
+    "a/blind-review/images/ac585bfc5f8ee182a2a2e836.img": "9fc04c0975e4b6ea506aa673c19bc9277ecfbb8dabd6ac4393287198947bd147",
+    "a/blind-review/images/63a06c0fed2bbf06b82d2b14.img": "17a52d8d3f6ff6329d470dc57e54edc37bedc03d416abfcf8eaea4ddd05a0fe2",
+    "a/blind-review/images/11e59b0038c0daeb95e1dc47.img": "993a8e61edd68550f00bcdfd8b362656a35c589f4dd2f169bc7faf9c5374a003",
+    "a/blind-review/images/9261344a3f7c145675e9c40b.img": "36dddddbf8f43aac0d0081e4614a2c6bc8df9177bbc0549a7305fcc92491c3a1",
+    "a/blind-review/images/7fd46ac302c7d26420372f49.img": "bc24176896a13111e87ece068d0c55709543ec4f535a333c0f0b810576b743fc",
+    "a/blind-review/images/e416d37c43493bf618166737.img": "d5f8d54f7185bc1a3f995c6be442abba416cc236a883dabb434b8db9ed37341e",
+    "a/blind-review/images/4c545ff9343f3a5b2c862703.img": "10ad78a1b1c684969d38d18a5a4d1fd025af0bdb0544bea9de2cd07dd2bfee1a",
+    "a/blind-review/images/430bd7479d360433804d58b4.img": "6db1cb911a034a69366585c4f1e76bd057f63366fee7d63322e3569392badb7c",
+    "a/blind-review/images/081bc308c486fffa9089f88f.img": "e47bd8f8ffb8d0a515d3d622605c3de997c6371373890643fb1dd3ed5e59f7c9",
+    "a/blind-review/images/31665a57024368fff905a585.img": "a7103b6eee627d5d0480c35af93727791cbe84d750778149b7a0df6b94415ceb",
+    "a/blind-review/images/5fb88cce98bded05f6398c86.img": "7d9b978ae9b5021360dccf62736845d8d4f34adc1e6527698d4cc9a5d9f89588",
+    "a/blind-review/images/bc2b2303ac630229ab36ae58.img": "8c464296cd519e9d0bb5fa383d59321563104714510d41d19ef9b133b3cb6569",
+    "a/blind-review/images/f8053386091081fb7205c1ea.img": "310fcd4487bf5be64fc5918f19fc1ffc4803df4ff947878ca7e1e5081b6b0196",
+    "a/blind-review/images/2d4722a3a9f9d2400da98ffb.img": "14619a3492dbd94d7658a4a796d4946ab19ea277c17bfdbcffd95d1ebe0d7b96",
+    "a/blind-review/images/b67f535aa39a05ff21c49152.img": "dd2730d5258628add5b4f985d6d092f2693327a55f944a5d3912b7472ae2936b",
+    "a/blind-review/images/2a4c2c1bf2ea1f7fc86ae8e1.img": "08e800d7424b8fb569e8b2c3b965cd8bd57a4165270a18b3b81d9896085eedf0",
+    "a/blind-review/images/a1ce4f6b1ec9cfa7fa93e756.img": "6cead3aaccb5d0f27de62589555f682cf202d61286cafb73fce5ddbc99e75594",
+    "a/blind-review/images/dac4a1630ccb43d501eccb30.img": "6445bf9408659d24f3729846ec59a278083364addcd0815ec76a44fd0071cb20",
+    "a/blind-review/images/49cbde81ad47196b79cb8372.img": "ce37fdad4e7d78d8fc1a8989930da1bd40f30f7066577078da60730ca9b14125",
+    "a/blind-review/images/19d4d3ffc44ed8852ab63fd3.img": "02f0ec50a2caaecfa5390d6822b65ed7cd12793bf37d8c70ac8421239cf6582d",
+    "a/blind-review/images/6c9e7d8f2418e76ef06618c2.img": "f3801a18f3911f82626d81bf70f88415a524f649cb8c25ea034fbc2d90bdf7d7",
+    "a/blind-review/images/4118a296521c86299c415297.img": "5318271c7a2e0a3f092274eabbd1c9eb104a6c26c4152d89fe4595bda51fe63d",
+    "a/blind-review/images/d0eaeaf744104344b0078fb0.img": "81dff634f47baf928f47edefd7252065ce7088fb0827d23e725b4f632c8c0396",
+    "b/blind-review/images/d5c30cb1c337f99f8c2ff22a.img": "82dc60a4ffb039b9dbed192e8821e4ed6ae3fc0ba8c649cc4f55c2cd52277eb0",
+    "b/blind-review/images/1f0a7c3a7e5708e24e3084ba.img": "4a5f4a620aa639a7be429fdfc62c27d5d53862e6f7ef92c7a8e3e598884c91dd",
+    "b/blind-review/images/7b8a618957f68bb4a62d04aa.img": "00e029c69de454ddc9cbbd523f06ce3206b924cf52d7a66d784c331de27434ff",
+    "b/blind-review/images/f8c7c76d78c38196faf0c7db.img": "f683e142e5fb5abd344d2fc5b7ecaaac83589e94b29c365b931e298f7110572d",
+    "b/blind-review/images/078a84a3dbddfd67f0680ae4.img": "664692d907ba414c4c3849ca15d8ab6a65b334044b1c6d2b344aed603bcce19b",
+    "b/blind-review/images/7dacf963208409d7e26b9828.img": "234e456f0efcbed3a52e8d876a4774c42ec9ea60e258877c3c0a7d6dcedd77c4",
+    "b/blind-review/images/a80220b8ac9a1cbf73147ab8.img": "6188ce417238fa4c2a5e2d0c183d64a1759629a15e98d1651978bb57744442ae",
+    "b/blind-review/images/d08e7403484f9a7604a9c647.img": "ea2d2f3baccc51fc9489ffbb91619d1a7c46c4ca21deef64ad3a1e71649be08e",
+    "b/blind-review/images/154d667017b3d0474ae911f9.img": "40c5a3eb5e04f0204a5676a2f803a6105ac3729970f2ac99aa502669c2f84d46",
+    "b/blind-review/images/a361fc27c7b4e9375d3aaff4.img": "f1158bb9df2a2a2ece96814b530011db37b10264d9a3fab952b2d883b481b923",
+    "b/blind-review/images/43e6781ae5f98ecdcac81ab3.img": "57e09826779ad9b90a8d801f473febe46db5939a87d9b0cf76a762080f81e8f0",
+    "b/blind-review/images/cb035b38a9f81a5f31d5dd92.img": "48ab1e24585a233125ebf23de6067450cca2f6bb825f7650bd6796c125da5285",
+    "b/blind-review/images/92fdf4b7aca60e351276eca3.img": "e6eafee362129fb362309679655e9d9aa7c7e7d25bed2dc90ebd397f09dda5f9",
+    "b/blind-review/images/dda26d7e3056105878a55a5c.img": "d0893191af24cb3771d5b734ad07a6fc984bc37049428e356c2393a82f6254e5",
+    "b/blind-review/images/d938775345baa90d86b718f3.img": "3ff5868d85641adc3d7d032e2344c50226c8e0e3ae6194c711fc78e09ac42725",
+    "b/blind-review/images/a8fd3311d3da1feec53a2e01.img": "829719489019aa296e3e274fdaad385c05e5175be318e011817b075dad292da6",
+    "b/blind-review/images/6df155721299ec016d232a26.img": "8d88f9d59253607e1e73c4b6e9f7b9d132176aea37e35fd62f14329a6bdc37c9",
+    "b/blind-review/images/e4138d52666ec391b5ce8d44.img": "96d263e27fe464d82d2e45ff1f2ef4d6d6e212a086f820940f29a9db109610d9",
+    "b/blind-review/images/2c3d89086992c2cde536552d.img": "caee3e12dbb7f2714f22e92cfd8932829dc3640a6e4edb72d774ce2668e3b316",
+    "b/blind-review/images/af723c8c1dc1629dd42ccf7e.img": "b9940814c8e2c5fab0d7ebc45119026f0dedd92c2825e3984fa2afdcce14a984",
+    "b/blind-review/images/9c903cf3d4d8efd1f4fd595c.img": "cb099ba20aeb8223f0df4f07de892fad4ce421572eb4d7d7f16fb776ee179f5c",
+    "b/blind-review/images/21b538c3ad2c72242d4171bb.img": "1f05583b06e99842d31b392b42cbac39dfea856e0cf90e8fde89cd87a78ec067",
+    "b/blind-review/images/07a940ba8f3ab49a5e701d4b.img": "25398904d88655af67d2017d41cad1b53959b14ae012bd600e82168b0fc91165",
+    "b/blind-review/images/7bd7d76c78f05a66dfb1a47b.img": "a17f189723401a8f28320ae772b28c57a469f65a5c2bdb4c05f92c29620a35ad"
+  },
+  "reproducibility": {
+    "script": "work/clip-ui-evaluation/evaluate.mjs",
+    "summaryScript": "work/clip-ui-evaluation/summarize.mjs",
+    "command": "node work/clip-ui-evaluation/evaluate.mjs && node work/clip-ui-evaluation/summarize.mjs",
+    "localModelCache": "work/image-pretraining/cache/models (read through symlink; local_files_only enabled; no downloads)",
+    "generatedEmbeddingsCache": "work/clip-ui-evaluation/cache/"
+  }
+}

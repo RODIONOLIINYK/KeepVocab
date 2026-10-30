@@ -1,0 +1,49 @@
+{
+  "version": "1.12.9",
+  "versionCode": 59,
+  "architecture": "arm64",
+  "macVersion": "1.12.9",
+  "androidBadging": "package: name='com.keepvocab.app' versionCode='59' versionName='1.12.9' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+  "webAssetFilesByteMatchedInMacAndAndroid": 117,
+  "screeningSourceMatched": true,
+  "updaterSha512Matched": true,
+  "tests": 649,
+  "assets": [
+    {
+      "path": "dist/macos/KeepVocab-1.12.9-macOS-arm64.dmg",
+      "name": "KeepVocab-1.12.9-macOS-arm64.dmg",
+      "size": 112641957,
+      "sha256": "44bcd8aeb9c2ac29fd4bef8daabe1f0d3f22cd90641d45db9b85f6bf86f5d9b2"
+    },
+    {
+      "path": "dist/macos/KeepVocab-1.12.9-macOS-arm64.dmg.blockmap",
+      "name": "KeepVocab-1.12.9-macOS-arm64.dmg.blockmap",
+      "size": 119954,
+      "sha256": "03ac9472d07c8a2dc7a2b7ef7882624717bd9a4546c59b90247e6bcffaee69ff"
+    },
+    {
+      "path": "dist/macos/KeepVocab-1.12.9-macOS-arm64.zip",
+      "name": "KeepVocab-1.12.9-macOS-arm64.zip",
+      "size": 111010472,
+      "sha256": "cc531857e25a246cfca64a4b8fadb0caf12617505fb72ce25ff74bb6e42bd58b"
+    },
+    {
+      "path": "dist/macos/KeepVocab-1.12.9-macOS-arm64.zip.blockmap",
+      "name": "KeepVocab-1.12.9-macOS-arm64.zip.blockmap",
+      "size": 117243,
+      "sha256": "fa4c47525ce0ce5ddb78fff80a0c376f4e29e845782b3cf24337cf5eb82ae512"
+    },
+    {
+      "path": "dist/macos/latest-mac.yml",
+      "name": "latest-mac.yml",
+      "size": 525,
+      "sha256": "b2a4119e9a88c2af695b7486c3b01d22b59014d9e555f34c23a4c9624a631ff7"
+    },
+    {
+      "path": "dist/KeepVocab-1.12.9-Android-debug.apk",
+      "name": "KeepVocab-1.12.9-Android-debug.apk",
+      "size": 8369048,
+      "sha256": "643aeb8d2d40c985d29dabbe855c8c66315b0ae76aa27102f5e759e4231a77e9"
+    }
+  ]
+}

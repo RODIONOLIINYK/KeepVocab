@@ -9,6 +9,7 @@ const MODEL_KEY = 'keepvocab_image_preference_model_v1';
 import { IMAGE_PREPROCESSING, encodeMeaning, personalizerScore, isCurrentPersonalizer } from './imagePersonalizer.js';
 import { ImagePersonalizerTraining } from './imagePersonalizerTraining.js';
 import { scheduleImageModelWarmup } from './imageModelStartup.js';
+import { IMAGE_SEMANTIC_FILTER, passesImageSemanticGate } from './imageSemanticGate.js';
 let trainingInstance;
 function training() { return trainingInstance ||= new ImagePersonalizerTraining(driveSync); }
 let cachedModel = null;
@@ -251,10 +252,12 @@ export function semanticScores(image, texts, sceneCount, alternativeCount) {
   const unwanted = cosine(image, texts.at(-1));
   return { selected, contrast, margin, unwanted, score: selected + (contrast === null ? 0 : 0.6 * margin) - 0.25 * Math.max(0, unwanted) };
 }
-export function rankEmbeddedImages(items, model = null) {
-  const scored = items.map((item, index) => {
+export function rankEmbeddedImages(items, model = null, { semanticFilter = false } = {}) {
+  // Preference can reorder eligible photos, but cannot rescue a failed match.
+  const eligible = semanticFilter ? items.filter(item => passesImageSemanticGate(item.semantic)) : items;
+  const scored = eligible.map((item, index) => {
     const features = preferenceFeatures(item.vector, item.semantic);
-    const neural = isCurrentPersonalizer(model) && item.meaningFeatures;
+    const neural = isCurrentPersonalizer(model) && model.role !== 'semantic' && item.meaningFeatures;
     const adjustment = neural ? personalizerScore(model, encodeFullFeatures(features), item.meaningFeatures) - personalizerScore(null, encodeFullFeatures(features), item.meaningFeatures) : 0;
     const probability = neural ? 1 / (1 + Math.exp(-8 * adjustment)) : preferenceProbability(model, features);
     // Early feedback should have little influence. A visual preference must not
@@ -285,45 +288,44 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     // Let startup finish its GPU-to-CPU recovery before adding picker requests
     // to the worker queue: replacing a failed worker rejects its pending RPCs.
     if (warmupPromise) {
-      try { await warmupPromise; } catch { return candidates; }
-      if (!current() || !workerReady) return candidates;
+      try { await warmupPromise; } catch { return []; }
+      if (!current() || !workerReady) return [];
     }
     const prompt = imageClipPrompts(word, options);
     const texts = await rpc('texts', { texts: prompt.texts }, inference);
-    if (!current() || !workerReady) return candidates;
+    if (!current() || !workerReady) return [];
     const meaningFeatures = encodeMeaning(texts[0]);
     const items = [];
-    // A six-photo chooser needs a small shortlist, not forty serial inferences.
-    const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(40, Number(options.localCandidateLimit) || 8)));
+    // Oversample in bounded worker batches; only screened photos reach the UI.
+    const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(40,
+      Number(options.localCandidateLimit) || IMAGE_SEMANTIC_FILTER.candidatePoolSize)));
     const prepareBatch = start => start < scoringLimit
       ? prepareImageThumbnails(candidates.slice(start, Math.min(start + 4, scoringLimit)), { ...options, preferOriginal: true, timeoutMs: options.timeoutMs || 2800 })
       : null;
     let nextBatch = prepareBatch(0);
     for (let offset = 0; offset < scoringLimit; offset += 4) {
-      if (!current()) return candidates;
+      if (!current()) return [];
       const currentBatch = nextBatch;
       nextBatch = prepareBatch(offset + 4);
       const thumbnails = await currentBatch;
-      if (!current()) return candidates;
+      if (!current()) return [];
       for (const thumbnail of thumbnails) {
-        if (!current()) return candidates;
+        if (!current()) return [];
         const vector = await rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }) }, inference);
-        if (!current() || !workerReady) return candidates;
+        if (!current() || !workerReady) return [];
         items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, semantic: semanticScores(vector, texts, prompt.sceneCount, prompt.alternativeCount) });
       }
       phase = 'scoring';message = `Scored ${items.length} of ${candidates.length} image suggestions locally.`;emit();
     }
     const model = await training().current();
-    if (!current() || !workerReady) return candidates;
+    if (!current() || !workerReady) return [];
     cachedModel = model;
-    const scored = rankEmbeddedImages(items, model);
-    const scoredImages = new Set(items.map(item => item.candidate));
+    const scored = rankEmbeddedImages(items, model, { semanticFilter: true });
     phase = 'ready';message = `${items.length} image suggestions scored locally.`;emit();
     return [...scored.map(item => ({ ...item.candidate, ml: { model: CLIP_TAG, sense: fingerprint(word), features: encodeFullFeatures(item.features), meaningFeatures, preprocessing: IMAGE_PREPROCESSING, scenes: prompt.scenes,
       selected: item.semantic.selected, contrast: item.semantic.contrast, margin: item.semantic.margin, unwanted: item.semantic.unwanted, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
-      trainedComparisons: model?.trainedComparisons || 0, trainedPositiveLabels: model?.trainedPositiveLabels || 0, trainedNegativeLabels: model?.trainedNegativeLabels || 0, score: item.score } })),
-      ...candidates.filter(item => !scoredImages.has(item))];
-  } catch (error) { if (current()) { phase = 'error';message = `${error.message} Metadata search is still available.`;emit(); } return candidates; }
+      trainedComparisons: model?.trainedComparisons || 0, trainedPositiveLabels: model?.trainedPositiveLabels || 0, trainedNegativeLabels: model?.trainedNegativeLabels || 0, score: item.score } }))];
+  } catch (error) { if (current()) { phase = 'error';message = `${error.message} Image screening could not finish.`;emit(); } return []; }
 }
 let feedbackQueue = Promise.resolve();
 async function imageRecordIds(word, image) {

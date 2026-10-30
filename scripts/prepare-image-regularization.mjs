@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { readJsonFile } from './lib/json-files.mjs';
 import { validatePretrainingBenchmark } from './lib/image-pretraining-benchmark.mjs';
 import { auditMeaningShiftSplit } from './lib/image-meaning-shift.mjs';
-import { createPersonalizer, fitImagePersonalizer, personalizerLossAndGradient } from '../js/services/imagePersonalizer.js';
+import { createPersonalizer, fitImagePersonalizer, personalizerLossAndGradient } from './lib/image-personalizer-v2.mjs';
 const dir='work/image-regularization';await mkdir(dir,{recursive:true});
 const protocol=await readJsonFile('docs/image-regularization-protocol.json'),plan=await readJsonFile(protocol.dataSplit);
 const valid=validatePretrainingBenchmark(await readJsonFile(plan.sourceFeatures),await readJsonFile(plan.sourceManifest));
@@ -18,6 +18,6 @@ const data={initials:Object.fromEntries(protocol.seeds.map(seed=>[seed,createPer
   parity:{ids:first.map(row=>row.id),trainIds:train.map(row=>row.id),loss:probe.loss,gradient:probe.gradient,oneBatch,oneEpoch},
   provenance:{protocolSha256:createHash('sha256').update(await readFile('docs/image-regularization-protocol.json')).digest('hex'),
     splitSha256:createHash('sha256').update(await readFile(protocol.dataSplit)).digest('hex'),
-    productionSourceSha256:createHash('sha256').update(await readFile('js/services/imagePersonalizer.js')).digest('hex')}};
+    productionSourceSha256:createHash('sha256').update(await readFile('scripts/lib/image-personalizer-v2.mjs')).digest('hex')}};
 await writeFile(`${dir}/prepared.json.gz`,gzipSync(JSON.stringify(data,(_key,v)=>ArrayBuffer.isView(v)?Array.from(v):v)));
 console.log('Validated both preserved splits; saved exact JS initialization, gradients, one-batch and one-epoch reference.');

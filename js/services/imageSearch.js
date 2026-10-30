@@ -153,12 +153,12 @@ export function getImageProviderSettings(storage = globalThis.localStorage) {
   try {
     const saved = JSON.parse(storage?.getItem(IMAGE_PROVIDER_SETTINGS_KEY) || '{}');
     return {
-      provider: saved.provider === 'openverse' ? 'openverse' : 'pexels',
+      provider: saved.provider === 'pexels' || (!saved.provider && saved.pexelsApiKey) ? 'pexels' : 'openverse',
       pexelsApiKey: String(saved.pexelsApiKey || '').trim(),
       updatedAt: saved.updatedAt || null
     };
   } catch {
-    return { provider: 'pexels', pexelsApiKey: '', updatedAt: null };
+    return { provider: 'openverse', pexelsApiKey: '', updatedAt: null };
   }
 }
 
@@ -870,11 +870,21 @@ export async function findRelevantImages(word, options = {}) {
       ? [{ id: 'loc', search: concept => findLibraryOfCongressImages(concept, fetchImpl, { page, signal: options.signal }) }] : []),
     { id: 'nasa', search: concept => findNasaImages(concept, fetchImpl, { page, signal: options.signal }) }
   ];
-  const batches = await Promise.all(providers.flatMap((source, providerIndex) => concepts.slice(0, 3).map(async (concept, conceptIndex) => {
+  const searchProviders = sources => Promise.all(sources.flatMap(source => concepts.slice(0, 3).map(async (concept, conceptIndex) => {
+    const providerIndex = providers.indexOf(source);
     const searchQuery = compactVisualSearchQuery(concept);
     const found = await source.search(searchQuery);
     return { providerIndex, conceptIndex, images: found.slice(0, 40).map(image => ({ ...image, visualScene: concept })) };
   })));
+  const primary = providers.filter(source => source.id === 'pexels');
+  const batches = primary.length ? await searchProviders(primary) : [];
+  // A configured stock source gets the first chance to fill the larger pool.
+  // This avoids both slow catalog requests and unrelated fallback noise when
+  // enough Pexels photos are already available. Public catalogs remain keyless.
+  const primaryPhotos = new Set(batches.flatMap(batch => batch.images)
+    .filter(image => !excluded.has(candidateUrlKey(image.url)))
+    .map(image => candidateUrlKey(image.url)));
+  if (primaryPhotos.size < 30) batches.push(...await searchProviders(providers.filter(source => source.id !== 'pexels')));
   const orderedBatches = batches.sort((left, right) => left.conceptIndex - right.conceptIndex || left.providerIndex - right.providerIndex);
   // Explicitly approved results get into the bounded pool even if a catalog
   // returns them late. Other sources and scenes then contribute in turn.

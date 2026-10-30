@@ -1,0 +1,951 @@
+{
+  "date": "2026-10-30T19:17:14.513Z",
+  "sourceManifestSha256": "d5d70ecd14fd49fd76fa344e125bbf2331ad3c90f915e5cf25584ddbddc6bff7",
+  "scriptSha256": {
+    "scripts/image-evaluation-runtime.mjs": "2d1f632249055a1e8c700fa92408634f1b904751418ec93efc458307d86d32ae",
+    "js/ml/clipConfig.js": "f1ef53abd94881e2f26e73d5eee9bee1748aff7ae5d9641c3033e1f85ee8f263",
+    "js/services/imagePreprocessing.js": "ea006730594d0aedac32c8fc7e250f708644054a8ba91a3730eed093c88534ae",
+    "work/image-augmentation-pilot/select_candidates.mjs": "48fe988524781bb9c63b2c79892748b2625d3a95ac1352d845dd3dfd622b0a45",
+    "work/image-augmentation-pilot/select_and_augment.py": "79ed60c98993383d3da71e4fac6438c835b85cbf4a92c6e60ba6ccc80346f91c",
+    "work/image-augmentation-pilot/evaluate.mjs": "8f59a2fc1d782bb12c26b5bfec76e3f4850c289eca8922935604be8a73d0e877"
+  },
+  "artifactSha256": {
+    "work/image-augmentation-pilot/select_candidates.mjs": "48fe988524781bb9c63b2c79892748b2625d3a95ac1352d845dd3dfd622b0a45",
+    "work/image-augmentation-pilot/select_and_augment.py": "79ed60c98993383d3da71e4fac6438c835b85cbf4a92c6e60ba6ccc80346f91c",
+    "work/image-augmentation-pilot/evaluate.mjs": "8f59a2fc1d782bb12c26b5bfec76e3f4850c289eca8922935604be8a73d0e877",
+    "work/image-augmentation-pilot/README.md": "68263b697a9be91c089c6e0352a06201cf2558d48c77ff8e95a4de582ccdc5a8",
+    "work/image-augmentation-pilot/selection-and-provenance.json": "c46262ef0a4680fe71d71033b4b20395e11041e0bc1c57c1b299170b25459338",
+    "work/image-augmentation-pilot/visual-reference-review.json": "6313c7462d20ad0ef4113eb43b81dd60a3478b7eb717573efb890a7d7bad1b11",
+    "work/image-augmentation-pilot/selected-originals-contact-sheet.jpg": "53f143dc5caa4e43605ecf8f5939e2e8146eed9709884506062740fddd3ba166",
+    "work/image-augmentation-pilot/original-vs-variant-contact-sheet.jpg": "205976984d55825231e55bc7e351c73eb1ea82e72d3f47d024937a94e78132dd"
+  },
+  "runtime": {
+    "modelTag": "Xenova/mobileclip_s0@757d59c9c6870a76a4b0306f05f5061bca15c39f:text-fp16-vision-fp32",
+    "textDtype": "fp16",
+    "visionDtype": "fp32",
+    "preprocessing": "full-frame-letterbox-256-v1",
+    "allowDownloads": false,
+    "pillowVersion": "13.0.0"
+  },
+  "selection": {
+    "trainGalleries": 385,
+    "uniqueTrainMeaningCount": 141,
+    "selectedDistinctMeanings": 24,
+    "selectedDistinctPhotos": 24,
+    "allSelectedGroups": [
+      {
+        "groupId": "semantic-v2:surf|381360",
+        "meaningId": "semantic-v2:surf",
+        "galleryId": "semantic-v2-surf-0",
+        "parentPhotoId": "381360",
+        "parentSha256": "8f16a69db296dc4b490c68751df1facccd067e0287e3328d9a7479e973c44e14",
+        "variantId": "aug-b085-s090-381360",
+        "variantSha256": "8ab53196683a35b5f14c33e9128b2e5e328b2e8e4d5442bb3531523924e87404",
+        "originalSize": [
+          640,
+          425
+        ],
+        "variantSize": [
+          640,
+          425
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "376625",
+            "sha256": "81267617f13de3900abfe82e0e48f5b66ca43b2092cac9b3c15e8606ebf81b72"
+          },
+          {
+            "photoId": "381360",
+            "sha256": "8f16a69db296dc4b490c68751df1facccd067e0287e3328d9a7479e973c44e14"
+          },
+          {
+            "photoId": "13004",
+            "sha256": "09d489992329d2a17186a82781c7d23d8c687ee580567babc7494f9bc8b1220a"
+          },
+          {
+            "photoId": "250137",
+            "sha256": "00b60aa56c8552f04a59da5ec1a6ba555991fa22cd8ff932f31d72a159595e8b"
+          },
+          {
+            "photoId": "288391",
+            "sha256": "9143a1cce1ad90bf5b1a4b3801e32c57a93a8ab1227e6f54fb915aecd75d2439"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:bus|446206",
+        "meaningId": "semantic-v2:bus",
+        "galleryId": "semantic-v2-bus-0",
+        "parentPhotoId": "446206",
+        "parentSha256": "37f631d7cf9ff3f54abb80600fa15651061c228fb1265b95888847de72e06bae",
+        "variantId": "aug-b085-s090-446206",
+        "variantSha256": "a5a0918b111c11f050a51cf9750d7a33c3c888450917b039d277889e434343d2",
+        "originalSize": [
+          640,
+          385
+        ],
+        "variantSize": [
+          640,
+          385
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "340697",
+            "sha256": "e8561c69704c7b6b901d95c2555dd4d8758534b94dc661f23c9dfd901013fc4c"
+          },
+          {
+            "photoId": "158660",
+            "sha256": "a33426379658d6ddc0a3b4c574e224eee02b9a26589a699e122a40c74cac9a05"
+          },
+          {
+            "photoId": "60507",
+            "sha256": "0aa436c998cd750d278170996d88b02869af323af4543ae4a8ef6349a14ca7fb"
+          },
+          {
+            "photoId": "446206",
+            "sha256": "37f631d7cf9ff3f54abb80600fa15651061c228fb1265b95888847de72e06bae"
+          },
+          {
+            "photoId": "82715",
+            "sha256": "3633367a51bb0bcff7e513f7b3d93dea749c47a1e48e9bac5381ce39697dd5d5"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:stairs|249180",
+        "meaningId": "semantic-v2:stairs",
+        "galleryId": "semantic-v2-stairs-0",
+        "parentPhotoId": "249180",
+        "parentSha256": "685bd913e0bfbbcd9d91b2368c219696308f51ba4f9428b077584d64b5a6ae83",
+        "variantId": "aug-b085-s090-249180",
+        "variantSha256": "08b79a139168a2b1c8f73bdf44d55b54eab567ba6cbfad5d5c1a005f321974b2",
+        "originalSize": [
+          640,
+          427
+        ],
+        "variantSize": [
+          640,
+          427
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "458223",
+            "sha256": "b1dd74ccf72451429d9444fec031e55abf94038b8fcc94e4abc20f4cc74d22fa"
+          },
+          {
+            "photoId": "397303",
+            "sha256": "1c8a18f308b9febf0994c0bb26eed328c8a21cdb36a63a4432695994bb984af2"
+          },
+          {
+            "photoId": "391144",
+            "sha256": "8bdd8160c80e2f5729d9071b328773884c9b1542aa4b712c8ab9fc5df9be0bfe"
+          },
+          {
+            "photoId": "409358",
+            "sha256": "e20ee8a186a94b03a7ea3f55d4b097ec2fe7a21db29df61073c31f0e38fbb958"
+          },
+          {
+            "photoId": "249180",
+            "sha256": "685bd913e0bfbbcd9d91b2368c219696308f51ba4f9428b077584d64b5a6ae83"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:bridge|344816",
+        "meaningId": "semantic-v2:bridge",
+        "galleryId": "semantic-v2-bridge-0",
+        "parentPhotoId": "344816",
+        "parentSha256": "091feaf5dbb6a28c71f83d0d91756aac8d176e7c3d31b766c484252440772457",
+        "variantId": "aug-b085-s090-344816",
+        "variantSha256": "237b5d16873c266565108b7cd9d8297722b6345d25c399a3c7ef37e15816cec5",
+        "originalSize": [
+          640,
+          427
+        ],
+        "variantSize": [
+          640,
+          427
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "486112",
+            "sha256": "8a2918d24583f33aedc6cdc212c129176e6535102c5e87f418a4f230e9002bfb"
+          },
+          {
+            "photoId": "44279",
+            "sha256": "ec4f47bbaa7a948c06f4e748cfb9c8388facc711b1b69e98aa0dfdc656e6b95d"
+          },
+          {
+            "photoId": "344816",
+            "sha256": "091feaf5dbb6a28c71f83d0d91756aac8d176e7c3d31b766c484252440772457"
+          },
+          {
+            "photoId": "443969",
+            "sha256": "4d406247b349070eb79a47c16d299fc6285188c81241097169bb797cf921be2c"
+          },
+          {
+            "photoId": "63552",
+            "sha256": "a3a0b0e84709ed08012ed3fa37b2d6bc0d45546560c750f8e9de921c0a2de406"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:beer|74733",
+        "meaningId": "semantic-v2:beer",
+        "galleryId": "semantic-v2-beer-1",
+        "parentPhotoId": "74733",
+        "parentSha256": "d99c93fb6d22a5d51bbb6e09ca5f10c11bdcf90a711abf6cc83188df52cc456a",
+        "variantId": "aug-b085-s090-74733",
+        "variantSha256": "040f962b5a799c7d45ada87b527405007c66e39564c063e6eb77f2298c5e409e",
+        "originalSize": [
+          612,
+          612
+        ],
+        "variantSize": [
+          612,
+          612
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "567886",
+            "sha256": "a1954fe14f98e86a0808229bcc3eba011214ca82b2c3d725822b428ca2b28d2a"
+          },
+          {
+            "photoId": "289343",
+            "sha256": "3e55a91ce9257d70771eac2380332a743cb17f2220aee0c070d2d46204931e56"
+          },
+          {
+            "photoId": "74733",
+            "sha256": "d99c93fb6d22a5d51bbb6e09ca5f10c11bdcf90a711abf6cc83188df52cc456a"
+          },
+          {
+            "photoId": "223959",
+            "sha256": "40723194728d52fd499ce505353bd9e153cc453dec045795167dbabf339bdc23"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:suit|9483",
+        "meaningId": "semantic-v2:suit",
+        "galleryId": "semantic-v2-suit-0",
+        "parentPhotoId": "9483",
+        "parentSha256": "c7e6e15f4db067c3e09ab8605759be9d850e2d5c45ea4dfb9cda8f5d85308ea4",
+        "variantId": "aug-b085-s090-9483",
+        "variantSha256": "8d1a1ce5ecb7a40d6d2cc396de617e69da5556da5295618868548ab67d5fd7ac",
+        "originalSize": [
+          640,
+          480
+        ],
+        "variantSize": [
+          640,
+          480
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "65736",
+            "sha256": "2964c5da08d186b8a875c9ec2de8aa7a829da5b6bb028a70933baf7eecf8dde8"
+          },
+          {
+            "photoId": "481159",
+            "sha256": "51dc6c4511cdd2dbd999174521f6ab0b1418ed0b323a0050c0582ecea6cf2ed8"
+          },
+          {
+            "photoId": "183437",
+            "sha256": "959f995aeb1786cb09541e28f3a328a1e1a1ce421bf2851431494a6c70d65159"
+          },
+          {
+            "photoId": "9483",
+            "sha256": "c7e6e15f4db067c3e09ab8605759be9d850e2d5c45ea4dfb9cda8f5d85308ea4"
+          },
+          {
+            "photoId": "458755",
+            "sha256": "a46fe4379f6edc9e2d8652b0f929fe92851ff2b1c470c5fa355135323fa60774"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:open|512330",
+        "meaningId": "semantic-v2:open",
+        "galleryId": "semantic-v2-open-0",
+        "parentPhotoId": "512330",
+        "parentSha256": "a97b7899f984d8cbb9505b659cb428c3654a4a7d3505178036e316926c73f0b6",
+        "variantId": "aug-b085-s090-512330",
+        "variantSha256": "7442c3ac0a94373ead1ca62d6767bdfdeb68aa7857fa66264c8d3082d6a8ed2d",
+        "originalSize": [
+          426,
+          640
+        ],
+        "variantSize": [
+          426,
+          640
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "140420",
+            "sha256": "6129582d906698ca9785642983c58adc22b8e4d32a5be24396d6c4f8369dea5f"
+          },
+          {
+            "photoId": "512330",
+            "sha256": "a97b7899f984d8cbb9505b659cb428c3654a4a7d3505178036e316926c73f0b6"
+          },
+          {
+            "photoId": "540414",
+            "sha256": "fcde3d391e5ff8ca3df743484effef4c13e1cf5f3aa548af815b777a23adc365"
+          },
+          {
+            "photoId": "51938",
+            "sha256": "83af2d377338ed8dfe2608d8c8da1273b11dfb4c534b6426cdec0d93c6ed2892"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:cake|363207",
+        "meaningId": "semantic-v2:cake",
+        "galleryId": "semantic-v2-cake-1",
+        "parentPhotoId": "363207",
+        "parentSha256": "b07a2456f7eea2f05eb2276a00b174a4fe5863936774f501b2e76308b10bb16e",
+        "variantId": "aug-b085-s090-363207",
+        "variantSha256": "db4b5bbcb87ad8b3dab3d04a7249d5b1ddc3571ea94fd4fd037cac3583677987",
+        "originalSize": [
+          640,
+          480
+        ],
+        "variantSize": [
+          640,
+          480
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "363207",
+            "sha256": "b07a2456f7eea2f05eb2276a00b174a4fe5863936774f501b2e76308b10bb16e"
+          },
+          {
+            "photoId": "52591",
+            "sha256": "f137597498947e8bdc1f81e2d72972faff7bfda12e5910392019ffd5ffaea57b"
+          },
+          {
+            "photoId": "262587",
+            "sha256": "e14247bbc942361d9b291478f9d6c32ceb5df85a937e46c83d0152b3e25202e5"
+          },
+          {
+            "photoId": "236914",
+            "sha256": "d4e1e11320ed62510aa92c6ebf23e3a45cd3f014e07cb37f27a99545be973112"
+          },
+          {
+            "photoId": "180011",
+            "sha256": "47706a6be9df4d2cdadfd08dbfc275c502e68f8a4ac9469f463e0b3bcf8f112a"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:rock|308753",
+        "meaningId": "semantic-v2:rock",
+        "galleryId": "semantic-v2-rock-0",
+        "parentPhotoId": "308753",
+        "parentSha256": "952e8f3e0a98da80843838bd3496e1ad2c6f1c26ff75558e1046215b9a8ef6d3",
+        "variantId": "aug-b085-s090-308753",
+        "variantSha256": "587d49bb7d738ffefd9551bdb81ac0aaaa6d9baea4df67799dde7d0849ffb84d",
+        "originalSize": [
+          640,
+          480
+        ],
+        "variantSize": [
+          640,
+          480
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "464786",
+            "sha256": "4b14c0aa08c422043040fa7c55eefb6d8937cd477eb0baccd248b80b20bc1002"
+          },
+          {
+            "photoId": "229858",
+            "sha256": "78782fd13f98e77b1c4f4061f850a6a1d3d8b16b948fb1e083d70c00d5f75555"
+          },
+          {
+            "photoId": "476215",
+            "sha256": "0f292f55b4658641a083ee1e443a1494f3406979426a722f4c860c1299d75b27"
+          },
+          {
+            "photoId": "290163",
+            "sha256": "0b45c8bdbbf95d6c99aa0a9eb845d1d86e46857b77be703a3dc68854d1c6bb4f"
+          },
+          {
+            "photoId": "308753",
+            "sha256": "952e8f3e0a98da80843838bd3496e1ad2c6f1c26ff75558e1046215b9a8ef6d3"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:laptop|248314",
+        "meaningId": "semantic-v2:laptop",
+        "galleryId": "semantic-v2-laptop-0",
+        "parentPhotoId": "248314",
+        "parentSha256": "b6b1cf5511ed5a690b596376813360b46b180c3fa8c3c3ef9cead9b5647f87e1",
+        "variantId": "aug-b085-s090-248314",
+        "variantSha256": "720258a80516351f4796677474634f7487573cf4a047d2363af4bdc86d5c81c8",
+        "originalSize": [
+          640,
+          480
+        ],
+        "variantSize": [
+          640,
+          480
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "471991",
+            "sha256": "51288ea643006b471c953a548554822e2c5e2f6745c9dd65726458dce634907f"
+          },
+          {
+            "photoId": "13177",
+            "sha256": "f93626195530f46ed849091160f8cccce1a255ca886fd5945f5719adc12dc789"
+          },
+          {
+            "photoId": "248314",
+            "sha256": "b6b1cf5511ed5a690b596376813360b46b180c3fa8c3c3ef9cead9b5647f87e1"
+          },
+          {
+            "photoId": "396518",
+            "sha256": "99c61958bdc57c9c073bc33ac8fda6dcb8f634c73dcce369bff5612b05d85b5e"
+          },
+          {
+            "photoId": "206271",
+            "sha256": "715a4e7172e849888d18f748dd7c4217aa2543912a705cb73045707eb9e51b41"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:puppy|329219",
+        "meaningId": "semantic-v2:puppy",
+        "galleryId": "semantic-v2-puppy-0",
+        "parentPhotoId": "329219",
+        "parentSha256": "10dc6cd39da78d787f01a4221d6f6765d30021799f332965de18faae501587d6",
+        "variantId": "aug-b085-s090-329219",
+        "variantSha256": "daf0c1aceb1e12ad1979e9354c3c7abaa1182c1e4856acf10433f9d83610f6ee",
+        "originalSize": [
+          640,
+          427
+        ],
+        "variantSize": [
+          640,
+          427
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "476215",
+            "sha256": "0f292f55b4658641a083ee1e443a1494f3406979426a722f4c860c1299d75b27"
+          },
+          {
+            "photoId": "167898",
+            "sha256": "fed6c4d5fc7f3b77dd7e47a2658eb8f9f1462374151dd2b335c2a54aba18a75e"
+          },
+          {
+            "photoId": "329219",
+            "sha256": "10dc6cd39da78d787f01a4221d6f6765d30021799f332965de18faae501587d6"
+          },
+          {
+            "photoId": "540414",
+            "sha256": "fcde3d391e5ff8ca3df743484effef4c13e1cf5f3aa548af815b777a23adc365"
+          },
+          {
+            "photoId": "253002",
+            "sha256": "a8fa4e0fa0d88819f851e0f4252248312cc932b93bf7124ef213a661ea5355b0"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:giraffe|130599",
+        "meaningId": "semantic-v2:giraffe",
+        "galleryId": "semantic-v2-giraffe-0",
+        "parentPhotoId": "130599",
+        "parentSha256": "669aa9b450c1d423c450da6a9e25cab88a9fcbc61b447028248fb748a0925e4d",
+        "variantId": "aug-b085-s090-130599",
+        "variantSha256": "1b75670ad5b8a986dc101511e830fa45cdd3a4f924f691e7da44def49f61559b",
+        "originalSize": [
+          640,
+          480
+        ],
+        "variantSize": [
+          640,
+          480
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "80057",
+            "sha256": "2d7e55fd015c7b559a373070dbae412b241d2d0a67ece9304fa938474ccc93af"
+          },
+          {
+            "photoId": "464689",
+            "sha256": "cb685bf3ccf9db9df9f762422fd9ef3452dcf3f6ab7a96d329a595767ced55b5"
+          },
+          {
+            "photoId": "310862",
+            "sha256": "d308275268ce56f773ff5a8335194504089939acca75a040df20de0ed1e87582"
+          },
+          {
+            "photoId": "130599",
+            "sha256": "669aa9b450c1d423c450da6a9e25cab88a9fcbc61b447028248fb748a0925e4d"
+          },
+          {
+            "photoId": "510095",
+            "sha256": "40eea5adaa2072c80f28e81c22546c7610bfafef193732da6b4639b1bc5f1add"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:toilet|147518",
+        "meaningId": "semantic-v2:toilet",
+        "galleryId": "semantic-v2-toilet-0",
+        "parentPhotoId": "147518",
+        "parentSha256": "33ebfe94537ecdf095bf1a0119cf7ef2735d6e5c33e798b5c52eecc9bc3d23e3",
+        "variantId": "aug-b085-s090-147518",
+        "variantSha256": "6a0b6e04c10948020a5bfc04525f28ca8a2daefb5466a11cc2e364f50f6c425a",
+        "originalSize": [
+          480,
+          640
+        ],
+        "variantSize": [
+          480,
+          640
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "147518",
+            "sha256": "33ebfe94537ecdf095bf1a0119cf7ef2735d6e5c33e798b5c52eecc9bc3d23e3"
+          },
+          {
+            "photoId": "376307",
+            "sha256": "a21b620bce393bbad0b44bfecb475a8cc9abcd7f637dca09ed657bb4bd9c6d38"
+          },
+          {
+            "photoId": "250137",
+            "sha256": "00b60aa56c8552f04a59da5ec1a6ba555991fa22cd8ff932f31d72a159595e8b"
+          },
+          {
+            "photoId": "532901",
+            "sha256": "7d6095aecac5e38f60d699e76d26ed74dc0ac4cc8d48ce42e7ef10e17048013c"
+          },
+          {
+            "photoId": "134689",
+            "sha256": "f951a4e9e970a0e2d19efc702cac3c01f08cae3dbe6080cd91c218509b008c01"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:monitor|186282",
+        "meaningId": "semantic-v2:monitor",
+        "galleryId": "semantic-v2-monitor-0",
+        "parentPhotoId": "186282",
+        "parentSha256": "73c0456e323cfed4d729360302c86b5a4cefca1257e2ae9e30a04deda0b35e14",
+        "variantId": "aug-b085-s090-186282",
+        "variantSha256": "abf6b5d266de737216c849c1b0b8ede40a460d6572587d427a59e03a5ef9ad3f",
+        "originalSize": [
+          640,
+          427
+        ],
+        "variantSize": [
+          640,
+          427
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "121242",
+            "sha256": "63c1eeacec4fc367dc318672c0ac8aeb487c91abfe250ddea45d8ad25582c038"
+          },
+          {
+            "photoId": "222118",
+            "sha256": "08359f1eb5dd2c5779b22aded4d4425934ee7d78574bc3a9a6d887b4a1716e2e"
+          },
+          {
+            "photoId": "577584",
+            "sha256": "9e47eaaf563d2ae9bfebcea80f2616ceb7eaf6c99a0390f0274cfb0068686d77"
+          },
+          {
+            "photoId": "186282",
+            "sha256": "73c0456e323cfed4d729360302c86b5a4cefca1257e2ae9e30a04deda0b35e14"
+          },
+          {
+            "photoId": "54967",
+            "sha256": "d40210c4e2241a0ac4de79f4cdc7a6c859dafb1b2b18469146f992c714fe9b2d"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:fence|21903",
+        "meaningId": "semantic-v2:fence",
+        "galleryId": "semantic-v2-fence-0",
+        "parentPhotoId": "21903",
+        "parentSha256": "3fa9ccedfc3ac829c07e14b0e7ef4211b5963f7700dc6e30dde3054f704efa09",
+        "variantId": "aug-b085-s090-21903",
+        "variantSha256": "63954590e1f3d37c551685508654f765d356b0e466a601d71d7dd5581c17bf70",
+        "originalSize": [
+          640,
+          480
+        ],
+        "variantSize": [
+          640,
+          480
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "21903",
+            "sha256": "3fa9ccedfc3ac829c07e14b0e7ef4211b5963f7700dc6e30dde3054f704efa09"
+          },
+          {
+            "photoId": "186632",
+            "sha256": "a9e150a34b0f76252c2049857ed88f94368ae45ebbff65e3bfccb3a2b49ae82c"
+          },
+          {
+            "photoId": "341094",
+            "sha256": "8dd624082055c6686acb10be52b5f46e6d65f718cd8b1008f2155389a8a238cd"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:book|578545",
+        "meaningId": "semantic-v2:book",
+        "galleryId": "semantic-v2-book-0",
+        "parentPhotoId": "578545",
+        "parentSha256": "3b1e4dc0f5d15f4d74b3d2926e15d80e996a7e6fb4302808bbf7ba84213e0d2e",
+        "variantId": "aug-b085-s090-578545",
+        "variantSha256": "dcc177bb4352fb72513d55e323dee13ec81a7446a06ec2fff4808c02ce2016c7",
+        "originalSize": [
+          640,
+          474
+        ],
+        "variantSize": [
+          640,
+          474
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "114907",
+            "sha256": "1ef6feb0a8d8886de8dc4db6e6c379cdd8fad15111a8edc570eeda66bcc17dba"
+          },
+          {
+            "photoId": "2532",
+            "sha256": "fc017f5308d348bdb6011f2312b10853ccd780a4a7369f48774ef67f499f2e77"
+          },
+          {
+            "photoId": "248111",
+            "sha256": "cb5ac7d777b00669aea16772fa45f1015baf4b06d1b887e76fa6557bac2cb429"
+          },
+          {
+            "photoId": "578545",
+            "sha256": "3b1e4dc0f5d15f4d74b3d2926e15d80e996a7e6fb4302808bbf7ba84213e0d2e"
+          },
+          {
+            "photoId": "566282",
+            "sha256": "8194b9a1efda00e15ec8386d9dc78f70055d84203781625fbb17845a356efa9c"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:suitcase|453001",
+        "meaningId": "semantic-v2:suitcase",
+        "galleryId": "semantic-v2-suitcase-0",
+        "parentPhotoId": "453001",
+        "parentSha256": "5a53866848c1d1eebad2df1a6d659bd699ccb52cfa89ce3bebb5105e2d81c9a5",
+        "variantId": "aug-b085-s090-453001",
+        "variantSha256": "98823cb1ac4b12cab8243ac3beff8120d76a83d617b8c4fe55e13d3f9014cafe",
+        "originalSize": [
+          640,
+          480
+        ],
+        "variantSize": [
+          640,
+          480
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "28285",
+            "sha256": "a37d71f6459efc47c22ec687945599cf4ec81c1056e6f0256eca3776834879b4"
+          },
+          {
+            "photoId": "289702",
+            "sha256": "57740f11d008af86186d9dfa0b3bf93eef6399a4cf4613ffd3c392dfc2bf3543"
+          },
+          {
+            "photoId": "453001",
+            "sha256": "5a53866848c1d1eebad2df1a6d659bd699ccb52cfa89ce3bebb5105e2d81c9a5"
+          },
+          {
+            "photoId": "335450",
+            "sha256": "c7a2792dca793ceaf05f97171d0f1c70800d6295099aebaff6dd0930382866bb"
+          },
+          {
+            "photoId": "576031",
+            "sha256": "8b8df22489ff798c9a180016fc70681388ecd8f24f77f7e2f6144b70e761354d"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:tennis-racket|200421",
+        "meaningId": "semantic-v2:tennis-racket",
+        "galleryId": "semantic-v2-tennis-racket-0",
+        "parentPhotoId": "200421",
+        "parentSha256": "5fbb7144ab7e492ed1a39dad1daa82c25ea3bc2f17bbd285693feba439dc4161",
+        "variantId": "aug-b085-s090-200421",
+        "variantSha256": "2032ad9c8556d59488f5bc11cd865226364506dfae093feea86969c8c151754e",
+        "originalSize": [
+          640,
+          480
+        ],
+        "variantSize": [
+          640,
+          480
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "231747",
+            "sha256": "389e3ecbfaae1b09e918365bb46be7120c767cfdf0d59c61657b285aec6712f8"
+          },
+          {
+            "photoId": "200421",
+            "sha256": "5fbb7144ab7e492ed1a39dad1daa82c25ea3bc2f17bbd285693feba439dc4161"
+          },
+          {
+            "photoId": "109976",
+            "sha256": "cacf3729edd11a3f6f3d0c6f6b9f94479583892c877ae7d0ad03cd1b6c7c4231"
+          },
+          {
+            "photoId": "486479",
+            "sha256": "9f3bf68815b9d35646131e84d97ed6d20fd9de4d343cded54a8f726e4c167de7"
+          },
+          {
+            "photoId": "223188",
+            "sha256": "f922a1cca984ebe2f129aa3caf6067963a235de830cc5f49e4d1e23c2d77e76f"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:parked-bicycle|101762",
+        "meaningId": "semantic-v2:parked-bicycle",
+        "galleryId": "semantic-v2-parked-bicycle-0",
+        "parentPhotoId": "101762",
+        "parentSha256": "8150aec4794933e1d30b565f6511a870e5721e58c72a919735eff71575fb098b",
+        "variantId": "aug-b085-s090-101762",
+        "variantSha256": "06faeb6be7d28dc4e25662b17ffb291658da25a0f177dd7b114d66d2d083d3a4",
+        "originalSize": [
+          640,
+          480
+        ],
+        "variantSize": [
+          640,
+          480
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "116825",
+            "sha256": "5504ef709e0631da620603c50ba3f58a7d3d8290652f3cc8e64b34b21db554bb"
+          },
+          {
+            "photoId": "567886",
+            "sha256": "a1954fe14f98e86a0808229bcc3eba011214ca82b2c3d725822b428ca2b28d2a"
+          },
+          {
+            "photoId": "438862",
+            "sha256": "3689831ed23f734ebab9405f48ffbfbbefb778e9de3101a9d56e421ea45288cf"
+          },
+          {
+            "photoId": "101762",
+            "sha256": "8150aec4794933e1d30b565f6511a870e5721e58c72a919735eff71575fb098b"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:airport|84270",
+        "meaningId": "semantic-v2:airport",
+        "galleryId": "semantic-v2-airport-0",
+        "parentPhotoId": "84270",
+        "parentSha256": "ae7ff3f09caaedb11b002d1e25ab46e5236ee62713fcf74bfaddafe6cc3e4b17",
+        "variantId": "aug-b085-s090-84270",
+        "variantSha256": "5a7b278248eb809f62fa3ae24637e1923ee19a5f6811c38c5b2c75cfa55e768e",
+        "originalSize": [
+          640,
+          480
+        ],
+        "variantSize": [
+          640,
+          480
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "297343",
+            "sha256": "4a175dded2929c5a585b37c83a3d7f926f37df2d2a15bb54de019946ab477b04"
+          },
+          {
+            "photoId": "470773",
+            "sha256": "48aac88bc3071da216a2a5ebe08ea7792b825edea1f4ed5039a20d302fb16560"
+          },
+          {
+            "photoId": "540414",
+            "sha256": "fcde3d391e5ff8ca3df743484effef4c13e1cf5f3aa548af815b777a23adc365"
+          },
+          {
+            "photoId": "302107",
+            "sha256": "70cd955351742b105e1870c5d71516f7a422e71b49117bded96faca225690a1b"
+          },
+          {
+            "photoId": "84270",
+            "sha256": "ae7ff3f09caaedb11b002d1e25ab46e5236ee62713fcf74bfaddafe6cc3e4b17"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:bicycle|492937",
+        "meaningId": "semantic-v2:bicycle",
+        "galleryId": "semantic-v2-bicycle-0",
+        "parentPhotoId": "492937",
+        "parentSha256": "2c1dbb9427ecfcbb98eab03ba9c65a51ae9d3d72ba6df04ec83a07a15b8d937e",
+        "variantId": "aug-b085-s090-492937",
+        "variantSha256": "f7958a51710c0db8c0490058feaf142dcb88f373b47a2b436c7f86be6db5b661",
+        "originalSize": [
+          612,
+          612
+        ],
+        "variantSize": [
+          612,
+          612
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "100238",
+            "sha256": "aeebb3301d652e291323df9567bed787a7966fefbefeb0629634424b1567769b"
+          },
+          {
+            "photoId": "492937",
+            "sha256": "2c1dbb9427ecfcbb98eab03ba9c65a51ae9d3d72ba6df04ec83a07a15b8d937e"
+          },
+          {
+            "photoId": "298904",
+            "sha256": "9322af155b73aa991f85ab169a3679ab62271539a8d1dbe8af38c7912f0d1b75"
+          },
+          {
+            "photoId": "539143",
+            "sha256": "0b5fafd3202abf7bb23cde6fe1407b681fab6ff2b17c12c33b277211f927cf26"
+          },
+          {
+            "photoId": "255749",
+            "sha256": "6b7e93b3bddf3c69af9f2411c46d7b3321ca0eebb18009c8476eb8f620ebd1a6"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:railway|100274",
+        "meaningId": "semantic-v2:railway",
+        "galleryId": "semantic-v2-railway-0",
+        "parentPhotoId": "100274",
+        "parentSha256": "18a930e65771a5c2954229da0b448d2ab74b03a3e6179cae61c212d52f5ff3cd",
+        "variantId": "aug-b085-s090-100274",
+        "variantSha256": "55a4d9b9c6c868a3ca3befa08eb0739cf6346d91e0003070ec63efbafadaec34",
+        "originalSize": [
+          640,
+          427
+        ],
+        "variantSize": [
+          640,
+          427
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "142620",
+            "sha256": "0f3dd713a8c98734879b3108ac6a160877b031831048330a0fc09cedfdf1dd80"
+          },
+          {
+            "photoId": "308793",
+            "sha256": "a11eae1711221ca28f3ad22e9c14b3fa045c1e3206eae82d754697d52902b1c7"
+          },
+          {
+            "photoId": "336309",
+            "sha256": "e596ab5e41982529cb87aaac601145764a28e08cfa8372491d3773b2320ad370"
+          },
+          {
+            "photoId": "100274",
+            "sha256": "18a930e65771a5c2954229da0b448d2ab74b03a3e6179cae61c212d52f5ff3cd"
+          },
+          {
+            "photoId": "324614",
+            "sha256": "349e8a6b5af5f7455e1ede69e260e7a664dcf12a9af328df058d5cfb260d631f"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:ball|60507",
+        "meaningId": "semantic-v2:ball",
+        "galleryId": "semantic-v2-ball-0",
+        "parentPhotoId": "60507",
+        "parentSha256": "0aa436c998cd750d278170996d88b02869af323af4543ae4a8ef6349a14ca7fb",
+        "variantId": "aug-b085-s090-60507",
+        "variantSha256": "fa25c873aae1f007a2bdd8995c558c014fa47451c4cc77131153e22d65dc5e82",
+        "originalSize": [
+          640,
+          427
+        ],
+        "variantSize": [
+          640,
+          427
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "381360",
+            "sha256": "8f16a69db296dc4b490c68751df1facccd067e0287e3328d9a7479e973c44e14"
+          },
+          {
+            "photoId": "534664",
+            "sha256": "f408511d6fa665c44345c3473d7e20124aecbf2e91c0e9de34dae2263b0559d1"
+          },
+          {
+            "photoId": "256518",
+            "sha256": "2e0f61f66dcd728f9d3ca0e5898f1d8c0684f32951efe2b84607bd3b3e665764"
+          },
+          {
+            "photoId": "60507",
+            "sha256": "0aa436c998cd750d278170996d88b02869af323af4543ae4a8ef6349a14ca7fb"
+          }
+        ]
+      },
+      {
+        "groupId": "semantic-v2:horse|574297",
+        "meaningId": "semantic-v2:horse",
+        "galleryId": "semantic-v2-horse-0",
+        "parentPhotoId": "574297",
+        "parentSha256": "fdf3ab0fc576b6fcea27d692fcd14c21d8c3bcd1c1a1ef66de8f0d98e6a85c75",
+        "variantId": "aug-b085-s090-574297",
+        "variantSha256": "afec886c2295e15e8f20d6a68fc92bd2eb74180aa270e0a65587128cf5ab675c",
+        "originalSize": [
+          640,
+          427
+        ],
+        "variantSize": [
+          640,
+          427
+        ],
+        "galleryCandidateHashes": [
+          {
+            "photoId": "78565",
+            "sha256": "af56785c7c458a53bf642cd48f7d209073302115e5d6806db3c6fb039df7558e"
+          },
+          {
+            "photoId": "574297",
+            "sha256": "fdf3ab0fc576b6fcea27d692fcd14c21d8c3bcd1c1a1ef66de8f0d98e6a85c75"
+          },
+          {
+            "photoId": "155571",
+            "sha256": "d7f93778697b4e70e1f483cc2828a5fc0ac45c0c801122a50cd88470e2ac55d7"
+          },
+          {
+            "photoId": "393469",
+            "sha256": "a6565c9a61ad9d8793e7264bcc583954b152ab63715822d8494e35eae39aab7c"
+          },
+          {
+            "photoId": "218362",
+            "sha256": "61049627b034266483211b8563cdf6b0330644935e52b9bd314b560bd679f412"
+          }
+        ]
+      }
+    ]
+  },
+  "note": "Source fixture files were read only. New scripts, transforms, output vectors, logs and contact sheets are under work/image-augmentation-pilot. Model cache is reused read-only through a symlink; embedding cache files are written under the pilot directory. No model fitting or evaluation split access occurred."
+}
