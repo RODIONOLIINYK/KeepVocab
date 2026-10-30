@@ -38,7 +38,7 @@ export function mountImageReview(container, words, {
   const headingId = `image-review-heading-${++reviewId}`;
   const rows = (Array.isArray(words) ? words : []).map((word, index) => {
     const original = clone(word);
-    const candidates = (Array.isArray(word.imageCandidates) ? word.imageCandidates : []).filter(image => safeImage(image?.url)).slice(0, 40).map(clone);
+    const candidates = (Array.isArray(word.imageCandidates) ? word.imageCandidates : []).filter(image => safeImage(image?.url)).map(clone);
     const proposal = candidates.find(image => image.url === word.imageUrl) || currentImage(word) || candidates[0] || null;
     if (!candidates.length && proposal) candidates.push(proposal);
     delete original.imageCandidates;
@@ -46,7 +46,7 @@ export function mountImageReview(container, words, {
     // must restore its real saved image state, rather than accept that proposal.
     if (Array.isArray(originalWords)) Object.assign(original, imageSelectionPatch(currentImage(originalWords[index] || {})));
     const automatic = canAutoSelectImage(candidates);
-    return { original, proposal, candidates, automatic, explicit: false, decision: automatic ? 'keep' : 'pending', viewed: new Set(), seen: new Set([...identities(proposal), ...candidates.flatMap(identities)]), page: Array.isArray(word.imageCandidates) && word.imageCandidates.length ? 1 : 0, revision: 0, controller: null, loading: false, error: '' };
+    return { original, proposal, candidates, visibleCount: 9, automatic, explicit: false, decision: automatic ? 'keep' : 'pending', viewed: new Set(), seen: new Set([...identities(proposal), ...candidates.flatMap(identities)]), page: Array.isArray(word.imageCandidates) && word.imageCandidates.length ? 1 : 0, revision: 0, controller: null, loading: false, error: '' };
   });
   let active = true;
   let applying = false;
@@ -107,10 +107,10 @@ export function mountImageReview(container, words, {
         const status = row.loading ? 'Finding more images…' : row.error || (row.decision === 'skip' ? (existing ? 'Current image kept.' : 'No image. Your word and meaning will still be saved.') : chosen ? (row.automatic && !row.explicit ? 'Suggested photo. You can change it.' : 'Selected. Save to use this image.') : 'Tap an image to select it.');
         return `<article class="image-review__card ${chosen ? 'is-kept' : row.decision === 'skip' ? 'is-without-image' : ''}" aria-busy="${row.loading}">
           <div class="image-review__meaning"><h3>${escapeHtml(row.original.word)}</h3><p>${escapeHtml(row.original.definition)}</p></div>
-          ${row.candidates.length ? `<div class="image-review__choices" role="radiogroup" aria-label="Image options for ${escapeHtml(row.original.word)}">${row.candidates.map((candidate, candidateIndex) => {
+          ${row.candidates.length ? `<div class="image-review__choices" role="radiogroup" aria-label="Image options for ${escapeHtml(row.original.word)}">${row.candidates.slice(0, row.visibleCount).map((candidate, candidateIndex) => {
             const selected = chosen?.url === candidate.url;
             const unavailable = conflict(index, candidate);
-            return `<button type="button" role="radio" aria-checked="${selected}" tabindex="${selected || !chosen && candidateIndex === firstAvailable ? 0 : -1}" class="image-review__choice ${selected ? 'is-selected' : ''}" data-image-review-action="choose" data-image-review-index="${index}" data-image-review-candidate="${candidateIndex}" aria-label="Choose image ${candidateIndex + 1} for ${escapeHtml(row.original.word)}" ${applying || unavailable ? 'disabled' : ''}><img src="${escapeHtml(safeImage(candidate.thumbnailUrl) || safeImage(candidate.url))}" alt="${escapeHtml(candidate.title || `Option ${candidateIndex + 1}`)}" loading="${candidateIndex < 6 ? 'eager' : 'lazy'}" decoding="async"><span class="image-review__choice-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span><span class="image-review__choice-label">${selected ? 'Selected' : `Option ${candidateIndex + 1}`}</span></button>`;
+            return `<button type="button" role="radio" aria-checked="${selected}" tabindex="${selected || !chosen && candidateIndex === firstAvailable ? 0 : -1}" class="image-review__choice ${selected ? 'is-selected' : ''}" data-image-review-action="choose" data-image-review-index="${index}" data-image-review-candidate="${candidateIndex}" aria-label="Choose image ${candidateIndex + 1} for ${escapeHtml(row.original.word)}" ${applying || unavailable ? 'disabled' : ''}><img src="${escapeHtml(safeImage(candidate.thumbnailUrl) || safeImage(candidate.url))}" alt="${escapeHtml(candidate.title || `Option ${candidateIndex + 1}`)}" loading="${candidateIndex < 9 ? 'eager' : 'lazy'}" decoding="async"><span class="image-review__choice-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span><span class="image-review__choice-label">${selected ? 'Selected' : `Option ${candidateIndex + 1}`}</span></button>`;
           }).join('')}</div>` : '<div class="image-review__empty"><i class="fa-regular fa-image" aria-hidden="true"></i><span>No images yet. You can add one later.</span></div>'}
           <div class="image-review__row-actions"><button type="button" class="image-review__secondary" data-image-review-action="next" data-image-review-index="${index}" ${row.loading || applying ? 'disabled' : ''}><i class="fa-solid fa-rotate" aria-hidden="true"></i> ${row.loading ? 'Searching…' : row.candidates.length ? 'Find more' : 'Find images'}</button>${addSingle ? '' : `<button type="button" class="image-review__secondary" data-image-review-action="skip" data-image-review-index="${index}" aria-pressed="${row.decision === 'skip'}" ${applying ? 'disabled' : ''}>${existing ? 'Keep current image' : 'No image'}</button>`}</div>
           <p class="image-review__status ${row.error ? 'image-review__error' : ''}" role="status" aria-live="polite">${escapeHtml(status)}</p>
@@ -130,6 +130,7 @@ export function mountImageReview(container, words, {
   async function nextImage(index) {
     const row = rows[index];
     if (row.loading || applying) return;
+    if (row.visibleCount < row.candidates.length) { row.visibleCount += 9; render(); return; }
     row.controller?.abort();
     const controller = new AbortController();
     row.controller = controller;
@@ -141,15 +142,16 @@ export function mountImageReview(container, words, {
     const excluded = new Set([...reserved(index), ...row.seen]);
     render();
     try {
-      const candidates = await findImages(clone(row.original), { limit: 6, page: row.page, excludeUrls: [...excluded], signal: controller.signal });
+      const candidates = await findImages(clone(row.original), { limit: 30, page: row.page, excludeUrls: [...excluded], signal: controller.signal });
       if (!active || revision !== row.revision || controller.signal.aborted) return;
       const candidate = (Array.isArray(candidates) ? candidates : []).find(image => safeImage(image?.url)
         && !identities(image).some(url => excluded.has(url)) && !conflict(index, image));
       if (!candidate) {
         row.error = 'No different image found. Try another search or save without a new image.';
       } else {
-        const fresh = candidates.filter(image => safeImage(image?.url) && !identities(image).some(url => excluded.has(url)) && !conflict(index, image)).slice(0, 6).map(clone);
-        row.candidates = [...row.candidates, ...fresh].slice(0, 40);
+        const fresh = candidates.filter(image => safeImage(image?.url) && !identities(image).some(url => excluded.has(url)) && !conflict(index, image)).map(clone);
+        row.visibleCount = Math.min(row.visibleCount, row.candidates.length) + 9;
+        row.candidates = [...row.candidates, ...fresh];
         if (!kept) row.proposal = clone(candidate);
         row.automatic = !kept && canAutoSelectImage(row.candidates);
         if (!kept) row.explicit = false;

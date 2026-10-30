@@ -1,0 +1,18 @@
+{
+  "count": 36,
+  "task": "semantic",
+  "trained": false,
+  "trainOnly": true,
+  "distinctReusedPhotos": 24,
+  "currentGateDiagnostic": {
+    "photo": {
+      "labeledWrong": 24,
+      "acceptedByCurrentGate": 0
+    },
+    "meme": {
+      "labeledWrong": 12,
+      "acceptedByCurrentGate": 0
+    }
+  },
+  "note": "Training supplement only; not an independent accuracy evaluation."
+}

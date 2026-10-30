@@ -88,7 +88,7 @@ export function imageUrlsUsedByOtherWords(words, currentWordId) {
   return imageUrlsForWords(words, { excludeWordId: currentWordId });
 }
 
-export function activeImageResultCandidates(currentImage, results, limit = 10) {
+export function activeImageResultCandidates(currentImage, results, limit = 9) {
   const searched = Array.isArray(results) ? results : [];
   return searched
     .filter(image => image?.url && image.url !== currentImage?.url && (!currentImage?.sourceUrl || image.sourceUrl !== currentImage.sourceUrl))
@@ -131,6 +131,8 @@ export function renderLibraryView(container) {
   container.libraryViewOwner = viewOwner;
   let deleteId = null;
   let imageCandidates = [];
+  let imageCandidatePool = [];
+  let imageSeen = new Set();
   let imageLoading = false;
   let imageError = '';
   let selectedImage = null;
@@ -146,6 +148,10 @@ export function renderLibraryView(container) {
   const imageProviderSettings = getImageProviderSettings();
 
   async function loadImageCandidates(wordId, refresh = false) {
+    if (refresh && imageCandidates.length < imageCandidatePool.length) {
+      imageCandidates = imageCandidatePool.slice(0, imageCandidates.length + 9); render(); return;
+    }
+    if (!refresh) { imageCandidatePool = []; imageSeen = new Set(); }
     const saved = driveSync.getWords().find(item => item.id === wordId);
     let word = saved ? { ...saved, ...editDraft } : null;
     if (!word) return;
@@ -162,7 +168,7 @@ export function renderLibraryView(container) {
     imageLoading = true;
     imageError = '';
     render();
-    const excludeUrls = imageUrlsUsedByOtherWords(driveSync.getWords(), wordId);
+    const excludeUrls = [...imageUrlsUsedByOtherWords(driveSync.getWords(), wordId), ...imageSeen];
     const otherDefinitions = driveSync.getWords().filter(item => item.id !== wordId && item.word.toLowerCase() === word.word.toLowerCase()).map(item => item.sourceDefinition || item.definition);
     word.otherDefinitions = [...new Set([...(word.otherDefinitions || []), ...otherDefinitions])];
     const customActive = Boolean(customImageConcept && activeImageConcept === customImageConcept);
@@ -198,7 +204,7 @@ export function renderLibraryView(container) {
       pexelsApiKey: imageProviderSettings.pexelsApiKey,
       otherDefinitions,
       page: imageResultPage,
-      limit: 10
+      limit: 30
     });
     if (container.libraryViewOwner !== viewOwner || !container.querySelector('#library-edit-form') || editId !== wordId || requestId !== imageRequestId) return;
     if (!meaningStillCurrent()) return;
@@ -212,7 +218,11 @@ export function renderLibraryView(container) {
       searchQuery: word.imageSearchQuery || activeImageConcept,
       imageKind: word.imageKind || 'external'
     } : null;
-    imageCandidates = activeImageResultCandidates(currentImage, results, 10);
+    const fresh = activeImageResultCandidates(currentImage, results, 30)
+      .filter(image => !imageIdentityKeys(image).some(key => imageSeen.has(key)));
+    for (const image of fresh) for (const key of imageIdentityKeys(image)) imageSeen.add(key);
+    imageCandidatePool = refresh ? [...imageCandidatePool, ...fresh] : fresh;
+    imageCandidates = imageCandidatePool.slice(0, refresh ? imageCandidates.length + 9 : 9);
     imageQuery = imageCandidates[0]?.searchQuery || activeImageConcept;
     imageLoading = false;
     imageError = imageCandidates.length ? '' : customActive
@@ -226,7 +236,7 @@ export function renderLibraryView(container) {
     editId = wordId;
     editDraft = {};
     deleteId = null;
-    imageCandidates = [];
+    imageCandidates = []; imageCandidatePool = []; imageSeen = new Set();
     viewedImageCandidates.clear();
     imageLoading = false;
     imageError = '';
@@ -651,6 +661,7 @@ export function renderLibraryView(container) {
       driveSync.updateWord(editId, patch);
       imageRequestId += 1;
       imageLoading = false;
+      imageCandidatePool = remainingImageCandidates(imageCandidatePool, image);
       imageCandidates = remainingImageCandidates(imageCandidates, image);
       viewedImageCandidates = new Map(remainingImageCandidates([...viewedImageCandidates.values()], image).map(item => [item.url, item]));
       void recordImagePreference(latest, 'wrong', image).catch(() => {});

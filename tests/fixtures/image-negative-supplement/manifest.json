@@ -1,0 +1,1562 @@
+{
+  "kind": "image-negative-training-supplement",
+  "version": 1,
+  "labelMeaning": "0 means this exact image-target-meaning pair is semantically unrelated",
+  "sourceSplitPolicy": "TRAIN examples only; no validation/test sources or target meanings",
+  "reviewStatus": "primary and independent blind review complete",
+  "items": [
+    {
+      "id": "photo-01",
+      "path": "photos/photo-01.jpg",
+      "label": 0,
+      "targetMeaning": "tennis court",
+      "targetMeaningId": "semantic-v2:tennis-court",
+      "targetCaseId": "semantic-v2-tennis-court-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:181969",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'tennis court'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "181969",
+        "sourceCaseId": "semantic-v2-pan-0",
+        "sourceMeaning": "pan",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000181969.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000181969.jpg",
+        "sha256": "2fd0c2522e6b699b96ece04d820b962e5caf54254579193a4c0d48f8e1599675"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Sleepy cat; no court, court marking, or tennis activity is visible.",
+        "assetSha256": "2fd0c2522e6b699b96ece04d820b962e5caf54254579193a4c0d48f8e1599675"
+      },
+      "target": {
+        "word": "tennis court",
+        "partOfSpeech": "noun",
+        "definition": "A marked area on which tennis is played.",
+        "meaningId": "semantic-v2:tennis-court",
+        "caseId": "semantic-v2-tennis-court-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a tennis court with a net"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-02",
+      "path": "photos/photo-02.jpg",
+      "label": 0,
+      "targetMeaning": "snowboard",
+      "targetMeaningId": "semantic-v2:snowboard-action",
+      "targetCaseId": "semantic-v2-snowboard-action-1",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:114907",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'snowboard'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "114907",
+        "sourceCaseId": "semantic-v2-pan-1",
+        "sourceMeaning": "pan",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000114907.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000114907.jpg",
+        "sha256": "1ef6feb0a8d8886de8dc4db6e6c379cdd8fad15111a8edc570eeda66bcc17dba"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Crowd at an exhibit; no snowboard or snow sport is visible.",
+        "assetSha256": "1ef6feb0a8d8886de8dc4db6e6c379cdd8fad15111a8edc570eeda66bcc17dba"
+      },
+      "target": {
+        "word": "snowboard",
+        "partOfSpeech": "verb",
+        "definition": "To ride over snow on a snowboard.",
+        "meaningId": "semantic-v2:snowboard-action",
+        "caseId": "semantic-v2-snowboard-action-1",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a person snowboarding on snow"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-03",
+      "path": "photos/photo-03.jpg",
+      "label": 0,
+      "targetMeaning": "traffic light",
+      "targetMeaningId": "semantic-v2:traffic-light",
+      "targetCaseId": "semantic-v2-traffic-light-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:109916",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'traffic light'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "109916",
+        "sourceCaseId": "semantic-v2-pan-2",
+        "sourceMeaning": "pan",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000109916.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000109916.jpg",
+        "sha256": "b8409b5137f8653727eed92c375318c1c947cc2bb0cf75cc972d2293aacd9323"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Cookware on a stovetop; no traffic signal is visible.",
+        "assetSha256": "b8409b5137f8653727eed92c375318c1c947cc2bb0cf75cc972d2293aacd9323"
+      },
+      "target": {
+        "word": "traffic light",
+        "partOfSpeech": "noun",
+        "definition": "A signal with coloured lights controlling road traffic.",
+        "meaningId": "semantic-v2:traffic-light",
+        "caseId": "semantic-v2-traffic-light-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a traffic light"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-04",
+      "path": "photos/photo-04.jpg",
+      "label": 0,
+      "targetMeaning": "puppy",
+      "targetMeaningId": "semantic-v2:puppy",
+      "targetCaseId": "semantic-v2-puppy-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:217400",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'puppy'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "217400",
+        "sourceCaseId": "semantic-v2-white-1",
+        "sourceMeaning": "white",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000217400.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000217400.jpg",
+        "sha256": "0bf52c9409ae0eeb5cd056d2cd8a48217073f9be09137b76e39a8c6f2411229d"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Passenger train at a platform; no puppy is visible.",
+        "assetSha256": "0bf52c9409ae0eeb5cd056d2cd8a48217073f9be09137b76e39a8c6f2411229d"
+      },
+      "target": {
+        "word": "puppy",
+        "partOfSpeech": "noun",
+        "definition": "A young dog.",
+        "meaningId": "semantic-v2:puppy",
+        "caseId": "semantic-v2-puppy-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a puppy"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-05",
+      "path": "photos/photo-05.jpg",
+      "label": 0,
+      "targetMeaning": "giraffe",
+      "targetMeaningId": "semantic-v2:giraffe",
+      "targetCaseId": "semantic-v2-giraffe-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:376625",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'giraffe'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "376625",
+        "sourceCaseId": "semantic-v2-surf-0",
+        "sourceMeaning": "surf",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000376625.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000376625.jpg",
+        "sha256": "81267617f13de3900abfe82e0e48f5b66ca43b2092cac9b3c15e8606ebf81b72"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Urban streetcar scene; no giraffe is visible.",
+        "assetSha256": "81267617f13de3900abfe82e0e48f5b66ca43b2092cac9b3c15e8606ebf81b72"
+      },
+      "target": {
+        "word": "giraffe",
+        "partOfSpeech": "noun",
+        "definition": "An African animal with a very long neck.",
+        "meaningId": "semantic-v2:giraffe",
+        "caseId": "semantic-v2-giraffe-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a giraffe"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-06",
+      "path": "photos/photo-06.jpg",
+      "label": 0,
+      "targetMeaning": "river",
+      "targetMeaningId": "semantic-v2:river",
+      "targetCaseId": "semantic-v2-river-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:474095",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'river'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "474095",
+        "sourceCaseId": "semantic-v2-cook-1",
+        "sourceMeaning": "cook",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000474095.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000474095.jpg",
+        "sha256": "6e216fd96173658eb945140933ef0c9ae23217a733f02765fe59f57f9db0ae6e"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Seated person indoors; no river or river scene is visible.",
+        "assetSha256": "6e216fd96173658eb945140933ef0c9ae23217a733f02765fe59f57f9db0ae6e"
+      },
+      "target": {
+        "word": "river",
+        "partOfSpeech": "noun",
+        "definition": "A large natural stream of flowing water.",
+        "meaningId": "semantic-v2:river",
+        "caseId": "semantic-v2-river-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a river"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-07",
+      "path": "photos/photo-07.jpg",
+      "label": 0,
+      "targetMeaning": "keyboard",
+      "targetMeaningId": "semantic-v2:computer-keyboard",
+      "targetCaseId": "semantic-v2-computer-keyboard-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:163746",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'keyboard'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "163746",
+        "sourceCaseId": "semantic-v2-cook-2",
+        "sourceMeaning": "cook",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000163746.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000163746.jpg",
+        "sha256": "1a6a36f8e88b5ff69228ddd0e9ace1484d075de3dfe55f73be3e658b5ab5b726"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "People wading at a beach; no keyboard is visible.",
+        "assetSha256": "1a6a36f8e88b5ff69228ddd0e9ace1484d075de3dfe55f73be3e658b5ab5b726"
+      },
+      "target": {
+        "word": "keyboard",
+        "partOfSpeech": "noun",
+        "definition": "A panel of keys used to enter text into a computer.",
+        "meaningId": "semantic-v2:computer-keyboard",
+        "caseId": "semantic-v2-computer-keyboard-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a computer keyboard"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-08",
+      "path": "photos/photo-08.jpg",
+      "label": 0,
+      "targetMeaning": "zebra",
+      "targetMeaningId": "semantic-v2:zebra",
+      "targetCaseId": "semantic-v2-zebra-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:440475",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'zebra'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "440475",
+        "sourceCaseId": "semantic-v2-cook-3",
+        "sourceMeaning": "cook",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000440475.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000440475.jpg",
+        "sha256": "9f183229fce4e13f8651f6c3c349d2fcae6057debc691cafe80658a63bc2351f"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Living room interior; no zebra is visible.",
+        "assetSha256": "9f183229fce4e13f8651f6c3c349d2fcae6057debc691cafe80658a63bc2351f"
+      },
+      "target": {
+        "word": "zebra",
+        "partOfSpeech": "noun",
+        "definition": "An African animal with black and white stripes.",
+        "meaningId": "semantic-v2:zebra",
+        "caseId": "semantic-v2-zebra-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a zebra"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-09",
+      "path": "photos/photo-09.jpg",
+      "label": 0,
+      "targetMeaning": "suitcase",
+      "targetMeaningId": "semantic-v2:suitcase",
+      "targetCaseId": "semantic-v2-suitcase-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:340697",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'suitcase'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "340697",
+        "sourceCaseId": "semantic-v2-bus-0",
+        "sourceMeaning": "bus",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000340697.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000340697.jpg",
+        "sha256": "e8561c69704c7b6b901d95c2555dd4d8758534b94dc661f23c9dfd901013fc4c"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Shelves of bottled drinks; no suitcase is visible.",
+        "assetSha256": "e8561c69704c7b6b901d95c2555dd4d8758534b94dc661f23c9dfd901013fc4c"
+      },
+      "target": {
+        "word": "suitcase",
+        "partOfSpeech": "noun",
+        "definition": "A travel bag used to carry clothes and belongings.",
+        "meaningId": "semantic-v2:suitcase",
+        "caseId": "semantic-v2-suitcase-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a suitcase"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-10",
+      "path": "photos/photo-10.jpg",
+      "label": 0,
+      "targetMeaning": "towel",
+      "targetMeaningId": "semantic-v2:towel",
+      "targetCaseId": "semantic-v2-towel-1",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:570756",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'towel'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "570756",
+        "sourceCaseId": "semantic-v2-bus-2",
+        "sourceMeaning": "bus",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000570756.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000570756.jpg",
+        "sha256": "33b57b983a5342f3349d27ee697a6517d8cda23fb260c138c4ddf3dd94b996f3"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Beach scene with people and umbrellas; no towel is identifiable.",
+        "assetSha256": "33b57b983a5342f3349d27ee697a6517d8cda23fb260c138c4ddf3dd94b996f3"
+      },
+      "target": {
+        "word": "towel",
+        "partOfSpeech": "noun",
+        "definition": "An absorbent piece of cloth used for drying.",
+        "meaningId": "semantic-v2:towel",
+        "caseId": "semantic-v2-towel-1",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a towel"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-11",
+      "path": "photos/photo-11.jpg",
+      "label": 0,
+      "targetMeaning": "banana",
+      "targetMeaningId": "semantic-v2:banana",
+      "targetCaseId": "semantic-v2-extra-banana-3",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:357567",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'banana'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "357567",
+        "sourceCaseId": "semantic-v2-curtain-0",
+        "sourceMeaning": "curtain",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000357567.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000357567.jpg",
+        "sha256": "a3ef4377e4e197497a39d30eeeca7ae759b96003f5546c23aec913f7ab251557"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Bathroom with toilet and shower curtain; no banana is visible.",
+        "assetSha256": "a3ef4377e4e197497a39d30eeeca7ae759b96003f5546c23aec913f7ab251557"
+      },
+      "target": {
+        "word": "banana",
+        "partOfSpeech": "noun",
+        "definition": "A long curved fruit with a peel.",
+        "meaningId": "semantic-v2:banana",
+        "caseId": "semantic-v2-extra-banana-3",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a banana"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-12",
+      "path": "photos/photo-12.jpg",
+      "label": 0,
+      "targetMeaning": "laptop",
+      "targetMeaningId": "semantic-v2:laptop",
+      "targetCaseId": "semantic-v2-laptop-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:172935",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'laptop'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "172935",
+        "sourceCaseId": "semantic-v2-curtain-1",
+        "sourceMeaning": "curtain",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000172935.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000172935.jpg",
+        "sha256": "5afaa83a4a9e38f56d23e517618bbd017511a35a3a4e040e53aee2d22c854650"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Low-resolution black-and-white outdoor scene; no laptop is discernible.",
+        "assetSha256": "5afaa83a4a9e38f56d23e517618bbd017511a35a3a4e040e53aee2d22c854650"
+      },
+      "target": {
+        "word": "laptop",
+        "partOfSpeech": "noun",
+        "definition": "A portable computer with a screen attached to a keyboard.",
+        "meaningId": "semantic-v2:laptop",
+        "caseId": "semantic-v2-laptop-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a laptop computer"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-13",
+      "path": "photos/photo-13.jpg",
+      "label": 0,
+      "targetMeaning": "bridge",
+      "targetMeaningId": "semantic-v2:bridge",
+      "targetCaseId": "semantic-v2-bridge-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:286708",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'bridge'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "286708",
+        "sourceCaseId": "semantic-v2-sleep-1",
+        "sourceMeaning": "sleep",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000286708.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000286708.jpg",
+        "sha256": "a7b888fd1076cc9816e78e96ecb94e7a346e740d578af0dcbc037319944c1bc3"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Cat wearing a hat; no bridge is visible.",
+        "assetSha256": "a7b888fd1076cc9816e78e96ecb94e7a346e740d578af0dcbc037319944c1bc3"
+      },
+      "target": {
+        "word": "bridge",
+        "partOfSpeech": "noun",
+        "definition": "A structure carrying a path over water or another obstacle.",
+        "meaningId": "semantic-v2:bridge",
+        "caseId": "semantic-v2-bridge-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a bridge"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-14",
+      "path": "photos/photo-14.jpg",
+      "label": 0,
+      "targetMeaning": "noodle",
+      "targetMeaningId": "semantic-v2:noodle",
+      "targetCaseId": "semantic-v2-extra-noodle-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:58655",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'noodle'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "58655",
+        "sourceCaseId": "semantic-v2-sign-1",
+        "sourceMeaning": "sign",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000058655.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000058655.jpg",
+        "sha256": "9784ea090eeba09ca328705b68552f091e4f2dc950119d0bdb1fdbe0d5032e31"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Clock tower/building; no noodle or noodle dish is visible.",
+        "assetSha256": "9784ea090eeba09ca328705b68552f091e4f2dc950119d0bdb1fdbe0d5032e31"
+      },
+      "target": {
+        "word": "noodle",
+        "partOfSpeech": "noun",
+        "definition": "A long thin strip of pasta or similar dough.",
+        "meaningId": "semantic-v2:noodle",
+        "caseId": "semantic-v2-extra-noodle-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "noodles in a dish"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-15",
+      "path": "photos/photo-15.jpg",
+      "label": 0,
+      "targetMeaning": "bedroom",
+      "targetMeaningId": "semantic-v2:bedroom",
+      "targetCaseId": "semantic-v2-bedroom-1",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:104424",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'bedroom'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "104424",
+        "sourceCaseId": "semantic-v2-sign-2",
+        "sourceMeaning": "sign",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000104424.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000104424.jpg",
+        "sha256": "569aa89fdabc7f62bf7e14003f847a72a0d82705c73e4e1d55d88852712fb3ba"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Person holding a tennis racket on a tennis court; it does not depict a bedroom.",
+        "assetSha256": "569aa89fdabc7f62bf7e14003f847a72a0d82705c73e4e1d55d88852712fb3ba"
+      },
+      "target": {
+        "word": "bedroom",
+        "partOfSpeech": "noun",
+        "definition": "A room used for sleeping.",
+        "meaningId": "semantic-v2:bedroom",
+        "caseId": "semantic-v2-bedroom-1",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "the inside of a bedroom"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-16",
+      "path": "photos/photo-16.jpg",
+      "label": 0,
+      "targetMeaning": "orange",
+      "targetMeaningId": "semantic-v2:orange-fruit",
+      "targetCaseId": "semantic-v2-extra-orange-fruit-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:241297",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'orange'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "241297",
+        "sourceCaseId": "semantic-v2-sign-3",
+        "sourceMeaning": "sign",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000241297.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000241297.jpg",
+        "sha256": "d260409099574c126e78341c537a1daf6960284942799641f42c87105fd40e7e"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Train with a yellow/orange front; no orange fruit is visible.",
+        "assetSha256": "d260409099574c126e78341c537a1daf6960284942799641f42c87105fd40e7e"
+      },
+      "target": {
+        "word": "orange",
+        "partOfSpeech": "noun",
+        "definition": "A round citrus fruit with orange peel.",
+        "meaningId": "semantic-v2:orange-fruit",
+        "caseId": "semantic-v2-extra-orange-fruit-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "an orange citrus fruit"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-17",
+      "path": "photos/photo-17.jpg",
+      "label": 0,
+      "targetMeaning": "street",
+      "targetMeaningId": "semantic-v2:street",
+      "targetCaseId": "semantic-v2-street-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:298904",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'street'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "298904",
+        "sourceCaseId": "semantic-v2-cooking-pot-0",
+        "sourceMeaning": "pot",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000298904.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000298904.jpg",
+        "sha256": "9322af155b73aa991f85ab169a3679ab62271539a8d1dbe8af38c7912f0d1b75"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Fish in a glass bowl; no street scene is visible.",
+        "assetSha256": "9322af155b73aa991f85ab169a3679ab62271539a8d1dbe8af38c7912f0d1b75"
+      },
+      "target": {
+        "word": "street",
+        "partOfSpeech": "noun",
+        "definition": "A public road in a town or city.",
+        "meaningId": "semantic-v2:street",
+        "caseId": "semantic-v2-street-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a city street"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-18",
+      "path": "photos/photo-18.jpg",
+      "label": 0,
+      "targetMeaning": "bird",
+      "targetMeaningId": "semantic-v2:bird",
+      "targetCaseId": "semantic-v2-bird-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:568290",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'bird'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "568290",
+        "sourceCaseId": "semantic-v2-cooking-pot-3",
+        "sourceMeaning": "pot",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000568290.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000568290.jpg",
+        "sha256": "116519cb932504866058215a0cca5e5d03b4af04a71e540db38c5caefb8d4725"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "City bus on a street; no bird is discernible.",
+        "assetSha256": "116519cb932504866058215a0cca5e5d03b4af04a71e540db38c5caefb8d4725"
+      },
+      "target": {
+        "word": "bird",
+        "partOfSpeech": "noun",
+        "definition": "An animal with feathers, wings and a beak.",
+        "meaningId": "semantic-v2:bird",
+        "caseId": "semantic-v2-bird-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a bird"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-19",
+      "path": "photos/photo-19.jpg",
+      "label": 0,
+      "targetMeaning": "tennis racket",
+      "targetMeaningId": "semantic-v2:tennis-racket",
+      "targetCaseId": "semantic-v2-tennis-racket-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:498919",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'tennis racket'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "498919",
+        "sourceCaseId": "semantic-v2-refrigerator-0",
+        "sourceMeaning": "refrigerator",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000498919.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000498919.jpg",
+        "sha256": "207e1007cad81d6fdb5e4061c0a652c351b217c23570dbe0bac920929841d537"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Display of assorted fruit including oranges; no tennis racket is visible.",
+        "assetSha256": "207e1007cad81d6fdb5e4061c0a652c351b217c23570dbe0bac920929841d537"
+      },
+      "target": {
+        "word": "tennis racket",
+        "partOfSpeech": "noun",
+        "definition": "A handled frame with strings used to hit a tennis ball.",
+        "meaningId": "semantic-v2:tennis-racket",
+        "caseId": "semantic-v2-tennis-racket-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a tennis racket"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-20",
+      "path": "photos/photo-20.jpg",
+      "label": 0,
+      "targetMeaning": "snowboard",
+      "targetMeaningId": "semantic-v2:snowboard-action",
+      "targetCaseId": "semantic-v2-snowboard-action-1",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:559348",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'snowboard'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "559348",
+        "sourceCaseId": "semantic-v2-refrigerator-2",
+        "sourceMeaning": "refrigerator",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000559348.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000559348.jpg",
+        "sha256": "a73654c0617b1c814453ecb7db42adb053b50b521775fe67e54de7fe839062a4"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Baseball game; no snowboard or snow sport is visible.",
+        "assetSha256": "a73654c0617b1c814453ecb7db42adb053b50b521775fe67e54de7fe839062a4"
+      },
+      "target": {
+        "word": "snowboard",
+        "partOfSpeech": "verb",
+        "definition": "To ride over snow on a snowboard.",
+        "meaningId": "semantic-v2:snowboard-action",
+        "caseId": "semantic-v2-snowboard-action-1",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a person snowboarding on snow"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-21",
+      "path": "photos/photo-21.jpg",
+      "label": 0,
+      "targetMeaning": "trash can",
+      "targetMeaningId": "semantic-v2:trash-can",
+      "targetCaseId": "semantic-v2-trash-can-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:16228",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'trash can'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "16228",
+        "sourceCaseId": "semantic-v2-table-0",
+        "sourceMeaning": "table",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000016228.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000016228.jpg",
+        "sha256": "b34d80f1f13989eb0c7031f95373a9e26c698397cb9511b422dcf5daba60110e"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Horse-drawn tourist carriage; no trash can is visible.",
+        "assetSha256": "b34d80f1f13989eb0c7031f95373a9e26c698397cb9511b422dcf5daba60110e"
+      },
+      "target": {
+        "word": "trash can",
+        "partOfSpeech": "noun",
+        "definition": "A container used for discarded waste.",
+        "meaningId": "semantic-v2:trash-can",
+        "caseId": "semantic-v2-trash-can-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a trash can"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-22",
+      "path": "photos/photo-22.jpg",
+      "label": 0,
+      "targetMeaning": "toilet",
+      "targetMeaningId": "semantic-v2:toilet",
+      "targetCaseId": "semantic-v2-toilet-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:36539",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'toilet'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "36539",
+        "sourceCaseId": "semantic-v2-table-1",
+        "sourceMeaning": "table",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000036539.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000036539.jpg",
+        "sha256": "e16c9d4bab618469d1d841a4b905fa01232f42c0f18884b349b243b736c66d86"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Snowboarder on a snowy slope; no toilet is visible.",
+        "assetSha256": "e16c9d4bab618469d1d841a4b905fa01232f42c0f18884b349b243b736c66d86"
+      },
+      "target": {
+        "word": "toilet",
+        "partOfSpeech": "noun",
+        "definition": "A bathroom fixture with a bowl for bodily waste.",
+        "meaningId": "semantic-v2:toilet",
+        "caseId": "semantic-v2-toilet-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a toilet"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-23",
+      "path": "photos/photo-23.jpg",
+      "label": 0,
+      "targetMeaning": "carrot",
+      "targetMeaningId": "semantic-v2:carrot",
+      "targetCaseId": "semantic-v2-extra-carrot-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:563281",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'carrot'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "563281",
+        "sourceCaseId": "semantic-v2-table-2",
+        "sourceMeaning": "table",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000563281.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000563281.jpg",
+        "sha256": "d8d424750ed225b82f8cb349aaefc8e3f7156ca2ead51c1518245d05c63d2da2"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Child indoors beside toys; no carrot is visible.",
+        "assetSha256": "d8d424750ed225b82f8cb349aaefc8e3f7156ca2ead51c1518245d05c63d2da2"
+      },
+      "target": {
+        "word": "carrot",
+        "partOfSpeech": "noun",
+        "definition": "A long orange root vegetable.",
+        "meaningId": "semantic-v2:carrot",
+        "caseId": "semantic-v2-extra-carrot-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a carrot"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "photo-24",
+      "path": "photos/photo-24.jpg",
+      "label": 0,
+      "targetMeaning": "river",
+      "targetMeaningId": "semantic-v2:river",
+      "targetCaseId": "semantic-v2-river-0",
+      "targetSplit": "train",
+      "distractorKind": "photo",
+      "parentGroup": "coco:438862",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'river'.",
+      "memeCaption": null,
+      "source": {
+        "kind": "COCO val2017 candidate",
+        "sourceImageId": "438862",
+        "sourceCaseId": "semantic-v2-table-0",
+        "sourceMeaning": "table",
+        "sourceSplit": "train",
+        "url": "https://huggingface.co/datasets/merve/coco/resolve/9e50abcdc1361852f34841af4939cbcd2d37c92f/val2017/000000438862.jpg",
+        "provider": "COCO val2017 human annotations via pinned public mirror",
+        "datasetFile": "images/000000438862.jpg",
+        "sha256": "3689831ed23f734ebab9405f48ffbfbbefb778e9de3101a9d56e421ea45288cf"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Soccer players on a field; no river or river scene is visible.",
+        "assetSha256": "3689831ed23f734ebab9405f48ffbfbbefb778e9de3101a9d56e421ea45288cf"
+      },
+      "target": {
+        "word": "river",
+        "partOfSpeech": "noun",
+        "definition": "A large natural stream of flowing water.",
+        "meaningId": "semantic-v2:river",
+        "caseId": "semantic-v2-river-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a river"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-01",
+      "path": "memes/meme-01.svg",
+      "label": 0,
+      "targetMeaning": "towel",
+      "targetMeaningId": "semantic-v2:towel",
+      "targetCaseId": "semantic-v2-towel-1",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'towel'.",
+      "memeCaption": "The calendar invited its alarm clock to a meeting.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "721f0c30bd5873106a6980ca3e5cb46e5182996479b1d133f868a52b89a02a46"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "721f0c30bd5873106a6980ca3e5cb46e5182996479b1d133f868a52b89a02a46"
+      },
+      "target": {
+        "word": "towel",
+        "partOfSpeech": "noun",
+        "definition": "An absorbent piece of cloth used for drying.",
+        "meaningId": "semantic-v2:towel",
+        "caseId": "semantic-v2-towel-1",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a towel"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-02",
+      "path": "memes/meme-02.svg",
+      "label": 0,
+      "targetMeaning": "banana",
+      "targetMeaningId": "semantic-v2:banana",
+      "targetCaseId": "semantic-v2-extra-banana-3",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'banana'.",
+      "memeCaption": "A phone tried to call itself; busy signal.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "064897fc82b8b7f78f5c514f42ed9752d472f30a0a1ea0590ebedec16a01b37e"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "064897fc82b8b7f78f5c514f42ed9752d472f30a0a1ea0590ebedec16a01b37e"
+      },
+      "target": {
+        "word": "banana",
+        "partOfSpeech": "noun",
+        "definition": "A long curved fruit with a peel.",
+        "meaningId": "semantic-v2:banana",
+        "caseId": "semantic-v2-extra-banana-3",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a banana"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-03",
+      "path": "memes/meme-03.svg",
+      "label": 0,
+      "targetMeaning": "keyboard",
+      "targetMeaningId": "semantic-v2:computer-keyboard",
+      "targetCaseId": "semantic-v2-computer-keyboard-0",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'keyboard'.",
+      "memeCaption": "My cactus started a podcast about cloud storage.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "7c93f243d7f16c517ac910238ff52b0315504d8c6cb9d7935cd260711c8536fe"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "7c93f243d7f16c517ac910238ff52b0315504d8c6cb9d7935cd260711c8536fe"
+      },
+      "target": {
+        "word": "keyboard",
+        "partOfSpeech": "noun",
+        "definition": "A panel of keys used to enter text into a computer.",
+        "meaningId": "semantic-v2:computer-keyboard",
+        "caseId": "semantic-v2-computer-keyboard-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a computer keyboard"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-04",
+      "path": "memes/meme-04.svg",
+      "label": 0,
+      "targetMeaning": "giraffe",
+      "targetMeaningId": "semantic-v2:giraffe",
+      "targetCaseId": "semantic-v2-giraffe-0",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'giraffe'.",
+      "memeCaption": "The elevator declared Tuesday a no-fly zone.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "57fa5734ac00e09f48ca26d1a7756e89250715b86edc460ef887b767ac23fa4e"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "57fa5734ac00e09f48ca26d1a7756e89250715b86edc460ef887b767ac23fa4e"
+      },
+      "target": {
+        "word": "giraffe",
+        "partOfSpeech": "noun",
+        "definition": "An African animal with a very long neck.",
+        "meaningId": "semantic-v2:giraffe",
+        "caseId": "semantic-v2-giraffe-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a giraffe"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-05",
+      "path": "memes/meme-05.svg",
+      "label": 0,
+      "targetMeaning": "traffic light",
+      "targetMeaningId": "semantic-v2:traffic-light",
+      "targetCaseId": "semantic-v2-traffic-light-0",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'traffic light'.",
+      "memeCaption": "A sandwich sent its résumé to the aquarium.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "f3cdeb65ba28067e5473aa6d7a8b1dcafbc2c9326be501bce47f629b11dd131f"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "f3cdeb65ba28067e5473aa6d7a8b1dcafbc2c9326be501bce47f629b11dd131f"
+      },
+      "target": {
+        "word": "traffic light",
+        "partOfSpeech": "noun",
+        "definition": "A signal with coloured lights controlling road traffic.",
+        "meaningId": "semantic-v2:traffic-light",
+        "caseId": "semantic-v2-traffic-light-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a traffic light"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-06",
+      "path": "memes/meme-06.svg",
+      "label": 0,
+      "targetMeaning": "river",
+      "targetMeaningId": "semantic-v2:river",
+      "targetCaseId": "semantic-v2-river-0",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'river'.",
+      "memeCaption": "My socks held a meeting about tax season.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "f5572026ee9faeb03b9d6362c473f9fbfdeb3f0e676bb82b5ba48faa76d123c9"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "f5572026ee9faeb03b9d6362c473f9fbfdeb3f0e676bb82b5ba48faa76d123c9"
+      },
+      "target": {
+        "word": "river",
+        "partOfSpeech": "noun",
+        "definition": "A large natural stream of flowing water.",
+        "meaningId": "semantic-v2:river",
+        "caseId": "semantic-v2-river-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a river"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-07",
+      "path": "memes/meme-07.svg",
+      "label": 0,
+      "targetMeaning": "suitcase",
+      "targetMeaningId": "semantic-v2:suitcase",
+      "targetCaseId": "semantic-v2-suitcase-0",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'suitcase'.",
+      "memeCaption": "The moon forgot to bring a lunchbox.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "72a9fd7cc8d9153283afd9ea17ecd92888e29ec2e59fe94fc6ca0cd0beead093"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "72a9fd7cc8d9153283afd9ea17ecd92888e29ec2e59fe94fc6ca0cd0beead093"
+      },
+      "target": {
+        "word": "suitcase",
+        "partOfSpeech": "noun",
+        "definition": "A travel bag used to carry clothes and belongings.",
+        "meaningId": "semantic-v2:suitcase",
+        "caseId": "semantic-v2-suitcase-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a suitcase"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-08",
+      "path": "memes/meme-08.svg",
+      "label": 0,
+      "targetMeaning": "tennis court",
+      "targetMeaningId": "semantic-v2:tennis-court",
+      "targetCaseId": "semantic-v2-tennis-court-0",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'tennis court'.",
+      "memeCaption": "The kettle won a staring contest with a wall.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "17cdb9acb21ecb08d9364e68d093210a97caac5fc8e4d13b0b25b0a97ce13a00"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "17cdb9acb21ecb08d9364e68d093210a97caac5fc8e4d13b0b25b0a97ce13a00"
+      },
+      "target": {
+        "word": "tennis court",
+        "partOfSpeech": "noun",
+        "definition": "A marked area on which tennis is played.",
+        "meaningId": "semantic-v2:tennis-court",
+        "caseId": "semantic-v2-tennis-court-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a tennis court with a net"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-09",
+      "path": "memes/meme-09.svg",
+      "label": 0,
+      "targetMeaning": "bird",
+      "targetMeaningId": "semantic-v2:bird",
+      "targetCaseId": "semantic-v2-bird-0",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'bird'.",
+      "memeCaption": "A sleepy robot ordered seven umbrellas.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "17eb2774d04debb241c3ab3e95bff6908655b0fdb64946a78c12232af7052ef6"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "17eb2774d04debb241c3ab3e95bff6908655b0fdb64946a78c12232af7052ef6"
+      },
+      "target": {
+        "word": "bird",
+        "partOfSpeech": "noun",
+        "definition": "An animal with feathers, wings and a beak.",
+        "meaningId": "semantic-v2:bird",
+        "caseId": "semantic-v2-bird-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a bird"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-10",
+      "path": "memes/meme-10.svg",
+      "label": 0,
+      "targetMeaning": "orange",
+      "targetMeaningId": "semantic-v2:orange-fruit",
+      "targetCaseId": "semantic-v2-extra-orange-fruit-0",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'orange'.",
+      "memeCaption": "The stapler wants a vacation in outer space.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "9fc11e48bda0bd26f52faa2ec32cb978a82c193db7a358313a6504b189f3db33"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "9fc11e48bda0bd26f52faa2ec32cb978a82c193db7a358313a6504b189f3db33"
+      },
+      "target": {
+        "word": "orange",
+        "partOfSpeech": "noun",
+        "definition": "A round citrus fruit with orange peel.",
+        "meaningId": "semantic-v2:orange-fruit",
+        "caseId": "semantic-v2-extra-orange-fruit-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "an orange citrus fruit"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-11",
+      "path": "memes/meme-11.svg",
+      "label": 0,
+      "targetMeaning": "bridge",
+      "targetMeaningId": "semantic-v2:bridge",
+      "targetCaseId": "semantic-v2-bridge-0",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'bridge'.",
+      "memeCaption": "A penguin applied for a desk job in accounting.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "536ddb866866ee50dc5387dff8c049e6ccefcba758b7c5f2b5c7e487fa0bfb4d"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "536ddb866866ee50dc5387dff8c049e6ccefcba758b7c5f2b5c7e487fa0bfb4d"
+      },
+      "target": {
+        "word": "bridge",
+        "partOfSpeech": "noun",
+        "definition": "A structure carrying a path over water or another obstacle.",
+        "meaningId": "semantic-v2:bridge",
+        "caseId": "semantic-v2-bridge-0",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a bridge"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    },
+    {
+      "id": "meme-12",
+      "path": "memes/meme-12.svg",
+      "label": 0,
+      "targetMeaning": "snowboard",
+      "targetMeaningId": "semantic-v2:snowboard-action",
+      "targetCaseId": "semantic-v2-snowboard-action-1",
+      "targetSplit": "train",
+      "distractorKind": "meme",
+      "parentGroup": "original-smiley-meme-template-v1",
+      "reviewStatus": "visually-reviewed; independently confirmed",
+      "visualReason": "This image does not depict the paired target meaning 'snowboard'.",
+      "memeCaption": "The teapot joined a jazz band and plays triangle.",
+      "source": {
+        "kind": "original repo-native SVG",
+        "sourceSplit": "synthetic; paired only with train target",
+        "sha256": "9dd12c38564827b593dc1301742a5003f2c11a48f9857d0d48f350bc53a83da7"
+      },
+      "independentReview": {
+        "reviewer": "Luna independent visual review",
+        "label": 0,
+        "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+        "assetSha256": "9dd12c38564827b593dc1301742a5003f2c11a48f9857d0d48f350bc53a83da7"
+      },
+      "target": {
+        "word": "snowboard",
+        "partOfSpeech": "verb",
+        "definition": "To ride over snow on a snowboard.",
+        "meaningId": "semantic-v2:snowboard-action",
+        "caseId": "semantic-v2-snowboard-action-1",
+        "split": "train",
+        "imageScenes": {
+          "scenes": [
+            "a person snowboarding on snow"
+          ]
+        }
+      },
+      "suitabilityLabel": 0
+    }
+  ],
+  "independentReviewFile": "independent-review-revised.json",
+  "task": "semantic",
+  "personalPreference": false,
+  "trained": false,
+  "trainingEligible": true
+}

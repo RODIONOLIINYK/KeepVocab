@@ -1,0 +1,207 @@
+{
+  "reviewer": "Luna independent visual review",
+  "basis": "Viewed the actual source image pixels and original SVGs. Labels are exact-target-meaning judgments; ambiguous text-only meme relevance is uncertain and excluded.",
+  "items": [
+    {
+      "id": "photo-01",
+      "label": "wrong",
+      "reason": "Sleepy cat; no court, court marking, or tennis activity is visible."
+    },
+    {
+      "id": "photo-02",
+      "label": "wrong",
+      "reason": "Crowd at an exhibit; no snowboard or snow sport is visible."
+    },
+    {
+      "id": "photo-03",
+      "label": "wrong",
+      "reason": "Cookware on a stovetop; no traffic signal is visible."
+    },
+    {
+      "id": "photo-04",
+      "label": "wrong",
+      "reason": "Passenger train at a platform; no puppy is visible."
+    },
+    {
+      "id": "photo-05",
+      "label": "wrong",
+      "reason": "Urban streetcar scene; no giraffe is visible."
+    },
+    {
+      "id": "photo-06",
+      "label": "wrong",
+      "reason": "Seated person indoors; no river or river scene is visible."
+    },
+    {
+      "id": "photo-07",
+      "label": "wrong",
+      "reason": "People wading at a beach; no keyboard is visible."
+    },
+    {
+      "id": "photo-08",
+      "label": "wrong",
+      "reason": "Living room interior; no zebra is visible."
+    },
+    {
+      "id": "photo-09",
+      "label": "wrong",
+      "reason": "Shelves of bottled drinks; no suitcase is visible."
+    },
+    {
+      "id": "photo-10",
+      "label": "wrong",
+      "reason": "Beach scene with people and umbrellas; no towel is identifiable."
+    },
+    {
+      "id": "photo-11",
+      "label": "wrong",
+      "reason": "Bathroom with toilet and shower curtain; no banana is visible."
+    },
+    {
+      "id": "photo-12",
+      "label": "wrong",
+      "reason": "Low-resolution black-and-white outdoor scene; no laptop is discernible."
+    },
+    {
+      "id": "photo-13",
+      "label": "wrong",
+      "reason": "Cat wearing a hat; no bridge is visible."
+    },
+    {
+      "id": "photo-14",
+      "label": "wrong",
+      "reason": "Clock tower/building; no noodle or noodle dish is visible."
+    },
+    {
+      "id": "photo-15",
+      "label": "wrong",
+      "reason": "Person holding a tennis racket on a tennis court; it does not depict a bedroom."
+    },
+    {
+      "id": "photo-16",
+      "label": "wrong",
+      "reason": "Train with a yellow/orange front; no orange fruit is visible."
+    },
+    {
+      "id": "photo-17",
+      "label": "wrong",
+      "reason": "Fish in a glass bowl; no street scene is visible."
+    },
+    {
+      "id": "photo-18",
+      "label": "wrong",
+      "reason": "City bus on a street; no bird is discernible."
+    },
+    {
+      "id": "photo-19",
+      "label": "wrong",
+      "reason": "Display of assorted fruit including oranges; no tennis racket is visible."
+    },
+    {
+      "id": "photo-20",
+      "label": "wrong",
+      "reason": "Baseball game; no snowboard or snow sport is visible."
+    },
+    {
+      "id": "photo-21",
+      "label": "wrong",
+      "reason": "Horse-drawn tourist carriage; no trash can is visible."
+    },
+    {
+      "id": "photo-22",
+      "label": "wrong",
+      "reason": "Snowboarder on a snowy slope; no toilet is visible."
+    },
+    {
+      "id": "photo-23",
+      "label": "wrong",
+      "reason": "Child indoors beside toys; no carrot is visible."
+    },
+    {
+      "id": "photo-24",
+      "label": "wrong",
+      "reason": "Soccer players on a field; no river or river scene is visible."
+    },
+    {
+      "id": "meme-01",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    },
+    {
+      "id": "meme-02",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    },
+    {
+      "id": "meme-03",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    },
+    {
+      "id": "meme-04",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    },
+    {
+      "id": "meme-05",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    },
+    {
+      "id": "meme-06",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    },
+    {
+      "id": "meme-07",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    },
+    {
+      "id": "meme-08",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    },
+    {
+      "id": "meme-09",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    },
+    {
+      "id": "meme-10",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    },
+    {
+      "id": "meme-11",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    },
+    {
+      "id": "meme-12",
+      "label": "uncertain",
+      "reason": "Original illustration has a generic smiling face, while the caption explicitly mentions the target meaning. Textual mention makes semantic relevance ambiguous, but the target object/concept is not visually depicted; exclude rather than automatically mark wrong."
+    }
+  ],
+  "counts": {
+    "fits": 0,
+    "wrong": 24,
+    "uncertain": 12
+  },
+  "status": "superseded",
+  "supersededReason": "This review was for the initial meme SVG caption set, which repeated each paired target term. Those 12 items are rejected and were replaced with unrelated captions before the final blind review.",
+  "oldMemeCaptions": [
+    "This towel has one job. It is still buffering.",
+    "Banana says: “I am not a phone.”",
+    "The keyboard filed a complaint about too many space bars.",
+    "Giraffe: excellent view, terrible hide-and-seek.",
+    "The traffic light changed its mind. Again.",
+    "River says: “I go with the flow.”",
+    "Suitcase packed for a trip to the sofa.",
+    "The court is ready. The player is still finding a ball.",
+    "Bird meeting agenda: fly, snack, repeat.",
+    "Orange: nature’s tiny sunrise with peel.",
+    "Bridge says: “I bring people together.”",
+    "Snowboard season postponed: snow is on vacation."
+  ]
+}

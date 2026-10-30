@@ -1,0 +1,221 @@
+{
+  "kind": "image-negative-supplement-blind",
+  "items": [
+    {
+      "id": "photo-01",
+      "path": "photos/photo-01.jpg",
+      "targetMeaning": "tennis court",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-02",
+      "path": "photos/photo-02.jpg",
+      "targetMeaning": "snowboard",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-03",
+      "path": "photos/photo-03.jpg",
+      "targetMeaning": "traffic light",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-04",
+      "path": "photos/photo-04.jpg",
+      "targetMeaning": "puppy",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-05",
+      "path": "photos/photo-05.jpg",
+      "targetMeaning": "giraffe",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-06",
+      "path": "photos/photo-06.jpg",
+      "targetMeaning": "river",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-07",
+      "path": "photos/photo-07.jpg",
+      "targetMeaning": "keyboard",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-08",
+      "path": "photos/photo-08.jpg",
+      "targetMeaning": "zebra",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-09",
+      "path": "photos/photo-09.jpg",
+      "targetMeaning": "suitcase",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-10",
+      "path": "photos/photo-10.jpg",
+      "targetMeaning": "towel",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-11",
+      "path": "photos/photo-11.jpg",
+      "targetMeaning": "banana",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-12",
+      "path": "photos/photo-12.jpg",
+      "targetMeaning": "laptop",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-13",
+      "path": "photos/photo-13.jpg",
+      "targetMeaning": "bridge",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-14",
+      "path": "photos/photo-14.jpg",
+      "targetMeaning": "noodle",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-15",
+      "path": "photos/photo-15.jpg",
+      "targetMeaning": "bedroom",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-16",
+      "path": "photos/photo-16.jpg",
+      "targetMeaning": "orange",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-17",
+      "path": "photos/photo-17.jpg",
+      "targetMeaning": "street",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-18",
+      "path": "photos/photo-18.jpg",
+      "targetMeaning": "bird",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-19",
+      "path": "photos/photo-19.jpg",
+      "targetMeaning": "tennis racket",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-20",
+      "path": "photos/photo-20.jpg",
+      "targetMeaning": "snowboard",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-21",
+      "path": "photos/photo-21.jpg",
+      "targetMeaning": "trash can",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-22",
+      "path": "photos/photo-22.jpg",
+      "targetMeaning": "toilet",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-23",
+      "path": "photos/photo-23.jpg",
+      "targetMeaning": "carrot",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "photo-24",
+      "path": "photos/photo-24.jpg",
+      "targetMeaning": "river",
+      "sourceSplit": "train"
+    },
+    {
+      "id": "meme-01",
+      "path": "memes/meme-01.svg",
+      "targetMeaning": "towel",
+      "sourceSplit": "train target only; original graphic"
+    },
+    {
+      "id": "meme-02",
+      "path": "memes/meme-02.svg",
+      "targetMeaning": "banana",
+      "sourceSplit": "train target only; original graphic"
+    },
+    {
+      "id": "meme-03",
+      "path": "memes/meme-03.svg",
+      "targetMeaning": "keyboard",
+      "sourceSplit": "train target only; original graphic"
+    },
+    {
+      "id": "meme-04",
+      "path": "memes/meme-04.svg",
+      "targetMeaning": "giraffe",
+      "sourceSplit": "train target only; original graphic"
+    },
+    {
+      "id": "meme-05",
+      "path": "memes/meme-05.svg",
+      "targetMeaning": "traffic light",
+      "sourceSplit": "train target only; original graphic"
+    },
+    {
+      "id": "meme-06",
+      "path": "memes/meme-06.svg",
+      "targetMeaning": "river",
+      "sourceSplit": "train target only; original graphic"
+    },
+    {
+      "id": "meme-07",
+      "path": "memes/meme-07.svg",
+      "targetMeaning": "suitcase",
+      "sourceSplit": "train target only; original graphic"
+    },
+    {
+      "id": "meme-08",
+      "path": "memes/meme-08.svg",
+      "targetMeaning": "tennis court",
+      "sourceSplit": "train target only; original graphic"
+    },
+    {
+      "id": "meme-09",
+      "path": "memes/meme-09.svg",
+      "targetMeaning": "bird",
+      "sourceSplit": "train target only; original graphic"
+    },
+    {
+      "id": "meme-10",
+      "path": "memes/meme-10.svg",
+      "targetMeaning": "orange",
+      "sourceSplit": "train target only; original graphic"
+    },
+    {
+      "id": "meme-11",
+      "path": "memes/meme-11.svg",
+      "targetMeaning": "bridge",
+      "sourceSplit": "train target only; original graphic"
+    },
+    {
+      "id": "meme-12",
+      "path": "memes/meme-12.svg",
+      "targetMeaning": "snowboard",
+      "sourceSplit": "train target only; original graphic"
+    }
+  ]
+}

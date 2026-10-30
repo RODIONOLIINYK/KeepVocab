@@ -12,7 +12,7 @@ test('shared save pipeline attaches an image to each chosen meaning and preserve
     findImages: async (item, options) => {
       assert.equal(item.definition, entry.senses[0].definition);
       assert.deepEqual(options.excludeUrls, ['https://example.test/old.jpg']);
-      assert.equal(options.limit, 6);
+      assert.equal(options.limit, 30);
       assert.equal(options.aiScenes, false);
       return [{ url: 'https://example.test/coffee.jpg', attribution: 'Photo author', license: 'CC0' }];
     }
@@ -199,7 +199,7 @@ test('bulk image Skip completes the shared save pipeline before the provider fin
     { word: 'bank', definition: 'Land beside a river.', example: '' }
   ], {
     translationLanguage: 'uk', translate: async () => 'Підготовлений переклад.', skipImagesSignal: controller.signal,
-    findImages: (_word, options) => { assert.equal(options.limit, 6); started(); return new Promise(resolve => { finishLate = resolve; }); }
+    findImages: (_word, options) => { assert.equal(options.limit, 30); started(); return new Promise(resolve => { finishLate = resolve; }); }
   });
   await searching;
   controller.abort();

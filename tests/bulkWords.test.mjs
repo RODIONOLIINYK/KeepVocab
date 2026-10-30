@@ -98,7 +98,7 @@ test('automatic images are selected sequentially and saved with attribution', as
   let maximumActive = 0;
   const seenExclusions = [];
   const enriched = await attachImagesSequentially(words, async (word, options) => {
-    assert.equal(options.limit, 6);
+    assert.equal(options.limit, 30);
     assert.equal(options.aiScenes, false);
     active += 1;
     maximumActive = Math.max(maximumActive, active);

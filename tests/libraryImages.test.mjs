@@ -66,7 +66,7 @@ function installImageEditor(context, prompt, count = 2, beforePhotoResponse = nu
     requests.push({ host: url.hostname, prompt: url.searchParams.get('q'), page: url.searchParams.get('page') });
     if (url.hostname === 'api.openverse.org') await beforePhotoResponse?.();
     return { ok: true, json: async () => url.hostname === 'api.openverse.org' ? { results: Array.from({ length: count }, (_item, index) => ({
-      title: index ? 'Running fox leaping through meadow' : 'Fox standing beside running stream in meadow',
+      title: (index ? 'Running fox leaping through meadow' : 'Fox standing beside running stream in meadow') + (count > 2 ? ` frame ${index}` : ''),
       thumbnail: `https://library-feedback.test/${encodeURIComponent(prompt)}/${index}.jpg`,
       foreign_landing_url: `https://library-feedback.test/${encodeURIComponent(prompt)}/source/${index}`,
       tags: [{ name: 'running' }, { name: 'fox' }], category: 'photograph'
@@ -255,4 +255,17 @@ test('a synced meaning change during scene preparation cancels the obsolete phot
   assert.deepEqual(requests, []);
   assert.equal(container.querySelectorAll('[data-library-image]').length, 0);
   assert.match(container.innerHTML, /meaning changed/i);
+});
+
+
+test('library reveals nine ranked results at a time without refetching the retained pool', async context => {
+  const {container,requests}=installImageEditor(context,'fox running pagination trial',30);
+  await container.click('[data-edit-word]'); await finishImageSearch(container);
+  const count=()=>(container.innerHTML.match(/data-library-image="/g)||[]).length;
+  assert.equal(count(),9); const before=requests.length;
+  await container.click('#refresh-library-images'); assert.equal(count(),18); assert.equal(requests.length,before);
+  await container.click('#refresh-library-images'); assert.equal(count(),27); assert.equal(requests.length,before);
+  await container.click('#refresh-library-images'); assert.equal(count(),30); assert.equal(requests.length,before);
+  await container.click('#refresh-library-images'); await finishImageSearch(container);
+  assert.ok(requests.length>before); assert.equal(count(),30,'duplicate-only new search cannot add repeated images');
 });

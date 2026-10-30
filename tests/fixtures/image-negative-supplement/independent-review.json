@@ -1,0 +1,231 @@
+{
+  "reviewer": "Luna independent visual review",
+  "reviewVersion": "revised-current-assets",
+  "supersedes": "independent-review.json for meme-01 through meme-12 only; photo review unchanged",
+  "blindManifestSha256": "c64f7b66e53aeacfab376bf1b86e99bbf9d0de82dbfb75ea010160f722fac264",
+  "contactSheetSha256": "a5b03871cdb6025c70d3a091c446e9092310d07939730a52bac795c4cf47e553",
+  "basis": "Viewed current image pixels and SVG-rendered text in the current contact sheets. The previous meme review referred to stale pre-revision SVG assets and is retained separately for audit.",
+  "items": [
+    {
+      "id": "photo-01",
+      "label": "wrong",
+      "reason": "Sleepy cat; no court, court marking, or tennis activity is visible.",
+      "assetSha256": "2fd0c2522e6b699b96ece04d820b962e5caf54254579193a4c0d48f8e1599675"
+    },
+    {
+      "id": "photo-02",
+      "label": "wrong",
+      "reason": "Crowd at an exhibit; no snowboard or snow sport is visible.",
+      "assetSha256": "1ef6feb0a8d8886de8dc4db6e6c379cdd8fad15111a8edc570eeda66bcc17dba"
+    },
+    {
+      "id": "photo-03",
+      "label": "wrong",
+      "reason": "Cookware on a stovetop; no traffic signal is visible.",
+      "assetSha256": "b8409b5137f8653727eed92c375318c1c947cc2bb0cf75cc972d2293aacd9323"
+    },
+    {
+      "id": "photo-04",
+      "label": "wrong",
+      "reason": "Passenger train at a platform; no puppy is visible.",
+      "assetSha256": "0bf52c9409ae0eeb5cd056d2cd8a48217073f9be09137b76e39a8c6f2411229d"
+    },
+    {
+      "id": "photo-05",
+      "label": "wrong",
+      "reason": "Urban streetcar scene; no giraffe is visible.",
+      "assetSha256": "81267617f13de3900abfe82e0e48f5b66ca43b2092cac9b3c15e8606ebf81b72"
+    },
+    {
+      "id": "photo-06",
+      "label": "wrong",
+      "reason": "Seated person indoors; no river or river scene is visible.",
+      "assetSha256": "6e216fd96173658eb945140933ef0c9ae23217a733f02765fe59f57f9db0ae6e"
+    },
+    {
+      "id": "photo-07",
+      "label": "wrong",
+      "reason": "People wading at a beach; no keyboard is visible.",
+      "assetSha256": "1a6a36f8e88b5ff69228ddd0e9ace1484d075de3dfe55f73be3e658b5ab5b726"
+    },
+    {
+      "id": "photo-08",
+      "label": "wrong",
+      "reason": "Living room interior; no zebra is visible.",
+      "assetSha256": "9f183229fce4e13f8651f6c3c349d2fcae6057debc691cafe80658a63bc2351f"
+    },
+    {
+      "id": "photo-09",
+      "label": "wrong",
+      "reason": "Shelves of bottled drinks; no suitcase is visible.",
+      "assetSha256": "e8561c69704c7b6b901d95c2555dd4d8758534b94dc661f23c9dfd901013fc4c"
+    },
+    {
+      "id": "photo-10",
+      "label": "wrong",
+      "reason": "Beach scene with people and umbrellas; no towel is identifiable.",
+      "assetSha256": "33b57b983a5342f3349d27ee697a6517d8cda23fb260c138c4ddf3dd94b996f3"
+    },
+    {
+      "id": "photo-11",
+      "label": "wrong",
+      "reason": "Bathroom with toilet and shower curtain; no banana is visible.",
+      "assetSha256": "a3ef4377e4e197497a39d30eeeca7ae759b96003f5546c23aec913f7ab251557"
+    },
+    {
+      "id": "photo-12",
+      "label": "wrong",
+      "reason": "Low-resolution black-and-white outdoor scene; no laptop is discernible.",
+      "assetSha256": "5afaa83a4a9e38f56d23e517618bbd017511a35a3a4e040e53aee2d22c854650"
+    },
+    {
+      "id": "photo-13",
+      "label": "wrong",
+      "reason": "Cat wearing a hat; no bridge is visible.",
+      "assetSha256": "a7b888fd1076cc9816e78e96ecb94e7a346e740d578af0dcbc037319944c1bc3"
+    },
+    {
+      "id": "photo-14",
+      "label": "wrong",
+      "reason": "Clock tower/building; no noodle or noodle dish is visible.",
+      "assetSha256": "9784ea090eeba09ca328705b68552f091e4f2dc950119d0bdb1fdbe0d5032e31"
+    },
+    {
+      "id": "photo-15",
+      "label": "wrong",
+      "reason": "Person holding a tennis racket on a tennis court; it does not depict a bedroom.",
+      "assetSha256": "569aa89fdabc7f62bf7e14003f847a72a0d82705c73e4e1d55d88852712fb3ba"
+    },
+    {
+      "id": "photo-16",
+      "label": "wrong",
+      "reason": "Train with a yellow/orange front; no orange fruit is visible.",
+      "assetSha256": "d260409099574c126e78341c537a1daf6960284942799641f42c87105fd40e7e"
+    },
+    {
+      "id": "photo-17",
+      "label": "wrong",
+      "reason": "Fish in a glass bowl; no street scene is visible.",
+      "assetSha256": "9322af155b73aa991f85ab169a3679ab62271539a8d1dbe8af38c7912f0d1b75"
+    },
+    {
+      "id": "photo-18",
+      "label": "wrong",
+      "reason": "City bus on a street; no bird is discernible.",
+      "assetSha256": "116519cb932504866058215a0cca5e5d03b4af04a71e540db38c5caefb8d4725"
+    },
+    {
+      "id": "photo-19",
+      "label": "wrong",
+      "reason": "Display of assorted fruit including oranges; no tennis racket is visible.",
+      "assetSha256": "207e1007cad81d6fdb5e4061c0a652c351b217c23570dbe0bac920929841d537"
+    },
+    {
+      "id": "photo-20",
+      "label": "wrong",
+      "reason": "Baseball game; no snowboard or snow sport is visible.",
+      "assetSha256": "a73654c0617b1c814453ecb7db42adb053b50b521775fe67e54de7fe839062a4"
+    },
+    {
+      "id": "photo-21",
+      "label": "wrong",
+      "reason": "Horse-drawn tourist carriage; no trash can is visible.",
+      "assetSha256": "b34d80f1f13989eb0c7031f95373a9e26c698397cb9511b422dcf5daba60110e"
+    },
+    {
+      "id": "photo-22",
+      "label": "wrong",
+      "reason": "Snowboarder on a snowy slope; no toilet is visible.",
+      "assetSha256": "e16c9d4bab618469d1d841a4b905fa01232f42c0f18884b349b243b736c66d86"
+    },
+    {
+      "id": "photo-23",
+      "label": "wrong",
+      "reason": "Child indoors beside toys; no carrot is visible.",
+      "assetSha256": "d8d424750ed225b82f8cb349aaefc8e3f7156ca2ead51c1518245d05c63d2da2"
+    },
+    {
+      "id": "photo-24",
+      "label": "wrong",
+      "reason": "Soccer players on a field; no river or river scene is visible.",
+      "assetSha256": "3689831ed23f734ebab9405f48ffbfbbefb778e9de3101a9d56e421ea45288cf"
+    },
+    {
+      "id": "meme-01",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "721f0c30bd5873106a6980ca3e5cb46e5182996479b1d133f868a52b89a02a46"
+    },
+    {
+      "id": "meme-02",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "064897fc82b8b7f78f5c514f42ed9752d472f30a0a1ea0590ebedec16a01b37e"
+    },
+    {
+      "id": "meme-03",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "7c93f243d7f16c517ac910238ff52b0315504d8c6cb9d7935cd260711c8536fe"
+    },
+    {
+      "id": "meme-04",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "57fa5734ac00e09f48ca26d1a7756e89250715b86edc460ef887b767ac23fa4e"
+    },
+    {
+      "id": "meme-05",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "f3cdeb65ba28067e5473aa6d7a8b1dcafbc2c9326be501bce47f629b11dd131f"
+    },
+    {
+      "id": "meme-06",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "f5572026ee9faeb03b9d6362c473f9fbfdeb3f0e676bb82b5ba48faa76d123c9"
+    },
+    {
+      "id": "meme-07",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "72a9fd7cc8d9153283afd9ea17ecd92888e29ec2e59fe94fc6ca0cd0beead093"
+    },
+    {
+      "id": "meme-08",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "17cdb9acb21ecb08d9364e68d093210a97caac5fc8e4d13b0b25b0a97ce13a00"
+    },
+    {
+      "id": "meme-09",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "17eb2774d04debb241c3ab3e95bff6908655b0fdb64946a78c12232af7052ef6"
+    },
+    {
+      "id": "meme-10",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "9fc11e48bda0bd26f52faa2ec32cb978a82c193db7a358313a6504b189f3db33"
+    },
+    {
+      "id": "meme-11",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "536ddb866866ee50dc5387dff8c049e6ccefcba758b7c5f2b5c7e487fa0bfb4d"
+    },
+    {
+      "id": "meme-12",
+      "label": "wrong",
+      "reason": "Generic smiling-face graphic with a caption about an unrelated subject; neither the paired target meaning nor an image of it appears.",
+      "assetSha256": "9dd12c38564827b593dc1301742a5003f2c11a48f9857d0d48f350bc53a83da7"
+    }
+  ],
+  "counts": {
+    "fits": 0,
+    "wrong": 36,
+    "uncertain": 0
+  }
+}
