@@ -44,9 +44,9 @@ test('expanded heads reproduce Python probabilities and fresh-test membership me
   }
 });
 
-test('one current category head is bound to the frozen architecture decision and confirmation', async () => {
-  const [registry, selection, report, protocol] = await Promise.all([
-    json('tests/fixtures/meaning-taxonomy/current-classifier.json'), json(`${output}selection.json`),
+test('expanded snapshot is bound to its frozen architecture decision and confirmation', async () => {
+  const [selection, report, protocol] = await Promise.all([
+    json(`${output}selection.json`),
     json(`${output}report.json`), json(`${output}protocol.json`)
   ]);
   assert.equal(selection.decisionFrozenBeforeTest, true);
@@ -54,13 +54,11 @@ test('one current category head is bound to the frozen architecture decision and
   assert.equal(report.testUsedForArchitectureOrHyperparameterSelection, false);
   assert.equal(report.selectionFileSha256, hash(await bytes(`${output}selection.json`)));
   assert.equal(selection.protocolFileSha256, hash(await bytes(`${output}protocol.json`)));
-  assert.equal(selection.classifierFileSha256, hash(await bytes(registry.artifact)));
-  assert.equal(registry.artifactFileSha256, selection.classifierFileSha256);
+  assert.equal(selection.classifierFileSha256, hash(await bytes(`${fixture}classifier.json`)));
   assert.equal(report.promotionGate.passed, true);
-  assert.equal(registry.productionPersonalizerChanged, false);
   const expectedFamily = selection.practicalLinearComparison.passed ? 'linear' : '32';
   assert.equal(selection.selectedArchitecture, expectedFamily);
-  assert.deepEqual(await bytes(registry.artifact), await bytes(`${fixture}classifier-${expectedFamily}.json`));
+  assert.deepEqual(await bytes(`${fixture}classifier.json`), await bytes(`${fixture}classifier-${expectedFamily}.json`));
   assert.equal(protocol.legacyEvaluationUsedForSelection, false);
   const data = await json(`${fixture}dataset.json`);
   const train = data.items.filter(row => row.split === 'train');

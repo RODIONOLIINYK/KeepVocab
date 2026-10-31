@@ -8,7 +8,7 @@ Pass the selected, valid six-output classifier explicitly. The script deliberate
 
 ```sh
 node scripts/prepare-clip-adapter-data.mjs \
-  --classifier tests/fixtures/meaning-taxonomy/expanded-1000/classifier.json
+  --classifier tests/fixtures/meaning-taxonomy/regularized-expansion/classifier-regularized-selected.json
 ```
 
 The selected classifier must satisfy the current `meaning-category-v1` schema, six category order, 512-D current `CLIP_TAG`, and the original-definition-only prompt protocol. The tool validates its weights/config, captures file and model hashes and provenance, and saves the raw six sigmoid outputs. It does not threshold, argmax, or softmax them. Router weights are `p / sum(p)`; if all six probabilities sum to zero, it records a uniform fallback while retaining the all-zero probability vector.
@@ -58,10 +58,16 @@ adapter selection. The fresh 120-text classifier test does not provide a fresh
 image–meaning test.
 
 Exactly **one meaning category classifier** supplies the six routing outputs.
-The selected expanded 32-unit head is recorded in
+The selected regularized 32-unit head is recorded in
 `tests/fixtures/meaning-taxonomy/current-classifier.json`. Each triplet uses the
 same target-meaning probabilities for its positive and negative images. There
 is no image category classifier in this conversion.
+
+The routing cache was regenerated after the targeted text expansion and L1/L2
+comparison. The image/meaning vectors, semantic labels, crop choices, groups,
+and record counts are unchanged; the six conditioning probabilities and their
+classifier provenance now refer to the selected regularized head. Neither the
+48-text confirmation nor the earlier 120-text test supplies a fresh image test.
 
 The category classifier's weights and future CLIP transform weights serve
 different jobs. The classifier maps a text vector to six memberships. Future

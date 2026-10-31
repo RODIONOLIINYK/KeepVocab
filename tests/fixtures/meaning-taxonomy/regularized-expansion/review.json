@@ -1,0 +1,344 @@
+{
+  "schemaVersion": 1,
+  "reviewType": "AI semantic review; not human-expert ground truth",
+  "reviewedCount": 420,
+  "newMeaningCount": 280,
+  "trainingOnlyParaphraseCount": 140,
+  "newAnnotationsFileSha256": "a0cdf2ba5e21d4d105e26f31d0a99dff2a62141f02b03e6202d1183b8c51bd2c",
+  "reviewer": "primary assistant; all 280 new definitions and all 140 rewritten paraphrases inspected individually",
+  "corrections": [
+    {
+      "id": "regphys-place-001",
+      "word": "cupola",
+      "labels": [
+        "entity"
+      ],
+      "definition": "A small dome-shaped structure rising from a roof."
+    },
+    {
+      "id": "regphys-place-004",
+      "word": "belfry",
+      "labels": [
+        "entity"
+      ],
+      "definition": "A tower or upper structure that contains bells."
+    },
+    {
+      "id": "regphys-place-027",
+      "word": "lighthouse",
+      "labels": [
+        "entity"
+      ],
+      "definition": "A tower with a light that guides ships near a coast."
+    },
+    {
+      "id": "regphys-place-035",
+      "word": "bell tower",
+      "labels": [
+        "entity"
+      ],
+      "definition": "A tower built to hold one or more bells."
+    },
+    {
+      "id": "regphys-place-015",
+      "word": "colonnade",
+      "labels": [
+        "entity",
+        "place",
+        "relation"
+      ],
+      "definition": "A row of columns supporting a roof or other structure."
+    },
+    {
+      "id": "regphys-place-002",
+      "word": "basement",
+      "labels": [
+        "place",
+        "relation"
+      ],
+      "definition": "A floor of a building that lies partly or wholly below ground level."
+    },
+    {
+      "id": "regphys-place-026",
+      "word": "hothouse",
+      "labels": [
+        "entity",
+        "place"
+      ],
+      "definition": "A heated glass structure used for growing plants."
+    },
+    {
+      "id": "regphys-place-003",
+      "word": "bathhouse",
+      "labels": [
+        "place"
+      ],
+      "definition": "A public facility where people bathe in shared baths or bathing rooms."
+    },
+    {
+      "id": "reg-new-001",
+      "word": "photosynthesize",
+      "labels": [
+        "action"
+      ],
+      "definition": "For a green plant to use light energy to turn water and carbon dioxide into sugars, releasing oxygen."
+    },
+    {
+      "id": "reg-new-004",
+      "word": "fledge",
+      "labels": [
+        "action"
+      ],
+      "definition": "For a young bird to develop the feathers needed for flight."
+    },
+    {
+      "id": "reg-new-006",
+      "word": "hibernate",
+      "labels": [
+        "state"
+      ],
+      "definition": "For an animal to pass a season in a prolonged period of reduced activity and metabolism."
+    },
+    {
+      "id": "reg-new-052",
+      "word": "swarm",
+      "labels": [
+        "action"
+      ],
+      "definition": "An event in which many insects fly or move together as a group."
+    },
+    {
+      "id": "reg-new-055",
+      "word": "avalanche",
+      "labels": [
+        "action"
+      ],
+      "definition": "An event in which snow and ice rapidly slide down a mountain slope."
+    },
+    {
+      "id": "reg-new-056",
+      "word": "landslide",
+      "labels": [
+        "action"
+      ],
+      "definition": "An event in which earth or rock rapidly slides down a slope."
+    },
+    {
+      "id": "reg-new-057",
+      "word": "aftershock",
+      "labels": [
+        "action",
+        "relation",
+        "abstract"
+      ],
+      "definition": "A smaller earthquake that follows a larger earthquake in the same region."
+    },
+    {
+      "id": "reg-new-018",
+      "word": "percolate",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "definition": "For liquid to pass gradually through a porous material."
+    },
+    {
+      "id": "reg-new-019",
+      "word": "seep",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "definition": "For a liquid to pass slowly through small openings or porous material."
+    },
+    {
+      "id": "reg-new-021",
+      "word": "seepage",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "definition": "A slow, thin flow of liquid moving through a small opening or porous surface."
+    },
+    {
+      "id": "reg-new-023",
+      "word": "eject",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "definition": "To force material out from an enclosed place or container."
+    },
+    {
+      "id": "reg-new-047",
+      "word": "suture",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "definition": "To join the edges of a wound by stitching them together."
+    },
+    {
+      "id": "reg-new-049",
+      "word": "envenom",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "definition": "To introduce venom into a body by biting or stinging."
+    },
+    {
+      "id": "reg-new-050",
+      "word": "inoculate",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "definition": "To introduce a vaccine or other biological material into a body to produce protection or a response."
+    },
+    {
+      "id": "reg-new-064",
+      "word": "effervescent",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "definition": "Releasing many small bubbles of gas in a liquid."
+    },
+    {
+      "id": "reg-new-070",
+      "word": "hardened arteries",
+      "labels": [
+        "entity",
+        "state"
+      ],
+      "definition": "Arteries whose walls have become thick and less elastic."
+    },
+    {
+      "id": "reg-new-085",
+      "word": "rigor mortis",
+      "labels": [
+        "state"
+      ],
+      "definition": "The temporary stiff condition of muscles after death."
+    },
+    {
+      "id": "reg-new-082",
+      "word": "phosphorescent",
+      "labels": [
+        "state"
+      ],
+      "definition": "Having a lingering dim glow after the illuminating light source has been removed."
+    },
+    {
+      "id": "relabs-new-003",
+      "word": "hinged",
+      "labels": [
+        "relation"
+      ],
+      "definition": "Attached by a joint that allows one part to swing relative to another."
+    },
+    {
+      "id": "relabs-new-019",
+      "word": "successor",
+      "labels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "definition": "A person who takes the position or role previously held by another."
+    },
+    {
+      "id": "relabs-new-020",
+      "word": "predecessor",
+      "labels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "definition": "A person who held a position or role before another person took it."
+    },
+    {
+      "id": "relabs-new-050",
+      "word": "equity",
+      "labels": [
+        "relation",
+        "abstract"
+      ],
+      "definition": "Fairness in how resources, opportunities, or treatment are distributed."
+    },
+    {
+      "id": "relabs-new-046",
+      "word": "implication",
+      "labels": [
+        "relation",
+        "abstract"
+      ],
+      "definition": "A conclusion or consequence suggested by a statement or situation."
+    },
+    {
+      "id": "relabs-new-060",
+      "word": "conditional",
+      "labels": [
+        "relation",
+        "abstract"
+      ],
+      "definition": "True or applicable only when a specified requirement is met."
+    },
+    {
+      "id": "relabs-new-057",
+      "word": "unless",
+      "labels": [
+        "relation",
+        "abstract"
+      ],
+      "definition": "Except on the condition that something happens or is true."
+    },
+    {
+      "id": "relabs-new-072",
+      "word": "reconciliation",
+      "labels": [
+        "action",
+        "relation",
+        "abstract"
+      ],
+      "definition": "The restoration of agreement or a workable relationship after disagreement."
+    },
+    {
+      "id": "relabs-new-075",
+      "word": "handoff",
+      "labels": [
+        "action",
+        "relation",
+        "abstract"
+      ],
+      "definition": "The transfer of responsibility, authority, or an object from one person or group to another."
+    },
+    {
+      "id": "relabs-new-071",
+      "word": "convergence",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "definition": "The tendency of different ideas or trends to approach a common outcome."
+    }
+  ],
+  "replacedDrafts": [
+    {
+      "old": "threadbare",
+      "new": "bilateral"
+    },
+    {
+      "old": "forked",
+      "new": "interleaved"
+    }
+  ],
+  "limitations": [
+    "AI-authored and AI-reviewed labels, not expert-verified accuracy.",
+    "Old labels remain frozen for comparability; inherited annotation ambiguity is not corrected using evaluation errors.",
+    "Direct synonyms and derivatives linked to old evaluation groups remain retired and cannot enter training or fresh evaluation.",
+    "Paraphrases share their source meaning unit and total training weight one; they are not independent new observations."
+  ],
+  "datasetFileSha256": "c6ac49bf923f3166ddde12faa54d1f345e66597cdb59bc4d61a9fa7446ba8b4a"
+}

@@ -2,7 +2,7 @@
 /** Prepare leakage-aware current-encoder semantic pairs for adapter experiments.
  *
  * Requires an explicitly selected offline six-category classifier artifact:
- *   node scripts/prepare-clip-adapter-data.mjs --classifier tests/fixtures/meaning-taxonomy/expanded-1000/classifier.json
+ *   node scripts/prepare-clip-adapter-data.mjs --classifier tests/fixtures/meaning-taxonomy/regularized-expansion/classifier-regularized-selected.json
  *
  * This is a data converter only. It does not train an adapter, create user
  * preference labels, activate a model, or download images/models.

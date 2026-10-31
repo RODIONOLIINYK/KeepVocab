@@ -1,0 +1,854 @@
+{
+  "count": 140,
+  "identicalVectors": 0,
+  "cosineQuantiles": {
+    "min": 0.865579438964911,
+    "q25": 0.940908692193456,
+    "median": 0.9642098159945908,
+    "q75": 0.9767273227087072,
+    "max": 0.9991832515343166
+  },
+  "rows": [
+    {
+      "id": "reg-state-para-001",
+      "sourceId": "meaning-ffe324c89f77d1f5",
+      "word": "white",
+      "cosine": 0.9830605249347161
+    },
+    {
+      "id": "reg-state-para-002",
+      "sourceId": "meaning-33111286e6fba410",
+      "word": "sleep",
+      "cosine": 0.985688909761733
+    },
+    {
+      "id": "reg-state-para-003",
+      "sourceId": "meaning-74b1117d3654e13f",
+      "word": "blue",
+      "cosine": 0.9753718713475305
+    },
+    {
+      "id": "reg-state-para-004",
+      "sourceId": "meaning-872645840621c9a8",
+      "word": "open",
+      "cosine": 0.9793218953031675
+    },
+    {
+      "id": "reg-state-para-005",
+      "sourceId": "meaning-3eb27ea420b0b40f",
+      "word": "wooden",
+      "cosine": 0.9420713761746394
+    },
+    {
+      "id": "reg-state-para-006",
+      "sourceId": "meaning-ce4ee726a7f157bb",
+      "word": "wet",
+      "cosine": 0.9823976376857573
+    },
+    {
+      "id": "reg-state-para-007",
+      "sourceId": "meaning-ef012676e90838d0",
+      "word": "lie down",
+      "cosine": 0.9889985576774569
+    },
+    {
+      "id": "reg-state-para-008",
+      "sourceId": "meaning-72ca20bee6122bf2",
+      "word": "sit",
+      "cosine": 0.9809548039621837
+    },
+    {
+      "id": "reg-state-para-009",
+      "sourceId": "meaning-caeb9ced391114d8",
+      "word": "purple",
+      "cosine": 0.9601690192991373
+    },
+    {
+      "id": "reg-state-para-010",
+      "sourceId": "meaning-ffbae1669506522d",
+      "word": "snowy",
+      "cosine": 0.9548492965569055
+    },
+    {
+      "id": "reg-state-para-011",
+      "sourceId": "meaning-7287bfc20116700c",
+      "word": "pink",
+      "cosine": 0.973988769797508
+    },
+    {
+      "id": "reg-state-para-012",
+      "sourceId": "meaning-548131f9d9bad6a6",
+      "word": "red",
+      "cosine": 0.9769333825268263
+    },
+    {
+      "id": "reg-state-para-013",
+      "sourceId": "meaning-a4ea886f98899c44",
+      "word": "black",
+      "cosine": 0.9745221116945009
+    },
+    {
+      "id": "reg-state-para-014",
+      "sourceId": "meaning-8b8fda304b4fbb68",
+      "word": "brick",
+      "cosine": 0.9725341334278466
+    },
+    {
+      "id": "reg-state-para-015",
+      "sourceId": "expanded-b0b73d66426c4dfb",
+      "word": "rigid",
+      "cosine": 0.9576385247237358
+    },
+    {
+      "id": "reg-state-para-016",
+      "sourceId": "meaning-9ad5250330efa05e",
+      "word": "stand",
+      "cosine": 0.9339270388666551
+    },
+    {
+      "id": "reg-state-para-017",
+      "sourceId": "meaning-8f2b9edbf84e806c",
+      "word": "broken",
+      "cosine": 0.9482975632400564
+    },
+    {
+      "id": "reg-state-para-018",
+      "sourceId": "meaning-1daa07f845385e8e",
+      "word": "smile",
+      "cosine": 0.9641584843112685
+    },
+    {
+      "id": "reg-state-para-019",
+      "sourceId": "meaning-02a2ac4592c616d9",
+      "word": "hover",
+      "cosine": 0.9078839509427626
+    },
+    {
+      "id": "reg-state-para-020",
+      "sourceId": "meaning-061b02bb94433e1f",
+      "word": "bent",
+      "cosine": 0.9647737876036686
+    },
+    {
+      "id": "reg-state-para-021",
+      "sourceId": "meaning-18078920decc9a38",
+      "word": "transparent",
+      "cosine": 0.932718501804275
+    },
+    {
+      "id": "reg-state-para-022",
+      "sourceId": "meaning-a3d7b51eae34fd35",
+      "word": "crowded",
+      "cosine": 0.9708816648446712
+    },
+    {
+      "id": "reg-state-para-023",
+      "sourceId": "meaning-7fc58291b5c1d03e",
+      "word": "tangled",
+      "cosine": 0.9798094103832242
+    },
+    {
+      "id": "reg-state-para-024",
+      "sourceId": "meaning-85905dc7f6edba6d",
+      "word": "frozen",
+      "cosine": 0.9535335747355693
+    },
+    {
+      "id": "reg-state-para-025",
+      "sourceId": "meaning-705fd69428b9ae40",
+      "word": "bald",
+      "cosine": 0.9674379403944118
+    },
+    {
+      "id": "reg-state-para-026",
+      "sourceId": "meaning-8410b09eafa21f2f",
+      "word": "lopsided",
+      "cosine": 0.9516472679417449
+    },
+    {
+      "id": "reg-state-para-027",
+      "sourceId": "meaning-cd5f0f1c9ffc5044",
+      "word": "bare",
+      "cosine": 0.9721749384854225
+    },
+    {
+      "id": "reg-state-para-028",
+      "sourceId": "meaning-efcf701357b91aa0",
+      "word": "shallow",
+      "cosine": 0.9602746690561679
+    },
+    {
+      "id": "reg-state-para-029",
+      "sourceId": "meaning-0d51d9d92a073a0e",
+      "word": "dilated",
+      "cosine": 0.9494300555435764
+    },
+    {
+      "id": "reg-state-para-030",
+      "sourceId": "meaning-6458042c38d90484",
+      "word": "frayed",
+      "cosine": 0.9769586392371835
+    },
+    {
+      "id": "reg-state-para-031",
+      "sourceId": "meaning-e672b862b0fec27a",
+      "word": "sealed",
+      "cosine": 0.9227370889840887
+    },
+    {
+      "id": "reg-state-para-032",
+      "sourceId": "meaning-5792197ba2b19c3c",
+      "word": "sedimented",
+      "cosine": 0.9840914383217736
+    },
+    {
+      "id": "reg-state-para-033",
+      "sourceId": "meaning-5e5b37085db813ff",
+      "word": "sleepy",
+      "cosine": 0.987752961682616
+    },
+    {
+      "id": "reg-state-para-034",
+      "sourceId": "supp-wrinkled",
+      "word": "wrinkled",
+      "cosine": 0.9732148987418727
+    },
+    {
+      "id": "reg-state-para-035",
+      "sourceId": "supp-pitted",
+      "word": "pitted",
+      "cosine": 0.9708183604442854
+    },
+    {
+      "id": "reg-state-para-036",
+      "sourceId": "supp-translucent",
+      "word": "translucent",
+      "cosine": 0.9560970690480867
+    },
+    {
+      "id": "reg-state-para-037",
+      "sourceId": "supp-opaque",
+      "word": "opaque",
+      "cosine": 0.9675847945133703
+    },
+    {
+      "id": "reg-state-para-038",
+      "sourceId": "supp-curved",
+      "word": "curved",
+      "cosine": 0.9442792069570751
+    },
+    {
+      "id": "reg-state-para-039",
+      "sourceId": "supp-hollow",
+      "word": "hollow",
+      "cosine": 0.8826769811186205
+    },
+    {
+      "id": "reg-state-para-040",
+      "sourceId": "supp-stained",
+      "word": "stained",
+      "cosine": 0.9670455001057388
+    },
+    {
+      "id": "reg-state-para-041",
+      "sourceId": "supp-overheated",
+      "word": "overheated",
+      "cosine": 0.9714524527538886
+    },
+    {
+      "id": "reg-state-para-042",
+      "sourceId": "supp-deflated",
+      "word": "deflated",
+      "cosine": 0.9417849440070234
+    },
+    {
+      "id": "reg-state-para-043",
+      "sourceId": "supp-dented",
+      "word": "dented",
+      "cosine": 0.964261147677913
+    },
+    {
+      "id": "reg-state-para-044",
+      "sourceId": "supp-asleep",
+      "word": "asleep",
+      "cosine": 0.9584756897461917
+    },
+    {
+      "id": "reg-state-para-045",
+      "sourceId": "supp-awake",
+      "word": "awake",
+      "cosine": 0.917479861925583
+    },
+    {
+      "id": "reg-state-para-046",
+      "sourceId": "supp-overcast",
+      "word": "overcast",
+      "cosine": 0.9786116627720847
+    },
+    {
+      "id": "reg-state-para-047",
+      "sourceId": "supp-jammed",
+      "word": "jammed",
+      "cosine": 0.9104389355720517
+    },
+    {
+      "id": "reg-state-para-048",
+      "sourceId": "supp-crooked",
+      "word": "crooked",
+      "cosine": 0.9776912044173736
+    },
+    {
+      "id": "reg-state-para-049",
+      "sourceId": "supp-stale",
+      "word": "stale",
+      "cosine": 0.9544434511129852
+    },
+    {
+      "id": "reg-state-para-050",
+      "sourceId": "supp-saturated",
+      "word": "saturated",
+      "cosine": 0.9328709485180966
+    },
+    {
+      "id": "reg-state-para-051",
+      "sourceId": "supp-unbalanced",
+      "word": "unbalanced",
+      "cosine": 0.898012402946837
+    },
+    {
+      "id": "reg-state-para-052",
+      "sourceId": "supp-tapering-toward",
+      "word": "tapering toward",
+      "cosine": 0.9505668722060637
+    },
+    {
+      "id": "reg-state-para-053",
+      "sourceId": "supp-squeezed-between",
+      "word": "squeezed between",
+      "cosine": 0.8933220905798936
+    },
+    {
+      "id": "reg-state-para-054",
+      "sourceId": "supp-congestion",
+      "word": "congestion",
+      "cosine": 0.9337269659532219
+    },
+    {
+      "id": "reg-state-para-055",
+      "sourceId": "expanded-ae08f8e90e559732",
+      "word": "creased",
+      "cosine": 0.9607490302887592
+    },
+    {
+      "id": "reg-state-para-056",
+      "sourceId": "expanded-4036f7ac2b8f1602",
+      "word": "smooth",
+      "cosine": 0.9617288199663503
+    },
+    {
+      "id": "reg-state-para-057",
+      "sourceId": "expanded-bc1f8c9fd28faa24",
+      "word": "rough",
+      "cosine": 0.9766097810525679
+    },
+    {
+      "id": "reg-state-para-058",
+      "sourceId": "expanded-b1623a2435d8fc01",
+      "word": "bumpy",
+      "cosine": 0.9609166695854379
+    },
+    {
+      "id": "reg-state-para-059",
+      "sourceId": "expanded-37154295b3dfb846",
+      "word": "flaky",
+      "cosine": 0.9532114121881983
+    },
+    {
+      "id": "reg-state-para-060",
+      "sourceId": "expanded-4671aa7183946515",
+      "word": "powdery",
+      "cosine": 0.9496999671998018
+    },
+    {
+      "id": "reg-state-para-061",
+      "sourceId": "expanded-9c24d465d6f6ee03",
+      "word": "sticky",
+      "cosine": 0.9541491216887432
+    },
+    {
+      "id": "reg-state-para-062",
+      "sourceId": "expanded-f3b19abbf2b78133",
+      "word": "greasy",
+      "cosine": 0.97154943671458
+    },
+    {
+      "id": "reg-state-para-063",
+      "sourceId": "expanded-c39cf8b4521b2403",
+      "word": "slippery",
+      "cosine": 0.9711713067747438
+    },
+    {
+      "id": "reg-state-para-064",
+      "sourceId": "expanded-06774e08987b5053",
+      "word": "fuzzy",
+      "cosine": 0.9672687008996266
+    },
+    {
+      "id": "reg-state-para-065",
+      "sourceId": "expanded-0106ea59041fba40",
+      "word": "spotted",
+      "cosine": 0.9749523176148319
+    },
+    {
+      "id": "reg-state-para-066",
+      "sourceId": "expanded-51bac4ab7202e900",
+      "word": "striped",
+      "cosine": 0.9555935348841651
+    },
+    {
+      "id": "reg-state-para-067",
+      "sourceId": "expanded-9826563b051d4cb0",
+      "word": "speckled",
+      "cosine": 0.9746484760772055
+    },
+    {
+      "id": "reg-state-para-068",
+      "sourceId": "expanded-5d7faa7767715476",
+      "word": "mottled",
+      "cosine": 0.9739795592520566
+    },
+    {
+      "id": "reg-state-para-069",
+      "sourceId": "expanded-b05ac06d2cafedd1",
+      "word": "dark",
+      "cosine": 0.9761401482006392
+    },
+    {
+      "id": "reg-state-para-070",
+      "sourceId": "expanded-f90dacf7e7299e0d",
+      "word": "cloudy",
+      "cosine": 0.992880420764092
+    },
+    {
+      "id": "relabs-para-001",
+      "sourceId": "meaning-945e5bdc29652eac",
+      "word": "surf",
+      "cosine": 0.9921687738503215
+    },
+    {
+      "id": "relabs-para-002",
+      "sourceId": "meaning-debcc41c45e2cd58",
+      "word": "brush teeth",
+      "cosine": 0.9984398044374829
+    },
+    {
+      "id": "relabs-para-003",
+      "sourceId": "meaning-c4dd245a2176c794",
+      "word": "bridge",
+      "cosine": 0.9856939526949335
+    },
+    {
+      "id": "relabs-para-004",
+      "sourceId": "meaning-efce7e31057a4c96",
+      "word": "snowboard",
+      "cosine": 0.9830122520654376
+    },
+    {
+      "id": "relabs-para-005",
+      "sourceId": "meaning-422f526935a1e690",
+      "word": "throw",
+      "cosine": 0.9779492519607984
+    },
+    {
+      "id": "relabs-para-006",
+      "sourceId": "meaning-2db1f62d6aa16b10",
+      "word": "ride a bicycle",
+      "cosine": 0.9871655617625459
+    },
+    {
+      "id": "relabs-para-007",
+      "sourceId": "meaning-003b36287cdb5be6",
+      "word": "play tennis",
+      "cosine": 0.985741319198865
+    },
+    {
+      "id": "relabs-para-008",
+      "sourceId": "meaning-4cae3fb22f1b951a",
+      "word": "eat",
+      "cosine": 0.9749018110726363
+    },
+    {
+      "id": "relabs-para-009",
+      "sourceId": "meaning-5bb5b6e244370d14",
+      "word": "alley",
+      "cosine": 0.9840936054058811
+    },
+    {
+      "id": "relabs-para-010",
+      "sourceId": "meaning-30372a81941b9497",
+      "word": "cellar",
+      "cosine": 0.9650015585347302
+    },
+    {
+      "id": "relabs-para-011",
+      "sourceId": "meaning-eabf8f93e73ad570",
+      "word": "orbit",
+      "cosine": 0.9592389065703506
+    },
+    {
+      "id": "relabs-para-012",
+      "sourceId": "meaning-b16c7e4929274a3b",
+      "word": "migrate",
+      "cosine": 0.9521103455361037
+    },
+    {
+      "id": "relabs-para-013",
+      "sourceId": "meaning-3f1e3f585937fe28",
+      "word": "pour",
+      "cosine": 0.9614716143747646
+    },
+    {
+      "id": "relabs-para-014",
+      "sourceId": "meaning-694359724aac979d",
+      "word": "nest",
+      "cosine": 0.9896946881540225
+    },
+    {
+      "id": "relabs-para-015",
+      "sourceId": "meaning-054dcb2df9bba930",
+      "word": "knead",
+      "cosine": 0.9692177847729141
+    },
+    {
+      "id": "relabs-para-016",
+      "sourceId": "meaning-3d7dbf160d2c8912",
+      "word": "beneath",
+      "cosine": 0.9671020422503367
+    },
+    {
+      "id": "relabs-para-017",
+      "sourceId": "meaning-1f87dc45a98a61b2",
+      "word": "beside",
+      "cosine": 0.9881988182484347
+    },
+    {
+      "id": "relabs-para-018",
+      "sourceId": "meaning-86f5e8f4202f63ec",
+      "word": "against",
+      "cosine": 0.9130109943339332
+    },
+    {
+      "id": "relabs-para-019",
+      "sourceId": "meaning-17d9f112f4a6bb2f",
+      "word": "overlapping",
+      "cosine": 0.9805846592404639
+    },
+    {
+      "id": "relabs-para-020",
+      "sourceId": "meaning-a81e685b23565df1",
+      "word": "wrapped around",
+      "cosine": 0.9331098357158019
+    },
+    {
+      "id": "relabs-para-021",
+      "sourceId": "meaning-53c90359c41f1f74",
+      "word": "crossing",
+      "cosine": 0.9881822605577193
+    },
+    {
+      "id": "relabs-para-022",
+      "sourceId": "meaning-0e77c4fb23ab7cd1",
+      "word": "surrounding",
+      "cosine": 0.8994399925439616
+    },
+    {
+      "id": "relabs-para-023",
+      "sourceId": "meaning-6f00aa892bc53b48",
+      "word": "parallel",
+      "cosine": 0.9116238632942154
+    },
+    {
+      "id": "relabs-para-024",
+      "sourceId": "meaning-e228583fcfbc2581",
+      "word": "perpendicular",
+      "cosine": 0.865579438964911
+    },
+    {
+      "id": "relabs-para-025",
+      "sourceId": "meaning-07cbe951297ae134",
+      "word": "gripping",
+      "cosine": 0.9706845012102088
+    },
+    {
+      "id": "relabs-para-026",
+      "sourceId": "meaning-1c640b36920ca4e2",
+      "word": "suspended over",
+      "cosine": 0.9065103711210809
+    },
+    {
+      "id": "relabs-para-027",
+      "sourceId": "meaning-e329e7c395c83f3d",
+      "word": "nestled among",
+      "cosine": 0.9331338484022227
+    },
+    {
+      "id": "relabs-para-028",
+      "sourceId": "meaning-44e2bdbc2be1db39",
+      "word": "intersecting",
+      "cosine": 0.9106066588373765
+    },
+    {
+      "id": "relabs-para-029",
+      "sourceId": "meaning-14965bc16d8d6c95",
+      "word": "diverging",
+      "cosine": 0.9382799367527539
+    },
+    {
+      "id": "relabs-para-030",
+      "sourceId": "meaning-569d942cbba9ea35",
+      "word": "to the left of",
+      "cosine": 0.9455760879591304
+    },
+    {
+      "id": "relabs-para-031",
+      "sourceId": "meaning-6ae9cd025fd772c2",
+      "word": "above",
+      "cosine": 0.9546264382261074
+    },
+    {
+      "id": "relabs-para-032",
+      "sourceId": "meaning-a80535e4b9e7248a",
+      "word": "far from",
+      "cosine": 0.9623346076914605
+    },
+    {
+      "id": "relabs-para-033",
+      "sourceId": "meaning-c3ff7405f4269f06",
+      "word": "supported by",
+      "cosine": 0.94776299296384
+    },
+    {
+      "id": "relabs-para-034",
+      "sourceId": "meaning-816dbccb2a6942d0",
+      "word": "piled on",
+      "cosine": 0.9268124666950481
+    },
+    {
+      "id": "relabs-para-035",
+      "sourceId": "meaning-47929b97c34790b4",
+      "word": "before",
+      "cosine": 0.9811232801465192
+    },
+    {
+      "id": "relabs-para-036",
+      "sourceId": "meaning-cc4f1d7a968336d7",
+      "word": "owe",
+      "cosine": 0.9347027031609781
+    },
+    {
+      "id": "relabs-para-037",
+      "sourceId": "meaning-009fd3959520c480",
+      "word": "trust",
+      "cosine": 0.9372970161356606
+    },
+    {
+      "id": "relabs-para-038",
+      "sourceId": "meaning-0a340784b34f6441",
+      "word": "permission",
+      "cosine": 0.9232411255218957
+    },
+    {
+      "id": "relabs-para-039",
+      "sourceId": "meaning-975807cf43105c8e",
+      "word": "married",
+      "cosine": 0.9462968757883148
+    },
+    {
+      "id": "relabs-para-040",
+      "sourceId": "meaning-9ed061f0080e1f00",
+      "word": "popular",
+      "cosine": 0.9316824275455924
+    },
+    {
+      "id": "relabs-para-041",
+      "sourceId": "meaning-579e2b27ea0a775a",
+      "word": "famous",
+      "cosine": 0.978935096546797
+    },
+    {
+      "id": "relabs-para-042",
+      "sourceId": "meaning-170feda370000aa5",
+      "word": "unfair",
+      "cosine": 0.8974667192062624
+    },
+    {
+      "id": "relabs-para-043",
+      "sourceId": "meaning-8fac5a6bb2033aea",
+      "word": "earlier",
+      "cosine": 0.9708125499374232
+    },
+    {
+      "id": "relabs-para-044",
+      "sourceId": "meaning-e9b5311bde60a693",
+      "word": "equal",
+      "cosine": 0.9742802650213895
+    },
+    {
+      "id": "relabs-para-045",
+      "sourceId": "meaning-819e85879dfc1e45",
+      "word": "rude",
+      "cosine": 0.9049860696173905
+    },
+    {
+      "id": "relabs-para-046",
+      "sourceId": "supp-detached",
+      "word": "detached",
+      "cosine": 0.9329689247517997
+    },
+    {
+      "id": "relabs-para-047",
+      "sourceId": "supp-threaded-through",
+      "word": "threaded through",
+      "cosine": 0.9528602163423361
+    },
+    {
+      "id": "relabs-para-048",
+      "sourceId": "supp-concentric",
+      "word": "concentric",
+      "cosine": 0.9661714384835443
+    },
+    {
+      "id": "relabs-para-049",
+      "sourceId": "supp-covering",
+      "word": "covering",
+      "cosine": 0.9207868250214654
+    },
+    {
+      "id": "relabs-para-050",
+      "sourceId": "supp-caught-under",
+      "word": "caught under",
+      "cosine": 0.9151942354800395
+    },
+    {
+      "id": "relabs-para-051",
+      "sourceId": "supp-threaded-onto",
+      "word": "threaded onto",
+      "cosine": 0.9864853747139697
+    },
+    {
+      "id": "relabs-para-052",
+      "sourceId": "supp-bisecting",
+      "word": "bisecting",
+      "cosine": 0.9677720749556409
+    },
+    {
+      "id": "relabs-para-053",
+      "sourceId": "supp-linked-by",
+      "word": "linked by",
+      "cosine": 0.9569883914688805
+    },
+    {
+      "id": "relabs-para-054",
+      "sourceId": "supp-tangent-to",
+      "word": "tangent to",
+      "cosine": 0.9960276009143578
+    },
+    {
+      "id": "relabs-para-055",
+      "sourceId": "supp-alternating",
+      "word": "alternating",
+      "cosine": 0.9247762114868693
+    },
+    {
+      "id": "relabs-para-056",
+      "sourceId": "supp-threading",
+      "word": "threading",
+      "cosine": 0.9829343247464987
+    },
+    {
+      "id": "relabs-para-057",
+      "sourceId": "supp-collide",
+      "word": "collide",
+      "cosine": 0.9152252657347767
+    },
+    {
+      "id": "relabs-para-058",
+      "sourceId": "supp-echo",
+      "word": "echo",
+      "cosine": 0.9336588307291922
+    },
+    {
+      "id": "relabs-para-059",
+      "sourceId": "expanded-ab3dc5e21f3074ce",
+      "word": "aqueduct",
+      "cosine": 0.9815009918996617
+    },
+    {
+      "id": "relabs-para-060",
+      "sourceId": "expanded-0ec85cb05262024d",
+      "word": "overpass",
+      "cosine": 0.9945888421151967
+    },
+    {
+      "id": "relabs-para-061",
+      "sourceId": "expanded-08daac99236c3834",
+      "word": "hug",
+      "cosine": 0.9677140146202744
+    },
+    {
+      "id": "relabs-para-062",
+      "sourceId": "expanded-a4e8283320674f3b",
+      "word": "kiss",
+      "cosine": 0.9714185443979314
+    },
+    {
+      "id": "relabs-para-063",
+      "sourceId": "expanded-542fdf1f8ba7e9f6",
+      "word": "pull",
+      "cosine": 0.9221729065233206
+    },
+    {
+      "id": "relabs-para-064",
+      "sourceId": "expanded-6c3ce032aa9ba7d1",
+      "word": "spill",
+      "cosine": 0.9425261830855844
+    },
+    {
+      "id": "relabs-para-065",
+      "sourceId": "expanded-7099e725e08641ea",
+      "word": "pounce",
+      "cosine": 0.9093630037615094
+    },
+    {
+      "id": "relabs-para-066",
+      "sourceId": "expanded-25234d45886d1310",
+      "word": "sandwiched",
+      "cosine": 0.9790602734397814
+    },
+    {
+      "id": "relabs-para-067",
+      "sourceId": "expanded-9295a6d5aa2f4796",
+      "word": "customer",
+      "cosine": 0.9766586361026676
+    },
+    {
+      "id": "relabs-para-068",
+      "sourceId": "expanded-baacbcb8467cfbee",
+      "word": "borrower",
+      "cosine": 0.9991832515343166
+    },
+    {
+      "id": "relabs-para-069",
+      "sourceId": "expanded-52195c67b4c2c94a",
+      "word": "lender",
+      "cosine": 0.9702764657364427
+    },
+    {
+      "id": "relabs-para-070",
+      "sourceId": "expanded-dbf48633ca2f6f62",
+      "word": "instead",
+      "cosine": 0.9616756583660526
+    }
+  ],
+  "note": "Similarity is an embedding diagnostic, not semantic label verification."
+}

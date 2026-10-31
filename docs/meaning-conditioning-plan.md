@@ -79,6 +79,33 @@ alone and the classifier's own weights cannot train or substitute for those
 transforms. The converted image holdouts are retired, so obtain fresh reviewed
 image–meaning evaluation groups before adapter selection or integration.
 
+## Targeted examples and regularization follow-up (2026-10-31)
+
+The [1,420-row follow-up](meaning-taxonomy-training/regularized-expansion/README.md)
+contains 280 newly reviewed meanings and 140 training-only paraphrases. The
+primary assistant inspected every addition and corrected Luna drafts before
+encoding. Materials, actions versus conditions, and physical/social relations
+target the earlier error analysis. Close synonyms and derivatives inherit old
+groups; old held-out groups stay retired. The 890 training rows represent 750
+meaning units: each original/paraphrase pair shares one unit of loss weight.
+
+Train-only grouped search compares exact weight-only L1, L2, and elastic-net for
+linear and 32-unit heads. The selected 32-unit L2 coefficient is 0.0377165, versus
+0.0106707 previously. On the same new 48-meaning test, exact match rises from
+52.08% to 68.75%, micro precision from 73.02% to 87.04%, and macro F1 from 72.77%
+to 80.01%. Recall is 77.05%. Both validation and test promotion gates pass, so
+the offline registry and adapter-data routing probabilities use this head.
+This is not app activation, adapter training, or a 97% result.
+
+Linear L2 has slightly higher validation F1, but falls outside the predeclared
+precision and worst-class tolerances; L1 adds sparsity without better validation
+F1. Fixed-configuration data controls have better test F1/BCE than the selected
+candidate, while the selected candidate has better exact match/precision. The
+report retains that tradeoff; no candidate was reselected using test results.
+Relations remain the main weakness (test F1 50%). Obtain new independent
+evaluation groups before another round of targeted tuning. Text paraphrases
+do not substitute for image crops or genuine image–meaning adapter examples.
+
 ## Categories describe required visual evidence
 
 | Output ID | Evidence focus | Examples |

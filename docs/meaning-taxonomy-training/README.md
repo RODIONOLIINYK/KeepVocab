@@ -21,6 +21,12 @@ training, fresh grouped evaluation, and an explicit cheaper-linear replacement
 rule. Its current selected artifact is recorded separately; the original models
 and results below remain frozen.
 
+The [targeted expansion and L1/L2 experiment](regularized-expansion/README.md)
+adds 280 reviewed meanings and 140 training-only paraphrases, compares exact L1,
+L2 and elastic-net, and records a new frozen comparison against the 1,000-row
+head. The current offline head is the stronger-L2 32-unit candidate from that
+experiment. Historical numbers below use different evaluation cohorts.
+
 ## Result and interpretation
 
 | Validation-selected model | Validation macro-F1 | Test macro-F1 | Test exact label-set match | Parameters |

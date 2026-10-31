@@ -1,0 +1,827 @@
+{
+  "schemaVersion": 1,
+  "selectionFileSha256": "f3c936052ce16d2f241551b23f5e38d5b57ed6a0bd9129ecdefee884e213bcc0",
+  "protocolFileSha256": "5ffc375e9428127d00536caa9efc9d254382e82c1431f61978bc308bf58df986",
+  "datasetFileSha256": "c6ac49bf923f3166ddde12faa54d1f345e66597cdb59bc4d61a9fa7446ba8b4a",
+  "embeddingsFileSha256": "6833559eac3657546d87fc6f3b0244ea7288c2f1a0cbd5650404aa6910f7ba1b",
+  "freshTestCount": 48,
+  "testUsedForSelection": false,
+  "selectedFamily": "32",
+  "linearPracticalEquivalence": {
+    "passed": false,
+    "checks": {
+      "macroF1": true,
+      "exactMatch": true,
+      "microPrecision": false,
+      "microRecall": true,
+      "bce": true,
+      "brier": true,
+      "perClassF1": false
+    },
+    "margins": {
+      "macroF1": 0.01,
+      "exactMatch": 0.02,
+      "microPrecision": 0.02,
+      "microRecall": 0.02,
+      "bce": 0.01,
+      "brier": 0.003,
+      "perClassF1": 0.05
+    },
+    "interpretation": "Practical noninferiority margins on the same fresh validation cohort; not statistical proof."
+  },
+  "validationPromotionGate": {
+    "passed": true,
+    "checks": {
+      "macroF1": true,
+      "exactMatch": true,
+      "microPrecision": true,
+      "microRecall": true,
+      "bce": true,
+      "brier": true,
+      "perClassF1": true
+    },
+    "margins": {
+      "macroF1": 0.01,
+      "exactMatch": 0.02,
+      "microPrecision": 0.02,
+      "microRecall": 0.02,
+      "bce": 0.01,
+      "brier": 0.003,
+      "perClassF1": 0.05
+    },
+    "comparatorValidation": {
+      "count": 48,
+      "macroF1": 0.8063077984817114,
+      "microF1": 0.8095238095238095,
+      "exactMatch": 0.5833333333333334,
+      "bce": 0.20862525912377236,
+      "brier": 0.060628949217089945,
+      "macroAveragePrecision": 0.88647443991194,
+      "threshold": 0.3615006965813038,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 13,
+          "predictedPositive": 10,
+          "tp": 9,
+          "fp": 1,
+          "fn": 4,
+          "precision": 0.9,
+          "recall": 0.6923076923076923,
+          "f1": 0.782608695652174,
+          "averagePrecision": 0.8782828282828283
+        },
+        "place": {
+          "positiveSupport": 8,
+          "predictedPositive": 10,
+          "tp": 8,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.8,
+          "recall": 1.0,
+          "f1": 0.8888888888888888,
+          "averagePrecision": 0.9861111111111112
+        },
+        "action": {
+          "positiveSupport": 10,
+          "predictedPositive": 8,
+          "tp": 7,
+          "fp": 1,
+          "fn": 3,
+          "precision": 0.875,
+          "recall": 0.7,
+          "f1": 0.7777777777777778,
+          "averagePrecision": 0.9433119658119657
+        },
+        "state": {
+          "positiveSupport": 8,
+          "predictedPositive": 13,
+          "tp": 7,
+          "fp": 6,
+          "fn": 1,
+          "precision": 0.5384615384615384,
+          "recall": 0.875,
+          "f1": 0.6666666666666666,
+          "averagePrecision": 0.8921130952380952
+        },
+        "relation": {
+          "positiveSupport": 10,
+          "predictedPositive": 11,
+          "tp": 8,
+          "fp": 3,
+          "fn": 2,
+          "precision": 0.7272727272727273,
+          "recall": 0.8,
+          "f1": 0.7619047619047619,
+          "averagePrecision": 0.6292840492840492
+        },
+        "abstract": {
+          "positiveSupport": 13,
+          "predictedPositive": 12,
+          "tp": 12,
+          "fp": 0,
+          "fn": 1,
+          "precision": 1.0,
+          "recall": 0.9230769230769231,
+          "f1": 0.96,
+          "averagePrecision": 0.9897435897435898
+        }
+      },
+      "macroPrecision": 0.8067890442890443,
+      "macroRecall": 0.8317307692307693,
+      "microPrecision": 0.796875,
+      "microRecall": 0.8225806451612904,
+      "hammingAccuracy": 0.9166666666666666,
+      "topOneIsAnyValidLabel": 0.9166666666666666,
+      "tp": 51,
+      "fp": 13,
+      "fn": 11
+    }
+  },
+  "results": {
+    "selectedRegularized": {
+      "metrics": {
+        "count": 48,
+        "macroF1": 0.8000730994152047,
+        "microF1": 0.8173913043478261,
+        "exactMatch": 0.6875,
+        "bce": 0.20456538161728643,
+        "brier": 0.05880226333170429,
+        "macroAveragePrecision": 0.8763015432423327,
+        "threshold": 0.5097574864438786,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 10,
+            "fp": 1,
+            "fn": 3,
+            "precision": 0.9090909090909091,
+            "recall": 0.7692307692307693,
+            "f1": 0.8333333333333334,
+            "averagePrecision": 0.882063550484603
+          },
+          "place": {
+            "positiveSupport": 8,
+            "predictedPositive": 8,
+            "tp": 7,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.875,
+            "recall": 0.875,
+            "f1": 0.875,
+            "averagePrecision": 0.9861111111111112
+          },
+          "action": {
+            "positiveSupport": 10,
+            "predictedPositive": 9,
+            "tp": 8,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.8888888888888888,
+            "recall": 0.8,
+            "f1": 0.8421052631578947,
+            "averagePrecision": 0.9105880230880231
+          },
+          "state": {
+            "positiveSupport": 8,
+            "predictedPositive": 8,
+            "tp": 6,
+            "fp": 2,
+            "fn": 2,
+            "precision": 0.75,
+            "recall": 0.75,
+            "f1": 0.75,
+            "averagePrecision": 0.8368577694235589
+          },
+          "relation": {
+            "positiveSupport": 10,
+            "predictedPositive": 6,
+            "tp": 4,
+            "fp": 2,
+            "fn": 6,
+            "precision": 0.6666666666666666,
+            "recall": 0.4,
+            "f1": 0.5,
+            "averagePrecision": 0.6421888053467001
+          },
+          "abstract": {
+            "positiveSupport": 12,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          }
+        },
+        "macroPrecision": 0.8482744107744108,
+        "macroRecall": 0.7657051282051283,
+        "microPrecision": 0.8703703703703703,
+        "microRecall": 0.7704918032786885,
+        "hammingAccuracy": 0.9270833333333334,
+        "topOneIsAnyValidLabel": 0.875,
+        "tp": 47,
+        "fp": 7,
+        "fn": 14
+      },
+      "confidentErrors": [
+        {
+          "id": "regphys-place-015",
+          "word": "colonnade",
+          "category": "relation",
+          "probability": 0.008701634764470638,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9912983652355294
+        },
+        {
+          "id": "reg-new-006",
+          "word": "hibernate",
+          "category": "state",
+          "probability": 0.03296887630959755,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9670311236904024
+        },
+        {
+          "id": "relabs-new-004",
+          "word": "keyed",
+          "category": "state",
+          "probability": 0.9016176287784338,
+          "goldMembership": 0,
+          "confidenceInWrongBinaryDecision": 0.9016176287784338
+        },
+        {
+          "id": "relabs-new-016",
+          "word": "guardian",
+          "category": "entity",
+          "probability": 0.015083971567851958,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9849160284321481
+        },
+        {
+          "id": "relabs-new-016",
+          "word": "guardian",
+          "category": "relation",
+          "probability": 0.07688148528947629,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9231185147105238
+        },
+        {
+          "id": "relabs-new-017",
+          "word": "tenant",
+          "category": "entity",
+          "probability": 0.058070602349441926,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.941929397650558
+        },
+        {
+          "id": "relabs-new-018",
+          "word": "landlord",
+          "category": "entity",
+          "probability": 0.03788937433564393,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9621106256643561
+        },
+        {
+          "id": "relabs-new-075",
+          "word": "handoff",
+          "category": "action",
+          "probability": 0.04532994846771054,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9546700515322895
+        }
+      ],
+      "parameters": {
+        "weightParameters": 16576,
+        "biasParameters": 38,
+        "totalParameters": 16614,
+        "exactZeroWeights": 0,
+        "zeroWeightFraction": 0.0,
+        "nonzeroWeightCount": 16576
+      }
+    },
+    "currentClassifier": {
+      "metrics": {
+        "count": 48,
+        "macroF1": 0.7277067348678603,
+        "microF1": 0.7419354838709677,
+        "exactMatch": 0.5208333333333334,
+        "bce": 0.23831086240397564,
+        "brier": 0.07525729630898087,
+        "macroAveragePrecision": 0.846664747856996,
+        "threshold": 0.3615006965813038,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 13,
+            "predictedPositive": 10,
+            "tp": 8,
+            "fp": 2,
+            "fn": 5,
+            "precision": 0.8,
+            "recall": 0.6153846153846154,
+            "f1": 0.6956521739130435,
+            "averagePrecision": 0.7833678691978287
+          },
+          "place": {
+            "positiveSupport": 8,
+            "predictedPositive": 12,
+            "tp": 8,
+            "fp": 4,
+            "fn": 0,
+            "precision": 0.6666666666666666,
+            "recall": 1.0,
+            "f1": 0.8,
+            "averagePrecision": 0.975
+          },
+          "action": {
+            "positiveSupport": 10,
+            "predictedPositive": 10,
+            "tp": 8,
+            "fp": 2,
+            "fn": 2,
+            "precision": 0.8,
+            "recall": 0.8,
+            "f1": 0.8,
+            "averagePrecision": 0.9013888888888889
+          },
+          "state": {
+            "positiveSupport": 8,
+            "predictedPositive": 12,
+            "tp": 6,
+            "fp": 6,
+            "fn": 2,
+            "precision": 0.5,
+            "recall": 0.75,
+            "f1": 0.6,
+            "averagePrecision": 0.8166666666666667
+          },
+          "relation": {
+            "positiveSupport": 10,
+            "predictedPositive": 7,
+            "tp": 4,
+            "fp": 3,
+            "fn": 6,
+            "precision": 0.5714285714285714,
+            "recall": 0.4,
+            "f1": 0.47058823529411764,
+            "averagePrecision": 0.6035650623885918
+          },
+          "abstract": {
+            "positiveSupport": 12,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          }
+        },
+        "macroPrecision": 0.723015873015873,
+        "macroRecall": 0.760897435897436,
+        "microPrecision": 0.7301587301587301,
+        "microRecall": 0.7540983606557377,
+        "hammingAccuracy": 0.8888888888888888,
+        "topOneIsAnyValidLabel": 0.7291666666666666,
+        "tp": 46,
+        "fp": 17,
+        "fn": 15
+      },
+      "confidentErrors": [
+        {
+          "id": "regphys-entity-031",
+          "word": "gneiss",
+          "category": "entity",
+          "probability": 0.09069669475452481,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9093033052454752
+        },
+        {
+          "id": "regphys-place-015",
+          "word": "colonnade",
+          "category": "relation",
+          "probability": 0.00921825319100231,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9907817468089977
+        },
+        {
+          "id": "reg-new-024",
+          "word": "spurt",
+          "category": "relation",
+          "probability": 0.9207701307438199,
+          "goldMembership": 0,
+          "confidenceInWrongBinaryDecision": 0.9207701307438199
+        },
+        {
+          "id": "relabs-new-015",
+          "word": "fastener",
+          "category": "relation",
+          "probability": 0.08037934181729775,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9196206581827022
+        },
+        {
+          "id": "relabs-new-016",
+          "word": "guardian",
+          "category": "entity",
+          "probability": 0.03894212755101373,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9610578724489862
+        },
+        {
+          "id": "relabs-new-016",
+          "word": "guardian",
+          "category": "relation",
+          "probability": 0.07968571172183586,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9203142882781641
+        },
+        {
+          "id": "relabs-new-075",
+          "word": "handoff",
+          "category": "action",
+          "probability": 0.04599623086066322,
+          "goldMembership": 1,
+          "confidenceInWrongBinaryDecision": 0.9540037691393368
+        }
+      ],
+      "parameters": {
+        "weightParameters": 16576,
+        "biasParameters": 38,
+        "totalParameters": 16614,
+        "exactZeroWeights": 0,
+        "zeroWeightFraction": 0.0,
+        "nonzeroWeightCount": 16576
+      }
+    },
+    "fixedDataAblations": {
+      "newdata-no-paraphrases": {
+        "metrics": {
+          "count": 48,
+          "macroF1": 0.8080993080993081,
+          "microF1": 0.8130081300813008,
+          "exactMatch": 0.625,
+          "bce": 0.1805768855930249,
+          "brier": 0.05265684391687703,
+          "macroAveragePrecision": 0.89832431593461,
+          "threshold": 0.3615006965813038,
+          "perClass": {
+            "entity": {
+              "positiveSupport": 13,
+              "predictedPositive": 13,
+              "tp": 10,
+              "fp": 3,
+              "fn": 3,
+              "precision": 0.7692307692307693,
+              "recall": 0.7692307692307693,
+              "f1": 0.7692307692307693,
+              "averagePrecision": 0.912690250925545
+            },
+            "place": {
+              "positiveSupport": 8,
+              "predictedPositive": 8,
+              "tp": 8,
+              "fp": 0,
+              "fn": 0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "averagePrecision": 1.0
+            },
+            "action": {
+              "positiveSupport": 10,
+              "predictedPositive": 11,
+              "tp": 9,
+              "fp": 2,
+              "fn": 1,
+              "precision": 0.8181818181818182,
+              "recall": 0.9,
+              "f1": 0.8571428571428571,
+              "averagePrecision": 0.9252124183006536
+            },
+            "state": {
+              "positiveSupport": 8,
+              "predictedPositive": 10,
+              "tp": 6,
+              "fp": 4,
+              "fn": 2,
+              "precision": 0.6,
+              "recall": 0.75,
+              "f1": 0.6666666666666666,
+              "averagePrecision": 0.8400735294117647
+            },
+            "relation": {
+              "positiveSupport": 10,
+              "predictedPositive": 8,
+              "tp": 5,
+              "fp": 3,
+              "fn": 5,
+              "precision": 0.625,
+              "recall": 0.5,
+              "f1": 0.5555555555555556,
+              "averagePrecision": 0.7119696969696969
+            },
+            "abstract": {
+              "positiveSupport": 12,
+              "predictedPositive": 12,
+              "tp": 12,
+              "fp": 0,
+              "fn": 0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "averagePrecision": 1.0
+            }
+          },
+          "macroPrecision": 0.8020687645687646,
+          "macroRecall": 0.8198717948717947,
+          "microPrecision": 0.8064516129032258,
+          "microRecall": 0.819672131147541,
+          "hammingAccuracy": 0.9201388888888888,
+          "topOneIsAnyValidLabel": 0.8958333333333334,
+          "tp": 50,
+          "fp": 12,
+          "fn": 11
+        },
+        "parameters": {
+          "weightParameters": 16576,
+          "biasParameters": 38,
+          "totalParameters": 16614,
+          "exactZeroWeights": 0,
+          "zeroWeightFraction": 0.0,
+          "nonzeroWeightCount": 16576
+        },
+        "confidentErrors": [
+          {
+            "id": "regphys-place-015",
+            "word": "colonnade",
+            "category": "relation",
+            "probability": 0.011384844504248377,
+            "goldMembership": 1,
+            "confidenceInWrongBinaryDecision": 0.9886151554957516
+          },
+          {
+            "id": "reg-new-006",
+            "word": "hibernate",
+            "category": "state",
+            "probability": 0.06144549242693848,
+            "goldMembership": 1,
+            "confidenceInWrongBinaryDecision": 0.9385545075730615
+          },
+          {
+            "id": "relabs-new-016",
+            "word": "guardian",
+            "category": "entity",
+            "probability": 0.0288712468316365,
+            "goldMembership": 1,
+            "confidenceInWrongBinaryDecision": 0.9711287531683634
+          },
+          {
+            "id": "relabs-new-016",
+            "word": "guardian",
+            "category": "relation",
+            "probability": 0.055447089160933,
+            "goldMembership": 1,
+            "confidenceInWrongBinaryDecision": 0.944552910839067
+          },
+          {
+            "id": "relabs-new-075",
+            "word": "handoff",
+            "category": "action",
+            "probability": 0.04817664627092325,
+            "goldMembership": 1,
+            "confidenceInWrongBinaryDecision": 0.9518233537290768
+          }
+        ],
+        "groupedBootstrapVsCurrentMacroF1": {
+          "method": "Percentile paired group bootstrap; sparse-class resamples can have zero support.",
+          "repetitions": 1000,
+          "groupCount": 47,
+          "macroF1_95PercentInterval": [
+            0.7188337522497762,
+            0.868076388888889
+          ],
+          "deltaVsComparatorMacroF1_95PercentInterval": [
+            0.013135159366777083,
+            0.15403126512029128
+          ]
+        }
+      },
+      "newdata-shared-weight-paraphrases": {
+        "metrics": {
+          "count": 48,
+          "macroF1": 0.8132275132275132,
+          "microF1": 0.819672131147541,
+          "exactMatch": 0.625,
+          "bce": 0.17892971867063798,
+          "brier": 0.050689580910822825,
+          "macroAveragePrecision": 0.9024206076508708,
+          "threshold": 0.3615006965813038,
+          "perClass": {
+            "entity": {
+              "positiveSupport": 13,
+              "predictedPositive": 12,
+              "tp": 10,
+              "fp": 2,
+              "fn": 3,
+              "precision": 0.8333333333333334,
+              "recall": 0.7692307692307693,
+              "f1": 0.8,
+              "averagePrecision": 0.9199300699300699
+            },
+            "place": {
+              "positiveSupport": 8,
+              "predictedPositive": 8,
+              "tp": 8,
+              "fp": 0,
+              "fn": 0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "averagePrecision": 1.0
+            },
+            "action": {
+              "positiveSupport": 10,
+              "predictedPositive": 11,
+              "tp": 9,
+              "fp": 2,
+              "fn": 1,
+              "precision": 0.8181818181818182,
+              "recall": 0.9,
+              "f1": 0.8571428571428571,
+              "averagePrecision": 0.9315204678362573
+            },
+            "state": {
+              "positiveSupport": 8,
+              "predictedPositive": 10,
+              "tp": 6,
+              "fp": 4,
+              "fn": 2,
+              "precision": 0.6,
+              "recall": 0.75,
+              "f1": 0.6666666666666666,
+              "averagePrecision": 0.8300937001594897
+            },
+            "relation": {
+              "positiveSupport": 10,
+              "predictedPositive": 8,
+              "tp": 5,
+              "fp": 3,
+              "fn": 5,
+              "precision": 0.625,
+              "recall": 0.5,
+              "f1": 0.5555555555555556,
+              "averagePrecision": 0.7329794079794081
+            },
+            "abstract": {
+              "positiveSupport": 12,
+              "predictedPositive": 12,
+              "tp": 12,
+              "fp": 0,
+              "fn": 0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "averagePrecision": 1.0
+            }
+          },
+          "macroPrecision": 0.8127525252525253,
+          "macroRecall": 0.8198717948717947,
+          "microPrecision": 0.819672131147541,
+          "microRecall": 0.819672131147541,
+          "hammingAccuracy": 0.9236111111111112,
+          "topOneIsAnyValidLabel": 0.8958333333333334,
+          "tp": 50,
+          "fp": 11,
+          "fn": 11
+        },
+        "parameters": {
+          "weightParameters": 16576,
+          "biasParameters": 38,
+          "totalParameters": 16614,
+          "exactZeroWeights": 0,
+          "zeroWeightFraction": 0.0,
+          "nonzeroWeightCount": 16576
+        },
+        "confidentErrors": [
+          {
+            "id": "regphys-place-015",
+            "word": "colonnade",
+            "category": "relation",
+            "probability": 0.007726431375998206,
+            "goldMembership": 1,
+            "confidenceInWrongBinaryDecision": 0.9922735686240018
+          },
+          {
+            "id": "reg-new-006",
+            "word": "hibernate",
+            "category": "state",
+            "probability": 0.04276509941151752,
+            "goldMembership": 1,
+            "confidenceInWrongBinaryDecision": 0.9572349005884825
+          },
+          {
+            "id": "relabs-new-004",
+            "word": "keyed",
+            "category": "state",
+            "probability": 0.9129602256962704,
+            "goldMembership": 0,
+            "confidenceInWrongBinaryDecision": 0.9129602256962704
+          },
+          {
+            "id": "relabs-new-016",
+            "word": "guardian",
+            "category": "entity",
+            "probability": 0.028736388754615334,
+            "goldMembership": 1,
+            "confidenceInWrongBinaryDecision": 0.9712636112453846
+          },
+          {
+            "id": "relabs-new-016",
+            "word": "guardian",
+            "category": "relation",
+            "probability": 0.07464034599489618,
+            "goldMembership": 1,
+            "confidenceInWrongBinaryDecision": 0.9253596540051038
+          },
+          {
+            "id": "relabs-new-075",
+            "word": "handoff",
+            "category": "action",
+            "probability": 0.03784247262991587,
+            "goldMembership": 1,
+            "confidenceInWrongBinaryDecision": 0.9621575273700841
+          }
+        ],
+        "groupedBootstrapVsCurrentMacroF1": {
+          "method": "Percentile paired group bootstrap; sparse-class resamples can have zero support.",
+          "repetitions": 1000,
+          "groupCount": 47,
+          "macroF1_95PercentInterval": [
+            0.7249980742296919,
+            0.8708853492186825
+          ],
+          "deltaVsComparatorMacroF1_95PercentInterval": [
+            0.02095781070159045,
+            0.15710743133036675
+          ]
+        }
+      }
+    }
+  },
+  "selectedVsCurrentGroupedBootstrapMacroF1": {
+    "method": "Percentile paired group bootstrap; sparse-class resamples can have zero support.",
+    "repetitions": 1000,
+    "groupCount": 47,
+    "macroF1_95PercentInterval": [
+      0.6953213814765672,
+      0.8719512727339739
+    ],
+    "deltaVsComparatorMacroF1_95PercentInterval": [
+      0.005528247091546305,
+      0.14102007290668278
+    ]
+  },
+  "promotionGate": {
+    "passed": true,
+    "eligibleBeforeTest": true,
+    "eligibleForRegistryUpdate": true,
+    "validationChecks": {
+      "macroF1": true,
+      "exactMatch": true,
+      "microPrecision": true,
+      "microRecall": true,
+      "bce": true,
+      "brier": true,
+      "perClassF1": true
+    },
+    "testChecks": {
+      "macroF1": true,
+      "exactMatch": true,
+      "microPrecision": true,
+      "microRecall": true,
+      "bce": true,
+      "brier": true,
+      "perClassF1": true
+    },
+    "margins": {
+      "macroF1": 0.01,
+      "exactMatch": 0.02,
+      "microPrecision": 0.02,
+      "microRecall": 0.02,
+      "bce": 0.01,
+      "brier": 0.003,
+      "perClassF1": 0.05
+    },
+    "comparator": "tests/fixtures/meaning-taxonomy/expanded-1000/classifier.json",
+    "comparatorSha256": "38ca941fd61eb3636cc5b8f7675bb883ead5a8baf8a9f4474429360e45e7cf4f",
+    "meaning": "Registry changes only if the validation and frozen test gates both pass; failed test results do not trigger candidate reselection."
+  },
+  "limitations": [
+    "Only 48 fresh AI-reviewed pilot meanings; not human-expert truth or real app prevalence.",
+    "One frozen test evaluation after architecture/configuration selection; do not reuse these labels for another search.",
+    "Validation-selected thresholds and calibrators are not guarantees of deployment calibration."
+  ]
+}
