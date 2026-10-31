@@ -1,0 +1,599 @@
+{
+  "schemaVersion": 1,
+  "task": "read-only targeted label-quality audit",
+  "dataset": "tests/fixtures/meaning-taxonomy/regularized-expansion/dataset.json",
+  "focus": [
+    "action/state",
+    "entity/place"
+  ],
+  "summary": {
+    "reviewedNewMeaningCount": 280,
+    "reviewedNewMeaningDefinitions": true,
+    "trainingNewMeaningCount": 160,
+    "relevantOldTrainingCounterpartCount": 10,
+    "relevantOldTrainingCounterpartIds": [
+      "expanded-0ec85cb05262024d",
+      "expanded-230e7f18ab50564a",
+      "expanded-94d32626df2bff22",
+      "meaning-1e7e00420d1ddf26",
+      "meaning-35f5bcf0192bc01b",
+      "meaning-74d46cff80862410",
+      "meaning-aa8cbd89f935aec8",
+      "meaning-aa9a8dc1e6ede9b3",
+      "meaning-c4dd245a2176c794",
+      "meaning-ceb7f273cf84a64a"
+    ],
+    "findingCount": 15,
+    "definiteErrorCount": 0,
+    "ambiguousPolicyCount": 15,
+    "coverageNote": "Reviewed the exact definitions and current labels for all 280 new-meaning rows across splits. Findings target training rows and compare relevant old TRAIN meanings. This is a policy-focused audit, not an accuracy estimate; no labels, splits, or data were changed."
+  },
+  "findings": [
+    {
+      "rowId": "reg-new-039",
+      "word": "disintegrate",
+      "partOfSpeech": "verb",
+      "exactDefinition": "To break apart into smaller pieces or particles.",
+      "currentLabels": [
+        "action"
+      ],
+      "proposedLabels": [
+        "action",
+        "state"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "This is a process verb whose endpoint is a visibly broken-apart condition. The old TRAIN sense “shatter” carries both action and state for the same break-into-pieces pattern; consider whether the disintegrated result is part of the required visual evidence.",
+      "counterparts": [
+        {
+          "rowId": "meaning-aa9a8dc1e6ede9b3",
+          "word": "shatter",
+          "exactDefinition": "To break suddenly into many sharp pieces.",
+          "currentLabels": [
+            "action",
+            "state"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Retain action for this experiment. A persistent aftermath alone is not a consistent reason to add state; review the old shatter co-label in a future policy revision.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "reg-new-040",
+      "word": "fragment",
+      "partOfSpeech": "verb",
+      "exactDefinition": "To break or divide something into smaller pieces.",
+      "currentLabels": [
+        "action"
+      ],
+      "proposedLabels": [
+        "action",
+        "state"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "The definition explicitly includes division into smaller pieces, so an image of the resulting fragments may satisfy part of the selected meaning. Old TRAIN “shatter” is action+state for a very close event; the current action-only label may reflect a policy distinction that needs stating.",
+      "counterparts": [
+        {
+          "rowId": "meaning-aa9a8dc1e6ede9b3",
+          "word": "shatter",
+          "exactDefinition": "To break suddenly into many sharp pieces.",
+          "currentLabels": [
+            "action",
+            "state"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Verified near-parallel with shatter. This is a process/result policy conflict, not proof that this new action-only label is wrong.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "reg-new-041",
+      "word": "splinter",
+      "partOfSpeech": "verb",
+      "exactDefinition": "To break into long, thin, sharp pieces.",
+      "currentLabels": [
+        "action"
+      ],
+      "proposedLabels": [
+        "action",
+        "state"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "The event produces long, thin, sharp pieces, making the resulting visible condition salient as well as the breakage event. Old TRAIN “shatter” is action+state; review whether this near-neighbor should share that treatment.",
+      "counterparts": [
+        {
+          "rowId": "meaning-aa9a8dc1e6ede9b3",
+          "word": "shatter",
+          "exactDefinition": "To break suddenly into many sharp pieces.",
+          "currentLabels": [
+            "action",
+            "state"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Verified unusually close definition to shatter, including sharp pieces. The differing state membership needs a consistent rule across both meanings.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "reg-new-027",
+      "word": "solidify",
+      "partOfSpeech": "verb",
+      "exactDefinition": "To change from a liquid or gas into a solid.",
+      "currentLabels": [
+        "action"
+      ],
+      "proposedLabels": [
+        "action",
+        "state"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "Changing material into a solid is an event and yields a persistent solid condition. Old TRAIN “evaporate” is action+state for a phase change; clarify whether the endpoint condition merits state for both directions of phase change.",
+      "counterparts": [
+        {
+          "rowId": "meaning-35f5bcf0192bc01b",
+          "word": "evaporate",
+          "exactDefinition": "To change from liquid into vapor at a surface.",
+          "currentLabels": [
+            "action",
+            "state"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Phase-change precedent evaporate has state, while crystallize is action-only. Resolve the policy across all three rather than automatically adding state here.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "reg-new-031",
+      "word": "corrode",
+      "partOfSpeech": "verb",
+      "exactDefinition": "For a material to deteriorate through chemical reaction with its surroundings.",
+      "currentLabels": [
+        "action"
+      ],
+      "proposedLabels": [
+        "action",
+        "state"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "The definition describes material deterioration through a chemical reaction, which may be visible both as an ongoing change and as a corroded surface. Old TRAIN “erode” is action+state for a closely related wear-away process; review whether chemical versus mechanical cause justifies the label difference.",
+      "counterparts": [
+        {
+          "rowId": "meaning-1e7e00420d1ddf26",
+          "word": "erode",
+          "exactDefinition": "To wear away gradually through water, wind, or friction.",
+          "currentLabels": [
+            "action",
+            "state"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Verified mismatch with erode for material deterioration. Chemical versus mechanical cause does not by itself explain different endpoint-state membership.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "reg-new-032",
+      "word": "calcify",
+      "partOfSpeech": "verb",
+      "exactDefinition": "For tissue or another material to become hardened by deposits of calcium salts.",
+      "currentLabels": [
+        "action"
+      ],
+      "proposedLabels": [
+        "action",
+        "state"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "Calcification makes tissue or material harder through calcium deposits, so the resulting physical condition may be visible as well as the process. Old co-labeled transformation examples include “erode” and “inflate”; review whether this sense warrants action+state.",
+      "counterparts": [
+        {
+          "rowId": "meaning-aa8cbd89f935aec8",
+          "word": "inflate",
+          "exactDefinition": "To fill with air or gas so that something expands.",
+          "currentLabels": [
+            "action",
+            "state"
+          ],
+          "split": "train"
+        },
+        {
+          "rowId": "meaning-1e7e00420d1ddf26",
+          "word": "erode",
+          "exactDefinition": "To wear away gradually through water, wind, or friction.",
+          "currentLabels": [
+            "action",
+            "state"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Do not automatically add state: composition/history is not directly identifiable from many photos. Retain as a lower-confidence process/result policy question.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "reg-new-033",
+      "word": "coagulate",
+      "partOfSpeech": "verb",
+      "exactDefinition": "For a liquid, especially blood or protein, to thicken into a semisolid mass.",
+      "currentLabels": [
+        "action"
+      ],
+      "proposedLabels": [
+        "action",
+        "state"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "The definition includes a change of consistency ending in a semisolid mass, so a still image can show both the thickening event and its resulting condition. Old TRAIN phase-change “evaporate” is action+state; check whether that precedent applies.",
+      "counterparts": [
+        {
+          "rowId": "meaning-35f5bcf0192bc01b",
+          "word": "evaporate",
+          "exactDefinition": "To change from liquid into vapor at a surface.",
+          "currentLabels": [
+            "action",
+            "state"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Verified action-only versus action/state for other phase/consistency changes. A result-route policy is needed; the suggested label is not established gold.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "reg-new-034",
+      "word": "curdle",
+      "partOfSpeech": "verb",
+      "exactDefinition": "For milk or a similar liquid to separate into lumps and thinner liquid.",
+      "currentLabels": [
+        "action"
+      ],
+      "proposedLabels": [
+        "action",
+        "state"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "The separation into lumps and thinner liquid is a visible resulting configuration as well as a change process. Compare old TRAIN “shatter,” which labels a break event and its visible aftermath action+state; review whether the same evidence logic applies.",
+      "counterparts": [
+        {
+          "rowId": "meaning-aa9a8dc1e6ede9b3",
+          "word": "shatter",
+          "exactDefinition": "To break suddenly into many sharp pieces.",
+          "currentLabels": [
+            "action",
+            "state"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Lumps and thinner liquid are visible results, but that does not automatically require a state category for a process. Review with other transformation verbs.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "reg-new-042",
+      "word": "pulverize",
+      "partOfSpeech": "verb",
+      "exactDefinition": "To crush or grind a solid into fine powder.",
+      "currentLabels": [
+        "action"
+      ],
+      "proposedLabels": [
+        "action",
+        "state"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "The definition ends with a solid reduced to fine powder, a visible condition distinct from the grinding event. Old TRAIN “shatter” co-labels an event and its pieces; review whether the endpoint is similarly meaningful here.",
+      "counterparts": [
+        {
+          "rowId": "meaning-aa9a8dc1e6ede9b3",
+          "word": "shatter",
+          "exactDefinition": "To break suddenly into many sharp pieces.",
+          "currentLabels": [
+            "action",
+            "state"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Verified difference from shatter. Fine powder versus sharp fragments does not by itself justify different result-state policy.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "regphys-place-020",
+      "word": "causeway",
+      "partOfSpeech": "noun",
+      "exactDefinition": "A raised road or path across low or wet ground.",
+      "currentLabels": [
+        "place"
+      ],
+      "proposedLabels": [
+        "entity",
+        "place",
+        "relation"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "A causeway is defined as a raised road/path crossing low or wet ground, so it can require evidence of the built structure and its spatial course. Old TRAIN bridge/overpass meanings carry entity+place+relation, while underpass is place-only; this looks like a boundary-policy question rather than a clear factual error.",
+      "counterparts": [
+        {
+          "rowId": "meaning-c4dd245a2176c794",
+          "word": "bridge",
+          "exactDefinition": "A structure carrying a path over water or another obstacle.",
+          "currentLabels": [
+            "entity",
+            "place",
+            "relation"
+          ],
+          "split": "train"
+        },
+        {
+          "rowId": "expanded-0ec85cb05262024d",
+          "word": "overpass",
+          "exactDefinition": "A bridge carrying one road or path above another.",
+          "currentLabels": [
+            "entity",
+            "place",
+            "relation"
+          ],
+          "split": "train"
+        },
+        {
+          "rowId": "expanded-230e7f18ab50564a",
+          "word": "underpass",
+          "exactDefinition": "A passage that lets a road or path go beneath another route.",
+          "currentLabels": [
+            "place"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Verified structure/path/crossing overlap with bridge and overpass. Entity/place/relation annotation is not consistently specified across built routes.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "regphys-place-025",
+      "word": "gazebo",
+      "partOfSpeech": "noun",
+      "exactDefinition": "A small roofed structure in a garden or park, open on the sides.",
+      "currentLabels": [
+        "place"
+      ],
+      "proposedLabels": [
+        "entity",
+        "place"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "The selected meaning is explicitly a roofed structure, yet the label is place-only. Old TRAIN greenhouse and new TRAIN hothouse are entity+place for structures used as growing sites; review whether the same physical-structure evidence applies to a gazebo.",
+      "counterparts": [
+        {
+          "rowId": "meaning-ceb7f273cf84a64a",
+          "word": "greenhouse",
+          "exactDefinition": "An enclosed structure with transparent walls for growing plants.",
+          "currentLabels": [
+            "entity",
+            "place"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Verified explicit physical structure and setting. Entity+place is plausible under the greenhouse rule; record a proposed policy change, not a measured label error.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "regphys-place-029",
+      "word": "hatchery",
+      "partOfSpeech": "noun",
+      "exactDefinition": "A building or place where eggs are incubated and young animals are raised.",
+      "currentLabels": [
+        "place"
+      ],
+      "proposedLabels": [
+        "entity",
+        "place"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "The definition names a building or place where eggs are incubated. It may be place-only as an operating site, but its physical building form is also explicit, unlike a generic activity setting. Compare the entity+place greenhouse/hothouse treatment.",
+      "counterparts": [
+        {
+          "rowId": "meaning-ceb7f273cf84a64a",
+          "word": "greenhouse",
+          "exactDefinition": "An enclosed structure with transparent walls for growing plants.",
+          "currentLabels": [
+            "entity",
+            "place"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "The definition permits a building OR a site, so place-only can be defensible. Reject any claim that an omitted entity label is definitely wrong.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "regphys-place-014",
+      "word": "cloister",
+      "partOfSpeech": "noun",
+      "exactDefinition": "A covered walkway around a courtyard, especially in a monastery.",
+      "currentLabels": [
+        "place"
+      ],
+      "proposedLabels": [
+        "place",
+        "relation"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "The walkway’s defining layout is around a courtyard, an explicit spatial configuration between the walkway and the courtyard. Old TRAIN bridge/overpass senses include relation when the structure’s spatial arrangement is central; review whether “around” should trigger the same evidence label.",
+      "counterparts": [
+        {
+          "rowId": "meaning-c4dd245a2176c794",
+          "word": "bridge",
+          "exactDefinition": "A structure carrying a path over water or another obstacle.",
+          "currentLabels": [
+            "entity",
+            "place",
+            "relation"
+          ],
+          "split": "train"
+        },
+        {
+          "rowId": "expanded-0ec85cb05262024d",
+          "word": "overpass",
+          "exactDefinition": "A bridge carrying one road or path above another.",
+          "currentLabels": [
+            "entity",
+            "place",
+            "relation"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "The courtyard arrangement is definitionally central; relation membership is a substantive review candidate under the basement/bridge policy.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "regphys-place-032",
+      "word": "mezzanine",
+      "partOfSpeech": "noun",
+      "exactDefinition": "A low intermediate floor between two main floors of a building.",
+      "currentLabels": [
+        "place"
+      ],
+      "proposedLabels": [
+        "place",
+        "relation"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "The definition identifies an intermediate floor by its position between two other floors. That vertical configuration is essential to the selected meaning. Old TRAIN underpass is place-only despite a “beneath another route” definition, so the relation boundary appears inconsistent and needs a policy decision.",
+      "counterparts": [
+        {
+          "rowId": "expanded-230e7f18ab50564a",
+          "word": "underpass",
+          "exactDefinition": "A passage that lets a road or path go beneath another route.",
+          "currentLabels": [
+            "place"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "Between-floor location is defining, comparable to basement/cellar position. This is a strong relation-boundary inconsistency candidate.",
+        "labelApplied": false
+      }
+    },
+    {
+      "rowId": "regphys-place-007",
+      "word": "breakwater",
+      "partOfSpeech": "noun",
+      "exactDefinition": "A barrier built offshore to reduce the force of waves at a harbor.",
+      "currentLabels": [
+        "place"
+      ],
+      "proposedLabels": [
+        "entity",
+        "place"
+      ],
+      "classification": "ambiguous-policy",
+      "split": "train",
+      "reason": "The definition calls this a built barrier offshore. A fixed structure can be an entity while its environmental role/location supports place; old TRAIN wall is entity-only and levee is place-only, leaving this analogous barrier ambiguous.",
+      "counterparts": [
+        {
+          "rowId": "meaning-74d46cff80862410",
+          "word": "wall",
+          "exactDefinition": "A vertical structure enclosing or dividing a space.",
+          "currentLabels": [
+            "entity"
+          ],
+          "split": "train"
+        },
+        {
+          "rowId": "expanded-94d32626df2bff22",
+          "word": "levee",
+          "exactDefinition": "A raised bank built beside a river to prevent flooding.",
+          "currentLabels": [
+            "place"
+          ],
+          "split": "train"
+        }
+      ],
+      "primaryReview": {
+        "reviewer": "primary assistant",
+        "status": "reviewed individually",
+        "assessment": "An explicitly built barrier suggests entity evidence; place-only matches levee but conflicts with wall. The structural entity/place boundary needs clarification.",
+        "labelApplied": false
+      }
+    }
+  ],
+  "date": "2026-11-01",
+  "datasetFileSha256": "c6ac49bf923f3166ddde12faa54d1f345e66597cdb59bc4d61a9fa7446ba8b4a",
+  "labelsChanged": false,
+  "reviewType": "AI semantic/policy review; not human-expert label accuracy",
+  "primaryConclusion": "All 15 flags and cited counterparts independently inspected. They identify unresolved boundary policies; no ground-truth error rate is established. Training/evaluation labels remain frozen to isolate dropout."
+}

@@ -106,6 +106,19 @@ Relations remain the main weakness (test F1 50%). Obtain new independent
 evaluation groups before another round of targeted tuning. Text paraphrases
 do not substitute for image crops or genuine image–meaning adapter examples.
 
+## Dropout and grouped early stopping (2026-11-01)
+
+The [controlled dropout follow-up](meaning-taxonomy-training/dropout/README.md)
+compares 24 settings and repeats five finalist settings over three seeds, keeping
+all labels fixed. Dropout gives small CV gains but lowers validation precision
+and does not pass the replacement rules; the current L2 head remains selected.
+Both previously inspected test cohorts are fixed regression checks, not fresh
+confirmation. The primary-reviewed label audit records 15 unresolved policy
+cases rather than an asserted label-accuracy percentage. Resolve process/result
+and built-structure/place rules in a separate versioned annotation revision,
+then obtain independent confirmation meanings before another generalization
+claim. Dropout is training-only and adds no deployed parameters.
+
 ## Categories describe required visual evidence
 
 | Output ID | Evidence focus | Examples |

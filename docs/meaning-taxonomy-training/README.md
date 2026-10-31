@@ -27,6 +27,11 @@ L2 and elastic-net, and records a new frozen comparison against the 1,000-row
 head. The current offline head is the stronger-L2 32-unit candidate from that
 experiment. Historical numbers below use different evaluation cohorts.
 
+The subsequent [dropout and early-stopping comparison](dropout/README.md) keeps
+labels fixed and compares matched Adam controls with dropout across three seeds.
+It does not replace the current stronger-L2 head: improvements are inconsistent
+across precision, recall and the two fixed regression cohorts.
+
 ## Result and interpretation
 
 | Validation-selected model | Validation macro-F1 | Test macro-F1 | Test exact label-set match | Parameters |

@@ -219,6 +219,7 @@ test('abandoned sessions retain goal progress and shrink today’s 8:00 AM plan 
   const persistence = new DriveSyncService(new MemoryStorage());
   const words = Array.from({ length: 30 }, (_, index) => word(String(index), { monthYear: 'October 2026', courseId: 'english' }));
   persistence.saveWords(words);
+  persistence.refreshNotebooks();
   persistence.setActiveNotebook('October 2026 Vocabulary');
   const initialSettings = ensureDailyStudyPlan(persistence, { now: activityDate });
   const initial = buildScheduledPracticeSession(getScheduledPracticeWords(persistence), initialSettings, { now: activityDate });
@@ -419,6 +420,7 @@ test('replacing a planned word with one practiced outside the plan persists even
   const persistence = new DriveSyncService(new MemoryStorage());
   const words = ['a', 'b', 'c'].map(id => word(id, { monthYear: 'October 2026', courseId: 'english' }));
   persistence.saveWords(words);
+  persistence.refreshNotebooks();
   persistence.setActiveNotebook('October 2026 Vocabulary');
   const first = ensureDailyStudyPlan(persistence, { now, targetSize: 2 });
   const selected = new Set([...first.dailyStudyPlan.reviseIds, ...first.dailyStudyPlan.learnIds]);

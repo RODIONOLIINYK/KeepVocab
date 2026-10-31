@@ -43,6 +43,7 @@ function installPractice(context, touch) {
     courseId: 'english', monthYear: 'October 2026',
     createdAt: new Date(now - 86400000).toISOString(), nextReviewDate: new Date(now - 60000).toISOString() }));
   persistence.saveWords(words);
+  persistence.refreshNotebooks();
   persistence.setActiveNotebook('October 2026 Vocabulary');
   const names = ['getActiveNotebook', 'getWordsByMonthYear', 'getSettings', 'updateSettings', 'getWords', 'saveWords', 'recordReview', 'appendReviewEvent'];
   const original = new Map(names.map(name => [name, driveSync[name]]));
