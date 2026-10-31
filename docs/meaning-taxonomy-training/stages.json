@@ -1,0 +1,47 @@
+[
+  {
+    "stage": 1,
+    "trialCount": 72,
+    "bestMacroF1": 0.8551260221316705,
+    "gain": 0.6366926262592503,
+    "bestConfig": {
+      "trial": 68,
+      "phase": "broad",
+      "hidden": 0,
+      "preprocess": "standardize",
+      "center": false,
+      "l2": 2.0579558337621543e-05,
+      "weightPower": 0.9767617536399757
+    }
+  },
+  {
+    "stage": 2,
+    "trialCount": 48,
+    "bestMacroF1": 0.8598963067876874,
+    "gain": 0.00477028465601681,
+    "bestConfig": {
+      "trial": 81,
+      "phase": "local",
+      "hidden": 32,
+      "preprocess": "scaled",
+      "center": true,
+      "l2": 0.0001228156082236678,
+      "weightPower": 1.0
+    }
+  },
+  {
+    "stage": 3,
+    "trialCount": 32,
+    "bestMacroF1": 0.8598963067876874,
+    "gain": 0.0,
+    "bestConfig": {
+      "trial": 81,
+      "phase": "local",
+      "hidden": 32,
+      "preprocess": "scaled",
+      "center": true,
+      "l2": 0.0001228156082236678,
+      "weightPower": 1.0
+    }
+  }
+]

@@ -1,0 +1,2996 @@
+{
+  "schemaVersion": 1,
+  "reviewType": "AI semantic review; not human-expert ground truth",
+  "reviewer": "Primary Codex assistant, after Luna annotation and targeted second-pass review",
+  "reviewedCount": 417,
+  "reviewedContentSha256": "e8984095d71e1312f7816f9211b2dee58cc37b95f6b7960898dc7cf8503560d3",
+  "reviewScope": [
+    "Read all 237 original exact meanings and their proposed category labels.",
+    "Read all 180 AI-authored definitions and labels; inspected the visual/nonvisual evidence boundaries.",
+    "Corrected POS shortcuts, incidental secondary labels, mixed senses and unsupported visual claims.",
+    "No actual images were annotated and no human-expert review is claimed."
+  ],
+  "confidenceDefinition": "Per-record confidence concerns the semantic label assignment, not classifier calibration or certainty that an image depicts it.",
+  "policyDecisions": [
+    "Use six overlapping evidence categories and sigmoid membership targets; abstract is separate from prediction uncertainty.",
+    "Classify the exact selected definition. A noun can describe a process and a verb can describe a state.",
+    "Use entity for the referent as target; do not add it to every property/action merely because an entity bears the property or performs the action.",
+    "Use relation where referent roles/configuration define the meaning, not merely because a medium or background is present.",
+    "Structures can be entity+place when recognized both as a referent and an environmental arrangement; ordinary rooms/landscapes use place.",
+    "Private mental feelings and normative/temporal claims require nonvisual context; do not infer them from appearance alone.",
+    "Definition-proposed misleading alternatives are NOT independently verified negative image labels and are excluded from final training records.",
+    "Preserve legacy provenance; quarantine connected headword/family components crossing old splits.",
+    "Group reviewed close paraphrases and antonym contrasts in the authored supplement; these grouping decisions precede any model fit."
+  ],
+  "overrides": [
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 104,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The target is the parked condition of the named vehicle; entity identity is context rather than a second general routing target. The selected sense is: A bicycle left stationary rather than being ridden."
+      },
+      "reason": "The target is the parked condition of the named vehicle; entity identity is context rather than a second general routing target."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 155,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The target is the parked condition of the named vehicle; entity identity is context rather than a second general routing target. The selected sense is: A motorcycle left stationary rather than being ridden."
+      },
+      "reason": "The target is the parked condition of the named vehicle; entity identity is context rather than a second general routing target."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 198,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The target is the parked condition of the named vehicle; entity identity is context rather than a second general routing target. The selected sense is: An airplane stationary on the ground."
+      },
+      "reason": "The target is the parked condition of the named vehicle; entity identity is context rather than a second general routing target."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 126,
+      "fields": {
+        "labels": [
+          "state",
+          "action"
+        ],
+        "primaryClass": "state",
+        "rationale": "The definition says to form a visible facial configuration; state is the primary photographic cue and formation is a valid event route. The selected sense is: To form an expression with the corners of the mouth raised."
+      },
+      "reason": "The definition says to form a visible facial configuration; state is the primary photographic cue and formation is a valid event route."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 42,
+      "fields": {
+        "labels": [
+          "entity",
+          "action"
+        ],
+        "primaryClass": "entity",
+        "rationale": "The defined water ridge is an entity whose movement also supplies a process route. The selected sense is: A moving ridge on the surface of water."
+      },
+      "reason": "The defined water ridge is an entity whose movement also supplies a process route."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 88,
+      "fields": {
+        "labels": [
+          "entity",
+          "action"
+        ],
+        "primaryClass": "entity",
+        "rationale": "The definition explicitly permits snow either falling or lying on the ground; process evidence is an alternative, not a requirement for every image. The selected sense is: Soft white frozen water falling from clouds or lying on the ground.",
+        "evidenceLimitations": "Either falling snow or settled snow can fit; a still image need not depict both routes."
+      },
+      "reason": "The definition explicitly permits snow either falling or lying on the ground; process evidence is an alternative, not a requirement for every image. Record the disjunction explicitly."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 187,
+      "fields": {
+        "evidenceLimitations": "A still image of looking at text cannot prove that the person understands it."
+      },
+      "reason": "Visible reading behavior illustrates the action but cannot establish comprehension."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 21,
+      "fields": {
+        "evidenceLimitations": "Appearance can illustrate this physical referent; composition, provenance, or meal timing may require context beyond a photograph.",
+        "requiredEvidence": "Show the defined physical referent: an alcoholic drink made from malt and hops."
+      },
+      "reason": "Keep hidden composition/timing separate from category membership. Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 35,
+      "fields": {
+        "evidenceLimitations": "Appearance can illustrate this physical referent; composition, provenance, or meal timing may require context beyond a photograph.",
+        "requiredEvidence": "Show the defined physical referent: a drink made from roasted coffee beans."
+      },
+      "reason": "Keep hidden composition/timing separate from category membership. Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 67,
+      "fields": {
+        "evidenceLimitations": "Appearance can illustrate this physical referent; composition, provenance, or meal timing may require context beyond a photograph.",
+        "requiredEvidence": "Show the defined physical referent: the first meal of the day."
+      },
+      "reason": "Keep hidden composition/timing separate from category membership. Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 186,
+      "fields": {
+        "evidenceLimitations": "Appearance can illustrate this physical referent; composition, provenance, or meal timing may require context beyond a photograph.",
+        "requiredEvidence": "Show the defined physical referent: an alcoholic drink made from fermented grapes."
+      },
+      "reason": "Keep hidden composition/timing separate from category membership. Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 223,
+      "fields": {
+        "evidenceLimitations": "Appearance can illustrate this physical referent; composition, provenance, or meal timing may require context beyond a photograph.",
+        "requiredEvidence": "Show the defined physical referent: a white liquid produced by mammals and used as a drink."
+      },
+      "reason": "Keep hidden composition/timing separate from category membership. Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 3,
+      "fields": {
+        "labels": [
+          "entity"
+        ],
+        "primaryClass": "entity",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: A cloud of fine particles and gases produced by burning."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 6,
+      "fields": {
+        "labels": [
+          "entity"
+        ],
+        "primaryClass": "entity",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: A very young child who is beginning to walk.",
+        "requiredEvidence": "A very young child depicted at the beginning-walking developmental stage.",
+        "evidenceLimitations": "Exact age and developmental history are not established by appearance alone."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. Child proportions alone do not prove developmental stage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 9,
+      "fields": {
+        "labels": [
+          "entity"
+        ],
+        "primaryClass": "entity",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: A plant structure that can grow into a new plant.",
+        "familyId": "sprouting"
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 15,
+      "fields": {
+        "labels": [
+          "place"
+        ],
+        "primaryClass": "place",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: A room or building equipped for making or repairing things."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 16,
+      "fields": {
+        "labels": [
+          "place"
+        ],
+        "primaryClass": "place",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: A room where a judge hears legal cases."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 17,
+      "fields": {
+        "labels": [
+          "place"
+        ],
+        "primaryClass": "place",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: An open field of grass and wildflowers."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 19,
+      "fields": {
+        "labels": [
+          "place"
+        ],
+        "primaryClass": "place",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: A sheltered coastal area where boats can anchor."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 20,
+      "fields": {
+        "labels": [
+          "place"
+        ],
+        "primaryClass": "place",
+        "rationale": "The target is a camping setting; no legal or administrative designation is asserted.",
+        "definition": "An outdoor area set up or used for camping.",
+        "requiredEvidence": "An outdoor camping area with tents or other overnight camping arrangements."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. Designation is administrative, not inferable from tent equipment."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 21,
+      "fields": {
+        "labels": [
+          "place"
+        ],
+        "primaryClass": "place",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: An area of land planted with fruit or nut trees."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 22,
+      "fields": {
+        "labels": [
+          "place"
+        ],
+        "primaryClass": "place",
+        "rationale": "A classroom is a setting; seating arrangement does not make the selected sense a separate relation. The selected sense is: A room arranged for teaching a group of learners."
+      },
+      "reason": "A classroom is a setting; seating arrangement does not make the selected sense a separate relation."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 25,
+      "fields": {
+        "labels": [
+          "action"
+        ],
+        "primaryClass": "action",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: To lose blood from a wound or bodily opening."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 35,
+      "fields": {
+        "labels": [
+          "action",
+          "relation"
+        ],
+        "primaryClass": "action",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: To scatter liquid in drops by striking or moving through it."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 38,
+      "fields": {
+        "labels": [
+          "action",
+          "relation"
+        ],
+        "primaryClass": "action",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: To make liquid flow from one container or source into another."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 42,
+      "fields": {
+        "labels": [
+          "action",
+          "relation"
+        ],
+        "primaryClass": "action",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: To let liquid or gas escape through an unintended opening."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 44,
+      "fields": {
+        "labels": [
+          "action",
+          "state"
+        ],
+        "primaryClass": "action",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: To cook gently in liquid just below boiling."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 52,
+      "fields": {
+        "labels": [
+          "action",
+          "relation"
+        ],
+        "primaryClass": "action",
+        "rationale": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category. The selected sense is: To pass a fine material through a mesh to separate particles."
+      },
+      "reason": "Sparse evidence routing: do not label an incidental bearer, medium, outcome, or setting as a separate category."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 32,
+      "fields": {
+        "labels": [
+          "action"
+        ],
+        "primaryClass": "action",
+        "rationale": "Sneezing is an expulsion event; a particular facial condition is not a separate target meaning. The selected sense is: To expel air suddenly through the nose and mouth."
+      },
+      "reason": "Sneezing is an expulsion event; a particular facial condition is not a separate target meaning."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 45,
+      "fields": {
+        "labels": [
+          "action"
+        ],
+        "primaryClass": "action",
+        "rationale": "Side-to-side movement is the event; a relationship with another referent is not required. The selected sense is: To move slowly from side to side."
+      },
+      "reason": "Side-to-side movement is the event; a relationship with another referent is not required."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 48,
+      "fields": {
+        "labels": [
+          "state",
+          "relation"
+        ],
+        "primaryClass": "state",
+        "rationale": "Remaining suspended above a surface describes a maintained spatial condition, not required motion. The selected sense is: To remain suspended in the air above a surface.",
+        "requiredEvidence": "A subject visibly suspended above a reference surface with a gap below it.",
+        "evidenceLimitations": "A still image cannot prove the subject remains suspended over time."
+      },
+      "reason": "Remaining suspended above a surface describes a maintained spatial condition, not required motion. Clarify target evidence."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 53,
+      "fields": {
+        "labels": [
+          "state",
+          "abstract"
+        ],
+        "primaryClass": "state",
+        "rationale": "Remaining in the same condition is a state with temporal persistence; persistence cannot be verified in one still frame. The selected sense is: To continue in the same condition or position.",
+        "requiredEvidence": "A depiction of the unchanged condition plus temporal context when persistence is essential.",
+        "evidenceLimitations": "A single photograph cannot establish continuation through time."
+      },
+      "reason": "Remaining in the same condition is a state with temporal persistence; persistence cannot be verified in one still frame. Clarify the unobservable time qualifier."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 50,
+      "fields": {
+        "labels": [
+          "action",
+          "relation"
+        ],
+        "primaryClass": "action",
+        "rationale": "Construction is an event; the bird–material placement interaction defines this sense. Occupying an existing nest is a different sense.",
+        "definition": "To build a structure in which birds lay eggs or raise young.",
+        "requiredEvidence": "A bird arranging twigs or other material into a nest structure."
+      },
+      "reason": "Narrow the authored sense to constructing a nest, with material placement defining the interaction. Remove the build/occupy disjunction."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 54,
+      "fields": {
+        "labels": [
+          "action",
+          "relation"
+        ],
+        "primaryClass": "action",
+        "rationale": "Digging is an event and contact with displaced soil defines the interaction. Merely being inside a hole does not show digging.",
+        "definition": "To dig a hole or passage into the ground.",
+        "requiredEvidence": "An animal or person displacing earth at the entrance or interior of a new hole."
+      },
+      "reason": "Narrow the authored sense to digging a burrow rather than occupying one. Remove dig/occupy disjunction."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 55,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Containing or covered with blood."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 56,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: To be upright on the feet or base without sitting or lying."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 57,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: To be in a resting state with awareness suspended."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 58,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Curved or forced away from a straight form."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 59,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Covered with reddish corrosion formed on iron or steel."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 60,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Covered with or saturated by liquid."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 61,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Allowing light to pass through so objects behind can be seen."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 62,
+      "fields": {
+        "labels": [
+          "state",
+          "relation"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Filled with many people or objects packed closely together."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 64,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Fully developed and ready to be eaten or used."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 65,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Turned to ice or made very cold and rigid."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 66,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Having little or no hair on the head."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 67,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Unevenly balanced or shaped, with one side lower or larger."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 68,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Covered with wet earth or mixed with mud."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 69,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Marked by one or more narrow breaks in a hard surface."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 70,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Swollen, reddened, or irritated as a bodily condition."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 71,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Uncovered or lacking its usual covering."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 72,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Having little depth from the surface to the bottom."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 73,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Widened or expanded beyond its usual opening or size."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 74,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Emitting light rather than merely reflecting it."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 75,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Worn at the edge, with threads coming loose."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 76,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Sloping away from a level or vertical orientation."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 77,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Closed so that air or liquid cannot pass through."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 78,
+      "fields": {
+        "labels": [
+          "state",
+          "relation"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Having particles settled out at the bottom of a liquid."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 79,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Showing visible signs of drowsiness."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 81,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Having a visibly downcast or sorrowful-looking expression."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 83,
+      "fields": {
+        "labels": [
+          "state"
+        ],
+        "primaryClass": "state",
+        "rationale": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison. The selected sense is: Not shut or covered, leaving an opening accessible."
+      },
+      "reason": "The selected target is a condition/property, not an independently named entity or incidental spatial comparison."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 97,
+      "fields": {
+        "labels": [
+          "relation"
+        ],
+        "primaryClass": "relation",
+        "rationale": "The exact definition permits an already-established static configuration; grammatical form alone does not require an event. The selected sense is: Extending from one side of a route or boundary to the other."
+      },
+      "reason": "The exact definition permits an already-established static configuration; grammatical form alone does not require an event."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 105,
+      "fields": {
+        "labels": [
+          "relation"
+        ],
+        "primaryClass": "relation",
+        "rationale": "The exact definition permits an already-established static configuration; grammatical form alone does not require an event. The selected sense is: Holding firmly by closing a hand or part around something.",
+        "familyId": "holding"
+      },
+      "reason": "The exact definition permits an already-established static configuration; grammatical form alone does not require an event. Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 109,
+      "fields": {
+        "labels": [
+          "relation"
+        ],
+        "primaryClass": "relation",
+        "rationale": "The exact definition permits an already-established static configuration; grammatical form alone does not require an event. The selected sense is: Extending across the space between two endpoints or supports."
+      },
+      "reason": "The exact definition permits an already-established static configuration; grammatical form alone does not require an event."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 113,
+      "fields": {
+        "labels": [
+          "relation"
+        ],
+        "primaryClass": "relation",
+        "rationale": "The exact definition permits an already-established static configuration; grammatical form alone does not require an event. The selected sense is: Passing across or meeting at a common point.",
+        "familyId": "line-geometry"
+      },
+      "reason": "The exact definition permits an already-established static configuration; grammatical form alone does not require an event. Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 127,
+      "fields": {
+        "labels": [
+          "relation"
+        ],
+        "primaryClass": "relation",
+        "rationale": "The exact definition permits an already-established static configuration; grammatical form alone does not require an event. The selected sense is: Positioning across and on both sides of a narrow object or boundary."
+      },
+      "reason": "The exact definition permits an already-established static configuration; grammatical form alone does not require an event."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 5,
+      "fields": {
+        "requiredEvidence": "A recognizable sparrow with enough plumage, bill and body detail to distinguish similar small birds.",
+        "evidenceLimitations": "Species identification from an image can remain uncertain; small size alone is insufficient."
+      },
+      "reason": "A small bill is not species proof."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 30,
+      "fields": {
+        "requiredEvidence": "A depicted orbital path around a larger body, or a clearly contextualized illustration of that trajectory.",
+        "evidenceLimitations": "A still photograph of two bodies cannot prove repeated orbital motion; diagram handling needs a separate test."
+      },
+      "reason": "Record orbital trajectory evidence limits."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 84,
+      "fields": {
+        "definition": "Directly under or underneath another thing.",
+        "requiredEvidence": "One referent positioned below and under the extent of another.",
+        "rationale": "The defining cue is an underneath relationship between referents, not an isolated low object."
+      },
+      "reason": "Underneath is narrower than merely lower."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 119,
+      "fields": {
+        "definition": "At a physically higher level than another thing.",
+        "requiredEvidence": "Two referents with clear physical elevation difference in a shared spatial context.",
+        "rationale": "The target is relative physical height. A higher position in an unrelated montage is insufficient."
+      },
+      "reason": "Separate physical elevation from picture-plane position."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 128,
+      "fields": {
+        "definition": "Having joint access to the same physical resource with another participant.",
+        "requiredEvidence": "A contextual illustration of participants accessing the same resource.",
+        "rationale": "Joint access is a relation; agreement and entitlement can require nonvisual context.",
+        "evidenceLimitations": "Co-presence alone cannot establish authorized joint access."
+      },
+      "reason": "Use one shared-resource sense."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 129,
+      "fields": {
+        "definition": "Having a particular person or organism as an ancestor.",
+        "requiredEvidence": "Genealogical context or an explicit representation of ancestry.",
+        "rationale": "Ancestry is a relation requiring nonvisual historical evidence.",
+        "evidenceLimitations": "Resemblance, age difference or a family photograph does not establish descent."
+      },
+      "reason": "Separate genealogical descent from generic historical source."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 135,
+      "fields": {
+        "definition": "To be the recognized property of a person or organization.",
+        "requiredEvidence": "Ownership context or records associated with the referent.",
+        "rationale": "This sense is a possession relation requiring conceptual context; holding something does not prove ownership.",
+        "familyId": "ownership"
+      },
+      "reason": "Separate ownership from group membership. Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 145,
+      "fields": {
+        "definition": "A feeling of remorse after believing one has done something wrong.",
+        "requiredEvidence": "A contextual illustration of remorse, without claiming a facial expression proves the feeling.",
+        "rationale": "The target is a private mental state, so state and abstract both apply.",
+        "familyId": "remorse"
+      },
+      "reason": "Separate remorse from legal responsibility. Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 166,
+      "fields": {
+        "definition": "Having the same recognized legal or social rights as another person or group.",
+        "requiredEvidence": "Context about the applicable rights and comparison groups.",
+        "rationale": "Equality of rights is a relation requiring conceptual/legal context, not visual similarity."
+      },
+      "reason": "Separate equal rights from visible equal amounts."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 167,
+      "fields": {
+        "labels": [
+          "abstract"
+        ],
+        "primaryClass": "abstract",
+        "rationale": "Monetary worth is conceptual and context dependent; surface appearance cannot establish it.",
+        "definition": "Worth a large amount of money in the relevant market.",
+        "requiredEvidence": "Context about market valuation rather than ornate appearance."
+      },
+      "reason": "Narrow the target to monetary worth; this is not a directly visible physical state. Separate market value from usefulness and importance."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 0,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a shallow container used for cooking."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 1,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: having the colour of fresh snow."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 2,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to ride ocean waves on a surfboard."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 3,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to prepare food using heat or kitchen equipment."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 4,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a large road vehicle that carries passengers."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 5,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: hanging fabric used to cover a window or divide a space."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 7,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a board or notice showing information or instructions."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 8,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a deep container used for cooking food."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 9,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a large appliance that keeps food cold."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 10,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: furniture with a flat top supported above the ground."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 11,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to strike something with the foot."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 13,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an absorbent piece of cloth used for drying."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 14,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a hard protective covering worn on the head."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 15,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a wheeled passenger vehicle pulled by a horse."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 16,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: having the colour of a clear daytime sky."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 17,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to clean the teeth using a toothbrush."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 19,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a basin with taps and a drain used for washing."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 20,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a wheeled container or small vehicle used to carry goods."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 22,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a matching jacket and trousers worn as a set."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 23,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to take a liquid into the mouth and swallow it."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 24,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a thin dry crisp biscuit usually eaten with savoury food."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 25,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: with a door, lid or cover moved aside to allow access."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 26,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a large road vehicle used to carry goods."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 27,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a movable panel used to open and close an entrance."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 28,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a vessel used to travel on water."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 29,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a rigid container with flat sides."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 30,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to ride over snow on a snowboard."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 31,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a container used to hold cut flowers."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 32,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a sweet baked food often served in slices."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 33,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an oval shelled food produced by a bird."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 34,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a solid natural piece of stone."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 36,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a garment hanging from the waist around the legs."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 37,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a flat round dish used to serve food."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 38,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a very high natural elevation of the ground."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 39,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a cutting tool with a sharp blade and a handle."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 40,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a soft toy made to resemble a bear."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 41,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an opening with glass in a wall allowing light and a view."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 43,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a vertical structure enclosing or dividing a space."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 44,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: made of wood."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 45,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a washing fixture that sprays water over the body."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 46,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: covered or soaked with water or another liquid."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 48,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a short outer garment covering the upper body."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 50,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a broad board ridden sideways down snow."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 51,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a farm animal with a woolly coat."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 52,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a marked area on which tennis is played."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 53,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a portable computer with a screen attached to a keyboard."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 54,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a large natural stream of flowing water."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 55,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a public road in a town or city."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 56,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a sweet course eaten after the main part of a meal."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 57,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a large area densely covered with trees."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 58,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a young dog."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 59,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an African animal with black and white stripes."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 60,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an African animal with a very long neck."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 61,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a large body of water surrounded by land."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 62,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a narrow strip of cloth worn tied around the neck."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 63,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a bathroom fixture with a bowl for bodily waste."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 64,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an animal with feathers, wings and a beak."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 65,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to move on foot with steps at an ordinary pace."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 66,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to send an object through the air with a movement of the arm."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 68,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a screen used to display a computer output."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 69,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a container with a narrow neck used for liquids."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 70,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a road sign instructing traffic to stop."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 71,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a barrier enclosing or dividing an area."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 72,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a signal with coloured lights controlling road traffic."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 73,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: having a colour between blue and red."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 74,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: bound pages containing written or printed material."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 75,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a travel bag used to carry clothes and belongings."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 76,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: covered with snow."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 77,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a container used for discarded waste."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 78,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a handled frame with strings used to hit a tennis ball."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 80,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a flat green part of a plant growing from a stem or branch."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 81,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to stop and take hold of a moving object."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 82,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a room used for sleeping."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 84,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a garment covering the upper body, usually with sleeves."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 85,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a picture made by applying paint to a surface."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 86,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: having a pale red colour."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 87,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a storage unit with doors and shelves."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 89,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to travel while seated on and pedalling a bicycle."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 90,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a sandy or pebbly shore beside a sea or lake."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 91,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to move quickly on foot."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 92,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a tall narrow structure or tall part of a building."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 93,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a shallow flat container used to carry or hold things."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 94,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: having the colour of blood or a ripe tomato."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 95,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a small two-wheeled vehicle ridden standing or sitting."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 96,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a large living mammal with thick fur."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 97,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a large farm animal kept for milk or meat."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 98,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: having a very dark colour that reflects little light."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 99,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: an open area of land, often covered in grass."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 100,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a solid three-dimensional representation of a person or animal."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 101,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a small open container used for drinking."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 102,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: made of rectangular blocks of baked clay."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 103,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a room used for relaxing and socialising at home."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 105,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to take part in a racket game played across a net."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 106,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a place where airplanes take off, land and are serviced."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 107,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a domesticated canine animal."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 108,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to travel over snow on skis."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 109,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: the upper covering of a building."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 110,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a vehicle with two wheels powered by pedals."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 111,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an appliance that heats food using microwave energy."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 113,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a device used to capture or amplify sound."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 114,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a device with a face or display showing the time."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 115,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a large plant with a woody trunk and branches."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 116,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a small narrow natural flow of water."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 117,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a track system on which trains travel."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 118,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a place where people buy and sell goods."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 119,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to take food into the mouth and swallow it."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 121,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a round object used in games and sports."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 122,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a standard set of clothing worn by members of a group."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 123,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a panel of keys used to enter text into a computer."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 124,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to move through the air using wings."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 125,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: damaged so that it is no longer whole or working."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 127,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: long narrow boards attached to boots for moving over snow."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 128,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a large four-legged animal commonly ridden by people."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 129,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a handheld device used to control electronic equipment."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 130,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: the open space visible above the earth."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 131,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a green vegetable with branching flower heads."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 132,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a hand-operated device used to move a pointer on a screen."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 133,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a railway vehicle or connected series of railway cars."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 134,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a covering worn on the head."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 135,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: small edible grains often cooked and served as food."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 136,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to travel while seated on a moving motorcycle."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 137,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: two lenses in a frame worn in front of the eyes."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 138,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a street fixture supplying water for firefighting."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 139,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a small motor vehicle used for road travel."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 140,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a handheld device used to make calls."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 141,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a motor-powered vehicle with two wheels."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 142,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an enclosed appliance used for heating and cooking food."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 143,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a covering for a hand with sections for the fingers."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 144,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a structure with walls and a roof."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 145,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a young cat."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 146,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a one-piece garment with a skirt."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 147,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: having the colour of earth or wood."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 148,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to push off a surface and move into the air."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 149,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to support an object while moving it from one place to another."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 150,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a solid stick used to hit a baseball."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 151,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a small domesticated feline animal."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 152,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a large piece of warm cloth used as a covering."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 153,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an eating utensil with a small bowl on a handle."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 156,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an aquatic animal with gills and fins."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 157,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a path beside a road for people walking."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 158,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: the colourful blossom of a flowering plant."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 159,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a piece of furniture used for sleeping."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 160,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: having the colour of a ripe lemon."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 161,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a device that produces light."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 162,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a very large animal with a trunk."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 165,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a deep round container used for food."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 166,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a large vessel used to travel on water."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 167,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a long board used to ride ocean waves."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 168,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a covering worn on the foot."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 170,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a woody part that grows out from the trunk of a tree."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 171,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a raised area of land smaller than a mountain."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 172,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: loose small grains of rock found on beaches and in deserts."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 173,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a reflective surface used to see an image of oneself."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 174,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to take part in a bat-and-ball team game."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 175,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: made of metal."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 176,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a powered aircraft with wings."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 177,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a long seat on which several people can sit."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 178,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a short board with wheels on which a person can ride."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 179,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to move through the air in an aircraft."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 180,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a folding canopy held above the head for rain or shade."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 181,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a long upholstered seat for several people."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 182,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a water bird with a broad bill."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 183,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: containing nothing or having no occupants."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 184,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a room used for preparing and cooking food."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 188,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a room containing washing or toilet facilities."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 189,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a round edible fruit with a firm skin."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 190,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a seat for one person with a back."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 191,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a hand tool with two pivoted blades for cutting."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 192,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a table used for writing, studying or working."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 193,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a public green area used for recreation."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 194,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a farm animal often having horns and a beard."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 195,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a stemmed drinking glass used to serve wine."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 196,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an appliance with heated surfaces used for cooking."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 197,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a street device used to pay for vehicle parking."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 199,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a piece of cloth with a design used as a symbol."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 200,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a large basin used for bathing the body."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 201,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an eating utensil with pointed prongs."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 202,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a small brush used to clean the teeth."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 203,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a living organism with leaves that usually grows in soil."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 204,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a covered motor vehicle used to carry goods or people."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 205,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: an electronic screen used to watch programmes."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 206,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to ride or perform tricks on a skateboard."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 207,
+      "fields": {
+        "requiredEvidence": "Show the defining visible condition: having the colour of grass."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 208,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a machine that produces printed pages."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 209,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a flexible container used for carrying things."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 210,
+      "fields": {
+        "requiredEvidence": "Show the event in progress: to give food to a person or animal."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 211,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a tree with a tall trunk and a crown of large leaves."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 212,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a device with rotating blades that moves air."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 213,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: a place where meals are prepared and served to customers."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 214,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a raised flat surface used for work or serving food."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 215,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a container made of woven material."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 216,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: long thin pieces of potato fried in oil."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 217,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: food made from flour and water shaped into pieces and cooked."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 218,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a long thin strip of pasta or similar dough."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 219,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a drink made from the liquid of fruit or vegetables."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 220,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a small individual cake baked in a cup-shaped mould."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 221,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a cooked patty served inside a split bread bun."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 222,
+      "fields": {
+        "requiredEvidence": "Show the setting or environmental structure itself: the upper inside surface of a room."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 224,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a liquid food made by cooking ingredients in water or stock."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 225,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a round red or green fruit used as a vegetable in food."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 226,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a baked food made with dough containing flour and fat."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 227,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a sweet brown food made from cacao."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 228,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a baked food made from flour and water."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 229,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a dish made from mixed vegetables or other cold ingredients."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 230,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a solid food made from milk."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 231,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a round citrus fruit with orange peel."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 232,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a long orange root vegetable."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 233,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: animal flesh eaten as food."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 234,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a small sweet fried cake, often shaped like a ring."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 235,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a long curved fruit with a peel."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "legacy",
+      "sourceIndex": 236,
+      "fields": {
+        "requiredEvidence": "Show the defined physical referent: a flat baked base topped with tomato, cheese and other food."
+      },
+      "reason": "Remove punctuation artifacts from the annotation draft."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 28,
+      "fields": {
+        "familyId": "sprouting"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 41,
+      "fields": {
+        "familyId": "sprouting"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 85,
+      "fields": {
+        "familyId": "containment"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 86,
+      "fields": {
+        "familyId": "spatial-proximity"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 89,
+      "fields": {
+        "familyId": "physical-contact"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 90,
+      "fields": {
+        "familyId": "physical-connection"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 92,
+      "fields": {
+        "familyId": "stacking"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 93,
+      "fields": {
+        "familyId": "physical-connection"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 94,
+      "fields": {
+        "familyId": "encirclement"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 99,
+      "fields": {
+        "familyId": "spatial-proximity"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 100,
+      "fields": {
+        "familyId": "line-geometry"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 101,
+      "fields": {
+        "familyId": "line-geometry"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 104,
+      "fields": {
+        "familyId": "physical-contact"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 106,
+      "fields": {
+        "familyId": "physical-connection"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 107,
+      "fields": {
+        "familyId": "containment"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 112,
+      "fields": {
+        "familyId": "encirclement"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 114,
+      "fields": {
+        "familyId": "convergence"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 115,
+      "fields": {
+        "familyId": "convergence"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 116,
+      "fields": {
+        "familyId": "viewer-depth"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 117,
+      "fields": {
+        "familyId": "viewer-depth"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 120,
+      "fields": {
+        "familyId": "spatial-proximity"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 121,
+      "fields": {
+        "familyId": "spatial-proximity"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 122,
+      "fields": {
+        "familyId": "physical-contact"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 123,
+      "fields": {
+        "familyId": "physical-connection"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 124,
+      "fields": {
+        "familyId": "holding"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 125,
+      "fields": {
+        "familyId": "stacking"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 131,
+      "fields": {
+        "familyId": "temporal-order"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 132,
+      "fields": {
+        "familyId": "comprehension"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 134,
+      "fields": {
+        "familyId": "ownership"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 143,
+      "fields": {
+        "familyId": "authorization"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 144,
+      "fields": {
+        "familyId": "authorization"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 147,
+      "fields": {
+        "familyId": "legality"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 148,
+      "fields": {
+        "familyId": "legality"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 152,
+      "fields": {
+        "familyId": "public-recognition"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 153,
+      "fields": {
+        "familyId": "public-recognition"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 154,
+      "fields": {
+        "familyId": "fairness"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 155,
+      "fields": {
+        "familyId": "fairness"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 158,
+      "fields": {
+        "familyId": "temporal-order"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 160,
+      "fields": {
+        "familyId": "frequency"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 161,
+      "fields": {
+        "familyId": "frequency"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 162,
+      "fields": {
+        "familyId": "frequency"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 163,
+      "fields": {
+        "familyId": "frequency"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 169,
+      "fields": {
+        "familyId": "risk"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 170,
+      "fields": {
+        "familyId": "risk"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 172,
+      "fields": {
+        "familyId": "courtesy"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 173,
+      "fields": {
+        "familyId": "courtesy"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 177,
+      "fields": {
+        "familyId": "comprehension"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    },
+    {
+      "sourceKind": "authored",
+      "sourceIndex": 178,
+      "fields": {
+        "familyId": "remorse"
+      },
+      "reason": " Group closely related paraphrases/opposites before fitting to reduce near-duplicate evaluation leakage."
+    }
+  ]
+}

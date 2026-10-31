@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "reviewType": "AI semantic review; not human-expert ground truth",
+  "reviewer": "Primary Codex assistant, after Luna annotation and targeted second-pass review",
+  "reviewedCount": 417,
+  "reviewedContentSha256": "e8984095d71e1312f7816f9211b2dee58cc37b95f6b7960898dc7cf8503560d3",
+  "datasetSha256": "5f7c2b305cfef2f6c80a0fa0ec4c4043985b6170e33d393be5d5ab0d36991255",
+  "mechanicalChecksAreNotSemanticProof": true,
+  "classifierTrained": false,
+  "adaptersTrained": false,
+  "productionModelChanged": false,
+  "reviewScope": [
+    "Read all 237 original exact meanings and their proposed category labels.",
+    "Read all 180 AI-authored definitions and labels; inspected the visual/nonvisual evidence boundaries.",
+    "Corrected POS shortcuts, incidental secondary labels, mixed senses and unsupported visual claims.",
+    "No actual images were annotated and no human-expert review is claimed."
+  ],
+  "policyDecisions": [
+    "Use six overlapping evidence categories and sigmoid membership targets; abstract is separate from prediction uncertainty.",
+    "Classify the exact selected definition. A noun can describe a process and a verb can describe a state.",
+    "Use entity for the referent as target; do not add it to every property/action merely because an entity bears the property or performs the action.",
+    "Use relation where referent roles/configuration define the meaning, not merely because a medium or background is present.",
+    "Structures can be entity+place when recognized both as a referent and an environmental arrangement; ordinary rooms/landscapes use place.",
+    "Private mental feelings and normative/temporal claims require nonvisual context; do not infer them from appearance alone.",
+    "Definition-proposed misleading alternatives are NOT independently verified negative image labels and are excluded from final training records.",
+    "Preserve legacy provenance; quarantine connected headword/family components crossing old splits.",
+    "Group reviewed close paraphrases and antonym contrasts in the authored supplement; these grouping decisions precede any model fit."
+  ],
+  "audit": {
+    "count": 417,
+    "counts": {
+      "train": 244,
+      "validation": 91,
+      "test": 77,
+      "quarantine": 5
+    },
+    "positives": {
+      "train": {
+        "entity": 98,
+        "place": 26,
+        "action": 34,
+        "state": 46,
+        "relation": 75,
+        "abstract": 32
+      },
+      "validation": {
+        "entity": 41,
+        "place": 7,
+        "action": 15,
+        "state": 16,
+        "relation": 22,
+        "abstract": 13
+      },
+      "test": {
+        "entity": 36,
+        "place": 7,
+        "action": 10,
+        "state": 12,
+        "relation": 15,
+        "abstract": 11
+      },
+      "quarantine": {
+        "entity": 2,
+        "place": 0,
+        "action": 2,
+        "state": 1,
+        "relation": 0,
+        "abstract": 0
+      }
+    },
+    "multilabelRows": 101,
+    "quarantined": [
+      {
+        "id": "meaning-1bf2a5a9834ce1eb",
+        "word": "bird",
+        "originalSplit": "train",
+        "reason": "Legacy component crosses test, train."
+      },
+      {
+        "id": "meaning-4e1358aba2738c3d",
+        "word": "fly",
+        "originalSplit": "train",
+        "reason": "Legacy component crosses test, train."
+      },
+      {
+        "id": "meaning-db4c45f9fd1b4d91",
+        "word": "airplane",
+        "originalSplit": "test",
+        "reason": "Legacy component crosses test, train."
+      },
+      {
+        "id": "meaning-0a35c5075a798cd5",
+        "word": "fly",
+        "originalSplit": "test",
+        "reason": "Legacy component crosses test, train."
+      },
+      {
+        "id": "meaning-39e6a2e972c183f1",
+        "word": "parked airplane",
+        "originalSplit": "test",
+        "reason": "Legacy component crosses test, train."
+      }
+    ],
+    "note": "Integrity audit only. AI labels are a reviewed pilot, not human-expert truth or image-quality evidence."
+  }
+}

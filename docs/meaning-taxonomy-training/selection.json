@@ -1,0 +1,2817 @@
+{
+  "selected": {
+    "config": {
+      "trial": 81,
+      "phase": "local",
+      "hidden": 32,
+      "preprocess": "scaled",
+      "center": true,
+      "l2": 0.0001228156082236678,
+      "weightPower": 1.0
+    },
+    "confirmationMeanMacroF1": 0.8589362934235816,
+    "validationDefault": {
+      "count": 91,
+      "macroF1": 0.8328968253968254,
+      "microF1": 0.8354430379746836,
+      "exactMatch": 0.6483516483516484,
+      "bce": 0.2549434129204758,
+      "brier": 0.05975522159484687,
+      "macroAveragePrecision": 0.9050847014609157,
+      "threshold": 0.5,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 41,
+          "predictedPositive": 43,
+          "tp": 39,
+          "fp": 4,
+          "fn": 2,
+          "precision": 0.9069767441860465,
+          "recall": 0.9512195121951219,
+          "f1": 0.9285714285714286,
+          "averagePrecision": 0.9921699191582541
+        },
+        "place": {
+          "positiveSupport": 7,
+          "predictedPositive": 9,
+          "tp": 7,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.7777777777777778,
+          "recall": 1.0,
+          "f1": 0.875,
+          "averagePrecision": 1.0
+        },
+        "action": {
+          "positiveSupport": 15,
+          "predictedPositive": 13,
+          "tp": 13,
+          "fp": 0,
+          "fn": 2,
+          "precision": 1.0,
+          "recall": 0.8666666666666667,
+          "f1": 0.9285714285714286,
+          "averagePrecision": 0.9877124183006536
+        },
+        "state": {
+          "positiveSupport": 16,
+          "predictedPositive": 19,
+          "tp": 11,
+          "fp": 8,
+          "fn": 5,
+          "precision": 0.5789473684210527,
+          "recall": 0.6875,
+          "f1": 0.6285714285714286,
+          "averagePrecision": 0.6890550026483973
+        },
+        "relation": {
+          "positiveSupport": 22,
+          "predictedPositive": 28,
+          "tp": 18,
+          "fp": 10,
+          "fn": 4,
+          "precision": 0.6428571428571429,
+          "recall": 0.8181818181818182,
+          "f1": 0.72,
+          "averagePrecision": 0.7718272789145996
+        },
+        "abstract": {
+          "positiveSupport": 13,
+          "predictedPositive": 11,
+          "tp": 11,
+          "fp": 0,
+          "fn": 2,
+          "precision": 1.0,
+          "recall": 0.8461538461538461,
+          "f1": 0.9166666666666666,
+          "averagePrecision": 0.9897435897435898
+        }
+      }
+    },
+    "validationSelectedThreshold": {
+      "count": 91,
+      "macroF1": 0.8401190476190475,
+      "microF1": 0.8403361344537815,
+      "exactMatch": 0.6593406593406593,
+      "bce": 0.2549434129204758,
+      "brier": 0.05975522159484687,
+      "macroAveragePrecision": 0.9050847014609157,
+      "threshold": 0.45,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 41,
+          "predictedPositive": 43,
+          "tp": 39,
+          "fp": 4,
+          "fn": 2,
+          "precision": 0.9069767441860465,
+          "recall": 0.9512195121951219,
+          "f1": 0.9285714285714286,
+          "averagePrecision": 0.9921699191582541
+        },
+        "place": {
+          "positiveSupport": 7,
+          "predictedPositive": 9,
+          "tp": 7,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.7777777777777778,
+          "recall": 1.0,
+          "f1": 0.875,
+          "averagePrecision": 1.0
+        },
+        "action": {
+          "positiveSupport": 15,
+          "predictedPositive": 13,
+          "tp": 13,
+          "fp": 0,
+          "fn": 2,
+          "precision": 1.0,
+          "recall": 0.8666666666666667,
+          "f1": 0.9285714285714286,
+          "averagePrecision": 0.9877124183006536
+        },
+        "state": {
+          "positiveSupport": 16,
+          "predictedPositive": 19,
+          "tp": 11,
+          "fp": 8,
+          "fn": 5,
+          "precision": 0.5789473684210527,
+          "recall": 0.6875,
+          "f1": 0.6285714285714286,
+          "averagePrecision": 0.6890550026483973
+        },
+        "relation": {
+          "positiveSupport": 22,
+          "predictedPositive": 28,
+          "tp": 18,
+          "fp": 10,
+          "fn": 4,
+          "precision": 0.6428571428571429,
+          "recall": 0.8181818181818182,
+          "f1": 0.72,
+          "averagePrecision": 0.7718272789145996
+        },
+        "abstract": {
+          "positiveSupport": 13,
+          "predictedPositive": 12,
+          "tp": 12,
+          "fp": 0,
+          "fn": 1,
+          "precision": 1.0,
+          "recall": 0.9230769230769231,
+          "f1": 0.96,
+          "averagePrecision": 0.9897435897435898
+        }
+      }
+    },
+    "optimizer": {
+      "success": true,
+      "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+      "iterations": 226,
+      "evaluations": 236,
+      "loss": 0.006136098348584338
+    }
+  },
+  "finalists": [
+    {
+      "config": {
+        "trial": 136,
+        "phase": "fine",
+        "hidden": 0,
+        "preprocess": "standardize",
+        "center": false,
+        "l2": 0.0002682241281001108,
+        "weightPower": 0.862346108985245
+      },
+      "confirmationMeanMacroF1": 0.8486799829598967,
+      "validationDefault": {
+        "count": 91,
+        "macroF1": 0.8191199694655915,
+        "microF1": 0.8245614035087719,
+        "exactMatch": 0.6483516483516484,
+        "bce": 0.27706731429702075,
+        "brier": 0.06010363526131846,
+        "macroAveragePrecision": 0.8881430619477132,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 43,
+            "tp": 40,
+            "fp": 3,
+            "fn": 1,
+            "precision": 0.9302325581395349,
+            "recall": 0.975609756097561,
+            "f1": 0.9523809523809523,
+            "averagePrecision": 0.9954002369345534
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 6,
+            "tp": 6,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.8571428571428571,
+            "f1": 0.9230769230769231,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "averagePrecision": 0.9888888888888889
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 15,
+            "tp": 9,
+            "fp": 6,
+            "fn": 7,
+            "precision": 0.6,
+            "recall": 0.5625,
+            "f1": 0.5806451612903226,
+            "averagePrecision": 0.6572054468436047
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 27,
+            "tp": 16,
+            "fp": 11,
+            "fn": 6,
+            "precision": 0.5925925925925926,
+            "recall": 0.7272727272727273,
+            "f1": 0.6530612244897959,
+            "averagePrecision": 0.7171714913269244
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 0.9701923076923078
+          }
+        }
+      },
+      "validationSelectedThreshold": {
+        "count": 91,
+        "macroF1": 0.8282603562015328,
+        "microF1": 0.825531914893617,
+        "exactMatch": 0.6373626373626373,
+        "bce": 0.27706731429702075,
+        "brier": 0.06010363526131846,
+        "macroAveragePrecision": 0.8881430619477132,
+        "threshold": 0.325,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 44,
+            "tp": 41,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.9318181818181818,
+            "recall": 1.0,
+            "f1": 0.9647058823529412,
+            "averagePrecision": 0.9954002369345534
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 7,
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "averagePrecision": 0.9888888888888889
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 17,
+            "tp": 9,
+            "fp": 8,
+            "fn": 7,
+            "precision": 0.5294117647058824,
+            "recall": 0.5625,
+            "f1": 0.5454545454545454,
+            "averagePrecision": 0.6572054468436047
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 30,
+            "tp": 17,
+            "fp": 13,
+            "fn": 5,
+            "precision": 0.5666666666666667,
+            "recall": 0.7727272727272727,
+            "f1": 0.6538461538461539,
+            "averagePrecision": 0.7171714913269244
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 0.9701923076923078
+          }
+        }
+      },
+      "optimizer": {
+        "success": true,
+        "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+        "iterations": 100,
+        "evaluations": 105,
+        "loss": 0.006606141502483175
+      }
+    },
+    {
+      "config": {
+        "trial": 130,
+        "phase": "fine",
+        "hidden": 0,
+        "preprocess": "standardize",
+        "center": false,
+        "l2": 0.0002274337269956871,
+        "weightPower": 0.9789103969701293
+      },
+      "confirmationMeanMacroF1": 0.8476258774715766,
+      "validationDefault": {
+        "count": 91,
+        "macroF1": 0.8160957759172045,
+        "microF1": 0.8209606986899564,
+        "exactMatch": 0.6373626373626373,
+        "bce": 0.2819869142509583,
+        "brier": 0.06042737877911973,
+        "macroAveragePrecision": 0.8881430619477132,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 43,
+            "tp": 40,
+            "fp": 3,
+            "fn": 1,
+            "precision": 0.9302325581395349,
+            "recall": 0.975609756097561,
+            "f1": 0.9523809523809523,
+            "averagePrecision": 0.9954002369345534
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 6,
+            "tp": 6,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.8571428571428571,
+            "f1": 0.9230769230769231,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "averagePrecision": 0.9888888888888889
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 16,
+            "tp": 9,
+            "fp": 7,
+            "fn": 7,
+            "precision": 0.5625,
+            "recall": 0.5625,
+            "f1": 0.5625,
+            "averagePrecision": 0.6572054468436047
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 27,
+            "tp": 16,
+            "fp": 11,
+            "fn": 6,
+            "precision": 0.5925925925925926,
+            "recall": 0.7272727272727273,
+            "f1": 0.6530612244897959,
+            "averagePrecision": 0.7171714913269244
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 0.9701923076923078
+          }
+        }
+      },
+      "validationSelectedThreshold": {
+        "count": 91,
+        "macroF1": 0.8264782494194259,
+        "microF1": 0.8235294117647058,
+        "exactMatch": 0.6373626373626373,
+        "bce": 0.2819869142509583,
+        "brier": 0.06042737877911973,
+        "macroAveragePrecision": 0.8881430619477132,
+        "threshold": 0.325,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 44,
+            "tp": 41,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.9318181818181818,
+            "recall": 1.0,
+            "f1": 0.9647058823529412,
+            "averagePrecision": 0.9954002369345534
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 7,
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "averagePrecision": 0.9888888888888889
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 19,
+            "tp": 10,
+            "fp": 9,
+            "fn": 6,
+            "precision": 0.5263157894736842,
+            "recall": 0.625,
+            "f1": 0.5714285714285714,
+            "averagePrecision": 0.6572054468436047
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 30,
+            "tp": 17,
+            "fp": 13,
+            "fn": 5,
+            "precision": 0.5666666666666667,
+            "recall": 0.7727272727272727,
+            "f1": 0.6538461538461539,
+            "averagePrecision": 0.7171714913269244
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 12,
+            "tp": 11,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.9166666666666666,
+            "recall": 0.8461538461538461,
+            "f1": 0.88,
+            "averagePrecision": 0.9701923076923078
+          }
+        }
+      },
+      "optimizer": {
+        "success": true,
+        "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+        "iterations": 103,
+        "evaluations": 106,
+        "loss": 0.0058403375716671365
+      }
+    },
+    {
+      "config": {
+        "trial": 135,
+        "phase": "fine",
+        "hidden": 0,
+        "preprocess": "standardize",
+        "center": false,
+        "l2": 0.00019854209163214486,
+        "weightPower": 0.9424832097339052
+      },
+      "confirmationMeanMacroF1": 0.8476258774715766,
+      "validationDefault": {
+        "count": 91,
+        "macroF1": 0.8160957759172045,
+        "microF1": 0.8209606986899564,
+        "exactMatch": 0.6373626373626373,
+        "bce": 0.28672861080164974,
+        "brier": 0.0606037624662922,
+        "macroAveragePrecision": 0.8880180716346432,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 43,
+            "tp": 40,
+            "fp": 3,
+            "fn": 1,
+            "precision": 0.9302325581395349,
+            "recall": 0.975609756097561,
+            "f1": 0.9523809523809523,
+            "averagePrecision": 0.9954002369345534
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 6,
+            "tp": 6,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.8571428571428571,
+            "f1": 0.9230769230769231,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "averagePrecision": 0.9888888888888889
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 16,
+            "tp": 9,
+            "fp": 7,
+            "fn": 7,
+            "precision": 0.5625,
+            "recall": 0.5625,
+            "f1": 0.5625,
+            "averagePrecision": 0.6572054468436047
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 27,
+            "tp": 16,
+            "fp": 11,
+            "fn": 6,
+            "precision": 0.5925925925925926,
+            "recall": 0.7272727272727273,
+            "f1": 0.6530612244897959,
+            "averagePrecision": 0.7164215494485043
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 0.9701923076923078
+          }
+        }
+      },
+      "validationSelectedThreshold": {
+        "count": 91,
+        "macroF1": 0.8264782494194259,
+        "microF1": 0.8235294117647058,
+        "exactMatch": 0.6373626373626373,
+        "bce": 0.28672861080164974,
+        "brier": 0.0606037624662922,
+        "macroAveragePrecision": 0.8880180716346432,
+        "threshold": 0.325,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 44,
+            "tp": 41,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.9318181818181818,
+            "recall": 1.0,
+            "f1": 0.9647058823529412,
+            "averagePrecision": 0.9954002369345534
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 7,
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "averagePrecision": 0.9888888888888889
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 19,
+            "tp": 10,
+            "fp": 9,
+            "fn": 6,
+            "precision": 0.5263157894736842,
+            "recall": 0.625,
+            "f1": 0.5714285714285714,
+            "averagePrecision": 0.6572054468436047
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 30,
+            "tp": 17,
+            "fp": 13,
+            "fn": 5,
+            "precision": 0.5666666666666667,
+            "recall": 0.7727272727272727,
+            "f1": 0.6538461538461539,
+            "averagePrecision": 0.7164215494485043
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 12,
+            "tp": 11,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.9166666666666666,
+            "recall": 0.8461538461538461,
+            "f1": 0.88,
+            "averagePrecision": 0.9701923076923078
+          }
+        }
+      },
+      "optimizer": {
+        "success": true,
+        "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+        "iterations": 106,
+        "evaluations": 111,
+        "loss": 0.005289837773215872
+      }
+    },
+    {
+      "config": {
+        "trial": 81,
+        "phase": "local",
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.0001228156082236678,
+        "weightPower": 1.0
+      },
+      "confirmationMeanMacroF1": 0.8589362934235816,
+      "validationDefault": {
+        "count": 91,
+        "macroF1": 0.8328968253968254,
+        "microF1": 0.8354430379746836,
+        "exactMatch": 0.6483516483516484,
+        "bce": 0.2549434129204758,
+        "brier": 0.05975522159484687,
+        "macroAveragePrecision": 0.9050847014609157,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 43,
+            "tp": 39,
+            "fp": 4,
+            "fn": 2,
+            "precision": 0.9069767441860465,
+            "recall": 0.9512195121951219,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9921699191582541
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 9,
+            "tp": 7,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.7777777777777778,
+            "recall": 1.0,
+            "f1": 0.875,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9877124183006536
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 19,
+            "tp": 11,
+            "fp": 8,
+            "fn": 5,
+            "precision": 0.5789473684210527,
+            "recall": 0.6875,
+            "f1": 0.6285714285714286,
+            "averagePrecision": 0.6890550026483973
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 28,
+            "tp": 18,
+            "fp": 10,
+            "fn": 4,
+            "precision": 0.6428571428571429,
+            "recall": 0.8181818181818182,
+            "f1": 0.72,
+            "averagePrecision": 0.7718272789145996
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 0.9897435897435898
+          }
+        }
+      },
+      "validationSelectedThreshold": {
+        "count": 91,
+        "macroF1": 0.8401190476190475,
+        "microF1": 0.8403361344537815,
+        "exactMatch": 0.6593406593406593,
+        "bce": 0.2549434129204758,
+        "brier": 0.05975522159484687,
+        "macroAveragePrecision": 0.9050847014609157,
+        "threshold": 0.45,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 43,
+            "tp": 39,
+            "fp": 4,
+            "fn": 2,
+            "precision": 0.9069767441860465,
+            "recall": 0.9512195121951219,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9921699191582541
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 9,
+            "tp": 7,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.7777777777777778,
+            "recall": 1.0,
+            "f1": 0.875,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9877124183006536
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 19,
+            "tp": 11,
+            "fp": 8,
+            "fn": 5,
+            "precision": 0.5789473684210527,
+            "recall": 0.6875,
+            "f1": 0.6285714285714286,
+            "averagePrecision": 0.6890550026483973
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 28,
+            "tp": 18,
+            "fp": 10,
+            "fn": 4,
+            "precision": 0.6428571428571429,
+            "recall": 0.8181818181818182,
+            "f1": 0.72,
+            "averagePrecision": 0.7718272789145996
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.9230769230769231,
+            "f1": 0.96,
+            "averagePrecision": 0.9897435897435898
+          }
+        }
+      },
+      "optimizer": {
+        "success": true,
+        "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+        "iterations": 226,
+        "evaluations": 236,
+        "loss": 0.006136098348584338
+      }
+    },
+    {
+      "config": {
+        "trial": 122,
+        "phase": "fine",
+        "hidden": 8,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.008546880578659877,
+        "weightPower": 0.9670491305657435
+      },
+      "confirmationMeanMacroF1": 0.8586244816987607,
+      "validationDefault": {
+        "count": 91,
+        "macroF1": 0.8288523953723116,
+        "microF1": 0.8185654008438819,
+        "exactMatch": 0.6483516483516484,
+        "bce": 0.20932608105854134,
+        "brier": 0.05725723228126112,
+        "macroAveragePrecision": 0.9055805024509986,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 40,
+            "tp": 38,
+            "fp": 2,
+            "fn": 3,
+            "precision": 0.95,
+            "recall": 0.926829268292683,
+            "f1": 0.9382716049382716,
+            "averagePrecision": 0.9908389519887777
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 8,
+            "tp": 7,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.875,
+            "recall": 1.0,
+            "f1": 0.9333333333333333,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9844444444444445
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 19,
+            "tp": 10,
+            "fp": 9,
+            "fn": 6,
+            "precision": 0.5263157894736842,
+            "recall": 0.625,
+            "f1": 0.5714285714285714,
+            "averagePrecision": 0.684406914939889
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 31,
+            "tp": 17,
+            "fp": 14,
+            "fn": 5,
+            "precision": 0.5483870967741935,
+            "recall": 0.7727272727272727,
+            "f1": 0.6415094339622641,
+            "averagePrecision": 0.7737927033328806
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.9230769230769231,
+            "f1": 0.96,
+            "averagePrecision": 1.0
+          }
+        }
+      },
+      "validationSelectedThreshold": {
+        "count": 91,
+        "macroF1": 0.8371871184371185,
+        "microF1": 0.8303571428571429,
+        "exactMatch": 0.6813186813186813,
+        "bce": 0.20932608105854134,
+        "brier": 0.05725723228126112,
+        "macroAveragePrecision": 0.9055805024509986,
+        "threshold": 0.65,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 37,
+            "tp": 37,
+            "fp": 0,
+            "fn": 4,
+            "precision": 1.0,
+            "recall": 0.9024390243902439,
+            "f1": 0.9487179487179487,
+            "averagePrecision": 0.9908389519887777
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 7,
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9844444444444445
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 16,
+            "tp": 9,
+            "fp": 7,
+            "fn": 7,
+            "precision": 0.5625,
+            "recall": 0.5625,
+            "f1": 0.5625,
+            "averagePrecision": 0.684406914939889
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 26,
+            "tp": 16,
+            "fp": 10,
+            "fn": 6,
+            "precision": 0.6153846153846154,
+            "recall": 0.7272727272727273,
+            "f1": 0.6666666666666666,
+            "averagePrecision": 0.7737927033328806
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 1.0
+          }
+        }
+      },
+      "optimizer": {
+        "success": true,
+        "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+        "iterations": 114,
+        "evaluations": 119,
+        "loss": 0.21334997934150265
+      }
+    },
+    {
+      "config": {
+        "trial": 120,
+        "phase": "fine",
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.00022050199534643804,
+        "weightPower": 0.9243762268607136
+      },
+      "confirmationMeanMacroF1": 0.8576483990728342,
+      "validationDefault": {
+        "count": 91,
+        "macroF1": 0.835765306122449,
+        "microF1": 0.8354430379746836,
+        "exactMatch": 0.6593406593406593,
+        "bce": 0.24402783784935633,
+        "brier": 0.05987284689543739,
+        "macroAveragePrecision": 0.9027560298378104,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 43,
+            "tp": 39,
+            "fp": 4,
+            "fn": 2,
+            "precision": 0.9069767441860465,
+            "recall": 0.9512195121951219,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9916432195390986
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 9,
+            "tp": 7,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.7777777777777778,
+            "recall": 1.0,
+            "f1": 0.875,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9877124183006536
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 19,
+            "tp": 11,
+            "fp": 8,
+            "fn": 5,
+            "precision": 0.5789473684210527,
+            "recall": 0.6875,
+            "f1": 0.6285714285714286,
+            "averagePrecision": 0.6905343814484851
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 27,
+            "tp": 17,
+            "fp": 10,
+            "fn": 5,
+            "precision": 0.6296296296296297,
+            "recall": 0.7727272727272727,
+            "f1": 0.6938775510204082,
+            "averagePrecision": 0.7610692366617013
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.9230769230769231,
+            "f1": 0.96,
+            "averagePrecision": 0.9855769230769231
+          }
+        }
+      },
+      "validationSelectedThreshold": {
+        "count": 91,
+        "macroF1": 0.835765306122449,
+        "microF1": 0.8354430379746836,
+        "exactMatch": 0.6593406593406593,
+        "bce": 0.24402783784935633,
+        "brier": 0.05987284689543739,
+        "macroAveragePrecision": 0.9027560298378104,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 43,
+            "tp": 39,
+            "fp": 4,
+            "fn": 2,
+            "precision": 0.9069767441860465,
+            "recall": 0.9512195121951219,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9916432195390986
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 9,
+            "tp": 7,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.7777777777777778,
+            "recall": 1.0,
+            "f1": 0.875,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9877124183006536
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 19,
+            "tp": 11,
+            "fp": 8,
+            "fn": 5,
+            "precision": 0.5789473684210527,
+            "recall": 0.6875,
+            "f1": 0.6285714285714286,
+            "averagePrecision": 0.6905343814484851
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 27,
+            "tp": 17,
+            "fp": 10,
+            "fn": 5,
+            "precision": 0.6296296296296297,
+            "recall": 0.7727272727272727,
+            "f1": 0.6938775510204082,
+            "averagePrecision": 0.7610692366617013
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.9230769230769231,
+            "f1": 0.96,
+            "averagePrecision": 0.9855769230769231
+          }
+        }
+      },
+      "optimizer": {
+        "success": true,
+        "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+        "iterations": 295,
+        "evaluations": 310,
+        "loss": 0.009908406515159444
+      }
+    }
+  ],
+  "confirmation": [
+    {
+      "config": {
+        "trial": 136,
+        "phase": "fine",
+        "hidden": 0,
+        "preprocess": "standardize",
+        "center": false,
+        "l2": 0.0002682241281001108,
+        "weightPower": 0.862346108985245
+      },
+      "firstCV": {
+        "count": 244,
+        "macroF1": 0.8567843969243737,
+        "microF1": 0.8496732026143791,
+        "exactMatch": 0.6926229508196722,
+        "bce": 0.22193665438977536,
+        "brier": 0.05295175358279806,
+        "macroAveragePrecision": 0.9042152957499278,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 103,
+            "tp": 92,
+            "fp": 11,
+            "fn": 6,
+            "precision": 0.8932038834951457,
+            "recall": 0.9387755102040817,
+            "f1": 0.9154228855721394,
+            "averagePrecision": 0.9658791416478403
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 24,
+            "tp": 24,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.9230769230769231,
+            "f1": 0.96,
+            "averagePrecision": 0.9853442928039702
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 33,
+            "tp": 29,
+            "fp": 4,
+            "fn": 5,
+            "precision": 0.8787878787878788,
+            "recall": 0.8529411764705882,
+            "f1": 0.8656716417910447,
+            "averagePrecision": 0.9207988327344897
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 36,
+            "tp": 27,
+            "fp": 9,
+            "fn": 19,
+            "precision": 0.75,
+            "recall": 0.5869565217391305,
+            "f1": 0.6585365853658537,
+            "averagePrecision": 0.7276665507439385
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 75,
+            "tp": 58,
+            "fp": 17,
+            "fn": 17,
+            "precision": 0.7733333333333333,
+            "recall": 0.7733333333333333,
+            "f1": 0.7733333333333333,
+            "averagePrecision": 0.8355763608246475
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 30,
+            "tp": 30,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.9375,
+            "f1": 0.967741935483871,
+            "averagePrecision": 0.9900265957446809
+          }
+        }
+      },
+      "secondCV": {
+        "count": 244,
+        "macroF1": 0.8405755689954196,
+        "microF1": 0.8341543513957307,
+        "exactMatch": 0.6762295081967213,
+        "bce": 0.22804389121574387,
+        "brier": 0.05293592218274211,
+        "macroAveragePrecision": 0.9094647551430236,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 106,
+            "tp": 92,
+            "fp": 14,
+            "fn": 6,
+            "precision": 0.8679245283018868,
+            "recall": 0.9387755102040817,
+            "f1": 0.9019607843137255,
+            "averagePrecision": 0.9676162161572872
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 25,
+            "tp": 24,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.96,
+            "recall": 0.9230769230769231,
+            "f1": 0.9411764705882353,
+            "averagePrecision": 0.987503969670061
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 32,
+            "tp": 29,
+            "fp": 3,
+            "fn": 5,
+            "precision": 0.90625,
+            "recall": 0.8529411764705882,
+            "f1": 0.8787878787878788,
+            "averagePrecision": 0.9479546098443554
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 35,
+            "tp": 25,
+            "fp": 10,
+            "fn": 21,
+            "precision": 0.7142857142857143,
+            "recall": 0.5434782608695652,
+            "f1": 0.6172839506172839,
+            "averagePrecision": 0.7140303596370106
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 71,
+            "tp": 55,
+            "fp": 16,
+            "fn": 20,
+            "precision": 0.7746478873239436,
+            "recall": 0.7333333333333333,
+            "f1": 0.7534246575342466,
+            "averagePrecision": 0.848206102822155
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.90625,
+            "f1": 0.9508196721311475,
+            "averagePrecision": 0.9914772727272727
+          }
+        }
+      },
+      "secondOptimizer": [
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 100,
+          "evaluations": 105,
+          "loss": 0.005741498211259362
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 92,
+          "evaluations": 95,
+          "loss": 0.005444108243659839
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 99,
+          "evaluations": 103,
+          "loss": 0.005507579582453269
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 82,
+          "evaluations": 85,
+          "loss": 0.005311227487087913
+        }
+      ],
+      "meanMacroF1": 0.8486799829598967
+    },
+    {
+      "config": {
+        "trial": 130,
+        "phase": "fine",
+        "hidden": 0,
+        "preprocess": "standardize",
+        "center": false,
+        "l2": 0.0002274337269956871,
+        "weightPower": 0.9789103969701293
+      },
+      "firstCV": {
+        "count": 244,
+        "macroF1": 0.8559308281237851,
+        "microF1": 0.8482871125611745,
+        "exactMatch": 0.6885245901639344,
+        "bce": 0.2241391848724371,
+        "brier": 0.05300574209951819,
+        "macroAveragePrecision": 0.9037205459024428,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 103,
+            "tp": 92,
+            "fp": 11,
+            "fn": 6,
+            "precision": 0.8932038834951457,
+            "recall": 0.9387755102040817,
+            "f1": 0.9154228855721394,
+            "averagePrecision": 0.9658791416478403
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 24,
+            "tp": 24,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.9230769230769231,
+            "f1": 0.96,
+            "averagePrecision": 0.9853442928039702
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 33,
+            "tp": 29,
+            "fp": 4,
+            "fn": 5,
+            "precision": 0.8787878787878788,
+            "recall": 0.8529411764705882,
+            "f1": 0.8656716417910447,
+            "averagePrecision": 0.918585674210533
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 36,
+            "tp": 27,
+            "fp": 9,
+            "fn": 19,
+            "precision": 0.75,
+            "recall": 0.5869565217391305,
+            "f1": 0.6585365853658537,
+            "averagePrecision": 0.727176527659606
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 76,
+            "tp": 58,
+            "fp": 18,
+            "fn": 17,
+            "precision": 0.7631578947368421,
+            "recall": 0.7733333333333333,
+            "f1": 0.7682119205298014,
+            "averagePrecision": 0.8353110433480266
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 30,
+            "tp": 30,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.9375,
+            "f1": 0.967741935483871,
+            "averagePrecision": 0.9900265957446809
+          }
+        }
+      },
+      "secondCV": {
+        "count": 244,
+        "macroF1": 0.8393209268193682,
+        "microF1": 0.8327868852459016,
+        "exactMatch": 0.6721311475409836,
+        "bce": 0.2304160022761168,
+        "brier": 0.0531178527912693,
+        "macroAveragePrecision": 0.9089429015051514,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 106,
+            "tp": 92,
+            "fp": 14,
+            "fn": 6,
+            "precision": 0.8679245283018868,
+            "recall": 0.9387755102040817,
+            "f1": 0.9019607843137255,
+            "averagePrecision": 0.9673215824154322
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 25,
+            "tp": 24,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.96,
+            "recall": 0.9230769230769231,
+            "f1": 0.9411764705882353,
+            "averagePrecision": 0.9861342567618865
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 32,
+            "tp": 29,
+            "fp": 3,
+            "fn": 5,
+            "precision": 0.90625,
+            "recall": 0.8529411764705882,
+            "f1": 0.8787878787878788,
+            "averagePrecision": 0.9478647625846968
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 36,
+            "tp": 25,
+            "fp": 11,
+            "fn": 21,
+            "precision": 0.6944444444444444,
+            "recall": 0.5434782608695652,
+            "f1": 0.6097560975609756,
+            "averagePrecision": 0.7131635201538088
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 71,
+            "tp": 55,
+            "fp": 16,
+            "fn": 20,
+            "precision": 0.7746478873239436,
+            "recall": 0.7333333333333333,
+            "f1": 0.7534246575342466,
+            "averagePrecision": 0.8476960143878115
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.90625,
+            "f1": 0.9508196721311475,
+            "averagePrecision": 0.9914772727272727
+          }
+        }
+      },
+      "secondOptimizer": [
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 99,
+          "evaluations": 105,
+          "loss": 0.005070647034764217
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 89,
+          "evaluations": 93,
+          "loss": 0.004806675150258658
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 92,
+          "evaluations": 94,
+          "loss": 0.004859938756058802
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 84,
+          "evaluations": 90,
+          "loss": 0.004686020687897337
+        }
+      ],
+      "meanMacroF1": 0.8476258774715766
+    },
+    {
+      "config": {
+        "trial": 135,
+        "phase": "fine",
+        "hidden": 0,
+        "preprocess": "standardize",
+        "center": false,
+        "l2": 0.00019854209163214486,
+        "weightPower": 0.9424832097339052
+      },
+      "firstCV": {
+        "count": 244,
+        "macroF1": 0.8559308281237851,
+        "microF1": 0.8482871125611745,
+        "exactMatch": 0.6885245901639344,
+        "bce": 0.22758679420627953,
+        "brier": 0.053186048279497015,
+        "macroAveragePrecision": 0.9036160292712725,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 103,
+            "tp": 92,
+            "fp": 11,
+            "fn": 6,
+            "precision": 0.8932038834951457,
+            "recall": 0.9387755102040817,
+            "f1": 0.9154228855721394,
+            "averagePrecision": 0.9659852850869831
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 24,
+            "tp": 24,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.9230769230769231,
+            "f1": 0.96,
+            "averagePrecision": 0.9853442928039702
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 33,
+            "tp": 29,
+            "fp": 4,
+            "fn": 5,
+            "precision": 0.8787878787878788,
+            "recall": 0.8529411764705882,
+            "f1": 0.8656716417910447,
+            "averagePrecision": 0.9184240711077535
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 36,
+            "tp": 27,
+            "fp": 9,
+            "fn": 19,
+            "precision": 0.75,
+            "recall": 0.5869565217391305,
+            "f1": 0.6585365853658537,
+            "averagePrecision": 0.7267539293695267
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 76,
+            "tp": 58,
+            "fp": 18,
+            "fn": 17,
+            "precision": 0.7631578947368421,
+            "recall": 0.7733333333333333,
+            "f1": 0.7682119205298014,
+            "averagePrecision": 0.834699466824619
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 30,
+            "tp": 30,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.9375,
+            "f1": 0.967741935483871,
+            "averagePrecision": 0.9904891304347826
+          }
+        }
+      },
+      "secondCV": {
+        "count": 244,
+        "macroF1": 0.8393209268193682,
+        "microF1": 0.8327868852459016,
+        "exactMatch": 0.6721311475409836,
+        "bce": 0.23388935225560142,
+        "brier": 0.05323942112258137,
+        "macroAveragePrecision": 0.9086225163635997,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 106,
+            "tp": 92,
+            "fp": 14,
+            "fn": 6,
+            "precision": 0.8679245283018868,
+            "recall": 0.9387755102040817,
+            "f1": 0.9019607843137255,
+            "averagePrecision": 0.9670256507159518
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 25,
+            "tp": 24,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.96,
+            "recall": 0.9230769230769231,
+            "f1": 0.9411764705882353,
+            "averagePrecision": 0.9861342567618865
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 32,
+            "tp": 29,
+            "fp": 3,
+            "fn": 5,
+            "precision": 0.90625,
+            "recall": 0.8529411764705882,
+            "f1": 0.8787878787878788,
+            "averagePrecision": 0.9478647625846968
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 36,
+            "tp": 25,
+            "fp": 11,
+            "fn": 21,
+            "precision": 0.6944444444444444,
+            "recall": 0.5434782608695652,
+            "f1": 0.6097560975609756,
+            "averagePrecision": 0.7124230153241334
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 71,
+            "tp": 55,
+            "fp": 16,
+            "fn": 20,
+            "precision": 0.7746478873239436,
+            "recall": 0.7333333333333333,
+            "f1": 0.7534246575342466,
+            "averagePrecision": 0.8468101400676573
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.90625,
+            "f1": 0.9508196721311475,
+            "averagePrecision": 0.9914772727272727
+          }
+        }
+      },
+      "secondOptimizer": [
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 105,
+          "evaluations": 110,
+          "loss": 0.004583572316472917
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 89,
+          "evaluations": 94,
+          "loss": 0.004344309685200708
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 106,
+          "evaluations": 112,
+          "loss": 0.004394325706296711
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 85,
+          "evaluations": 89,
+          "loss": 0.004235806065897219
+        }
+      ],
+      "meanMacroF1": 0.8476258774715766
+    },
+    {
+      "config": {
+        "trial": 142,
+        "phase": "fine",
+        "hidden": 0,
+        "preprocess": "standardize",
+        "center": false,
+        "l2": 0.0001835001361731123,
+        "weightPower": 1.0
+      },
+      "firstCV": {
+        "count": 244,
+        "macroF1": 0.8559308281237851,
+        "microF1": 0.8482871125611745,
+        "exactMatch": 0.6885245901639344,
+        "bce": 0.22875470133949372,
+        "brier": 0.053227994596470825,
+        "macroAveragePrecision": 0.9037073354669811,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 103,
+            "tp": 92,
+            "fp": 11,
+            "fn": 6,
+            "precision": 0.8932038834951457,
+            "recall": 0.9387755102040817,
+            "f1": 0.9154228855721394,
+            "averagePrecision": 0.9659852850869831
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 24,
+            "tp": 24,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.9230769230769231,
+            "f1": 0.96,
+            "averagePrecision": 0.9853442928039702
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 33,
+            "tp": 29,
+            "fp": 4,
+            "fn": 5,
+            "precision": 0.8787878787878788,
+            "recall": 0.8529411764705882,
+            "f1": 0.8656716417910447,
+            "averagePrecision": 0.9184240711077535
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 36,
+            "tp": 27,
+            "fp": 9,
+            "fn": 19,
+            "precision": 0.75,
+            "recall": 0.5869565217391305,
+            "f1": 0.6585365853658537,
+            "averagePrecision": 0.7273450341104113
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 76,
+            "tp": 58,
+            "fp": 18,
+            "fn": 17,
+            "precision": 0.7631578947368421,
+            "recall": 0.7733333333333333,
+            "f1": 0.7682119205298014,
+            "averagePrecision": 0.834656199257987
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 30,
+            "tp": 30,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.9375,
+            "f1": 0.967741935483871,
+            "averagePrecision": 0.9904891304347826
+          }
+        }
+      },
+      "secondCV": {
+        "count": 244,
+        "macroF1": 0.8393209268193682,
+        "microF1": 0.8327868852459016,
+        "exactMatch": 0.6721311475409836,
+        "bce": 0.23513915388803847,
+        "brier": 0.05334593191843293,
+        "macroAveragePrecision": 0.9086205034091382,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 106,
+            "tp": 92,
+            "fp": 14,
+            "fn": 6,
+            "precision": 0.8679245283018868,
+            "recall": 0.9387755102040817,
+            "f1": 0.9019607843137255,
+            "averagePrecision": 0.9672807527567683
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 25,
+            "tp": 24,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.96,
+            "recall": 0.9230769230769231,
+            "f1": 0.9411764705882353,
+            "averagePrecision": 0.9861342567618865
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 32,
+            "tp": 29,
+            "fp": 3,
+            "fn": 5,
+            "precision": 0.90625,
+            "recall": 0.8529411764705882,
+            "f1": 0.8787878787878788,
+            "averagePrecision": 0.9478647625846968
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 36,
+            "tp": 25,
+            "fp": 11,
+            "fn": 21,
+            "precision": 0.6944444444444444,
+            "recall": 0.5434782608695652,
+            "f1": 0.6097560975609756,
+            "averagePrecision": 0.7122281180141509
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 71,
+            "tp": 55,
+            "fp": 16,
+            "fn": 20,
+            "precision": 0.7746478873239436,
+            "recall": 0.7333333333333333,
+            "f1": 0.7534246575342466,
+            "averagePrecision": 0.8467378576100537
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.90625,
+            "f1": 0.9508196721311475,
+            "averagePrecision": 0.9914772727272727
+          }
+        }
+      },
+      "secondOptimizer": [
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 104,
+          "evaluations": 109,
+          "loss": 0.004317734675336231
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 99,
+          "evaluations": 102,
+          "loss": 0.004091904027583008
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 92,
+          "evaluations": 94,
+          "loss": 0.0041360916705363805
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 88,
+          "evaluations": 92,
+          "loss": 0.0039865747838671375
+        }
+      ],
+      "meanMacroF1": 0.8476258774715766
+    },
+    {
+      "config": {
+        "trial": 81,
+        "phase": "local",
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.0001228156082236678,
+        "weightPower": 1.0
+      },
+      "firstCV": {
+        "count": 244,
+        "macroF1": 0.8598963067876874,
+        "microF1": 0.8580750407830342,
+        "exactMatch": 0.7213114754098361,
+        "bce": 0.21583283084918395,
+        "brier": 0.05192669840390035,
+        "macroAveragePrecision": 0.9169098260678537,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 104,
+            "tp": 93,
+            "fp": 11,
+            "fn": 5,
+            "precision": 0.8942307692307693,
+            "recall": 0.9489795918367347,
+            "f1": 0.9207920792079208,
+            "averagePrecision": 0.9779756534698022
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 26,
+            "tp": 25,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.9615384615384616,
+            "recall": 0.9615384615384616,
+            "f1": 0.9615384615384616,
+            "averagePrecision": 0.9893162393162392
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 35,
+            "tp": 29,
+            "fp": 6,
+            "fn": 5,
+            "precision": 0.8285714285714286,
+            "recall": 0.8529411764705882,
+            "f1": 0.8405797101449275,
+            "averagePrecision": 0.9116746455223232
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 36,
+            "tp": 28,
+            "fp": 8,
+            "fn": 18,
+            "precision": 0.7777777777777778,
+            "recall": 0.6086956521739131,
+            "f1": 0.6829268292682927,
+            "averagePrecision": 0.7596870335785466
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 72,
+            "tp": 59,
+            "fp": 13,
+            "fn": 16,
+            "precision": 0.8194444444444444,
+            "recall": 0.7866666666666666,
+            "f1": 0.8027210884353742,
+            "averagePrecision": 0.8715590800117108
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.90625,
+            "f1": 0.9508196721311475,
+            "averagePrecision": 0.9912463045084996
+          }
+        }
+      },
+      "secondCV": {
+        "count": 244,
+        "macroF1": 0.8579762800594758,
+        "microF1": 0.8538587848932676,
+        "exactMatch": 0.7213114754098361,
+        "bce": 0.2185988377033791,
+        "brier": 0.0515996165871904,
+        "macroAveragePrecision": 0.9191472914373818,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 101,
+            "tp": 92,
+            "fp": 9,
+            "fn": 6,
+            "precision": 0.9108910891089109,
+            "recall": 0.9387755102040817,
+            "f1": 0.9246231155778895,
+            "averagePrecision": 0.9750127075368278
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 26,
+            "tp": 25,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.9615384615384616,
+            "recall": 0.9615384615384616,
+            "f1": 0.9615384615384616,
+            "averagePrecision": 0.9901098901098901
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 34,
+            "tp": 30,
+            "fp": 4,
+            "fn": 4,
+            "precision": 0.8823529411764706,
+            "recall": 0.8823529411764706,
+            "f1": 0.8823529411764706,
+            "averagePrecision": 0.9469147297872098
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 34,
+            "tp": 26,
+            "fp": 8,
+            "fn": 20,
+            "precision": 0.7647058823529411,
+            "recall": 0.5652173913043478,
+            "f1": 0.65,
+            "averagePrecision": 0.7339036393201219
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 74,
+            "tp": 58,
+            "fp": 16,
+            "fn": 17,
+            "precision": 0.7837837837837838,
+            "recall": 0.7733333333333333,
+            "f1": 0.7785234899328859,
+            "averagePrecision": 0.8798644990419585
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.90625,
+            "f1": 0.9508196721311475,
+            "averagePrecision": 0.9890782828282828
+          }
+        }
+      },
+      "secondOptimizer": [
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 232,
+          "evaluations": 241,
+          "loss": 0.005826579692426888
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 256,
+          "evaluations": 271,
+          "loss": 0.005762426362834833
+        },
+        {
+          "success": false,
+          "message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+          "iterations": 400,
+          "evaluations": 415,
+          "loss": 0.005642761948953922
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 190,
+          "evaluations": 192,
+          "loss": 0.005657573057137246
+        }
+      ],
+      "meanMacroF1": 0.8589362934235816
+    },
+    {
+      "config": {
+        "trial": 120,
+        "phase": "fine",
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.00022050199534643804,
+        "weightPower": 0.9243762268607136
+      },
+      "firstCV": {
+        "count": 244,
+        "macroF1": 0.8591403198589452,
+        "microF1": 0.8566775244299675,
+        "exactMatch": 0.7172131147540983,
+        "bce": 0.20206318574154128,
+        "brier": 0.05125362679029403,
+        "macroAveragePrecision": 0.9168268206861586,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 105,
+            "tp": 93,
+            "fp": 12,
+            "fn": 5,
+            "precision": 0.8857142857142857,
+            "recall": 0.9489795918367347,
+            "f1": 0.916256157635468,
+            "averagePrecision": 0.9775187243674032
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 26,
+            "tp": 25,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.9615384615384616,
+            "recall": 0.9615384615384616,
+            "f1": 0.9615384615384616,
+            "averagePrecision": 0.9870861986246601
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 35,
+            "tp": 29,
+            "fp": 6,
+            "fn": 5,
+            "precision": 0.8285714285714286,
+            "recall": 0.8529411764705882,
+            "f1": 0.8405797101449275,
+            "averagePrecision": 0.9098273392430993
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 36,
+            "tp": 28,
+            "fp": 8,
+            "fn": 18,
+            "precision": 0.7777777777777778,
+            "recall": 0.6086956521739131,
+            "f1": 0.6829268292682927,
+            "averagePrecision": 0.7609815239530897
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 72,
+            "tp": 59,
+            "fp": 13,
+            "fn": 16,
+            "precision": 0.8194444444444444,
+            "recall": 0.7866666666666666,
+            "f1": 0.8027210884353742,
+            "averagePrecision": 0.8739641766191765
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.90625,
+            "f1": 0.9508196721311475,
+            "averagePrecision": 0.9915829613095238
+          }
+        }
+      },
+      "secondCV": {
+        "count": 244,
+        "macroF1": 0.8561564782867231,
+        "microF1": 0.8538587848932676,
+        "exactMatch": 0.7213114754098361,
+        "bce": 0.2067719065881358,
+        "brier": 0.050826010043854376,
+        "macroAveragePrecision": 0.9185358347224168,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 101,
+            "tp": 92,
+            "fp": 9,
+            "fn": 6,
+            "precision": 0.9108910891089109,
+            "recall": 0.9387755102040817,
+            "f1": 0.9246231155778895,
+            "averagePrecision": 0.9753956113286241
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 27,
+            "tp": 25,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.9259259259259259,
+            "recall": 0.9615384615384616,
+            "f1": 0.9433962264150944,
+            "averagePrecision": 0.9893162393162392
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 35,
+            "tp": 31,
+            "fp": 4,
+            "fn": 3,
+            "precision": 0.8857142857142857,
+            "recall": 0.9117647058823529,
+            "f1": 0.8985507246376812,
+            "averagePrecision": 0.9490761731579984
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 32,
+            "tp": 25,
+            "fp": 7,
+            "fn": 21,
+            "precision": 0.78125,
+            "recall": 0.5434782608695652,
+            "f1": 0.6410256410256411,
+            "averagePrecision": 0.7311439921001681
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 74,
+            "tp": 58,
+            "fp": 16,
+            "fn": 17,
+            "precision": 0.7837837837837838,
+            "recall": 0.7733333333333333,
+            "f1": 0.7785234899328859,
+            "averagePrecision": 0.8772047096031883
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.90625,
+            "f1": 0.9508196721311475,
+            "averagePrecision": 0.9890782828282828
+          }
+        }
+      },
+      "secondOptimizer": [
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 234,
+          "evaluations": 244,
+          "loss": 0.009371341588569462
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 275,
+          "evaluations": 287,
+          "loss": 0.00920649941492126
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 201,
+          "evaluations": 209,
+          "loss": 0.009101510130920394
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 223,
+          "evaluations": 232,
+          "loss": 0.009070206678083047
+        }
+      ],
+      "meanMacroF1": 0.8576483990728342
+    },
+    {
+      "config": {
+        "trial": 122,
+        "phase": "fine",
+        "hidden": 8,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.008546880578659877,
+        "weightPower": 0.9670491305657435
+      },
+      "firstCV": {
+        "count": 244,
+        "macroF1": 0.8585099747084857,
+        "microF1": 0.8503184713375797,
+        "exactMatch": 0.6967213114754098,
+        "bce": 0.20062984595267724,
+        "brier": 0.052770723896620055,
+        "macroAveragePrecision": 0.9190797836565596,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 106,
+            "tp": 94,
+            "fp": 12,
+            "fn": 4,
+            "precision": 0.8867924528301887,
+            "recall": 0.9591836734693877,
+            "f1": 0.9215686274509803,
+            "averagePrecision": 0.9834207464737692
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 25,
+            "tp": 25,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.9615384615384616,
+            "f1": 0.9803921568627451,
+            "averagePrecision": 0.9832775919732442
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 38,
+            "tp": 29,
+            "fp": 9,
+            "fn": 5,
+            "precision": 0.7631578947368421,
+            "recall": 0.8529411764705882,
+            "f1": 0.8055555555555556,
+            "averagePrecision": 0.8985332545842928
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 41,
+            "tp": 31,
+            "fp": 10,
+            "fn": 15,
+            "precision": 0.7560975609756098,
+            "recall": 0.6739130434782609,
+            "f1": 0.7126436781609196,
+            "averagePrecision": 0.7916328111429773
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 77,
+            "tp": 58,
+            "fp": 19,
+            "fn": 17,
+            "precision": 0.7532467532467533,
+            "recall": 0.7733333333333333,
+            "f1": 0.7631578947368421,
+            "averagePrecision": 0.8630502221348215
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 30,
+            "tp": 30,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.9375,
+            "f1": 0.967741935483871,
+            "averagePrecision": 0.9945640756302521
+          }
+        }
+      },
+      "secondCV": {
+        "count": 244,
+        "macroF1": 0.8587389886890356,
+        "microF1": 0.853035143769968,
+        "exactMatch": 0.7295081967213115,
+        "bce": 0.19724782568266713,
+        "brier": 0.051743102146829194,
+        "macroAveragePrecision": 0.9273940080247671,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 102,
+            "tp": 93,
+            "fp": 9,
+            "fn": 5,
+            "precision": 0.9117647058823529,
+            "recall": 0.9489795918367347,
+            "f1": 0.93,
+            "averagePrecision": 0.9815849029641276
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 25,
+            "tp": 25,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.9615384615384616,
+            "f1": 0.9803921568627451,
+            "averagePrecision": 0.9909502262443439
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 40,
+            "tp": 32,
+            "fp": 8,
+            "fn": 2,
+            "precision": 0.8,
+            "recall": 0.9411764705882353,
+            "f1": 0.8648648648648649,
+            "averagePrecision": 0.9465799529541925
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 37,
+            "tp": 27,
+            "fp": 10,
+            "fn": 19,
+            "precision": 0.7297297297297297,
+            "recall": 0.5869565217391305,
+            "f1": 0.6506024096385542,
+            "averagePrecision": 0.7797680075344576
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 80,
+            "tp": 60,
+            "fp": 20,
+            "fn": 15,
+            "precision": 0.75,
+            "recall": 0.8,
+            "f1": 0.7741935483870968,
+            "averagePrecision": 0.8849154822610054
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 31,
+            "tp": 30,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.967741935483871,
+            "recall": 0.9375,
+            "f1": 0.9523809523809523,
+            "averagePrecision": 0.9805654761904762
+          }
+        }
+      },
+      "secondOptimizer": [
+        {
+          "success": true,
+          "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+          "iterations": 127,
+          "evaluations": 137,
+          "loss": 0.20787905117400216
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+          "iterations": 110,
+          "evaluations": 114,
+          "loss": 0.20931112903174373
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+          "iterations": 223,
+          "evaluations": 233,
+          "loss": 0.20744833243933386
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+          "iterations": 130,
+          "evaluations": 138,
+          "loss": 0.20436046137724445
+        }
+      ],
+      "meanMacroF1": 0.8586244816987607
+    },
+    {
+      "config": {
+        "trial": 111,
+        "phase": "local",
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.000158944898138651,
+        "weightPower": 0.8553981578551841
+      },
+      "firstCV": {
+        "count": 244,
+        "macroF1": 0.8565668908129354,
+        "microF1": 0.8534201954397395,
+        "exactMatch": 0.7172131147540983,
+        "bce": 0.209873602884523,
+        "brier": 0.05112707515805485,
+        "macroAveragePrecision": 0.9176023902004907,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 106,
+            "tp": 93,
+            "fp": 13,
+            "fn": 5,
+            "precision": 0.8773584905660378,
+            "recall": 0.9489795918367347,
+            "f1": 0.9117647058823529,
+            "averagePrecision": 0.9775472753095827
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 26,
+            "tp": 25,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.9615384615384616,
+            "recall": 0.9615384615384616,
+            "f1": 0.9615384615384616,
+            "averagePrecision": 0.9855477370861986
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 35,
+            "tp": 29,
+            "fp": 6,
+            "fn": 5,
+            "precision": 0.8285714285714286,
+            "recall": 0.8529411764705882,
+            "f1": 0.8405797101449275,
+            "averagePrecision": 0.9164493923870584
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 37,
+            "tp": 28,
+            "fp": 9,
+            "fn": 18,
+            "precision": 0.7567567567567568,
+            "recall": 0.6086956521739131,
+            "f1": 0.6746987951807228,
+            "averagePrecision": 0.7558605904955525
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 70,
+            "tp": 58,
+            "fp": 12,
+            "fn": 17,
+            "precision": 0.8285714285714286,
+            "recall": 0.7733333333333333,
+            "f1": 0.8,
+            "averagePrecision": 0.876120118950868
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.90625,
+            "f1": 0.9508196721311475,
+            "averagePrecision": 0.9940892269736842
+          }
+        }
+      },
+      "secondCV": {
+        "count": 244,
+        "macroF1": 0.8534568477098547,
+        "microF1": 0.8519736842105263,
+        "exactMatch": 0.7213114754098361,
+        "bce": 0.21384304741370297,
+        "brier": 0.051078611510721385,
+        "macroAveragePrecision": 0.919219848259644,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 101,
+            "tp": 92,
+            "fp": 9,
+            "fn": 6,
+            "precision": 0.9108910891089109,
+            "recall": 0.9387755102040817,
+            "f1": 0.9246231155778895,
+            "averagePrecision": 0.9757605155607149
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 27,
+            "tp": 25,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.9259259259259259,
+            "recall": 0.9615384615384616,
+            "f1": 0.9433962264150944,
+            "averagePrecision": 0.9901098901098901
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 34,
+            "tp": 30,
+            "fp": 4,
+            "fn": 4,
+            "precision": 0.8823529411764706,
+            "recall": 0.8823529411764706,
+            "f1": 0.8823529411764706,
+            "averagePrecision": 0.9484956624548685
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 32,
+            "tp": 25,
+            "fp": 7,
+            "fn": 21,
+            "precision": 0.78125,
+            "recall": 0.5434782608695652,
+            "f1": 0.6410256410256411,
+            "averagePrecision": 0.7389698933069018
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 74,
+            "tp": 58,
+            "fp": 16,
+            "fn": 17,
+            "precision": 0.7837837837837838,
+            "recall": 0.7733333333333333,
+            "f1": 0.7785234899328859,
+            "averagePrecision": 0.875351183681044
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.90625,
+            "f1": 0.9508196721311475,
+            "averagePrecision": 0.9866319444444445
+          }
+        }
+      },
+      "secondOptimizer": [
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 227,
+          "evaluations": 235,
+          "loss": 0.007234175049313173
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 188,
+          "evaluations": 199,
+          "loss": 0.0071140899766399595
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 322,
+          "evaluations": 339,
+          "loss": 0.00698378911970722
+        },
+        {
+          "success": true,
+          "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+          "iterations": 251,
+          "evaluations": 263,
+          "loss": 0.006961242830775392
+        }
+      ],
+      "meanMacroF1": 0.855011869261395
+    }
+  ],
+  "testLabelsUsed": false,
+  "decisionFrozenBeforeTest": true
+}

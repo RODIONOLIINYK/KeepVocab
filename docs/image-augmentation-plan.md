@@ -1,5 +1,10 @@
 # Dataset expansion and nine-image paging — 1.12.10
 
+For the subsequent six-category meaning dataset, soft routing, image/text
+adapter training, prompting/contrasts, and personal-ranking decisions, see
+[the meaning-conditioning plan](meaning-conditioning-plan.md). That staged plan
+supersedes the earlier three/four-category proposal; it does not activate a model.
+
 The app keeps the current frozen MobileCLIP S0 (FP16 text / FP32 vision) and the
 selected ≥0.19 / unwanted <0.20 filter. Search scores up to 30 candidates, then
 personal ranking orders survivors. Both chooser flows initially show up to nine.
@@ -51,6 +56,11 @@ Distance measures changed representation, not preserved meaning or usefulness.
    text, color, weather and lighting meanings require additional restrictions.
    Illustration variants should be a separately tracked domain, evaluated on real
    app photos as well.
+   The 2026-10-31 follow-up adds a controlled mild-crop experiment: retain
+   80–100% of image **area**, review the exact target evidence after cropping,
+   re-encode the changed pixels, and keep each accepted variant with its original
+   training group. A crop is a derivative, not a new independent photograph.
+   See the [crop protocol](meaning-conditioning-plan.md#cropping-experiment-added-2026-10-31).
 5. **Small embedding regularization or same-meaning mixup**, only as a later
    ablation. Use verified same-meaning positives, keep original/variant groups
    together, and test whether the resulting artificial vectors help held-out

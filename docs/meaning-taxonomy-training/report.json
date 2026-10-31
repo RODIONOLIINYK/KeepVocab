@@ -1,0 +1,1351 @@
+{
+  "schemaVersion": 1,
+  "selectedConfig": {
+    "trial": 81,
+    "phase": "local",
+    "hidden": 32,
+    "preprocess": "scaled",
+    "center": true,
+    "l2": 0.0001228156082236678,
+    "weightPower": 1.0
+  },
+  "decisionThreshold": 0.45,
+  "testUsedForSelection": false,
+  "selectionFileSha256": "3e6b6a99cb3f3b08fc9684deb7e876e59b8cd0141fed6a86b6c7d71a0f0c9f7d",
+  "trialCount": 153,
+  "confirmationTrialCount": 8,
+  "stageResults": [
+    {
+      "stage": 1,
+      "trialCount": 72,
+      "bestMacroF1": 0.8551260221316705,
+      "gain": 0.6366926262592503,
+      "bestConfig": {
+        "trial": 68,
+        "phase": "broad",
+        "hidden": 0,
+        "preprocess": "standardize",
+        "center": false,
+        "l2": 2.0579558337621543e-05,
+        "weightPower": 0.9767617536399757
+      }
+    },
+    {
+      "stage": 2,
+      "trialCount": 48,
+      "bestMacroF1": 0.8598963067876874,
+      "gain": 0.00477028465601681,
+      "bestConfig": {
+        "trial": 81,
+        "phase": "local",
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.0001228156082236678,
+        "weightPower": 1.0
+      }
+    },
+    {
+      "stage": 3,
+      "trialCount": 32,
+      "bestMacroF1": 0.8598963067876874,
+      "gain": 0.0,
+      "bestConfig": {
+        "trial": 81,
+        "phase": "local",
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.0001228156082236678,
+        "weightPower": 1.0
+      }
+    }
+  ],
+  "baseline": {
+    "config": {
+      "trial": -1,
+      "phase": "baseline",
+      "hidden": 0,
+      "preprocess": "unit",
+      "center": false,
+      "l2": 0.001,
+      "weightPower": 0.0
+    },
+    "cv": {
+      "count": 244,
+      "macroF1": 0.21843339587242028,
+      "microF1": 0.5011185682326622,
+      "exactMatch": 0.4016393442622951,
+      "bce": 0.35260247188057103,
+      "brier": 0.10816129250688829,
+      "macroAveragePrecision": 0.8342104514622798,
+      "threshold": 0.5,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 98,
+          "predictedPositive": 107,
+          "tp": 89,
+          "fp": 18,
+          "fn": 9,
+          "precision": 0.8317757009345794,
+          "recall": 0.9081632653061225,
+          "f1": 0.8682926829268293,
+          "averagePrecision": 0.911378245422116
+        },
+        "place": {
+          "positiveSupport": 26,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 26,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.9680996122707992
+        },
+        "action": {
+          "positiveSupport": 34,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 34,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.8307555139168332
+        },
+        "state": {
+          "positiveSupport": 46,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 46,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.5593866228308021
+        },
+        "relation": {
+          "positiveSupport": 75,
+          "predictedPositive": 29,
+          "tp": 23,
+          "fp": 6,
+          "fn": 52,
+          "precision": 0.7931034482758621,
+          "recall": 0.30666666666666664,
+          "f1": 0.4423076923076923,
+          "averagePrecision": 0.7566179604921988
+        },
+        "abstract": {
+          "positiveSupport": 32,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 32,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.9790247538409302
+        }
+      }
+    },
+    "validation": {
+      "count": 91,
+      "macroF1": 0.24538063562453805,
+      "microF1": 0.5662650602409639,
+      "exactMatch": 0.46153846153846156,
+      "bce": 0.3465285226498435,
+      "brier": 0.10521237033895257,
+      "macroAveragePrecision": 0.833553633738052,
+      "threshold": 0.5,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 41,
+          "predictedPositive": 41,
+          "tp": 38,
+          "fp": 3,
+          "fn": 3,
+          "precision": 0.926829268292683,
+          "recall": 0.926829268292683,
+          "f1": 0.926829268292683,
+          "averagePrecision": 0.9692805510577599
+        },
+        "place": {
+          "positiveSupport": 7,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 7,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.8260204081632653
+        },
+        "action": {
+          "positiveSupport": 15,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 15,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.9796825396825397
+        },
+        "state": {
+          "positiveSupport": 16,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 16,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.474929070391837
+        },
+        "relation": {
+          "positiveSupport": 22,
+          "predictedPositive": 11,
+          "tp": 9,
+          "fp": 2,
+          "fn": 13,
+          "precision": 0.8181818181818182,
+          "recall": 0.4090909090909091,
+          "f1": 0.5454545454545454,
+          "averagePrecision": 0.7569037386274157
+        },
+        "abstract": {
+          "positiveSupport": 13,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 13,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.9945054945054945
+        }
+      }
+    },
+    "test": {
+      "count": 77,
+      "macroF1": 0.19611872146118722,
+      "microF1": 0.5263157894736842,
+      "exactMatch": 0.44155844155844154,
+      "bce": 0.3329756462107152,
+      "brier": 0.09998093740602171,
+      "macroAveragePrecision": 0.8243589842998412,
+      "threshold": 0.5,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 36,
+          "predictedPositive": 37,
+          "tp": 32,
+          "fp": 5,
+          "fn": 4,
+          "precision": 0.8648648648648649,
+          "recall": 0.8888888888888888,
+          "f1": 0.8767123287671232,
+          "averagePrecision": 0.8914738241859715
+        },
+        "place": {
+          "positiveSupport": 7,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 7,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.9682539682539683
+        },
+        "action": {
+          "positiveSupport": 10,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 10,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.9110245310245311
+        },
+        "state": {
+          "positiveSupport": 12,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 12,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.6327086474167539
+        },
+        "relation": {
+          "positiveSupport": 15,
+          "predictedPositive": 5,
+          "tp": 3,
+          "fp": 2,
+          "fn": 12,
+          "precision": 0.6,
+          "recall": 0.2,
+          "f1": 0.3,
+          "averagePrecision": 0.55026869249358
+        },
+        "abstract": {
+          "positiveSupport": 11,
+          "predictedPositive": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 11,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "averagePrecision": 0.9924242424242423
+        }
+      }
+    }
+  },
+  "linearChampion": {
+    "config": {
+      "trial": 136,
+      "phase": "fine",
+      "hidden": 0,
+      "preprocess": "standardize",
+      "center": false,
+      "l2": 0.0002682241281001108,
+      "weightPower": 0.862346108985245
+    },
+    "validation": {
+      "count": 91,
+      "macroF1": 0.8282603562015328,
+      "microF1": 0.825531914893617,
+      "exactMatch": 0.6373626373626373,
+      "bce": 0.27706731429702075,
+      "brier": 0.06010363526131846,
+      "macroAveragePrecision": 0.8881430619477132,
+      "threshold": 0.325,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 41,
+          "predictedPositive": 44,
+          "tp": 41,
+          "fp": 3,
+          "fn": 0,
+          "precision": 0.9318181818181818,
+          "recall": 1.0,
+          "f1": 0.9647058823529412,
+          "averagePrecision": 0.9954002369345534
+        },
+        "place": {
+          "positiveSupport": 7,
+          "predictedPositive": 7,
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "averagePrecision": 1.0
+        },
+        "action": {
+          "positiveSupport": 15,
+          "predictedPositive": 12,
+          "tp": 12,
+          "fp": 0,
+          "fn": 3,
+          "precision": 1.0,
+          "recall": 0.8,
+          "f1": 0.8888888888888888,
+          "averagePrecision": 0.9888888888888889
+        },
+        "state": {
+          "positiveSupport": 16,
+          "predictedPositive": 17,
+          "tp": 9,
+          "fp": 8,
+          "fn": 7,
+          "precision": 0.5294117647058824,
+          "recall": 0.5625,
+          "f1": 0.5454545454545454,
+          "averagePrecision": 0.6572054468436047
+        },
+        "relation": {
+          "positiveSupport": 22,
+          "predictedPositive": 30,
+          "tp": 17,
+          "fp": 13,
+          "fn": 5,
+          "precision": 0.5666666666666667,
+          "recall": 0.7727272727272727,
+          "f1": 0.6538461538461539,
+          "averagePrecision": 0.7171714913269244
+        },
+        "abstract": {
+          "positiveSupport": 13,
+          "predictedPositive": 11,
+          "tp": 11,
+          "fp": 0,
+          "fn": 2,
+          "precision": 1.0,
+          "recall": 0.8461538461538461,
+          "f1": 0.9166666666666666,
+          "averagePrecision": 0.9701923076923078
+        }
+      }
+    },
+    "test": {
+      "count": 77,
+      "macroF1": 0.8374074074074075,
+      "microF1": 0.851063829787234,
+      "exactMatch": 0.7402597402597403,
+      "bce": 0.2019393999912496,
+      "brier": 0.05191239454744192,
+      "macroAveragePrecision": 0.8927609384768723,
+      "threshold": 0.325,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 36,
+          "predictedPositive": 39,
+          "tp": 36,
+          "fp": 3,
+          "fn": 0,
+          "precision": 0.9230769230769231,
+          "recall": 1.0,
+          "f1": 0.96,
+          "averagePrecision": 0.9963617463617465
+        },
+        "place": {
+          "positiveSupport": 7,
+          "predictedPositive": 7,
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "averagePrecision": 1.0
+        },
+        "action": {
+          "positiveSupport": 10,
+          "predictedPositive": 8,
+          "tp": 7,
+          "fp": 1,
+          "fn": 3,
+          "precision": 0.875,
+          "recall": 0.7,
+          "f1": 0.7777777777777778,
+          "averagePrecision": 0.9433119658119657
+        },
+        "state": {
+          "positiveSupport": 12,
+          "predictedPositive": 13,
+          "tp": 9,
+          "fp": 4,
+          "fn": 3,
+          "precision": 0.6923076923076923,
+          "recall": 0.75,
+          "f1": 0.72,
+          "averagePrecision": 0.7443610269041304
+        },
+        "relation": {
+          "positiveSupport": 15,
+          "predictedPositive": 21,
+          "tp": 12,
+          "fp": 9,
+          "fn": 3,
+          "precision": 0.5714285714285714,
+          "recall": 0.8,
+          "f1": 0.6666666666666666,
+          "averagePrecision": 0.6883711121690662
+        },
+        "abstract": {
+          "positiveSupport": 11,
+          "predictedPositive": 9,
+          "tp": 9,
+          "fp": 0,
+          "fn": 2,
+          "precision": 1.0,
+          "recall": 0.8181818181818182,
+          "f1": 0.9,
+          "averagePrecision": 0.9841597796143251
+        }
+      }
+    },
+    "parameterCount": 3078
+  },
+  "selected": {
+    "train": {
+      "count": 244,
+      "macroF1": 1.0,
+      "microF1": 1.0,
+      "exactMatch": 1.0,
+      "bce": 0.0011548194560685075,
+      "brier": 3.926865684914906e-06,
+      "macroAveragePrecision": 1.0,
+      "threshold": 0.45,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 98,
+          "predictedPositive": 98,
+          "tp": 98,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "averagePrecision": 1.0
+        },
+        "place": {
+          "positiveSupport": 26,
+          "predictedPositive": 26,
+          "tp": 26,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "averagePrecision": 1.0
+        },
+        "action": {
+          "positiveSupport": 34,
+          "predictedPositive": 34,
+          "tp": 34,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "averagePrecision": 1.0
+        },
+        "state": {
+          "positiveSupport": 46,
+          "predictedPositive": 46,
+          "tp": 46,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "averagePrecision": 1.0
+        },
+        "relation": {
+          "positiveSupport": 75,
+          "predictedPositive": 75,
+          "tp": 75,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "averagePrecision": 1.0
+        },
+        "abstract": {
+          "positiveSupport": 32,
+          "predictedPositive": 32,
+          "tp": 32,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "averagePrecision": 1.0
+        }
+      }
+    },
+    "validation": {
+      "count": 91,
+      "macroF1": 0.8401190476190475,
+      "microF1": 0.8403361344537815,
+      "exactMatch": 0.6593406593406593,
+      "bce": 0.2549434129204758,
+      "brier": 0.05975522159484687,
+      "macroAveragePrecision": 0.9050847014609157,
+      "threshold": 0.45,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 41,
+          "predictedPositive": 43,
+          "tp": 39,
+          "fp": 4,
+          "fn": 2,
+          "precision": 0.9069767441860465,
+          "recall": 0.9512195121951219,
+          "f1": 0.9285714285714286,
+          "averagePrecision": 0.9921699191582541
+        },
+        "place": {
+          "positiveSupport": 7,
+          "predictedPositive": 9,
+          "tp": 7,
+          "fp": 2,
+          "fn": 0,
+          "precision": 0.7777777777777778,
+          "recall": 1.0,
+          "f1": 0.875,
+          "averagePrecision": 1.0
+        },
+        "action": {
+          "positiveSupport": 15,
+          "predictedPositive": 13,
+          "tp": 13,
+          "fp": 0,
+          "fn": 2,
+          "precision": 1.0,
+          "recall": 0.8666666666666667,
+          "f1": 0.9285714285714286,
+          "averagePrecision": 0.9877124183006536
+        },
+        "state": {
+          "positiveSupport": 16,
+          "predictedPositive": 19,
+          "tp": 11,
+          "fp": 8,
+          "fn": 5,
+          "precision": 0.5789473684210527,
+          "recall": 0.6875,
+          "f1": 0.6285714285714286,
+          "averagePrecision": 0.6890550026483973
+        },
+        "relation": {
+          "positiveSupport": 22,
+          "predictedPositive": 28,
+          "tp": 18,
+          "fp": 10,
+          "fn": 4,
+          "precision": 0.6428571428571429,
+          "recall": 0.8181818181818182,
+          "f1": 0.72,
+          "averagePrecision": 0.7718272789145996
+        },
+        "abstract": {
+          "positiveSupport": 13,
+          "predictedPositive": 12,
+          "tp": 12,
+          "fp": 0,
+          "fn": 1,
+          "precision": 1.0,
+          "recall": 0.9230769230769231,
+          "f1": 0.96,
+          "averagePrecision": 0.9897435897435898
+        }
+      }
+    },
+    "test": {
+      "count": 77,
+      "macroF1": 0.8530489290385194,
+      "microF1": 0.8645833333333334,
+      "exactMatch": 0.7662337662337663,
+      "bce": 0.1771334624929769,
+      "brier": 0.043332730806966716,
+      "macroAveragePrecision": 0.903315240231641,
+      "threshold": 0.45,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 36,
+          "predictedPositive": 39,
+          "tp": 36,
+          "fp": 3,
+          "fn": 0,
+          "precision": 0.9230769230769231,
+          "recall": 1.0,
+          "f1": 0.96,
+          "averagePrecision": 0.9969727559639838
+        },
+        "place": {
+          "positiveSupport": 7,
+          "predictedPositive": 7,
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "averagePrecision": 1.0
+        },
+        "action": {
+          "positiveSupport": 10,
+          "predictedPositive": 9,
+          "tp": 8,
+          "fp": 1,
+          "fn": 2,
+          "precision": 0.8888888888888888,
+          "recall": 0.8,
+          "f1": 0.8421052631578947,
+          "averagePrecision": 0.9105880230880231
+        },
+        "state": {
+          "positiveSupport": 12,
+          "predictedPositive": 15,
+          "tp": 10,
+          "fp": 5,
+          "fn": 2,
+          "precision": 0.6666666666666666,
+          "recall": 0.8333333333333334,
+          "f1": 0.7407407407407407,
+          "averagePrecision": 0.8271103896103895
+        },
+        "relation": {
+          "positiveSupport": 15,
+          "predictedPositive": 19,
+          "tp": 12,
+          "fp": 7,
+          "fn": 3,
+          "precision": 0.631578947368421,
+          "recall": 0.8,
+          "f1": 0.7058823529411765,
+          "averagePrecision": 0.7074707495233811
+        },
+        "abstract": {
+          "positiveSupport": 11,
+          "predictedPositive": 12,
+          "tp": 10,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.8333333333333334,
+          "recall": 0.9090909090909091,
+          "f1": 0.8695652173913043,
+          "averagePrecision": 0.9777495232040688
+        }
+      }
+    },
+    "testAtDefaultThreshold": {
+      "count": 77,
+      "macroF1": 0.833509820103762,
+      "microF1": 0.851063829787234,
+      "exactMatch": 0.7662337662337663,
+      "bce": 0.1771334624929769,
+      "brier": 0.043332730806966716,
+      "macroAveragePrecision": 0.903315240231641,
+      "threshold": 0.5,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 36,
+          "predictedPositive": 37,
+          "tp": 35,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.9459459459459459,
+          "recall": 0.9722222222222222,
+          "f1": 0.958904109589041,
+          "averagePrecision": 0.9969727559639838
+        },
+        "place": {
+          "positiveSupport": 7,
+          "predictedPositive": 6,
+          "tp": 6,
+          "fp": 0,
+          "fn": 1,
+          "precision": 1.0,
+          "recall": 0.8571428571428571,
+          "f1": 0.9230769230769231,
+          "averagePrecision": 1.0
+        },
+        "action": {
+          "positiveSupport": 10,
+          "predictedPositive": 9,
+          "tp": 8,
+          "fp": 1,
+          "fn": 2,
+          "precision": 0.8888888888888888,
+          "recall": 0.8,
+          "f1": 0.8421052631578947,
+          "averagePrecision": 0.9105880230880231
+        },
+        "state": {
+          "positiveSupport": 12,
+          "predictedPositive": 15,
+          "tp": 10,
+          "fp": 5,
+          "fn": 2,
+          "precision": 0.6666666666666666,
+          "recall": 0.8333333333333334,
+          "f1": 0.7407407407407407,
+          "averagePrecision": 0.8271103896103895
+        },
+        "relation": {
+          "positiveSupport": 15,
+          "predictedPositive": 18,
+          "tp": 11,
+          "fp": 7,
+          "fn": 4,
+          "precision": 0.6111111111111112,
+          "recall": 0.7333333333333333,
+          "f1": 0.6666666666666666,
+          "averagePrecision": 0.7074707495233811
+        },
+        "abstract": {
+          "positiveSupport": 11,
+          "predictedPositive": 12,
+          "tp": 10,
+          "fp": 2,
+          "fn": 1,
+          "precision": 0.8333333333333334,
+          "recall": 0.9090909090909091,
+          "f1": 0.8695652173913043,
+          "averagePrecision": 0.9777495232040688
+        }
+      }
+    },
+    "testBySource": {
+      "legacy": {
+        "count": 44,
+        "macroF1": 0.7599493903841731,
+        "microF1": 0.9306930693069307,
+        "exactMatch": 0.8863636363636364,
+        "bce": 0.05571447873964672,
+        "brier": 0.01751371672881349,
+        "macroAveragePrecision": 0.8328916874371419,
+        "threshold": 0.45,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 33,
+            "predictedPositive": 36,
+            "tp": 33,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.9166666666666666,
+            "recall": 1.0,
+            "f1": 0.9565217391304348,
+            "averagePrecision": 0.9973501246228519
+          },
+          "place": {
+            "positiveSupport": 4,
+            "predictedPositive": 4,
+            "tp": 4,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 5,
+            "predictedPositive": 4,
+            "tp": 4,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "averagePrecision": 1.0
+          },
+          "state": {
+            "positiveSupport": 3,
+            "predictedPositive": 4,
+            "tp": 3,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.75,
+            "recall": 1.0,
+            "f1": 0.8571428571428571,
+            "averagePrecision": 1.0
+          },
+          "relation": {
+            "positiveSupport": 3,
+            "predictedPositive": 4,
+            "tp": 3,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.75,
+            "recall": 1.0,
+            "f1": 0.8571428571428571,
+            "averagePrecision": 1.0
+          },
+          "abstract": {
+            "positiveSupport": 0,
+            "predictedPositive": 1,
+            "tp": 0,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "averagePrecision": 0.0
+          }
+        }
+      },
+      "authored": {
+        "count": 33,
+        "macroF1": 0.845959595959596,
+        "microF1": 0.7912087912087912,
+        "exactMatch": 0.6060606060606061,
+        "bce": 0.33902544083075054,
+        "brier": 0.07775808291117103,
+        "macroAveragePrecision": 0.8813334658355519,
+        "threshold": 0.45,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 3,
+            "predictedPositive": 3,
+            "tp": 3,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "place": {
+            "positiveSupport": 3,
+            "predictedPositive": 3,
+            "tp": 3,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 5,
+            "predictedPositive": 5,
+            "tp": 4,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.8,
+            "recall": 0.8,
+            "f1": 0.8,
+            "averagePrecision": 0.8528571428571429
+          },
+          "state": {
+            "positiveSupport": 9,
+            "predictedPositive": 11,
+            "tp": 7,
+            "fp": 4,
+            "fn": 2,
+            "precision": 0.6363636363636364,
+            "recall": 0.7777777777777778,
+            "f1": 0.7,
+            "averagePrecision": 0.8230197070776781
+          },
+          "relation": {
+            "positiveSupport": 12,
+            "predictedPositive": 15,
+            "tp": 9,
+            "fp": 6,
+            "fn": 3,
+            "precision": 0.6,
+            "recall": 0.75,
+            "f1": 0.6666666666666666,
+            "averagePrecision": 0.6279641654641654
+          },
+          "abstract": {
+            "positiveSupport": 11,
+            "predictedPositive": 11,
+            "tp": 10,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.9090909090909091,
+            "recall": 0.9090909090909091,
+            "f1": 0.9090909090909091,
+            "averagePrecision": 0.9841597796143251
+          }
+        }
+      }
+    }
+  },
+  "uncertainty": {
+    "method": "Percentile paired group bootstrap; sparse-class resamples can have zero support.",
+    "repetitions": 1000,
+    "groupCount": 74,
+    "macroF1_95PercentInterval": [
+      0.773513641789597,
+      0.9168292074385187
+    ],
+    "deltaVsComparatorMacroF1_95PercentInterval": [
+      -0.02290440091517664,
+      0.05831857480754561
+    ],
+    "comparator": "Validation-selected tuned logistic regression; threshold 0.325."
+  },
+  "testErrors": [
+    {
+      "id": "meaning-0f081f20121c6d80",
+      "word": "mirror",
+      "definition": "A reflective surface used to see an image of oneself.",
+      "labels": [
+        "entity"
+      ],
+      "predicted": [
+        "entity",
+        "state"
+      ],
+      "probabilities": [
+        0.4973029916553872,
+        0.0005212928094493367,
+        4.985093314952334e-05,
+        0.55513998984547,
+        0.004314436062970071,
+        0.007504099979101072
+      ]
+    },
+    {
+      "id": "meaning-0067a511e93a5947",
+      "word": "kitchen",
+      "definition": "A room used for preparing and cooking food.",
+      "labels": [
+        "place"
+      ],
+      "predicted": [
+        "entity",
+        "place"
+      ],
+      "probabilities": [
+        0.4800057005610587,
+        0.9869060098964957,
+        0.006320797674326409,
+        3.6687451292964265e-05,
+        0.0023913519311227886,
+        0.00029705457340085646
+      ]
+    },
+    {
+      "id": "meaning-796458ce57a75185",
+      "word": "read",
+      "definition": "To look at written words and understand their meaning.",
+      "labels": [
+        "action"
+      ],
+      "predicted": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        3.317531652475727e-05,
+        0.00010127337246244032,
+        0.1659235595834396,
+        0.07670951952225823,
+        0.8164423754315255,
+        0.5170083595252757
+      ]
+    },
+    {
+      "id": "meaning-9a74db6385db42ab",
+      "word": "bathroom",
+      "definition": "A room containing washing or toilet facilities.",
+      "labels": [
+        "place"
+      ],
+      "predicted": [
+        "entity",
+        "place"
+      ],
+      "probabilities": [
+        0.8363140948434604,
+        0.9845813035970169,
+        0.000543530861068201,
+        6.331103458641808e-05,
+        0.0016448837219101811,
+        0.0033940871297064917
+      ]
+    },
+    {
+      "id": "meaning-69d0b719d57d6699",
+      "word": "restaurant",
+      "definition": "A place where meals are prepared and served to customers.",
+      "labels": [
+        "place"
+      ],
+      "predicted": [
+        "entity",
+        "place"
+      ],
+      "probabilities": [
+        0.9691428187858784,
+        0.4858180587789924,
+        5.1129855678518626e-05,
+        9.185642118482488e-06,
+        0.00460375086679511,
+        0.01910782456504739
+      ]
+    },
+    {
+      "id": "meaning-e9bac315d81d3246",
+      "word": "smoke",
+      "definition": "A cloud of fine particles and gases produced by burning.",
+      "labels": [
+        "entity"
+      ],
+      "predicted": [
+        "entity",
+        "action"
+      ],
+      "probabilities": [
+        0.9799155405239651,
+        0.00037764314520067135,
+        0.9406681249458984,
+        0.005186709583682244,
+        0.0002165466801872565,
+        0.0019000944564308174
+      ]
+    },
+    {
+      "id": "meaning-ebfc880160567e1a",
+      "word": "unfurl",
+      "definition": "To open out from a rolled or folded position.",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "predicted": [
+        "action",
+        "relation"
+      ],
+      "probabilities": [
+        0.003353491732725181,
+        0.00019649455010275024,
+        0.9761533818753021,
+        0.0037099176186728726,
+        0.6127957141563943,
+        0.005099392455342808
+      ]
+    },
+    {
+      "id": "meaning-f47ddc10988e1ee4",
+      "word": "crumble",
+      "definition": "To break into small irregular pieces.",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "predicted": [
+        "action",
+        "relation"
+      ],
+      "probabilities": [
+        0.0003068045006404251,
+        0.0003035738200338753,
+        0.9958567936320415,
+        0.0032350691692084816,
+        0.9831121787679815,
+        0.007573830028468371
+      ]
+    },
+    {
+      "id": "meaning-fc8d782cb3e8aa80",
+      "word": "decay",
+      "definition": "To break down gradually through chemical or biological change.",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "predicted": [
+        "state",
+        "abstract"
+      ],
+      "probabilities": [
+        4.093918343255824e-05,
+        0.0005655152693301502,
+        0.05953021844588641,
+        0.9640162161445868,
+        0.01553329681405094,
+        0.6228341791491576
+      ]
+    },
+    {
+      "id": "meaning-a1d3bb561c1c813f",
+      "word": "burrow",
+      "definition": "To dig a hole or passage into the ground.",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "predicted": [
+        "action",
+        "state",
+        "relation"
+      ],
+      "probabilities": [
+        0.0007784700023731012,
+        0.08883975345289856,
+        0.7080464715606578,
+        0.6047802981879042,
+        0.9780198227980857,
+        0.0002931169577106075
+      ]
+    },
+    {
+      "id": "meaning-cd44a430262d48d2",
+      "word": "leaning against",
+      "definition": "Resting at an angle with support from another surface.",
+      "labels": [
+        "relation"
+      ],
+      "predicted": [
+        "state"
+      ],
+      "probabilities": [
+        0.0011006305596523607,
+        0.00032767209070367834,
+        0.00022813570754127735,
+        0.9416798094682544,
+        0.032099643047908376,
+        0.00020211721447510486
+      ]
+    },
+    {
+      "id": "meaning-8695f727626f05f3",
+      "word": "face to face",
+      "definition": "Oriented with the front of each subject toward the other.",
+      "labels": [
+        "relation"
+      ],
+      "predicted": [
+        "state",
+        "relation"
+      ],
+      "probabilities": [
+        0.00011409334658699839,
+        0.00014391315432614812,
+        0.0029887985209363257,
+        0.5155501503373777,
+        0.9881185112775533,
+        0.015322153640510348
+      ]
+    },
+    {
+      "id": "meaning-619fd168330a6a98",
+      "word": "know",
+      "definition": "To have information or understanding in one\u2019s mind.",
+      "labels": [
+        "abstract"
+      ],
+      "predicted": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.00034594584125378415,
+        5.465459363255022e-05,
+        0.19975294350761205,
+        0.022668635408379247,
+        0.9891586598890045,
+        0.9308069134544887
+      ]
+    },
+    {
+      "id": "meaning-f40ffad9f10fc1cb",
+      "word": "forgive",
+      "definition": "To stop holding resentment for a wrong.",
+      "labels": [
+        "relation",
+        "abstract"
+      ],
+      "predicted": [
+        "state",
+        "abstract"
+      ],
+      "probabilities": [
+        0.00032370318965850337,
+        0.0002793932694327834,
+        0.005478146635864762,
+        0.9945637933119245,
+        0.013873936000281927,
+        0.9971277681187176
+      ]
+    },
+    {
+      "id": "meaning-958652d38ba85139",
+      "word": "cause",
+      "definition": "An event or condition that produces another event or outcome.",
+      "labels": [
+        "relation",
+        "abstract"
+      ],
+      "predicted": [
+        "abstract"
+      ],
+      "probabilities": [
+        0.019087644428662127,
+        0.002055906956423237,
+        0.00045460007962640827,
+        0.0006475257139611564,
+        0.19792996007253802,
+        0.997170714673652
+      ]
+    },
+    {
+      "id": "meaning-e09feae7ff574bb3",
+      "word": "normal",
+      "definition": "Conforming to what is usual or expected in a particular group or setting.",
+      "labels": [
+        "abstract"
+      ],
+      "predicted": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.0008459188177997226,
+        0.0011143090043768047,
+        0.000276396108821514,
+        0.0001921686878020228,
+        0.9990044337608166,
+        0.8363076200154053
+      ]
+    },
+    {
+      "id": "meaning-3b6e21991347695e",
+      "word": "accurate",
+      "definition": "Correct and faithful to the relevant facts or measurement.",
+      "labels": [
+        "abstract"
+      ],
+      "predicted": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.00020725608226160167,
+        0.0009654307604021238,
+        0.0005491129614475306,
+        0.005685416814240017,
+        0.8420720419269401,
+        0.9960939933320156
+      ]
+    },
+    {
+      "id": "meaning-9c8cdafcd328dd19",
+      "word": "understand",
+      "definition": "To grasp the meaning or significance of something.",
+      "labels": [
+        "abstract"
+      ],
+      "predicted": [
+        "relation"
+      ],
+      "probabilities": [
+        0.00013924926907983454,
+        6.707248600050388e-05,
+        0.021129275218234624,
+        0.004366788908791917,
+        0.998875421206218,
+        0.35407340371197327
+      ]
+    }
+  ],
+  "convergence": {
+    "primarySearchNonconvergedCVFits": 113,
+    "confirmationNonconvergedCVFits": 1,
+    "selectedFinalFit": {
+      "success": true,
+      "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+      "iterations": 226,
+      "evaluations": 236,
+      "loss": 0.006136098348584338
+    }
+  },
+  "parameterCount": 16614,
+  "classifierFileSha256": "a1d42e6ec97b3f1bd4c7cf25c76edc57115657897d4e2da4d1c91a808b933287",
+  "seconds": 13.696650124998996,
+  "limitations": [
+    "Only 77 test meanings; categories have small overlapping supports.",
+    "AI-authored and AI-reviewed text pilot; no independent human ground truth.",
+    "Repeated tuning can overfit CV/validation; test was used only after freezing the decision.",
+    "Probability outputs are not claimed calibrated; positive reweighting can change calibration.",
+    "No image adapter training, semantic image-quality improvement or personal preference improvement established.",
+    "Offline candidate only; no production model was activated."
+  ]
+}

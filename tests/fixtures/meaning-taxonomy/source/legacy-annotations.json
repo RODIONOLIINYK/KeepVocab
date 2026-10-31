@@ -1,0 +1,3652 @@
+{
+  "classes": {
+    "entity": "Photographically visible organisms, people, objects, or substances.",
+    "place": "A setting, geographic area, room, or environmental structure understood as a place.",
+    "action": "A visible event, movement, or process, including nonhuman processes.",
+    "state": "A visible property or condition of a referent.",
+    "relation": "Visible spatial, contact, or interaction evidence linking participants or things.",
+    "abstract": "A meaning not directly photographically demonstrable; do not use this for classifier uncertainty."
+  },
+  "reviewer": "gpt-6-luna",
+  "reviewType": "Revised AI semantic annotation, not human expert; definition-based and mechanically coverage-checked, not expert validated",
+  "source": "tests/fixtures/image-pretraining-v2/cases.json",
+  "coverage": {
+    "uniqueMeanings": 237,
+    "caseCount": 638
+  },
+  "ambiguities": [
+    {
+      "meaningKeys": [
+        "bridge|noun|A structure carrying a path over water or another obstacle.",
+        "building|noun|A structure with walls and a roof."
+      ],
+      "question": "Should a built structure be labeled place whenever its definition gives it a spatial role, or only when the referent itself is a setting? This review uses place as primary for bridge and entity+place for explicit structures that function as environments."
+    },
+    {
+      "meaningKeys": [
+        "sign|noun|A board or notice showing information or instructions.",
+        "flag|noun|A piece of cloth with a design used as a symbol."
+      ],
+      "question": "Should representational content add abstract when the selected definition names a physical carrier? This review labels the visible carrier as entity and does not add abstract for content alone."
+    },
+    {
+      "meaningKeys": [
+        "read|verb|To look at written words and understand their meaning."
+      ],
+      "question": "Does the cognitive comprehension component require abstract, or is visible reading behavior sufficient for this selected definition? This review keeps action primary and flags the boundary rather than treating uncertainty itself as abstract."
+    },
+    {
+      "meaningKeys": [
+        "snow|noun|Soft white frozen water falling from clouds or lying on the ground."
+      ],
+      "question": "The definition is disjunctive: falling snow is an action/process, while snow on the ground is a substance. Action is therefore acceptable evidence but not required for every valid instance; the annotation retains entity as primary and action as secondary."
+    },
+    {
+      "meaningKeys": [
+        "stairs|noun|A series of steps leading from one level to another.",
+        "floor|noun|The lower surface of a room on which people walk."
+      ],
+      "question": "For physical built surfaces and routes, should the spatial function always warrant place alongside entity? This review labels stairs and floor as place+entity because their definitions center on spatial access/surface."
+    }
+  ],
+  "items": [
+    {
+      "key": "pan|noun|A shallow container used for cooking.",
+      "word": "pan",
+      "partOfSpeech": "noun",
+      "definition": "A shallow container used for cooking.",
+      "familyId": "pan",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a shallow container used for cooking..",
+      "rationale": "The selected definition describes a shallow container used for cooking. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "white|adjective|Having the colour of fresh snow.",
+      "word": "white",
+      "partOfSpeech": "adjective",
+      "definition": "Having the colour of fresh snow.",
+      "familyId": "white",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: having the colour of fresh snow..",
+      "rationale": "The selected definition describes having the colour of fresh snow. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "surf|verb|To ride ocean waves on a surfboard.",
+      "word": "surf",
+      "partOfSpeech": "verb",
+      "definition": "To ride ocean waves on a surfboard.",
+      "familyId": "surfing",
+      "split": "train",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to ride ocean waves on a surfboard..",
+      "rationale": "The selected definition describes to ride ocean waves on a surfboard. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "cook|verb|To prepare food using heat or kitchen equipment.",
+      "word": "cook",
+      "partOfSpeech": "verb",
+      "definition": "To prepare food using heat or kitchen equipment.",
+      "familyId": "food-preparation",
+      "split": "train",
+      "labels": [
+        "action"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to prepare food using heat or kitchen equipment..",
+      "rationale": "The selected definition describes to prepare food using heat or kitchen equipment. This makes action the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "bus|noun|A large road vehicle that carries passengers.",
+      "word": "bus",
+      "partOfSpeech": "noun",
+      "definition": "A large road vehicle that carries passengers.",
+      "familyId": "bus",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a large road vehicle that carries passengers..",
+      "rationale": "The selected definition describes a large road vehicle that carries passengers. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "curtain|noun|Hanging fabric used to cover a window or divide a space.",
+      "word": "curtain",
+      "partOfSpeech": "noun",
+      "definition": "Hanging fabric used to cover a window or divide a space.",
+      "familyId": "curtain",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: hanging fabric used to cover a window or divide a space..",
+      "rationale": "The selected definition describes hanging fabric used to cover a window or divide a space. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "sleep|verb|To rest while unconscious with the eyes closed.",
+      "word": "sleep",
+      "partOfSpeech": "verb",
+      "definition": "To rest while unconscious with the eyes closed.",
+      "familyId": "sleep",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show a person or animal with eyes closed and a resting posture that supports the unconscious sleeping condition.",
+      "rationale": "The selected definition names a condition of rest and unconsciousness. Closed eyes and resting posture are evidence of that state; the category does not follow merely from the verb form.",
+      "confidence": "high"
+    },
+    {
+      "key": "sign|noun|A board or notice showing information or instructions.",
+      "word": "sign",
+      "partOfSpeech": "noun",
+      "definition": "A board or notice showing information or instructions.",
+      "familyId": "sign",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a board or notice showing information or instructions..",
+      "rationale": "The selected definition describes a board or notice showing information or instructions. This makes entity the most direct visual-evidence class.",
+      "confidence": "medium"
+    },
+    {
+      "key": "pot|noun|A deep container used for cooking food.",
+      "word": "pot",
+      "partOfSpeech": "noun",
+      "definition": "A deep container used for cooking food.",
+      "familyId": "cooking-pot",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a deep container used for cooking food..",
+      "rationale": "The selected definition describes a deep container used for cooking food. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "refrigerator|noun|A large appliance that keeps food cold.",
+      "word": "refrigerator",
+      "partOfSpeech": "noun",
+      "definition": "A large appliance that keeps food cold.",
+      "familyId": "refrigerator",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a large appliance that keeps food cold..",
+      "rationale": "The selected definition describes a large appliance that keeps food cold. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "table|noun|Furniture with a flat top supported above the ground.",
+      "word": "table",
+      "partOfSpeech": "noun",
+      "definition": "Furniture with a flat top supported above the ground.",
+      "familyId": "table",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: furniture with a flat top supported above the ground..",
+      "rationale": "The selected definition describes furniture with a flat top supported above the ground. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "kick|verb|To strike something with the foot.",
+      "word": "kick",
+      "partOfSpeech": "verb",
+      "definition": "To strike something with the foot.",
+      "familyId": "kicking",
+      "split": "train",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to strike something with the foot..",
+      "rationale": "The selected definition describes to strike something with the foot. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "stairs|noun|A series of steps leading from one level to another.",
+      "word": "stairs",
+      "partOfSpeech": "noun",
+      "definition": "A series of steps leading from one level to another.",
+      "familyId": "stairs",
+      "split": "train",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show a connected series of steps forming a route between distinct levels, with the level-to-level path visible.",
+      "rationale": "The selected definition is a spatial route between levels, so place is primary; the physical steps are also visible entities.",
+      "confidence": "high"
+    },
+    {
+      "key": "towel|noun|An absorbent piece of cloth used for drying.",
+      "word": "towel",
+      "partOfSpeech": "noun",
+      "definition": "An absorbent piece of cloth used for drying.",
+      "familyId": "towel",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an absorbent piece of cloth used for drying..",
+      "rationale": "The selected definition describes an absorbent piece of cloth used for drying. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "helmet|noun|A hard protective covering worn on the head.",
+      "word": "helmet",
+      "partOfSpeech": "noun",
+      "definition": "A hard protective covering worn on the head.",
+      "familyId": "helmet",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a hard protective covering worn on the head..",
+      "rationale": "The selected definition describes a hard protective covering worn on the head. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "carriage|noun|A wheeled passenger vehicle pulled by a horse.",
+      "word": "carriage",
+      "partOfSpeech": "noun",
+      "definition": "A wheeled passenger vehicle pulled by a horse.",
+      "familyId": "carriage",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a wheeled passenger vehicle pulled by a horse..",
+      "rationale": "The selected definition describes a wheeled passenger vehicle pulled by a horse. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "blue|adjective|Having the colour of a clear daytime sky.",
+      "word": "blue",
+      "partOfSpeech": "adjective",
+      "definition": "Having the colour of a clear daytime sky.",
+      "familyId": "blue",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: having the colour of a clear daytime sky..",
+      "rationale": "The selected definition describes having the colour of a clear daytime sky. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "brush teeth|verb|To clean the teeth using a toothbrush.",
+      "word": "brush teeth",
+      "partOfSpeech": "verb",
+      "definition": "To clean the teeth using a toothbrush.",
+      "familyId": "brushing-teeth",
+      "split": "train",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to clean the teeth using a toothbrush..",
+      "rationale": "The selected definition describes to clean the teeth using a toothbrush. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "bridge|noun|A structure carrying a path over water or another obstacle.",
+      "word": "bridge",
+      "partOfSpeech": "noun",
+      "definition": "A structure carrying a path over water or another obstacle.",
+      "familyId": "bridge",
+      "split": "train",
+      "labels": [
+        "place",
+        "entity",
+        "relation"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show a built structure spanning water or another obstacle and visibly carrying a path across it.",
+      "rationale": "The selected definition names a physical structure and a traversable place. Its defining configuration is a path spanning an obstacle, so relation is essential secondary evidence.",
+      "confidence": "medium"
+    },
+    {
+      "key": "sink|noun|A basin with taps and a drain used for washing.",
+      "word": "sink",
+      "partOfSpeech": "noun",
+      "definition": "A basin with taps and a drain used for washing.",
+      "familyId": "sink",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a basin with taps and a drain used for washing..",
+      "rationale": "The selected definition describes a basin with taps and a drain used for washing. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "cart|noun|A wheeled container or small vehicle used to carry goods.",
+      "word": "cart",
+      "partOfSpeech": "noun",
+      "definition": "A wheeled container or small vehicle used to carry goods.",
+      "familyId": "cart",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a wheeled container or small vehicle used to carry goods..",
+      "rationale": "The selected definition describes a wheeled container or small vehicle used to carry goods. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "beer|noun|An alcoholic drink made from malt and hops.",
+      "word": "beer",
+      "partOfSpeech": "noun",
+      "definition": "An alcoholic drink made from malt and hops.",
+      "familyId": "beer",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an alcoholic drink made from malt and hops..",
+      "rationale": "The selected definition describes an alcoholic drink made from malt and hops. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "suit|noun|A matching jacket and trousers worn as a set.",
+      "word": "suit",
+      "partOfSpeech": "noun",
+      "definition": "A matching jacket and trousers worn as a set.",
+      "familyId": "suit",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a matching jacket and trousers worn as a set..",
+      "rationale": "The selected definition describes a matching jacket and trousers worn as a set. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "drink|verb|To take a liquid into the mouth and swallow it.",
+      "word": "drink",
+      "partOfSpeech": "verb",
+      "definition": "To take a liquid into the mouth and swallow it.",
+      "familyId": "drinking",
+      "split": "train",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to take a liquid into the mouth and swallow it..",
+      "rationale": "The selected definition describes to take a liquid into the mouth and swallow it. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "cracker|noun|A thin dry crisp biscuit usually eaten with savoury food.",
+      "word": "cracker",
+      "partOfSpeech": "noun",
+      "definition": "A thin dry crisp biscuit usually eaten with savoury food.",
+      "familyId": "cracker",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a thin dry crisp biscuit usually eaten with savoury food..",
+      "rationale": "The selected definition describes a thin dry crisp biscuit usually eaten with savoury food. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "open|adjective|With a door, lid or cover moved aside to allow access.",
+      "word": "open",
+      "partOfSpeech": "adjective",
+      "definition": "With a door, lid or cover moved aside to allow access.",
+      "familyId": "open",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: with a door, lid or cover moved aside to allow access..",
+      "rationale": "The selected definition describes with a door, lid or cover moved aside to allow access. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "truck|noun|A large road vehicle used to carry goods.",
+      "word": "truck",
+      "partOfSpeech": "noun",
+      "definition": "A large road vehicle used to carry goods.",
+      "familyId": "truck",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a large road vehicle used to carry goods..",
+      "rationale": "The selected definition describes a large road vehicle used to carry goods. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "door|noun|A movable panel used to open and close an entrance.",
+      "word": "door",
+      "partOfSpeech": "noun",
+      "definition": "A movable panel used to open and close an entrance.",
+      "familyId": "door",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a movable panel used to open and close an entrance..",
+      "rationale": "The selected definition describes a movable panel used to open and close an entrance. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "boat|noun|A vessel used to travel on water.",
+      "word": "boat",
+      "partOfSpeech": "noun",
+      "definition": "A vessel used to travel on water.",
+      "familyId": "boat",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a vessel used to travel on water..",
+      "rationale": "The selected definition describes a vessel used to travel on water. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "box|noun|A rigid container with flat sides.",
+      "word": "box",
+      "partOfSpeech": "noun",
+      "definition": "A rigid container with flat sides.",
+      "familyId": "box",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a rigid container with flat sides..",
+      "rationale": "The selected definition describes a rigid container with flat sides. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "snowboard|verb|To ride over snow on a snowboard.",
+      "word": "snowboard",
+      "partOfSpeech": "verb",
+      "definition": "To ride over snow on a snowboard.",
+      "familyId": "snowboarding",
+      "split": "train",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to ride over snow on a snowboard..",
+      "rationale": "The selected definition describes to ride over snow on a snowboard. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "vase|noun|A container used to hold cut flowers.",
+      "word": "vase",
+      "partOfSpeech": "noun",
+      "definition": "A container used to hold cut flowers.",
+      "familyId": "vase",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a container used to hold cut flowers..",
+      "rationale": "The selected definition describes a container used to hold cut flowers. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "cake|noun|A sweet baked food often served in slices.",
+      "word": "cake",
+      "partOfSpeech": "noun",
+      "definition": "A sweet baked food often served in slices.",
+      "familyId": "cake",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a sweet baked food often served in slices..",
+      "rationale": "The selected definition describes a sweet baked food often served in slices. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "egg|noun|An oval shelled food produced by a bird.",
+      "word": "egg",
+      "partOfSpeech": "noun",
+      "definition": "An oval shelled food produced by a bird.",
+      "familyId": "egg",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an oval shelled food produced by a bird..",
+      "rationale": "The selected definition describes an oval shelled food produced by a bird. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "rock|noun|A solid natural piece of stone.",
+      "word": "rock",
+      "partOfSpeech": "noun",
+      "definition": "A solid natural piece of stone.",
+      "familyId": "rock",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a solid natural piece of stone..",
+      "rationale": "The selected definition describes a solid natural piece of stone. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "coffee|noun|A drink made from roasted coffee beans.",
+      "word": "coffee",
+      "partOfSpeech": "noun",
+      "definition": "A drink made from roasted coffee beans.",
+      "familyId": "coffee",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a drink made from roasted coffee beans..",
+      "rationale": "The selected definition describes a drink made from roasted coffee beans. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "skirt|noun|A garment hanging from the waist around the legs.",
+      "word": "skirt",
+      "partOfSpeech": "noun",
+      "definition": "A garment hanging from the waist around the legs.",
+      "familyId": "skirt",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a garment hanging from the waist around the legs..",
+      "rationale": "The selected definition describes a garment hanging from the waist around the legs. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "plate|noun|A flat round dish used to serve food.",
+      "word": "plate",
+      "partOfSpeech": "noun",
+      "definition": "A flat round dish used to serve food.",
+      "familyId": "plate",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a flat round dish used to serve food..",
+      "rationale": "The selected definition describes a flat round dish used to serve food. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "mountain|noun|A very high natural elevation of the ground.",
+      "word": "mountain",
+      "partOfSpeech": "noun",
+      "definition": "A very high natural elevation of the ground.",
+      "familyId": "mountain",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a very high natural elevation of the ground..",
+      "rationale": "The selected definition describes a very high natural elevation of the ground. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "knife|noun|A cutting tool with a sharp blade and a handle.",
+      "word": "knife",
+      "partOfSpeech": "noun",
+      "definition": "A cutting tool with a sharp blade and a handle.",
+      "familyId": "knife",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a cutting tool with a sharp blade and a handle..",
+      "rationale": "The selected definition describes a cutting tool with a sharp blade and a handle. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "teddy bear|noun|A soft toy made to resemble a bear.",
+      "word": "teddy bear",
+      "partOfSpeech": "noun",
+      "definition": "A soft toy made to resemble a bear.",
+      "familyId": "teddy-bear",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a soft toy made to resemble a bear..",
+      "rationale": "The selected definition describes a soft toy made to resemble a bear. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "window|noun|An opening with glass in a wall allowing light and a view.",
+      "word": "window",
+      "partOfSpeech": "noun",
+      "definition": "An opening with glass in a wall allowing light and a view.",
+      "familyId": "window",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an opening with glass in a wall allowing light and a view..",
+      "rationale": "The selected definition describes an opening with glass in a wall allowing light and a view. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "wave|noun|A moving ridge on the surface of water.",
+      "word": "wave",
+      "partOfSpeech": "noun",
+      "definition": "A moving ridge on the surface of water.",
+      "familyId": "wave",
+      "split": "train",
+      "labels": [
+        "action",
+        "entity"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show a moving ridge on the water surface, with both its raised form and movement visible.",
+      "rationale": "The selected definition names a ridge as a physical form and explicitly says it is moving. The process is primary and the visible water form is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "wall|noun|A vertical structure enclosing or dividing a space.",
+      "word": "wall",
+      "partOfSpeech": "noun",
+      "definition": "A vertical structure enclosing or dividing a space.",
+      "familyId": "wall",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a vertical structure enclosing or dividing a space..",
+      "rationale": "The selected definition describes a vertical structure enclosing or dividing a space. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "wooden|adjective|Made of wood.",
+      "word": "wooden",
+      "partOfSpeech": "adjective",
+      "definition": "Made of wood.",
+      "familyId": "wood",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: made of wood..",
+      "rationale": "The selected definition describes made of wood. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "shower|noun|A washing fixture that sprays water over the body.",
+      "word": "shower",
+      "partOfSpeech": "noun",
+      "definition": "A washing fixture that sprays water over the body.",
+      "familyId": "shower",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a washing fixture that sprays water over the body..",
+      "rationale": "The selected definition describes a washing fixture that sprays water over the body. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "wet|adjective|Covered or soaked with water or another liquid.",
+      "word": "wet",
+      "partOfSpeech": "adjective",
+      "definition": "Covered or soaked with water or another liquid.",
+      "familyId": "wet",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: covered or soaked with water or another liquid..",
+      "rationale": "The selected definition describes covered or soaked with water or another liquid. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "lie down|verb|To rest with the body stretched out horizontally.",
+      "word": "lie down",
+      "partOfSpeech": "verb",
+      "definition": "To rest with the body stretched out horizontally.",
+      "familyId": "body-position",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show a person or animal resting with the body stretched horizontally.",
+      "rationale": "The selected definition describes the resulting horizontal resting posture, not the transition into it. The visible body configuration is a state.",
+      "confidence": "high"
+    },
+    {
+      "key": "jacket|noun|A short outer garment covering the upper body.",
+      "word": "jacket",
+      "partOfSpeech": "noun",
+      "definition": "A short outer garment covering the upper body.",
+      "familyId": "jacket",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a short outer garment covering the upper body..",
+      "rationale": "The selected definition describes a short outer garment covering the upper body. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "sit|verb|To rest with the body supported by the buttocks.",
+      "word": "sit",
+      "partOfSpeech": "verb",
+      "definition": "To rest with the body supported by the buttocks.",
+      "familyId": "body-position",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show a person resting with body weight supported by the buttocks, typically on a seat or surface.",
+      "rationale": "The selected definition describes a supported body posture. This annotation targets the visible condition, rather than an assumed movement into the posture.",
+      "confidence": "high"
+    },
+    {
+      "key": "snowboard|noun|A broad board ridden sideways down snow.",
+      "word": "snowboard",
+      "partOfSpeech": "noun",
+      "definition": "A broad board ridden sideways down snow.",
+      "familyId": "snowboard",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a broad board ridden sideways down snow..",
+      "rationale": "The selected definition describes a broad board ridden sideways down snow. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "sheep|noun|A farm animal with a woolly coat.",
+      "word": "sheep",
+      "partOfSpeech": "noun",
+      "definition": "A farm animal with a woolly coat.",
+      "familyId": "sheep",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a farm animal with a woolly coat..",
+      "rationale": "The selected definition describes a farm animal with a woolly coat. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "tennis court|noun|A marked area on which tennis is played.",
+      "word": "tennis court",
+      "partOfSpeech": "noun",
+      "definition": "A marked area on which tennis is played.",
+      "familyId": "tennis",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a marked area on which tennis is played..",
+      "rationale": "The selected definition describes a marked area on which tennis is played. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "laptop|noun|A portable computer with a screen attached to a keyboard.",
+      "word": "laptop",
+      "partOfSpeech": "noun",
+      "definition": "A portable computer with a screen attached to a keyboard.",
+      "familyId": "laptop",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a portable computer with a screen attached to a keyboard..",
+      "rationale": "The selected definition describes a portable computer with a screen attached to a keyboard. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "river|noun|A large natural stream of flowing water.",
+      "word": "river",
+      "partOfSpeech": "noun",
+      "definition": "A large natural stream of flowing water.",
+      "familyId": "river",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a large natural stream of flowing water..",
+      "rationale": "The selected definition describes a large natural stream of flowing water. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "street|noun|A public road in a town or city.",
+      "word": "street",
+      "partOfSpeech": "noun",
+      "definition": "A public road in a town or city.",
+      "familyId": "street",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a public road in a town or city..",
+      "rationale": "The selected definition describes a public road in a town or city. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "dessert|noun|A sweet course eaten after the main part of a meal.",
+      "word": "dessert",
+      "partOfSpeech": "noun",
+      "definition": "A sweet course eaten after the main part of a meal.",
+      "familyId": "dessert",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a sweet course eaten after the main part of a meal..",
+      "rationale": "The selected definition describes a sweet course eaten after the main part of a meal. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "forest|noun|A large area densely covered with trees.",
+      "word": "forest",
+      "partOfSpeech": "noun",
+      "definition": "A large area densely covered with trees.",
+      "familyId": "forest",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a large area densely covered with trees..",
+      "rationale": "The selected definition describes a large area densely covered with trees. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "puppy|noun|A young dog.",
+      "word": "puppy",
+      "partOfSpeech": "noun",
+      "definition": "A young dog.",
+      "familyId": "dog",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a young dog..",
+      "rationale": "The selected definition describes a young dog. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "zebra|noun|An African animal with black and white stripes.",
+      "word": "zebra",
+      "partOfSpeech": "noun",
+      "definition": "An African animal with black and white stripes.",
+      "familyId": "zebra",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an African animal with black and white stripes..",
+      "rationale": "The selected definition describes an African animal with black and white stripes. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "giraffe|noun|An African animal with a very long neck.",
+      "word": "giraffe",
+      "partOfSpeech": "noun",
+      "definition": "An African animal with a very long neck.",
+      "familyId": "giraffe",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an African animal with a very long neck..",
+      "rationale": "The selected definition describes an African animal with a very long neck. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "lake|noun|A large body of water surrounded by land.",
+      "word": "lake",
+      "partOfSpeech": "noun",
+      "definition": "A large body of water surrounded by land.",
+      "familyId": "lake",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a large body of water surrounded by land..",
+      "rationale": "The selected definition describes a large body of water surrounded by land. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "tie|noun|A narrow strip of cloth worn tied around the neck.",
+      "word": "tie",
+      "partOfSpeech": "noun",
+      "definition": "A narrow strip of cloth worn tied around the neck.",
+      "familyId": "tie",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a narrow strip of cloth worn tied around the neck..",
+      "rationale": "The selected definition describes a narrow strip of cloth worn tied around the neck. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "toilet|noun|A bathroom fixture with a bowl for bodily waste.",
+      "word": "toilet",
+      "partOfSpeech": "noun",
+      "definition": "A bathroom fixture with a bowl for bodily waste.",
+      "familyId": "toilet",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a bathroom fixture with a bowl for bodily waste..",
+      "rationale": "The selected definition describes a bathroom fixture with a bowl for bodily waste. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "bird|noun|An animal with feathers, wings and a beak.",
+      "word": "bird",
+      "partOfSpeech": "noun",
+      "definition": "An animal with feathers, wings and a beak.",
+      "familyId": "bird",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an animal with feathers, wings and a beak..",
+      "rationale": "The selected definition describes an animal with feathers, wings and a beak. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "walk|verb|To move on foot with steps at an ordinary pace.",
+      "word": "walk",
+      "partOfSpeech": "verb",
+      "definition": "To move on foot with steps at an ordinary pace.",
+      "familyId": "foot-motion",
+      "split": "train",
+      "labels": [
+        "action"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to move on foot with steps at an ordinary pace..",
+      "rationale": "The selected definition describes to move on foot with steps at an ordinary pace. This makes action the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "throw|verb|To send an object through the air with a movement of the arm.",
+      "word": "throw",
+      "partOfSpeech": "verb",
+      "definition": "To send an object through the air with a movement of the arm.",
+      "familyId": "ball-action",
+      "split": "train",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to send an object through the air with a movement of the arm..",
+      "rationale": "The selected definition describes to send an object through the air with a movement of the arm. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "breakfast|noun|The first meal of the day.",
+      "word": "breakfast",
+      "partOfSpeech": "noun",
+      "definition": "The first meal of the day.",
+      "familyId": "breakfast",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: the first meal of the day..",
+      "rationale": "The selected definition describes the first meal of the day. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "monitor|noun|A screen used to display a computer output.",
+      "word": "monitor",
+      "partOfSpeech": "noun",
+      "definition": "A screen used to display a computer output.",
+      "familyId": "monitor",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a screen used to display a computer output..",
+      "rationale": "The selected definition describes a screen used to display a computer output. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "bottle|noun|A container with a narrow neck used for liquids.",
+      "word": "bottle",
+      "partOfSpeech": "noun",
+      "definition": "A container with a narrow neck used for liquids.",
+      "familyId": "bottle",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a container with a narrow neck used for liquids..",
+      "rationale": "The selected definition describes a container with a narrow neck used for liquids. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "stop sign|noun|A road sign instructing traffic to stop.",
+      "word": "stop sign",
+      "partOfSpeech": "noun",
+      "definition": "A road sign instructing traffic to stop.",
+      "familyId": "stop-sign",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a road sign instructing traffic to stop..",
+      "rationale": "The selected definition describes a road sign instructing traffic to stop. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "fence|noun|A barrier enclosing or dividing an area.",
+      "word": "fence",
+      "partOfSpeech": "noun",
+      "definition": "A barrier enclosing or dividing an area.",
+      "familyId": "fence",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a barrier enclosing or dividing an area..",
+      "rationale": "The selected definition describes a barrier enclosing or dividing an area. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "traffic light|noun|A signal with coloured lights controlling road traffic.",
+      "word": "traffic light",
+      "partOfSpeech": "noun",
+      "definition": "A signal with coloured lights controlling road traffic.",
+      "familyId": "traffic-light",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a signal with coloured lights controlling road traffic..",
+      "rationale": "The selected definition describes a signal with coloured lights controlling road traffic. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "purple|adjective|Having a colour between blue and red.",
+      "word": "purple",
+      "partOfSpeech": "adjective",
+      "definition": "Having a colour between blue and red.",
+      "familyId": "purple",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: having a colour between blue and red..",
+      "rationale": "The selected definition describes having a colour between blue and red. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "book|noun|Bound pages containing written or printed material.",
+      "word": "book",
+      "partOfSpeech": "noun",
+      "definition": "Bound pages containing written or printed material.",
+      "familyId": "book",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: bound pages containing written or printed material..",
+      "rationale": "The selected definition describes bound pages containing written or printed material. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "suitcase|noun|A travel bag used to carry clothes and belongings.",
+      "word": "suitcase",
+      "partOfSpeech": "noun",
+      "definition": "A travel bag used to carry clothes and belongings.",
+      "familyId": "suitcase",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a travel bag used to carry clothes and belongings..",
+      "rationale": "The selected definition describes a travel bag used to carry clothes and belongings. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "snowy|adjective|Covered with snow.",
+      "word": "snowy",
+      "partOfSpeech": "adjective",
+      "definition": "Covered with snow.",
+      "familyId": "snow",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: covered with snow..",
+      "rationale": "The selected definition describes covered with snow. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "trash can|noun|A container used for discarded waste.",
+      "word": "trash can",
+      "partOfSpeech": "noun",
+      "definition": "A container used for discarded waste.",
+      "familyId": "trash-can",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a container used for discarded waste..",
+      "rationale": "The selected definition describes a container used for discarded waste. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "tennis racket|noun|A handled frame with strings used to hit a tennis ball.",
+      "word": "tennis racket",
+      "partOfSpeech": "noun",
+      "definition": "A handled frame with strings used to hit a tennis ball.",
+      "familyId": "tennis-racket",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a handled frame with strings used to hit a tennis ball..",
+      "rationale": "The selected definition describes a handled frame with strings used to hit a tennis ball. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "subway|noun|An urban railway, often running underground.",
+      "word": "subway",
+      "partOfSpeech": "noun",
+      "definition": "An urban railway, often running underground.",
+      "familyId": "subway",
+      "split": "train",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show an urban railway system in its underground or station setting, or a train belonging to that system.",
+      "rationale": "The selected definition can name an urban railway system or one of its vehicles/stations. Place is primary for the network and setting, while the railway vehicle is an essential physical entity reading.",
+      "confidence": "medium"
+    },
+    {
+      "key": "leaf|noun|A flat green part of a plant growing from a stem or branch.",
+      "word": "leaf",
+      "partOfSpeech": "noun",
+      "definition": "A flat green part of a plant growing from a stem or branch.",
+      "familyId": "leaf",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a flat green part of a plant growing from a stem or branch..",
+      "rationale": "The selected definition describes a flat green part of a plant growing from a stem or branch. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "catch|verb|To stop and take hold of a moving object.",
+      "word": "catch",
+      "partOfSpeech": "verb",
+      "definition": "To stop and take hold of a moving object.",
+      "familyId": "ball-action",
+      "split": "train",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to stop and take hold of a moving object..",
+      "rationale": "The selected definition describes to stop and take hold of a moving object. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "bedroom|noun|A room used for sleeping.",
+      "word": "bedroom",
+      "partOfSpeech": "noun",
+      "definition": "A room used for sleeping.",
+      "familyId": "bedroom",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a room used for sleeping..",
+      "rationale": "The selected definition describes a room used for sleeping. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "floor|noun|The lower surface of a room on which people walk.",
+      "word": "floor",
+      "partOfSpeech": "noun",
+      "definition": "The lower surface of a room on which people walk.",
+      "familyId": "floor",
+      "split": "train",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the lower surface of an interior room on which people can walk.",
+      "rationale": "The selected definition identifies an interior spatial surface by its location and function, so place is primary; the physical floor surface is also visible.",
+      "confidence": "high"
+    },
+    {
+      "key": "shirt|noun|A garment covering the upper body, usually with sleeves.",
+      "word": "shirt",
+      "partOfSpeech": "noun",
+      "definition": "A garment covering the upper body, usually with sleeves.",
+      "familyId": "shirt",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a garment covering the upper body, usually with sleeves..",
+      "rationale": "The selected definition describes a garment covering the upper body, usually with sleeves. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "painting|noun|A picture made by applying paint to a surface.",
+      "word": "painting",
+      "partOfSpeech": "noun",
+      "definition": "A picture made by applying paint to a surface.",
+      "familyId": "painting",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a picture made by applying paint to a surface..",
+      "rationale": "The selected definition describes a picture made by applying paint to a surface. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "pink|adjective|Having a pale red colour.",
+      "word": "pink",
+      "partOfSpeech": "adjective",
+      "definition": "Having a pale red colour.",
+      "familyId": "pink",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: having a pale red colour..",
+      "rationale": "The selected definition describes having a pale red colour. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "cabinet|noun|A storage unit with doors and shelves.",
+      "word": "cabinet",
+      "partOfSpeech": "noun",
+      "definition": "A storage unit with doors and shelves.",
+      "familyId": "cabinet",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a storage unit with doors and shelves..",
+      "rationale": "The selected definition describes a storage unit with doors and shelves. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "snow|noun|Soft white frozen water falling from clouds or lying on the ground.",
+      "word": "snow",
+      "partOfSpeech": "noun",
+      "definition": "Soft white frozen water falling from clouds or lying on the ground.",
+      "familyId": "snow",
+      "split": "train",
+      "labels": [
+        "entity",
+        "action"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show soft white frozen water, visibly either falling from clouds or lying on the ground.",
+      "rationale": "The selected definition denotes frozen water as a substance and includes two alternative appearances: falling or already on the ground. Action evidence is valid for the falling branch but is not required for the ground-covered branch.",
+      "confidence": "medium"
+    },
+    {
+      "key": "ride a bicycle|verb|To travel while seated on and pedalling a bicycle.",
+      "word": "ride a bicycle",
+      "partOfSpeech": "verb",
+      "definition": "To travel while seated on and pedalling a bicycle.",
+      "familyId": "bicycle",
+      "split": "train",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to travel while seated on and pedalling a bicycle..",
+      "rationale": "The selected definition describes to travel while seated on and pedalling a bicycle. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "beach|noun|A sandy or pebbly shore beside a sea or lake.",
+      "word": "beach",
+      "partOfSpeech": "noun",
+      "definition": "A sandy or pebbly shore beside a sea or lake.",
+      "familyId": "beach",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a sandy or pebbly shore beside a sea or lake..",
+      "rationale": "The selected definition describes a sandy or pebbly shore beside a sea or lake. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "run|verb|To move quickly on foot.",
+      "word": "run",
+      "partOfSpeech": "verb",
+      "definition": "To move quickly on foot.",
+      "familyId": "foot-motion",
+      "split": "train",
+      "labels": [
+        "action"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to move quickly on foot..",
+      "rationale": "The selected definition describes to move quickly on foot. This makes action the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "tower|noun|A tall narrow structure or tall part of a building.",
+      "word": "tower",
+      "partOfSpeech": "noun",
+      "definition": "A tall narrow structure or tall part of a building.",
+      "familyId": "tower",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a tall narrow structure or tall part of a building..",
+      "rationale": "The selected definition describes a tall narrow structure or tall part of a building. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "tray|noun|A shallow flat container used to carry or hold things.",
+      "word": "tray",
+      "partOfSpeech": "noun",
+      "definition": "A shallow flat container used to carry or hold things.",
+      "familyId": "tray",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a shallow flat container used to carry or hold things..",
+      "rationale": "The selected definition describes a shallow flat container used to carry or hold things. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "red|adjective|Having the colour of blood or a ripe tomato.",
+      "word": "red",
+      "partOfSpeech": "adjective",
+      "definition": "Having the colour of blood or a ripe tomato.",
+      "familyId": "red",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: having the colour of blood or a ripe tomato..",
+      "rationale": "The selected definition describes having the colour of blood or a ripe tomato. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "scooter|noun|A small two-wheeled vehicle ridden standing or sitting.",
+      "word": "scooter",
+      "partOfSpeech": "noun",
+      "definition": "A small two-wheeled vehicle ridden standing or sitting.",
+      "familyId": "scooter",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a small two-wheeled vehicle ridden standing or sitting..",
+      "rationale": "The selected definition describes a small two-wheeled vehicle ridden standing or sitting. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "bear|noun|A large living mammal with thick fur.",
+      "word": "bear",
+      "partOfSpeech": "noun",
+      "definition": "A large living mammal with thick fur.",
+      "familyId": "bear",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a large living mammal with thick fur..",
+      "rationale": "The selected definition describes a large living mammal with thick fur. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "cow|noun|A large farm animal kept for milk or meat.",
+      "word": "cow",
+      "partOfSpeech": "noun",
+      "definition": "A large farm animal kept for milk or meat.",
+      "familyId": "cow",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a large farm animal kept for milk or meat..",
+      "rationale": "The selected definition describes a large farm animal kept for milk or meat. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "black|adjective|Having a very dark colour that reflects little light.",
+      "word": "black",
+      "partOfSpeech": "adjective",
+      "definition": "Having a very dark colour that reflects little light.",
+      "familyId": "black",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: having a very dark colour that reflects little light..",
+      "rationale": "The selected definition describes having a very dark colour that reflects little light. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "field|noun|An open area of land, often covered in grass.",
+      "word": "field",
+      "partOfSpeech": "noun",
+      "definition": "An open area of land, often covered in grass.",
+      "familyId": "field",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: an open area of land, often covered in grass..",
+      "rationale": "The selected definition describes an open area of land, often covered in grass. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "statue|noun|A solid three-dimensional representation of a person or animal.",
+      "word": "statue",
+      "partOfSpeech": "noun",
+      "definition": "A solid three-dimensional representation of a person or animal.",
+      "familyId": "statue",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a solid three-dimensional representation of a person or animal..",
+      "rationale": "The selected definition describes a solid three-dimensional representation of a person or animal. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "cup|noun|A small open container used for drinking.",
+      "word": "cup",
+      "partOfSpeech": "noun",
+      "definition": "A small open container used for drinking.",
+      "familyId": "cup",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a small open container used for drinking..",
+      "rationale": "The selected definition describes a small open container used for drinking. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "brick|adjective|Made of rectangular blocks of baked clay.",
+      "word": "brick",
+      "partOfSpeech": "adjective",
+      "definition": "Made of rectangular blocks of baked clay.",
+      "familyId": "brick",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: made of rectangular blocks of baked clay..",
+      "rationale": "The selected definition describes made of rectangular blocks of baked clay. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "living room|noun|A room used for relaxing and socialising at home.",
+      "word": "living room",
+      "partOfSpeech": "noun",
+      "definition": "A room used for relaxing and socialising at home.",
+      "familyId": "living-room",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a room used for relaxing and socialising at home..",
+      "rationale": "The selected definition describes a room used for relaxing and socialising at home. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "parked bicycle|adjective|A bicycle left stationary rather than being ridden.",
+      "word": "parked bicycle",
+      "partOfSpeech": "adjective",
+      "definition": "A bicycle left stationary rather than being ridden.",
+      "familyId": "bicycle",
+      "split": "train",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show a bicycle stationary beside a wall or other setting, with no rider using it to travel.",
+      "rationale": "The selected adjective names the bicycle’s stationary, unridden condition. The bicycle itself must also be visible to establish what is parked.",
+      "confidence": "medium"
+    },
+    {
+      "key": "play tennis|verb|To take part in a racket game played across a net.",
+      "word": "play tennis",
+      "partOfSpeech": "verb",
+      "definition": "To take part in a racket game played across a net.",
+      "familyId": "tennis",
+      "split": "train",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to take part in a racket game played across a net..",
+      "rationale": "The selected definition describes to take part in a racket game played across a net. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "airport|noun|A place where airplanes take off, land and are serviced.",
+      "word": "airport",
+      "partOfSpeech": "noun",
+      "definition": "A place where airplanes take off, land and are serviced.",
+      "familyId": "airport",
+      "split": "train",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a place where airplanes take off, land and are serviced..",
+      "rationale": "The selected definition describes a place where airplanes take off, land and are serviced. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "dog|noun|A domesticated canine animal.",
+      "word": "dog",
+      "partOfSpeech": "noun",
+      "definition": "A domesticated canine animal.",
+      "familyId": "dog",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a domesticated canine animal..",
+      "rationale": "The selected definition describes a domesticated canine animal. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "ski|verb|To travel over snow on skis.",
+      "word": "ski",
+      "partOfSpeech": "verb",
+      "definition": "To travel over snow on skis.",
+      "familyId": "skiing",
+      "split": "train",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to travel over snow on skis..",
+      "rationale": "The selected definition describes to travel over snow on skis. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "roof|noun|The upper covering of a building.",
+      "word": "roof",
+      "partOfSpeech": "noun",
+      "definition": "The upper covering of a building.",
+      "familyId": "roof",
+      "split": "train",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: the upper covering of a building..",
+      "rationale": "The selected definition describes the upper covering of a building. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "bicycle|noun|A vehicle with two wheels powered by pedals.",
+      "word": "bicycle",
+      "partOfSpeech": "noun",
+      "definition": "A vehicle with two wheels powered by pedals.",
+      "familyId": "bicycle",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a vehicle with two wheels powered by pedals..",
+      "rationale": "The selected definition describes a vehicle with two wheels powered by pedals. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "microwave|noun|An appliance that heats food using microwave energy.",
+      "word": "microwave",
+      "partOfSpeech": "noun",
+      "definition": "An appliance that heats food using microwave energy.",
+      "familyId": "microwave",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an appliance that heats food using microwave energy..",
+      "rationale": "The selected definition describes an appliance that heats food using microwave energy. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "stand|verb|To be upright supported by the feet.",
+      "word": "stand",
+      "partOfSpeech": "verb",
+      "definition": "To be upright supported by the feet.",
+      "familyId": "body-position",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show a person upright and supported by the feet.",
+      "rationale": "The selected definition describes an upright posture maintained by the feet, so state is the direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "microphone|noun|A device used to capture or amplify sound.",
+      "word": "microphone",
+      "partOfSpeech": "noun",
+      "definition": "A device used to capture or amplify sound.",
+      "familyId": "microphone",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a device used to capture or amplify sound..",
+      "rationale": "The selected definition describes a device used to capture or amplify sound. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "clock|noun|A device with a face or display showing the time.",
+      "word": "clock",
+      "partOfSpeech": "noun",
+      "definition": "A device with a face or display showing the time.",
+      "familyId": "clock",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a device with a face or display showing the time..",
+      "rationale": "The selected definition describes a device with a face or display showing the time. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "tree|noun|A large plant with a woody trunk and branches.",
+      "word": "tree",
+      "partOfSpeech": "noun",
+      "definition": "A large plant with a woody trunk and branches.",
+      "familyId": "tree",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a large plant with a woody trunk and branches..",
+      "rationale": "The selected definition describes a large plant with a woody trunk and branches. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "stream|noun|A small narrow natural flow of water.",
+      "word": "stream",
+      "partOfSpeech": "noun",
+      "definition": "A small narrow natural flow of water.",
+      "familyId": "stream",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a small narrow natural flow of water..",
+      "rationale": "The selected definition describes a small narrow natural flow of water. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "railway|noun|A track system on which trains travel.",
+      "word": "railway",
+      "partOfSpeech": "noun",
+      "definition": "A track system on which trains travel.",
+      "familyId": "railway",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a track system on which trains travel..",
+      "rationale": "The selected definition describes a track system on which trains travel. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "market|noun|A place where people buy and sell goods.",
+      "word": "market",
+      "partOfSpeech": "noun",
+      "definition": "A place where people buy and sell goods.",
+      "familyId": "market",
+      "split": "train",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a place where people buy and sell goods..",
+      "rationale": "The selected definition describes a place where people buy and sell goods. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "eat|verb|To take food into the mouth and swallow it.",
+      "word": "eat",
+      "partOfSpeech": "verb",
+      "definition": "To take food into the mouth and swallow it.",
+      "familyId": "eating",
+      "split": "train",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to take food into the mouth and swallow it..",
+      "rationale": "The selected definition describes to take food into the mouth and swallow it. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "hold|verb|To support or grasp something with the hand or another body part.",
+      "word": "hold",
+      "partOfSpeech": "verb",
+      "definition": "To support or grasp something with the hand or another body part.",
+      "familyId": "holding",
+      "split": "train",
+      "labels": [
+        "relation"
+      ],
+      "primaryClass": "relation",
+      "requiredEvidence": "Show a hand or other body part in contact with and supporting or grasping a distinct object.",
+      "rationale": "The selected definition is defined by the support or grasp relation between a body part and another thing. A dynamic action label is not needed to establish that relation.",
+      "confidence": "high"
+    },
+    {
+      "key": "ball|noun|A round object used in games and sports.",
+      "word": "ball",
+      "partOfSpeech": "noun",
+      "definition": "A round object used in games and sports.",
+      "familyId": "ball",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a round object used in games and sports..",
+      "rationale": "The selected definition describes a round object used in games and sports. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "uniform|noun|A standard set of clothing worn by members of a group.",
+      "word": "uniform",
+      "partOfSpeech": "noun",
+      "definition": "A standard set of clothing worn by members of a group.",
+      "familyId": "uniform",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a standard set of clothing worn by members of a group..",
+      "rationale": "The selected definition describes a standard set of clothing worn by members of a group. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "keyboard|noun|A panel of keys used to enter text into a computer.",
+      "word": "keyboard",
+      "partOfSpeech": "noun",
+      "definition": "A panel of keys used to enter text into a computer.",
+      "familyId": "computer-keyboard",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a panel of keys used to enter text into a computer..",
+      "rationale": "The selected definition describes a panel of keys used to enter text into a computer. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "fly|verb|To move through the air using wings.",
+      "word": "fly",
+      "partOfSpeech": "verb",
+      "definition": "To move through the air using wings.",
+      "familyId": "bird",
+      "split": "train",
+      "labels": [
+        "action"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to move through the air using wings..",
+      "rationale": "The selected definition describes to move through the air using wings. This makes action the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "broken|adjective|Damaged so that it is no longer whole or working.",
+      "word": "broken",
+      "partOfSpeech": "adjective",
+      "definition": "Damaged so that it is no longer whole or working.",
+      "familyId": "broken",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: damaged so that it is no longer whole or working..",
+      "rationale": "The selected definition describes damaged so that it is no longer whole or working. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "smile|verb|To form an expression with the corners of the mouth raised.",
+      "word": "smile",
+      "partOfSpeech": "verb",
+      "definition": "To form an expression with the corners of the mouth raised.",
+      "familyId": "smiling",
+      "split": "train",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the corners of a person’s mouth raised in the facial expression described by the definition.",
+      "rationale": "The selected definition identifies a visible facial configuration. A person may form it dynamically, but the defining evidence is the resulting expression state.",
+      "confidence": "high"
+    },
+    {
+      "key": "skis|noun|Long narrow boards attached to boots for moving over snow.",
+      "word": "skis",
+      "partOfSpeech": "noun",
+      "definition": "Long narrow boards attached to boots for moving over snow.",
+      "familyId": "skis",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: long narrow boards attached to boots for moving over snow..",
+      "rationale": "The selected definition describes long narrow boards attached to boots for moving over snow. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "horse|noun|A large four-legged animal commonly ridden by people.",
+      "word": "horse",
+      "partOfSpeech": "noun",
+      "definition": "A large four-legged animal commonly ridden by people.",
+      "familyId": "horse",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a large four-legged animal commonly ridden by people..",
+      "rationale": "The selected definition describes a large four-legged animal commonly ridden by people. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "remote control|noun|A handheld device used to control electronic equipment.",
+      "word": "remote control",
+      "partOfSpeech": "noun",
+      "definition": "A handheld device used to control electronic equipment.",
+      "familyId": "remote-control",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a handheld device used to control electronic equipment..",
+      "rationale": "The selected definition describes a handheld device used to control electronic equipment. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "sky|noun|The open space visible above the earth.",
+      "word": "sky",
+      "partOfSpeech": "noun",
+      "definition": "The open space visible above the earth.",
+      "familyId": "sky",
+      "split": "validation",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: the open space visible above the earth..",
+      "rationale": "The selected definition describes the open space visible above the earth. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "broccoli|noun|A green vegetable with branching flower heads.",
+      "word": "broccoli",
+      "partOfSpeech": "noun",
+      "definition": "A green vegetable with branching flower heads.",
+      "familyId": "broccoli",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a green vegetable with branching flower heads..",
+      "rationale": "The selected definition describes a green vegetable with branching flower heads. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "computer mouse|noun|A hand-operated device used to move a pointer on a screen.",
+      "word": "computer mouse",
+      "partOfSpeech": "noun",
+      "definition": "A hand-operated device used to move a pointer on a screen.",
+      "familyId": "computer-mouse",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a hand-operated device used to move a pointer on a screen..",
+      "rationale": "The selected definition describes a hand-operated device used to move a pointer on a screen. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "train|noun|A railway vehicle or connected series of railway cars.",
+      "word": "train",
+      "partOfSpeech": "noun",
+      "definition": "A railway vehicle or connected series of railway cars.",
+      "familyId": "train",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a railway vehicle or connected series of railway cars..",
+      "rationale": "The selected definition describes a railway vehicle or connected series of railway cars. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "hat|noun|A covering worn on the head.",
+      "word": "hat",
+      "partOfSpeech": "noun",
+      "definition": "A covering worn on the head.",
+      "familyId": "hat",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a covering worn on the head..",
+      "rationale": "The selected definition describes a covering worn on the head. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "rice|noun|Small edible grains often cooked and served as food.",
+      "word": "rice",
+      "partOfSpeech": "noun",
+      "definition": "Small edible grains often cooked and served as food.",
+      "familyId": "rice",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: small edible grains often cooked and served as food..",
+      "rationale": "The selected definition describes small edible grains often cooked and served as food. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "ride a motorcycle|verb|To travel while seated on a moving motorcycle.",
+      "word": "ride a motorcycle",
+      "partOfSpeech": "verb",
+      "definition": "To travel while seated on a moving motorcycle.",
+      "familyId": "motorcycle",
+      "split": "validation",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to travel while seated on a moving motorcycle..",
+      "rationale": "The selected definition describes to travel while seated on a moving motorcycle. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "glasses|noun|Two lenses in a frame worn in front of the eyes.",
+      "word": "glasses",
+      "partOfSpeech": "noun",
+      "definition": "Two lenses in a frame worn in front of the eyes.",
+      "familyId": "glasses",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: two lenses in a frame worn in front of the eyes..",
+      "rationale": "The selected definition describes two lenses in a frame worn in front of the eyes. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "fire hydrant|noun|A street fixture supplying water for firefighting.",
+      "word": "fire hydrant",
+      "partOfSpeech": "noun",
+      "definition": "A street fixture supplying water for firefighting.",
+      "familyId": "fire-hydrant",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a street fixture supplying water for firefighting..",
+      "rationale": "The selected definition describes a street fixture supplying water for firefighting. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "car|noun|A small motor vehicle used for road travel.",
+      "word": "car",
+      "partOfSpeech": "noun",
+      "definition": "A small motor vehicle used for road travel.",
+      "familyId": "car",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a small motor vehicle used for road travel..",
+      "rationale": "The selected definition describes a small motor vehicle used for road travel. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "phone|noun|A handheld device used to make calls.",
+      "word": "phone",
+      "partOfSpeech": "noun",
+      "definition": "A handheld device used to make calls.",
+      "familyId": "phone",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a handheld device used to make calls..",
+      "rationale": "The selected definition describes a handheld device used to make calls. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "motorcycle|noun|A motor-powered vehicle with two wheels.",
+      "word": "motorcycle",
+      "partOfSpeech": "noun",
+      "definition": "A motor-powered vehicle with two wheels.",
+      "familyId": "motorcycle",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a motor-powered vehicle with two wheels..",
+      "rationale": "The selected definition describes a motor-powered vehicle with two wheels. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "oven|noun|An enclosed appliance used for heating and cooking food.",
+      "word": "oven",
+      "partOfSpeech": "noun",
+      "definition": "An enclosed appliance used for heating and cooking food.",
+      "familyId": "oven",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an enclosed appliance used for heating and cooking food..",
+      "rationale": "The selected definition describes an enclosed appliance used for heating and cooking food. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "glove|noun|A covering for a hand with sections for the fingers.",
+      "word": "glove",
+      "partOfSpeech": "noun",
+      "definition": "A covering for a hand with sections for the fingers.",
+      "familyId": "glove",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a covering for a hand with sections for the fingers..",
+      "rationale": "The selected definition describes a covering for a hand with sections for the fingers. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "building|noun|A structure with walls and a roof.",
+      "word": "building",
+      "partOfSpeech": "noun",
+      "definition": "A structure with walls and a roof.",
+      "familyId": "building",
+      "split": "validation",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a structure with walls and a roof..",
+      "rationale": "The selected definition describes a structure with walls and a roof. This makes place the most direct visual-evidence class.",
+      "confidence": "medium"
+    },
+    {
+      "key": "kitten|noun|A young cat.",
+      "word": "kitten",
+      "partOfSpeech": "noun",
+      "definition": "A young cat.",
+      "familyId": "cat",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a young cat..",
+      "rationale": "The selected definition describes a young cat. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "dress|noun|A one-piece garment with a skirt.",
+      "word": "dress",
+      "partOfSpeech": "noun",
+      "definition": "A one-piece garment with a skirt.",
+      "familyId": "dress",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a one-piece garment with a skirt..",
+      "rationale": "The selected definition describes a one-piece garment with a skirt. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "brown|adjective|Having the colour of earth or wood.",
+      "word": "brown",
+      "partOfSpeech": "adjective",
+      "definition": "Having the colour of earth or wood.",
+      "familyId": "brown",
+      "split": "validation",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: having the colour of earth or wood..",
+      "rationale": "The selected definition describes having the colour of earth or wood. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "jump|verb|To push off a surface and move into the air.",
+      "word": "jump",
+      "partOfSpeech": "verb",
+      "definition": "To push off a surface and move into the air.",
+      "familyId": "jump",
+      "split": "validation",
+      "labels": [
+        "action"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to push off a surface and move into the air..",
+      "rationale": "The selected definition describes to push off a surface and move into the air. This makes action the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "carry|verb|To support an object while moving it from one place to another.",
+      "word": "carry",
+      "partOfSpeech": "verb",
+      "definition": "To support an object while moving it from one place to another.",
+      "familyId": "carrying",
+      "split": "validation",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to support an object while moving it from one place to another..",
+      "rationale": "The selected definition describes to support an object while moving it from one place to another. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "baseball bat|noun|A solid stick used to hit a baseball.",
+      "word": "baseball bat",
+      "partOfSpeech": "noun",
+      "definition": "A solid stick used to hit a baseball.",
+      "familyId": "baseball-bat",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a solid stick used to hit a baseball..",
+      "rationale": "The selected definition describes a solid stick used to hit a baseball. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "cat|noun|A small domesticated feline animal.",
+      "word": "cat",
+      "partOfSpeech": "noun",
+      "definition": "A small domesticated feline animal.",
+      "familyId": "cat",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a small domesticated feline animal..",
+      "rationale": "The selected definition describes a small domesticated feline animal. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "blanket|noun|A large piece of warm cloth used as a covering.",
+      "word": "blanket",
+      "partOfSpeech": "noun",
+      "definition": "A large piece of warm cloth used as a covering.",
+      "familyId": "blanket",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a large piece of warm cloth used as a covering..",
+      "rationale": "The selected definition describes a large piece of warm cloth used as a covering. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "spoon|noun|An eating utensil with a small bowl on a handle.",
+      "word": "spoon",
+      "partOfSpeech": "noun",
+      "definition": "An eating utensil with a small bowl on a handle.",
+      "familyId": "spoon",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an eating utensil with a small bowl on a handle..",
+      "rationale": "The selected definition describes an eating utensil with a small bowl on a handle. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "shop|verb|To look for or buy goods in a shop or market.",
+      "word": "shop",
+      "partOfSpeech": "verb",
+      "definition": "To look for or buy goods in a shop or market.",
+      "familyId": "shopping",
+      "split": "validation",
+      "labels": [
+        "action"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show a person looking for or buying goods in a shop or market.",
+      "rationale": "The selected definition covers looking for goods as well as buying them. Because a transaction is not required in every instance, action alone is the direct class.",
+      "confidence": "high"
+    },
+    {
+      "key": "parked motorcycle|adjective|A motorcycle left stationary rather than being ridden.",
+      "word": "parked motorcycle",
+      "partOfSpeech": "adjective",
+      "definition": "A motorcycle left stationary rather than being ridden.",
+      "familyId": "motorcycle",
+      "split": "validation",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show a motorcycle stationary by a road or other setting, with no rider using it to travel.",
+      "rationale": "The selected adjective names the motorcycle’s stationary, unridden condition. The motorcycle itself must also be visible to establish what is parked.",
+      "confidence": "medium"
+    },
+    {
+      "key": "fish|noun|An aquatic animal with gills and fins.",
+      "word": "fish",
+      "partOfSpeech": "noun",
+      "definition": "An aquatic animal with gills and fins.",
+      "familyId": "fish",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an aquatic animal with gills and fins..",
+      "rationale": "The selected definition describes an aquatic animal with gills and fins. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "sidewalk|noun|A path beside a road for people walking.",
+      "word": "sidewalk",
+      "partOfSpeech": "noun",
+      "definition": "A path beside a road for people walking.",
+      "familyId": "sidewalk",
+      "split": "validation",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a path beside a road for people walking..",
+      "rationale": "The selected definition describes a path beside a road for people walking. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "flower|noun|The colourful blossom of a flowering plant.",
+      "word": "flower",
+      "partOfSpeech": "noun",
+      "definition": "The colourful blossom of a flowering plant.",
+      "familyId": "flower",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: the colourful blossom of a flowering plant..",
+      "rationale": "The selected definition describes the colourful blossom of a flowering plant. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "bed|noun|A piece of furniture used for sleeping.",
+      "word": "bed",
+      "partOfSpeech": "noun",
+      "definition": "A piece of furniture used for sleeping.",
+      "familyId": "bed",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a piece of furniture used for sleeping..",
+      "rationale": "The selected definition describes a piece of furniture used for sleeping. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "yellow|adjective|Having the colour of a ripe lemon.",
+      "word": "yellow",
+      "partOfSpeech": "adjective",
+      "definition": "Having the colour of a ripe lemon.",
+      "familyId": "yellow",
+      "split": "validation",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: having the colour of a ripe lemon..",
+      "rationale": "The selected definition describes having the colour of a ripe lemon. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "lamp|noun|A device that produces light.",
+      "word": "lamp",
+      "partOfSpeech": "noun",
+      "definition": "A device that produces light.",
+      "familyId": "lamp",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a device that produces light..",
+      "rationale": "The selected definition describes a device that produces light. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "elephant|noun|A very large animal with a trunk.",
+      "word": "elephant",
+      "partOfSpeech": "noun",
+      "definition": "A very large animal with a trunk.",
+      "familyId": "elephant",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a very large animal with a trunk..",
+      "rationale": "The selected definition describes a very large animal with a trunk. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "talk|verb|To communicate using spoken words.",
+      "word": "talk",
+      "partOfSpeech": "verb",
+      "definition": "To communicate using spoken words.",
+      "familyId": "talking",
+      "split": "validation",
+      "labels": [
+        "action"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show a person producing spoken words; a visible listener is not required by this definition.",
+      "rationale": "The selected definition names the action of communicating through spoken words. A second participant is not required by the wording, so action alone is sufficient.",
+      "confidence": "high"
+    },
+    {
+      "key": "swim|verb|To move through water using the body.",
+      "word": "swim",
+      "partOfSpeech": "verb",
+      "definition": "To move through water using the body.",
+      "familyId": "swimming",
+      "split": "validation",
+      "labels": [
+        "action"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show a person or animal moving through water using its body.",
+      "rationale": "The selected definition names bodily movement through water. Water is the medium of the action, not a second participant that defines a relation label.",
+      "confidence": "high"
+    },
+    {
+      "key": "bowl|noun|A deep round container used for food.",
+      "word": "bowl",
+      "partOfSpeech": "noun",
+      "definition": "A deep round container used for food.",
+      "familyId": "bowl",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a deep round container used for food..",
+      "rationale": "The selected definition describes a deep round container used for food. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "ship|noun|A large vessel used to travel on water.",
+      "word": "ship",
+      "partOfSpeech": "noun",
+      "definition": "A large vessel used to travel on water.",
+      "familyId": "ship",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a large vessel used to travel on water..",
+      "rationale": "The selected definition describes a large vessel used to travel on water. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "surfboard|noun|A long board used to ride ocean waves.",
+      "word": "surfboard",
+      "partOfSpeech": "noun",
+      "definition": "A long board used to ride ocean waves.",
+      "familyId": "surfboard",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a long board used to ride ocean waves..",
+      "rationale": "The selected definition describes a long board used to ride ocean waves. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "shoe|noun|A covering worn on the foot.",
+      "word": "shoe",
+      "partOfSpeech": "noun",
+      "definition": "A covering worn on the foot.",
+      "familyId": "shoe",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a covering worn on the foot..",
+      "rationale": "The selected definition describes a covering worn on the foot. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "reflection|noun|An image visible in a mirror or another reflective surface.",
+      "word": "reflection",
+      "partOfSpeech": "noun",
+      "definition": "An image visible in a mirror or another reflective surface.",
+      "familyId": "reflection",
+      "split": "validation",
+      "labels": [
+        "relation",
+        "entity"
+      ],
+      "primaryClass": "relation",
+      "requiredEvidence": "Show a recognizable image of an object or person appearing in a reflective surface, with the reflected image visibly linked to its source.",
+      "rationale": "A reflection is an image (entity-like visible content) whose identity depends on its relation to the reflective source. Relation is primary because the selected definition explicitly makes the image visible in a mirror or reflective surface.",
+      "confidence": "high"
+    },
+    {
+      "key": "branch|noun|A woody part that grows out from the trunk of a tree.",
+      "word": "branch",
+      "partOfSpeech": "noun",
+      "definition": "A woody part that grows out from the trunk of a tree.",
+      "familyId": "branch",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a woody part that grows out from the trunk of a tree..",
+      "rationale": "The selected definition describes a woody part that grows out from the trunk of a tree. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "hill|noun|A raised area of land smaller than a mountain.",
+      "word": "hill",
+      "partOfSpeech": "noun",
+      "definition": "A raised area of land smaller than a mountain.",
+      "familyId": "hill",
+      "split": "validation",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a raised area of land smaller than a mountain..",
+      "rationale": "The selected definition describes a raised area of land smaller than a mountain. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "sand|noun|Loose small grains of rock found on beaches and in deserts.",
+      "word": "sand",
+      "partOfSpeech": "noun",
+      "definition": "Loose small grains of rock found on beaches and in deserts.",
+      "familyId": "sand",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: loose small grains of rock found on beaches and in deserts..",
+      "rationale": "The selected definition describes loose small grains of rock found on beaches and in deserts. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "mirror|noun|A reflective surface used to see an image of oneself.",
+      "word": "mirror",
+      "partOfSpeech": "noun",
+      "definition": "A reflective surface used to see an image of oneself.",
+      "familyId": "mirror",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a reflective surface used to see an image of oneself..",
+      "rationale": "The selected definition describes a reflective surface used to see an image of oneself. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "play baseball|verb|To take part in a bat-and-ball team game.",
+      "word": "play baseball",
+      "partOfSpeech": "verb",
+      "definition": "To take part in a bat-and-ball team game.",
+      "familyId": "baseball",
+      "split": "test",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to take part in a bat-and-ball team game..",
+      "rationale": "The selected definition describes to take part in a bat-and-ball team game. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "metal|adjective|Made of metal.",
+      "word": "metal",
+      "partOfSpeech": "adjective",
+      "definition": "Made of metal.",
+      "familyId": "metal",
+      "split": "test",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: made of metal..",
+      "rationale": "The selected definition describes made of metal. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "airplane|noun|A powered aircraft with wings.",
+      "word": "airplane",
+      "partOfSpeech": "noun",
+      "definition": "A powered aircraft with wings.",
+      "familyId": "airplane",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a powered aircraft with wings..",
+      "rationale": "The selected definition describes a powered aircraft with wings. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "bench|noun|A long seat on which several people can sit.",
+      "word": "bench",
+      "partOfSpeech": "noun",
+      "definition": "A long seat on which several people can sit.",
+      "familyId": "bench",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a long seat on which several people can sit..",
+      "rationale": "The selected definition describes a long seat on which several people can sit. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "skateboard|noun|A short board with wheels on which a person can ride.",
+      "word": "skateboard",
+      "partOfSpeech": "noun",
+      "definition": "A short board with wheels on which a person can ride.",
+      "familyId": "skateboard",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a short board with wheels on which a person can ride..",
+      "rationale": "The selected definition describes a short board with wheels on which a person can ride. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "fly|verb|To move through the air in an aircraft.",
+      "word": "fly",
+      "partOfSpeech": "verb",
+      "definition": "To move through the air in an aircraft.",
+      "familyId": "airplane",
+      "split": "test",
+      "labels": [
+        "action"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to move through the air in an aircraft..",
+      "rationale": "The selected definition describes to move through the air in an aircraft. This makes action the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "umbrella|noun|A folding canopy held above the head for rain or shade.",
+      "word": "umbrella",
+      "partOfSpeech": "noun",
+      "definition": "A folding canopy held above the head for rain or shade.",
+      "familyId": "umbrella",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a folding canopy held above the head for rain or shade..",
+      "rationale": "The selected definition describes a folding canopy held above the head for rain or shade. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "couch|noun|A long upholstered seat for several people.",
+      "word": "couch",
+      "partOfSpeech": "noun",
+      "definition": "A long upholstered seat for several people.",
+      "familyId": "couch",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a long upholstered seat for several people..",
+      "rationale": "The selected definition describes a long upholstered seat for several people. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "duck|noun|A water bird with a broad bill.",
+      "word": "duck",
+      "partOfSpeech": "noun",
+      "definition": "A water bird with a broad bill.",
+      "familyId": "duck",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a water bird with a broad bill..",
+      "rationale": "The selected definition describes a water bird with a broad bill. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "empty|adjective|Containing nothing or having no occupants.",
+      "word": "empty",
+      "partOfSpeech": "adjective",
+      "definition": "Containing nothing or having no occupants.",
+      "familyId": "empty",
+      "split": "test",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: containing nothing or having no occupants..",
+      "rationale": "The selected definition describes containing nothing or having no occupants. This makes state the most direct visual-evidence class.",
+      "confidence": "medium"
+    },
+    {
+      "key": "kitchen|noun|A room used for preparing and cooking food.",
+      "word": "kitchen",
+      "partOfSpeech": "noun",
+      "definition": "A room used for preparing and cooking food.",
+      "familyId": "kitchen",
+      "split": "test",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a room used for preparing and cooking food..",
+      "rationale": "The selected definition describes a room used for preparing and cooking food. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "rain|noun|Water falling from clouds in drops.",
+      "word": "rain",
+      "partOfSpeech": "noun",
+      "definition": "Water falling from clouds in drops.",
+      "familyId": "rain",
+      "split": "test",
+      "labels": [
+        "action",
+        "entity"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show water drops visibly falling from clouds; the falling process is primary, with rainwater as the physical substance.",
+      "rationale": "Although the headword is a noun, the selected definition explicitly names water falling. That visible process is primary, and the falling water is also a physical substance.",
+      "confidence": "high"
+    },
+    {
+      "key": "wine|noun|An alcoholic drink made from fermented grapes.",
+      "word": "wine",
+      "partOfSpeech": "noun",
+      "definition": "An alcoholic drink made from fermented grapes.",
+      "familyId": "wine",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an alcoholic drink made from fermented grapes..",
+      "rationale": "The selected definition describes an alcoholic drink made from fermented grapes. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "read|verb|To look at written words and understand their meaning.",
+      "word": "read",
+      "partOfSpeech": "verb",
+      "definition": "To look at written words and understand their meaning.",
+      "familyId": "reading",
+      "split": "test",
+      "labels": [
+        "action"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show a person looking at written words; understanding those words is part of the meaning but is not directly visible by itself.",
+      "rationale": "The selected definition names looking at written words and understanding them. Visible reading behavior grounds the action; comprehension is not separately labeled abstract because this is an evidence limit, not a different visual class.",
+      "confidence": "medium"
+    },
+    {
+      "key": "bathroom|noun|A room containing washing or toilet facilities.",
+      "word": "bathroom",
+      "partOfSpeech": "noun",
+      "definition": "A room containing washing or toilet facilities.",
+      "familyId": "bathroom",
+      "split": "test",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a room containing washing or toilet facilities..",
+      "rationale": "The selected definition describes a room containing washing or toilet facilities. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "apple|noun|A round edible fruit with a firm skin.",
+      "word": "apple",
+      "partOfSpeech": "noun",
+      "definition": "A round edible fruit with a firm skin.",
+      "familyId": "apple",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a round edible fruit with a firm skin..",
+      "rationale": "The selected definition describes a round edible fruit with a firm skin. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "chair|noun|A seat for one person with a back.",
+      "word": "chair",
+      "partOfSpeech": "noun",
+      "definition": "A seat for one person with a back.",
+      "familyId": "chair",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a seat for one person with a back..",
+      "rationale": "The selected definition describes a seat for one person with a back. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "scissors|noun|A hand tool with two pivoted blades for cutting.",
+      "word": "scissors",
+      "partOfSpeech": "noun",
+      "definition": "A hand tool with two pivoted blades for cutting.",
+      "familyId": "scissors",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a hand tool with two pivoted blades for cutting..",
+      "rationale": "The selected definition describes a hand tool with two pivoted blades for cutting. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "desk|noun|A table used for writing, studying or working.",
+      "word": "desk",
+      "partOfSpeech": "noun",
+      "definition": "A table used for writing, studying or working.",
+      "familyId": "desk",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a table used for writing, studying or working..",
+      "rationale": "The selected definition describes a table used for writing, studying or working. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "park|noun|A public green area used for recreation.",
+      "word": "park",
+      "partOfSpeech": "noun",
+      "definition": "A public green area used for recreation.",
+      "familyId": "park",
+      "split": "test",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a public green area used for recreation..",
+      "rationale": "The selected definition describes a public green area used for recreation. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "goat|noun|A farm animal often having horns and a beard.",
+      "word": "goat",
+      "partOfSpeech": "noun",
+      "definition": "A farm animal often having horns and a beard.",
+      "familyId": "goat",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a farm animal often having horns and a beard..",
+      "rationale": "The selected definition describes a farm animal often having horns and a beard. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "wine glass|noun|A stemmed drinking glass used to serve wine.",
+      "word": "wine glass",
+      "partOfSpeech": "noun",
+      "definition": "A stemmed drinking glass used to serve wine.",
+      "familyId": "wine-glass",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a stemmed drinking glass used to serve wine..",
+      "rationale": "The selected definition describes a stemmed drinking glass used to serve wine. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "stove|noun|An appliance with heated surfaces used for cooking.",
+      "word": "stove",
+      "partOfSpeech": "noun",
+      "definition": "An appliance with heated surfaces used for cooking.",
+      "familyId": "stove",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an appliance with heated surfaces used for cooking..",
+      "rationale": "The selected definition describes an appliance with heated surfaces used for cooking. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "parking meter|noun|A street device used to pay for vehicle parking.",
+      "word": "parking meter",
+      "partOfSpeech": "noun",
+      "definition": "A street device used to pay for vehicle parking.",
+      "familyId": "parking-meter",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a street device used to pay for vehicle parking..",
+      "rationale": "The selected definition describes a street device used to pay for vehicle parking. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "parked airplane|adjective|An airplane stationary on the ground.",
+      "word": "parked airplane",
+      "partOfSpeech": "adjective",
+      "definition": "An airplane stationary on the ground.",
+      "familyId": "airplane",
+      "split": "test",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show an airplane stationary on the ground, rather than in flight.",
+      "rationale": "The selected adjective names the airplane’s grounded, stationary condition. The airplane itself must also be visible to establish what is parked.",
+      "confidence": "medium"
+    },
+    {
+      "key": "flag|noun|A piece of cloth with a design used as a symbol.",
+      "word": "flag",
+      "partOfSpeech": "noun",
+      "definition": "A piece of cloth with a design used as a symbol.",
+      "familyId": "flag",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a piece of cloth with a design used as a symbol..",
+      "rationale": "The selected definition describes a piece of cloth with a design used as a symbol. This makes entity the most direct visual-evidence class.",
+      "confidence": "medium"
+    },
+    {
+      "key": "bathtub|noun|A large basin used for bathing the body.",
+      "word": "bathtub",
+      "partOfSpeech": "noun",
+      "definition": "A large basin used for bathing the body.",
+      "familyId": "bathtub",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a large basin used for bathing the body..",
+      "rationale": "The selected definition describes a large basin used for bathing the body. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "fork|noun|An eating utensil with pointed prongs.",
+      "word": "fork",
+      "partOfSpeech": "noun",
+      "definition": "An eating utensil with pointed prongs.",
+      "familyId": "fork",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an eating utensil with pointed prongs..",
+      "rationale": "The selected definition describes an eating utensil with pointed prongs. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "toothbrush|noun|A small brush used to clean the teeth.",
+      "word": "toothbrush",
+      "partOfSpeech": "noun",
+      "definition": "A small brush used to clean the teeth.",
+      "familyId": "toothbrush",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a small brush used to clean the teeth..",
+      "rationale": "The selected definition describes a small brush used to clean the teeth. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "plant|noun|A living organism with leaves that usually grows in soil.",
+      "word": "plant",
+      "partOfSpeech": "noun",
+      "definition": "A living organism with leaves that usually grows in soil.",
+      "familyId": "plant",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a living organism with leaves that usually grows in soil..",
+      "rationale": "The selected definition describes a living organism with leaves that usually grows in soil. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "van|noun|A covered motor vehicle used to carry goods or people.",
+      "word": "van",
+      "partOfSpeech": "noun",
+      "definition": "A covered motor vehicle used to carry goods or people.",
+      "familyId": "van",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a covered motor vehicle used to carry goods or people..",
+      "rationale": "The selected definition describes a covered motor vehicle used to carry goods or people. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "television|noun|An electronic screen used to watch programmes.",
+      "word": "television",
+      "partOfSpeech": "noun",
+      "definition": "An electronic screen used to watch programmes.",
+      "familyId": "television",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: an electronic screen used to watch programmes..",
+      "rationale": "The selected definition describes an electronic screen used to watch programmes. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "skateboard|verb|To ride or perform tricks on a skateboard.",
+      "word": "skateboard",
+      "partOfSpeech": "verb",
+      "definition": "To ride or perform tricks on a skateboard.",
+      "familyId": "skateboarding",
+      "split": "test",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to ride or perform tricks on a skateboard..",
+      "rationale": "The selected definition describes to ride or perform tricks on a skateboard. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "green|adjective|Having the colour of grass.",
+      "word": "green",
+      "partOfSpeech": "adjective",
+      "definition": "Having the colour of grass.",
+      "familyId": "green",
+      "split": "test",
+      "labels": [
+        "state"
+      ],
+      "primaryClass": "state",
+      "requiredEvidence": "Show the defining visible condition: having the colour of grass..",
+      "rationale": "The selected definition describes having the colour of grass. This makes state the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "printer|noun|A machine that produces printed pages.",
+      "word": "printer",
+      "partOfSpeech": "noun",
+      "definition": "A machine that produces printed pages.",
+      "familyId": "printer",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a machine that produces printed pages..",
+      "rationale": "The selected definition describes a machine that produces printed pages. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "bag|noun|A flexible container used for carrying things.",
+      "word": "bag",
+      "partOfSpeech": "noun",
+      "definition": "A flexible container used for carrying things.",
+      "familyId": "bag",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a flexible container used for carrying things..",
+      "rationale": "The selected definition describes a flexible container used for carrying things. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "feed|verb|To give food to a person or animal.",
+      "word": "feed",
+      "partOfSpeech": "verb",
+      "definition": "To give food to a person or animal.",
+      "familyId": "feeding",
+      "split": "test",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "primaryClass": "action",
+      "requiredEvidence": "Show the event in progress: to give food to a person or animal..",
+      "rationale": "The selected definition describes to give food to a person or animal. This makes action the most direct visual-evidence class. The definition also requires the stated contact, motion path, or interaction between participants, so relation is essential secondary evidence.",
+      "confidence": "high"
+    },
+    {
+      "key": "palm tree|noun|A tree with a tall trunk and a crown of large leaves.",
+      "word": "palm tree",
+      "partOfSpeech": "noun",
+      "definition": "A tree with a tall trunk and a crown of large leaves.",
+      "familyId": "palm-tree",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a tree with a tall trunk and a crown of large leaves..",
+      "rationale": "The selected definition describes a tree with a tall trunk and a crown of large leaves. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "fan|noun|A device with rotating blades that moves air.",
+      "word": "fan",
+      "partOfSpeech": "noun",
+      "definition": "A device with rotating blades that moves air.",
+      "familyId": "fan",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a device with rotating blades that moves air..",
+      "rationale": "The selected definition describes a device with rotating blades that moves air. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "restaurant|noun|A place where meals are prepared and served to customers.",
+      "word": "restaurant",
+      "partOfSpeech": "noun",
+      "definition": "A place where meals are prepared and served to customers.",
+      "familyId": "restaurant",
+      "split": "test",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: a place where meals are prepared and served to customers..",
+      "rationale": "The selected definition describes a place where meals are prepared and served to customers. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "counter|noun|A raised flat surface used for work or serving food.",
+      "word": "counter",
+      "partOfSpeech": "noun",
+      "definition": "A raised flat surface used for work or serving food.",
+      "familyId": "counter",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a raised flat surface used for work or serving food..",
+      "rationale": "The selected definition describes a raised flat surface used for work or serving food. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "basket|noun|A container made of woven material.",
+      "word": "basket",
+      "partOfSpeech": "noun",
+      "definition": "A container made of woven material.",
+      "familyId": "basket",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a container made of woven material..",
+      "rationale": "The selected definition describes a container made of woven material. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "french fries|noun|Long thin pieces of potato fried in oil.",
+      "word": "french fries",
+      "partOfSpeech": "noun",
+      "definition": "Long thin pieces of potato fried in oil.",
+      "familyId": "french-fries",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: long thin pieces of potato fried in oil..",
+      "rationale": "The selected definition describes long thin pieces of potato fried in oil. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "pasta|noun|Food made from flour and water shaped into pieces and cooked.",
+      "word": "pasta",
+      "partOfSpeech": "noun",
+      "definition": "Food made from flour and water shaped into pieces and cooked.",
+      "familyId": "pasta",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: food made from flour and water shaped into pieces and cooked..",
+      "rationale": "The selected definition describes food made from flour and water shaped into pieces and cooked. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "noodle|noun|A long thin strip of pasta or similar dough.",
+      "word": "noodle",
+      "partOfSpeech": "noun",
+      "definition": "A long thin strip of pasta or similar dough.",
+      "familyId": "noodle",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a long thin strip of pasta or similar dough..",
+      "rationale": "The selected definition describes a long thin strip of pasta or similar dough. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "juice|noun|A drink made from the liquid of fruit or vegetables.",
+      "word": "juice",
+      "partOfSpeech": "noun",
+      "definition": "A drink made from the liquid of fruit or vegetables.",
+      "familyId": "juice",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a drink made from the liquid of fruit or vegetables..",
+      "rationale": "The selected definition describes a drink made from the liquid of fruit or vegetables. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "cupcake|noun|A small individual cake baked in a cup-shaped mould.",
+      "word": "cupcake",
+      "partOfSpeech": "noun",
+      "definition": "A small individual cake baked in a cup-shaped mould.",
+      "familyId": "cupcake",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a small individual cake baked in a cup-shaped mould..",
+      "rationale": "The selected definition describes a small individual cake baked in a cup-shaped mould. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "hamburger|noun|A cooked patty served inside a split bread bun.",
+      "word": "hamburger",
+      "partOfSpeech": "noun",
+      "definition": "A cooked patty served inside a split bread bun.",
+      "familyId": "hamburger",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a cooked patty served inside a split bread bun..",
+      "rationale": "The selected definition describes a cooked patty served inside a split bread bun. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "ceiling|noun|The upper inside surface of a room.",
+      "word": "ceiling",
+      "partOfSpeech": "noun",
+      "definition": "The upper inside surface of a room.",
+      "familyId": "ceiling",
+      "split": "validation",
+      "labels": [
+        "place"
+      ],
+      "primaryClass": "place",
+      "requiredEvidence": "Show the setting or environmental structure itself: the upper inside surface of a room..",
+      "rationale": "The selected definition describes the upper inside surface of a room. This makes place the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "milk|noun|A white liquid produced by mammals and used as a drink.",
+      "word": "milk",
+      "partOfSpeech": "noun",
+      "definition": "A white liquid produced by mammals and used as a drink.",
+      "familyId": "milk",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a white liquid produced by mammals and used as a drink..",
+      "rationale": "The selected definition describes a white liquid produced by mammals and used as a drink. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "soup|noun|A liquid food made by cooking ingredients in water or stock.",
+      "word": "soup",
+      "partOfSpeech": "noun",
+      "definition": "A liquid food made by cooking ingredients in water or stock.",
+      "familyId": "soup",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a liquid food made by cooking ingredients in water or stock..",
+      "rationale": "The selected definition describes a liquid food made by cooking ingredients in water or stock. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "tomato|noun|A round red or green fruit used as a vegetable in food.",
+      "word": "tomato",
+      "partOfSpeech": "noun",
+      "definition": "A round red or green fruit used as a vegetable in food.",
+      "familyId": "tomato",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a round red or green fruit used as a vegetable in food..",
+      "rationale": "The selected definition describes a round red or green fruit used as a vegetable in food. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "pastry|noun|A baked food made with dough containing flour and fat.",
+      "word": "pastry",
+      "partOfSpeech": "noun",
+      "definition": "A baked food made with dough containing flour and fat.",
+      "familyId": "pastry",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a baked food made with dough containing flour and fat..",
+      "rationale": "The selected definition describes a baked food made with dough containing flour and fat. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "chocolate|noun|A sweet brown food made from cacao.",
+      "word": "chocolate",
+      "partOfSpeech": "noun",
+      "definition": "A sweet brown food made from cacao.",
+      "familyId": "chocolate",
+      "split": "validation",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a sweet brown food made from cacao..",
+      "rationale": "The selected definition describes a sweet brown food made from cacao. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "bread|noun|A baked food made from flour and water.",
+      "word": "bread",
+      "partOfSpeech": "noun",
+      "definition": "A baked food made from flour and water.",
+      "familyId": "bread",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a baked food made from flour and water..",
+      "rationale": "The selected definition describes a baked food made from flour and water. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "salad|noun|A dish made from mixed vegetables or other cold ingredients.",
+      "word": "salad",
+      "partOfSpeech": "noun",
+      "definition": "A dish made from mixed vegetables or other cold ingredients.",
+      "familyId": "salad",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a dish made from mixed vegetables or other cold ingredients..",
+      "rationale": "The selected definition describes a dish made from mixed vegetables or other cold ingredients. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "cheese|noun|A solid food made from milk.",
+      "word": "cheese",
+      "partOfSpeech": "noun",
+      "definition": "A solid food made from milk.",
+      "familyId": "cheese",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a solid food made from milk..",
+      "rationale": "The selected definition describes a solid food made from milk. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "orange|noun|A round citrus fruit with orange peel.",
+      "word": "orange",
+      "partOfSpeech": "noun",
+      "definition": "A round citrus fruit with orange peel.",
+      "familyId": "orange-fruit",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a round citrus fruit with orange peel..",
+      "rationale": "The selected definition describes a round citrus fruit with orange peel. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "carrot|noun|A long orange root vegetable.",
+      "word": "carrot",
+      "partOfSpeech": "noun",
+      "definition": "A long orange root vegetable.",
+      "familyId": "carrot",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a long orange root vegetable..",
+      "rationale": "The selected definition describes a long orange root vegetable. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "meat|noun|Animal flesh eaten as food.",
+      "word": "meat",
+      "partOfSpeech": "noun",
+      "definition": "Animal flesh eaten as food.",
+      "familyId": "meat",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: animal flesh eaten as food..",
+      "rationale": "The selected definition describes animal flesh eaten as food. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "doughnut|noun|A small sweet fried cake, often shaped like a ring.",
+      "word": "doughnut",
+      "partOfSpeech": "noun",
+      "definition": "A small sweet fried cake, often shaped like a ring.",
+      "familyId": "doughnut",
+      "split": "test",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a small sweet fried cake, often shaped like a ring..",
+      "rationale": "The selected definition describes a small sweet fried cake, often shaped like a ring. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "banana|noun|A long curved fruit with a peel.",
+      "word": "banana",
+      "partOfSpeech": "noun",
+      "definition": "A long curved fruit with a peel.",
+      "familyId": "banana",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a long curved fruit with a peel..",
+      "rationale": "The selected definition describes a long curved fruit with a peel. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    },
+    {
+      "key": "pizza|noun|A flat baked base topped with tomato, cheese and other food.",
+      "word": "pizza",
+      "partOfSpeech": "noun",
+      "definition": "A flat baked base topped with tomato, cheese and other food.",
+      "familyId": "pizza",
+      "split": "train",
+      "labels": [
+        "entity"
+      ],
+      "primaryClass": "entity",
+      "requiredEvidence": "Show the defined physical referent: a flat baked base topped with tomato, cheese and other food..",
+      "rationale": "The selected definition describes a flat baked base topped with tomato, cheese and other food. This makes entity the most direct visual-evidence class.",
+      "confidence": "high"
+    }
+  ],
+  "dataQualityNotes": [
+    "These entries are definition-based semantic annotations, not image labels, image judgments, or verified positive/negative image examples.",
+    "Candidate images and their captions were not used as labels for this taxonomy; imageScenes were context only."
+  ],
+  "revisionNotes": [
+    "Corrected classifications based on selected-definition meaning rather than part of speech: sleep, lie down, sit, stand, smile, rain, wave, snow, reflection, subway, stairs, floor, and hold.",
+    "Changed hold to relation; changed visible postures and smile to state; labeled rain and wave as action+entity and snow as entity+action due to its falling-or-grounded definition.",
+    "Removed relation labels for talk, shop, swim, and read because another participant or contact configuration is not required; added relation to bridge because spanning an obstacle defines its configuration.",
+    "Removed generated misleadingAlternative fields because they were unverified contrasts, not image labels or verified hard negatives.",
+    "Coverage counts indicate only unique-key matching to the fixture and do not imply expert validation."
+  ],
+  "coverageNote": "Mechanical unique-key coverage only; not independent expert validation."
+}

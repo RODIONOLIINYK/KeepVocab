@@ -1,0 +1,2685 @@
+{
+  "metadata": {
+    "title": "Meaning classification supplement for image-selection research",
+    "purpose": "AI-authored pilot definitions and semantic labels for reviewing which evidence a still image would need to show.",
+    "authorship": "AI-authored pilot; not expert-reviewed and not a claim of human annotation.",
+    "visualAnnotations": "No visual images were reviewed or annotated for these examples.",
+    "labelingBasis": "Labels describe semantic evidence required to verify the selected sense from a still image; they are not part-of-speech rules or image classifier confidence labels.",
+    "categories": [
+      "entity",
+      "place",
+      "action",
+      "state",
+      "relation",
+      "abstract"
+    ],
+    "primaryClassTargets": {
+      "entity": 12,
+      "place": 12,
+      "action": 30,
+      "state": 30,
+      "relation": 48,
+      "abstract": 48
+    },
+    "primaryClassCounts": {
+      "entity": 12,
+      "place": 12,
+      "action": 30,
+      "state": 30,
+      "relation": 48,
+      "abstract": 48
+    },
+    "exampleCount": 180,
+    "families": "familyId groups senses sharing a headword; contrastive senses such as pet and blood remain in one family."
+  },
+  "examples": [
+    {
+      "word": "pet",
+      "partOfSpeech": "noun",
+      "definition": "A companion animal kept for affection or company.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity",
+        "relation"
+      ],
+      "requiredEvidence": "An animal shown as a companion in a domestic context.",
+      "misleadingAlternative": "A wild animal near a person does not by itself show that it is someone’s companion.",
+      "confidence": "high",
+      "familyId": "pet",
+      "rationale": "The deciding cue is An animal shown as a companion in a domestic context.; A wild animal near a person does not by itself show that it is someone’s companion. could occur without the selected meaning."
+    },
+    {
+      "word": "blood",
+      "partOfSpeech": "noun",
+      "definition": "The red fluid that circulates through the body of a person or animal.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity"
+      ],
+      "requiredEvidence": "A visible sample of bodily fluid or a clear depiction of circulation.",
+      "misleadingAlternative": "Red paint can resemble the fluid without being blood.",
+      "confidence": "high",
+      "familyId": "blood",
+      "rationale": "An image would need to establish A visible sample of bodily fluid or a clear depiction of circulation.. Seeing Red paint can resemble the fluid without being blood. alone would leave the sense uncertain."
+    },
+    {
+      "word": "water",
+      "partOfSpeech": "noun",
+      "definition": "A clear liquid that forms streams, pools, or droplets.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity"
+      ],
+      "requiredEvidence": "The liquid itself, with its surface or droplets visible.",
+      "misleadingAlternative": "A blue surface may be painted material rather than water.",
+      "confidence": "high",
+      "familyId": "water",
+      "rationale": "This reading depends on The liquid itself, with its surface or droplets visible.; A blue surface may be painted material rather than water. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "smoke",
+      "partOfSpeech": "noun",
+      "definition": "A cloud of fine particles and gases produced by burning.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity",
+        "state"
+      ],
+      "requiredEvidence": "A drifting plume connected to combustion or a smoky source.",
+      "misleadingAlternative": "Fog can look similar without particles from burning.",
+      "confidence": "high",
+      "familyId": "smoke",
+      "rationale": "The visible test is A drifting plume connected to combustion or a smoky source.. A scene with Fog can look similar without particles from burning. would not be enough on its own."
+    },
+    {
+      "word": "granite",
+      "partOfSpeech": "noun",
+      "definition": "A coarse-grained hard rock made of interlocking minerals.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity"
+      ],
+      "requiredEvidence": "A speckled crystalline stone surface.",
+      "misleadingAlternative": "A printed stone pattern is not the material itself.",
+      "confidence": "high",
+      "familyId": "granite",
+      "rationale": "To support this sense, a still should show A speckled crystalline stone surface.; A printed stone pattern is not the material itself. can otherwise be mistaken for it."
+    },
+    {
+      "word": "sparrow",
+      "partOfSpeech": "noun",
+      "definition": "A small seed-eating songbird with a short stout bill.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity"
+      ],
+      "requiredEvidence": "A small bird whose size and bill suit the description.",
+      "misleadingAlternative": "A similarly sized finch need not be a sparrow.",
+      "confidence": "high",
+      "familyId": "sparrow",
+      "rationale": "The deciding cue is A small bird whose size and bill suit the description.; A similarly sized finch need not be a sparrow. could occur without the selected meaning."
+    },
+    {
+      "word": "toddler",
+      "partOfSpeech": "noun",
+      "definition": "A very young child who is beginning to walk.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity",
+        "state"
+      ],
+      "requiredEvidence": "A young child with childlike proportions.",
+      "misleadingAlternative": "A short adult is not a toddler.",
+      "confidence": "high",
+      "familyId": "toddler",
+      "rationale": "An image would need to establish A young child with childlike proportions.. Seeing A short adult is not a toddler. alone would leave the sense uncertain."
+    },
+    {
+      "word": "wool",
+      "partOfSpeech": "noun",
+      "definition": "The soft curly coat fiber obtained from sheep or similar animals.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity"
+      ],
+      "requiredEvidence": "Visible curly animal fiber or a recognizable wool textile.",
+      "misleadingAlternative": "A synthetic fleece can imitate wool’s appearance.",
+      "confidence": "high",
+      "familyId": "wool",
+      "rationale": "This reading depends on Visible curly animal fiber or a recognizable wool textile.; A synthetic fleece can imitate wool’s appearance. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "honey",
+      "partOfSpeech": "noun",
+      "definition": "A thick sweet substance made by bees from flower nectar.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity"
+      ],
+      "requiredEvidence": "The amber viscous substance in a comb, jar, or drop.",
+      "misleadingAlternative": "Golden syrup may look similar but has a different source.",
+      "confidence": "high",
+      "familyId": "honey",
+      "rationale": "The visible test is The amber viscous substance in a comb, jar, or drop.. A scene with Golden syrup may look similar but has a different source. would not be enough on its own."
+    },
+    {
+      "word": "seed",
+      "partOfSpeech": "noun",
+      "definition": "A plant structure that can grow into a new plant.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity",
+        "state"
+      ],
+      "requiredEvidence": "A discrete seed with a recognizable protective coat.",
+      "misleadingAlternative": "A grain-shaped bead may only resemble one.",
+      "confidence": "high",
+      "familyId": "seed",
+      "rationale": "To support this sense, a still should show A discrete seed with a recognizable protective coat.; A grain-shaped bead may only resemble one. can otherwise be mistaken for it."
+    },
+    {
+      "word": "copper",
+      "partOfSpeech": "noun",
+      "definition": "A reddish-brown metal used in pipes, wiring, and objects.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity"
+      ],
+      "requiredEvidence": "The metal itself, such as a cut surface or wire.",
+      "misleadingAlternative": "Copper-colored plastic is only a visual imitation.",
+      "confidence": "high",
+      "familyId": "copper",
+      "rationale": "The deciding cue is The metal itself, such as a cut surface or wire.; Copper-colored plastic is only a visual imitation. could occur without the selected meaning."
+    },
+    {
+      "word": "cloud",
+      "partOfSpeech": "noun",
+      "definition": "A visible mass of tiny water droplets or ice crystals in the sky.",
+      "primaryClass": "entity",
+      "labels": [
+        "entity"
+      ],
+      "requiredEvidence": "A suspended atmospheric mass against open sky.",
+      "misleadingAlternative": "A cloud painted on a wall is a picture, not a cloud.",
+      "confidence": "high",
+      "familyId": "cloud",
+      "rationale": "An image would need to establish A suspended atmospheric mass against open sky.. Seeing A cloud painted on a wall is a picture, not a cloud. alone would leave the sense uncertain."
+    },
+    {
+      "word": "greenhouse",
+      "partOfSpeech": "noun",
+      "definition": "An enclosed structure with transparent walls for growing plants.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "requiredEvidence": "A glass or plastic enclosure arranged for cultivation.",
+      "misleadingAlternative": "A glass shed used only for storage lacks the growing setting.",
+      "confidence": "high",
+      "familyId": "greenhouse",
+      "rationale": "This reading depends on A glass or plastic enclosure arranged for cultivation.; A glass shed used only for storage lacks the growing setting. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "alley",
+      "partOfSpeech": "noun",
+      "definition": "A narrow passage between or behind buildings.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "relation"
+      ],
+      "requiredEvidence": "A confined route bounded by building walls.",
+      "misleadingAlternative": "A broad street is not an alley merely because it has buildings.",
+      "confidence": "high",
+      "familyId": "alley",
+      "rationale": "The visible test is A confined route bounded by building walls.. A scene with A broad street is not an alley merely because it has buildings. would not be enough on its own."
+    },
+    {
+      "word": "shoreline",
+      "partOfSpeech": "noun",
+      "definition": "The boundary where land meets a body of water.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "relation"
+      ],
+      "requiredEvidence": "A visible edge joining land and water.",
+      "misleadingAlternative": "A wet patch inland does not establish a shoreline.",
+      "confidence": "high",
+      "familyId": "shoreline",
+      "rationale": "To support this sense, a still should show A visible edge joining land and water.; A wet patch inland does not establish a shoreline. can otherwise be mistaken for it."
+    },
+    {
+      "word": "workshop",
+      "partOfSpeech": "noun",
+      "definition": "A room or building equipped for making or repairing things.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "requiredEvidence": "A workspace with tools or work surfaces arranged for making or repair.",
+      "misleadingAlternative": "A room containing one tool may serve another purpose.",
+      "confidence": "high",
+      "familyId": "workshop",
+      "rationale": "The deciding cue is A workspace with tools or work surfaces arranged for making or repair.; A room containing one tool may serve another purpose. could occur without the selected meaning."
+    },
+    {
+      "word": "courtroom",
+      "partOfSpeech": "noun",
+      "definition": "A room where a judge hears legal cases.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "requiredEvidence": "A formal hearing room with a raised bench and seating arrangement.",
+      "misleadingAlternative": "A lecture hall with a platform is not necessarily a courtroom.",
+      "confidence": "high",
+      "familyId": "courtroom",
+      "rationale": "An image would need to establish A formal hearing room with a raised bench and seating arrangement.. Seeing A lecture hall with a platform is not necessarily a courtroom. alone would leave the sense uncertain."
+    },
+    {
+      "word": "meadow",
+      "partOfSpeech": "noun",
+      "definition": "An open field of grass and wildflowers.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "requiredEvidence": "A broad grassy area with open natural surroundings.",
+      "misleadingAlternative": "A clipped lawn beside a house is not automatically a meadow.",
+      "confidence": "high",
+      "familyId": "meadow",
+      "rationale": "This reading depends on A broad grassy area with open natural surroundings.; A clipped lawn beside a house is not automatically a meadow. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "cellar",
+      "partOfSpeech": "noun",
+      "definition": "A room below ground level, often used for storage.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "relation"
+      ],
+      "requiredEvidence": "A below-ground room with enclosed walls and access from above or indoors.",
+      "misleadingAlternative": "A dim room above ground is not a cellar.",
+      "confidence": "high",
+      "familyId": "cellar",
+      "rationale": "The visible test is A below-ground room with enclosed walls and access from above or indoors.. A scene with A dim room above ground is not a cellar. would not be enough on its own."
+    },
+    {
+      "word": "harbor",
+      "partOfSpeech": "noun",
+      "definition": "A sheltered coastal area where boats can anchor.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "requiredEvidence": "A protected water area with boats, docks, or a breakwater.",
+      "misleadingAlternative": "Boats offshore in open water do not define a harbor.",
+      "confidence": "high",
+      "familyId": "harbor",
+      "rationale": "To support this sense, a still should show A protected water area with boats, docks, or a breakwater.; Boats offshore in open water do not define a harbor. can otherwise be mistaken for it."
+    },
+    {
+      "word": "campsite",
+      "partOfSpeech": "noun",
+      "definition": "A designated outdoor area for pitching tents or parking campers.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "requiredEvidence": "An outdoor overnight setup with tent or camping equipment.",
+      "misleadingAlternative": "A tent in a garden may not be a designated campsite.",
+      "confidence": "high",
+      "familyId": "campsite",
+      "rationale": "The deciding cue is An outdoor overnight setup with tent or camping equipment.; A tent in a garden may not be a designated campsite. could occur without the selected meaning."
+    },
+    {
+      "word": "orchard",
+      "partOfSpeech": "noun",
+      "definition": "An area of land planted with fruit or nut trees.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "entity"
+      ],
+      "requiredEvidence": "Rows or a managed grouping of fruit-bearing trees.",
+      "misleadingAlternative": "A wild stand of trees does not show cultivation as an orchard.",
+      "confidence": "high",
+      "familyId": "orchard",
+      "rationale": "An image would need to establish Rows or a managed grouping of fruit-bearing trees.. Seeing A wild stand of trees does not show cultivation as an orchard. alone would leave the sense uncertain."
+    },
+    {
+      "word": "classroom",
+      "partOfSpeech": "noun",
+      "definition": "A room arranged for teaching a group of learners.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "relation"
+      ],
+      "requiredEvidence": "A teaching room with learner seating and instructional materials.",
+      "misleadingAlternative": "Tables and chairs alone could be an ordinary meeting room.",
+      "confidence": "high",
+      "familyId": "classroom",
+      "rationale": "This reading depends on A teaching room with learner seating and instructional materials.; Tables and chairs alone could be an ordinary meeting room. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "tunnel",
+      "partOfSpeech": "noun",
+      "definition": "A passage dug through or beneath an obstacle.",
+      "primaryClass": "place",
+      "labels": [
+        "place",
+        "relation"
+      ],
+      "requiredEvidence": "A long enclosed passage with an opening continuing through terrain or structure.",
+      "misleadingAlternative": "A short doorway through a wall is not a tunnel.",
+      "confidence": "high",
+      "familyId": "tunnel",
+      "rationale": "The visible test is A long enclosed passage with an opening continuing through terrain or structure.. A scene with A short doorway through a wall is not a tunnel. would not be enough on its own."
+    },
+    {
+      "word": "pet",
+      "partOfSpeech": "verb",
+      "definition": "To stroke an animal gently with the hand.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "requiredEvidence": "A hand making gentle contact and moving over an animal’s coat.",
+      "misleadingAlternative": "Standing beside an animal does not show stroking.",
+      "confidence": "high",
+      "familyId": "pet",
+      "rationale": "To support this sense, a still should show A hand making gentle contact and moving over an animal’s coat.; Standing beside an animal does not show stroking. can otherwise be mistaken for it."
+    },
+    {
+      "word": "bleed",
+      "partOfSpeech": "verb",
+      "definition": "To lose blood from a wound or bodily opening.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "entity"
+      ],
+      "requiredEvidence": "A visible flow of blood from a body or wound.",
+      "misleadingAlternative": "A static red stain does not prove blood is currently flowing.",
+      "confidence": "high",
+      "familyId": "blood",
+      "rationale": "The deciding cue is A visible flow of blood from a body or wound.; A static red stain does not prove blood is currently flowing. could occur without the selected meaning."
+    },
+    {
+      "word": "collision",
+      "partOfSpeech": "noun",
+      "definition": "A forceful event in which moving objects strike one another.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "requiredEvidence": "Objects at the instant of impact, with disrupted contact or deformation.",
+      "misleadingAlternative": "Two objects resting together do not establish a collision.",
+      "confidence": "high",
+      "familyId": "collision",
+      "rationale": "An image would need to establish Objects at the instant of impact, with disrupted contact or deformation.. Seeing Two objects resting together do not establish a collision. alone would leave the sense uncertain."
+    },
+    {
+      "word": "erode",
+      "partOfSpeech": "verb",
+      "definition": "To wear away gradually through water, wind, or friction.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "A process of material loss at an exposed edge or surface.",
+      "misleadingAlternative": "A worn-looking surface alone may be old damage rather than ongoing erosion.",
+      "confidence": "medium",
+      "familyId": "erode",
+      "rationale": "This reading depends on A process of material loss at an exposed edge or surface.; A worn-looking surface alone may be old damage rather than ongoing erosion. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "germinate",
+      "partOfSpeech": "verb",
+      "definition": "To begin growing from a seed.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "A seed opening as a root or shoot emerges.",
+      "misleadingAlternative": "A fully grown plant nearby does not show a seed beginning to grow.",
+      "confidence": "high",
+      "familyId": "germinate",
+      "rationale": "The visible test is A seed opening as a root or shoot emerges.. A scene with A fully grown plant nearby does not show a seed beginning to grow. would not be enough on its own."
+    },
+    {
+      "word": "dissolve",
+      "partOfSpeech": "verb",
+      "definition": "To mix into a liquid until a solid is no longer distinct.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "A solid dispersing through a liquid, often with a fading boundary.",
+      "misleadingAlternative": "A solid merely floating in liquid has not dissolved.",
+      "confidence": "high",
+      "familyId": "dissolve",
+      "rationale": "To support this sense, a still should show A solid dispersing through a liquid, often with a fading boundary.; A solid merely floating in liquid has not dissolved. can otherwise be mistaken for it."
+    },
+    {
+      "word": "orbit",
+      "partOfSpeech": "verb",
+      "definition": "To travel repeatedly around a larger body along a path.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "requiredEvidence": "A body moving along a curved path around a central object.",
+      "misleadingAlternative": "Two bodies near each other do not establish an orbit.",
+      "confidence": "high",
+      "familyId": "orbit",
+      "rationale": "The deciding cue is A body moving along a curved path around a central object.; Two bodies near each other do not establish an orbit. could occur without the selected meaning."
+    },
+    {
+      "word": "evaporate",
+      "partOfSpeech": "verb",
+      "definition": "To change from liquid into vapor at a surface.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "Liquid diminishing while vapor rises or forms above it.",
+      "misleadingAlternative": "An empty container alone does not show evaporation.",
+      "confidence": "high",
+      "familyId": "evaporate",
+      "rationale": "An image would need to establish Liquid diminishing while vapor rises or forms above it.. Seeing An empty container alone does not show evaporation. alone would leave the sense uncertain."
+    },
+    {
+      "word": "sneeze",
+      "partOfSpeech": "verb",
+      "definition": "To expel air suddenly through the nose and mouth.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "A sudden expulsion pose, often with a covered nose or closed eyes.",
+      "misleadingAlternative": "A person covering the nose may simply be wiping it.",
+      "confidence": "high",
+      "familyId": "sneeze",
+      "rationale": "This reading depends on A sudden expulsion pose, often with a covered nose or closed eyes.; A person covering the nose may simply be wiping it. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "migrate",
+      "partOfSpeech": "verb",
+      "definition": "To move seasonally from one region to another.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "relation",
+        "abstract"
+      ],
+      "requiredEvidence": "A directional journey by a group between distinct regions.",
+      "misleadingAlternative": "A group gathered in one place cannot prove seasonal migration.",
+      "confidence": "medium",
+      "familyId": "migrate",
+      "rationale": "The visible test is A directional journey by a group between distinct regions.. A scene with A group gathered in one place cannot prove seasonal migration. would not be enough on its own."
+    },
+    {
+      "word": "unfurl",
+      "partOfSpeech": "verb",
+      "definition": "To open out from a rolled or folded position.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "A surface visibly opening from a curled or folded form.",
+      "misleadingAlternative": "An already flat sheet is not shown unfurling.",
+      "confidence": "high",
+      "familyId": "unfurl",
+      "rationale": "To support this sense, a still should show A surface visibly opening from a curled or folded form.; An already flat sheet is not shown unfurling. can otherwise be mistaken for it."
+    },
+    {
+      "word": "splash",
+      "partOfSpeech": "verb",
+      "definition": "To scatter liquid in drops by striking or moving through it.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "entity",
+        "relation"
+      ],
+      "requiredEvidence": "Drops thrown outward from a liquid surface at impact.",
+      "misleadingAlternative": "A still pool with droplets from rain does not show the action.",
+      "confidence": "high",
+      "familyId": "splash",
+      "rationale": "The deciding cue is Drops thrown outward from a liquid surface at impact.; A still pool with droplets from rain does not show the action. could occur without the selected meaning."
+    },
+    {
+      "word": "weave",
+      "partOfSpeech": "verb",
+      "definition": "To interlace strands or strips into a fabric or structure.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "requiredEvidence": "Crossing strands passing alternately over and under one another.",
+      "misleadingAlternative": "A finished cloth alone does not show it being woven.",
+      "confidence": "high",
+      "familyId": "weave",
+      "rationale": "An image would need to establish Crossing strands passing alternately over and under one another.. Seeing A finished cloth alone does not show it being woven. alone would leave the sense uncertain."
+    },
+    {
+      "word": "bloom",
+      "partOfSpeech": "verb",
+      "definition": "To produce open flowers.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "A flower opening or newly opened on a plant.",
+      "misleadingAlternative": "A cut flower in a vase does not show a plant blooming.",
+      "confidence": "high",
+      "familyId": "bloom",
+      "rationale": "This reading depends on A flower opening or newly opened on a plant.; A cut flower in a vase does not show a plant blooming. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "pour",
+      "partOfSpeech": "verb",
+      "definition": "To make liquid flow from one container or source into another.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "entity",
+        "relation"
+      ],
+      "requiredEvidence": "A stream of liquid leaving one vessel and entering another.",
+      "misleadingAlternative": "A filled glass does not show the act of pouring.",
+      "confidence": "high",
+      "familyId": "pour",
+      "rationale": "The visible test is A stream of liquid leaving one vessel and entering another.. A scene with A filled glass does not show the act of pouring. would not be enough on its own."
+    },
+    {
+      "word": "crumble",
+      "partOfSpeech": "verb",
+      "definition": "To break into small irregular pieces.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "Fragments separating from a formerly cohesive object.",
+      "misleadingAlternative": "Loose crumbs on a plate may have been placed there.",
+      "confidence": "high",
+      "familyId": "crumble",
+      "rationale": "To support this sense, a still should show Fragments separating from a formerly cohesive object.; Loose crumbs on a plate may have been placed there. can otherwise be mistaken for it."
+    },
+    {
+      "word": "inflate",
+      "partOfSpeech": "verb",
+      "definition": "To fill with air or gas so that something expands.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "An object expanding as air enters it.",
+      "misleadingAlternative": "A full balloon alone does not show inflation happening.",
+      "confidence": "high",
+      "familyId": "inflate",
+      "rationale": "The deciding cue is An object expanding as air enters it.; A full balloon alone does not show inflation happening. could occur without the selected meaning."
+    },
+    {
+      "word": "sprout",
+      "partOfSpeech": "verb",
+      "definition": "To put out a new shoot or bud.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "A fresh shoot emerging from a seed or plant stem.",
+      "misleadingAlternative": "A mature leafy plant does not show a new shoot appearing.",
+      "confidence": "high",
+      "familyId": "sprout",
+      "rationale": "An image would need to establish A fresh shoot emerging from a seed or plant stem.. Seeing A mature leafy plant does not show a new shoot appearing. alone would leave the sense uncertain."
+    },
+    {
+      "word": "leak",
+      "partOfSpeech": "verb",
+      "definition": "To let liquid or gas escape through an unintended opening.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "entity",
+        "relation"
+      ],
+      "requiredEvidence": "Fluid escaping from a seam, crack, or hole.",
+      "misleadingAlternative": "A wet patch beside a pipe does not prove an active leak.",
+      "confidence": "high",
+      "familyId": "leak",
+      "rationale": "This reading depends on Fluid escaping from a seam, crack, or hole.; A wet patch beside a pipe does not prove an active leak. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "shatter",
+      "partOfSpeech": "verb",
+      "definition": "To break suddenly into many sharp pieces.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "A break occurring with pieces scattering from a brittle object.",
+      "misleadingAlternative": "A pile of fragments alone may be arranged debris.",
+      "confidence": "high",
+      "familyId": "shatter",
+      "rationale": "The visible test is A break occurring with pieces scattering from a brittle object.. A scene with A pile of fragments alone may be arranged debris. would not be enough on its own."
+    },
+    {
+      "word": "simmer",
+      "partOfSpeech": "verb",
+      "definition": "To cook gently in liquid just below boiling.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "entity",
+        "state"
+      ],
+      "requiredEvidence": "Small bubbles forming across heated liquid in a cooking vessel.",
+      "misleadingAlternative": "Bubbles in a cold carbonated drink are not simmering.",
+      "confidence": "high",
+      "familyId": "simmer",
+      "rationale": "To support this sense, a still should show Small bubbles forming across heated liquid in a cooking vessel.; Bubbles in a cold carbonated drink are not simmering. can otherwise be mistaken for it."
+    },
+    {
+      "word": "sway",
+      "partOfSpeech": "verb",
+      "definition": "To move slowly from side to side.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "requiredEvidence": "A body or object displaced from its upright position during motion.",
+      "misleadingAlternative": "A tilted object in a still image may simply be leaning.",
+      "confidence": "high",
+      "familyId": "sway",
+      "rationale": "The deciding cue is A body or object displaced from its upright position during motion.; A tilted object in a still image may simply be leaning. could occur without the selected meaning."
+    },
+    {
+      "word": "melt",
+      "partOfSpeech": "verb",
+      "definition": "To change from solid to liquid through heat.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "A solid losing its shape as liquid forms around it.",
+      "misleadingAlternative": "A puddle near an intact ice cube does not prove melting.",
+      "confidence": "high",
+      "familyId": "melt",
+      "rationale": "An image would need to establish A solid losing its shape as liquid forms around it.. Seeing A puddle near an intact ice cube does not prove melting. alone would leave the sense uncertain."
+    },
+    {
+      "word": "scratch",
+      "partOfSpeech": "verb",
+      "definition": "To scrape or mark a surface with a sharp point.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "requiredEvidence": "A pointed object contacting and scoring a surface.",
+      "misleadingAlternative": "An existing scratch does not show the marking action.",
+      "confidence": "high",
+      "familyId": "scratch",
+      "rationale": "This reading depends on A pointed object contacting and scoring a surface.; An existing scratch does not show the marking action. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "hover",
+      "partOfSpeech": "verb",
+      "definition": "To remain suspended in the air above a surface.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "relation",
+        "state"
+      ],
+      "requiredEvidence": "An object held aloft without visible support near a surface.",
+      "misleadingAlternative": "An object on a transparent stand may only appear suspended.",
+      "confidence": "high",
+      "familyId": "hover",
+      "rationale": "The visible test is An object held aloft without visible support near a surface.. A scene with An object on a transparent stand may only appear suspended. would not be enough on its own."
+    },
+    {
+      "word": "decay",
+      "partOfSpeech": "verb",
+      "definition": "To break down gradually through chemical or biological change.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "state"
+      ],
+      "requiredEvidence": "Material visibly decomposing, such as softened or discolored organic matter.",
+      "misleadingAlternative": "Old discoloration may be staining without decay.",
+      "confidence": "high",
+      "familyId": "decay",
+      "rationale": "To support this sense, a still should show Material visibly decomposing, such as softened or discolored organic matter.; Old discoloration may be staining without decay. can otherwise be mistaken for it."
+    },
+    {
+      "word": "nest",
+      "partOfSpeech": "verb",
+      "definition": "To build or occupy a structure used for laying eggs or raising young.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "entity",
+        "place"
+      ],
+      "requiredEvidence": "An animal arranging nesting material or settling into a nest.",
+      "misleadingAlternative": "An empty nest alone does not show the animal nesting.",
+      "confidence": "high",
+      "familyId": "nest",
+      "rationale": "The deciding cue is An animal arranging nesting material or settling into a nest.; An empty nest alone does not show the animal nesting. could occur without the selected meaning."
+    },
+    {
+      "word": "knead",
+      "partOfSpeech": "verb",
+      "definition": "To work a soft mixture by pressing and folding it repeatedly.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "requiredEvidence": "Hands or a tool pressing and folding dough or another mixture.",
+      "misleadingAlternative": "A smooth lump of dough alone does not show kneading.",
+      "confidence": "high",
+      "familyId": "knead",
+      "rationale": "An image would need to establish Hands or a tool pressing and folding dough or another mixture.. Seeing A smooth lump of dough alone does not show kneading. alone would leave the sense uncertain."
+    },
+    {
+      "word": "sift",
+      "partOfSpeech": "verb",
+      "definition": "To pass a fine material through a mesh to separate particles.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "entity",
+        "relation"
+      ],
+      "requiredEvidence": "Powder falling through a sieve while larger pieces remain.",
+      "misleadingAlternative": "Flour in a bowl does not establish that it was sifted.",
+      "confidence": "high",
+      "familyId": "sift",
+      "rationale": "This reading depends on Powder falling through a sieve while larger pieces remain.; Flour in a bowl does not establish that it was sifted. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "remain",
+      "partOfSpeech": "verb",
+      "definition": "To continue in the same condition or position.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "requiredEvidence": "A subject still in the specified condition across an interval or after an event.",
+      "misleadingAlternative": "A single frame can show a condition but cannot by itself establish continuation.",
+      "confidence": "medium",
+      "familyId": "remain",
+      "rationale": "The visible test is A subject still in the specified condition across an interval or after an event.. A scene with A single frame can show a condition but cannot by itself establish continuation. would not be enough on its own."
+    },
+    {
+      "word": "burrow",
+      "partOfSpeech": "verb",
+      "definition": "To dig or occupy a hole or passage in the ground.",
+      "primaryClass": "action",
+      "labels": [
+        "action",
+        "entity",
+        "place"
+      ],
+      "requiredEvidence": "An animal or person digging into soil or entering a burrow.",
+      "misleadingAlternative": "An existing hole does not show that it is being dug or occupied.",
+      "confidence": "high",
+      "familyId": "burrow",
+      "rationale": "To support this sense, a still should show An animal or person digging into soil or entering a burrow.; An existing hole does not show that it is being dug or occupied. can otherwise be mistaken for it."
+    },
+    {
+      "word": "bloody",
+      "partOfSpeech": "adjective",
+      "definition": "Containing or covered with blood.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "Blood visibly coating or present within the described object.",
+      "misleadingAlternative": "A red color alone could come from paint or fruit.",
+      "confidence": "high",
+      "familyId": "blood",
+      "rationale": "The deciding cue is Blood visibly coating or present within the described object.; A red color alone could come from paint or fruit. could occur without the selected meaning."
+    },
+    {
+      "word": "stand",
+      "partOfSpeech": "verb",
+      "definition": "To be upright on the feet or base without sitting or lying.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "requiredEvidence": "An upright posture supported by feet or a base.",
+      "misleadingAlternative": "A momentary rising motion is an action, not the settled posture.",
+      "confidence": "high",
+      "familyId": "stand",
+      "rationale": "An image would need to establish An upright posture supported by feet or a base.. Seeing A momentary rising motion is an action, not the settled posture. alone would leave the sense uncertain."
+    },
+    {
+      "word": "sleep",
+      "partOfSpeech": "verb",
+      "definition": "To be in a resting state with awareness suspended.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "A resting posture with closed eyes and relaxed stillness.",
+      "misleadingAlternative": "Closed eyes during a blink do not establish sleep.",
+      "confidence": "high",
+      "familyId": "sleep",
+      "rationale": "This reading depends on A resting posture with closed eyes and relaxed stillness.; Closed eyes during a blink do not establish sleep. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "bent",
+      "partOfSpeech": "adjective",
+      "definition": "Curved or forced away from a straight form.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "A visible curve or angle in the object’s form.",
+      "misleadingAlternative": "A straight item viewed at a perspective angle may only look bent.",
+      "confidence": "high",
+      "familyId": "bent",
+      "rationale": "The visible test is A visible curve or angle in the object’s form.. A scene with A straight item viewed at a perspective angle may only look bent. would not be enough on its own."
+    },
+    {
+      "word": "rusted",
+      "partOfSpeech": "adjective",
+      "definition": "Covered with reddish corrosion formed on iron or steel.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "Flaky orange-brown corrosion on a ferrous surface.",
+      "misleadingAlternative": "Brown paint can mimic corrosion.",
+      "confidence": "high",
+      "familyId": "rusted",
+      "rationale": "To support this sense, a still should show Flaky orange-brown corrosion on a ferrous surface.; Brown paint can mimic corrosion. can otherwise be mistaken for it."
+    },
+    {
+      "word": "wet",
+      "partOfSpeech": "adjective",
+      "definition": "Covered with or saturated by liquid.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "A liquid sheen, droplets, or visibly soaked material.",
+      "misleadingAlternative": "Glossy dry material can look wet under bright light.",
+      "confidence": "high",
+      "familyId": "wet",
+      "rationale": "The deciding cue is A liquid sheen, droplets, or visibly soaked material.; Glossy dry material can look wet under bright light. could occur without the selected meaning."
+    },
+    {
+      "word": "transparent",
+      "partOfSpeech": "adjective",
+      "definition": "Allowing light to pass through so objects behind can be seen.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "requiredEvidence": "A clear view of objects through the material itself.",
+      "misleadingAlternative": "A hole or open frame also reveals what is behind.",
+      "confidence": "high",
+      "familyId": "transparent",
+      "rationale": "An image would need to establish A clear view of objects through the material itself.. Seeing A hole or open frame also reveals what is behind. alone would leave the sense uncertain."
+    },
+    {
+      "word": "crowded",
+      "partOfSpeech": "adjective",
+      "definition": "Filled with many people or objects packed closely together.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity",
+        "relation"
+      ],
+      "requiredEvidence": "Many subjects occupying limited space with little separation.",
+      "misleadingAlternative": "A large group spread over a broad area may not be crowded.",
+      "confidence": "high",
+      "familyId": "crowded",
+      "rationale": "This reading depends on Many subjects occupying limited space with little separation.; A large group spread over a broad area may not be crowded. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "tangled",
+      "partOfSpeech": "adjective",
+      "definition": "Twisted together in a confused knot or mass.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "requiredEvidence": "Strands crossing and catching so they cannot lie separately.",
+      "misleadingAlternative": "Parallel overlapping lines may not be tangled.",
+      "confidence": "high",
+      "familyId": "tangled",
+      "rationale": "The visible test is Strands crossing and catching so they cannot lie separately.. A scene with Parallel overlapping lines may not be tangled. would not be enough on its own."
+    },
+    {
+      "word": "ripe",
+      "partOfSpeech": "adjective",
+      "definition": "Fully developed and ready to be eaten or used.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "Mature appearance associated with the relevant fruit or crop.",
+      "misleadingAlternative": "Color alone may not establish ripeness for every variety.",
+      "confidence": "high",
+      "familyId": "ripe",
+      "rationale": "To support this sense, a still should show Mature appearance associated with the relevant fruit or crop.; Color alone may not establish ripeness for every variety. can otherwise be mistaken for it."
+    },
+    {
+      "word": "frozen",
+      "partOfSpeech": "adjective",
+      "definition": "Turned to ice or made very cold and rigid.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "Ice formation or a rigid frozen surface.",
+      "misleadingAlternative": "Frosty decoration may only imitate freezing.",
+      "confidence": "high",
+      "familyId": "frozen",
+      "rationale": "The deciding cue is Ice formation or a rigid frozen surface.; Frosty decoration may only imitate freezing. could occur without the selected meaning."
+    },
+    {
+      "word": "bald",
+      "partOfSpeech": "adjective",
+      "definition": "Having little or no hair on the head.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "A bare scalp with hair absent over the relevant area.",
+      "misleadingAlternative": "A shaved head resembles baldness but may be temporary.",
+      "confidence": "high",
+      "familyId": "bald",
+      "rationale": "An image would need to establish A bare scalp with hair absent over the relevant area.. Seeing A shaved head resembles baldness but may be temporary. alone would leave the sense uncertain."
+    },
+    {
+      "word": "lopsided",
+      "partOfSpeech": "adjective",
+      "definition": "Unevenly balanced or shaped, with one side lower or larger.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "requiredEvidence": "A clear asymmetry between the two sides.",
+      "misleadingAlternative": "Perspective distortion can make a balanced object appear uneven.",
+      "confidence": "high",
+      "familyId": "lopsided",
+      "rationale": "This reading depends on A clear asymmetry between the two sides.; Perspective distortion can make a balanced object appear uneven. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "muddy",
+      "partOfSpeech": "adjective",
+      "definition": "Covered with wet earth or mixed with mud.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "Brown earth visibly coating a surface or clothing.",
+      "misleadingAlternative": "Brown dye or shadow may resemble mud.",
+      "confidence": "high",
+      "familyId": "muddy",
+      "rationale": "The visible test is Brown earth visibly coating a surface or clothing.. A scene with Brown dye or shadow may resemble mud. would not be enough on its own."
+    },
+    {
+      "word": "cracked",
+      "partOfSpeech": "adjective",
+      "definition": "Marked by one or more narrow breaks in a hard surface.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "A fissure interrupting an otherwise continuous surface.",
+      "misleadingAlternative": "A painted line may imitate a crack.",
+      "confidence": "high",
+      "familyId": "cracked",
+      "rationale": "To support this sense, a still should show A fissure interrupting an otherwise continuous surface.; A painted line may imitate a crack. can otherwise be mistaken for it."
+    },
+    {
+      "word": "inflamed",
+      "partOfSpeech": "adjective",
+      "definition": "Swollen, reddened, or irritated as a bodily condition.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "Visible redness and swelling in tissue.",
+      "misleadingAlternative": "A naturally red patch alone does not establish inflammation.",
+      "confidence": "high",
+      "familyId": "inflamed",
+      "rationale": "The deciding cue is Visible redness and swelling in tissue.; A naturally red patch alone does not establish inflammation. could occur without the selected meaning."
+    },
+    {
+      "word": "bare",
+      "partOfSpeech": "adjective",
+      "definition": "Uncovered or lacking its usual covering.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "requiredEvidence": "The normally covered surface is exposed.",
+      "misleadingAlternative": "A different material may cover it without being obvious.",
+      "confidence": "high",
+      "familyId": "bare",
+      "rationale": "An image would need to establish The normally covered surface is exposed.. Seeing A different material may cover it without being obvious. alone would leave the sense uncertain."
+    },
+    {
+      "word": "shallow",
+      "partOfSpeech": "adjective",
+      "definition": "Having little depth from the surface to the bottom.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "requiredEvidence": "The bottom is close to the surface relative to the span.",
+      "misleadingAlternative": "A top-down view can make deep water seem shallow.",
+      "confidence": "high",
+      "familyId": "shallow",
+      "rationale": "This reading depends on The bottom is close to the surface relative to the span.; A top-down view can make deep water seem shallow. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "dilated",
+      "partOfSpeech": "adjective",
+      "definition": "Widened or expanded beyond its usual opening or size.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "An opening visibly larger than its surrounding structure suggests.",
+      "misleadingAlternative": "A naturally wide opening may not be expanded.",
+      "confidence": "high",
+      "familyId": "dilated",
+      "rationale": "The visible test is An opening visibly larger than its surrounding structure suggests.. A scene with A naturally wide opening may not be expanded. would not be enough on its own."
+    },
+    {
+      "word": "luminous",
+      "partOfSpeech": "adjective",
+      "definition": "Emitting light rather than merely reflecting it.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "Light visibly emanating from the object.",
+      "misleadingAlternative": "A bright reflection does not establish that it produces light.",
+      "confidence": "high",
+      "familyId": "luminous",
+      "rationale": "To support this sense, a still should show Light visibly emanating from the object.; A bright reflection does not establish that it produces light. can otherwise be mistaken for it."
+    },
+    {
+      "word": "frayed",
+      "partOfSpeech": "adjective",
+      "definition": "Worn at the edge, with threads coming loose.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "Loose fibers protruding from a textile edge.",
+      "misleadingAlternative": "Decorative fringe may resemble wear.",
+      "confidence": "high",
+      "familyId": "frayed",
+      "rationale": "The deciding cue is Loose fibers protruding from a textile edge.; Decorative fringe may resemble wear. could occur without the selected meaning."
+    },
+    {
+      "word": "tilted",
+      "partOfSpeech": "adjective",
+      "definition": "Sloping away from a level or vertical orientation.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "requiredEvidence": "A clear angle relative to a level surface or vertical reference.",
+      "misleadingAlternative": "Camera rotation may make every object seem tilted.",
+      "confidence": "high",
+      "familyId": "tilted",
+      "rationale": "An image would need to establish A clear angle relative to a level surface or vertical reference.. Seeing Camera rotation may make every object seem tilted. alone would leave the sense uncertain."
+    },
+    {
+      "word": "sealed",
+      "partOfSpeech": "adjective",
+      "definition": "Closed so that air or liquid cannot pass through.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "requiredEvidence": "A closure fitted continuously around an opening.",
+      "misleadingAlternative": "A lid placed loosely on top is not necessarily sealed.",
+      "confidence": "high",
+      "familyId": "sealed",
+      "rationale": "This reading depends on A closure fitted continuously around an opening.; A lid placed loosely on top is not necessarily sealed. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "sedimented",
+      "partOfSpeech": "adjective",
+      "definition": "Having particles settled out at the bottom of a liquid.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity",
+        "relation"
+      ],
+      "requiredEvidence": "A layer of settled particles beneath clearer fluid.",
+      "misleadingAlternative": "Dark material at the bottom may be part of the container.",
+      "confidence": "high",
+      "familyId": "sedimented",
+      "rationale": "The visible test is A layer of settled particles beneath clearer fluid.. A scene with Dark material at the bottom may be part of the container. would not be enough on its own."
+    },
+    {
+      "word": "sleepy",
+      "partOfSpeech": "adjective",
+      "definition": "Showing visible signs of drowsiness.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "Heavy eyelids, a yawn, or a drooping resting posture.",
+      "misleadingAlternative": "A neutral relaxed face alone does not establish drowsiness.",
+      "confidence": "high",
+      "familyId": "sleepy",
+      "rationale": "To support this sense, a still should show Heavy eyelids, a yawn, or a drooping resting posture.; A neutral relaxed face alone does not establish drowsiness. can otherwise be mistaken for it."
+    },
+    {
+      "word": "sad",
+      "partOfSpeech": "adjective",
+      "definition": "Experiencing unhappiness as a feeling.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "abstract"
+      ],
+      "requiredEvidence": "No still image can establish the private feeling itself; visible clues only support a guess.",
+      "misleadingAlternative": "A frown may be posed or caused by something other than unhappiness.",
+      "confidence": "medium",
+      "familyId": "sad",
+      "rationale": "The deciding cue is No still image can establish the private feeling itself; visible clues only support a guess.; A frown may be posed or caused by something other than unhappiness. could occur without the selected meaning."
+    },
+    {
+      "word": "sad",
+      "partOfSpeech": "adjective",
+      "definition": "Having a visibly downcast or sorrowful-looking expression.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "entity"
+      ],
+      "requiredEvidence": "A downturned mouth or brows and a visibly downcast expression.",
+      "misleadingAlternative": "The expression cannot prove the person’s private feeling.",
+      "confidence": "medium",
+      "familyId": "sad",
+      "rationale": "An image would need to establish A downturned mouth or brows and a visibly downcast expression.. Seeing The expression cannot prove the person’s private feeling. alone would leave the sense uncertain."
+    },
+    {
+      "word": "fragile",
+      "partOfSpeech": "adjective",
+      "definition": "Easily broken or damaged because of its structure or condition.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "abstract"
+      ],
+      "requiredEvidence": "A visibly delicate structure or an indicated breakable material.",
+      "misleadingAlternative": "An intact still object cannot prove how easily it breaks.",
+      "confidence": "medium",
+      "familyId": "fragile",
+      "rationale": "This reading depends on A visibly delicate structure or an indicated breakable material.; An intact still object cannot prove how easily it breaks. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "open",
+      "partOfSpeech": "adjective",
+      "definition": "Not shut or covered, leaving an opening accessible.",
+      "primaryClass": "state",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "requiredEvidence": "A gap between the moving part and its frame or cover.",
+      "misleadingAlternative": "A dark panel can look open when it is actually closed.",
+      "confidence": "high",
+      "familyId": "open",
+      "rationale": "The visible test is A gap between the moving part and its frame or cover.. A scene with A dark panel can look open when it is actually closed. would not be enough on its own."
+    },
+    {
+      "word": "beneath",
+      "partOfSpeech": "preposition",
+      "definition": "At a lower level than something else.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The target is lower than a visible reference object.",
+      "misleadingAlternative": "Separate vertical position does not prove one object is directly underneath the other.",
+      "confidence": "high",
+      "familyId": "beneath",
+      "rationale": "To support this sense, a still should show The target is lower than a visible reference object.; Separate vertical position does not prove one object is directly underneath the other. can otherwise be mistaken for it."
+    },
+    {
+      "word": "inside",
+      "partOfSpeech": "preposition",
+      "definition": "Within the enclosing boundaries of something.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The subject lies within a visible enclosing boundary.",
+      "misleadingAlternative": "A subject in front of a transparent container may only appear inside.",
+      "confidence": "high",
+      "familyId": "inside",
+      "rationale": "The deciding cue is The subject lies within a visible enclosing boundary.; A subject in front of a transparent container may only appear inside. could occur without the selected meaning."
+    },
+    {
+      "word": "beside",
+      "partOfSpeech": "preposition",
+      "definition": "At the side of and close to something.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "Two subjects occupy neighboring positions with a small gap or contact.",
+      "misleadingAlternative": "Perspective can make distant objects seem adjacent.",
+      "confidence": "high",
+      "familyId": "beside",
+      "rationale": "An image would need to establish Two subjects occupy neighboring positions with a small gap or contact.. Seeing Perspective can make distant objects seem adjacent. alone would leave the sense uncertain."
+    },
+    {
+      "word": "between",
+      "partOfSpeech": "preposition",
+      "definition": "In the intervening space separating two things.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The subject occupies the gap bounded by two distinct references.",
+      "misleadingAlternative": "Being in front of both references is not necessarily being between them.",
+      "confidence": "high",
+      "familyId": "between",
+      "rationale": "This reading depends on The subject occupies the gap bounded by two distinct references.; Being in front of both references is not necessarily being between them. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "through",
+      "partOfSpeech": "preposition",
+      "definition": "From one side or end of an opening to the other.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "A path or object passes across an opening or bounded passage.",
+      "misleadingAlternative": "A view aligned with an opening may only seem to pass through it.",
+      "confidence": "medium",
+      "familyId": "through",
+      "rationale": "The visible test is A path or object passes across an opening or bounded passage.. A scene with A view aligned with an opening may only seem to pass through it. would not be enough on its own."
+    },
+    {
+      "word": "against",
+      "partOfSpeech": "preposition",
+      "definition": "In contact with and supported or pressed by a surface.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The subject touches the reference surface with pressure or support.",
+      "misleadingAlternative": "Close proximity with a visible gap is not contact.",
+      "confidence": "high",
+      "familyId": "against",
+      "rationale": "To support this sense, a still should show The subject touches the reference surface with pressure or support.; Close proximity with a visible gap is not contact. can otherwise be mistaken for it."
+    },
+    {
+      "word": "attached to",
+      "partOfSpeech": "adjective",
+      "definition": "Connected or fastened to another object.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "A visible joint, fastener, or continuous connection joins the objects.",
+      "misleadingAlternative": "Objects touching may still be separate.",
+      "confidence": "high",
+      "familyId": "attached_to",
+      "rationale": "The deciding cue is A visible joint, fastener, or continuous connection joins the objects.; Objects touching may still be separate. could occur without the selected meaning."
+    },
+    {
+      "word": "overlapping",
+      "partOfSpeech": "adjective",
+      "definition": "Partly covering the extent of another thing.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "One outline obscures part of the other in a shared region.",
+      "misleadingAlternative": "Crossing lines on separate planes may not overlap in depth.",
+      "confidence": "high",
+      "familyId": "overlapping",
+      "rationale": "An image would need to establish One outline obscures part of the other in a shared region.. Seeing Crossing lines on separate planes may not overlap in depth. alone would leave the sense uncertain."
+    },
+    {
+      "word": "stacked",
+      "partOfSpeech": "adjective",
+      "definition": "Placed one on top of another in a stable pile.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "Multiple objects are vertically supported by those below.",
+      "misleadingAlternative": "A tiered display with separate supports may look stacked.",
+      "confidence": "high",
+      "familyId": "stacked",
+      "rationale": "This reading depends on Multiple objects are vertically supported by those below.; A tiered display with separate supports may look stacked. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "interlocked",
+      "partOfSpeech": "adjective",
+      "definition": "Fitted together so that parts catch or pass through one another.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "Parts visibly engage and resist separating in a simple direction.",
+      "misleadingAlternative": "Parts pressed side by side are not necessarily interlocked.",
+      "confidence": "high",
+      "familyId": "interlocked",
+      "rationale": "The visible test is Parts visibly engage and resist separating in a simple direction.. A scene with Parts pressed side by side are not necessarily interlocked. would not be enough on its own."
+    },
+    {
+      "word": "wrapped around",
+      "partOfSpeech": "adjective",
+      "definition": "Curved around another object so as to encircle part of it.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "A band or flexible object bends around the reference object.",
+      "misleadingAlternative": "A flat object crossing the front does not show enclosure.",
+      "confidence": "high",
+      "familyId": "wrapped_around",
+      "rationale": "To support this sense, a still should show A band or flexible object bends around the reference object.; A flat object crossing the front does not show enclosure. can otherwise be mistaken for it."
+    },
+    {
+      "word": "leaning against",
+      "partOfSpeech": "adjective",
+      "definition": "Resting at an angle with support from another surface.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "A tilted subject makes contact with and is supported by the other surface.",
+      "misleadingAlternative": "An angled subject with a gap is merely near it.",
+      "confidence": "high",
+      "familyId": "leaning_against",
+      "rationale": "The deciding cue is A tilted subject makes contact with and is supported by the other surface.; An angled subject with a gap is merely near it. could occur without the selected meaning."
+    },
+    {
+      "word": "hanging from",
+      "partOfSpeech": "adjective",
+      "definition": "Suspended below and supported at a point above.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "A visible attachment above bears the suspended object’s weight.",
+      "misleadingAlternative": "An object below a hook may be independently supported.",
+      "confidence": "high",
+      "familyId": "hanging_from",
+      "rationale": "An image would need to establish A visible attachment above bears the suspended object’s weight.. Seeing An object below a hook may be independently supported. alone would leave the sense uncertain."
+    },
+    {
+      "word": "crossing",
+      "partOfSpeech": "verb",
+      "definition": "Extending from one side of a route or boundary to the other.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation",
+        "action"
+      ],
+      "requiredEvidence": "A subject spans or moves across a visible path or boundary.",
+      "misleadingAlternative": "Being aligned with a road does not show crossing it.",
+      "confidence": "high",
+      "familyId": "crossing",
+      "rationale": "This reading depends on A subject spans or moves across a visible path or boundary.; Being aligned with a road does not show crossing it. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "surrounding",
+      "partOfSpeech": "verb",
+      "definition": "Being positioned on all sides of a central subject.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The surrounding items encircle the subject from multiple directions.",
+      "misleadingAlternative": "Several items on one side do not surround it.",
+      "confidence": "high",
+      "familyId": "surrounding",
+      "rationale": "The visible test is The surrounding items encircle the subject from multiple directions.. A scene with Several items on one side do not surround it. would not be enough on its own."
+    },
+    {
+      "word": "adjacent",
+      "partOfSpeech": "adjective",
+      "definition": "Next to and sharing a boundary with something.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "Two regions share an edge or are directly side by side.",
+      "misleadingAlternative": "A narrow gap means the regions are near but not adjacent.",
+      "confidence": "high",
+      "familyId": "adjacent",
+      "rationale": "To support this sense, a still should show Two regions share an edge or are directly side by side.; A narrow gap means the regions are near but not adjacent. can otherwise be mistaken for it."
+    },
+    {
+      "word": "parallel",
+      "partOfSpeech": "adjective",
+      "definition": "Keeping the same distance apart along their lengths.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "Two extended lines or objects maintain equal separation.",
+      "misleadingAlternative": "A short view may hide convergence outside the frame.",
+      "confidence": "high",
+      "familyId": "parallel",
+      "rationale": "The deciding cue is Two extended lines or objects maintain equal separation.; A short view may hide convergence outside the frame. could occur without the selected meaning."
+    },
+    {
+      "word": "perpendicular",
+      "partOfSpeech": "adjective",
+      "definition": "Meeting at a right angle.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "Two directions meet at approximately ninety degrees.",
+      "misleadingAlternative": "Perspective can distort an angle in the image.",
+      "confidence": "high",
+      "familyId": "perpendicular",
+      "rationale": "An image would need to establish Two directions meet at approximately ninety degrees.. Seeing Perspective can distort an angle in the image. alone would leave the sense uncertain."
+    },
+    {
+      "word": "aligned",
+      "partOfSpeech": "adjective",
+      "definition": "Arranged along the same line or in corresponding positions.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "Relevant edges or centers form a shared line or axis.",
+      "misleadingAlternative": "Objects can be parallel without being aligned.",
+      "confidence": "high",
+      "familyId": "aligned",
+      "rationale": "This reading depends on Relevant edges or centers form a shared line or axis.; Objects can be parallel without being aligned. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "face to face",
+      "partOfSpeech": "adjective",
+      "definition": "Oriented with the front of each subject toward the other.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The fronts or faces are directed toward one another.",
+      "misleadingAlternative": "Two subjects close together may face different directions.",
+      "confidence": "high",
+      "familyId": "face_to_face",
+      "rationale": "The visible test is The fronts or faces are directed toward one another.. A scene with Two subjects close together may face different directions. would not be enough on its own."
+    },
+    {
+      "word": "touching",
+      "partOfSpeech": "adjective",
+      "definition": "In direct physical contact.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The visible boundaries meet with no intervening gap.",
+      "misleadingAlternative": "A shadow or optical overlap can imitate contact.",
+      "confidence": "high",
+      "familyId": "touching",
+      "rationale": "To support this sense, a still should show The visible boundaries meet with no intervening gap.; A shadow or optical overlap can imitate contact. can otherwise be mistaken for it."
+    },
+    {
+      "word": "gripping",
+      "partOfSpeech": "verb",
+      "definition": "Holding firmly by closing a hand or part around something.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation",
+        "action"
+      ],
+      "requiredEvidence": "Digits or a clamp close around the held object.",
+      "misleadingAlternative": "A hand resting on top may not be gripping.",
+      "confidence": "high",
+      "familyId": "gripping",
+      "rationale": "The deciding cue is Digits or a clamp close around the held object.; A hand resting on top may not be gripping. could occur without the selected meaning."
+    },
+    {
+      "word": "tethered to",
+      "partOfSpeech": "adjective",
+      "definition": "Connected by a line or chain that limits movement.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "A cord or chain visibly links the subject to an anchor.",
+      "misleadingAlternative": "A loose line nearby does not establish a connection.",
+      "confidence": "high",
+      "familyId": "tethered_to",
+      "rationale": "An image would need to establish A cord or chain visibly links the subject to an anchor.. Seeing A loose line nearby does not establish a connection. alone would leave the sense uncertain."
+    },
+    {
+      "word": "embedded in",
+      "partOfSpeech": "adjective",
+      "definition": "Fixed within a surrounding material or surface.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "Part of the object penetrates and is held by the surrounding material.",
+      "misleadingAlternative": "An object resting in a shallow indentation may not be embedded.",
+      "confidence": "high",
+      "familyId": "embedded_in",
+      "rationale": "This reading depends on Part of the object penetrates and is held by the surrounding material.; An object resting in a shallow indentation may not be embedded. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "suspended over",
+      "partOfSpeech": "adjective",
+      "definition": "Held above something with a gap beneath it.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The subject is above the reference with visible separation and support.",
+      "misleadingAlternative": "A camera angle may create an apparent gap.",
+      "confidence": "high",
+      "familyId": "suspended_over",
+      "rationale": "The visible test is The subject is above the reference with visible separation and support.. A scene with A camera angle may create an apparent gap. would not be enough on its own."
+    },
+    {
+      "word": "spanning",
+      "partOfSpeech": "verb",
+      "definition": "Extending across the space between two endpoints or supports.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation",
+        "action"
+      ],
+      "requiredEvidence": "A continuous structure reaches across the full interval.",
+      "misleadingAlternative": "A structure near both endpoints may stop short.",
+      "confidence": "high",
+      "familyId": "spanning",
+      "rationale": "To support this sense, a still should show A continuous structure reaches across the full interval.; A structure near both endpoints may stop short. can otherwise be mistaken for it."
+    },
+    {
+      "word": "nestled among",
+      "partOfSpeech": "adjective",
+      "definition": "Settled closely within a group of surrounding objects.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The subject is partly enclosed by several nearby objects.",
+      "misleadingAlternative": "Being in front of a group alone is insufficient.",
+      "confidence": "high",
+      "familyId": "nestled_among",
+      "rationale": "The deciding cue is The subject is partly enclosed by several nearby objects.; Being in front of a group alone is insufficient. could occur without the selected meaning."
+    },
+    {
+      "word": "draped over",
+      "partOfSpeech": "adjective",
+      "definition": "Lying loosely across and hanging down from another object.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "Flexible material rests on top and falls along a side.",
+      "misleadingAlternative": "A stiff panel covering the object does not drape.",
+      "confidence": "high",
+      "familyId": "draped_over",
+      "rationale": "An image would need to establish Flexible material rests on top and falls along a side.. Seeing A stiff panel covering the object does not drape. alone would leave the sense uncertain."
+    },
+    {
+      "word": "coiled around",
+      "partOfSpeech": "adjective",
+      "definition": "Wound in loops that encircle another object.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "Repeated loops pass around the reference object.",
+      "misleadingAlternative": "A coil resting beside it is not around it.",
+      "confidence": "high",
+      "familyId": "coiled_around",
+      "rationale": "This reading depends on Repeated loops pass around the reference object.; A coil resting beside it is not around it. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "intersecting",
+      "partOfSpeech": "verb",
+      "definition": "Passing across or meeting at a common point.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation",
+        "action"
+      ],
+      "requiredEvidence": "Two paths or structures share a crossing point.",
+      "misleadingAlternative": "Near approaches that do not meet are not intersections.",
+      "confidence": "high",
+      "familyId": "intersecting",
+      "rationale": "The visible test is Two paths or structures share a crossing point.. A scene with Near approaches that do not meet are not intersections. would not be enough on its own."
+    },
+    {
+      "word": "diverging",
+      "partOfSpeech": "verb",
+      "definition": "Moving or extending apart from a common direction or point.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation",
+        "action"
+      ],
+      "requiredEvidence": "Two paths spread farther apart from a shared origin.",
+      "misleadingAlternative": "Parallel paths are separated but not diverging.",
+      "confidence": "high",
+      "familyId": "diverging",
+      "rationale": "To support this sense, a still should show Two paths spread farther apart from a shared origin.; Parallel paths are separated but not diverging. can otherwise be mistaken for it."
+    },
+    {
+      "word": "converging",
+      "partOfSpeech": "verb",
+      "definition": "Moving or extending toward a common point.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation",
+        "action"
+      ],
+      "requiredEvidence": "Two paths narrow toward the same visible point.",
+      "misleadingAlternative": "Perspective may make parallel lines appear to meet.",
+      "confidence": "medium",
+      "familyId": "converging",
+      "rationale": "The deciding cue is Two paths narrow toward the same visible point.; Perspective may make parallel lines appear to meet. could occur without the selected meaning."
+    },
+    {
+      "word": "in front of",
+      "partOfSpeech": "preposition",
+      "definition": "Closer to the viewer than another object.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The subject occludes some part of the reference from the camera view.",
+      "misleadingAlternative": "Image overlap does not establish real-world depth if the scene is a collage.",
+      "confidence": "high",
+      "familyId": "in_front_of",
+      "rationale": "An image would need to establish The subject occludes some part of the reference from the camera view.. Seeing Image overlap does not establish real-world depth if the scene is a collage. alone would leave the sense uncertain."
+    },
+    {
+      "word": "behind",
+      "partOfSpeech": "preposition",
+      "definition": "Farther from the viewer than another object.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The reference object partly occludes the subject.",
+      "misleadingAlternative": "A graphic layer can create the same appearance without physical depth.",
+      "confidence": "high",
+      "familyId": "behind",
+      "rationale": "This reading depends on The reference object partly occludes the subject.; A graphic layer can create the same appearance without physical depth. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "to the left of",
+      "partOfSpeech": "preposition",
+      "definition": "Positioned on the viewer’s left side of a reference.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The subject appears left of the reference in the frame.",
+      "misleadingAlternative": "The phrase is viewer-relative and may differ from the subject’s own left.",
+      "confidence": "high",
+      "familyId": "to_the_left_of",
+      "rationale": "The visible test is The subject appears left of the reference in the frame.. A scene with The phrase is viewer-relative and may differ from the subject’s own left. would not be enough on its own."
+    },
+    {
+      "word": "above",
+      "partOfSpeech": "preposition",
+      "definition": "At a higher image or physical position than something else.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The subject is higher than a clearly visible reference.",
+      "misleadingAlternative": "The image alone may not reveal gravity or actual elevation.",
+      "confidence": "high",
+      "familyId": "above",
+      "rationale": "To support this sense, a still should show The subject is higher than a clearly visible reference.; The image alone may not reveal gravity or actual elevation. can otherwise be mistaken for it."
+    },
+    {
+      "word": "near",
+      "partOfSpeech": "preposition",
+      "definition": "A short distance from something.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The gap is small relative to the surrounding scene.",
+      "misleadingAlternative": "Wide-angle perspective can distort perceived distance.",
+      "confidence": "medium",
+      "familyId": "near",
+      "rationale": "The deciding cue is The gap is small relative to the surrounding scene.; Wide-angle perspective can distort perceived distance. could occur without the selected meaning."
+    },
+    {
+      "word": "far from",
+      "partOfSpeech": "preposition",
+      "definition": "At a substantial distance from something.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "A wide interval or clear scale cues separate the subjects.",
+      "misleadingAlternative": "A tight crop may hide intervening distance.",
+      "confidence": "medium",
+      "familyId": "far_from",
+      "rationale": "An image would need to establish A wide interval or clear scale cues separate the subjects.. Seeing A tight crop may hide intervening distance. alone would leave the sense uncertain."
+    },
+    {
+      "word": "in contact with",
+      "partOfSpeech": "preposition",
+      "definition": "Touching a surface or object directly.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The two boundaries meet without a visible gap.",
+      "misleadingAlternative": "A cast shadow can resemble a contact edge.",
+      "confidence": "high",
+      "familyId": "in_contact_with",
+      "rationale": "This reading depends on The two boundaries meet without a visible gap.; A cast shadow can resemble a contact edge. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "connected to",
+      "partOfSpeech": "preposition",
+      "definition": "Linked by a continuous physical path or fastener.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "A visible bridge, cord, joint, or other continuous link joins them.",
+      "misleadingAlternative": "Sharing a location does not establish a connection.",
+      "confidence": "high",
+      "familyId": "connected_to",
+      "rationale": "The visible test is A visible bridge, cord, joint, or other continuous link joins them.. A scene with Sharing a location does not establish a connection. would not be enough on its own."
+    },
+    {
+      "word": "supported by",
+      "partOfSpeech": "preposition",
+      "definition": "Resting on or held up by another structure.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "The lower or attached structure bears the subject’s weight.",
+      "misleadingAlternative": "Touching a support does not prove that it carries weight.",
+      "confidence": "high",
+      "familyId": "supported_by",
+      "rationale": "To support this sense, a still should show The lower or attached structure bears the subject’s weight.; Touching a support does not prove that it carries weight. can otherwise be mistaken for it."
+    },
+    {
+      "word": "piled on",
+      "partOfSpeech": "preposition",
+      "definition": "Resting in a heap atop a surface or other objects.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "Multiple items form a heap with weight borne by lower layers.",
+      "misleadingAlternative": "A neat row on a shelf is not piled.",
+      "confidence": "high",
+      "familyId": "piled_on",
+      "rationale": "The deciding cue is Multiple items form a heap with weight borne by lower layers.; A neat row on a shelf is not piled. could occur without the selected meaning."
+    },
+    {
+      "word": "tucked beneath",
+      "partOfSpeech": "adjective",
+      "definition": "Partly inserted under an edge or object.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation"
+      ],
+      "requiredEvidence": "One edge disappears beneath the covering object.",
+      "misleadingAlternative": "Being entirely behind it does not show insertion underneath.",
+      "confidence": "high",
+      "familyId": "tucked_beneath",
+      "rationale": "An image would need to establish One edge disappears beneath the covering object.. Seeing Being entirely behind it does not show insertion underneath. alone would leave the sense uncertain."
+    },
+    {
+      "word": "straddling",
+      "partOfSpeech": "verb",
+      "definition": "Positioning across and on both sides of a narrow object or boundary.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation",
+        "action"
+      ],
+      "requiredEvidence": "The subject’s parts lie on opposite sides of the reference.",
+      "misleadingAlternative": "Standing beside the boundary does not straddle it.",
+      "confidence": "high",
+      "familyId": "straddling",
+      "rationale": "This reading depends on The subject’s parts lie on opposite sides of the reference.; Standing beside the boundary does not straddle it. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "sharing",
+      "partOfSpeech": "verb",
+      "definition": "Having a common boundary, portion, or resource together.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation",
+        "abstract"
+      ],
+      "requiredEvidence": "The image can show joint access or a shared physical item, but not consent or ownership.",
+      "misleadingAlternative": "Two people near one item do not prove that they share it.",
+      "confidence": "medium",
+      "familyId": "sharing",
+      "rationale": "The visible test is The image can show joint access or a shared physical item, but not consent or ownership.. A scene with Two people near one item do not prove that they share it. would not be enough on its own."
+    },
+    {
+      "word": "descended from",
+      "partOfSpeech": "preposition",
+      "definition": "Having an ancestor or earlier source from which something originated.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation",
+        "abstract"
+      ],
+      "requiredEvidence": "No single still image can prove ancestry or historical origin.",
+      "misleadingAlternative": "Resemblance between two subjects is not proof of descent.",
+      "confidence": "medium",
+      "familyId": "descended_from",
+      "rationale": "To support this sense, a still should show No single still image can prove ancestry or historical origin.; Resemblance between two subjects is not proof of descent. can otherwise be mistaken for it."
+    },
+    {
+      "word": "because of",
+      "partOfSpeech": "preposition",
+      "definition": "Having something as the cause or reason.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation",
+        "abstract"
+      ],
+      "requiredEvidence": "A still image cannot establish the causal link by appearance alone.",
+      "misleadingAlternative": "Two events shown together may be coincidental.",
+      "confidence": "medium",
+      "familyId": "because_of",
+      "rationale": "The deciding cue is A still image cannot establish the causal link by appearance alone.; Two events shown together may be coincidental. could occur without the selected meaning."
+    },
+    {
+      "word": "before",
+      "partOfSpeech": "preposition",
+      "definition": "Earlier than another event in time.",
+      "primaryClass": "relation",
+      "labels": [
+        "relation",
+        "abstract"
+      ],
+      "requiredEvidence": "A single frame cannot establish event order without external temporal evidence.",
+      "misleadingAlternative": "Spatial placement in a picture does not prove sequence.",
+      "confidence": "medium",
+      "familyId": "before",
+      "rationale": "An image would need to establish A single frame cannot establish event order without external temporal evidence.. Seeing Spatial placement in a picture does not prove sequence. alone would leave the sense uncertain."
+    },
+    {
+      "word": "know",
+      "partOfSpeech": "verb",
+      "definition": "To have information or understanding in one’s mind.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Knowledge is private; no still image verifies that the person possesses the information.",
+      "misleadingAlternative": "A confident expression or pointing gesture could be mistaken for knowing.",
+      "confidence": "high",
+      "familyId": "know",
+      "rationale": "This reading depends on Knowledge is private; no still image verifies that the person possesses the information.; A confident expression or pointing gesture could be mistaken for knowing. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "believe",
+      "partOfSpeech": "verb",
+      "definition": "To accept a claim as true without direct proof.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Belief itself is not visible, even when a person states or signals it.",
+      "misleadingAlternative": "A person repeating a sentence may not believe it.",
+      "confidence": "high",
+      "familyId": "believe",
+      "rationale": "The visible test is Belief itself is not visible, even when a person states or signals it.. A scene with A person repeating a sentence may not believe it. would not be enough on its own."
+    },
+    {
+      "word": "own",
+      "partOfSpeech": "verb",
+      "definition": "To have legal or recognized possession of something.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "A still image can show holding but cannot establish recognized ownership.",
+      "misleadingAlternative": "Possession at the moment is not legal title.",
+      "confidence": "high",
+      "familyId": "own",
+      "rationale": "To support this sense, a still should show A still image can show holding but cannot establish recognized ownership.; Possession at the moment is not legal title. can otherwise be mistaken for it."
+    },
+    {
+      "word": "belong to",
+      "partOfSpeech": "verb",
+      "definition": "To be the property or member of a person or group.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Membership or property status requires facts outside the visible arrangement.",
+      "misleadingAlternative": "Being used by someone does not show that an object belongs to them.",
+      "confidence": "high",
+      "familyId": "belong_to",
+      "rationale": "The deciding cue is Membership or property status requires facts outside the visible arrangement.; Being used by someone does not show that an object belongs to them. could occur without the selected meaning."
+    },
+    {
+      "word": "owe",
+      "partOfSpeech": "verb",
+      "definition": "To be obligated to repay or provide something.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Debt is an obligation that cannot be read from a still scene alone.",
+      "misleadingAlternative": "An exchange of money may be a gift rather than repayment.",
+      "confidence": "high",
+      "familyId": "owe",
+      "rationale": "An image would need to establish Debt is an obligation that cannot be read from a still scene alone.. Seeing An exchange of money may be a gift rather than repayment. alone would leave the sense uncertain."
+    },
+    {
+      "word": "promise",
+      "partOfSpeech": "verb",
+      "definition": "To commit oneself to a future action or outcome.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "The commitment concerns future intent and requires context beyond a frame.",
+      "misleadingAlternative": "An apparent agreement gesture may be ceremonial or staged.",
+      "confidence": "high",
+      "familyId": "promise",
+      "rationale": "This reading depends on The commitment concerns future intent and requires context beyond a frame.; An apparent agreement gesture may be ceremonial or staged. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "forgive",
+      "partOfSpeech": "verb",
+      "definition": "To stop holding resentment for a wrong.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "The change in resentment is private and not directly visible.",
+      "misleadingAlternative": "A smile or embrace does not prove forgiveness.",
+      "confidence": "high",
+      "familyId": "forgive",
+      "rationale": "The visible test is The change in resentment is private and not directly visible.. A scene with A smile or embrace does not prove forgiveness. would not be enough on its own."
+    },
+    {
+      "word": "trust",
+      "partOfSpeech": "verb",
+      "definition": "To rely on another person as dependable or honest.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Reliance and confidence cannot be confirmed from posture alone.",
+      "misleadingAlternative": "Physical closeness may occur without trust.",
+      "confidence": "high",
+      "familyId": "trust",
+      "rationale": "To support this sense, a still should show Reliance and confidence cannot be confirmed from posture alone.; Physical closeness may occur without trust. can otherwise be mistaken for it."
+    },
+    {
+      "word": "fear",
+      "partOfSpeech": "noun",
+      "definition": "An unpleasant feeling caused by a perceived threat.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "state"
+      ],
+      "requiredEvidence": "The feeling is private; a still image can show only possible outward signs.",
+      "misleadingAlternative": "A tense face might reflect concentration or discomfort instead.",
+      "confidence": "high",
+      "familyId": "fear",
+      "rationale": "The deciding cue is The feeling is private; a still image can show only possible outward signs.; A tense face might reflect concentration or discomfort instead. could occur without the selected meaning."
+    },
+    {
+      "word": "hope",
+      "partOfSpeech": "noun",
+      "definition": "A desire for a future outcome combined with expectation it may happen.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Future expectation is mental and cannot be established by a still frame.",
+      "misleadingAlternative": "Looking toward a distant object does not prove hope.",
+      "confidence": "high",
+      "familyId": "hope",
+      "rationale": "An image would need to establish Future expectation is mental and cannot be established by a still frame.. Seeing Looking toward a distant object does not prove hope. alone would leave the sense uncertain."
+    },
+    {
+      "word": "intention",
+      "partOfSpeech": "noun",
+      "definition": "A plan or purpose held in the mind before acting.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "A plan is not visible until it produces an action, and the same action can have different purposes.",
+      "misleadingAlternative": "An object being carried does not reveal why it is carried.",
+      "confidence": "high",
+      "familyId": "intention",
+      "rationale": "This reading depends on A plan is not visible until it produces an action, and the same action can have different purposes.; An object being carried does not reveal why it is carried. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "permission",
+      "partOfSpeech": "noun",
+      "definition": "Consent or authorization for an action.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Authorization depends on an agreement or rule not visible in the act itself.",
+      "misleadingAlternative": "An open door does not prove permission to enter.",
+      "confidence": "high",
+      "familyId": "permission",
+      "rationale": "The visible test is Authorization depends on an agreement or rule not visible in the act itself.. A scene with An open door does not prove permission to enter. would not be enough on its own."
+    },
+    {
+      "word": "consent",
+      "partOfSpeech": "noun",
+      "definition": "Freely given agreement to an action or proposal.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Voluntary agreement requires context and cannot be inferred from a still pose.",
+      "misleadingAlternative": "Silence or physical proximity does not establish agreement.",
+      "confidence": "high",
+      "familyId": "consent",
+      "rationale": "To support this sense, a still should show Voluntary agreement requires context and cannot be inferred from a still pose.; Silence or physical proximity does not establish agreement. can otherwise be mistaken for it."
+    },
+    {
+      "word": "guilt",
+      "partOfSpeech": "noun",
+      "definition": "Responsibility for a wrong action, often accompanied by remorse.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "state"
+      ],
+      "requiredEvidence": "Responsibility and remorse are not image-verifiable facts.",
+      "misleadingAlternative": "A downcast posture does not prove wrongdoing.",
+      "confidence": "high",
+      "familyId": "guilt",
+      "rationale": "The deciding cue is Responsibility and remorse are not image-verifiable facts.; A downcast posture does not prove wrongdoing. could occur without the selected meaning."
+    },
+    {
+      "word": "innocence",
+      "partOfSpeech": "noun",
+      "definition": "The condition of not having committed an alleged wrong.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "The absence of wrongdoing cannot be established by appearance.",
+      "misleadingAlternative": "A calm or youthful appearance is not proof of innocence.",
+      "confidence": "high",
+      "familyId": "innocence",
+      "rationale": "An image would need to establish The absence of wrongdoing cannot be established by appearance.. Seeing A calm or youthful appearance is not proof of innocence. alone would leave the sense uncertain."
+    },
+    {
+      "word": "legal",
+      "partOfSpeech": "adjective",
+      "definition": "Permitted or recognized under the applicable law.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Legality depends on jurisdiction and facts beyond the visible scene.",
+      "misleadingAlternative": "A uniform or official-looking stamp does not prove lawful status.",
+      "confidence": "high",
+      "familyId": "legal",
+      "rationale": "This reading depends on Legality depends on jurisdiction and facts beyond the visible scene.; A uniform or official-looking stamp does not prove lawful status. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "illegal",
+      "partOfSpeech": "adjective",
+      "definition": "Prohibited by the applicable law.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Whether conduct violates a rule is not shown by the act alone.",
+      "misleadingAlternative": "An unusual act is not necessarily unlawful.",
+      "confidence": "high",
+      "familyId": "illegal",
+      "rationale": "The visible test is Whether conduct violates a rule is not shown by the act alone.. A scene with An unusual act is not necessarily unlawful. would not be enough on its own."
+    },
+    {
+      "word": "married",
+      "partOfSpeech": "adjective",
+      "definition": "Joined to another person in a legally or socially recognized marriage.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Marital status depends on a recognized bond, not appearance.",
+      "misleadingAlternative": "Two people wearing rings may not be married.",
+      "confidence": "high",
+      "familyId": "married",
+      "rationale": "To support this sense, a still should show Marital status depends on a recognized bond, not appearance.; Two people wearing rings may not be married. can otherwise be mistaken for it."
+    },
+    {
+      "word": "employed",
+      "partOfSpeech": "adjective",
+      "definition": "Having paid work under an employer or organization.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Employment is a formal relation not guaranteed by wearing work clothes.",
+      "misleadingAlternative": "A person at a workplace may be a visitor.",
+      "confidence": "high",
+      "familyId": "employed",
+      "rationale": "The deciding cue is Employment is a formal relation not guaranteed by wearing work clothes.; A person at a workplace may be a visitor. could occur without the selected meaning."
+    },
+    {
+      "word": "eligible",
+      "partOfSpeech": "adjective",
+      "definition": "Meeting the conditions required for a benefit or role.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Eligibility depends on criteria and records unavailable in a still image.",
+      "misleadingAlternative": "A person’s appearance cannot establish qualifications.",
+      "confidence": "high",
+      "familyId": "eligible",
+      "rationale": "An image would need to establish Eligibility depends on criteria and records unavailable in a still image.. Seeing A person’s appearance cannot establish qualifications. alone would leave the sense uncertain."
+    },
+    {
+      "word": "popular",
+      "partOfSpeech": "adjective",
+      "definition": "Liked or admired by many people.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Popularity is a broad social pattern, not a visible property of one scene.",
+      "misleadingAlternative": "A crowd around someone may be temporary or unrelated.",
+      "confidence": "high",
+      "familyId": "popular",
+      "rationale": "This reading depends on Popularity is a broad social pattern, not a visible property of one scene.; A crowd around someone may be temporary or unrelated. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "famous",
+      "partOfSpeech": "adjective",
+      "definition": "Widely known by many people.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Public recognition requires evidence beyond a person’s appearance.",
+      "misleadingAlternative": "A crowd or camera cannot prove fame.",
+      "confidence": "high",
+      "familyId": "famous",
+      "rationale": "The visible test is Public recognition requires evidence beyond a person’s appearance.. A scene with A crowd or camera cannot prove fame. would not be enough on its own."
+    },
+    {
+      "word": "fair",
+      "partOfSpeech": "adjective",
+      "definition": "Treating people according to impartial and justified rules.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Fairness depends on rules, history, and comparable cases not visible at one moment.",
+      "misleadingAlternative": "Equal-looking portions do not alone establish fair treatment.",
+      "confidence": "high",
+      "familyId": "fair",
+      "rationale": "To support this sense, a still should show Fairness depends on rules, history, and comparable cases not visible at one moment.; Equal-looking portions do not alone establish fair treatment. can otherwise be mistaken for it."
+    },
+    {
+      "word": "unfair",
+      "partOfSpeech": "adjective",
+      "definition": "Treating people in a way that is unjust or unequal without good reason.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Judgment of injustice requires context unavailable from a single arrangement.",
+      "misleadingAlternative": "Unequal portions may be justified by different needs.",
+      "confidence": "high",
+      "familyId": "unfair",
+      "rationale": "The deciding cue is Judgment of injustice requires context unavailable from a single arrangement.; Unequal portions may be justified by different needs. could occur without the selected meaning."
+    },
+    {
+      "word": "cause",
+      "partOfSpeech": "noun",
+      "definition": "An event or condition that produces another event or outcome.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Causation requires a connection that a still image cannot prove.",
+      "misleadingAlternative": "Co-occurrence does not show that one event produced the other.",
+      "confidence": "high",
+      "familyId": "cause",
+      "rationale": "An image would need to establish Causation requires a connection that a still image cannot prove.. Seeing Co-occurrence does not show that one event produced the other. alone would leave the sense uncertain."
+    },
+    {
+      "word": "consequence",
+      "partOfSpeech": "noun",
+      "definition": "An outcome that follows from an action or event.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "The outcome’s history cannot be reconstructed from one frame alone.",
+      "misleadingAlternative": "A nearby object may not have resulted from the depicted action.",
+      "confidence": "high",
+      "familyId": "consequence",
+      "rationale": "This reading depends on The outcome’s history cannot be reconstructed from one frame alone.; A nearby object may not have resulted from the depicted action. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "earlier",
+      "partOfSpeech": "adverb",
+      "definition": "At a time preceding another time or event.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Temporal order is not recoverable from a static scene by itself.",
+      "misleadingAlternative": "Left-to-right placement is not a timeline unless defined as one.",
+      "confidence": "high",
+      "familyId": "earlier",
+      "rationale": "The visible test is Temporal order is not recoverable from a static scene by itself.. A scene with Left-to-right placement is not a timeline unless defined as one. would not be enough on its own."
+    },
+    {
+      "word": "eventually",
+      "partOfSpeech": "adverb",
+      "definition": "At some later point after a period of time.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "A future endpoint cannot be observed in a still image.",
+      "misleadingAlternative": "A subject near a destination does not prove eventual arrival.",
+      "confidence": "high",
+      "familyId": "eventually",
+      "rationale": "To support this sense, a still should show A future endpoint cannot be observed in a still image.; A subject near a destination does not prove eventual arrival. can otherwise be mistaken for it."
+    },
+    {
+      "word": "often",
+      "partOfSpeech": "adverb",
+      "definition": "On many occasions or with high frequency.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Frequency requires repeated observations over time.",
+      "misleadingAlternative": "One occurrence cannot establish that it happens often.",
+      "confidence": "high",
+      "familyId": "often",
+      "rationale": "The deciding cue is Frequency requires repeated observations over time.; One occurrence cannot establish that it happens often. could occur without the selected meaning."
+    },
+    {
+      "word": "usually",
+      "partOfSpeech": "adverb",
+      "definition": "In most instances or on the customary occasion.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "A usual pattern requires multiple instances, not a single frame.",
+      "misleadingAlternative": "A scene that looks routine may be exceptional.",
+      "confidence": "high",
+      "familyId": "usually",
+      "rationale": "An image would need to establish A usual pattern requires multiple instances, not a single frame.. Seeing A scene that looks routine may be exceptional. alone would leave the sense uncertain."
+    },
+    {
+      "word": "always",
+      "partOfSpeech": "adverb",
+      "definition": "On every occasion or at all times.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "An absolute claim spans time beyond any single observation.",
+      "misleadingAlternative": "One consistent-looking example cannot prove always.",
+      "confidence": "high",
+      "familyId": "always",
+      "rationale": "This reading depends on An absolute claim spans time beyond any single observation.; One consistent-looking example cannot prove always. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "rarely",
+      "partOfSpeech": "adverb",
+      "definition": "On very few occasions.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Rarity is a frequency claim requiring a comparison set.",
+      "misleadingAlternative": "An unusual-looking scene does not establish how often it occurs.",
+      "confidence": "high",
+      "familyId": "rarely",
+      "rationale": "The visible test is Rarity is a frequency claim requiring a comparison set.. A scene with An unusual-looking scene does not establish how often it occurs. would not be enough on its own."
+    },
+    {
+      "word": "possible",
+      "partOfSpeech": "adjective",
+      "definition": "Able to happen or exist, though not certain.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Possibility is modal rather than a directly visible feature.",
+      "misleadingAlternative": "An imagined depiction does not prove real-world feasibility.",
+      "confidence": "high",
+      "familyId": "possible",
+      "rationale": "To support this sense, a still should show Possibility is modal rather than a directly visible feature.; An imagined depiction does not prove real-world feasibility. can otherwise be mistaken for it."
+    },
+    {
+      "word": "necessary",
+      "partOfSpeech": "adjective",
+      "definition": "Required so that an outcome or rule can hold.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Necessity depends on a rule or counterfactual that a still image cannot display.",
+      "misleadingAlternative": "An item present in a scene may be optional.",
+      "confidence": "high",
+      "familyId": "necessary",
+      "rationale": "The deciding cue is Necessity depends on a rule or counterfactual that a still image cannot display.; An item present in a scene may be optional. could occur without the selected meaning."
+    },
+    {
+      "word": "equal",
+      "partOfSpeech": "adjective",
+      "definition": "The same in value, amount, status, or rights.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "The relevant measure of equality must be specified and may not be visible.",
+      "misleadingAlternative": "Matching size does not prove equal status or value.",
+      "confidence": "high",
+      "familyId": "equal",
+      "rationale": "An image would need to establish The relevant measure of equality must be specified and may not be visible.. Seeing Matching size does not prove equal status or value. alone would leave the sense uncertain."
+    },
+    {
+      "word": "valuable",
+      "partOfSpeech": "adjective",
+      "definition": "Worth a great deal in money, usefulness, or importance.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "state"
+      ],
+      "requiredEvidence": "Value depends on a market or purpose outside visible appearance.",
+      "misleadingAlternative": "An ornate object may have little monetary worth.",
+      "confidence": "high",
+      "familyId": "valuable",
+      "rationale": "This reading depends on Value depends on a market or purpose outside visible appearance.; An ornate object may have little monetary worth. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "important",
+      "partOfSpeech": "adjective",
+      "definition": "Having substantial significance or influence.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Importance is evaluated relative to a goal or context.",
+      "misleadingAlternative": "Prominent placement in a picture does not prove significance.",
+      "confidence": "high",
+      "familyId": "important",
+      "rationale": "The visible test is Importance is evaluated relative to a goal or context.. A scene with Prominent placement in a picture does not prove significance. would not be enough on its own."
+    },
+    {
+      "word": "safe",
+      "partOfSpeech": "adjective",
+      "definition": "Free from unacceptable risk of harm in the relevant situation.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "state"
+      ],
+      "requiredEvidence": "Risk depends on unseen conditions and standards beyond the frame.",
+      "misleadingAlternative": "Protective gear does not prove an activity is safe.",
+      "confidence": "high",
+      "familyId": "safe",
+      "rationale": "To support this sense, a still should show Risk depends on unseen conditions and standards beyond the frame.; Protective gear does not prove an activity is safe. can otherwise be mistaken for it."
+    },
+    {
+      "word": "dangerous",
+      "partOfSpeech": "adjective",
+      "definition": "Likely to cause harm under relevant conditions.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "state"
+      ],
+      "requiredEvidence": "Likelihood of harm depends on context and cannot be settled by appearance alone.",
+      "misleadingAlternative": "A dramatic-looking object may be harmless.",
+      "confidence": "high",
+      "familyId": "dangerous",
+      "rationale": "The deciding cue is Likelihood of harm depends on context and cannot be settled by appearance alone.; A dramatic-looking object may be harmless. could occur without the selected meaning."
+    },
+    {
+      "word": "normal",
+      "partOfSpeech": "adjective",
+      "definition": "Conforming to what is usual or expected in a particular group or setting.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "The comparison group and expectation are not inherent in the visible scene.",
+      "misleadingAlternative": "Unfamiliar appearance does not establish abnormality.",
+      "confidence": "high",
+      "familyId": "normal",
+      "rationale": "An image would need to establish The comparison group and expectation are not inherent in the visible scene.. Seeing Unfamiliar appearance does not establish abnormality. alone would leave the sense uncertain."
+    },
+    {
+      "word": "polite",
+      "partOfSpeech": "adjective",
+      "definition": "Showing socially considerate behavior according to local conventions.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Courtesy depends on social norms, intention, and context beyond posture.",
+      "misleadingAlternative": "A bow can be greeting, performance, or obligation.",
+      "confidence": "high",
+      "familyId": "polite",
+      "rationale": "This reading depends on Courtesy depends on social norms, intention, and context beyond posture.; A bow can be greeting, performance, or obligation. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "rude",
+      "partOfSpeech": "adjective",
+      "definition": "Showing disregard for social courtesy or respect.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation"
+      ],
+      "requiredEvidence": "Whether conduct breaches a norm depends on context and local convention.",
+      "misleadingAlternative": "An interrupted gesture may look discourteous without being so.",
+      "confidence": "high",
+      "familyId": "rude",
+      "rationale": "The visible test is Whether conduct breaches a norm depends on context and local convention.. A scene with An interrupted gesture may look discourteous without being so. would not be enough on its own."
+    },
+    {
+      "word": "honest",
+      "partOfSpeech": "adjective",
+      "definition": "Truthful and free from deliberate deception.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Truthfulness concerns what a speaker knows and intends.",
+      "misleadingAlternative": "A sincere expression does not verify the statement.",
+      "confidence": "high",
+      "familyId": "honest",
+      "rationale": "To support this sense, a still should show Truthfulness concerns what a speaker knows and intends.; A sincere expression does not verify the statement. can otherwise be mistaken for it."
+    },
+    {
+      "word": "accurate",
+      "partOfSpeech": "adjective",
+      "definition": "Correct and faithful to the relevant facts or measurement.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Correctness requires comparing the claim or result with a reference.",
+      "misleadingAlternative": "Precise-looking equipment does not prove a correct reading.",
+      "confidence": "high",
+      "familyId": "accurate",
+      "rationale": "The deciding cue is Correctness requires comparing the claim or result with a reference.; Precise-looking equipment does not prove a correct reading. could occur without the selected meaning."
+    },
+    {
+      "word": "remember",
+      "partOfSpeech": "verb",
+      "definition": "To retain or bring information from the past to mind.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Remembering is a mental event that is not directly visible.",
+      "misleadingAlternative": "Looking at an old photograph does not prove what is recalled.",
+      "confidence": "high",
+      "familyId": "remember",
+      "rationale": "An image would need to establish Remembering is a mental event that is not directly visible.. Seeing Looking at an old photograph does not prove what is recalled. alone would leave the sense uncertain."
+    },
+    {
+      "word": "understand",
+      "partOfSpeech": "verb",
+      "definition": "To grasp the meaning or significance of something.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract"
+      ],
+      "requiredEvidence": "Comprehension is mental; a response can be memorized or mistaken.",
+      "misleadingAlternative": "Nodding does not establish understanding.",
+      "confidence": "high",
+      "familyId": "understand",
+      "rationale": "This reading depends on Comprehension is mental; a response can be memorized or mistaken.; Nodding does not establish understanding. is a plausible lookalike but does not settle it."
+    },
+    {
+      "word": "regret",
+      "partOfSpeech": "verb",
+      "definition": "To feel sorrow or disappointment about a past action or outcome.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "state"
+      ],
+      "requiredEvidence": "The feeling and its object are private and require context.",
+      "misleadingAlternative": "A downcast face does not establish regret.",
+      "confidence": "high",
+      "familyId": "regret",
+      "rationale": "The visible test is The feeling and its object are private and require context.. A scene with A downcast face does not establish regret. would not be enough on its own."
+    },
+    {
+      "word": "belonging",
+      "partOfSpeech": "noun",
+      "definition": "A sense of being accepted as part of a group or place.",
+      "primaryClass": "abstract",
+      "labels": [
+        "abstract",
+        "relation",
+        "state"
+      ],
+      "requiredEvidence": "Acceptance and felt membership cannot be inferred from physical grouping.",
+      "misleadingAlternative": "Standing among a group does not show feeling included.",
+      "confidence": "high",
+      "familyId": "belonging",
+      "rationale": "To support this sense, a still should show Acceptance and felt membership cannot be inferred from physical grouping.; Standing among a group does not show feeling included. can otherwise be mistaken for it."
+    }
+  ]
+}
