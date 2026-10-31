@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "role": "current-meaning-category-classifier",
+  "modelType": "mlp",
+  "artifact": "tests/fixtures/meaning-taxonomy/expanded-1000/classifier.json",
+  "artifactFileSha256": "38ca941fd61eb3636cc5b8f7675bb883ead5a8baf8a9f4474429360e45e7cf4f",
+  "selection": "docs/meaning-taxonomy-training/expanded-1000/selection.json",
+  "confirmation": "docs/meaning-taxonomy-training/expanded-1000/report.json",
+  "productionPersonalizerChanged": false
+}

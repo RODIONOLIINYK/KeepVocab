@@ -16,6 +16,11 @@ records real-batch fitting, learning curves, the 97% precision target search,
 frozen-model error analysis, mobile inference cost, a reviewed text training
 extension, and reviewed image crops. Original results below remain frozen.
 
+The later [1,000-example experiment](expanded-1000/README.md) adds balanced
+training, fresh grouped evaluation, and an explicit cheaper-linear replacement
+rule. Its current selected artifact is recorded separately; the original models
+and results below remain frozen.
+
 ## Result and interpretation
 
 | Validation-selected model | Validation macro-F1 | Test macro-F1 | Test exact label-set match | Parameters |

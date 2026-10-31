@@ -1,0 +1,900 @@
+{
+  "schemaVersion": 1,
+  "selectionFileSha256": "9b1bb164d111a144a759e40002c586c9e98ac9bfae0fafbb535412b1bfb60e9b",
+  "selectedArchitecture": "32",
+  "freshTestCount": 120,
+  "testUsedForArchitectureOrHyperparameterSelection": false,
+  "results": {
+    "linear": {
+      "test": {
+        "count": 120,
+        "macroF1": 0.8130263349069087,
+        "microF1": 0.8116883116883117,
+        "exactMatch": 0.6083333333333333,
+        "bce": 0.16767756484460755,
+        "brier": 0.04933634638686238,
+        "macroAveragePrecision": 0.8900550260302156,
+        "threshold": 0.28708202107421127,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 26,
+            "predictedPositive": 21,
+            "tp": 19,
+            "fp": 2,
+            "fn": 7,
+            "precision": 0.9047619047619048,
+            "recall": 0.7307692307692307,
+            "f1": 0.8085106382978723,
+            "averagePrecision": 0.9144433557623366
+          },
+          "place": {
+            "positiveSupport": 20,
+            "predictedPositive": 21,
+            "tp": 20,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9523809523809523,
+            "recall": 1.0,
+            "f1": 0.975609756097561,
+            "averagePrecision": 0.9976190476190476
+          },
+          "action": {
+            "positiveSupport": 27,
+            "predictedPositive": 24,
+            "tp": 22,
+            "fp": 2,
+            "fn": 5,
+            "precision": 0.9166666666666666,
+            "recall": 0.8148148148148148,
+            "f1": 0.8627450980392157,
+            "averagePrecision": 0.9381936342502571
+          },
+          "state": {
+            "positiveSupport": 20,
+            "predictedPositive": 37,
+            "tp": 19,
+            "fp": 18,
+            "fn": 1,
+            "precision": 0.5135135135135135,
+            "recall": 0.95,
+            "f1": 0.6666666666666666,
+            "averagePrecision": 0.8760543612368427
+          },
+          "relation": {
+            "positiveSupport": 20,
+            "predictedPositive": 29,
+            "tp": 15,
+            "fp": 14,
+            "fn": 5,
+            "precision": 0.5172413793103449,
+            "recall": 0.75,
+            "f1": 0.6122448979591837,
+            "averagePrecision": 0.6199620323552548
+          },
+          "abstract": {
+            "positiveSupport": 31,
+            "predictedPositive": 32,
+            "tp": 30,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.9375,
+            "recall": 0.967741935483871,
+            "f1": 0.9523809523809523,
+            "averagePrecision": 0.9940577249575553
+          }
+        },
+        "macroPrecision": 0.790344069438897,
+        "macroRecall": 0.8688876635113195,
+        "microPrecision": 0.7621951219512195,
+        "microRecall": 0.8680555555555556,
+        "hammingAccuracy": 0.9194444444444444,
+        "topOneIsAnyValidLabel": 0.9083333333333333,
+        "tp": 125,
+        "fp": 39,
+        "fn": 19
+      },
+      "testAtOOFTarget97": {
+        "threshold": 0.8569288228313795,
+        "microPrecision": 0.9456521739130435,
+        "macroPrecision": 0.9222222222222222,
+        "microRecall": 0.6041666666666666,
+        "macroF1": 0.7067504109954643,
+        "exactMatch": 0.575,
+        "positivePredictions": 92,
+        "falsePositives": 5,
+        "perClassPositivePredictions": [
+          9,
+          19,
+          14,
+          15,
+          9,
+          26
+        ],
+        "allClassesHaveAtLeastThreePredictions": true,
+        "meaningsWithAnyPositiveLabel": 85
+      },
+      "legacyDiagnostics": {
+        "legacy-validation": {
+          "count": 91,
+          "macroF1": 0.8087120482771296,
+          "microF1": 0.8270042194092827,
+          "exactMatch": 0.6263736263736264,
+          "bce": 0.16500221881364704,
+          "brier": 0.04324373769813526,
+          "macroAveragePrecision": 0.9046844531534414,
+          "threshold": 0.28708202107421127,
+          "perClass": {
+            "entity": {
+              "positiveSupport": 41,
+              "predictedPositive": 44,
+              "tp": 40,
+              "fp": 4,
+              "fn": 1,
+              "precision": 0.9090909090909091,
+              "recall": 0.975609756097561,
+              "f1": 0.9411764705882353,
+              "averagePrecision": 0.9966273382246018
+            },
+            "place": {
+              "positiveSupport": 7,
+              "predictedPositive": 9,
+              "tp": 7,
+              "fp": 2,
+              "fn": 0,
+              "precision": 0.7777777777777778,
+              "recall": 1.0,
+              "f1": 0.875,
+              "averagePrecision": 1.0
+            },
+            "action": {
+              "positiveSupport": 15,
+              "predictedPositive": 18,
+              "tp": 15,
+              "fp": 3,
+              "fn": 0,
+              "precision": 0.8333333333333334,
+              "recall": 1.0,
+              "f1": 0.9090909090909091,
+              "averagePrecision": 0.9844444444444445
+            },
+            "state": {
+              "positiveSupport": 16,
+              "predictedPositive": 14,
+              "tp": 9,
+              "fp": 5,
+              "fn": 7,
+              "precision": 0.6428571428571429,
+              "recall": 0.5625,
+              "f1": 0.6,
+              "averagePrecision": 0.6127968578282167
+            },
+            "relation": {
+              "positiveSupport": 22,
+              "predictedPositive": 25,
+              "tp": 16,
+              "fp": 9,
+              "fn": 6,
+              "precision": 0.64,
+              "recall": 0.7272727272727273,
+              "f1": 0.6808510638297872,
+              "averagePrecision": 0.8554834996688062
+            },
+            "abstract": {
+              "positiveSupport": 13,
+              "predictedPositive": 13,
+              "tp": 11,
+              "fp": 2,
+              "fn": 2,
+              "precision": 0.8461538461538461,
+              "recall": 0.8461538461538461,
+              "f1": 0.8461538461538461,
+              "averagePrecision": 0.9787545787545788
+            }
+          },
+          "macroPrecision": 0.774868834868835,
+          "macroRecall": 0.8519227215873557,
+          "microPrecision": 0.7967479674796748,
+          "microRecall": 0.8596491228070176,
+          "hammingAccuracy": 0.924908424908425,
+          "topOneIsAnyValidLabel": 0.9560439560439561,
+          "tp": 98,
+          "fp": 25,
+          "fn": 16
+        },
+        "legacy-test": {
+          "count": 79,
+          "macroF1": 0.8236056090045905,
+          "microF1": 0.8484848484848485,
+          "exactMatch": 0.6708860759493671,
+          "bce": 0.1604262557058051,
+          "brier": 0.04615147788512058,
+          "macroAveragePrecision": 0.9142732122360412,
+          "threshold": 0.28708202107421127,
+          "perClass": {
+            "entity": {
+              "positiveSupport": 36,
+              "predictedPositive": 40,
+              "tp": 36,
+              "fp": 4,
+              "fn": 0,
+              "precision": 0.9,
+              "recall": 1.0,
+              "f1": 0.9473684210526315,
+              "averagePrecision": 0.9704230013985042
+            },
+            "place": {
+              "positiveSupport": 7,
+              "predictedPositive": 8,
+              "tp": 7,
+              "fp": 1,
+              "fn": 0,
+              "precision": 0.875,
+              "recall": 1.0,
+              "f1": 0.9333333333333333,
+              "averagePrecision": 1.0
+            },
+            "action": {
+              "positiveSupport": 10,
+              "predictedPositive": 11,
+              "tp": 8,
+              "fp": 3,
+              "fn": 2,
+              "precision": 0.7272727272727273,
+              "recall": 0.8,
+              "f1": 0.7619047619047619,
+              "averagePrecision": 0.9408119658119659
+            },
+            "state": {
+              "positiveSupport": 12,
+              "predictedPositive": 16,
+              "tp": 8,
+              "fp": 8,
+              "fn": 4,
+              "precision": 0.5,
+              "recall": 0.6666666666666666,
+              "f1": 0.5714285714285714,
+              "averagePrecision": 0.7094279631044337
+            },
+            "relation": {
+              "positiveSupport": 16,
+              "predictedPositive": 15,
+              "tp": 13,
+              "fp": 2,
+              "fn": 3,
+              "precision": 0.8666666666666667,
+              "recall": 0.8125,
+              "f1": 0.8387096774193549,
+              "averagePrecision": 0.8713865995115995
+            },
+            "abstract": {
+              "positiveSupport": 12,
+              "predictedPositive": 15,
+              "tp": 12,
+              "fp": 3,
+              "fn": 0,
+              "precision": 0.8,
+              "recall": 1.0,
+              "f1": 0.8888888888888888,
+              "averagePrecision": 0.9935897435897436
+            }
+          },
+          "macroPrecision": 0.7781565656565657,
+          "macroRecall": 0.8798611111111111,
+          "microPrecision": 0.8,
+          "microRecall": 0.9032258064516129,
+          "hammingAccuracy": 0.9367088607594937,
+          "topOneIsAnyValidLabel": 0.9113924050632911,
+          "tp": 84,
+          "fp": 21,
+          "fn": 9
+        }
+      }
+    },
+    "32": {
+      "test": {
+        "count": 120,
+        "macroF1": 0.8358851616527371,
+        "microF1": 0.8406779661016949,
+        "exactMatch": 0.7,
+        "bce": 0.1563839061058667,
+        "brier": 0.04535152012041272,
+        "macroAveragePrecision": 0.9116698532753745,
+        "threshold": 0.3615006965813038,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 26,
+            "predictedPositive": 19,
+            "tp": 18,
+            "fp": 1,
+            "fn": 8,
+            "precision": 0.9473684210526315,
+            "recall": 0.6923076923076923,
+            "f1": 0.8,
+            "averagePrecision": 0.9271517732319754
+          },
+          "place": {
+            "positiveSupport": 20,
+            "predictedPositive": 21,
+            "tp": 20,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9523809523809523,
+            "recall": 1.0,
+            "f1": 0.975609756097561,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 27,
+            "predictedPositive": 23,
+            "tp": 23,
+            "fp": 0,
+            "fn": 4,
+            "precision": 1.0,
+            "recall": 0.8518518518518519,
+            "f1": 0.92,
+            "averagePrecision": 0.9438700241335761
+          },
+          "state": {
+            "positiveSupport": 20,
+            "predictedPositive": 31,
+            "tp": 19,
+            "fp": 12,
+            "fn": 1,
+            "precision": 0.6129032258064516,
+            "recall": 0.95,
+            "f1": 0.7450980392156863,
+            "averagePrecision": 0.9338909932659935
+          },
+          "relation": {
+            "positiveSupport": 20,
+            "predictedPositive": 25,
+            "tp": 14,
+            "fp": 11,
+            "fn": 6,
+            "precision": 0.56,
+            "recall": 0.7,
+            "f1": 0.6222222222222222,
+            "averagePrecision": 0.671048604063147
+          },
+          "abstract": {
+            "positiveSupport": 31,
+            "predictedPositive": 32,
+            "tp": 30,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.9375,
+            "recall": 0.967741935483871,
+            "f1": 0.9523809523809523,
+            "averagePrecision": 0.9940577249575553
+          }
+        },
+        "macroPrecision": 0.8350254332066726,
+        "macroRecall": 0.8603169132739025,
+        "microPrecision": 0.8211920529801324,
+        "microRecall": 0.8611111111111112,
+        "hammingAccuracy": 0.9347222222222222,
+        "topOneIsAnyValidLabel": 0.9,
+        "tp": 124,
+        "fp": 27,
+        "fn": 20
+      },
+      "testAtOOFTarget97": {
+        "threshold": 0.8811547601930124,
+        "microPrecision": 0.9479166666666666,
+        "macroPrecision": 0.930392156862745,
+        "microRecall": 0.6319444444444444,
+        "macroF1": 0.7377638917112602,
+        "exactMatch": 0.6083333333333333,
+        "positivePredictions": 96,
+        "falsePositives": 5,
+        "perClassPositivePredictions": [
+          11,
+          18,
+          15,
+          17,
+          10,
+          25
+        ],
+        "allClassesHaveAtLeastThreePredictions": true,
+        "meaningsWithAnyPositiveLabel": 91
+      },
+      "legacyDiagnostics": {
+        "legacy-validation": {
+          "count": 91,
+          "macroF1": 0.8303331876925276,
+          "microF1": 0.8482142857142857,
+          "exactMatch": 0.6923076923076923,
+          "bce": 0.1541615954964606,
+          "brier": 0.04154187188026464,
+          "macroAveragePrecision": 0.9159714788414183,
+          "threshold": 0.3615006965813038,
+          "perClass": {
+            "entity": {
+              "positiveSupport": 41,
+              "predictedPositive": 43,
+              "tp": 40,
+              "fp": 3,
+              "fn": 1,
+              "precision": 0.9302325581395349,
+              "recall": 0.975609756097561,
+              "f1": 0.9523809523809523,
+              "averagePrecision": 0.9977421448272132
+            },
+            "place": {
+              "positiveSupport": 7,
+              "predictedPositive": 8,
+              "tp": 7,
+              "fp": 1,
+              "fn": 0,
+              "precision": 0.875,
+              "recall": 1.0,
+              "f1": 0.9333333333333333,
+              "averagePrecision": 1.0
+            },
+            "action": {
+              "positiveSupport": 15,
+              "predictedPositive": 16,
+              "tp": 14,
+              "fp": 2,
+              "fn": 1,
+              "precision": 0.875,
+              "recall": 0.9333333333333333,
+              "f1": 0.9032258064516129,
+              "averagePrecision": 0.9921568627450981
+            },
+            "state": {
+              "positiveSupport": 16,
+              "predictedPositive": 10,
+              "tp": 8,
+              "fp": 2,
+              "fn": 8,
+              "precision": 0.8,
+              "recall": 0.5,
+              "f1": 0.6153846153846154,
+              "averagePrecision": 0.6676227661493805
+            },
+            "relation": {
+              "positiveSupport": 22,
+              "predictedPositive": 21,
+              "tp": 15,
+              "fp": 6,
+              "fn": 7,
+              "precision": 0.7142857142857143,
+              "recall": 0.6818181818181818,
+              "f1": 0.6976744186046512,
+              "averagePrecision": 0.8637191872389054
+            },
+            "abstract": {
+              "positiveSupport": 13,
+              "predictedPositive": 12,
+              "tp": 11,
+              "fp": 1,
+              "fn": 2,
+              "precision": 0.9166666666666666,
+              "recall": 0.8461538461538461,
+              "f1": 0.88,
+              "averagePrecision": 0.9745879120879122
+            }
+          },
+          "macroPrecision": 0.8518641565153193,
+          "macroRecall": 0.8228191862338203,
+          "microPrecision": 0.8636363636363636,
+          "microRecall": 0.8333333333333334,
+          "hammingAccuracy": 0.9377289377289377,
+          "topOneIsAnyValidLabel": 0.989010989010989,
+          "tp": 95,
+          "fp": 15,
+          "fn": 19
+        },
+        "legacy-test": {
+          "count": 79,
+          "macroF1": 0.8361458361458363,
+          "microF1": 0.8571428571428571,
+          "exactMatch": 0.7215189873417721,
+          "bce": 0.1496529266170418,
+          "brier": 0.04293585812400632,
+          "macroAveragePrecision": 0.9217407719618902,
+          "threshold": 0.3615006965813038,
+          "perClass": {
+            "entity": {
+              "positiveSupport": 36,
+              "predictedPositive": 38,
+              "tp": 35,
+              "fp": 3,
+              "fn": 1,
+              "precision": 0.9210526315789473,
+              "recall": 0.9722222222222222,
+              "f1": 0.9459459459459459,
+              "averagePrecision": 0.9866912396823513
+            },
+            "place": {
+              "positiveSupport": 7,
+              "predictedPositive": 6,
+              "tp": 6,
+              "fp": 0,
+              "fn": 1,
+              "precision": 1.0,
+              "recall": 0.8571428571428571,
+              "f1": 0.9230769230769231,
+              "averagePrecision": 1.0
+            },
+            "action": {
+              "positiveSupport": 10,
+              "predictedPositive": 12,
+              "tp": 9,
+              "fp": 3,
+              "fn": 1,
+              "precision": 0.75,
+              "recall": 0.9,
+              "f1": 0.8181818181818182,
+              "averagePrecision": 0.9353174603174604
+            },
+            "state": {
+              "positiveSupport": 12,
+              "predictedPositive": 14,
+              "tp": 9,
+              "fp": 5,
+              "fn": 3,
+              "precision": 0.6428571428571429,
+              "recall": 0.75,
+              "f1": 0.6923076923076923,
+              "averagePrecision": 0.7532571695615173
+            },
+            "relation": {
+              "positiveSupport": 16,
+              "predictedPositive": 12,
+              "tp": 10,
+              "fp": 2,
+              "fn": 6,
+              "precision": 0.8333333333333334,
+              "recall": 0.625,
+              "f1": 0.7142857142857143,
+              "averagePrecision": 0.8551787622100122
+            },
+            "abstract": {
+              "positiveSupport": 12,
+              "predictedPositive": 14,
+              "tp": 12,
+              "fp": 2,
+              "fn": 0,
+              "precision": 0.8571428571428571,
+              "recall": 1.0,
+              "f1": 0.9230769230769231,
+              "averagePrecision": 1.0
+            }
+          },
+          "macroPrecision": 0.83406432748538,
+          "macroRecall": 0.8507275132275133,
+          "microPrecision": 0.84375,
+          "microRecall": 0.8709677419354839,
+          "hammingAccuracy": 0.9430379746835443,
+          "topOneIsAnyValidLabel": 0.8987341772151899,
+          "tp": 81,
+          "fp": 15,
+          "fn": 12
+        }
+      }
+    },
+    "fixed-expanded-32": {
+      "test": {
+        "count": 120,
+        "macroF1": 0.8234706868188758,
+        "microF1": 0.8316151202749141,
+        "exactMatch": 0.7,
+        "bce": 0.22774371251482425,
+        "brier": 0.05327014018512659,
+        "macroAveragePrecision": 0.8916522237127977,
+        "threshold": 0.45,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 26,
+            "predictedPositive": 19,
+            "tp": 18,
+            "fp": 1,
+            "fn": 8,
+            "precision": 0.9473684210526315,
+            "recall": 0.6923076923076923,
+            "f1": 0.8,
+            "averagePrecision": 0.933472235483371
+          },
+          "place": {
+            "positiveSupport": 20,
+            "predictedPositive": 21,
+            "tp": 20,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9523809523809523,
+            "recall": 1.0,
+            "f1": 0.975609756097561,
+            "averagePrecision": 0.9976190476190476
+          },
+          "action": {
+            "positiveSupport": 27,
+            "predictedPositive": 23,
+            "tp": 23,
+            "fp": 0,
+            "fn": 4,
+            "precision": 1.0,
+            "recall": 0.8518518518518519,
+            "f1": 0.92,
+            "averagePrecision": 0.9349202433014694
+          },
+          "state": {
+            "positiveSupport": 20,
+            "predictedPositive": 29,
+            "tp": 18,
+            "fp": 11,
+            "fn": 2,
+            "precision": 0.6206896551724138,
+            "recall": 0.9,
+            "f1": 0.7346938775510204,
+            "averagePrecision": 0.9134922226466344
+          },
+          "relation": {
+            "positiveSupport": 20,
+            "predictedPositive": 23,
+            "tp": 12,
+            "fp": 11,
+            "fn": 8,
+            "precision": 0.5217391304347826,
+            "recall": 0.6,
+            "f1": 0.5581395348837209,
+            "averagePrecision": 0.5748898799646158
+          },
+          "abstract": {
+            "positiveSupport": 31,
+            "predictedPositive": 32,
+            "tp": 30,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.9375,
+            "recall": 0.967741935483871,
+            "f1": 0.9523809523809523,
+            "averagePrecision": 0.9955197132616488
+          }
+        },
+        "macroPrecision": 0.8299463598401301,
+        "macroRecall": 0.8353169132739025,
+        "microPrecision": 0.8231292517006803,
+        "microRecall": 0.8402777777777778,
+        "hammingAccuracy": 0.9319444444444445,
+        "topOneIsAnyValidLabel": 0.8666666666666667,
+        "tp": 121,
+        "fp": 26,
+        "fn": 23
+      }
+    },
+    "original244-32": {
+      "test": {
+        "count": 120,
+        "macroF1": 0.7698751696888343,
+        "microF1": 0.7539936102236422,
+        "exactMatch": 0.475,
+        "bce": 0.4102800580804135,
+        "brier": 0.09199837971059913,
+        "macroAveragePrecision": 0.8202128418316456,
+        "threshold": 0.45,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 26,
+            "predictedPositive": 23,
+            "tp": 17,
+            "fp": 6,
+            "fn": 9,
+            "precision": 0.7391304347826086,
+            "recall": 0.6538461538461539,
+            "f1": 0.6938775510204082,
+            "averagePrecision": 0.757335995807371
+          },
+          "place": {
+            "positiveSupport": 20,
+            "predictedPositive": 19,
+            "tp": 19,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.95,
+            "f1": 0.9743589743589743,
+            "averagePrecision": 0.9976190476190476
+          },
+          "action": {
+            "positiveSupport": 27,
+            "predictedPositive": 19,
+            "tp": 18,
+            "fp": 1,
+            "fn": 9,
+            "precision": 0.9473684210526315,
+            "recall": 0.6666666666666666,
+            "f1": 0.782608695652174,
+            "averagePrecision": 0.8488172867424011
+          },
+          "state": {
+            "positiveSupport": 20,
+            "predictedPositive": 30,
+            "tp": 17,
+            "fp": 13,
+            "fn": 3,
+            "precision": 0.5666666666666667,
+            "recall": 0.85,
+            "f1": 0.68,
+            "averagePrecision": 0.7962985913480908
+          },
+          "relation": {
+            "positiveSupport": 20,
+            "predictedPositive": 49,
+            "tp": 18,
+            "fp": 31,
+            "fn": 2,
+            "precision": 0.3673469387755102,
+            "recall": 0.9,
+            "f1": 0.5217391304347826,
+            "averagePrecision": 0.531813511048087
+          },
+          "abstract": {
+            "positiveSupport": 31,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.9354838709677419,
+            "f1": 0.9666666666666667,
+            "averagePrecision": 0.9893926184248765
+          }
+        },
+        "macroPrecision": 0.7700854102129028,
+        "macroRecall": 0.8259994485800938,
+        "microPrecision": 0.6982248520710059,
+        "microRecall": 0.8194444444444444,
+        "hammingAccuracy": 0.8930555555555556,
+        "topOneIsAnyValidLabel": 0.775,
+        "tp": 118,
+        "fp": 51,
+        "fn": 26
+      }
+    },
+    "supplement301-32": {
+      "test": {
+        "count": 120,
+        "macroF1": 0.7785767649078643,
+        "microF1": 0.7682119205298014,
+        "exactMatch": 0.525,
+        "bce": 0.3915465936133376,
+        "brier": 0.08067398353042614,
+        "macroAveragePrecision": 0.8229767126441071,
+        "threshold": 0.45,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 26,
+            "predictedPositive": 20,
+            "tp": 16,
+            "fp": 4,
+            "fn": 10,
+            "precision": 0.8,
+            "recall": 0.6153846153846154,
+            "f1": 0.6956521739130435,
+            "averagePrecision": 0.7574169138607434
+          },
+          "place": {
+            "positiveSupport": 20,
+            "predictedPositive": 19,
+            "tp": 19,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.95,
+            "f1": 0.9743589743589743,
+            "averagePrecision": 0.9976190476190476
+          },
+          "action": {
+            "positiveSupport": 27,
+            "predictedPositive": 19,
+            "tp": 18,
+            "fp": 1,
+            "fn": 9,
+            "precision": 0.9473684210526315,
+            "recall": 0.6666666666666666,
+            "f1": 0.782608695652174,
+            "averagePrecision": 0.8525027869115716
+          },
+          "state": {
+            "positiveSupport": 20,
+            "predictedPositive": 31,
+            "tp": 19,
+            "fp": 12,
+            "fn": 1,
+            "precision": 0.6129032258064516,
+            "recall": 0.95,
+            "f1": 0.7450980392156863,
+            "averagePrecision": 0.8627038504973289
+          },
+          "relation": {
+            "positiveSupport": 20,
+            "predictedPositive": 41,
+            "tp": 16,
+            "fp": 25,
+            "fn": 4,
+            "precision": 0.3902439024390244,
+            "recall": 0.8,
+            "f1": 0.5245901639344263,
+            "averagePrecision": 0.48197495947839525
+          },
+          "abstract": {
+            "positiveSupport": 31,
+            "predictedPositive": 28,
+            "tp": 28,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.9032258064516129,
+            "f1": 0.9491525423728814,
+            "averagePrecision": 0.9856427174975562
+          }
+        },
+        "macroPrecision": 0.7917525915496846,
+        "macroRecall": 0.8142128480838159,
+        "microPrecision": 0.7341772151898734,
+        "microRecall": 0.8055555555555556,
+        "hammingAccuracy": 0.9027777777777778,
+        "topOneIsAnyValidLabel": 0.8333333333333334,
+        "tp": 116,
+        "fp": 42,
+        "fn": 28
+      }
+    }
+  },
+  "linearPracticalMarginsOnFreshTest": {
+    "passed": false,
+    "checks": {
+      "macroF1": false,
+      "exactMatch": false,
+      "microPrecision": false,
+      "microRecall": true,
+      "bce": false,
+      "brier": false,
+      "perClassF1": false
+    },
+    "margins": {
+      "macroF1": 0.01,
+      "exactMatch": 0.02,
+      "microPrecision": 0.02,
+      "microRecall": 0.02,
+      "bce": 0.01,
+      "brier": 0.003,
+      "perClassF1": 0.05
+    },
+    "interpretation": "Predeclared practical tolerances; small held-out samples do not prove statistical equivalence."
+  },
+  "pairedGroupBootstrap": {
+    "method": "Percentile paired group bootstrap; sparse-class resamples can have zero support.",
+    "repetitions": 1000,
+    "groupCount": 94,
+    "macroF1_95PercentInterval": [
+      0.747946097946098,
+      0.8517119585481747
+    ],
+    "deltaVsComparatorMacroF1_95PercentInterval": [
+      -0.048336756935404665,
+      -0.0008520373527887078
+    ],
+    "reportedModel": "linear",
+    "comparatorModel": "32",
+    "differenceDirection": "linear minus 32"
+  },
+  "promotionGate": {
+    "passed": true,
+    "checks": {
+      "macroF1": true,
+      "exactMatch": true,
+      "microPrecision": true,
+      "microRecall": true
+    },
+    "comparator": "frozen original244 32-unit architecture/config/weights/threshold",
+    "meaning": "Predeclared confirmation gate; failing preserves the previous recommendation rather than choosing a new architecture using test outcomes."
+  },
+  "limitations": [
+    "Balanced AI-authored/reviewed pilot, not human-expert truth or real-app prevalence.",
+    "Architecture and thresholds frozen before this fresh-test evaluation; legacy evaluation is retired diagnosis.",
+    "Practical margins and a confidence interval including zero do not establish population-level equivalence."
+  ]
+}

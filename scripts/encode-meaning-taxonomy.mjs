@@ -10,7 +10,10 @@ import { CLIP_DIMENSION, CLIP_TAG } from '../js/ml/clipConfig.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const supplement = process.argv.includes('--supplement');
-const fixtureDirectory = resolve(root, 'tests/fixtures/meaning-taxonomy', supplement ? 'supplement' : '.');
+const expanded = process.argv.includes('--expanded');
+assert(!(supplement && expanded), '--supplement and --expanded are mutually exclusive.');
+const fixtureDirectory = resolve(root, 'tests/fixtures/meaning-taxonomy',
+  expanded ? 'expanded-1000' : supplement ? 'supplement' : '.');
 const datasetPath = resolve(fixtureDirectory, 'dataset.json');
 const outputArg = process.argv.findIndex(arg => arg === '--output');
 if (outputArg !== -1) assert(process.argv[outputArg + 1], 'Provide a path after --output.');
@@ -18,7 +21,9 @@ const outputPath = resolve(outputArg === -1
   ? resolve(fixtureDirectory, 'embeddings.json.gz')
   : process.argv[outputArg + 1]);
 
-const audit = spawnSync(process.execPath, [resolve(root, supplement ? 'scripts/audit-meaning-supplement.mjs' : 'scripts/audit-meaning-taxonomy.mjs')], {
+const auditScript = expanded ? 'scripts/audit-meaning-expanded.mjs'
+  : supplement ? 'scripts/audit-meaning-supplement.mjs' : 'scripts/audit-meaning-taxonomy.mjs';
+const audit = spawnSync(process.execPath, [resolve(root, auditScript)], {
   cwd: root,
   encoding: 'utf8',
   stdio: ['ignore', 'inherit', 'inherit']

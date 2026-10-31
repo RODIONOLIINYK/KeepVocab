@@ -1,0 +1,14 @@
+[
+  {
+    "stage": 1,
+    "configurations": 48,
+    "bestCVF1": 0.8590357683383013,
+    "bestF1Gain": 0.009781859349506483
+  },
+  {
+    "stage": 2,
+    "configurations": 32,
+    "bestCVF1": 0.8600999568895874,
+    "bestF1Gain": 0.0010641885512860938
+  }
+]

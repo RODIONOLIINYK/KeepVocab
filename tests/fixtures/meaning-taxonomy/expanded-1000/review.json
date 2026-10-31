@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "reviewType": "AI semantic review; not human-expert ground truth",
+  "reviewedCount": 531,
+  "newAnnotationsFileSha256": "d17fe50a5c757993ecab8c248c49d382ad702645d9f06d7bd0b884e5afc9dcd1",
+  "primaryScope": "Every exact definition, membership set and selected sense inspected before fitting; corrections to motion/condition, private feelings, roles, objects versus settings, and accidental synonym leakage.",
+  "secondaryReviewCounts": {
+    "entityPlace": 180,
+    "actionState": 190,
+    "relationAbstract": 161
+  },
+  "dispositions": [
+    "Accepted physical-fatigue and visible-expression corrections.",
+    "Accepted structure labels consistent with the frozen tower/bridge policy, retaining multiple independent routes.",
+    "Accepted noun/adjective/role/opposite and near-paraphrase grouping recommendations.",
+    "Kept the ordinary word uncertainty as a valid private condition; it is distinct from a classifier uncertainty/fallback output.",
+    "Added entity to explicit person-role referents alongside relation and abstract; isolated people do not establish their roles.",
+    "Kept coaxial distinct from concentric and coplanar distinct from parallel; sharing a general geometry domain is not identity of selected meaning.",
+    "Linked purpose/back-to-back with related old test families; these cannot enter train or the fresh evaluation sets.",
+    "Corrected secondary reviewer stale IDs/content claims by inspecting the final primary data; only valid recommendations adopted."
+  ],
+  "limitations": [
+    "AI authorship and review can share biases; agreement is not independent expert truth.",
+    "Class balance refers to training membership counts, not proof of deployment frequency or semantic certainty.",
+    "1000 text examples include related meanings; family grouping prevents counting paraphrases as independent evaluation samples."
+  ],
+  "sourceDraftSha256": {
+    "draft-entity-place.json": "d4ece01ba0ca9fc12391cc209f2fe736c5db99a6ec49fcceb55638cf47c52a79",
+    "draft-action-state.json": "c2a8556219ec75773d855a666cda9dc33eaac4762274e9e00d41e98e513940c9",
+    "draft-relation-abstract.json": "1ba1908f56804d9d37f993a4b073587b7a597f875153ddf0192ab4591a916969"
+  },
+  "datasetFileSha256": "36d8d5d86d47b6dc9b7f0a50d074d33ac730626ded8417825574e358973df7c7"
+}

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-10-31T20:49:34.389Z",
+  "benchmark": "meaningCategoryProbabilities on cached expanded-dataset vectors",
+  "runtime": {
+    "node": "v22.23.1",
+    "osArch": "arm64",
+    "platform": "darwin",
+    "cpuModel": "Apple M5"
+  },
+  "scope": {
+    "deviceClass": "Apple Silicon desktop Mac",
+    "noPhoneMeasurementPerformed": true,
+    "embeddingSource": "Actual saved 512-D vectors from tests/fixtures/meaning-taxonomy/expanded-1000/embeddings.json.gz, rotated round-robin.",
+    "includes": "Public classifier function validation, JS preprocessing, dense head inference, sigmoid calibration, and per-call performance.now timing overhead.",
+    "excludes": "CLIP text encoding, model loading, phone inference, and battery or thermal measurements.",
+    "footnotes": "Latency describes this desktop Node run only. Float32 payload is a numeric storage estimate; actual runtime uses JavaScript Numbers and arrays, so object/runtime overhead is not included. MAC counts cover dense-layer multiply-accumulates only."
+  },
+  "embeddingVectorCount": 1000,
+  "results": [
+    {
+      "name": "linear",
+      "artifact": "tests/fixtures/meaning-taxonomy/expanded-1000/classifier-linear.json",
+      "actualModelJSONbytes": 163605,
+      "parameterCount": 3078,
+      "multiplyAccumulateCountPerCall": 3072,
+      "float32PayloadBytes": {
+        "parameters": 12312,
+        "preprocessingMeanAndScale": 4096,
+        "combined": 16408
+      },
+      "calls": {
+        "warmup": 5000,
+        "measured": 3000
+      },
+      "latencyMs": {
+        "p50": 0.011832999999995764,
+        "p95": 0.013041999999984455,
+        "mean": 0.012211419333333093
+      },
+      "throughputCallsPerSecondFromMean": 81890.56265313354
+    },
+    {
+      "name": "32-unit",
+      "artifact": "tests/fixtures/meaning-taxonomy/expanded-1000/classifier-32.json",
+      "actualModelJSONbytes": 602914,
+      "parameterCount": 16614,
+      "multiplyAccumulateCountPerCall": 16576,
+      "float32PayloadBytes": {
+        "parameters": 66456,
+        "preprocessingMeanAndScale": 4096,
+        "combined": 70552
+      },
+      "calls": {
+        "warmup": 5000,
+        "measured": 3000
+      },
+      "latencyMs": {
+        "p50": 0.026791000000002896,
+        "p95": 0.03000000000002956,
+        "mean": 0.02739237233333292
+      },
+      "throughputCallsPerSecondFromMean": 36506.513120922034
+    }
+  ]
+}

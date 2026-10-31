@@ -1,0 +1,1125 @@
+{
+  "schemaVersion": 1,
+  "weightsChanged": false,
+  "labelsChanged": false,
+  "testUsedForTuning": false,
+  "models": {
+    "linear": {
+      "train": {
+        "count": 590,
+        "macroF1": 0.9441915323475237,
+        "microF1": 0.9424083769633508,
+        "exactMatch": 0.8559322033898306,
+        "bce": 0.05629211999115631,
+        "brier": 0.011782742204692179,
+        "macroAveragePrecision": 0.995030776017868,
+        "threshold": 0.28708202107421127,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 119,
+            "predictedPositive": 127,
+            "tp": 119,
+            "fp": 8,
+            "fn": 0,
+            "precision": 0.937007874015748,
+            "recall": 1.0,
+            "f1": 0.967479674796748,
+            "averagePrecision": 1.0
+          },
+          "place": {
+            "positiveSupport": 118,
+            "predictedPositive": 118,
+            "tp": 118,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 125,
+            "predictedPositive": 137,
+            "tp": 125,
+            "fp": 12,
+            "fn": 0,
+            "precision": 0.9124087591240876,
+            "recall": 1.0,
+            "f1": 0.9541984732824428,
+            "averagePrecision": 0.9988348013788512
+          },
+          "state": {
+            "positiveSupport": 115,
+            "predictedPositive": 142,
+            "tp": 115,
+            "fp": 27,
+            "fn": 0,
+            "precision": 0.8098591549295775,
+            "recall": 1.0,
+            "f1": 0.8949416342412452,
+            "averagePrecision": 0.9895943509549397
+          },
+          "relation": {
+            "positiveSupport": 117,
+            "predictedPositive": 155,
+            "tp": 117,
+            "fp": 38,
+            "fn": 0,
+            "precision": 0.7548387096774194,
+            "recall": 1.0,
+            "f1": 0.8602941176470589,
+            "averagePrecision": 0.9817555037734176
+          },
+          "abstract": {
+            "positiveSupport": 126,
+            "predictedPositive": 129,
+            "tp": 126,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.9767441860465116,
+            "recall": 1.0,
+            "f1": 0.9882352941176471,
+            "averagePrecision": 1.0
+          }
+        },
+        "macroPrecision": 0.8984764472988908,
+        "macroRecall": 1.0,
+        "microPrecision": 0.8910891089108911,
+        "microRecall": 1.0,
+        "hammingAccuracy": 0.9751412429378531,
+        "topOneIsAnyValidLabel": 1.0,
+        "tp": 720,
+        "fp": 88,
+        "fn": 0
+      },
+      "validation": {
+        "count": 120,
+        "macroF1": 0.8069417722395301,
+        "microF1": 0.8113207547169812,
+        "exactMatch": 0.6083333333333333,
+        "bce": 0.1821036001579609,
+        "brier": 0.05313832148972077,
+        "macroAveragePrecision": 0.9040548362724324,
+        "threshold": 0.28708202107421127,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 28,
+            "predictedPositive": 18,
+            "tp": 16,
+            "fp": 2,
+            "fn": 12,
+            "precision": 0.8888888888888888,
+            "recall": 0.5714285714285714,
+            "f1": 0.6956521739130435,
+            "averagePrecision": 0.8412378818787248
+          },
+          "place": {
+            "positiveSupport": 20,
+            "predictedPositive": 21,
+            "tp": 20,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9523809523809523,
+            "recall": 1.0,
+            "f1": 0.975609756097561,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 26,
+            "predictedPositive": 25,
+            "tp": 21,
+            "fp": 4,
+            "fn": 5,
+            "precision": 0.84,
+            "recall": 0.8076923076923077,
+            "f1": 0.8235294117647058,
+            "averagePrecision": 0.92184803109384
+          },
+          "state": {
+            "positiveSupport": 20,
+            "predictedPositive": 31,
+            "tp": 19,
+            "fp": 12,
+            "fn": 1,
+            "precision": 0.6129032258064516,
+            "recall": 0.95,
+            "f1": 0.7450980392156863,
+            "averagePrecision": 0.9023029640077695
+          },
+          "relation": {
+            "positiveSupport": 20,
+            "predictedPositive": 36,
+            "tp": 18,
+            "fp": 18,
+            "fn": 2,
+            "precision": 0.5,
+            "recall": 0.9,
+            "f1": 0.6428571428571429,
+            "averagePrecision": 0.7611737338966256
+          },
+          "abstract": {
+            "positiveSupport": 36,
+            "predictedPositive": 37,
+            "tp": 35,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.9459459459459459,
+            "recall": 0.9722222222222222,
+            "f1": 0.958904109589041,
+            "averagePrecision": 0.9977664067576347
+          }
+        },
+        "macroPrecision": 0.7900198355037064,
+        "macroRecall": 0.8668905168905169,
+        "microPrecision": 0.7678571428571429,
+        "microRecall": 0.86,
+        "hammingAccuracy": 0.9166666666666666,
+        "topOneIsAnyValidLabel": 0.9083333333333333,
+        "tp": 129,
+        "fp": 39,
+        "fn": 21
+      }
+    },
+    "32": {
+      "train": {
+        "count": 590,
+        "macroF1": 0.993685866078648,
+        "microF1": 0.9937888198757764,
+        "exactMatch": 0.9847457627118644,
+        "bce": 0.03399871891745859,
+        "brier": 0.0039995440670376635,
+        "macroAveragePrecision": 1.0,
+        "threshold": 0.3615006965813038,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 119,
+            "predictedPositive": 119,
+            "tp": 119,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "place": {
+            "positiveSupport": 118,
+            "predictedPositive": 118,
+            "tp": 118,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 125,
+            "predictedPositive": 126,
+            "tp": 125,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9920634920634921,
+            "recall": 1.0,
+            "f1": 0.9960159362549801,
+            "averagePrecision": 1.0
+          },
+          "state": {
+            "positiveSupport": 115,
+            "predictedPositive": 119,
+            "tp": 115,
+            "fp": 4,
+            "fn": 0,
+            "precision": 0.9663865546218487,
+            "recall": 1.0,
+            "f1": 0.9829059829059829,
+            "averagePrecision": 1.0
+          },
+          "relation": {
+            "positiveSupport": 117,
+            "predictedPositive": 121,
+            "tp": 117,
+            "fp": 4,
+            "fn": 0,
+            "precision": 0.9669421487603306,
+            "recall": 1.0,
+            "f1": 0.9831932773109243,
+            "averagePrecision": 1.0
+          },
+          "abstract": {
+            "positiveSupport": 126,
+            "predictedPositive": 126,
+            "tp": 126,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          }
+        },
+        "macroPrecision": 0.9875653659076119,
+        "macroRecall": 1.0,
+        "microPrecision": 0.9876543209876543,
+        "microRecall": 1.0,
+        "hammingAccuracy": 0.997457627118644,
+        "topOneIsAnyValidLabel": 1.0,
+        "tp": 720,
+        "fp": 9,
+        "fn": 0
+      },
+      "validation": {
+        "count": 120,
+        "macroF1": 0.8175694853699834,
+        "microF1": 0.8258064516129032,
+        "exactMatch": 0.6583333333333333,
+        "bce": 0.17445576417395559,
+        "brier": 0.05039981703961141,
+        "macroAveragePrecision": 0.9182585420129472,
+        "threshold": 0.3615006965813038,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 28,
+            "predictedPositive": 16,
+            "tp": 15,
+            "fp": 1,
+            "fn": 13,
+            "precision": 0.9375,
+            "recall": 0.5357142857142857,
+            "f1": 0.6818181818181818,
+            "averagePrecision": 0.8653534295278094
+          },
+          "place": {
+            "positiveSupport": 20,
+            "predictedPositive": 21,
+            "tp": 20,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.9523809523809523,
+            "recall": 1.0,
+            "f1": 0.975609756097561,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 26,
+            "predictedPositive": 26,
+            "tp": 21,
+            "fp": 5,
+            "fn": 5,
+            "precision": 0.8076923076923077,
+            "recall": 0.8076923076923077,
+            "f1": 0.8076923076923077,
+            "averagePrecision": 0.9299297856909212
+          },
+          "state": {
+            "positiveSupport": 20,
+            "predictedPositive": 29,
+            "tp": 19,
+            "fp": 10,
+            "fn": 1,
+            "precision": 0.6551724137931034,
+            "recall": 0.95,
+            "f1": 0.7755102040816326,
+            "averagePrecision": 0.9342285981991865
+          },
+          "relation": {
+            "positiveSupport": 20,
+            "predictedPositive": 31,
+            "tp": 18,
+            "fp": 13,
+            "fn": 2,
+            "precision": 0.5806451612903226,
+            "recall": 0.9,
+            "f1": 0.7058823529411765,
+            "averagePrecision": 0.7821761907965188
+          },
+          "abstract": {
+            "positiveSupport": 36,
+            "predictedPositive": 37,
+            "tp": 35,
+            "fp": 2,
+            "fn": 1,
+            "precision": 0.9459459459459459,
+            "recall": 0.9722222222222222,
+            "f1": 0.958904109589041,
+            "averagePrecision": 0.9978632478632478
+          }
+        },
+        "macroPrecision": 0.8132227968504386,
+        "macroRecall": 0.860938135938136,
+        "microPrecision": 0.8,
+        "microRecall": 0.8533333333333334,
+        "hammingAccuracy": 0.925,
+        "topOneIsAnyValidLabel": 0.9,
+        "tp": 128,
+        "fp": 32,
+        "fn": 22
+      }
+    }
+  },
+  "searchFits": {
+    "count": 328,
+    "nonConvergedCount": 51,
+    "meaning": "Exploratory fits hitting optimization limits are recorded, not claimed optimal."
+  },
+  "selectedFreshTestErrors": [
+    {
+      "id": "expanded-c5876b6de2de214f",
+      "word": "charcoal",
+      "definition": "A lightweight black residue made by heating wood without enough air.",
+      "referenceLabels": [
+        "entity"
+      ],
+      "predictedLabels": [
+        "state"
+      ],
+      "probabilities": [
+        0.16633162518409755,
+        0.044767781889784024,
+        0.01753612284375181,
+        0.6626735575839888,
+        0.0009801428773969377,
+        0.017736916714577965
+      ],
+      "groupId": "expanded-family-70722e18596b013d"
+    },
+    {
+      "id": "expanded-97d2a37631a27636",
+      "word": "marble",
+      "definition": "A hard crystalline stone often marked with colored veins.",
+      "referenceLabels": [
+        "entity"
+      ],
+      "predictedLabels": [
+        "state"
+      ],
+      "probabilities": [
+        0.025474253073556864,
+        0.05580287084532695,
+        0.024942168257577255,
+        0.8412963366008284,
+        0.0005742621598964755,
+        0.0065873872432431
+      ],
+      "groupId": "expanded-family-8a549c501a0412e8"
+    },
+    {
+      "id": "expanded-2b9ec28103482ca4",
+      "word": "coral",
+      "definition": "A marine animal colony that builds a hard branching skeleton.",
+      "referenceLabels": [
+        "entity"
+      ],
+      "predictedLabels": [
+        "entity",
+        "place"
+      ],
+      "probabilities": [
+        0.5218939322390485,
+        0.5750065413408184,
+        0.02130585765986673,
+        0.003060426381424923,
+        0.010291609970375632,
+        0.0025770113744443073
+      ],
+      "groupId": "expanded-family-81f56209317b0f35"
+    },
+    {
+      "id": "expanded-059b9ba3ddd886ea",
+      "word": "mercury",
+      "definition": "A dense silvery metal that is liquid at ordinary room temperature.",
+      "referenceLabels": [
+        "entity"
+      ],
+      "predictedLabels": [
+        "state"
+      ],
+      "probabilities": [
+        0.047006576286287904,
+        0.06543748522647361,
+        0.026637593015229253,
+        0.7598724843027352,
+        0.0027434633393460563,
+        0.003066834302655649
+      ],
+      "groupId": "expanded-family-d83a5d5a982044f0"
+    },
+    {
+      "id": "expanded-c225e6b4c3541570",
+      "word": "terminal",
+      "definition": "A building where passengers begin or end a journey by air, rail, or bus.",
+      "referenceLabels": [
+        "place"
+      ],
+      "predictedLabels": [
+        "entity",
+        "place"
+      ],
+      "probabilities": [
+        0.707586113186244,
+        0.8480605368485687,
+        0.023342333357102646,
+        0.00027848146778575644,
+        0.016860350836339157,
+        0.023364395585541396
+      ],
+      "groupId": "expanded-family-c1083c88d590e5d5"
+    },
+    {
+      "id": "expanded-5bd616a8bb5d5e2f",
+      "word": "breathe",
+      "definition": "To draw air into the lungs and release it again.",
+      "referenceLabels": [
+        "action"
+      ],
+      "predictedLabels": [
+        "action",
+        "state"
+      ],
+      "probabilities": [
+        0.002543398204707289,
+        0.004881330752330023,
+        0.8896781640408581,
+        0.546375422667898,
+        0.013711433803214068,
+        0.03710247135288313
+      ],
+      "groupId": "expanded-family-bdd9c653fe98643f"
+    },
+    {
+      "id": "expanded-3ef3f6324dfafd2d",
+      "word": "cry",
+      "definition": "To shed tears, often while making sounds of distress.",
+      "referenceLabels": [
+        "action"
+      ],
+      "predictedLabels": [
+        "action",
+        "state"
+      ],
+      "probabilities": [
+        0.0016809481602245316,
+        0.0021853462890657595,
+        0.4912873248907147,
+        0.9347626443764158,
+        0.011377376356078876,
+        0.06354959588589355
+      ],
+      "groupId": "expanded-family-1cde4df56a644a11"
+    },
+    {
+      "id": "expanded-21909fb5fb5b7145",
+      "word": "hum",
+      "definition": "To make a tune with closed lips and a steady voice.",
+      "referenceLabels": [
+        "action"
+      ],
+      "predictedLabels": [
+        "action",
+        "state"
+      ],
+      "probabilities": [
+        0.0011880669052545512,
+        0.006693692219545725,
+        0.7694619244899263,
+        0.822411475535696,
+        0.004363792651752191,
+        0.03682031217045771
+      ],
+      "groupId": "expanded-family-bdf3dfdf0eb87a12"
+    },
+    {
+      "id": "expanded-45a55ea3c24b281e",
+      "word": "yawn",
+      "definition": "To open the mouth widely while breathing in, often when tired.",
+      "referenceLabels": [
+        "action"
+      ],
+      "predictedLabels": [
+        "action",
+        "state"
+      ],
+      "probabilities": [
+        0.009117287927863815,
+        0.0045266752183670406,
+        0.6593560751529925,
+        0.9075387311699897,
+        0.0017146472595000657,
+        0.03218836509064787
+      ],
+      "groupId": "expanded-family-ff474f8c46c48a2c"
+    },
+    {
+      "id": "expanded-d6687ce0d150749e",
+      "word": "wink",
+      "definition": "To close one eye briefly as a signal or playful gesture.",
+      "referenceLabels": [
+        "action"
+      ],
+      "predictedLabels": [
+        "action",
+        "state"
+      ],
+      "probabilities": [
+        0.009509837503863779,
+        0.0020599920788059597,
+        0.8823595829366094,
+        0.42337509425135383,
+        0.026291850890446937,
+        0.009165076168133618
+      ],
+      "groupId": "expanded-family-82cf635010d8e9e0"
+    },
+    {
+      "id": "expanded-00a289d511fa6e90",
+      "word": "gush",
+      "definition": "To flow out suddenly and in a large amount.",
+      "referenceLabels": [
+        "action"
+      ],
+      "predictedLabels": [
+        "action",
+        "relation"
+      ],
+      "probabilities": [
+        0.0020553945107673562,
+        0.005769681678827347,
+        0.9868406808412988,
+        0.014816169897423754,
+        0.9170064508464615,
+        0.019973377044937433
+      ],
+      "groupId": "expanded-family-291707af576b4e12"
+    },
+    {
+      "id": "expanded-ed0c4afbf321d01f",
+      "word": "hatch",
+      "definition": "To emerge from an egg.",
+      "referenceLabels": [
+        "action"
+      ],
+      "predictedLabels": [
+        "action",
+        "relation"
+      ],
+      "probabilities": [
+        0.010957111792144206,
+        0.0033883619885324377,
+        0.9908168716552674,
+        0.012230370796123546,
+        0.534022702312421,
+        0.008705468550997719
+      ],
+      "groupId": "expanded-family-83ac27ae8c0d3936"
+    },
+    {
+      "id": "expanded-e94881f27364d950",
+      "word": "muscular",
+      "definition": "Having large or well-developed muscles.",
+      "referenceLabels": [
+        "state"
+      ],
+      "predictedLabels": [],
+      "probabilities": [
+        0.27881866470168026,
+        0.0030321652995974157,
+        0.06723242014281759,
+        0.33658246580230794,
+        0.007557809927583805,
+        0.008072996994556124
+      ],
+      "groupId": "expanded-family-cab007720bac3907"
+    },
+    {
+      "id": "expanded-8dedb59f6bb47815",
+      "word": "motionless",
+      "definition": "Not moving or changing position.",
+      "referenceLabels": [
+        "state"
+      ],
+      "predictedLabels": [
+        "state",
+        "abstract"
+      ],
+      "probabilities": [
+        0.002553707764707358,
+        0.0024147423100768493,
+        0.08676141610609292,
+        0.47414145007478725,
+        0.014257345394994157,
+        0.5076995142721207
+      ],
+      "groupId": "expanded-family-17c88d850ffa9a87"
+    },
+    {
+      "id": "expanded-02e48d7242cde885",
+      "word": "viscous",
+      "definition": "Thick and resistant to flowing freely.",
+      "referenceLabels": [
+        "state"
+      ],
+      "predictedLabels": [
+        "state",
+        "relation"
+      ],
+      "probabilities": [
+        0.0015955108290872902,
+        0.00364162766902613,
+        0.08136524103491322,
+        0.914086516078088,
+        0.47262429491650826,
+        0.023369710972473732
+      ],
+      "groupId": "expanded-family-38a0910769eb8166"
+    },
+    {
+      "id": "expanded-9ab26f6bf7c9f9c3",
+      "word": "fatigue",
+      "definition": "A condition of physical tiredness and reduced energy.",
+      "referenceLabels": [
+        "state"
+      ],
+      "predictedLabels": [
+        "state",
+        "abstract"
+      ],
+      "probabilities": [
+        0.0017527488141104487,
+        0.005189373869018911,
+        0.037657979211768805,
+        0.9686481762291226,
+        0.0028687214248695296,
+        0.5743175470328427
+      ],
+      "groupId": "expanded-family-cab007720bac3907"
+    },
+    {
+      "id": "expanded-3b05b0c97396d945",
+      "word": "flanking",
+      "definition": "Standing or lying on both sides of a central person or thing.",
+      "referenceLabels": [
+        "relation"
+      ],
+      "predictedLabels": [
+        "state"
+      ],
+      "probabilities": [
+        0.0018276425464225999,
+        0.00867417023648323,
+        0.13733747625361695,
+        0.4204843793518414,
+        0.14333460323110675,
+        0.018908955601601156
+      ],
+      "groupId": "expanded-family-282a2dd2c0d8f278"
+    },
+    {
+      "id": "expanded-88da7f1d7050af77",
+      "word": "flush with",
+      "definition": "Level with an adjoining surface so that neither projects beyond the other.",
+      "referenceLabels": [
+        "relation"
+      ],
+      "predictedLabels": [
+        "state",
+        "relation"
+      ],
+      "probabilities": [
+        0.0026640200369140526,
+        0.030048270538037034,
+        0.06445198442784114,
+        0.4037464197062997,
+        0.36353342808604616,
+        0.004772031105756931
+      ],
+      "groupId": "expanded-family-6d6d3bab5fda5bcf"
+    },
+    {
+      "id": "expanded-b5c0a415fc0a5d8f",
+      "word": "diagonal to",
+      "definition": "Running at a slant relative to the edges or usual directions of another shape.",
+      "referenceLabels": [
+        "relation"
+      ],
+      "predictedLabels": [
+        "state"
+      ],
+      "probabilities": [
+        0.030898953877311317,
+        0.007950925026098302,
+        0.06217166322343748,
+        0.3842182068644093,
+        0.09235529306428057,
+        0.003910839309802557
+      ],
+      "groupId": "expanded-family-16783de8dc3d8d22"
+    },
+    {
+      "id": "expanded-52a141bfecaea9fd",
+      "word": "senior to",
+      "definition": "Higher than another person in rank or length of service.",
+      "referenceLabels": [
+        "relation",
+        "abstract"
+      ],
+      "predictedLabels": [
+        "abstract"
+      ],
+      "probabilities": [
+        0.011996534657247196,
+        0.0018695707800285308,
+        0.0816662391845827,
+        0.11865502015287714,
+        0.05555367513893758,
+        0.9582322771805453
+      ],
+      "groupId": "expanded-family-cee59122244cf891"
+    },
+    {
+      "id": "expanded-364aa7b9fe9d2dd4",
+      "word": "junior to",
+      "definition": "Lower than another person in rank or length of service.",
+      "referenceLabels": [
+        "relation",
+        "abstract"
+      ],
+      "predictedLabels": [
+        "abstract"
+      ],
+      "probabilities": [
+        0.020121214568436022,
+        0.0016651293935541526,
+        0.1792359725735695,
+        0.06981879211103671,
+        0.07573096080616641,
+        0.9216835886615364
+      ],
+      "groupId": "expanded-family-cee59122244cf891"
+    },
+    {
+      "id": "expanded-758183ef2ed17c25",
+      "word": "sibling",
+      "definition": "A person who has one or both parents in common with another person.",
+      "referenceLabels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "predictedLabels": [
+        "abstract"
+      ],
+      "probabilities": [
+        0.23966463607117955,
+        0.01057939011230914,
+        0.030196651403960342,
+        0.002078233462898657,
+        0.3402508323261673,
+        0.865935966946397
+      ],
+      "groupId": "expanded-family-34d5d28748fe65e8"
+    },
+    {
+      "id": "expanded-f2509463b0241977",
+      "word": "cousin",
+      "definition": "A relative who shares a grandparent or another recent ancestor but is not a sibling.",
+      "referenceLabels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "predictedLabels": [
+        "abstract"
+      ],
+      "probabilities": [
+        0.09963721764158127,
+        0.01028016120049428,
+        0.003717780968525697,
+        0.0224742887005428,
+        0.27305565074505883,
+        0.9397354768320547
+      ],
+      "groupId": "expanded-family-34d5d28748fe65e8"
+    },
+    {
+      "id": "expanded-b2cc85052d47d8ea",
+      "word": "neighbor",
+      "definition": "A person whose home is near another person\u2019s home.",
+      "referenceLabels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.279333465843954,
+        0.02822730428714478,
+        0.09566964012545444,
+        0.00035842230056823746,
+        0.8970805277518117,
+        0.8357058641426537
+      ],
+      "groupId": "expanded-family-e4495461b94c20f8"
+    },
+    {
+      "id": "expanded-3528237dd8a0e0bd",
+      "word": "supervisor",
+      "definition": "A person responsible for overseeing the work of other people.",
+      "referenceLabels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.06679213974816164,
+        0.004134238232368925,
+        0.019425779968395528,
+        0.010769272944005627,
+        0.8271424411301922,
+        0.9730015114827293
+      ],
+      "groupId": "expanded-family-8018dc623370fc9c"
+    },
+    {
+      "id": "expanded-5dce5029bee9fb3e",
+      "word": "beneficiary",
+      "definition": "A person or group entitled to receive a benefit from another party\u2019s arrangement.",
+      "referenceLabels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.2231854257215413,
+        0.01365391678621944,
+        0.01169237261966812,
+        0.0017433465561447036,
+        0.9178257710065272,
+        0.9652023769781564
+      ],
+      "groupId": "expanded-family-ecdbbf41a5441126"
+    },
+    {
+      "id": "expanded-9bf2a657499fde12",
+      "word": "teamwork",
+      "definition": "Coordinated effort by people working toward a shared goal.",
+      "referenceLabels": [
+        "action",
+        "abstract"
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.07162899567252182,
+        0.0025597170306398535,
+        0.1772523797870801,
+        0.008624046193371227,
+        0.9514760541430405,
+        0.9519805571580146
+      ],
+      "groupId": "expanded-family-f2ed57f5cc934712"
+    },
+    {
+      "id": "expanded-d322e4249439c32a",
+      "word": "cooperation",
+      "definition": "Working together willingly to achieve a shared result.",
+      "referenceLabels": [
+        "action",
+        "abstract"
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.04405535727626094,
+        0.0039030805483040733,
+        0.03846232112802996,
+        0.00810320747871347,
+        0.9590635281802904,
+        0.9673742199486431
+      ],
+      "groupId": "expanded-family-f2ed57f5cc934712"
+    },
+    {
+      "id": "expanded-97364debf4e468f4",
+      "word": "method",
+      "definition": "An organized way of doing or investigating something.",
+      "referenceLabels": [
+        "action",
+        "abstract"
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.005894728857657488,
+        0.015472824899550505,
+        0.03241581706768455,
+        0.007509340253548436,
+        0.49015396773793557,
+        0.8975883608109104
+      ],
+      "groupId": "expanded-family-3865bd6c22892cbe"
+    },
+    {
+      "id": "expanded-980688f56355ee7f",
+      "word": "valid",
+      "definition": "Sound or well-founded according to the rules or evidence that apply.",
+      "referenceLabels": [
+        "abstract"
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.003933284902519812,
+        0.0025030508466490115,
+        0.07586809559388943,
+        0.061157208739968626,
+        0.6606279348190985,
+        0.7605984621382054
+      ],
+      "groupId": "expanded-family-53a53490c6f3858a"
+    },
+    {
+      "id": "expanded-fcd459c16408134a",
+      "word": "true",
+      "definition": "In agreement with fact or reality.",
+      "referenceLabels": [
+        "abstract"
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.002936276571447441,
+        0.007015210668085275,
+        0.007920936903672739,
+        0.08823651491408048,
+        0.4198572855252731,
+        0.9851771665204223
+      ],
+      "groupId": "expanded-family-61faea2979620bfe"
+    },
+    {
+      "id": "expanded-bc60fc51290e2ffe",
+      "word": "therefore",
+      "definition": "For that reason; used to mark a conclusion drawn from what came before.",
+      "referenceLabels": [
+        "abstract"
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.001711571036816392,
+        0.005142477972138566,
+        0.028204667346311926,
+        0.13051062257379226,
+        0.44348736026505414,
+        0.9394191152638414
+      ],
+      "groupId": "expanded-family-1d3836137982e22a"
+    },
+    {
+      "id": "expanded-b42277020e6b367c",
+      "word": "otherwise",
+      "definition": "In a different way or under different circumstances.",
+      "referenceLabels": [
+        "abstract"
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.002666385303623717,
+        0.0064351225402946724,
+        0.01797415881693509,
+        0.08189755201615882,
+        0.5958680129002405,
+        0.9432157654172038
+      ],
+      "groupId": "expanded-family-817c8c68d5e4c18e"
+    },
+    {
+      "id": "expanded-73a20a5f4f116a27",
+      "word": "exactly",
+      "definition": "In every detail or respect required by the comparison or statement.",
+      "referenceLabels": [
+        "abstract"
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.00312793874762362,
+        0.006466792696820764,
+        0.009308762163942889,
+        0.03640189338595636,
+        0.7743216412714611,
+        0.9373587061449739
+      ],
+      "groupId": "expanded-family-5decaa263c65c15b"
+    },
+    {
+      "id": "expanded-a64c8be672c45ba5",
+      "word": "roughly",
+      "definition": "Approximately, without claiming exact measurement.",
+      "referenceLabels": [
+        "abstract"
+      ],
+      "predictedLabels": [],
+      "probabilities": [
+        0.0050331365427529985,
+        0.005325845298220966,
+        0.010406779276394487,
+        0.23433529683109597,
+        0.21284039775675723,
+        0.14291248458788172
+      ],
+      "groupId": "expanded-family-93ffcc947eec6e5a"
+    },
+    {
+      "id": "expanded-fbbd20224334d85b",
+      "word": "gradual",
+      "definition": "Happening by small degrees over a period of time.",
+      "referenceLabels": [
+        "action",
+        "abstract"
+      ],
+      "predictedLabels": [
+        "state",
+        "abstract"
+      ],
+      "probabilities": [
+        0.0011993410029014747,
+        0.0061208544418212074,
+        0.042141526039857206,
+        0.516469137011409,
+        0.041503928068818516,
+        0.6884145278732773
+      ],
+      "groupId": "expanded-family-6d0628f0c7f065ed"
+    }
+  ],
+  "interpretation": "Reference labels are AI-reviewed and may have policy ambiguity. Error analysis does not establish annotation truth and does not relabel test errors."
+}

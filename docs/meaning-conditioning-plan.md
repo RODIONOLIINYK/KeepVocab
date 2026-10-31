@@ -52,6 +52,33 @@ budget, such as half the parent's weight each, so augmentation does not silently
 double positive loss weight relative to negatives. Crops enlarge image–meaning
 training data, not text-category training data.
 
+## Expanded classifier and reusable adapter data (2026-10-31)
+
+The [expanded 1,000-example experiment](meaning-taxonomy-training/expanded-1000/README.md)
+contains 590 training, 120 fresh validation, 120 fresh test, and 170 legacy
+evaluation examples. Each training category has 115–126 positive memberships.
+531 new text examples were authored and reviewed; five old quarantined meanings
+remain outside the 1,000 usable rows. Original benchmark labels and model files
+stay frozen. The current **offline conditioning head** is identified by
+`tests/fixtures/meaning-taxonomy/current-classifier.json`.
+
+The predeclared cheaper-model comparison selected the 32-unit head over logistic
+regression. On the same fresh test, 32-unit exact match/macro-F1 are 70.00%/83.59%,
+versus linear 60.83%/81.30%. Its advantage is larger than the practical tolerance
+for replacing it with linear. This is not a 97% result or a production-usage
+estimate. The selected head is one meaning classifier; no separate image
+category classifier is planned. Production personal ranking is a distinct
+model and is unchanged.
+
+The [MLP-data conversion](clip-adapter-data.md) produces 2,241 explicit semantic
+triplets and 954 positive point pairs, including 355 approved crops. All CLIP
+vectors retain 512 coordinates; the three old MLP score fields are removed.
+Only target-meaning vectors supply the six class probabilities. These examples
+can train the planned per-category image/text transforms; text-category labels
+alone and the classifier's own weights cannot train or substitute for those
+transforms. The converted image holdouts are retired, so obtain fresh reviewed
+image–meaning evaluation groups before adapter selection or integration.
+
 ## Categories describe required visual evidence
 
 | Output ID | Evidence focus | Examples |

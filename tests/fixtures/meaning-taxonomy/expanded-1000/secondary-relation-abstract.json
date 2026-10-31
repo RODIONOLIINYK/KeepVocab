@@ -1,0 +1,244 @@
+{
+  "reviewedCount": 161,
+  "concerns": [
+    {
+      "id": "expanded-1cafeeb4ded32980",
+      "word": "back to back",
+      "proposedLabels": [
+        "relation"
+      ],
+      "reason": "This is the direct opposing orientation to the old held-out meaning 'face to face' (test). The primary row has its own familyId, so a future split could leak a paired relation across partitions. Connect it to the old face-to-face group and keep the connected component out of training, or remove it from this expansion.",
+      "relatedWords": [
+        "face to face"
+      ]
+    },
+    {
+      "id": "expanded-25234d45886d1310",
+      "word": "sandwiched",
+      "proposedLabels": [
+        "relation"
+      ],
+      "reason": "The definition is a close paraphrase of the supplement training meaning 'squeezed between', but its familyId is the synthetic value 'linked-existing-supplement-family-squeezed-between' rather than the existing familyId 'squeezed-between'. It also has no linkedExistingId in primary-reviewed.json. As stored, the related rows will not share a family group.",
+      "relatedWords": [
+        "squeezed between"
+      ]
+    },
+    {
+      "id": "expanded-ba2bfcbd47112139",
+      "word": "purpose",
+      "proposedLabels": [
+        "abstract"
+      ],
+      "reason": "The stated aim is close to the old test definition of 'intention' ('A plan or purpose held in the mind before acting.'). This may be a distinct purpose-as-function sense, but the current wording is close enough to risk paraphrase leakage. Clarify the function/object-goal sense and review its split connection before using it.",
+      "relatedWords": [
+        "intention"
+      ]
+    },
+    {
+      "id": "expanded-d66465d2d8a5a35b",
+      "word": "community",
+      "proposedLabels": [
+        "entity",
+        "abstract"
+      ],
+      "reason": "The definition includes 'a shared sense of belonging', which closely echoes the old validation meaning 'A sense of being accepted as part of a group or place.' The referent is a group of people, but the added phrase makes this row overlap with a held-out feeling. Narrow the wording to the group/community sense or quarantine the connected family.",
+      "relatedWords": [
+        "belonging",
+        "society"
+      ]
+    },
+    {
+      "id": "expanded-ada28687f0ea7dca",
+      "word": "coplanar",
+      "proposedLabels": [
+        "relation"
+      ],
+      "reason": "This is a geometric relation in the same conceptual family as existing 'parallel' and 'perpendicular' meanings, but it has a new isolated familyId. Group these geometric relations so a later split cannot separate closely related geometry meanings.",
+      "relatedWords": [
+        "parallel",
+        "perpendicular"
+      ]
+    },
+    {
+      "id": "expanded-0c355539abb9d122",
+      "word": "coaxial",
+      "proposedLabels": [
+        "relation"
+      ],
+      "reason": "A shared central axis is closely related to the supplement training meaning 'concentric' (same center). The current familyId is separate, so group them or record why their relation families should be partitioned independently.",
+      "relatedWords": [
+        "concentric"
+      ]
+    },
+    {
+      "id": "expanded-4490969544ca9ae9",
+      "word": "apprentice",
+      "proposedLabels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "reason": "Consider whether person-role nouns need entity in addition to relation+abstract. The person is a core referent in the definition, and the taxonomy permits entity+relation when both person/object and relationship contribute (for example, companion meaning). Apply the same decision consistently to the related social-role nouns.",
+      "relatedWords": [
+        "sibling",
+        "cousin",
+        "neighbor",
+        "teammate",
+        "opponent",
+        "partner",
+        "mentor",
+        "supervisor",
+        "colleague",
+        "customer",
+        "supplier",
+        "borrower",
+        "lender",
+        "host",
+        "guest",
+        "beneficiary",
+        "intermediary",
+        "counterpart"
+      ]
+    },
+    {
+      "id": "expanded-f2509463b0241977",
+      "word": "cousin",
+      "reason": "Cousin and sibling are both kinship roles and should stay in one connected family for grouped partitions. Their current familyIds are separate.",
+      "relatedWords": [
+        "sibling"
+      ]
+    },
+    {
+      "id": "expanded-4abb44226e1afdb3",
+      "word": "partner",
+      "reason": "The generic joint-activity role overlaps closely with teammate, while both have distinct familyIds. Group the near-related collaboration roles to prevent a train/evaluation split between close role descriptions.",
+      "relatedWords": [
+        "teammate"
+      ]
+    },
+    {
+      "id": "expanded-3528237dd8a0e0bd",
+      "word": "supervisor",
+      "reason": "This and colleague are workplace relationship roles but currently have separate families. Group the connected workplace roles (or document a stricter family boundary) before assigning partitions.",
+      "relatedWords": [
+        "colleague"
+      ]
+    },
+    {
+      "id": "expanded-efc122bd31a10837",
+      "word": "doubt",
+      "proposedLabels": [
+        "state",
+        "abstract"
+      ],
+      "reason": "The epistemic-attitude cluster is split across separate families: belief links to the existing believe family, while doubt and opinion stand alone. Doubt directly contrasts with belief, so keep this close concept group connected for grouped partitioning.",
+      "relatedWords": [
+        "belief",
+        "opinion",
+        "certain"
+      ]
+    },
+    {
+      "id": "expanded-f77f68f724013600",
+      "word": "proof",
+      "proposedLabels": [
+        "abstract"
+      ],
+      "reason": "Proof is explicitly a stronger kind of evidence, but the two have separate familyIds. The related reason/argument meanings also describe support for conclusions. Group this reasoning-evidence cluster or otherwise prevent a close-definition split.",
+      "relatedWords": [
+        "evidence",
+        "reason",
+        "argument",
+        "infer"
+      ]
+    },
+    {
+      "id": "expanded-fcd459c16408134a",
+      "word": "true",
+      "proposedLabels": [
+        "abstract"
+      ],
+      "reason": "True and false are direct opposites but currently have distinct familyIds. The taxonomy's grouping contract keeps connected opposites together; use one truth-value family.",
+      "relatedWords": [
+        "false"
+      ]
+    },
+    {
+      "id": "expanded-b7cce5bddef1862b",
+      "word": "reluctant",
+      "proposedLabels": [
+        "state",
+        "abstract"
+      ],
+      "reason": "Reluctant and willing are direct opposites with separate familyIds. Connect the pair before assigning a grouped split.",
+      "relatedWords": [
+        "willing"
+      ]
+    },
+    {
+      "id": "expanded-f441f673ca3b47ea",
+      "word": "disagreement",
+      "proposedLabels": [
+        "abstract"
+      ],
+      "reason": "Disagreement is the direct opposite of agreement, but the rows use separate familyIds. Keep the opposite pair in one group.",
+      "relatedWords": [
+        "agreement"
+      ]
+    },
+    {
+      "id": "expanded-d322e4249439c32a",
+      "word": "cooperation",
+      "proposedLabels": [
+        "action",
+        "abstract"
+      ],
+      "reason": "The definition is very close to teamwork ('coordinated effort ... toward a shared goal' versus 'working together willingly to achieve a shared result'). The two near-paraphrases have separate familyIds and should share a group or be differentiated more clearly.",
+      "relatedWords": [
+        "teamwork"
+      ]
+    },
+    {
+      "id": "expanded-dab4a502b38ffa7b",
+      "word": "aware",
+      "proposedLabels": [
+        "state",
+        "abstract"
+      ],
+      "reason": "Aware and conscious are close descriptions of awareness, but their familyIds are separate. Connect this pair or clarify a narrower sense distinction.",
+      "relatedWords": [
+        "conscious"
+      ]
+    },
+    {
+      "id": "expanded-6ab09c3d0b781fb6",
+      "word": "duration",
+      "proposedLabels": [
+        "abstract"
+      ],
+      "reason": "Duration, temporary, permanent, and constant describe the same duration/continuity dimension, but only the three adjectives share a family. Consider joining the noun and adjective variants in one family.",
+      "relatedWords": [
+        "temporary",
+        "permanent",
+        "constant"
+      ]
+    },
+    {
+      "id": "expanded-8254635efcb1f6b1",
+      "word": "future",
+      "reason": "Past, present, and future form a connected set of temporal reference meanings, but each has its own familyId. Keep them grouped for partitioning.",
+      "relatedWords": [
+        "past",
+        "present"
+      ]
+    },
+    {
+      "id": "expanded-3cc74019696cd1c1",
+      "word": "responsibility",
+      "reason": "Responsibility and responsible are direct derivational variants, but have separate familyIds. Connect the noun/adjective pair to keep the same root from crossing partitions.",
+      "relatedWords": [
+        "responsible"
+      ]
+    }
+  ]
+}
