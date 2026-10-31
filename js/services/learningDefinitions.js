@@ -223,10 +223,11 @@ export async function withLearnerExplanations(entry, options = {}) {
       senses[index] = applyExplanation(word, cached, model, preserveDefinition, explicit);
     } else pending.push({ id: String(index), key, word, preserveDefinition });
   }
+  const batchSize = Math.min(20, Math.max(1, Math.floor(Number(options.explanationBatchSize) || 12)));
   if (!enabled) for (const item of pending) failed(item, 'AI_NOT_CONFIGURED', 'Connect Gemini in Settings to generate an explanation. Your current meaning is unchanged.');
-  else for (let offset = 0; offset < pending.length; offset += 12) {
+  else for (let offset = 0; offset < pending.length; offset += batchSize) {
     if (options.signal?.aborted) break;
-    let batch = pending.slice(offset, offset + 12);
+    let batch = pending.slice(offset, offset + batchSize);
     if (blockedError) {
       for (const item of batch) failed(item, `API_${blockedError.status}`, blockedError.message);
       continue;

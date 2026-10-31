@@ -139,3 +139,25 @@ test('manual and Weak Words Use It modes share the same exercise component and e
   assert.match(sessionSource, /daily-session-shell/);
   assert.match(sessionSource, /sessionLabel = options.kind === 'weak' \? 'Weak Words' : 'Practice'/);
 });
+
+test('Gemini Use It evaluation caches repeated sentence checks and applies minimal thinking overhead', async () => {
+  const values = new Map([['keepvocab_gemini_live_key_v1', 'AIza-test-key-for-use-it-cache-123456789']]);
+  const storage = { getItem: key => values.get(key) || null, setItem: (key, val) => values.set(key, val) };
+  let calls = 0;
+  let requestBody = null;
+  const word = { word: 'walk', partOfSpeech: 'verb', definition: 'Move on foot.' };
+  const options = {
+    storage,
+    fetchImpl: async (_url, req) => {
+      calls += 1;
+      requestBody = JSON.parse(req.body);
+      return { ok: true, async json() { return { candidates: [{ content: { parts: [{ text: '{"used":true,"senseCorrect":true,"grammatical":true,"natural":true,"correct":true,"feedback":"Good sentence.","improvedSentence":""}' }] } }] }; } };
+    }
+  };
+  const first = await evaluateUseItSentence(word, 'She walked home after work.', options);
+  const second = await evaluateUseItSentence(word, '  She   walked home after work. ', options);
+  assert.equal(calls, 1);
+  assert.deepEqual(second, first);
+  assert.deepEqual(requestBody.generationConfig.thinkingConfig, { thinkingLevel: 'minimal' });
+  assert.equal(requestBody.generationConfig.maxOutputTokens, 320);
+});

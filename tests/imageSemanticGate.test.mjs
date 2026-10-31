@@ -10,8 +10,8 @@ const vector = axis => Array.from({length:512},(_,i)=>Number(i===axis));
 test('the user-selected semantic cutoff is inclusive, selected must exceed unwanted, and missing scores fail',()=>{
   assert.deepEqual(IMAGE_SEMANTIC_FILTER,{minimumSimilarity:.19,candidatePoolSize:30});
   assert.equal(passesImageSemanticGate({selected:.19,unwanted:.189}),true);
-  assert.equal(passesImageSemanticGate({selected:.25,unwanted:.24}),true);
-  for(const row of [{selected:.1899,unwanted:0},{selected:.19,unwanted:.19},{selected:.22,unwanted:.25},{selected:NaN,unwanted:0},{selected:.9},null])assert.equal(passesImageSemanticGate(row),false);
+  assert.equal(passesImageSemanticGate({selected:.25,unwanted:.24,margin:.02}),true);
+  for(const row of [{selected:.1899,unwanted:0},{selected:.19,unwanted:.19},{selected:.22,unwanted:.25},{selected:.24,unwanted:.1,margin:-.01},{selected:NaN,unwanted:0},{selected:.9},null])assert.equal(passesImageSemanticGate(row),false);
 });
 test('personal taste cannot resurrect a failed semantic match or unwanted-content rejection',()=>{
   const model=createPersonalizer();model.weights.fill(0);

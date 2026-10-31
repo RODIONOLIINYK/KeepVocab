@@ -15,6 +15,7 @@ const providerCooldownUntil = new Map();
 const SCENE_CACHE_KEY = 'keepvocab_image_scenes_v2';
 const SCENE_GENERATOR_VERSION = '3';
 const sceneRequests = new Map();
+const sceneBatchQueues = new Map();
 const sceneRetryAfter = new Map();
 const exactText = value => String(value || '').replace(/\s+/g, ' ').trim();
 const semanticWord = word => ({ ...word, definition: exactText(word?.sourceDefinition || word?.definition) });
@@ -440,27 +441,50 @@ export async function prepareImageScenes(words, options = {}) {
     sceneRequests.set(key, pending); tasks.set(key, pending);
     own.push({ id: `sense-${own.length}`, key, word, settle });
   }
-  const batchSize = Math.min(20, Math.max(1, Math.floor(Number(options.sceneBatchSize) || 12)));
-  let blocked = false;
-  for (let offset = 0; offset < own.length; offset += batchSize) {
-    const batch = own.slice(offset, offset + batchSize);
-    let generated = new Map();
-    try {
-      if (!blocked) {
-        const result = await generateSceneBatch(batch, options);
-        generated = result.records;
-        blocked = result.blocked;
+  const batchSize = Math.min(20, Math.max(1, Math.floor(Number(options.sceneBatchSize) || 20)));
+  const runSceneBatches = async (queued, batchOptions) => {
+    let blocked = false;
+    for (let offset = 0; offset < queued.length; offset += batchSize) {
+      const batch = queued.slice(offset, offset + batchSize);
+      let generated = new Map();
+      try {
+        if (!blocked) {
+          const result = await generateSceneBatch(batch, batchOptions);
+          generated = result.records;
+          blocked = result.blocked;
+        }
+      }
+      finally {
+        for (const item of batch) {
+          const record = generated.get(item.key) || null;
+          if (!record) {
+            sceneRetryAfter.set(item.key, Date.now() + 60_000);
+            while (sceneRetryAfter.size > 300) sceneRetryAfter.delete(sceneRetryAfter.keys().next().value);
+          }
+          item.settle(record); sceneRequests.delete(item.key);
+        }
       }
     }
-    finally {
-      for (const item of batch) {
-        const record = generated.get(item.key) || null;
-        if (!record) {
-          sceneRetryAfter.set(item.key, Date.now() + 60_000);
-          while (sceneRetryAfter.size > 300) sceneRetryAfter.delete(sceneRetryAfter.keys().next().value);
-        }
-        item.settle(record); sceneRequests.delete(item.key);
+  };
+  if (own.length) {
+    if (options.coalesceScenes) {
+      const queueGroupKey = `${settings.apiKey}|${settings.textModel}|${batchSize}|${options.sceneRetries ?? 1}`;
+      let group = sceneBatchQueues.get(queueGroupKey);
+      if (!group || group.fetchImpl !== options.fetchImpl || group.storage !== options.storage) {
+        group = { items: [], options, fetchImpl: options.fetchImpl, storage: options.storage, scheduled: false };
+        sceneBatchQueues.set(queueGroupKey, group);
       }
+      group.items.push(...own);
+      if (!group.scheduled) {
+        group.scheduled = true;
+        queueMicrotask(() => {
+          if (sceneBatchQueues.get(queueGroupKey) === group) sceneBatchQueues.delete(queueGroupKey);
+          const queued = group.items.map((item, idx) => ({ ...item, id: `sense-${idx}` }));
+          runSceneBatches(queued, group.options);
+        });
+      }
+    } else {
+      await runSceneBatches(own, options);
     }
   }
   for (const [key, task] of tasks) {
@@ -477,7 +501,7 @@ export async function prepareImageScenes(words, options = {}) {
 }
 
 export async function generateVisualScenesWithGemini(word, options = {}) {
-  const [prepared] = await prepareImageScenes([word], options);
+  const [prepared] = await prepareImageScenes([word], { coalesceScenes: true, ...options });
   return prepared?.imageScenes?.scenes || [];
 }
 

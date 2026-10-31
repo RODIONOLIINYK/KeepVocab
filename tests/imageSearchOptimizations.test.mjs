@@ -60,6 +60,11 @@ test('bulk scene generation batches twenty distinct senses and shares concurrent
   assert.deepEqual(batches.map(batch => batch.length), [20, 5]);
   assert.ok(prepared.every(word => word.imageScenes.scenes[0] === scene));
   assert.deepEqual(scenes, [scene]);
+
+  const distinctSingles = [sense('coalesce0'), sense('coalesce1'), sense('coalesce2')];
+  const coalesced = await Promise.all(distinctSingles.map(item => generateVisualScenesWithGemini(item, { storage: saved, fetchImpl })));
+  assert.deepEqual(batches.map(batch => batch.length), [20, 5, 3]);
+  assert.ok(coalesced.every(items => items[0] === scene));
 });
 
 test('partial batches retry only failed IDs once and do not persist malformed or empty results', async () => {

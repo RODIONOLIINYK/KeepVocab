@@ -101,6 +101,15 @@ export function restoreGeminiBackupRecord(record, storage = globalThis.localStor
   }, storage, { silent: true });
 }
 
+export function defaultGeminiThinkingConfig(model, isAudioRequest = false) {
+  if (isAudioRequest) return null;
+  const name = String(model || '');
+  if (/^(?:gemini-3\.1-flash-lite|gemini-3-flash-preview)$/.test(name)) return { thinkingLevel: 'minimal' };
+  if (/^gemini-3(?:[.-]|$)/.test(name) && !/(?:image|live)/.test(name)) return { thinkingLevel: 'low' };
+  if (/^gemini-2\.5-(?:pro|flash)/.test(name)) return { thinkingBudget: 512 };
+  return null;
+}
+
 export async function generateGeminiParts(parts, options = {}) {
   const settings = { ...getGeminiSettings(options.storage), ...(options.settings || {}) };
   if (options.settings?.enabled === false) throw new Error('AI is disabled in Settings.');
@@ -111,9 +120,11 @@ export async function generateGeminiParts(parts, options = {}) {
   if (!fetchImpl) throw new Error('Network requests are unavailable on this device.');
   const isAudioRequest = Array.isArray(options.responseModalities) && options.responseModalities.includes('AUDIO');
   const configuredMaxOutputTokens = Number(options.maxOutputTokens);
+  const thinkingConfig = defaultGeminiThinkingConfig(model, isAudioRequest);
   const body = JSON.stringify({
     contents: [{ role: 'user', parts: Array.isArray(parts) ? parts : [{ text: String(parts || '') }] }],
     generationConfig: {
+      ...(thinkingConfig ? { thinkingConfig } : {}),
       ...(options.generationConfig || {}),
       ...(options.json ? { responseMimeType: 'application/json' } : {}),
       ...(options.responseModalities ? { responseModalities: options.responseModalities } : {}),

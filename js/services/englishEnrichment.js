@@ -1,5 +1,5 @@
 import { DictionaryApiError, fetchWordDetails, normalizeQuery, withEntryTranslations, entryTranslationLanguage } from './dictionaryApi.js?v=18900';
-import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18900';
+import { defaultGeminiThinkingConfig, generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18900';
 import { sanitizeExistingExamples } from './exampleSearch.js?v=18900';
 import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18900';
 import { groupSimilarSenses } from './learningDefinitions.js?v=18900';
@@ -25,9 +25,7 @@ function entrySchema(translationLanguage, allowSpellingCorrection) {
 
 function entryGenerationConfig(settings, options, translationLanguage) {
   const model = String(options.model || settings.textModel);
-  const thinkingConfig = /^(?:gemini-3\.1-flash-lite|gemini-3-flash-preview)$/.test(model)
-    ? { thinkingLevel: 'minimal' } : /^gemini-3(?:[.-]|$)/.test(model) && !/(?:image|live)/.test(model)
-      ? { thinkingLevel: 'low' } : /^gemini-2\.5-(?:pro|flash)/.test(model) ? { thinkingBudget: 512 } : null;
+  const thinkingConfig = defaultGeminiThinkingConfig(model, false);
   return { ...(thinkingConfig ? { thinkingConfig } : {}), ...options.generationConfig,
     responseSchema: entrySchema(translationLanguage, options.allowSpellingCorrection) };
 }

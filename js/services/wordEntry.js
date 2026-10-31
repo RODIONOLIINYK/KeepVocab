@@ -29,7 +29,7 @@ export async function prepareBulkLearnerExplanations(results, options = {}) {
   if (!selected.length) return results;
   // Bulk rows import one chosen meaning; rewriting every unselected dictionary
   // sense can multiply the request cost before the learner has chosen it.
-  const explained = await withLearnerExplanations({ senses: selected.map(item => item.sense) }, options);
+  const explained = await withLearnerExplanations({ senses: selected.map(item => item.sense) }, { explanationBatchSize: 20, ...options });
   const replacements = new Map(selected.map((item, index) => [item.index, { ...item, sense: explained.senses[index] }]));
   return results.map((result, index) => {
     const replacement = replacements.get(index);
