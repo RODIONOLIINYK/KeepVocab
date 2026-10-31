@@ -7,15 +7,16 @@ import { getImageProviderSettings, findRelevantImages } from '../js/services/ima
 import { MemoryStorage } from '../js/services/driveSync.js';
 
 const vector = axis => Array.from({length:512},(_,i)=>Number(i===axis));
-test('the user-selected semantic cutoff is inclusive, unwanted cutoff is strict, and missing scores fail',()=>{
-  assert.deepEqual(IMAGE_SEMANTIC_FILTER,{minimumSimilarity:.19,maximumUnwanted:.20,candidatePoolSize:30});
-  assert.equal(passesImageSemanticGate({selected:.19,unwanted:.199}),true);
-  for(const row of [{selected:.1899,unwanted:0},{selected:.8,unwanted:.20},{selected:NaN,unwanted:0},{selected:.9},null])assert.equal(passesImageSemanticGate(row),false);
+test('the user-selected semantic cutoff is inclusive, selected must exceed unwanted, and missing scores fail',()=>{
+  assert.deepEqual(IMAGE_SEMANTIC_FILTER,{minimumSimilarity:.19,candidatePoolSize:30});
+  assert.equal(passesImageSemanticGate({selected:.19,unwanted:.189}),true);
+  assert.equal(passesImageSemanticGate({selected:.25,unwanted:.24}),true);
+  for(const row of [{selected:.1899,unwanted:0},{selected:.19,unwanted:.19},{selected:.22,unwanted:.25},{selected:NaN,unwanted:0},{selected:.9},null])assert.equal(passesImageSemanticGate(row),false);
 });
 test('personal taste cannot resurrect a failed semantic match or unwanted-content rejection',()=>{
   const model=createPersonalizer();model.weights.fill(0);
   model.weights[0]=10;model.weights[32896]=1;model.weights[33424]=10;
-  const items=[.18,.21,.9].map((selected,i)=>({candidate:{id:i},vector:vector(i),meaningFeatures:encodeMeaning(vector(3)),
+  const items=[.18,.21,.24].map((selected,i)=>({candidate:{id:i},vector:vector(i),meaningFeatures:encodeMeaning(vector(3)),
     semantic:{selected,margin:0,unwanted:i===2?.25:0,contrast:null,score:selected}}));
   assert.equal(rankEmbeddedImages(items,model)[0].candidate.id,0,'the rejected photo has the largest learned score');
   assert.deepEqual(rankEmbeddedImages(items,model,{semanticFilter:true}).map(r=>r.candidate.id),[1]);

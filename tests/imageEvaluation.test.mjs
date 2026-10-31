@@ -13,9 +13,13 @@ test('the evaluation path calls image/text encoders and ignores metadata promise
   assert.equal(report.events.length,1);assert.ok(report.events[0].meaningFeatures);assert.equal(report.evidence,'injected-vectors');
 });
 test('saved scenes and the actual active query reach CLIP even when an explicit-search path passes empty scenes',()=>{
-  const prompt=imageClipPrompts({word:'run',definition:'Move quickly.',imageScenes:{scenes:['a fox running across a meadow'],contrasts:['a fox standing beside a tree']}},{scenes:[],extraQueries:['a runner sprinting along a track']});
+  const prompt=imageClipPrompts({word:'run',definition:'Move quickly.',otherDefinitions:['Move quickly on foot.'],imageScenes:{scenes:['a fox running across a meadow'],contrasts:['a fox standing beside a tree','an enclosed outdoor run for chickens']}},{scenes:[],extraQueries:['a runner sprinting along a track']});
   assert.ok(prompt.texts.includes('A photo of a fox running across a meadow'));assert.ok(prompt.texts.includes('A photo of a runner sprinting along a track'));
-  assert.ok(prompt.texts.includes('A photo of a fox standing beside a tree'));assert.equal(prompt.alternativeCount,1);
+  assert.ok(prompt.texts.includes('A photo of a fox standing beside a tree'));assert.ok(prompt.texts.includes('A photo of an enclosed outdoor run for chickens'));
+  assert.equal(prompt.alternativeCount,2);
+  const fallback=imageClipPrompts({word:'drink',partOfSpeech:'verb',definition:'Take liquid into the mouth and swallow.',otherDefinitions:['Take liquid into the mouth and swallow it.','A beverage served in a glass.']});
+  assert.equal(fallback.alternativeCount,1);
+  assert.ok(fallback.texts.includes('A photo illustrating drink: A beverage served in a glass.'));
 });
 test('the real-photo pretraining fixture keeps files, hashes and meanings out of different splits',async()=>{
   const fixture=JSON.parse(await readFile(new URL('./fixtures/image-pretraining/cases.json',import.meta.url),'utf8'));

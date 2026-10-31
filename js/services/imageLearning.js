@@ -235,12 +235,20 @@ export async function resetImagePreferences() {
   globalThis.localStorage?.removeItem(MODEL_KEY); emit();
 }
 const fingerprint = word => JSON.stringify([String(word.word || '').trim().toLowerCase(), String(word.partOfSpeech || '').trim().toLowerCase(), String(word.sourceDefinition || word.definition || '').replace(/\s+/g, ' ').trim()]);
+const contentTokens = text => new Set(String(text || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').split(/\s+/).filter(token => token.length > 3 && !/^(?:that|this|with|from|into|have|having|make|made|used|very|more|most|some|such|when|where|which|while|person|something|someone)$/.test(token)));
+function sharesVisualDefinitionTokens(candidate, target) {
+  const a = contentTokens(candidate), b = contentTokens(target);
+  if (!a.size || !b.size) return false;
+  const overlap = [...a].filter(token => b.has(token)).length;
+  return overlap / Math.min(a.size, b.size) >= 0.5;
+}
 export function imageClipPrompts(word, options = {}) {
-  const selected = `A photo illustrating ${word.word} (${word.partOfSpeech || 'word'}): ${word.definition || word.sourceDefinition}`;
+  const targetDefinition = word.definition || word.sourceDefinition;
+  const selected = `A photo illustrating ${word.word} (${word.partOfSpeech || 'word'}): ${targetDefinition}`;
   const rawScenes = [...new Set([...(options.extraQueries || []), ...(options.scenes || []), ...(word.imageScenes?.scenes || [])].map(s => String(s).trim()).filter(Boolean))].slice(0, 3);
   const scenes = rawScenes.map(scene => `A photo of ${scene}`);
-  const alternatives = [...new Set([...(options.otherDefinitions || []), ...(word.otherDefinitions || [])])].filter(value => value && value !== word.definition && value !== word.sourceDefinition).slice(0, 8).map(value => `A photo illustrating ${word.word}: ${value}`);
-  const contrasts = (word.imageScenes?.contrasts || []).slice(0, 2).map(scene => `A photo of ${scene}`);
+  const contrasts = [...new Set([...(options.contrasts || []), ...(word.imageScenes?.contrasts || [])].map(s => String(s).trim()).filter(Boolean))].slice(0, 3).map(scene => `A photo of ${scene}`);
+  const alternatives = contrasts.length ? [] : [...new Set([...(options.otherDefinitions || []), ...(word.otherDefinitions || [])])].filter(value => value && value !== word.definition && value !== word.sourceDefinition && !sharesVisualDefinitionTokens(value, targetDefinition)).slice(0, 8).map(value => `A photo illustrating ${word.word}: ${value}`);
   return { scenes: rawScenes, texts: [selected, ...scenes, ...alternatives, ...contrasts, 'Text, a logo, a diagram, a screenshot or a document.'].map(text => text.slice(0, 2000)), sceneCount: scenes.length, alternativeCount: alternatives.length + contrasts.length };
 }
 export function semanticScores(image, texts, sceneCount, alternativeCount) {
