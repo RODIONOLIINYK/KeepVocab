@@ -6,6 +6,11 @@ KeepVocab 1.12.13 preserves the current app model while making this experiment
 reproducible. See [the full plan](../meaning-conditioning-plan.md) for integration
 and image/text adapter work that remains to be done.
 
+Follow-up: [multi-metric comparison and historical label audit](COMPARISON.md)
+adds precision/recall, the frozen 8-unit finalist, and the exact reasons earlier
+four-class logistic-regression results cannot be compared directly. The original
+selection below was F1-first, not a universal model ranking.
+
 ## Result and interpretation
 
 | Validation-selected model | Validation macro-F1 | Test macro-F1 | Test exact label-set match | Parameters |

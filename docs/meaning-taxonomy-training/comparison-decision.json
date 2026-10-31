@@ -1,0 +1,553 @@
+{
+  "postHoc": true,
+  "hyperparametersRetuned": false,
+  "existingTestPreviouslyInspectedForOtherModels": true,
+  "policy": "Compare all metrics. For soft routing, among frozen finalists within 0.01 validation macro-F1 of the best, prefer validation BCE, then Brier, AP and simplicity. Preserve the original F1 winner.",
+  "selectedFrozenCandidate": {
+    "trial": 122,
+    "phase": "fine",
+    "hidden": 8,
+    "preprocess": "scaled",
+    "center": true,
+    "l2": 0.008546880578659877,
+    "weightPower": 0.9670491305657435
+  },
+  "selectedThresholdUnchanged": 0.65,
+  "testPerformanceUsedToSelectThisCandidate": false,
+  "validationCandidates": [
+    {
+      "config": {
+        "trial": 136,
+        "phase": "fine",
+        "hidden": 0,
+        "preprocess": "standardize",
+        "center": false,
+        "l2": 0.0002682241281001108,
+        "weightPower": 0.862346108985245
+      },
+      "metrics": {
+        "count": 91,
+        "macroF1": 0.8282603562015328,
+        "microF1": 0.825531914893617,
+        "exactMatch": 0.6373626373626373,
+        "bce": 0.27706731429702075,
+        "brier": 0.06010363526131846,
+        "macroAveragePrecision": 0.8881430619477132,
+        "threshold": 0.325,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 44,
+            "tp": 41,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.9318181818181818,
+            "recall": 1.0,
+            "f1": 0.9647058823529412,
+            "averagePrecision": 0.9954002369345534
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 7,
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "averagePrecision": 0.9888888888888889
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 17,
+            "tp": 9,
+            "fp": 8,
+            "fn": 7,
+            "precision": 0.5294117647058824,
+            "recall": 0.5625,
+            "f1": 0.5454545454545454,
+            "averagePrecision": 0.6572054468436047
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 30,
+            "tp": 17,
+            "fp": 13,
+            "fn": 5,
+            "precision": 0.5666666666666667,
+            "recall": 0.7727272727272727,
+            "f1": 0.6538461538461539,
+            "averagePrecision": 0.7171714913269244
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 0.9701923076923078
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "trial": 130,
+        "phase": "fine",
+        "hidden": 0,
+        "preprocess": "standardize",
+        "center": false,
+        "l2": 0.0002274337269956871,
+        "weightPower": 0.9789103969701293
+      },
+      "metrics": {
+        "count": 91,
+        "macroF1": 0.8264782494194259,
+        "microF1": 0.8235294117647058,
+        "exactMatch": 0.6373626373626373,
+        "bce": 0.2819869142509583,
+        "brier": 0.06042737877911973,
+        "macroAveragePrecision": 0.8881430619477132,
+        "threshold": 0.325,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 44,
+            "tp": 41,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.9318181818181818,
+            "recall": 1.0,
+            "f1": 0.9647058823529412,
+            "averagePrecision": 0.9954002369345534
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 7,
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "averagePrecision": 0.9888888888888889
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 19,
+            "tp": 10,
+            "fp": 9,
+            "fn": 6,
+            "precision": 0.5263157894736842,
+            "recall": 0.625,
+            "f1": 0.5714285714285714,
+            "averagePrecision": 0.6572054468436047
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 30,
+            "tp": 17,
+            "fp": 13,
+            "fn": 5,
+            "precision": 0.5666666666666667,
+            "recall": 0.7727272727272727,
+            "f1": 0.6538461538461539,
+            "averagePrecision": 0.7171714913269244
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 12,
+            "tp": 11,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.9166666666666666,
+            "recall": 0.8461538461538461,
+            "f1": 0.88,
+            "averagePrecision": 0.9701923076923078
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "trial": 135,
+        "phase": "fine",
+        "hidden": 0,
+        "preprocess": "standardize",
+        "center": false,
+        "l2": 0.00019854209163214486,
+        "weightPower": 0.9424832097339052
+      },
+      "metrics": {
+        "count": 91,
+        "macroF1": 0.8264782494194259,
+        "microF1": 0.8235294117647058,
+        "exactMatch": 0.6373626373626373,
+        "bce": 0.28672861080164974,
+        "brier": 0.0606037624662922,
+        "macroAveragePrecision": 0.8880180716346432,
+        "threshold": 0.325,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 44,
+            "tp": 41,
+            "fp": 3,
+            "fn": 0,
+            "precision": 0.9318181818181818,
+            "recall": 1.0,
+            "f1": 0.9647058823529412,
+            "averagePrecision": 0.9954002369345534
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 7,
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.8,
+            "f1": 0.8888888888888888,
+            "averagePrecision": 0.9888888888888889
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 19,
+            "tp": 10,
+            "fp": 9,
+            "fn": 6,
+            "precision": 0.5263157894736842,
+            "recall": 0.625,
+            "f1": 0.5714285714285714,
+            "averagePrecision": 0.6572054468436047
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 30,
+            "tp": 17,
+            "fp": 13,
+            "fn": 5,
+            "precision": 0.5666666666666667,
+            "recall": 0.7727272727272727,
+            "f1": 0.6538461538461539,
+            "averagePrecision": 0.7164215494485043
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 12,
+            "tp": 11,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.9166666666666666,
+            "recall": 0.8461538461538461,
+            "f1": 0.88,
+            "averagePrecision": 0.9701923076923078
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "trial": 81,
+        "phase": "local",
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.0001228156082236678,
+        "weightPower": 1.0
+      },
+      "metrics": {
+        "count": 91,
+        "macroF1": 0.8401190476190475,
+        "microF1": 0.8403361344537815,
+        "exactMatch": 0.6593406593406593,
+        "bce": 0.2549434129204758,
+        "brier": 0.05975522159484687,
+        "macroAveragePrecision": 0.9050847014609157,
+        "threshold": 0.45,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 43,
+            "tp": 39,
+            "fp": 4,
+            "fn": 2,
+            "precision": 0.9069767441860465,
+            "recall": 0.9512195121951219,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9921699191582541
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 9,
+            "tp": 7,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.7777777777777778,
+            "recall": 1.0,
+            "f1": 0.875,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9877124183006536
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 19,
+            "tp": 11,
+            "fp": 8,
+            "fn": 5,
+            "precision": 0.5789473684210527,
+            "recall": 0.6875,
+            "f1": 0.6285714285714286,
+            "averagePrecision": 0.6890550026483973
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 28,
+            "tp": 18,
+            "fp": 10,
+            "fn": 4,
+            "precision": 0.6428571428571429,
+            "recall": 0.8181818181818182,
+            "f1": 0.72,
+            "averagePrecision": 0.7718272789145996
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.9230769230769231,
+            "f1": 0.96,
+            "averagePrecision": 0.9897435897435898
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "trial": 122,
+        "phase": "fine",
+        "hidden": 8,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.008546880578659877,
+        "weightPower": 0.9670491305657435
+      },
+      "metrics": {
+        "count": 91,
+        "macroF1": 0.8371871184371185,
+        "microF1": 0.8303571428571429,
+        "exactMatch": 0.6813186813186813,
+        "bce": 0.20932608105854134,
+        "brier": 0.05725723228126112,
+        "macroAveragePrecision": 0.9055805024509986,
+        "threshold": 0.65,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 37,
+            "tp": 37,
+            "fp": 0,
+            "fn": 4,
+            "precision": 1.0,
+            "recall": 0.9024390243902439,
+            "f1": 0.9487179487179487,
+            "averagePrecision": 0.9908389519887777
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 7,
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9844444444444445
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 16,
+            "tp": 9,
+            "fp": 7,
+            "fn": 7,
+            "precision": 0.5625,
+            "recall": 0.5625,
+            "f1": 0.5625,
+            "averagePrecision": 0.684406914939889
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 26,
+            "tp": 16,
+            "fp": 10,
+            "fn": 6,
+            "precision": 0.6153846153846154,
+            "recall": 0.7272727272727273,
+            "f1": 0.6666666666666666,
+            "averagePrecision": 0.7737927033328806
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 1.0
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "trial": 120,
+        "phase": "fine",
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.00022050199534643804,
+        "weightPower": 0.9243762268607136
+      },
+      "metrics": {
+        "count": 91,
+        "macroF1": 0.835765306122449,
+        "microF1": 0.8354430379746836,
+        "exactMatch": 0.6593406593406593,
+        "bce": 0.24402783784935633,
+        "brier": 0.05987284689543739,
+        "macroAveragePrecision": 0.9027560298378104,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 43,
+            "tp": 39,
+            "fp": 4,
+            "fn": 2,
+            "precision": 0.9069767441860465,
+            "recall": 0.9512195121951219,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9916432195390986
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 9,
+            "tp": 7,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.7777777777777778,
+            "recall": 1.0,
+            "f1": 0.875,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9877124183006536
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 19,
+            "tp": 11,
+            "fp": 8,
+            "fn": 5,
+            "precision": 0.5789473684210527,
+            "recall": 0.6875,
+            "f1": 0.6285714285714286,
+            "averagePrecision": 0.6905343814484851
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 27,
+            "tp": 17,
+            "fp": 10,
+            "fn": 5,
+            "precision": 0.6296296296296297,
+            "recall": 0.7727272727272727,
+            "f1": 0.6938775510204082,
+            "averagePrecision": 0.7610692366617013
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 12,
+            "tp": 12,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.9230769230769231,
+            "f1": 0.96,
+            "averagePrecision": 0.9855769230769231
+          }
+        }
+      }
+    }
+  ]
+}

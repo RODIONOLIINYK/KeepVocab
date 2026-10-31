@@ -79,3 +79,18 @@ test('malformed models, incompatible encoders and invalid input vectors are reje
   const vector = [...byId.values()][0].slice(); vector[0] = NaN;
   assert.throws(() => meaningCategoryProbabilities(model, vector), /finite/);
 });
+
+test('post-hoc candidate preserves probability parity without replacing the original model', async () => {
+  const comparison = await read(new URL('docs/meaning-taxonomy-training/comparison.json', root));
+  const candidate = await read(new URL('classifier-soft-candidate.json', fixture));
+  assert(validMeaningCategoryClassifier(candidate));
+  assert.equal(candidate.provenance.postHocDiagnostic, true);
+  assert.equal(candidate.hyperparameters.trial, 122);
+  assert.equal(model.hyperparameters.trial, 81);
+  for (const row of comparison.testProbabilities.softCandidate8) {
+    const actual = meaningCategoryProbabilities(candidate, byId.get(row.id));
+    assert(actual.every((value, i) => Math.abs(value - row.probabilities[i]) < 1e-10));
+  }
+  assert.equal(comparison.labelReviewChanges.primaryChanged, 33);
+  assert.equal(comparison.labelReviewChanges.labelSetChanged, 55);
+});
