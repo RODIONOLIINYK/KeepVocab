@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-10-31T18:26:22.035Z",
+  "benchmark": "meaningCategoryProbabilities on cached fixture vectors",
+  "runtime": {
+    "node": "v22.23.1",
+    "osArch": "arm64",
+    "platform": "darwin",
+    "cpuModel": "Apple M5"
+  },
+  "scope": {
+    "deviceClass": "Apple Silicon desktop Mac",
+    "physicalAndroidDeviceConnected": false,
+    "inferenceInput": "Actual saved 512-D embeddings from tests/fixtures/meaning-taxonomy/embeddings.json.gz; vectors rotate round-robin.",
+    "includes": "Public classifier function validation, JS preprocessing, dense head inference, and output sigmoid; measured per-call performance.now timing overhead is included.",
+    "excludes": "CLIP text encoding, model loading, network, Android runtime, device thermal/battery behavior.",
+    "footnotes": "Latency and throughput describe this desktop run only and are not phone performance claims. Float32 byte values are numeric payload estimates; actual implementation uses JavaScript Numbers and arrays, whose memory overhead is excluded."
+  },
+  "embeddingVectorCount": 417,
+  "results": [
+    {
+      "name": "linear",
+      "artifact": "tests/fixtures/meaning-taxonomy/classifier-linear.json",
+      "modelJSONbytes": 149157,
+      "parameterCount": 3078,
+      "numericFootprintEstimateBytes": {
+        "float32Parameters": 12312,
+        "preprocessingMeanAndScale": 4096,
+        "scope": "Numeric payload estimate only; excludes JavaScript arrays, object/runtime overhead, code and loaded embedding vectors."
+      },
+      "multiplyAccumulateCountPerCall": 3072,
+      "calls": {
+        "warmup": 300,
+        "measured": 2000
+      },
+      "latencyMs": {
+        "p50": 0.017708000000013158,
+        "p95": 0.018958999999995285,
+        "mean": 0.017216992499999854
+      },
+      "throughputCallsPerSecondFromMean": 58082.153430688224
+    },
+    {
+      "name": "8-unit",
+      "artifact": "tests/fixtures/meaning-taxonomy/classifier-soft-candidate.json",
+      "modelJSONbytes": 185647,
+      "parameterCount": 4158,
+      "numericFootprintEstimateBytes": {
+        "float32Parameters": 16632,
+        "preprocessingMeanAndScale": 4096,
+        "scope": "Numeric payload estimate only; excludes JavaScript arrays, object/runtime overhead, code and loaded embedding vectors."
+      },
+      "multiplyAccumulateCountPerCall": 4144,
+      "calls": {
+        "warmup": 300,
+        "measured": 2000
+      },
+      "latencyMs": {
+        "p50": 0.01258299999999224,
+        "p95": 0.014250000000004093,
+        "mean": 0.013175298999999618
+      },
+      "throughputCallsPerSecondFromMean": 75899.60576985987
+    },
+    {
+      "name": "32-unit",
+      "artifact": "tests/fixtures/meaning-taxonomy/classifier.json",
+      "modelJSONbytes": 585685,
+      "parameterCount": 16614,
+      "numericFootprintEstimateBytes": {
+        "float32Parameters": 66456,
+        "preprocessingMeanAndScale": 4096,
+        "scope": "Numeric payload estimate only; excludes JavaScript arrays, object/runtime overhead, code and loaded embedding vectors."
+      },
+      "multiplyAccumulateCountPerCall": 16576,
+      "calls": {
+        "warmup": 300,
+        "measured": 2000
+      },
+      "latencyMs": {
+        "p50": 0.026208999999994376,
+        "p95": 0.02941699999999514,
+        "mean": 0.026683459000000156
+      },
+      "throughputCallsPerSecondFromMean": 37476.40064206047
+    }
+  ]
+}

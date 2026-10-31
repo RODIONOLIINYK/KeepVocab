@@ -1,0 +1,1681 @@
+{
+  "schemaVersion": 1,
+  "task": "meaning-category-membership",
+  "categories": [
+    "entity",
+    "place",
+    "action",
+    "state",
+    "relation",
+    "abstract"
+  ],
+  "sourceDatasetSha256": "8b05b643cad35cb6194f7fa82505ce864c05a7856d76a7c634c144042a4c34e6",
+  "splitPolicy": "New training-only meanings; existing train/validation/test/quarantine rows and labels unchanged. New related variants grouped. Existing test is retired for further selection. Development validation reused.",
+  "targeting": "State/relation error families from validation and published aggregate test analysis; no exact heldout word/family or direct test-definition paraphrase intentionally added. Not a fresh blind benchmark.",
+  "personalPreference": false,
+  "items": [
+    {
+      "id": "supp-wrinkled",
+      "word": "wrinkled",
+      "definition": "Marked by many small folds or creases.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "The folds are the defining visible condition, rather than an event.",
+      "familyId": "wrinkled",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The folds are the defining visible condition, rather than an event.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-wrinkled",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-pitted",
+      "word": "pitted",
+      "definition": "Marked with many small holes or depressions in a surface.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "Surface texture is the target; no corrosion event or material identity is required.",
+      "familyId": "pitted",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "Surface texture is the target; no corrosion event or material identity is required.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-pitted",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-translucent",
+      "word": "translucent",
+      "definition": "Allowing light to pass through diffusely so objects appear blurred.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "The defining property is visible light transmission.",
+      "familyId": "light-transmission",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The defining property is visible light transmission.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-light-transmission",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-opaque",
+      "word": "opaque",
+      "definition": "Not allowing light to pass through.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "Opacity is a condition of the material, not a process.",
+      "familyId": "light-transmission",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "Opacity is a condition of the material, not a process.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-light-transmission",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-curved",
+      "word": "curved",
+      "definition": "Bending smoothly away from a straight line.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "The shape itself is the defining visible condition.",
+      "familyId": "curved",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The shape itself is the defining visible condition.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-curved",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-hollow",
+      "word": "hollow",
+      "definition": "Having an empty space inside rather than being solid throughout.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "The internal cavity describes the target shape/condition; do not add relation for every object with an inside.",
+      "familyId": "hollow",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The internal cavity describes the target shape/condition; do not add relation for every object with an inside.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-hollow",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-stained",
+      "word": "stained",
+      "definition": "Discolored by a mark or substance that has penetrated a surface.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "The persistent discoloration is the target evidence; its cause need not be shown.",
+      "familyId": "stained",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The persistent discoloration is the target evidence; its cause need not be shown.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-stained",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-overheated",
+      "word": "overheated",
+      "definition": "At a temperature higher than is safe or intended.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "The target is a temperature condition; a still photo needs contextual cues and cannot prove a temperature measurement.",
+      "familyId": "overheated",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The target is a temperature condition; a still photo needs contextual cues and cannot prove a temperature measurement.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-overheated",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-deflated",
+      "word": "deflated",
+      "definition": "Having lost air and become slack or collapsed.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "The adjective names the collapsed result; its preceding process does not require an action label.",
+      "familyId": "deflated",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The adjective names the collapsed result; its preceding process does not require an action label.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-deflated",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-dented",
+      "word": "dented",
+      "definition": "Having a small hollow pressed into a surface by impact.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "A lasting surface deformation defines the meaning; the impact is incidental.",
+      "familyId": "dented",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "A lasting surface deformation defines the meaning; the impact is incidental.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-dented",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-asleep",
+      "word": "asleep",
+      "definition": "In the condition of natural rest with awareness suspended.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "The meaning is a condition, although outward cues only suggest it.",
+      "familyId": "asleep",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The meaning is a condition, although outward cues only suggest it.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-asleep",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-awake",
+      "word": "awake",
+      "definition": "In a condition of being aware and responsive rather than asleep.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "Awareness is the defined condition; response may provide visible evidence.",
+      "familyId": "awake",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "Awareness is the defined condition; response may provide visible evidence.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-awake",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-overcast",
+      "word": "overcast",
+      "definition": "Covered by a layer of cloud that obscures much of the sky.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "Cloud cover is an atmospheric condition; the sky as its setting is incidental to the state route.",
+      "familyId": "overcast",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "Cloud cover is an atmospheric condition; the sky as its setting is incidental to the state route.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-overcast",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-jammed",
+      "word": "jammed",
+      "definition": "Blocked so that a mechanism cannot move or operate normally.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "The defining malfunction is a condition; a second obstructing object is not entailed by this wording.",
+      "familyId": "jammed",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The defining malfunction is a condition; a second obstructing object is not entailed by this wording.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-jammed",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-detached",
+      "word": "detached",
+      "definition": "Separated from something to which it was previously connected.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The separated configuration relative to another referent defines it; do not add state to every relation.",
+      "familyId": "detached",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The separated configuration relative to another referent defines it; do not add state to every relation.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-detached",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-crooked",
+      "word": "crooked",
+      "definition": "Bent into an irregular shape rather than straight.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "This selected sense describes a bent shape, independent of alignment with another object.",
+      "familyId": "crooked",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "This selected sense describes a bent shape, independent of alignment with another object.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-crooked",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-stale",
+      "word": "stale",
+      "definition": "Having lost freshness, especially through age or exposure to air.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "Loss of freshness is a resulting condition; the prior change is not itself required.",
+      "familyId": "stale",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "Loss of freshness is a resulting condition; the prior change is not itself required.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-stale",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-saturated",
+      "word": "saturated",
+      "definition": "Holding as much liquid as possible, with no further absorption capacity.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "The defining condition is maximum liquid content, potentially visible in material appearance.",
+      "familyId": "saturated",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The defining condition is maximum liquid content, potentially visible in material appearance.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-saturated",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-unbalanced",
+      "word": "unbalanced",
+      "definition": "Unevenly distributed so that stability or equilibrium is lacking.",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "rationale": "The unstable condition arises from unequal distribution among parts.",
+      "familyId": "unbalanced",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The unstable condition arises from unequal distribution among parts.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-unbalanced",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-radiating-from",
+      "word": "radiating from",
+      "definition": "Extending outward in several directions from a shared central point.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The outward arrangement relative to a shared center defines the meaning.",
+      "familyId": "radiating-from",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The outward arrangement relative to a shared center defines the meaning.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-radiating-from",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-threaded-through",
+      "word": "threaded through",
+      "definition": "Passed through an opening or series of openings along a narrow path.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "familyId": "threading",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-threading",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-concentric",
+      "word": "concentric",
+      "definition": "Having the same center as another circle or rounded shape.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The common center of multiple shapes is defining.",
+      "familyId": "concentric",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The common center of multiple shapes is defining.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-concentric",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-staggered",
+      "word": "staggered",
+      "definition": "Arranged in rows whose positions are offset from the neighboring rows.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The relative offset among rows defines the arrangement.",
+      "familyId": "staggered",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The relative offset among rows defines the arrangement.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-staggered",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-covering",
+      "word": "covering",
+      "definition": "Extending over a surface so that it is partly or wholly concealed.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "familyId": "covering-relation",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-covering-relation",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-caught-under",
+      "word": "caught under",
+      "definition": "Trapped beneath an edge or object that prevents free movement.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "familyId": "caught-under",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-caught-under",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-nested-inside",
+      "word": "nested inside",
+      "definition": "Fitted within a larger enclosing object or space.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "familyId": "enclosure",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-enclosure",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-threaded-onto",
+      "word": "threaded onto",
+      "definition": "Placed along a narrow support that passes through its opening.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "familyId": "threading",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-threading",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-overhanging",
+      "word": "overhanging",
+      "definition": "Projecting beyond the edge of a supporting or adjacent surface.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "familyId": "overhanging",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-overhanging",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-tapering-toward",
+      "word": "tapering toward",
+      "definition": "Becoming progressively narrower in the direction of a specified end.",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "rationale": "Changing width is an appearance; its direction relative to an end is also defining.",
+      "familyId": "tapering-toward",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "Changing width is an appearance; its direction relative to an end is also defining.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-tapering-toward",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-bisecting",
+      "word": "bisecting",
+      "definition": "Dividing a shape or space into two parts of equal size.",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "rationale": "A dividing line and its equal-part relation define the concept; the geometric operation may be depicted statically.",
+      "familyId": "bisecting",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "A dividing line and its equal-part relation define the concept; the geometric operation may be depicted statically.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-bisecting",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-linked-by",
+      "word": "linked by",
+      "definition": "Joined to another thing through an intermediate connection.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "familyId": "linked-by",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-linked-by",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-tied-to",
+      "word": "tied to",
+      "definition": "Fastened to another thing with a knot or cord.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "familyId": "tied-to",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-tied-to",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-tangent-to",
+      "word": "tangent to",
+      "definition": "Touching a curve or surface at a point without crossing it there.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The precise touching configuration defines this spatial relation.",
+      "familyId": "tangent-to",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The precise touching configuration defines this spatial relation.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-tangent-to",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-alternating",
+      "word": "alternating",
+      "definition": "Arranged so that items of two kinds occur in turn.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "The order among multiple items, rather than the appearance of one, defines it.",
+      "familyId": "alternating",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The order among multiple items, rather than the appearance of one, defines it.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-alternating",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-equidistant",
+      "word": "equidistant",
+      "definition": "At the same distance from two or more specified points.",
+      "labels": [
+        "relation"
+      ],
+      "rationale": "Comparing distances between referents is essential.",
+      "familyId": "equidistant",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "Comparing distances between referents is essential.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-equidistant",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-squeezed-between",
+      "word": "squeezed between",
+      "definition": "Compressed in the space between two opposing surfaces.",
+      "labels": [
+        "state",
+        "relation"
+      ],
+      "rationale": "The position between opposing surfaces and the additional compressed/deformed condition both matter.",
+      "familyId": "squeezed-between",
+      "partOfSpeech": "adjective",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "The position between opposing surfaces and the additional compressed/deformed condition both matter.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-squeezed-between",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-threading",
+      "word": "threading",
+      "definition": "Passing a slender object through a narrow opening or sequence of openings.",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "rationale": "The act of passage and the object-opening relation jointly define the event.",
+      "familyId": "threading",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "The act of passage and the object-opening relation jointly define the event.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-threading",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-condense",
+      "word": "condense",
+      "definition": "To change from a vapor into liquid droplets on a cooler surface.",
+      "labels": [
+        "action"
+      ],
+      "rationale": "A material phase change over time is the core event.",
+      "familyId": "condense",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "A material phase change over time is the core event.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-condense",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-fracture",
+      "word": "fracture",
+      "definition": "To split or crack a solid material under force.",
+      "labels": [
+        "action"
+      ],
+      "rationale": "The sudden breakage is a change process, not merely a damaged state.",
+      "familyId": "fracture",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "The sudden breakage is a change process, not merely a damaged state.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-fracture",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-spiral",
+      "word": "spiral",
+      "definition": "To move along a path that repeatedly circles around a central axis while advancing.",
+      "labels": [
+        "action"
+      ],
+      "rationale": "The movement along a changing path is essential.",
+      "familyId": "spiral-motion",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "The movement along a changing path is essential.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-spiral-motion",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-collide",
+      "word": "collide",
+      "definition": "To strike one moving body against another with force.",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "rationale": "The impact event and interaction between participants both matter.",
+      "familyId": "collide",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "The impact event and interaction between participants both matter.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-collide",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-ferment",
+      "word": "ferment",
+      "definition": "To undergo chemical change as microorganisms convert sugars into other substances.",
+      "labels": [
+        "action"
+      ],
+      "rationale": "Microorganisms converting sugars define a chemical process; heating and temperature are not entailed.",
+      "familyId": "ferment",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "Microorganisms converting sugars define a chemical process; heating and temperature are not entailed.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-ferment",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-unzip",
+      "word": "unzip",
+      "definition": "To open a fastening by moving its slider along interlocking teeth.",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "rationale": "The movement changes the connection between two sides of a fastening.",
+      "familyId": "unzip",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "The movement changes the connection between two sides of a fastening.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-unzip",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-drip",
+      "word": "drip",
+      "definition": "To fall in separate small drops from a surface or container.",
+      "labels": [
+        "action"
+      ],
+      "rationale": "Repeated falling of liquid is the defining event; a person is unnecessary.",
+      "familyId": "drip",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "Repeated falling of liquid is the defining event; a person is unnecessary.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-drip",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-compress",
+      "word": "compress",
+      "definition": "To press something so that it occupies less space.",
+      "labels": [
+        "action"
+      ],
+      "rationale": "Pressing to reduce volume defines a changing process, not filling a container.",
+      "familyId": "compress",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "Pressing to reduce volume defines a changing process, not filling a container.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-compress",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-crystallize",
+      "word": "crystallize",
+      "definition": "To form solid crystals from a liquid or vapor.",
+      "labels": [
+        "action"
+      ],
+      "rationale": "Formation of solid crystals is the target phase-change process; erosion is unrelated.",
+      "familyId": "crystallize",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "Formation of solid crystals is the target phase-change process; erosion is unrelated.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-crystallize",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-rotate",
+      "word": "rotate",
+      "definition": "To turn around a central point or axis.",
+      "labels": [
+        "action"
+      ],
+      "rationale": "Change in orientation over time is the defining movement.",
+      "familyId": "rotate",
+      "partOfSpeech": "verb",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "Change in orientation over time is the defining movement.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-rotate",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-compass",
+      "word": "compass",
+      "definition": "A handheld instrument with a magnetized needle that indicates direction.",
+      "labels": [
+        "entity"
+      ],
+      "rationale": "A physical instrument is the central referent, even though its function communicates information.",
+      "familyId": "compass",
+      "partOfSpeech": "noun",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "entity",
+      "requiredEvidence": "A physical instrument is the central referent, even though its function communicates information.",
+      "targets": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-compass",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-planetarium",
+      "word": "planetarium",
+      "definition": "A domed theater where projected images represent stars and planets.",
+      "labels": [
+        "place"
+      ],
+      "rationale": "The definition identifies a specialized setting; a separate object route is not required.",
+      "familyId": "planetarium",
+      "partOfSpeech": "noun",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "place",
+      "requiredEvidence": "The definition identifies a specialized setting; a separate object route is not required.",
+      "targets": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-planetarium",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-viaduct",
+      "word": "viaduct",
+      "definition": "A long elevated bridge carrying a road or railway across a valley or other low ground.",
+      "labels": [
+        "place"
+      ],
+      "rationale": "The selected sense identifies a constructed passage across terrain, so the environmental structure route is appropriate.",
+      "familyId": "viaduct",
+      "partOfSpeech": "noun",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "place",
+      "requiredEvidence": "The selected sense identifies a constructed passage across terrain, so the environmental structure route is appropriate.",
+      "targets": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-viaduct",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-observatory",
+      "word": "observatory",
+      "definition": "A building or site equipped for observing astronomical phenomena.",
+      "labels": [
+        "place"
+      ],
+      "rationale": "The definition identifies an equipped site/setting; entity is not added merely because a building is physical.",
+      "familyId": "observatory",
+      "partOfSpeech": "noun",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "place",
+      "requiredEvidence": "The definition identifies an equipped site/setting; entity is not added merely because a building is physical.",
+      "targets": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-observatory",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-geyser",
+      "word": "geyser",
+      "definition": "A spring that intermittently ejects hot water and steam into the air.",
+      "labels": [
+        "entity",
+        "action"
+      ],
+      "rationale": "The natural feature and its characteristic eruptive event both contribute.",
+      "familyId": "geyser",
+      "partOfSpeech": "noun",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "entity",
+      "requiredEvidence": "The natural feature and its characteristic eruptive event both contribute.",
+      "targets": [
+        1,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-geyser",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-echo",
+      "word": "echo",
+      "definition": "A sound repeated after reflecting from a surface.",
+      "labels": [
+        "action",
+        "relation"
+      ],
+      "rationale": "A repeated sound event and its reflection path define this meaning; a still image alone cannot establish an audible echo.",
+      "familyId": "echo",
+      "partOfSpeech": "noun",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "action",
+      "requiredEvidence": "A repeated sound event and its reflection path define this meaning; a still image alone cannot establish an audible echo.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "groupId": "supplement-family-echo",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-congestion",
+      "word": "congestion",
+      "definition": "Excessive crowding that obstructs the normal flow of people or traffic.",
+      "labels": [
+        "state"
+      ],
+      "rationale": "Excess crowding and obstructed flow describe a condition; individual participant identities are incidental.",
+      "familyId": "congestion",
+      "partOfSpeech": "noun",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "state",
+      "requiredEvidence": "Excess crowding and obstructed flow describe a condition; individual participant identities are incidental.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "groupId": "supplement-family-congestion",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-deadline",
+      "word": "deadline",
+      "definition": "A latest time by which a task or obligation must be completed.",
+      "labels": [
+        "abstract"
+      ],
+      "rationale": "A time-bound requirement is conceptual and cannot be identified by appearance alone.",
+      "familyId": "deadline",
+      "partOfSpeech": "noun",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "abstract",
+      "requiredEvidence": "A time-bound requirement is conceptual and cannot be identified by appearance alone.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "groupId": "supplement-family-deadline",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-reputation",
+      "word": "reputation",
+      "definition": "The overall judgment of a person or organization held by others.",
+      "labels": [
+        "abstract"
+      ],
+      "rationale": "The social evaluation is conceptual; any portrait or rating display is only a carrier.",
+      "familyId": "reputation",
+      "partOfSpeech": "noun",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "abstract",
+      "requiredEvidence": "The social evaluation is conceptual; any portrait or rating display is only a carrier.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "groupId": "supplement-family-reputation",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    },
+    {
+      "id": "supp-coincidence",
+      "word": "coincidence",
+      "definition": "A notable occurrence of events together without an apparent causal connection.",
+      "labels": [
+        "relation",
+        "abstract"
+      ],
+      "rationale": "The interpretation of multiple events as coinciding without an apparent causal connection is conceptual and relational.",
+      "familyId": "coincidence",
+      "partOfSpeech": "noun",
+      "split": "train",
+      "sourceKind": "authored-targeted-supplement",
+      "primaryClass": "relation",
+      "requiredEvidence": "The interpretation of multiple events as coinciding without an apparent causal connection is conceptual and relational.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "groupId": "supplement-family-coincidence",
+      "review": {
+        "status": "reviewed",
+        "type": "AI semantic review; not human-expert ground truth",
+        "reviewer": "Primary Codex assistant after Luna draft; every definition and label inspected"
+      }
+    }
+  ]
+}

@@ -104,3 +104,7 @@ examples and near-miss negatives. Run
 `node scripts/audit-image-negative-supplement.mjs` to replay source split,
 independent label/hash, prompt, vector norm and current-gate checks without
 training or network access.
+
+## Reviewed crop extension
+
+The user-proposed mild crop is implemented in [the crop fixture](../tests/fixtures/image-crops/README.md). All 385 selected training originals were inspected with their centered crops, retaining at least 80% area. 355 crops passed and 30 were excluded, including existing source-label concerns. The eligible 355 originals plus 355 crops form 710 reviewed positive examples, still only 355 independent photos. Keep all derivatives grouped with the original meaning/family/photo, share the parent sampling weight, and evaluate on untouched uncropped images. Crops are image–meaning augmentation; the text classifier instead receives a separately reviewed 57-meaning training extension. No adapter or personal ranking gain is established by these data additions.

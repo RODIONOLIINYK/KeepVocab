@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "reviewType": "blinded-independent-semantic-label-proposal",
+  "source": "work/meaning-taxonomy-training/blind-confident-errors.json",
+  "policySource": "Category-policy sections in docs/meaning-conditioning-plan.md",
+  "reviewCaveat": "AI review, not human-expert truth. Labels are independently proposed from each supplied definition; no existing labels, predictions, datasets, or diagnostics were consulted.",
+  "items": [
+    {
+      "id": "meaning-4a300a74a8310dcf",
+      "word": "belonging",
+      "definition": "A sense of being accepted as part of a group or place.",
+      "proposedLabels": [
+        "abstract"
+      ],
+      "rationale": "The core meaning is an interpreted sense of acceptance or membership. A group or place may be pictured, but neither alone shows the subjective condition.",
+      "confidence": 0.91,
+      "ambiguityUnderPolicy": false,
+      "ambiguityNote": ""
+    },
+    {
+      "id": "meaning-5765a1097b6c6aaa",
+      "word": "sprout",
+      "definition": "To put out a new shoot or bud.",
+      "proposedLabels": [
+        "action",
+        "entity"
+      ],
+      "rationale": "The defining event is new growth emerging, and the new shoot or bud is an essential visible organism part rather than incidental scenery.",
+      "confidence": 0.78,
+      "ambiguityUnderPolicy": true,
+      "ambiguityNote": "The policy allows both labels when each contributes meaningfully; a sparse reading could treat the emergence process alone as sufficient action evidence and omit entity."
+    },
+    {
+      "id": "meaning-d28c4cab96fadea8",
+      "word": "jump",
+      "definition": "To push off a surface and move into the air.",
+      "proposedLabels": [
+        "action"
+      ],
+      "rationale": "The definition names a movement event. The person or animal performing it is a likely participant, not an independently defining entity route.",
+      "confidence": 0.94,
+      "ambiguityUnderPolicy": false,
+      "ambiguityNote": ""
+    },
+    {
+      "id": "meaning-d9a49fc452132f21",
+      "word": "talk",
+      "definition": "To communicate using spoken words.",
+      "proposedLabels": [
+        "action"
+      ],
+      "rationale": "The definition centers the activity of spoken communication. Speakers are participants, but the target is the event rather than their identities or a static relation.",
+      "confidence": 0.88,
+      "ambiguityUnderPolicy": false,
+      "ambiguityNote": ""
+    },
+    {
+      "id": "meaning-a7e4f8da10619cb6",
+      "word": "bleed",
+      "definition": "To lose blood from a wound or bodily opening.",
+      "proposedLabels": [
+        "action",
+        "entity",
+        "relation"
+      ],
+      "rationale": "This is a visible loss/flow process; blood is essential visible substance, and its passage from a wound or opening defines the roles and configuration.",
+      "confidence": 0.72,
+      "ambiguityUnderPolicy": true,
+      "ambiguityNote": "Entity and relation depend on whether the taxonomy treats the named substance and wound pathway as independent evidence routes or as details within the action. The policy cautions against adding entity to every action."
+    },
+    {
+      "id": "meaning-ab532aa1073db210",
+      "word": "reflection",
+      "definition": "An image visible in a mirror or another reflective surface.",
+      "proposedLabels": [
+        "relation"
+      ],
+      "rationale": "The target is the reflected image as defined by its optical relation to a reflective surface; the surface and reflected scene are referents in that configuration.",
+      "confidence": 0.76,
+      "ambiguityUnderPolicy": true,
+      "ambiguityNote": "A depiction can also be routed through visible entities or an appearance, but those may be contents of the reflected scene rather than evidence defining reflection itself."
+    },
+    {
+      "id": "meaning-d69f9ddb57c386a7",
+      "word": "leak",
+      "definition": "To let liquid or gas escape through an unintended opening.",
+      "proposedLabels": [
+        "action",
+        "relation"
+      ],
+      "rationale": "The escape is a process, and the material passing through an unintended opening is a defining relation between the material, opening, and containing structure.",
+      "confidence": 0.76,
+      "ambiguityUnderPolicy": true,
+      "ambiguityNote": "The boundary is whether passage through the opening is a distinct relation route or simply the manner that specifies the action."
+    },
+    {
+      "id": "meaning-f8853d651000a58d",
+      "word": "simmer",
+      "definition": "To cook gently in liquid just below boiling.",
+      "proposedLabels": [
+        "action",
+        "state"
+      ],
+      "rationale": "Cooking is the defining process; the gentle, just-below-boiling condition is also a meaningful visual state that distinguishes simmering from vigorous boiling.",
+      "confidence": 0.73,
+      "ambiguityUnderPolicy": true,
+      "ambiguityNote": "Whether the temperature/appearance condition warrants a separate state route is a process-versus-condition boundary; still images cannot establish the exact temperature."
+    },
+    {
+      "id": "meaning-549ccc8d3acdf62b",
+      "word": "shoreline",
+      "definition": "The boundary where land meets a body of water.",
+      "proposedLabels": [
+        "place",
+        "relation"
+      ],
+      "rationale": "The shoreline is an environmental boundary and spatial structure, and its defining evidence is the land-water meeting configuration.",
+      "confidence": 0.9,
+      "ambiguityUnderPolicy": false,
+      "ambiguityNote": ""
+    },
+    {
+      "id": "meaning-2e15415d20a24049",
+      "word": "always",
+      "definition": "On every occasion or at all times.",
+      "proposedLabels": [
+        "abstract"
+      ],
+      "rationale": "The definition expresses an unrestricted temporal quantifier; a single image cannot establish every occasion or all times.",
+      "confidence": 0.96,
+      "ambiguityUnderPolicy": false,
+      "ambiguityNote": ""
+    },
+    {
+      "id": "meaning-dea7a9922020746d",
+      "word": "dissolve",
+      "definition": "To mix into a liquid until a solid is no longer distinct.",
+      "proposedLabels": [
+        "action",
+        "relation",
+        "state"
+      ],
+      "rationale": "The target is a mixing process, with a solid entering a liquid in a defining material relationship and an endpoint condition where the solid is no longer distinct.",
+      "confidence": 0.64,
+      "ambiguityUnderPolicy": true,
+      "ambiguityNote": "This is a close policy boundary: relation may be redundant with the action's solute-liquid roles, while state may describe only the process endpoint. A sparse action-only annotation is also defensible."
+    },
+    {
+      "id": "meaning-33a261accdf5931f",
+      "word": "usually",
+      "definition": "In most instances or on the customary occasion.",
+      "proposedLabels": [
+        "abstract"
+      ],
+      "rationale": "The definition denotes frequency or customary recurrence across occasions, which is not established by one ordinary visual scene.",
+      "confidence": 0.95,
+      "ambiguityUnderPolicy": false,
+      "ambiguityNote": ""
+    },
+    {
+      "id": "meaning-2aa8fc33e23e2d1f",
+      "word": "bloom",
+      "definition": "To produce open flowers.",
+      "proposedLabels": [
+        "action"
+      ],
+      "rationale": "The definition names the process of producing flowers. Open flowers can evidence the result, but a static flower by itself does not establish production; organism identity is not an independent route for every action.",
+      "confidence": 0.74,
+      "ambiguityUnderPolicy": true,
+      "ambiguityNote": "A still image may show only the resulting open-flower condition, so action versus state depends on whether the task needs evidence of the process or the completed result."
+    },
+    {
+      "id": "meaning-09a443f92ec3878a",
+      "word": "interlocked",
+      "definition": "Fitted together so that parts catch or pass through one another.",
+      "proposedLabels": [
+        "relation",
+        "state"
+      ],
+      "rationale": "The parts' fitting/catching configuration defines the relation, and interlocked describes the resulting condition of those parts.",
+      "confidence": 0.88,
+      "ambiguityUnderPolicy": false,
+      "ambiguityNote": ""
+    },
+    {
+      "id": "meaning-5a45ee0d2921df1d",
+      "word": "rarely",
+      "definition": "On very few occasions.",
+      "proposedLabels": [
+        "abstract"
+      ],
+      "rationale": "This is a frequency concept about how often events occur, not a directly visible event, object, or condition in a single image.",
+      "confidence": 0.96,
+      "ambiguityUnderPolicy": false,
+      "ambiguityNote": ""
+    },
+    {
+      "id": "meaning-db67a1f179b3a920",
+      "word": "copper",
+      "definition": "A reddish-brown metal used in pipes, wiring, and objects.",
+      "proposedLabels": [
+        "entity"
+      ],
+      "rationale": "Copper is a material/substance, which the policy explicitly includes as entity. Its reddish-brown appearance may be visible, but a photo cannot by itself prove composition.",
+      "confidence": 0.92,
+      "ambiguityUnderPolicy": false,
+      "ambiguityNote": ""
+    }
+  ],
+  "disposition": "Secondary label proposals retained as disagreement evidence only; no original validation/test labels changed.",
+  "samplingLimitation": "Selected only high-confidence errors, not a random annotation audit; agreement cannot estimate dataset label accuracy."
+}

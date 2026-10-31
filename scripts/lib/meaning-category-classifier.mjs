@@ -12,6 +12,10 @@ export function validMeaningCategoryClassifier(model) {
   if (![mean, scale].every(values => Array.isArray(values) && values.length === 512 && values.every(Number.isFinite))
     || scale.some(value => value <= 0)) return false;
   if (!Array.isArray(model.layers) || model.layers.length !== (model.modelType === 'mlp' ? 2 : 1)) return false;
+  if (model.calibration && (!['none', 'temperature', 'temperature-global-bias', 'temperature-class-bias'].includes(model.calibration.method)
+    || !Number.isFinite(model.calibration.temperature) || model.calibration.temperature <= 0
+    || !Array.isArray(model.calibration.offsets) || model.calibration.offsets.length !== 6
+    || !model.calibration.offsets.every(Number.isFinite))) return false;
   let dimension = 512;
   for (const [index, layer] of model.layers.entries()) {
     const output = layer?.bias?.length;
@@ -35,5 +39,11 @@ export function meaningCategoryProbabilities(model, vector) {
     values = layer.activation === 'tanh' ? output.map(Math.tanh) : output;
   }
   // Independent sigmoids preserve overlapping classes; never softmax/argmax.
-  return values.map(value => value >= 0 ? 1 / (1 + Math.exp(-value)) : Math.exp(value) / (1 + Math.exp(value)));
+  const sigmoid = value => value >= 0 ? 1 / (1 + Math.exp(-value)) : Math.exp(value) / (1 + Math.exp(value));
+  const probabilities = values.map(sigmoid);
+  if (!model.calibration || model.calibration.method === 'none') return probabilities;
+  return probabilities.map((value, index) => {
+    const clipped = Math.max(1e-10, Math.min(1 - 1e-10, value));
+    return sigmoid(Math.log(clipped / (1 - clipped)) / model.calibration.temperature + model.calibration.offsets[index]);
+  });
 }

@@ -1,0 +1,2710 @@
+{
+  "schemaVersion": 1,
+  "sourceManifestSha256": "d5d70ecd14fd49fd76fa344e125bbf2331ad3c90f915e5cf25584ddbddc6bff7",
+  "draftManifestSha256": "747b499b4c3b4b19c9ff16cf457129ed6fefedfa69c321e6ff741d7e7b50ffe7",
+  "reviewType": "AI visual review; not human-expert ground truth",
+  "reviewer": "Primary Codex assistant",
+  "method": "Inspected every original/crop pair on all33 contact sheets, exact definitions displayed; enlarged uncertain crops152,328,340,344,4,59. Conservative exclusion of unclear positive evidence. No model scores used for acceptance.",
+  "reviewedCount": 385,
+  "approvedCount": 355,
+  "rejectedCount": 30,
+  "scope": "Rejection means not eligible as an augmented positive, not a verified negative. Original legacy labels remain frozen; flagged original positives need separate re-audit before adapter training. Six visually acceptable variants additionally excluded for connected-meaning split quarantine.",
+  "decisions": [
+    {
+      "reviewIndex": 1,
+      "parentSha256": "2593cdd6dd4d062527ff870041d7f9465a659c63a69edd865d03fd03af4a62cc",
+      "cropSha256": "da199812df1c5b181bc759cfef3161be4cfe2c367d9bf09b3044904b12a75a2a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pan' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 2,
+      "parentSha256": "5713c5b6f027603b4b1a02560bed3c0619df141c0c55d4c91528a16defc05bc3",
+      "cropSha256": "fe09191c71897454ce148e6de90a9c483af6689c380674411605f7a959ba3eef",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pan' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 3,
+      "parentSha256": "b8409b5137f8653727eed92c375318c1c947cc2bb0cf75cc972d2293aacd9323",
+      "cropSha256": "fbd4e09ed57daed4d0a8005531ea5455ad81105222ce478954a868480e43eef4",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pan' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 4,
+      "parentSha256": "e3f134c23b12cbf26929e4de7e89dcfdea55b63c6294367c73d6ba1a554176a3",
+      "cropSha256": "ccfc0b3e117c735701eacb72a50b06c160171e39acc44e534c6a0330b7f1b3ff",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pan' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 5,
+      "parentSha256": "3d9db2c38452a8941686c8ce28c9bf8018b04b3540d3a8cd891f77aca90b547a",
+      "cropSha256": "ee441e7d3ae1c78646654516dfae5a8f04229a6acad6b10e2d323d3be78e572c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'white' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 6,
+      "parentSha256": "8f16a69db296dc4b490c68751df1facccd067e0287e3328d9a7479e973c44e14",
+      "cropSha256": "89f41cc37fa9feac21f5c76d1026bd756f0d9fe08db4468ad160a58ebfd7f57f",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'surf' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 7,
+      "parentSha256": "36fa21336135c0c487085011bb469ee8acab9804cf53736e2492584af5a8ecb0",
+      "cropSha256": "eed9e912df9144edd5269dea4f31ba9d3a91514004e3e3ecb05fd588bf9e1785",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cook' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 8,
+      "parentSha256": "9f4fe7d747ae0d163c865e6478afc0a39822817b650b11094bbcb4fe37b46680",
+      "cropSha256": "43c4914bb4408b90acb67f06b1f9c1fa116fc3b16b09d48f47810d2830e2d93b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cook' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 9,
+      "parentSha256": "de4f89719ee24a9f7f9482bd902ad2a3e6851f554729dc60ffc65505b49e0f6c",
+      "cropSha256": "9818e45a39116f1294bf7c74e76bd6dd37e8045259ad9f869c331192d0a89475",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cook' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 10,
+      "parentSha256": "37f631d7cf9ff3f54abb80600fa15651061c228fb1265b95888847de72e06bae",
+      "cropSha256": "78cde04870d09e86aa29fe4fdd364011544a615b8aa75302f532308b54d14d30",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bus' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 11,
+      "parentSha256": "3ac833b5f383fc3c0bbde57011f5738c92c62eb12d1d387f501347c6ab2de03a",
+      "cropSha256": "69078d5ab3d3aa8cc9469060fca3bb711a49317bed229145caa8816e7f7df0db",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bus' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 12,
+      "parentSha256": "a3ef4377e4e197497a39d30eeeca7ae759b96003f5546c23aec913f7ab251557",
+      "cropSha256": "441f90f33def51b31bf4fb31f43c204451bb21ac1902f04bf63509515ee66336",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'curtain' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 13,
+      "parentSha256": "6c33ee9f7ee0332811ba3612c8ffa3636cbbe503e3b6f8c1f7f6ca0f2703ca3d",
+      "cropSha256": "78f241994fc629797299b909447144eb72922c8a3e136e84cbcc6f08052fa6d5",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'curtain' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 14,
+      "parentSha256": "2fa792119957910e428a6dedf63f4e50f3de21ef22e900ca38aa152962daa39c",
+      "cropSha256": "c3cc2aa9c1ffa965bae7bf7fac674fc1e8ef89becfceb26ce4a0e273cbe46cca",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'curtain' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 15,
+      "parentSha256": "20a7e7f2310e42c3618a49d1dc62823bb4c03ca308ca8469202f26f6cf586340",
+      "cropSha256": "3c26daf6c0aadf2964e5e1587052c40acfaa10f4966bc5494d042ef7a69c2fbc",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'sleep' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 16,
+      "parentSha256": "fa4a703a4b75abb75f2020f51c2bcbd021945e33f88356cdde2be9dd2c382cfb",
+      "cropSha256": "98de83c94e31cb637d97d8c4de5957d1dc750840bce8a743cc29eff2ca192181",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'sign' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 17,
+      "parentSha256": "ca199a84eddac5da5ee8f7e852328aeaa583ada32033d67bf3e31ca98a7a7db3",
+      "cropSha256": "df423bb58638e6922db647a57ebc2738d7f60f4132a407a246938ab99376cdc5",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'sign' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 18,
+      "parentSha256": "fa6c51682ef9eed545698b2a05c7009b257d0e4ff0443f4c4912f650a3f5695d",
+      "cropSha256": "b54ee1d3ce21745cb907ea255b128b251d2718876163095f71a30105b3202171",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'sign' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 19,
+      "parentSha256": "e3e0a05408aa5e2a0a6554a51a4aa8c6707b149e97865ecd11a46be9ca6df16b",
+      "cropSha256": "8d9aa8a22713a708aa9b3a7acb23200b28aecbe14a204228d8bb874c417a142a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pot' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 20,
+      "parentSha256": "7d3fdff1cdf4fe345c57ea392793a18bf485ab1fd5fdfc53d4d185855f2ae382",
+      "cropSha256": "23f7fb6e42302ffca38f6856ea10b2d100c3a802c4fd0a4084a8e5abf4f6b693",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pot' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 21,
+      "parentSha256": "ba317483a707c2fc3f287b9dc4c2742775962350de0ee85b428e849b86dbe4a8",
+      "cropSha256": "8d0e61e7eff40da3b89f4cde25bbbc28cf9f64b87a9a5ef38925dab9c2f7410e",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pot' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 22,
+      "parentSha256": "329e023a2f40925b9f28021f9daf9407d568b01edf5fd0b77ac772e27e2553c4",
+      "cropSha256": "c4af7ee6c0e190fbb5404ff1a424867b5a571e36acf7ae045687383c52b0dacb",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'refrigerator' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 23,
+      "parentSha256": "4f26c847c2f49574978e96733efaec720dd1d1ba95a8220d0de012b7317eed47",
+      "cropSha256": "e6856aa88a8b4de8cb79c66c9f1d732bdb8ffd055fec3474c7073ed2bb3606a8",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'refrigerator' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 24,
+      "parentSha256": "152e29f5f4bee2025adf17275476c248fe23077b66b12ff194718b95b977dce6",
+      "cropSha256": "ed8e10b4f2ba57bd21173c6b5dfd6fd0e08e2a595779f8438bb66bab3fdf5c69",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'refrigerator' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 25,
+      "parentSha256": "feadc69a8190787088fda0ac12971d91badc93dbe06057645050fdbec1ce6911",
+      "cropSha256": "c8404bbc73636c0d2f6fc380154f6194af120387b6f34e0abfb1deecc619163b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'refrigerator' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 26,
+      "parentSha256": "caa0324ee298c1429128662941b4a24b7432c5c8cd7223653ad46e9c72b9786f",
+      "cropSha256": "b818629402d9d08af06eafd86c64feae054464caa6c86f1debf64b9a4e20df65",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'table' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 27,
+      "parentSha256": "c7847b6a940733f7ae4ee04c5d6a524c76fd9659826dd6269c4564b07f5bc8cb",
+      "cropSha256": "3f47a40f201e6663eb50025adbfcbbfb9cc8563d024242f9f06a23055792bea4",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'table' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 28,
+      "parentSha256": "469e5374fcf43466d3ba8167126cdfa2833f1b8c8ed1e2248b29dd9feec20733",
+      "cropSha256": "73cc0a68f1110821f1a9acdf0f9eb88567617d518f92a7b434d60d522b6e6d57",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'table' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 29,
+      "parentSha256": "d0fc594a75f8407f6595501b86bd98bd8c3a245a124c3dcfb17fc77e6b2e5aef",
+      "cropSha256": "00c01089d3e63992d05d1176d996816d9682f6c6513e8a6273d55828ccb5772d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'table' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 30,
+      "parentSha256": "3689831ed23f734ebab9405f48ffbfbbefb778e9de3101a9d56e421ea45288cf",
+      "cropSha256": "a62ee80d6ab2b1c5343917ddea4753ba892960607ec6a91265212024697f28a8",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'kick' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 31,
+      "parentSha256": "8194b9a1efda00e15ec8386d9dc78f70055d84203781625fbb17845a356efa9c",
+      "cropSha256": "113d5888e1dae49720b8d404547db9d3362607386b1cde35de4c05545e2d8b34",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'kick' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 32,
+      "parentSha256": "a3b2759d2d51ed4e63e9283c3a383bf9477198887365fecd6aea6195a002911c",
+      "cropSha256": "bb4ea328ea4d2f1ab5f22a51b607e53288d3aac8bd577420402c6f244c495ecc",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'kick' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 33,
+      "parentSha256": "5145e280b584e5ae8598ea9dfecc57856d814ccd44f2b7597cae545a55c0cd9a",
+      "cropSha256": "cfe02390941c5b9b2933e1c08d870b518656f214b97db129e3318d27b1217acf",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'kick' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 34,
+      "parentSha256": "685bd913e0bfbbcd9d91b2368c219696308f51ba4f9428b077584d64b5a6ae83",
+      "cropSha256": "87d155044370ad48d1d19aaf987070bc3659f9d28d2f1b61b73258d4fe9f1021",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'stairs' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 35,
+      "parentSha256": "cb685bf3ccf9db9df9f762422fd9ef3452dcf3f6ab7a96d329a595767ced55b5",
+      "cropSha256": "e89c35ad3c614e5539fcd59474e08b8db8898edc6ecf8dfa62c2657c1dd13943",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'stairs' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 36,
+      "parentSha256": "2138bd1f76e16a19c7d7b571f40947147e07cddf87321bc0632999e6ceec809d",
+      "cropSha256": "181690a92684c5cd3f848cf83fb147e32d8fc214349f8f070f25e827ec53803d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'stairs' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 37,
+      "parentSha256": "3c679f05ff2a3f968c20694559dd1967afd91f087d9ad7ac0532c82eaa525e32",
+      "cropSha256": "e999b8ef22c54b9e29ec02599ad3b2f5db8c315a46e53c4110d7ed2cf78cb905",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'towel' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 38,
+      "parentSha256": "dbdcbb432c918d11747928a3eb0d80498b9cc52087b5fe515e17b3cffb7e8240",
+      "cropSha256": "ecdde45a8592d1fca91966dc0fe240dc34a177c74ae246f73ab44f1d8aecb399",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'helmet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 39,
+      "parentSha256": "c5f288d7a94cace0aa18389b07caaf48af32fc3a49a99a17794456a116016244",
+      "cropSha256": "24b7675a1bd739cbd88265283c5e7894620c9f24c427ce2b8525eda91afc7f8c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'helmet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 40,
+      "parentSha256": "19b802f8dd06dcad456ef8577e8994b9192c1a1187a7f85b5b26a3d7899d9a09",
+      "cropSha256": "0a312a38b732ccb4fb91a292fff5b67857fb869a495ca810d29e9110c90cf82c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'helmet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 41,
+      "parentSha256": "928f89bb03d6c06a883ba1b4eadeeea8db2764134445a3c70c5d1c33cf13ed39",
+      "cropSha256": "3c8edb177df219f2f734dac71e634a4f95e515472bef34e2d988f84cde6b83b7",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'helmet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 42,
+      "parentSha256": "819434c439824673d4fc441cf5548b7ad851f6ef4c14ad0fff23656abedbee62",
+      "cropSha256": "48f0681ab15178a1e8653bbe8af44250675f2dbe18d6b3294626dac434ba4e98",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'carriage' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 43,
+      "parentSha256": "300ece215194a17887101cf306654ff2780f5b98ac28133c0b00fe38248e00af",
+      "cropSha256": "263bd9e53f9206f3807241740bdbb51dda781257a6e2676a9f5a639b109966f7",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'blue' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 44,
+      "parentSha256": "ceb0a4848d7dea0d9c0576a91a8f8c9e93a9a090efbb3e6f641a9c327e7c679c",
+      "cropSha256": "f1e2b44993a75293ab11a2cc47b6e9677c5010fc1ad98e2bf9668818f478d9de",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'blue' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 45,
+      "parentSha256": "d0d23a51c92aba83b2ea2ad8d502ca128e6dc86c12789df1acdccb7db0f25e22",
+      "cropSha256": "45d82f25848f58d315ac9c67c3a9266598fb8d6f020b6276b4c9e83bb201ea91",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'blue' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 46,
+      "parentSha256": "0c6f0aaeb2369835abe9eb82e3f1f9177fcc509dfb8ac00130e95911652297c2",
+      "cropSha256": "be173e484fd3d8f2467c8af35a22bcbd8193a9680fa432d37f9ff9b077e90aa2",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'brush teeth' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 47,
+      "parentSha256": "349e8a6b5af5f7455e1ede69e260e7a664dcf12a9af328df058d5cfb260d631f",
+      "cropSha256": "0d4b20e7dad3817da571c450c972af5365c1aea5db440a3a5e5e1b4396c37a49",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'brush teeth' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 48,
+      "parentSha256": "2c557edf27254df0c5c11458f07506e462ca93e7dd3c47e851baed0fd654a776",
+      "cropSha256": "e1c0cf98ee7dd20caa765a9c98c94625641dbdcadbe9fc20194675d705147eb1",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'brush teeth' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 49,
+      "parentSha256": "091feaf5dbb6a28c71f83d0d91756aac8d176e7c3d31b766c484252440772457",
+      "cropSha256": "b5d5e8145d8aa91a94d5fe0caf428235f0fc6b04f84e264c799f7271ca1f5897",
+      "status": "rejected",
+      "reason": "Bridge evidence is peripheral/partly occluded by the train; the crop does not give a clear bridge depiction."
+    },
+    {
+      "reviewIndex": 50,
+      "parentSha256": "f4e6671d9be6d7bb897365eaad70051c1eaa4e292947f7e547e53fa4ddb3b55d",
+      "cropSha256": "7b6b6edba36a85f5d2ec71b0dcfc18d7f3e6e6828462260e49f719339f54d473",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bridge' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 51,
+      "parentSha256": "5f6e1f03f620dbe602f3d447952712d9eb922f23b5be0bb3f226f0dee5cc80da",
+      "cropSha256": "9ad9ffbea1f1210200b84874ddc5b4206164bca84e333157a22bf0fe0e96c0a0",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bridge' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 52,
+      "parentSha256": "507768eae1bb4085285fd57940138be6419169d751148666363d4f10bf7800d7",
+      "cropSha256": "437026b3ae4eb062b99c415d4198a2997c2f737c77be9282f82e10e3f35a1c0a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'sink' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 53,
+      "parentSha256": "49b048611fcf992ef2ff09acfc5dc82ed2add1439f326cb962c8a120c538fcf7",
+      "cropSha256": "5d470a25d042e4a34177ec4ddb59cf504d4d5cf38bf1d66c56a0257ca8fc1cf5",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'sink' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 54,
+      "parentSha256": "636a078ae06c6779d11fe5bc889506a6cbf5cad7a3c82dccf1d7d98130bbef73",
+      "cropSha256": "71bee6fb3bd7e2900baa2bf0b4f8fd4c67e0bb480c06a8961160c926c1331814",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cart' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 55,
+      "parentSha256": "f6c60eada61cc6c2358599ba213e8c196eb37ce4a3bd12fdfb10932e524233cb",
+      "cropSha256": "481c7cf20e364fa4583e21adbabcb6332f88bd1d7e7a4c88eb3b503f27ba0c27",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cart' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 56,
+      "parentSha256": "9c9682ad229ed5f848cf396a110dcbf00d60c91882aab4b15d30edb6d5e4ea4e",
+      "cropSha256": "831475c437c2b8bd82d038edec23880b7b9d586550d2df41fb8f3203694fff8d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cart' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 57,
+      "parentSha256": "c39d6a908175616d1d1071632146a2862958779730739a943c9540ca5d4c9e69",
+      "cropSha256": "68549cbd56aea0b18d04e01b2404003400dffed9e38f2bfdc31acfcc23471edc",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cart' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 58,
+      "parentSha256": "d99c93fb6d22a5d51bbb6e09ca5f10c11bdcf90a711abf6cc83188df52cc456a",
+      "cropSha256": "43a05d7049aa73742abf8341446be408fd9fb603742d4c9c46411f1f39a525ab",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'beer' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 59,
+      "parentSha256": "6e216fd96173658eb945140933ef0c9ae23217a733f02765fe59f57f9db0ae6e",
+      "cropSha256": "9b4c1cbb4a9968e9eca08911b4a861fd2d842c5ebff5d5eef153130d50f2ae98",
+      "status": "rejected",
+      "reason": "The central scene is a person on a toilet; beer is only suggested by a partly visible can. Exclude this ambiguous positive."
+    },
+    {
+      "reviewIndex": 60,
+      "parentSha256": "c7e6e15f4db067c3e09ab8605759be9d850e2d5c45ea4dfb9cda8f5d85308ea4",
+      "cropSha256": "93fecc31e333a7ff44de8e41b046f5c2ef81cbc04d1ac540fbfa8ba3c93db8ac",
+      "status": "rejected",
+      "reason": "Desk obscures the trousers; matching jacket and trousers are not clearly visible together."
+    },
+    {
+      "reviewIndex": 61,
+      "parentSha256": "c219b7e4409b0dcaab0ec1932372f7f91bfc72abb999a3ed92405c1089eb0b0f",
+      "cropSha256": "41d324813efc74069e1a2ac39c8ec9e282127e3af9ac0070d0529073f5b0e664",
+      "status": "rejected",
+      "reason": "Cropped upper-body framing does not clearly establish the matching jacket-and-trousers set."
+    },
+    {
+      "reviewIndex": 62,
+      "parentSha256": "d34457a9332b4ba3ccd391ff2e840d5bd2bf7a2395d128c9f95fa7b74b04c1be",
+      "cropSha256": "6eb7ca77e4aeae83895bc26ddca9ac6035263ee126723a83a6d94fb6d2ebceb9",
+      "status": "rejected",
+      "reason": "Person holds a glass away from the mouth; drinking is not clearly depicted."
+    },
+    {
+      "reviewIndex": 63,
+      "parentSha256": "bb9dc22912bbd5ac120a93062bb45e2d58e3beae75c45386b67e0e16f8c671f4",
+      "cropSha256": "0be745da9ba188efb190886b80d1fe0f1abc3062e8e636f8b9d181460d69a38b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'drink' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 64,
+      "parentSha256": "1028af0f688a5264bd6946304e3e67f1a29822722ab26ae1af4ae16ce7e2c92e",
+      "cropSha256": "a888d6fa364539200ea83624a6b6cd45110d6f0bc12aa5ca4c7506bc035ae459",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'drink' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 65,
+      "parentSha256": "5ada32a5fd65082d93a24e31af732446ee67a38dae1486f523de1476e0aea578",
+      "cropSha256": "7c0aeb76ea0da1a8e7df420318ba79548a98279f9b69cdcf509450582b474293",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cracker' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 66,
+      "parentSha256": "a97b7899f984d8cbb9505b659cb428c3654a4a7d3505178036e316926c73f0b6",
+      "cropSha256": "0a938e6d9f8c338580c2909b1b562305ccb079d2f79055494410a241b242866c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'open' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 67,
+      "parentSha256": "df75b3c0b09e519fa531f8bb57d27bb6eb86f0e2a951c47c8defe593746fef77",
+      "cropSha256": "f9a0cd1ff925b09bdd972ad35ae80e3423f087d1f1bf2658768c66c774966a09",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'open' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 68,
+      "parentSha256": "8043630d9033bd8c58b57cf4faad1b2459c5341bfa487112479128f3ac80e4cd",
+      "cropSha256": "ea8b88e1dd825ac8a5421a1dc22e1be9108a9985cd14ca42b19adf35e2cf29dd",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'truck' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 69,
+      "parentSha256": "e051d5c7180bec8cb38caae0cbeca57f4d09879d097065c581bb9f9c0d474a09",
+      "cropSha256": "0dc1d2d592c1c6e4f25e41930f9a9550c952167278d65bac1f489e1b38b03f1d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'truck' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 70,
+      "parentSha256": "fc0601e452807c790823559ddfc7fcfadfb61c59c6af8389ccff3444c604761a",
+      "cropSha256": "82ab0799afb712a6a879af7767a15456a57cac656fae7341570d7019ec5ba816",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'truck' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 71,
+      "parentSha256": "c2f11a1c919b1d1969c879b79e51250b83baa0187b42c32a820f7406bc489803",
+      "cropSha256": "30453fff3ef44e5754b78ffb352d6d659483647b50a5c1fdd700d2ab983e104b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'door' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 72,
+      "parentSha256": "bb5adc5c3916aec1e6024432e428c6f6b216ab97c02c58590bbf80a5f6fe24bb",
+      "cropSha256": "52ab0ae288152670e10c2b02c4aae99e35966255029d9112cb6d5f435aeb116e",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'door' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 73,
+      "parentSha256": "0229d24c0b96e5d38c859eaa099fa2fd57940da35e4a9f159e79af5d28ac3145",
+      "cropSha256": "ee196575c4977fb0c083da1c37cb9843d65572873bf43c6e9bb6f2ef17bd663c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'door' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 74,
+      "parentSha256": "99c61958bdc57c9c073bc33ac8fda6dcb8f634c73dcce369bff5612b05d85b5e",
+      "cropSha256": "663304a10c291e1a25efd509ed2e2d6f9afa4ec7bf46a62e60bb7a272326cb9a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'boat' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 75,
+      "parentSha256": "af56785c7c458a53bf642cd48f7d209073302115e5d6806db3c6fb039df7558e",
+      "cropSha256": "c92b5bfb8ec5cf6fa542a8213f7eced0901604cefd371104132f75e9d54731b5",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'boat' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 76,
+      "parentSha256": "08bb71100d6ae11c07207e9a308ec351c4f1865ee6afc533e820cdb779b10ac8",
+      "cropSha256": "1b52182a1c87d06d8052bdc1e71ec7b90e80256888b4e8a8eb0854a591ed3a46",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'boat' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 77,
+      "parentSha256": "e671c3e71386f51caae7f0dc55051ed79896567e1ccf34810fe784e60f8c679d",
+      "cropSha256": "1c5fd88a83f5e94ae85b3503b7d98ec93647e636a001fa332de5cd88496a8b19",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'box' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 78,
+      "parentSha256": "c8abab45d17f644945876d409ba6eada408fd2f4121739abf6fa9379920cbf09",
+      "cropSha256": "ac07fe503ce05a6eea3ce3b94d9bcb14b3e4f1ee982930d1ca1c7aa9d13a41d5",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'snowboard' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 79,
+      "parentSha256": "46b4e78fc22c44edfca47861e94718fc98a4002955f478b874340a857b79bc74",
+      "cropSha256": "ebc3f69846bbc0ce876a80b2758b56333dabffad0c03538dc710d1d973562867",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'vase' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 80,
+      "parentSha256": "2c741618578dd3a7b1e62de447e6a3d0ae7c7b34a927e51081038e857b65fe71",
+      "cropSha256": "cd5ae545bc4bcbedf86c8b91a1ff96ca49e0e3ea67b5cdbb93d11e809b39299d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'vase' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 81,
+      "parentSha256": "b07a2456f7eea2f05eb2276a00b174a4fe5863936774f501b2e76308b10bb16e",
+      "cropSha256": "75da4791bcbcb5da460af6508a1e1e8bd7c049601f1163d75031f1f4ce6e6e14",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cake' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 82,
+      "parentSha256": "06be922134b4177ddea7373a1c92c3236d12e290a9b43c9dfbc018c36fa235f6",
+      "cropSha256": "3ff15dde0815d65137a1cb31cd59cffad567592a92d98392ad2d939d8a44d062",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cake' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 83,
+      "parentSha256": "3d81e50af1e109fe56d1db5233e5966e617c81e6ea45597c0ceb05e0178e3727",
+      "cropSha256": "545425ac6d3c00bc7210e4585baf8efd0f7c7ad5fd65c4b3513763a72ee920e4",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'egg' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 84,
+      "parentSha256": "c86f3366d0cc4256a2c1d886ad9191cbea97508c688e6a5d0c01a84362184fec",
+      "cropSha256": "de092f00e2804244fe6b13ba1b26963b47e462bfe286af969b28a2c1ed5bbbfd",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'egg' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 85,
+      "parentSha256": "952e8f3e0a98da80843838bd3496e1ad2c6f1c26ff75558e1046215b9a8ef6d3",
+      "cropSha256": "3a0a9d1d57ff6511b258a094bcd4795806fd33706e0525d00a9ced0f06f2d0c4",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'rock' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 86,
+      "parentSha256": "880d6779e7230bac01ce873174ab51e5a615ad600f1b98268c4885cb30694349",
+      "cropSha256": "df638bc283192187fa4820b97471b03aa50daa52088de0c5067534f1f60a2bd9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'rock' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 87,
+      "parentSha256": "65effd9cbf440739c171ef3b55b310fe9111b2d91c4edaa91a668c1d2046ab7a",
+      "cropSha256": "e346c278e1784440999d831c9b1b046490f3ab20817937a16163bbbd58ee1a51",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'coffee' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 88,
+      "parentSha256": "00d649a45082e0a1fada27c1c603f0ca4a70a63f34c5f1bc349ef9777bff6a70",
+      "cropSha256": "838413135cd702020a5e9d66addf55e55aba83e0208d85ac9ec231e9d5a53d45",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'skirt' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 89,
+      "parentSha256": "c8866a5e483efeb8e1eb5e945d598015e8c46f0dad05cbfbc7cce0249488171b",
+      "cropSha256": "bb20dbb5a3a8a689829bb862dca2a9e30795250312d9b61b4b79bfaf2866d90f",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'skirt' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 90,
+      "parentSha256": "9e812fd1861d9bc51048321fec481961b40f37c55f04350d6704a7446944d16d",
+      "cropSha256": "b8816529788767cf8e2a36b90922b77f4b03e64e572046905e27ab7de5b5ce16",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'plate' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 91,
+      "parentSha256": "cb36f3c61b3eba0f1598c1c50555a1a18ed254ecbc8225d4eecb6d29e6f49493",
+      "cropSha256": "afbdce6613eac1e4a0a5067e338d909930a2ddf3002a1a6fcd0c3e0e57a90791",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'plate' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 92,
+      "parentSha256": "eb926dac8bba2ef2c30db3833fddf6229c21b5d3331f20da193b86231060a4ef",
+      "cropSha256": "155f542893132653e38946e1a479d3c563aaa29527b4505fbbf853d7dccfb9c4",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'plate' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 93,
+      "parentSha256": "5cb62bc7b2d250fb3a142b6683f3e66db80fbff1714ec67e21899a2fc57d87d3",
+      "cropSha256": "e40024378303fdfcf1666176e314c9e6910dff329ef9fdd9eb708def2f777f0a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'plate' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 94,
+      "parentSha256": "3cd68172a203646eed9bc2d6146a99e1a2ca8b47ac453a266b69412d79b321d2",
+      "cropSha256": "042f2ceb31c6c71e4ccf93569f12920bf3bb1310e11b4c7588bcf58b8caa4a84",
+      "status": "rejected",
+      "reason": "Snow slope is visible but the very high mountain structure is not clear in this framing."
+    },
+    {
+      "reviewIndex": 95,
+      "parentSha256": "5d7b99aa59e8bf434b3f57bdca2da11ba4ccca26d81d2ace37846dfc3b25ad44",
+      "cropSha256": "caa0e51785a15834d93ff9dc50713cf163079470ad13b7e53c88d3665f0ad5c9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'mountain' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 96,
+      "parentSha256": "7f4aaf803281ebe5ddecd6bbb969cc626b65bf893cd2198d05ec7b5a562aa0d1",
+      "cropSha256": "9ffe33064490c33c6fe9245b67aa70d8e65de3b25126197e2c5f0b5944298c61",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'mountain' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 97,
+      "parentSha256": "1df85ecd80d70c0e82089f2b9badcf4d8cfde414c5d005bcc6d3ef05d5fc44cc",
+      "cropSha256": "83271b551014540125d03c5f97913437ac14bcf4e088035eed18f06e590bced9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'mountain' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 98,
+      "parentSha256": "a44d7b20692b108c648ba73018390297bad07d23b8be13dd24bc637bd31534ba",
+      "cropSha256": "88ffc2932e575e0cd1f405b562c5fc926ab192487531a74bdf7bc04d53eeb084",
+      "status": "rejected",
+      "reason": "The cutting tool is peripheral and too incomplete to identify clearly after cropping."
+    },
+    {
+      "reviewIndex": 99,
+      "parentSha256": "609385695cda531905c5170d25d080d8218d202b4267707a406bf551f4c5e9e3",
+      "cropSha256": "545c456668fca7cc65904bcb3f585d5e4b481329a10199f0eed41461fa27fb08",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'knife' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 100,
+      "parentSha256": "da53addb3ae912182caa357bea446f2565e20a4c3c2dbcec53f5c29374a79061",
+      "cropSha256": "b45a33503efa588d53fcb4f12fd4f8a59b3d1eca5df492ff758aa66370e4da66",
+      "status": "rejected",
+      "reason": "Visible implement resembles a cake server; the specified knife is not established clearly."
+    },
+    {
+      "reviewIndex": 101,
+      "parentSha256": "298172fcef58a0568c1a2cff912f27f4e24c74dacee2e5e59720c840b6a73f5a",
+      "cropSha256": "9d43ed2939b253bb75d911c7227b16f6c211ea6716fb1a3e2418c8f25adf1a55",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'teddy bear' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 102,
+      "parentSha256": "6b39e845481a797835f0ec99579651918b7fe0144df623f476caded9a4b38d81",
+      "cropSha256": "22da52459c6b1c0e6cafb17baa8503caa8426818416d23200dc0f38b8b6a0313",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'window' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 103,
+      "parentSha256": "3a1cf56ddde8013d7d02fd63329e5b435936db386fb9db51d5f37ee60c6d2bcb",
+      "cropSha256": "6a2870ca63907739d3a1d1fd9ad588b1dacd94cf5fac284d74796b7743359ad3",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'window' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 104,
+      "parentSha256": "49568f890bcbfddb7afd18ba8afc6c1b20ffe6611a888a3cb93150d24b253ffa",
+      "cropSha256": "9b918722bdee0285ce9451537b8be96bf49059c5f101634c047e7aa68e09bfc7",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'window' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 105,
+      "parentSha256": "ab8dd34c054d18c7afeb047e803d3668f61dba3e08b211902bb8cda767625b55",
+      "cropSha256": "2181fc8de4d4c78b0c3a6113fe3d10897d2e66b2d709b0376f1bc8b75c2b64ac",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wave' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 106,
+      "parentSha256": "035638d597bbcdefb335bb51444b364c8a1c81fd1151e48e7a195d1a88c86d08",
+      "cropSha256": "b13370edcd7f125c39f2695785aee1c028264470673bad4d6866eae64beae849",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wave' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 107,
+      "parentSha256": "8d5bb0880f202267b97c5da77409f541acad3943ecfe8647c7d612d6f6bb27b8",
+      "cropSha256": "2e6957ad7eef46ad308d719a3da3555474267cc4ff3d8d277c1168ade7fcdc26",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wave' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 108,
+      "parentSha256": "882887321b03a174fce396e36bbca5e89a6b4c93f66948641a8e3d91d7a80e43",
+      "cropSha256": "68b9375730c40c6d288d92027e31e29a2bc9948d822a8f2170eebaacfd4ca5ac",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wave' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 109,
+      "parentSha256": "fba520c270003f70a09bdbb9ab8ca856a4a6cde110c64f05879e96b755ca7af6",
+      "cropSha256": "507634b1c3e7e0296f1f3331917227461b86b12ba51a560811ea0da4be58a4e4",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wall' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 110,
+      "parentSha256": "61049627b034266483211b8563cdf6b0330644935e52b9bd314b560bd679f412",
+      "cropSha256": "76c1622420186c583c1d5ff4eaa04cf980f18a45d51cd1b10379d058fc15690b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wall' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 111,
+      "parentSha256": "777a4b64d474ba0dc0b2f7094dae7b894aa50a5f701e7fda781b45094d27c28f",
+      "cropSha256": "9fbd2342c9f700111a119b6390aa110f651755224316e8339bddf7b6cd2fbcd0",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wooden' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 112,
+      "parentSha256": "30162d36befb49158ad704f299e42c28afa1117fbb295ac271691676100d29bd",
+      "cropSha256": "27ee8967568097fab32691c603143fde91948c94a35cb327587f8e1152016d58",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wooden' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 113,
+      "parentSha256": "36a1eff30f63e8ade3ee536119ae273452f27215afcac00f06c258228e71380e",
+      "cropSha256": "4f3baf10065275e0d834ba2085ef4b945024cdd7d9af09107537807011dd71b1",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wooden' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 114,
+      "parentSha256": "1cf3ed51231a81dbdcf1c5fb95b2cd2ad5c7373453983233149bed64a3698a2b",
+      "cropSha256": "ef866294d293e725eef68486773567abda81fbb7297c3e1d6c005be3540d5656",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wooden' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 115,
+      "parentSha256": "9547784399204c0db5185975b1caad2e9ecb10e8e3506e37bdd0bf9631ad82cd",
+      "cropSha256": "b891823b291bb739d0920d0c87f6ecec5d9ece00cb87b65dedcc3487b0a7b778",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'shower' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 116,
+      "parentSha256": "63cb0f0ac7d1e372d70bfd4a371ab71040b6dcea9fd5e522060be165e74a358f",
+      "cropSha256": "4f071199ed2bdc94d6ab825e1fbaeeb8ea14e6c49f1db74bb445dc370f1f3611",
+      "status": "rejected",
+      "reason": "Frosted enclosure does not clearly expose the shower fixture or spray."
+    },
+    {
+      "reviewIndex": 117,
+      "parentSha256": "a02be69d9dbaf2ebb1e21950d1a0c54238ea6b479b8200c46fd3330de5863236",
+      "cropSha256": "04c6b0f7570d1f47a1899ce5c61a18176ebf2dc46ef7720126ddaa1a1e801318",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 118,
+      "parentSha256": "e47e459ae6eeb0faecae6a0a5b0b13040d225be5c48066cfa2b46aa156a4f67f",
+      "cropSha256": "a92c30522b27a6d5fe28503e2528aeb275f943c59ae92cfb641b496e9a30ad70",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'wet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 119,
+      "parentSha256": "df2b6aad8abe17d07ada9c6f7a1807b4891989b61a0c48927f74766f9d82a79c",
+      "cropSha256": "df45a82d4ee80ad6a13e4123bf76bb906562f51092aa296a200a36e1e67700d7",
+      "status": "rejected",
+      "reason": "Only an elevated upper body is visible; the defined horizontally stretched resting posture is unclear."
+    },
+    {
+      "reviewIndex": 120,
+      "parentSha256": "3c21d6cb222e98c8fd88a6ea7ab6b0bacec19a5802092098536a079cc26dd23f",
+      "cropSha256": "b03274bfa38785ca5a6864fe576f77d1bce7c1d18c1a91d4be86b0bd9afa521d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'lie down' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 121,
+      "parentSha256": "2c476318934bf7b8e6ddbb0bcb119b8ce5ed9409e3444a6b8f8b4622e59fa1fe",
+      "cropSha256": "502a8e507719c5d3e30b5a8f47bcc4a1c98c191fc56bfc9d41415d7b44c6094c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'lie down' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 122,
+      "parentSha256": "73a97cb8eceb57e2b1872b7470a11c6e5abb2c03173bd4ce94a45c0d096ae5ea",
+      "cropSha256": "03a9c48ee26645d52c6044abfe1b553daf11adfe2ea50a8970cff2d5858aef8b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'jacket' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 123,
+      "parentSha256": "77578f52ee4644ec8ff4d8ffd712116b2ce0a498ae7ed5bd5430dec7b784cdc5",
+      "cropSha256": "69944d3a126505fdcad76c0f0c1785cd3a528b81aa254d453602a5932b2431a7",
+      "status": "rejected",
+      "reason": "An empty toilet does not show a person or animal sitting. Existing parent-label concern; do not propagate it."
+    },
+    {
+      "reviewIndex": 124,
+      "parentSha256": "c8d28db19ef226195811e86b5c41ab6635d16c8e9d375a1d4fb841fcb038b68a",
+      "cropSha256": "1f3eeab80fcac5af64cd5c2144d287180ec7aad25d368640031cbf246108c4ac",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'sit' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 125,
+      "parentSha256": "c6da2f84a9be83fc5d1c3cb3d1442d6b1b3a23b38ab6630911e624d005f350e2",
+      "cropSha256": "b4fe27d1739ee28ae208cc87b1f65b8169c6d7e64bf2fd52f1a0cf4ca7c9be49",
+      "status": "rejected",
+      "reason": "Board at the feet is insufficiently clear after cropping; exclude the ambiguous snowboard positive."
+    },
+    {
+      "reviewIndex": 126,
+      "parentSha256": "be12270a1e6c2854ab09f98f0e432340e7ae011946516519daf71018fbd8cccd",
+      "cropSha256": "b7d7204700b1a9151f2deae2009ffccbd28590e17dcd03b41b34d701f8bc1e3e",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'snowboard' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 127,
+      "parentSha256": "1ce72fe605a2e1fa219fa4307d59c77841d21bbb8c5048e406e398c4339cc573",
+      "cropSha256": "607119f5c431d7251d17e8d79e7eca4975796bcf227a33fd942c085ec2f8df27",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'snowboard' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 128,
+      "parentSha256": "c434ed7d3391af0ec5db9425cfb0f0e661972fcd21b720a7da33d0042e051bbe",
+      "cropSha256": "217c9503f110f90976d8733fccd50c2175f059d3689d0edaf59307fceb06041d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'sheep' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 129,
+      "parentSha256": "a46fe4379f6edc9e2d8652b0f929fe92851ff2b1c470c5fa355135323fa60774",
+      "cropSha256": "21291fdd4f8c1fed5eafab83a1540fa6763a733fdbfc7148bcbcde2783066094",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'sheep' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 130,
+      "parentSha256": "9dbed30a67aea1316d5c5d584f1b34469fd5e7fd0628ebd9a39d80f607ad9558",
+      "cropSha256": "61696cadc970153f667054c4f05a164f7e248e8585ea286c83137bef6c6352df",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'sheep' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 131,
+      "parentSha256": "319d58f0fa008d076b766671a5b607f94614f6005f773adced54a57567aa28fb",
+      "cropSha256": "9935f6e9a29d3713c216f3561d160d688ae9a1e50eb88b96e7432db188e2a70f",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'sheep' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 132,
+      "parentSha256": "2bde34357a8934f67db9e1c42a033718169233d2155acb8859a0d8d79028f40a",
+      "cropSha256": "2219180da449103534e44011cf5a42b0a07f32dc4f0c94a966415381c89b637a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tennis court' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 133,
+      "parentSha256": "298290da37182362fe71559d459a7781f08575563e731c6be7b04ef7bbc3226a",
+      "cropSha256": "3a1ffaed4bd886482ec45f261bfad21e3be3b97c5636e9c1ce25ba25ee7e52c8",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tennis court' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 134,
+      "parentSha256": "d93eef38f260cd20b70a58171dcda72ebbcac72b1cf5d1be8583072159917d2f",
+      "cropSha256": "e504dc91c682cd1704fe4e05f8fea8573c073b3a0ce6198ca1d2d60503f5370c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tennis court' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 135,
+      "parentSha256": "0f1b0b32e7259b5c34b3236301d8792e6ac5e0afc67bf4dfc30df77fb5841ba1",
+      "cropSha256": "9ea64cfe2c6b8752b4b84e3d7d65f738306044b87c8402f23939e1058e07b7a3",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tennis court' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 136,
+      "parentSha256": "b6b1cf5511ed5a690b596376813360b46b180c3fa8c3c3ef9cead9b5647f87e1",
+      "cropSha256": "b04829aaaf7e439dac173b897eaaedd075e552bb00d6c1af0b5b029dff62d505",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'laptop' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 137,
+      "parentSha256": "ad30a4335a65035ef96c5503151ea47370e6f66e65b70a44c26ed1c4d580df95",
+      "cropSha256": "c5e129cb45100aecd54a417123adc1c0edf994fde09a4faed563c6e5a3d80e5d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'laptop' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 138,
+      "parentSha256": "a64293cb5d4bfa0b1e6e1c0603f7a4f9892afd90f353c9ed0b250449818d5d36",
+      "cropSha256": "100d4867adac1be34ef910970e2d137d28db21d118a987f75dcee52450e0cf78",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'laptop' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 139,
+      "parentSha256": "74426999cd1b58aac06353d2afac10c9e6a8c3bbfeb05abfd3386801c47c035d",
+      "cropSha256": "b5cef69137d6380359d5bb82564dff3eaa4fdfd4a876cb5c001ef17fea0b72ec",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'laptop' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 140,
+      "parentSha256": "6d63ebaeede867676d7087efbe6ddfc778cb5868524539ff187420e2b594c807",
+      "cropSha256": "454218d9d41644aa143b0a1ef628981308554bd554a6b06b068142a0c170727b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'river' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 141,
+      "parentSha256": "c676dee2e229fcc635af6450d0c629e34cf900162f950e97cde17e18821acc23",
+      "cropSha256": "47f3d3be4d2dc0b66c904dcabc77aeeff62e6b9b05bf2819f8aed280a96e3961",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'river' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 142,
+      "parentSha256": "6673f93274f96666b7caaca9d0bde6e4de2238bfc21d9fa57c141d0f3a99e8d0",
+      "cropSha256": "61404c1c068246295a81a6637a950555e073f66b84a13064df39e202ee079054",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'river' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 143,
+      "parentSha256": "4fa3aab23ce3814a1da7f65ce615000413900e0f915daaf420c3af64a6bf6e93",
+      "cropSha256": "db30b718a2a5e8a93c0c7f749f81a8d0d234110e4a994a32b6ce54901a65de4d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'street' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 144,
+      "parentSha256": "03941a97b9abc2c06297f37688ea5227e2a3f41d8f087c0106171f40301c7187",
+      "cropSha256": "d78e70a0ec988b5b306dea03c9c9f5f92b47aafd3819eddbe38420bf315c195c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'street' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 145,
+      "parentSha256": "2336682bc863b1eb39a926b32d40659d09358c8163fffbdc5f4f818a074fadb8",
+      "cropSha256": "550309703d45ecde72363be3ab93aee0cb667271ddc82b3483869121105b7812",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'dessert' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 146,
+      "parentSha256": "f1809b639f23421ad6d40a3c16a2fb0a71184f8c4e1bda72bc1bf53eadeff387",
+      "cropSha256": "ca7fea1283fac5075ad6f2890b57c947ca860869a3471aaaaf54d67f054e4c7e",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'dessert' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 147,
+      "parentSha256": "688c4a3bf75a7dd19a9401d7f105f9675d50b2b1bc01a1355320878500e4d1fd",
+      "cropSha256": "e9407cc0e53c80f6c0265772c423cf85cc3460334c1d0d036039e4355c91cf03",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'dessert' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 148,
+      "parentSha256": "8cae3a123b9cd5076110ba7c2f5311a207ccd095e57f1ad080c5d7d1602d5851",
+      "cropSha256": "9df6b17d018d0a3fae151a6bafafb916e99b7909d81f357abe3e188b871a5b5c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'forest' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 149,
+      "parentSha256": "62e5029b36c901539d8733037a5340ae2ef85ee287094ac784b28e9463b9d502",
+      "cropSha256": "76d90177c01a02d7d253daf6795ff19d5d2c0331749454ff6308eeb8679af5ac",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'forest' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 150,
+      "parentSha256": "df1cfbabe293d62e1ad29ebf0e79699de8c1cef2a09177c5192255846a756974",
+      "cropSha256": "d3fffdae4a10a37899568de0e206fdf3fcd4ab3fde07381b71d5bd414095e9dc",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'forest' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 151,
+      "parentSha256": "10dc6cd39da78d787f01a4221d6f6765d30021799f332965de18faae501587d6",
+      "cropSha256": "9e44e1e656c8006d3c2b5443f0b7313e3fa37528cd007e4dfa0e2ae1241bc38d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'puppy' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 152,
+      "parentSha256": "1c8da1eabfff62cbca8233739b1313b6c0e7755268dbb2cd5cd401466e1c8bbb",
+      "cropSha256": "ea5d3b4a5d4267f1c9f61b00ea25d18fbb033833ba651cb63e174dccf9e2478c",
+      "status": "rejected",
+      "reason": "Full crop inspection shows a black cat, not a puppy. Existing parent-label mismatch; do not propagate it."
+    },
+    {
+      "reviewIndex": 153,
+      "parentSha256": "359ddd62f3bd41d46d67a469e2401d53ed2742d165ec235d5e9c22f0c26c0af6",
+      "cropSha256": "67d91e3f81a01fb36cbfaa42f399a0ea895b2a7036e80ae561e34ce41eed4838",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'puppy' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 154,
+      "parentSha256": "45b86dd04506ea6e6c2d96a6dcf389150a95922146ff41b858ab40c3edb8ed1d",
+      "cropSha256": "d18880da674aee8b56e7fc6cb39ffde16154294a5f0390bc2988ae9ec829d21d",
+      "status": "rejected",
+      "reason": "Only the back and hindquarters of a dog are visible; the puppy age/identity is insufficiently clear."
+    },
+    {
+      "reviewIndex": 155,
+      "parentSha256": "1ae5c58f3c865066c4731ff6379d8781da8a25986b8c1c6c9028e7293a04ab51",
+      "cropSha256": "93ef0cd2469dd1f538f3cce03a8cf36ba33bacbb243a467bdfed8c1e43713e20",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'zebra' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 156,
+      "parentSha256": "8d4170dea501b2865a5955e020045fbe184da8025d6cef2e72d1bd9c7cdbdcac",
+      "cropSha256": "bcce942aea0fd0da5f140267f06f990ef5048555fc895865e7ae12fadc5464ff",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'zebra' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 157,
+      "parentSha256": "8cd75e90da41fdb33c6d810f6bd566f43f71110bb208c29e74f04c4cbbcc7f20",
+      "cropSha256": "10d77bb9a53bcac0e10d0edd295ff86853b61eb13ea5ddb1ccb8048ccb81c7c3",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'zebra' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 158,
+      "parentSha256": "669aa9b450c1d423c450da6a9e25cab88a9fcbc61b447028248fb748a0925e4d",
+      "cropSha256": "5124bbb3e5a437aa22ca485e78c9598caabd92421556f941aee7be3fc903a078",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'giraffe' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 159,
+      "parentSha256": "9039c4e3f2b6ad32f9bb327e66e5992c7225f0be2507672ecec56ab1c9661ee2",
+      "cropSha256": "5c8198835676abf3cd0a5d4adaaab3b162e2aaecdc95b275d73d0202d56b7735",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'giraffe' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 160,
+      "parentSha256": "c28e9336f674dacb5d8412874153342ee66f8a5863bf1952ee476083147949c4",
+      "cropSha256": "ca5b4f11767396d35c4815e8736bbd11d88ebbeafc6098a4c5cd2f738a65cd2a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'giraffe' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 161,
+      "parentSha256": "2b1667f8b83d0303c4378172b84cf7a2a8a954a7ab7aaab43a60ed4d9bab7123",
+      "cropSha256": "f2f5d632582c9e4d07e7cedd83d62c4c72325bc9e5646541c523c9737f60bb57",
+      "status": "rejected",
+      "reason": "Depiction is a giraffe sculpture rather than a living animal. Exclude this ambiguous animal positive."
+    },
+    {
+      "reviewIndex": 162,
+      "parentSha256": "e29d63874a4828adfae9dc8f853b5d08713fea791d4b4475532fdb6f29e38f32",
+      "cropSha256": "58d535be18000687d1d41e109434d75f1c742d463d7a4212c465a2ec0fa3a32e",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'lake' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 163,
+      "parentSha256": "d308275268ce56f773ff5a8335194504089939acca75a040df20de0ed1e87582",
+      "cropSha256": "53ea8dce4c03ce61257b4ba6f54eb84e6fcba4987397d7908cd4631f441c5f4c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tie' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 164,
+      "parentSha256": "aaf5ea8a315e18e61c8c41b6b34f5a339f0c223d2af977ecebec418b472e3054",
+      "cropSha256": "54195934b1b702adfe78e814ffdd917a0a50295f23c0184368b9ce47986d572a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tie' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 165,
+      "parentSha256": "33ebfe94537ecdf095bf1a0119cf7ef2735d6e5c33e798b5c52eecc9bc3d23e3",
+      "cropSha256": "7515942f4452adbddc11476b7cf00b434c40d5bd1923c6a8ffacc016e372cad4",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'toilet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 166,
+      "parentSha256": "50d8eca396887768554706e6a17531278c20af83773d1d15f65bb271d62829e9",
+      "cropSha256": "8a3a368e662364fef4d34b1b1346ece6ea4b1dc7f14130ddb71385443bb05c60",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'toilet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 167,
+      "parentSha256": "ff95bf5ddb4bdbd7f4f0f96d963cd941a0a2b38cfcf7832f25113e8441a443c6",
+      "cropSha256": "6a0e6b6c9a49f449fb1433f26840611931f87a617db370a228e40c85930b5e6c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'toilet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 168,
+      "parentSha256": "1db0c839e7060314fa73cefcf19d616a4ced1e295b1b6f891c61f122fb448484",
+      "cropSha256": "9b78bc7ece48ea091990320e8a07cdaa176c1f6f37fb53ed50af28ab8cdc94bc",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'toilet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 169,
+      "parentSha256": "6011f15191913e73a622572caf5a621a9b2f2daea055dfe45b4672129dc058ef",
+      "cropSha256": "713f6c8feaa77e10d17c8c2f7d364bea59b84796cb35c4d8ec760ed2cc62ed54",
+      "status": "rejected",
+      "reason": "The source meaning belongs to a quarantined connected bird/fly/airplane group that crosses legacy partitions. Exclude the entire connected group before augmentation; visual suitability alone cannot override split isolation."
+    },
+    {
+      "reviewIndex": 170,
+      "parentSha256": "9afeb3d28088525f56f2e7ad650945825353ca307a32ca9fc7b1f1d52e8289dc",
+      "cropSha256": "bba356837e60a4a6113209746c788d4b4df7ad14c07202f72c26a20f1966f8ad",
+      "status": "rejected",
+      "reason": "The source meaning belongs to a quarantined connected bird/fly/airplane group that crosses legacy partitions. Exclude the entire connected group before augmentation; visual suitability alone cannot override split isolation."
+    },
+    {
+      "reviewIndex": 171,
+      "parentSha256": "25d07d472c7ad54b5806f912ed770a8a86cf8164d450164af4a1b5975df38038",
+      "cropSha256": "0f0264e2cceb89af5b6de7a082b96c82625951ffaa75d8deac0aa0714eb7c883",
+      "status": "rejected",
+      "reason": "The source meaning belongs to a quarantined connected bird/fly/airplane group that crosses legacy partitions. Exclude the entire connected group before augmentation; visual suitability alone cannot override split isolation."
+    },
+    {
+      "reviewIndex": 172,
+      "parentSha256": "b1dd74ccf72451429d9444fec031e55abf94038b8fcc94e4abc20f4cc74d22fa",
+      "cropSha256": "b3d69801cbb633a1afa34b102fe4fa03beeaaa0bbd7583e015f79bede1324ca1",
+      "status": "rejected",
+      "reason": "Person is beside a bicycle; the walking step/movement is unclear."
+    },
+    {
+      "reviewIndex": 173,
+      "parentSha256": "8b47087d39f6126a830c560e0e2d7d7b942bf9558704b8abd2b33a26d2d9dae8",
+      "cropSha256": "efbc692db9dd1c8978dab86d705e57882325384180aafe5df012505a151e00ed",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'throw' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 174,
+      "parentSha256": "8208c5aa7a2aa8b805e7581289a91c8ed0cad5cd8a90e826d1ea0ca59d1cb773",
+      "cropSha256": "7151be93496703951ad45dc40e498c5bb34cc8614d06102239493c810da0ead1",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'throw' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 175,
+      "parentSha256": "631a6472e729f091315113046e821686b1cace4b7d63f6d4d097b481af546665",
+      "cropSha256": "337c6466e0e4ae283a3adaad89f8e9afb64b536331ce6c40e278b708f2434ac9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'throw' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 176,
+      "parentSha256": "a79b653aef91ed9881f3f8e7b3e383b87eb24723c73b63971e39a35a9ac1c331",
+      "cropSha256": "cf524ab57676bdf452ad2ea9aa85004eb7d464a362de36c01358fe8dd3741e17",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'breakfast' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 177,
+      "parentSha256": "380992fb43f611e1e4c7abb763f6c3178dd16ba647f20d428da8e9334ecfe4ad",
+      "cropSha256": "610f9bf266f1b5bc42e7b20d97e3d8f671aa5e218166462a6f143f183fd7e949",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'breakfast' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 178,
+      "parentSha256": "73c0456e323cfed4d729360302c86b5a4cefca1257e2ae9e30a04deda0b35e14",
+      "cropSha256": "c74da145c0ea84238cfabd541e19a08910d11ede7c33e1fdb743d24b0629d348",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'monitor' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 179,
+      "parentSha256": "d049616f3b49d973d8f1f002fcf87a44b976d2bc4ca4a053211598b1d2232a42",
+      "cropSha256": "73adb6ee00f032278a4d5e00e124572334e0b8dd998c3d4302085c965ae2b8a7",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'monitor' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 180,
+      "parentSha256": "01d975300362169fe1d5bbdf664f28873201678c9e6679080e69aba4deb1ca27",
+      "cropSha256": "d0247d8dd54c9a5f935b62ab0fac99eb3531cefdc8435f5b8444ba4818178c56",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'monitor' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 181,
+      "parentSha256": "e8561c69704c7b6b901d95c2555dd4d8758534b94dc661f23c9dfd901013fc4c",
+      "cropSha256": "03e7a20b365f80e15845e7eac19ece1e51b2c36b149cd9dd7f496e8595371336",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bottle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 182,
+      "parentSha256": "a4e68e6ae9eef4884fcc8d010ceaf4f72d55c234dc68a03c027f9aef2976436e",
+      "cropSha256": "c8fe2bb2acabb2f3d6e9d439bef5564b5ab774ce85605dfdb3a51e96d868ead1",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bottle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 183,
+      "parentSha256": "327141f584232821dc46e28c0b85f30d206a449af1f9ca99d270910dcd7c73c3",
+      "cropSha256": "7a979f2e0c6976eaf5030b5657e0e5112c8625486bd5941c06b5fe5e41cb725d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'stop sign' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 184,
+      "parentSha256": "f2545620c6878bd0faf03dff4f32409a174c1f52bae525170f014abbaae4294b",
+      "cropSha256": "466f8c23a0d9bd39bb6b0d97ecb35f3800e3aa28ae8bf2254162479d9e669608",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'stop sign' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 185,
+      "parentSha256": "331d53040108d187e891656fb85ec6fbc4d8dbbc53b45cee7f45cc21074ea0a5",
+      "cropSha256": "e7f9a61c31843fdeced1f6bbfc33c04bdb11a092ecc377b61ce1e75c96f388d3",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'stop sign' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 186,
+      "parentSha256": "3e0a2faab9577bfb047aa66947f160ca681737e8b3ad8ef392e0ceeb96ae96bf",
+      "cropSha256": "f7e7d68494e233fc02cfaa1578cfd38fb77144539e035bd95e23783b3c0784b1",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'stop sign' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 187,
+      "parentSha256": "3fa9ccedfc3ac829c07e14b0e7ef4211b5963f7700dc6e30dde3054f704efa09",
+      "cropSha256": "d7dde80c8af1bc01383a06cc3dcb336422837a579a1794da75c1fbac95e06316",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'fence' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 188,
+      "parentSha256": "73fd4000636685e13e7c35092cd2935afe188bf15edf7fefc901affad73ab7f0",
+      "cropSha256": "4ca3ffc063816bfb7ef419d6f9ff1b3745dca86926c7cb84878f30adaa925d3b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'fence' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 189,
+      "parentSha256": "1456ca108e838538b13b880f129bebe3ad036a65a894952439f711e7f770fab7",
+      "cropSha256": "d51962ea32cf91675f8482ff442bd41709120b5e91c2b1d62206ce7fe77bc809",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'fence' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 190,
+      "parentSha256": "1c7ef576bd363223d4d0fb374272d157da94051efb3564f5ece7e4ceeec8e4da",
+      "cropSha256": "c6be9499e1646179a0837040a9c6f7641b50f8099cc435d1705508d4bccffa21",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'traffic light' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 191,
+      "parentSha256": "8576195617ab1ca21adf72d909446c93efd2c3b8707f97bb90eb8e9b2b19388f",
+      "cropSha256": "6fa0a73f3d9ae849074dd65d1d8b58e3f7479689fda7665f7342f9ebfb8e1113",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'traffic light' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 192,
+      "parentSha256": "740a8f0e6c980ad0587bb352a909308782f8c3a7fa3853cc6b06aa2ed1ff4675",
+      "cropSha256": "020735da4ea099017e14af720702ab224217de18b3d16ccdd5c1d8d26f3c2e82",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'traffic light' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 193,
+      "parentSha256": "eda4af13818b566f8fa4f479e76286ad90cd5da2e8dfd530be0ab3637e1482ed",
+      "cropSha256": "960f69bcf6639e97d956a55d693b8aac6d363d913be2b4ebedc35458e39f2b6a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'purple' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 194,
+      "parentSha256": "ae2c7be44df33d27135b6aa2f5d82d4c8bb9784e99469a04be708ee68943a45d",
+      "cropSha256": "51988bc640adef2853ce50e0590a7b9e4fad7b9f923fa45419d205e963fa7493",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'purple' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 195,
+      "parentSha256": "faa06206531e26d29bed2d1ecca535d5496a017e1e88a7329f19bf4a5574a83b",
+      "cropSha256": "77e66e1d5c753b5ae99fd0cc4d84713447e21581ecae190e2e043a4d09d4e5f5",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'purple' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 196,
+      "parentSha256": "3b1e4dc0f5d15f4d74b3d2926e15d80e996a7e6fb4302808bbf7ba84213e0d2e",
+      "cropSha256": "0aae0849dfc939fbbdc846dee22481db0ade870cc769d0e729919ca779ce3fa9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'book' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 197,
+      "parentSha256": "7e4985f7c75dd8940526cef636179af20151b3af7b7653f6986eed71f32488b0",
+      "cropSha256": "bbf3e6bd77d6d1459719e8fa0cb00a4859dead7c60e7cf6d80623346e7bca545",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'book' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 198,
+      "parentSha256": "5a53866848c1d1eebad2df1a6d659bd699ccb52cfa89ce3bebb5105e2d81c9a5",
+      "cropSha256": "b0e35cbc9f5631304e69c1bdb94337ede37100e4fc2c5fff6c94354872869bbb",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'suitcase' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 199,
+      "parentSha256": "57cf8aeaa73b52951118851955fb8f2a8a7f3eaef4725648122f76e54d22e245",
+      "cropSha256": "516a818bededcef3b3287ea0dd5ae0df782c05a0a455ece14fff9641fb29ee01",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'suitcase' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 200,
+      "parentSha256": "d609877d71bb235a132923cb287d90f3d0d0cf3299f01dc4b6b8b660240e1544",
+      "cropSha256": "497bc1d793afc05dd3d55ff08d19698af9d5c6189e486e6956197931f7457747",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'suitcase' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 201,
+      "parentSha256": "4d4a7aef5c24efbfdc8c5a529e98f708cebd96372240e9d798be488cd9bbd5bd",
+      "cropSha256": "41ead86dacd06cbdf019f4fcdaa0fda1efe8afa7dd8b2f930b5abbcd7d15d29b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'snowy' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 202,
+      "parentSha256": "8b8df22489ff798c9a180016fc70681388ecd8f24f77f7e2f6144b70e761354d",
+      "cropSha256": "a5b5db022b3a62b4211ec62f8e06e04587738ca6a97f717181e8dfb06d3f4acc",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'snowy' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 203,
+      "parentSha256": "51dc6c4511cdd2dbd999174521f6ab0b1418ed0b323a0050c0582ecea6cf2ed8",
+      "cropSha256": "336949b452df6d666791826383ea23ec3e44b311fe69315e556622783a38620f",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'snowy' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 204,
+      "parentSha256": "66a8024d2696e60bd73bc162d00bb9ee57ecd6b90ff5e0065d719ae5abfa5d32",
+      "cropSha256": "bdc779f30aa4025d4a8130637c5990d4b69c88a0a056358639b2f61d4194f6b7",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'snowy' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 205,
+      "parentSha256": "ea9ba651ef58aa6901a9cffcf2c86768809d38ea0537ad20625d5b4508486b88",
+      "cropSha256": "f252ccc96d7d59af4ca0b5d1680365fad02de8ef802b62acbb30de70e6effa4a",
+      "status": "rejected",
+      "reason": "Trash can is at the extreme right edge and mostly lost in the crop; the toilet dominates."
+    },
+    {
+      "reviewIndex": 206,
+      "parentSha256": "3407447c4e8ca2ceb0db4ba1cb97dee1547e63fb3499cb67d6813ac5d4275d3c",
+      "cropSha256": "4ebd884d0c967c15d7a452e2629e1d0f5a9856be9a3decd05864ed2d173c7779",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'trash can' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 207,
+      "parentSha256": "5fbb7144ab7e492ed1a39dad1daa82c25ea3bc2f17bbd285693feba439dc4161",
+      "cropSha256": "802930d9cb2cbc47ed1e32e056898374da048e523ca9a0b3b5032e539ebccd03",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tennis racket' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 208,
+      "parentSha256": "55d845f4048d0009698986cfa88ec1b27948f3deaf57adf30ca603ab343c58c5",
+      "cropSha256": "bbf1ec6a1f273346c50eb0efbf77b62a6313fb1b28b81b3ec65b4b6fad00ebe5",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tennis racket' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 209,
+      "parentSha256": "bac0d8e356c851c90d9e2bbc4026bee20fb1af87f57c4b2db535232945ae367e",
+      "cropSha256": "99f9275df125988f93f92db03d8022fa9c1095d6bc47608af6565bb906ea83ad",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'subway' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 210,
+      "parentSha256": "0bf52c9409ae0eeb5cd056d2cd8a48217073f9be09137b76e39a8c6f2411229d",
+      "cropSha256": "58044c17aa90ba1bd2a6823a893983fd3e227164c36ab7c99971feed9401411d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'subway' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 211,
+      "parentSha256": "65cad59294282125ccfec8acd572381af824b3307d995f031d2a61b923660ff3",
+      "cropSha256": "4b843bfe49b6b9202d5e54ddacc2b81137e002982bc420d75dade16d6efae1e2",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'leaf' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 212,
+      "parentSha256": "d619327903c6b05520f0d6768807c067cce2d6d908d2d83da018a1da3b1792cf",
+      "cropSha256": "adbdda9a64e190d96fa12d140d4e6ffb6403d32d723054efa7efc5bc85df6ea2",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'catch' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 213,
+      "parentSha256": "a6502322af5f875dc187ecc7c8dd23920ccd61b1acc32bfd8388247c2e79a30d",
+      "cropSha256": "16382ee7fed8d02e988b23879e1932bb93cd09adb2b72493bc501953a4839284",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'catch' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 214,
+      "parentSha256": "d2776dc38a5007addc0dfe4e700d3b9224b06b10c4a1681b92c85066e889413a",
+      "cropSha256": "5ce39bfb782be56ac99f5baf34f8975e0ec06de0c62ebbb8b82839ba6e27233c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'catch' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 215,
+      "parentSha256": "6624a78abc73c2075c1619a53ca7fbf8bdbaba559ec44ab6c15aed6f67554576",
+      "cropSha256": "870460de74a97d6bcab075b9f2c61835b1ee7ea2e06d0389f1238bf85e6bc5b9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bedroom' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 216,
+      "parentSha256": "f5ed1c21f176378a77e5e3dcd071908850d193cc200232790071fea5a1234aaf",
+      "cropSha256": "81ff7edb2f9ff836e0ae0089df59d61acd0024c6bdefdad58eb24499db5748e8",
+      "status": "rejected",
+      "reason": "The frame emphasizes a desk and storage; sleeping-room evidence is too weak after cropping."
+    },
+    {
+      "reviewIndex": 217,
+      "parentSha256": "4df90acc44913befbd1d6509cc91171fa19c7f9b9b04c6bcd0c7d17aed68530c",
+      "cropSha256": "0058e5dd94650181107baf62b2586ebeed590ef83a8d6a690fb57206051eef99",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'floor' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 218,
+      "parentSha256": "40723194728d52fd499ce505353bd9e153cc453dec045795167dbabf339bdc23",
+      "cropSha256": "5966ffae7d807242a958ac2e33f7e6a5ec49e644f57e350ceaf77f99ae88d7f1",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'shirt' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 219,
+      "parentSha256": "745fc379c0e51a1bb4aff3bfed40b4d126bdae452b817b6d704982d4652e331f",
+      "cropSha256": "9d1cf22e2e832698efe1b8d293eca819478a65d213c7133204f0b18f9711c987",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'shirt' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 220,
+      "parentSha256": "f93626195530f46ed849091160f8cccce1a255ca886fd5945f5719adc12dc789",
+      "cropSha256": "6fa54fc131bebefae726ebd5da63e165071d51517dd9797e2627b03324f5db68",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'shirt' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 221,
+      "parentSha256": "f3b813cb53d01a8ee122ea206701331b742732dedf1743803121d002187d4be4",
+      "cropSha256": "4a0b0720514db2a3949eda6c821ab82a706e6946c077b320133d67d4e16df966",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'painting' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 222,
+      "parentSha256": "33b4b4018ea6cabb60fdc62f594d1e1e6b9014e5a23f2a36b57cb692e8d31038",
+      "cropSha256": "670e056712552a69061c3cdabdd1073c208e6d5cca88ab462e918ed753609cbb",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'painting' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 223,
+      "parentSha256": "7a22cbb635f1a89081df046549ad066422ca9cee3270b57f66627cd7a0d096c6",
+      "cropSha256": "c1385cd6658d04641804ce28fceb257adc06eb13d8fcb0ac22e27eb4358e7d20",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'painting' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 224,
+      "parentSha256": "16db46aa2d8549a820e9b3bc5f19ef9ecd67259e983a0ae7024aa7720e0c2033",
+      "cropSha256": "27fe0e184af99d7b79fa8ed15be0ebef9957fcbf8ea52bd4cceaccdcb511fe05",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'painting' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 225,
+      "parentSha256": "9504f1c6b744bac92a9072750b9b27e223e707798ef1a6e14afdbd867113e9c0",
+      "cropSha256": "e53fa8e344ba7b34db41c5522b7cb4cd96643ed651c4f4321264cc2263b27f27",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pink' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 226,
+      "parentSha256": "6b202e24633cff5e2ca73be84378f8d7f442b040ed618499da83603faffab2fd",
+      "cropSha256": "428e18823159975f1686d692ca7b82d43c7e474ba7359b46c2f1fecbcbe08dd0",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pink' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 227,
+      "parentSha256": "6c481f084e4dcabcd55a57993235b48ff82243d80dc094c5b2b02cb5ab5c38f7",
+      "cropSha256": "0a42ea654f787349cc8292b1fe733bbea86ba289b1eb1ff9809f20462ff6824d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pink' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 228,
+      "parentSha256": "048eaf322b75935f7441845d441567d55ebcedea1a1c9f3cbe628b35bb01120d",
+      "cropSha256": "409c05b5e974637b4dc06c6cc241b2c5f80a390f8b3edbb6809fa0a4012a84af",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pink' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 229,
+      "parentSha256": "cacf3729edd11a3f6f3d0c6f6b9f94479583892c877ae7d0ad03cd1b6c7c4231",
+      "cropSha256": "0b40bd8ae1e63f54a6e2d51fe8a9841f1de18cdc417382f35ac5712f8912ceb0",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cabinet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 230,
+      "parentSha256": "0d3dd7d85cfcc4cf0ea1d814197ca3c4e419a1ce968b269f5d06fabe0b367f58",
+      "cropSha256": "6569a5c09c7788183c27157365424e0c705a5c1f7e605337f5c454f817ec1707",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cabinet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 231,
+      "parentSha256": "49beacd53c1e6f7b9bd1c582f0ea3c56a7c5d2fcf2117512f0aecb5db4570828",
+      "cropSha256": "7e8da6822a2e11e2fd3ed0e55f63e6746828ac17d6bdd15a8ef99f56a0b95aab",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cabinet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 232,
+      "parentSha256": "0c0130d59521b638c1e41dcea8150e33acd7a702a8921a3601f5b6a42b5ea0cf",
+      "cropSha256": "c3603cc39fb621a809de1fa712d7e2bdf6e9fc37a28d449f247a88af2dcba338",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cabinet' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 233,
+      "parentSha256": "9f3308ac7ee40f7e983b1f36adb8a65244063a1cebcd609407951d5457bd260a",
+      "cropSha256": "3e200c3724e1c6675d9a3fdae564f5c66aec9a15392ab36960c3edbbb52b9a2d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'snow' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 234,
+      "parentSha256": "83af2d377338ed8dfe2608d8c8da1273b11dfb4c534b6426cdec0d93c6ed2892",
+      "cropSha256": "ddc9d506d5d55cf2229f8f402fa531899f52054eb84c587f37e4fc0626e8320b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'snow' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 235,
+      "parentSha256": "9cbd814d4a5dd69d5652df7570f59b9a9570b3c3ad706bcf343a06805267771c",
+      "cropSha256": "80ce78481e88421a4355f395c35afea46305e07959dc2ced8a471de8ad03d98f",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'snow' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 236,
+      "parentSha256": "593d4d8a69f21f4821e0bdd1d9f90e77084b31fb951090b549915a986b0633fe",
+      "cropSha256": "3fe5b0bac0d939f9d7d399422deb4f86be40395586fd90e7c6b3aa9a46cf1ab0",
+      "status": "rejected",
+      "reason": "Person appears to be walking beside the bicycle rather than seated and pedalling."
+    },
+    {
+      "reviewIndex": 237,
+      "parentSha256": "7acabef5186a84189013c5fc859fe9e76f9507a00b20dc758d3e916d16a0f96c",
+      "cropSha256": "3c48babc6d6d83dbbdc78a49bb7c12f256d739ae2b7a9beb370e627627e63e2e",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'ride a bicycle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 238,
+      "parentSha256": "3b1a4b3e7a06e2f67ff42f2821f089e5038d53d9a06de390a23f65652af85d6d",
+      "cropSha256": "7a59c6a14d17324a8933c09b2587e29d0287eb1cb564fb06a2b61de74ee9a4a4",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'ride a bicycle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 239,
+      "parentSha256": "d58fbf97d596915335f1d9869ac59ec09ee16efa472bc49d820ed4cddd3b7af9",
+      "cropSha256": "e1fe9e5ddaef94f274bfd9c671107eaa4489af308cacceffc8bc7877c560d102",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'beach' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 240,
+      "parentSha256": "1a6a36f8e88b5ff69228ddd0e9ace1484d075de3dfe55f73be3e658b5ab5b726",
+      "cropSha256": "59bfcee935100ac335435c6f68f3563d1f6267ee1caf1ef51d797dcefbdd7525",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'beach' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 241,
+      "parentSha256": "cd359d7297084093f5bae1d00c0f5a1be5104e3ab016765a472326bb13aadc72",
+      "cropSha256": "5a5404e426651359ee692908631f604522c23775fcc05955d38936d5e9340c0d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'run' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 242,
+      "parentSha256": "3214da76b09571a07b5a4f9e5d4ac5afd802117110cc3bbfd797008d0af536e9",
+      "cropSha256": "72242262d7a21082e5cad9d0d2c3d857d06b9ebe5042119d133389e9db80ae21",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'run' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 243,
+      "parentSha256": "4434c715aa868745ed8d4506dfd812da5e0e6fdf0fba8250c7bded4cd15337b8",
+      "cropSha256": "e4da707c809d8a6b7cf956f6bd60c38a173cc2632780b28c71c9dcffa43fd3e7",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tower' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 244,
+      "parentSha256": "ae5d97a6b5f41a9821e50bb853b4c6d5f1c2c833c7231cc2c04768929f7dce0f",
+      "cropSha256": "a2f805e1f0a7991a500432c082b0a6c9d726dbf672c71c8a25fbffa6cb557960",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tower' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 245,
+      "parentSha256": "5ab2ab206221f51dfcdcd1b140afc1af6f2a33af3f6c26c9c11e1a1e716d71e7",
+      "cropSha256": "535a5dff76af8f32a50e5db22f7195ddb12bc0ddde89187bbaa1e6c3dcd8e872",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tower' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 246,
+      "parentSha256": "a03e74678aedee90fe6777e9ba4eef8b3025ba0b6f426723b2cf2b35c5ffef4f",
+      "cropSha256": "182404d31a98f95d087ad4fcf4c940890d0083b90a720c903b1b5ee78db98060",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tray' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 247,
+      "parentSha256": "44891e1a27e3a262a3d879fa27d2749b31ca71d648f800952f4dccc248bc3743",
+      "cropSha256": "73b8de4af8dda5bc00bad3204d26c699facc50406ea5404b0e70693febc74f6d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tray' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 248,
+      "parentSha256": "a02c348b83ed6cc7b4c3e9e445132751b1b01d1726819b233993177bd4a4f041",
+      "cropSha256": "32e83dc21846681f5be14588a483564dfbf74f6d97eaadce8210bb4200780c4c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tray' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 249,
+      "parentSha256": "c6e2d69d67f6c87377d64f761b3312293b7c2112d1714b5bf726b1aace24fef8",
+      "cropSha256": "e4fb57f444a6a844d6fe217ea54665c0e621f64ee8e56995c2c6dd8c108bd99f",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tray' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 250,
+      "parentSha256": "ba79e69d4272bc31ea4fb9f3731e020a9c8acf1fbf3b6ffb78528d70e2e183f7",
+      "cropSha256": "6fdfed3482e89eb6c9a412f999dd954efdf185d8b4c83eda513174c91f332ab9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'red' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 251,
+      "parentSha256": "7b0c55d345757ae8431fde2b2900ba6d49f27bbf50e19033564555ce5588fd75",
+      "cropSha256": "27d2ac76e55ce0ca886cae3d2826d3763b700d7a177c51eb2f15d50a3017ccdf",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'red' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 252,
+      "parentSha256": "116519cb932504866058215a0cca5e5d03b4af04a71e540db38c5caefb8d4725",
+      "cropSha256": "ebda7b1f008a086016c92d8820587ff4a53c9eca8e2769c7635187c3b7778156",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'red' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 253,
+      "parentSha256": "8f1a6220e63b77533def7e515bc4e7ebe8879d68cd6cf13c90f3f507c0c2583d",
+      "cropSha256": "e004a6ad601cf2a1acc5163fcdcf78e837152a3c386dd5b51e8b765d10db5366",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'red' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 254,
+      "parentSha256": "6c8207a06044306b0d271488a22e1a174af5a22e951a710e25a556cf5d212d5c",
+      "cropSha256": "7226115ff5b8b1e796415f4059cd48ef7bb7a07960ff33c2ddcb31a1df159aff",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'scooter' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 255,
+      "parentSha256": "b13b6ba1b399210e9cfd2aa3f14e7a4c209e543ee33cdca18d482bef4ff8dab4",
+      "cropSha256": "fd1735dc819895333730530f611b40aa3218c8612e2feb1efc7ec022f020e5e8",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'scooter' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 256,
+      "parentSha256": "5469f123ab838c9fdcc567c13148399dcb4cfa4eeee80e6e56a13627808a6d54",
+      "cropSha256": "f4f6d5d8e1f524161e3ab606d44f8c44fe89c7c95c3a7250c21f4de1a08ec294",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'scooter' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 257,
+      "parentSha256": "1aaea56776b53e55899b583ff6f5d716280a2cc1e9e5d9280d6c2899a6fddaea",
+      "cropSha256": "022a8db19e981f428090749a113d990f49dbdbb0691ed447e12aca8b082ed2c3",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bear' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 258,
+      "parentSha256": "91f4d327a8f83c8df2013b0962baf76794a4bbfefe939a7fc2bad545785d0d35",
+      "cropSha256": "95b7dba9e9d1c4a86c7f30711e081aa4a133c01d00d441713ac274632da8e4bc",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bear' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 259,
+      "parentSha256": "2a8ad09cb365a07da423ac6fec7f08dd4ae14c1dc059a6d6a87df2105803662b",
+      "cropSha256": "a42ff0db28b78ebbec7d591c1b5844b0b6c43e017aa3d0b9041bb3cdaeeb8178",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bear' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 260,
+      "parentSha256": "bbd1f8687deeaa813f2b57509dabb1e87f7ba532f06c8e79868cc7f1453d0bc1",
+      "cropSha256": "dc56c7f8ce11ae8f4f6ed49ddd8918833adc2b9800e52cd40b2d26810acbbdca",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bear' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 261,
+      "parentSha256": "7c4b394878f3ef3126606c271dfd311a9084af531df7b565da09333db295fbdf",
+      "cropSha256": "fe4e6adccf4c9338d18b8786e82a80809fd91de68f453c5354e25554e3ade7c5",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cow' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 262,
+      "parentSha256": "b55eca29ace3b322af2234d958edcde4e69d91c320053a568d86eb6767231f6c",
+      "cropSha256": "5c4a730a9aac8c09b109db8f70d9e5848bd6a5b8f8745742b7cf08c227c59895",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cow' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 263,
+      "parentSha256": "1ef6feb0a8d8886de8dc4db6e6c379cdd8fad15111a8edc570eeda66bcc17dba",
+      "cropSha256": "9918adb33b306eeef820fafffa2b77c65002633a970b2410ae150536271f6839",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cow' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 264,
+      "parentSha256": "385a229129bb4eeeb3a309c61cfd6e2ff03ea7f57b3eacf2b4b1c59958f6b22a",
+      "cropSha256": "4a8868d8bbe261ba7dd60bfb2ac705194c27072345ee5252da839f6fecc4fcb4",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'black' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 265,
+      "parentSha256": "7c84e839bf26fe9e12b464b300e480dbcadf88a79db134f2c29bf3a9056ab1ab",
+      "cropSha256": "a4590c6847e3e1af87a423d9591ff3adb738ea622d374f15a650a36b754b63ba",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'field' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 266,
+      "parentSha256": "63c1eeacec4fc367dc318672c0ac8aeb487c91abfe250ddea45d8ad25582c038",
+      "cropSha256": "ea32e91c26e081f4e09a51cd56531270333b45b67a8423815e62ed923a285b29",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'field' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 267,
+      "parentSha256": "f951a4e9e970a0e2d19efc702cac3c01f08cae3dbe6080cd91c218509b008c01",
+      "cropSha256": "da539d403226e4b966a5923003ca320841faa82dd3615427d6c0031e4adc6adb",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'field' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 268,
+      "parentSha256": "92d7bca3749452a0bd5c240e1a9a23f9c200bdd7f91047be96ce54b827aa1932",
+      "cropSha256": "fac0b64e0f0ad83b5b59e21cf652ebd1a62b0cc0bc2ec365c3f62a98ef42068d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'statue' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 269,
+      "parentSha256": "fd7fe9e831b97c31d2996209d4eb152558e46d752089d3a2b1b5e0cb21f343fe",
+      "cropSha256": "266f6d841eb09dd363c0dfc57cb3945250c539d29e25d5493d12d1ae1bf43edc",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'statue' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 270,
+      "parentSha256": "05435cdebe50a959e357ddd3eb9621559934b8761d3526e57fd9170658ce3d93",
+      "cropSha256": "c0fbc09b40b50859d107c3688e33b87eb4a9785491159231a710439aafbf94d5",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cup' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 271,
+      "parentSha256": "283e14ef8a28efda65411d850119607c68bf02036460b94f6a73688703fae491",
+      "cropSha256": "96c13543198938306429f4b47de1d47a4f9bd969eeccd1923c1295c9bf2d40fd",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'cup' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 272,
+      "parentSha256": "7aa9c205a4031b3be912dda9b3a37a9c29e88f6a684f38c46b2c4fceeb86d0a9",
+      "cropSha256": "62cb6df4aef38592cc05aa004778eaf1cc65ca3a09878c775c1d9989889ffe27",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'brick' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 273,
+      "parentSha256": "5c237332390d380fdc0ca82d0fb0fec54f59ed3bb6100517119a8fd9edfd53e7",
+      "cropSha256": "2b51ed8b74e45d8d31839e3fca988f47a8743461f9bbb8f914fa99358cf15614",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'brick' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 274,
+      "parentSha256": "cf692837b22f590cc75ed7eb9bcabd26772c71e924a35506df081b0956755bb2",
+      "cropSha256": "7d23a7ccc3e893aa3ed1e3890c02193e944b49380e1dce62a7eada5ebe9036d7",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'brick' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 275,
+      "parentSha256": "dd7af0c8c1adc9db909c8c7f92a00ac31fa97f41d62f5c92cc5c9b53acb7db77",
+      "cropSha256": "c3990583ba1eef2fe6522de9033a6f78df0f2fc517c0adb275dbf0d3d54728eb",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'brick' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 276,
+      "parentSha256": "e35bd1a93a4eebfce3829761c06d9621f3c36a5a5ac424cdcc6b83af86a673a8",
+      "cropSha256": "b0ee76b4f4f6c38e9d3c596326fc113748faa8c82c73a085a636709d680557af",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'living room' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 277,
+      "parentSha256": "346e603474857f6750d0f946eb80a76b104d600195c40cadca91b9f36f9ad84d",
+      "cropSha256": "a624c054a8715e3f810a9f44e5313d53f5747f587f4eb5b08620be62f58d65ac",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'living room' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 278,
+      "parentSha256": "8d7faf07b27808be169184a0dcc87839379c1bbde2d6742d7f2c4afc077a974c",
+      "cropSha256": "3c335e072f700fc5534fea10c5bc9a7184de4d1e214123d1fe0c208f0bfd358a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'living room' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 279,
+      "parentSha256": "a58776b09d34fb1c0072cbe1a01a20deb7f1c5dda0966369d1e6e4a5fec51757",
+      "cropSha256": "17d09124edc3ff970343f95b3fd8098dbe1ca23677465c832f18daa9b858b29f",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'living room' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 280,
+      "parentSha256": "8150aec4794933e1d30b565f6511a870e5721e58c72a919735eff71575fb098b",
+      "cropSha256": "b0fe3667fe24462d4a78ba25283d162bbce9e9e673d41913e32a881060f14dcd",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'parked bicycle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 281,
+      "parentSha256": "898e8d59cef547eb784066bd529f6a2f22c05ee0beddba310b7cd7c7531f7e6b",
+      "cropSha256": "3d21460c0e111be4fb2f8d16d91b693a2dd8417e3dafee23408eeb3116657eda",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'parked bicycle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 282,
+      "parentSha256": "6651f780761ad511ba3400e45a8a4e909439aec71227f1faac81211632f31d1a",
+      "cropSha256": "8307778f92b423e4e7ee24653d4406ddb7dc322bf36e08b5b970f4c4cba6c2a8",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'parked bicycle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 283,
+      "parentSha256": "ac0a290bfbd735b423b11d3395a16cada83b76fe3c013e8e5439d778fde93930",
+      "cropSha256": "59ab78271f2a0a8d8afd584d0414c3b283157faa26d69d88e2740fcefb935c2b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'play tennis' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 284,
+      "parentSha256": "64ab6a5556b022cbd398d98cd5bb243a4ee6e4ea6e3285f433eb78b76b53fd4e",
+      "cropSha256": "4dbf5a05a02220309b93fccbef08c194009ab40f09b6c4e5d13d94bf860328a4",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'play tennis' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 285,
+      "parentSha256": "ae7ff3f09caaedb11b002d1e25ab46e5236ee62713fcf74bfaddafe6cc3e4b17",
+      "cropSha256": "f18167bab68912ff14d0c26bed1db68434b7acc09398d7bf2fd2d3def78f7f44",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'airport' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 286,
+      "parentSha256": "e041ce705b88df703e66213dfed5ee67894a1849c2c1bafcf49ba586d93aad19",
+      "cropSha256": "5cbe9198c3efed6d4e88303df2f9c4fb41094f3ed735b723c8aeb98b131febd2",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'airport' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 287,
+      "parentSha256": "58a5b249b1f0f9b33ac2a3fc00fb7217e359a6430d300f637397dcef9c91e2b7",
+      "cropSha256": "828edc3aaf05ab9936efd3387cd308c977609028e2ca73e68d5d5e92816c4b3a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'airport' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 288,
+      "parentSha256": "73b8b91be7e59d1868f4702547f445e0211857cb5ffb2f205a25b55325dfa808",
+      "cropSha256": "2684fd93d21361a294dcbd53cbe9fb8d342a0c1f8461902e55176e8abbd54e27",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'airport' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 289,
+      "parentSha256": "4cc6935c4f45d41f57a53c5fb2ac917a81b3ff40e6dde5d6265357c32e93f7b5",
+      "cropSha256": "e5f1d737ef59a3b8459bc18cf98bb136547c71f4699e65c8d4c6af14d29f1380",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'dog' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 290,
+      "parentSha256": "e04e39ceb5c3266e7492b0f3b0762ebf8dd5e762f479525bfaea412a64b49152",
+      "cropSha256": "cc86ccae254d306d15379a1a84406c4277f90fa7595d0cc4a100389039acd7ad",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'dog' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 291,
+      "parentSha256": "04d1a6b409e54377a3be143fad6ae1ffd27dbdb55ffc8f1f2374afb3f416fecc",
+      "cropSha256": "3c80015403b3df8c5e0f555142469ba6669a7fbb31efcf610f424adf76e4690a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'dog' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 292,
+      "parentSha256": "185e71f2b131fcd9cca80750cfe9a3bbfc81298acf9d02dd6d2ca54ade8af67e",
+      "cropSha256": "3549e7867fcdaa9a20e960c80aad31ca07d815f21bd0d32c443c5cd7f41e15b8",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'ski' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 293,
+      "parentSha256": "a37d71f6459efc47c22ec687945599cf4ec81c1056e6f0256eca3776834879b4",
+      "cropSha256": "485376c832f87ed4d855e50901b95f2f16251ea187af1173f60ccc5a0635ac1d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'roof' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 294,
+      "parentSha256": "fa86b4cfa8c271862e2f1b2e235a94a7a2362a1ba03d75185007439f3344a21f",
+      "cropSha256": "496b544df77870d1d9a790f0dfae1a463da6d08ece03326a74dc7740c0edd1a8",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'roof' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 295,
+      "parentSha256": "2c1dbb9427ecfcbb98eab03ba9c65a51ae9d3d72ba6df04ec83a07a15b8d937e",
+      "cropSha256": "54f1611a5159d0477455256d456101561f517e11f34c2f208230c82d5994e11d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bicycle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 296,
+      "parentSha256": "611bac47a27ce814dffb589dd2ed663f447b22aed5365b95fce142dbc6ddcc08",
+      "cropSha256": "9c352a44ee16e18a0f27e600e5d5178f211f9a7e947415be9d2017cb618dff2d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bicycle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 297,
+      "parentSha256": "1198b8e38fa916c2dd72b00a17ab8944f52547aaee81b3098b9c1ca55e6fa0d1",
+      "cropSha256": "97cf7af3bd422650cd46b918b792b24624a230c149c3474c37e02648bb787b16",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bicycle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 298,
+      "parentSha256": "8553becb13b9673b395568279b88bcdaec95cf1aff5cf0b577da62330aac2e9d",
+      "cropSha256": "bf94581e8e4eaabc637c9fb0cbfd30d5124f46cbcfcaada7143711d9b70c85a5",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'microwave' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 299,
+      "parentSha256": "1a1f2ae67509d3e9572428773f931ff5727157a4af9764bcc113b102bb0c8a0e",
+      "cropSha256": "df4cf00310a80cac9ed03f64ac09e724f146c01ff9133eac3326dcedb5d26da3",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'microwave' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 300,
+      "parentSha256": "648979bae81b4d37a64c118c666ad9f382f581ee8d62ee6b8b2295458484a0d4",
+      "cropSha256": "f22083a2552fe3ea6a6191ac014aa98652123ad6bc73da6cc36494e9813b5979",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'microwave' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 301,
+      "parentSha256": "9e47eaaf563d2ae9bfebcea80f2616ceb7eaf6c99a0390f0274cfb0068686d77",
+      "cropSha256": "fe13d6122c61042dbaf3bae61d56f2dd0b86a12f62f6c9d23239581e21eb1b98",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'microwave' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 302,
+      "parentSha256": "2ce2ac7144577c0a6349c272e034295852aa5e1d0e81dcf5451f148e72e98d3d",
+      "cropSha256": "7945090662dad271aae78b955a00bb65a8f7643c38d3d21dbbe311a0feed0fa0",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'stand' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 303,
+      "parentSha256": "ceae3f93b17268cf155a5733f7858fc59803ad17c7d7f06a0deed244bbb9556f",
+      "cropSha256": "2400dfdccbb7bc5b184bdffbd5f71f8d02b5921aa3c5e9317cdc47e52c795f55",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'stand' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 304,
+      "parentSha256": "b8f193ba56ea637626ac4f754f8c5d7192660fadab754c59e368048d212be01d",
+      "cropSha256": "bc38d32c5198399288346bdd1a27b8638a6ef49e33730736f1033daf8814f713",
+      "status": "rejected",
+      "reason": "Lower body/support is outside the frame; standing rather than sitting is not sufficiently established."
+    },
+    {
+      "reviewIndex": 305,
+      "parentSha256": "94d9f30b294bd7f5fe09363a9ea72198f306bdc7fb1f343bbd0aa2453f16cc05",
+      "cropSha256": "130c9dd3679b0221fb14617e7184e9624ca017fa75587a9e1e4c57772595989d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'stand' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 306,
+      "parentSha256": "35f8ceeb90aa95f77693872f0cb1b27eef2583d157c2669fd83e2c72396f1ed3",
+      "cropSha256": "53c575c66b38402ebf1599c18e947286781847dc548400ef013a80b29a757f7b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'microphone' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 307,
+      "parentSha256": "83e639239c37b94134ebf2248043d12c90b50852db6fc4a02427ddd0959050f1",
+      "cropSha256": "861ce4807f0498a739a99bfc929a2f015c3d31b7222ac7bed0c9bba5258c0d05",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'microphone' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 308,
+      "parentSha256": "5ea3fcf5e1315fe04b9091cb53042a569acd05b1e41ad5a8d70f38e8c250ded6",
+      "cropSha256": "b9331c334f37e16ecaafdc393eb04ba6fb0683941c725ed2d00a3461b64a4d1a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'microphone' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 309,
+      "parentSha256": "8d98267ce9b4c72ec8a37b19110d2e1e67607e59ad9704fb9f6d196784e32c89",
+      "cropSha256": "bbf1c2736f37155aa1062a6e08a749fdbbcc4ff2cd12ab3954d066de33a9c3fc",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'clock' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 310,
+      "parentSha256": "b01f830541abca2fc5ff1227f8d622c7a9b2856a6232b422ca9aff09f493ec89",
+      "cropSha256": "f8df89861231273048263bd75458bb8f955757ee735a3a8de8007ce4bcb2e061",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'clock' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 311,
+      "parentSha256": "7fb101573bc859a0ec171c09e924d6ec39c92205de5572dd9068486ccb5d80cd",
+      "cropSha256": "2b552c5887159ab07f7a940ec8fe500d6c507c934a81a37cd6c98a35fb266880",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tree' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 312,
+      "parentSha256": "b5e70b751fdeb00a722ea0da8b3f1c1f9b5813707b7d29289b506f1e42d60edb",
+      "cropSha256": "7d46d53ab03638b1a43b248eb009557bcbcc2ef045ad6989511a72eb5c50d1af",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tree' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 313,
+      "parentSha256": "c7805457097c1eed39520121a88ae55d7ae14e600695f1d4c4af73f05a74fb7d",
+      "cropSha256": "f18ddace1dc6ba5b4f9f03aac0d5d33a92b2e072053a25ac3dbecd4f48495482",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'tree' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 314,
+      "parentSha256": "e4d3adbf785dd140cc6d627a00c9c972e5a9b43d34a4be2f1733931909f1b5ac",
+      "cropSha256": "713372e07631ae5bd99a38873f8b16cab00af351460f917a88c5c6736ddeba37",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'stream' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 315,
+      "parentSha256": "18a930e65771a5c2954229da0b448d2ab74b03a3e6179cae61c212d52f5ff3cd",
+      "cropSha256": "13cbdf6f00b65f731f501d598cb1342a8a3e3ef4f19943a0b31a98897bb8c3df",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'railway' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 316,
+      "parentSha256": "a56e6d03e3390fae54ef3a1eff49116a31eea935a3caf8636327af7550f074a9",
+      "cropSha256": "5fce3426aa53d1b0e9ebdfff7d39b6a91cd82606c357eb23f45f8ead40b882d9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'railway' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 317,
+      "parentSha256": "a6182f269c232a632a3ddba5ac6e0f730bd4f61c8ab31fc236b988c422768237",
+      "cropSha256": "d6c25bf921b42c0dc37ea8b945b2d0cd8ba45f33d391b712ac9200b77a6cb1ab",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'railway' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 318,
+      "parentSha256": "ab9c7a09369b381043f90e6008307610d63cd9cbe3803ba1af6b1998b361fe51",
+      "cropSha256": "b9d2c48d7ba3b99f807601e9f22fd5895d5b659da8dfe03a57838bcc84d79383",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'market' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 319,
+      "parentSha256": "1f529f83c9ceec1086b1fb67bb5d807e5e6992cb641e8b5fd33bb46b01d180c2",
+      "cropSha256": "a333867823a7951f9cdd4c758617fc48dc53360a1c3b48ae3a068749a444b436",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'market' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 320,
+      "parentSha256": "fb236fc376abd9564731a290666c32ed25e44a4db8158fb4c0c7d597b1b1beee",
+      "cropSha256": "4cda244e0e9e181fe0c9d278e224ddba3ba02780c46be29bc1a22a87f8ea9ec5",
+      "status": "rejected",
+      "reason": "Close-up of fruit does not clearly establish the buying/selling setting."
+    },
+    {
+      "reviewIndex": 321,
+      "parentSha256": "892ed5b6053c7e0a580b66f99b175cab517c41a88caf13dd2d5c44cba46051f9",
+      "cropSha256": "0b11e04fcf9c7c106186cb65d096f2af926495264be76ee05c08e986903ea659",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'market' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 322,
+      "parentSha256": "fc7b45a3a807fc9bb20b98df8e0893455da44e9fe15be3d23b61a4bd1c650183",
+      "cropSha256": "132c55c152dbf5a3f57a3edd4402ee79921e2dc87680fdab5622ba37c6eef5b0",
+      "status": "rejected",
+      "reason": "Overhead meal preparation has no visible mouth/eating contact; the eating action is unclear."
+    },
+    {
+      "reviewIndex": 323,
+      "parentSha256": "82c899741205bb8a7fb3deac0acc3fca15f81c029aaaf4d0f39aabbb090f452c",
+      "cropSha256": "cc02034f3b64dcd294104b4a96289977d6d8db9680b29ce489929e5a06383f21",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'hold' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 324,
+      "parentSha256": "f2387a00d0204b025f339a28d5afd6a777c76b4066acc51ba31c23e2356e4dcb",
+      "cropSha256": "58fb7d9efe33f96655266c22a01a7942b9422e4e353842d2f1dee664524a4aa9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'hold' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 325,
+      "parentSha256": "cffdab202c9cc07314e225c6a85caaed78e2f49d54480ec0f3409eedddd81f3e",
+      "cropSha256": "3f9d013e178eff03940cbd2291195b252f3a60aa7da9e9500ab7deee2b405f36",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'hold' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 326,
+      "parentSha256": "e1d4d1457ed0bf6d415ba8cc4b9fb0dd48264c202a654f1d49bca95fce523e03",
+      "cropSha256": "d8f1a533ab49ccffe24058e10da4e8d33f7c029540c28b6adf41047b45a1823a",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'hold' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 327,
+      "parentSha256": "0aa436c998cd750d278170996d88b02869af323af4543ae4a8ef6349a14ca7fb",
+      "cropSha256": "5bf7fb639fcda9196cddea85d46e765dc74b8d5ec799faaeba463fbc987da34e",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'ball' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 328,
+      "parentSha256": "c601be638b7641469dcb58adf5c14a04d8ebc349f6ca403be5bfd8ef2dfab49e",
+      "cropSha256": "cb30f399ccc55bf6b44a76c787d437a835060a40a377fe4286391c6e11971fa2",
+      "status": "rejected",
+      "reason": "No identifiable ball is visible in the cropped tennis scene; player/racket alone is insufficient."
+    },
+    {
+      "reviewIndex": 329,
+      "parentSha256": "b2e2e3a373ca6925746ce645689b6d38a730ce3f6f29b6d2fd67d18b2ba0600a",
+      "cropSha256": "f1f2a4119fe1d64f32b0b5bc2646c4b5ce83d9b51d7d6f8ecafd83634e543474",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'ball' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 330,
+      "parentSha256": "ad3b48655f5f185d6fd312e018ed1451dbcc063a8e270aa0fe587987f9bc0503",
+      "cropSha256": "1a2c5f442deb98c53c2358be22ebdb7bf812fa0c88b37143168ac3732b18887c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'uniform' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 331,
+      "parentSha256": "389e3ecbfaae1b09e918365bb46be7120c767cfdf0d59c61657b285aec6712f8",
+      "cropSha256": "6ce6ade78ae61559468c6c4b6884646c53cf883e4c8f0cf2805125ae8d9e1962",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'uniform' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 332,
+      "parentSha256": "5730afc66d049a466066bd21efbb2f0f11ef00f9ba968c821c71378a53a56d77",
+      "cropSha256": "64f2a61dd2432bdb0eb654c5062be5015d2f7d89edc5b29f5e94c2d15d44dfea",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'uniform' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 333,
+      "parentSha256": "cb5afca9304177a472d98045a48c8cf00a07a1cfc3a960cb57777d0d6ee798a2",
+      "cropSha256": "11d966285d86448720af6016ebf059f820157c17ad2e6fe3f45e0e421ad6c135",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'uniform' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 334,
+      "parentSha256": "06a29c981a65c55c1ec621ca326937f7207890f2d062806c2d093b0e9e5a66be",
+      "cropSha256": "e28f1a478ab6b4f2e3d61852e0a54a63fe0fb824d77bde32b7d598ddff147fae",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'keyboard' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 335,
+      "parentSha256": "6c982800572919f01e3350f844e0486ccd37796624d43eb97659d098d553bcad",
+      "cropSha256": "c3bc97c47e57163375d7d29f4b27b8d6dc56a4e21d0290f313ce9b21dddfde67",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'keyboard' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 336,
+      "parentSha256": "2aedd846bfe767e86dc858282c286ff9bcd3f1303ef51dababc4bd459f5a5060",
+      "cropSha256": "dc0516c95da1591097a7ecdb3e2cacaf4b20b30407414f4d4800380453bd17c8",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'keyboard' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 337,
+      "parentSha256": "884c2da8df372fe7709bb2e305a5a00fb214734bbc796e839265ebb4c715d5db",
+      "cropSha256": "bcbf3a205a699533267b031150705d68e5873a0aeab74e63b76d42bcb175b904",
+      "status": "rejected",
+      "reason": "The source meaning belongs to a quarantined connected bird/fly/airplane group that crosses legacy partitions. Exclude the entire connected group before augmentation; visual suitability alone cannot override split isolation."
+    },
+    {
+      "reviewIndex": 338,
+      "parentSha256": "1deb0314100d7cfc662279990610fd896e91b7c621588474f01e83bfd1ef617d",
+      "cropSha256": "026f3f520d08bcb26fb604ee233bb42451008c06270582a952e85a88567c59e4",
+      "status": "rejected",
+      "reason": "The source meaning belongs to a quarantined connected bird/fly/airplane group that crosses legacy partitions. Exclude the entire connected group before augmentation; visual suitability alone cannot override split isolation."
+    },
+    {
+      "reviewIndex": 339,
+      "parentSha256": "deb91b4988babf28cc289521d785b3f4c4e3ae03c50f946ec5a8420484b514d3",
+      "cropSha256": "9931ab2c55b02e6f7e5103c3785d80641c1a449232277f3ba049610202bbecb9",
+      "status": "rejected",
+      "reason": "The source meaning belongs to a quarantined connected bird/fly/airplane group that crosses legacy partitions. Exclude the entire connected group before augmentation; visual suitability alone cannot override split isolation."
+    },
+    {
+      "reviewIndex": 340,
+      "parentSha256": "b05c1e0c2219ac20707c4a47014f03d7fe149d8d3d25ff504837da48896c6bf7",
+      "cropSha256": "779905efe2e4957ab025c66fcf800c2757a88139057e6b064da488bd94746413",
+      "status": "rejected",
+      "reason": "Discarded toilets are visible, but a broken/nonworking condition is not clearly established."
+    },
+    {
+      "reviewIndex": 341,
+      "parentSha256": "331fa26c3a7931f3752e56783e16f147d9b0e25cb63f4ea01cb4aea2d7e3e1ed",
+      "cropSha256": "ae5571481fc35b12cffdf9e576603d30596b049c3b1cdd1bb36b26e6740c2651",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'broken' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 342,
+      "parentSha256": "d27086b222411ecaa834b0f14ff635d155884bc38eacce0ec7c33846a07df322",
+      "cropSha256": "082bed93cc3ce544f19077d25043b31374a480f62a557a2cb02bac4339af5a10",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'smile' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 343,
+      "parentSha256": "bd8133fe5862ea2b0b308db3c1d96b23012f2f667d43cb524d35ac1b710670a4",
+      "cropSha256": "dc980bc409922acc6f5c9d59075ec4a94dfb3a5c48de6fca2f440d7ae25a6d55",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'smile' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 344,
+      "parentSha256": "a5b154b5d98591146404e3a3693890107c046485ba746f2bc3c4ec7beb2241a4",
+      "cropSha256": "ecfdbd983dd1a771605817c5249dad2f54d1cd28460a49e3a298d06b75726255",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'skis' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 345,
+      "parentSha256": "309105454f28c30038cce8c44d48300b626548477957b3d056bfacf9da3127e4",
+      "cropSha256": "40f4735357c200d99cdd557363f6f0b4d5f06cfde2e3635d37cc1b423cef9cc3",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'skis' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 346,
+      "parentSha256": "fdf3ab0fc576b6fcea27d692fcd14c21d8c3bcd1c1a1ef66de8f0d98e6a85c75",
+      "cropSha256": "3f7c89b1cebba879bb14170c7bb48f14633a194d4220d2f81afce339241f5291",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'horse' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 347,
+      "parentSha256": "4ab5aaf6907735982113dacd309dcf051b426a40cda5b378c9613636f346db24",
+      "cropSha256": "23f1032f5bc520b1660b02441c1c2fc1c52350989cc0eb28321ee38590cd8038",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'horse' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 348,
+      "parentSha256": "47d1e607d2b623aa2e55dce0fa64f4ac66dc03f2611d4375caffe84358728a2d",
+      "cropSha256": "9b2c125294dab281b9098055287937994bb5477e21a774eaf826a4044296b54c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'horse' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 349,
+      "parentSha256": "ce4fc4045c9dbe6d5c321248c3d8af821036e2403c6d159d3745c75f6f6bc9e1",
+      "cropSha256": "12e2ca875629cb0985759504cc1989ce5226d844899c806ae6b5cf49d146c6f3",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'French fries' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 350,
+      "parentSha256": "2a7d805a00ba4b5bacf9573e745de52ba9746743659bf622027d694f0d43cffb",
+      "cropSha256": "bde85fa17aad78fb7c0ebf208d629d6932b014a927f6de45165412f64e43b6c6",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'French fries' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 351,
+      "parentSha256": "f8c47ad4f72d1ba8eb936d94bc54179806b0c22d10dde3491f82a5072034566d",
+      "cropSha256": "f0dc06180cb1693c9daa5af4f8e9e04792be005162147729a73c4844006ff62f",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'French fries' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 352,
+      "parentSha256": "ee8c2a9618c4ddf0dea13bf308d61af2d62fdb4f927409aa56fae182e0671df5",
+      "cropSha256": "2ee0506a5d2de6af9aeb0f32b5eb2c6a2bd74d00bfde1960d27d8cf6fe29aa34",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'noodle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 353,
+      "parentSha256": "997ac00cd26aff6a92717247dfb7ce7d5150a7281e61b7db8267833ea251c77d",
+      "cropSha256": "aed7d131e530d5bee6c8bfcbef2d626ecabd6fd557d783f6313145a58ccde5ca",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'noodle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 354,
+      "parentSha256": "da28681c7ffbb7b414f60c4f9116a2aa70c6ae23d1b66e9b96319c7b7cbd8d21",
+      "cropSha256": "98d0c58371ec343bd5d1e8ebe4855c71eb462022f3ba79a1438636b3d392076d",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'noodle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 355,
+      "parentSha256": "a4e8405077a8f93115116f548e7d59b29a092a6ac2f749732a525e7b82c2f35a",
+      "cropSha256": "1edb73237602eaeb985317f2d4ffd0317d7ef24e1bbfaf44ec36e78fe22fc607",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'noodle' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 356,
+      "parentSha256": "d41679495827ec7427fe452bc3706fc35e902a5061758cc2febda5f91d001691",
+      "cropSha256": "b90476fd46e1b757d8909d9f485a99ac0df2aaa0d30f6df477a9e729dcb7402f",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'juice' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 357,
+      "parentSha256": "dd50fa5167dce75df729637cf24efb78d8d75548e0d6fbfdcc9a8c62d97257bd",
+      "cropSha256": "919e7af648f82fe1fb7ebf8fe89b8b59ed8ea50de2c82a7e31f7beb44c66cf82",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'juice' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 358,
+      "parentSha256": "8e6da930dbb9d44c5674f231ecc190c69679139ae97967e953860c3bc12b9725",
+      "cropSha256": "7c0c79401c3303d194887a701bab439a212fa212201dea88f1d4ff8fc3a682b9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'juice' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 359,
+      "parentSha256": "eaf7b61fe63d008cf2660f87ba4b96cdbb7ea93094617efb26628501a42c31f8",
+      "cropSha256": "472a7dd3f687f61ddf4b664706bc8fb27aa26bd17425ee8e3222a538fae49ff5",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'hamburger' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 360,
+      "parentSha256": "2ac67dbbfe0acf69d409d57489d55b5cdb505c17c2af3998a7a17d8ae4be9733",
+      "cropSha256": "09821b5ba5d007e1ba6fe97735509fff90a757004fc6a960c1649116330dbb3c",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'hamburger' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 361,
+      "parentSha256": "940a7b30d361f1145f7780485aeb9015059f6fe2805d3075e9005c943d1c2767",
+      "cropSha256": "976a43758f2f6713a959557008d0993ee26917142eabea089e25605f30bc16b7",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'hamburger' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 362,
+      "parentSha256": "fa9783bd15f013c10e2f31a4068c9d8c89a44e9a52dd196389eef8aeedad4121",
+      "cropSha256": "564c811f0cbbbe8de3638811ca108e25fff129c146078a1dc357c101cc1dc6c1",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'hamburger' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 363,
+      "parentSha256": "3b6990cfb16374c2e2a7bf4387c2a99bdd93d85c26abaaed29ddd92dfc6487d9",
+      "cropSha256": "a670439c466583bafe64421c87e653e09f197755b3b282cbf2be55e62864c58f",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'milk' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 364,
+      "parentSha256": "a04f2f61686262a003c5faba0f835251e09a8de069ee7c8ad9b8a52b489ee583",
+      "cropSha256": "9697d37727815b17a98dee584b731f0de3f3cb0721f948609f2d0f249d825817",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'milk' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 365,
+      "parentSha256": "57f2bc4665e7cecfa799fb3ee60c79a5e9df4b2383e0f9921179265f2acdd832",
+      "cropSha256": "a96921aaaa2a759178650d82dc268d1f933df4ad98190def2901a7a779e10e7f",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bread' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 366,
+      "parentSha256": "f117909a82792ca630defc62adca57f8a0770d9d64808ed847d4adddd1c14a63",
+      "cropSha256": "440d7e93b1bd3c84c803058ac43e442675a07e517e90576842ef5f4c0bc6a765",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bread' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 367,
+      "parentSha256": "1f42110267d887eefc3f783a632c1b87c6a97b51538022389cf46e2c3c679449",
+      "cropSha256": "6a196b3358f420f52ab07e960963c1faaef1b9b6c05573d7b9196e4d837c0701",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'bread' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 368,
+      "parentSha256": "f0021606b0a2bdee66f892c4c5c72746c8dffc5855bf04f2ce18061d8f001b87",
+      "cropSha256": "286e674aa69145b0256218952a8a7ff9976053c606a9bdc1d1c2055e8ef269c9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'salad' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 369,
+      "parentSha256": "117febe96f79598d223d238d7df497859894112163fdbd9e6097bd434d702f47",
+      "cropSha256": "8c8afe7958493c129fe4774bd74991a3a9a614374acd5e1219b09ea9425be398",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'salad' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 370,
+      "parentSha256": "ecbe85cfbd9d41ad80a6724b5841876e35134b195d116881c550cdf7f61545d8",
+      "cropSha256": "cff59038f64512df598dcef99e424a67fbf6dbf95e4fabd1ed4e81fab6673103",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'salad' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 371,
+      "parentSha256": "e2e2b301b618eea67ffd39adbfe26608c72b846312582e8d1d958119632bd04c",
+      "cropSha256": "838eda9f5c3e255a12874307a1279a7b4427320008f8a7f40d2e6f560e0df246",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'orange' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 372,
+      "parentSha256": "6b1a30649b17b44ce45c6649f3ea150973dcf0c2b8fe27421de6d4046285b0cb",
+      "cropSha256": "2ab011c751c33fabed86dbdfbd2cfd36a2e6207d2b762fdee0d0d9ea55dc5635",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'orange' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 373,
+      "parentSha256": "93aab01b240687e18da883e5ec325e4bbcd166519a557369f0eb59c07e346610",
+      "cropSha256": "4fcb1f59b0a320932ba54a8caab5b54b49ace7e6fd75a0f4bd69092cb0249070",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'orange' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 374,
+      "parentSha256": "26c0697f27e653a634840879f24189a8326ffaf72da758b2a9b8cf5271c2fd34",
+      "cropSha256": "de75c6396383cff042620c0cff9bc25950f08980bdc9895617042b4bec1bb9c9",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'orange' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 375,
+      "parentSha256": "1d8845dab875af4f2893ebfa3e89c7346c77274efdfe3c7d71c7ae06ccd0ae30",
+      "cropSha256": "214be1be07beaef858f78f7f6b4fbf234992ce3f57e268d4f0c47ec98523ca72",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'carrot' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 376,
+      "parentSha256": "210a22c3eb45b590bd5f0087f15890673aa1c8900de5dd4dbb96f275d661ebb6",
+      "cropSha256": "2ed9dd106d9054b1e2beae23d36120cfd42db4dbdc07d0ba9957d0c63b177b3e",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'carrot' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 377,
+      "parentSha256": "b0f6a381bc1e8b741787a129946dff2524bb530eda3f15b6af1bbfd3061c217a",
+      "cropSha256": "f2694ba8a8b74fba71532472c25747c9348a35ab27f680d3396631257921a163",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'carrot' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 378,
+      "parentSha256": "37d54ba3653e0c07cdf6e9e0caf83f6ba884d1778a576ed10426bd9d3d81815c",
+      "cropSha256": "8255302f26ba5b57e87d928c82285dc45758f0f37bdb72fb43177eef9d35a1e3",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'meat' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 379,
+      "parentSha256": "26e7be7312bef629d313fdaedec6215c4e060b482d02d51b40ac557e5c8709fd",
+      "cropSha256": "c95b28e55f5e8f1674f62c9f84c535a318a66727ef817f74ccfe238dc6f29231",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'meat' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 380,
+      "parentSha256": "dc285d0ff02e63228acda4253dcd30a68be74462132aaea83faa52fac29fca02",
+      "cropSha256": "4e526fd9f3892a12a03b5cacb7e5ba5b50fe0f4d7b1988094c0fc72469eceeb8",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'meat' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 381,
+      "parentSha256": "0bf182b59b89f534d6f89a2b57c976c47b7f9a95e5e47a7f236b285b9211af14",
+      "cropSha256": "b3364185e2285f6721cce7be6f75fd4db8a31e687b7721b1626955eb4e596e68",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'banana' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 382,
+      "parentSha256": "98c3cc4b3c9a301558a8aca42f1e0231be44cd727cd611d62eeb74ba3ed1c59e",
+      "cropSha256": "ecf068ad1eff63d218b195489f2dd71212adf75754b2b4c43faa43e8a42e1b72",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pizza' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 383,
+      "parentSha256": "9288cbba23a3f1a399f8e6825f6c37e2a24491b8225cd1635a60327c423fbf2f",
+      "cropSha256": "c5d1fb9bbcab68ebefd4735494bec089a3b44161137f70ff09af4064239d07ff",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pizza' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 384,
+      "parentSha256": "16b2366ce6dbc44e2878ccb848952081844ca67f53da0fbeefe36eb0bcdde771",
+      "cropSha256": "d691408ccacea501487292ecad40c74c1b746eefa64f071edc22e2ba0f515c36",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pizza' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    },
+    {
+      "reviewIndex": 385,
+      "parentSha256": "cec543ec3b7a415a5c001e0a4d92683eb06a5b12fc532312c635436149a32b04",
+      "cropSha256": "3bb702823e1c8feda39897bd738c06e99caaf02537b6496a0cc62ec43ad2ea9b",
+      "status": "approved",
+      "reason": "Original and crop inspected together against the exact 'pizza' definition; the defining subject, condition, arrangement, or event cues remain recognizable."
+    }
+  ],
+  "meaningTaxonomySha256": "8b05b643cad35cb6194f7fa82505ce864c05a7856d76a7c634c144042a4c34e6"
+}

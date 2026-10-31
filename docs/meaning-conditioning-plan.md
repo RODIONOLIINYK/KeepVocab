@@ -32,6 +32,26 @@ Steps 1 and 2 are complete as an offline pilot. The
 search, grouped evaluation, learned models and limitations. Image/text adapter
 training and app integration remain subsequent milestones.
 
+The follow-up [capacity/confidence diagnostics](meaning-taxonomy-training/diagnostics/README.md)
+check real-batch memorization, learning curves, confident mistakes, probability
+calibration, mobile head cost, and a further precision-targeted search. The
+requested 97% validation precision/accuracy has **not** been established. Keep
+all six probability outputs; a high cutoff must disclose lost recall/coverage.
+The frozen original test is now retired for further model selection. Use new,
+independently reviewed evaluation meanings for the next confirmation.
+
+A separately reviewed 57-meaning training supplement raises the text training
+count from 244 to 301 without changing the original labels or partitions. Its
+fixed-configuration validation comparison records gains and regressions; it
+does not automatically replace the original model. The crop fixture adds one
+approved variant to each of 355 eligible training photos (710 reviewed positive
+examples from 355 independent photos). Thirty other proposed crops were
+excluded: 24 for unclear/incorrect evidence and six for meaning-group quarantine. Re-audit flagged original image labels before adapter training and
+retain parent/meaning groups. Give an original and its crop a shared sampling
+budget, such as half the parent's weight each, so augmentation does not silently
+double positive loss weight relative to negatives. Crops enlarge image–meaning
+training data, not text-category training data.
+
 ## Categories describe required visual evidence
 
 | Output ID | Evidence focus | Examples |
@@ -87,6 +107,13 @@ membership, per-class positive/negative coverage, review hashes, source hashes,
 group isolation, and quarantined conflicts. These checks establish integrity,
 not objective linguistic truth. AI-authored definitions and AI review can share
 bias; broaden with independently reviewed real app meanings before deployment.
+
+The existing production personal MLP currently concatenates the 512-coordinate
+image vector, 512-coordinate meaning vector, and three scoring features. This
+is distinct from the six-output category classifier. Image vector plus category
+probabilities is a proposed smaller personal-ranker input, not an already
+integrated change. Compare it with the existing inputs on the same held-out
+user decisions before claiming that full meaning vectors help.
 
 ## First classifier: regularized multilabel logistic regression
 

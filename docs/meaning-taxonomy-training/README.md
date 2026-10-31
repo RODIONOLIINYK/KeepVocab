@@ -11,6 +11,11 @@ adds precision/recall, the frozen 8-unit finalist, and the exact reasons earlier
 four-class logistic-regression results cannot be compared directly. The original
 selection below was F1-first, not a universal model ranking.
 
+The [capacity/confidence and augmentation follow-up](diagnostics/README.md)
+records real-batch fitting, learning curves, the 97% precision target search,
+frozen-model error analysis, mobile inference cost, a reviewed text training
+extension, and reviewed image crops. Original results below remain frozen.
+
 ## Result and interpretation
 
 | Validation-selected model | Validation macro-F1 | Test macro-F1 | Test exact label-set match | Parameters |

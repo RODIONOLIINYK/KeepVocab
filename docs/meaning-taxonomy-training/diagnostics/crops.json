@@ -1,0 +1,35 @@
+{
+  "kind": "image-crop-augmentation-encoding-report",
+  "taskUse": "image-semantic-personalizer training only; not text-classifier augmentation",
+  "sourceManifestSha256": "d5d70ecd14fd49fd76fa344e125bbf2331ad3c90f915e5cf25584ddbddc6bff7",
+  "meaningTaxonomySha256": "8b05b643cad35cb6194f7fa82505ce864c05a7856d76a7c634c144042a4c34e6",
+  "draftManifestSha256": "747b499b4c3b4b19c9ff16cf457129ed6fefedfa69c321e6ff741d7e7b50ffe7",
+  "decisionsSha256": "00eae023f3bea32da4939ac46fad319e2b67919f264485aa091bd614f4967d68",
+  "reviewType": "AI visual review; not human-expert ground truth",
+  "legacyReferencePositiveCount": 385,
+  "approvedParentCount": 355,
+  "rejectedParentPositiveCount": 30,
+  "rejectedParentDisposition": "needs re-audit; excluded from clean positive pairs",
+  "reviewedPositivePairCount": 710,
+  "eligibleSubsetMultiplier": 2,
+  "independentAcceptedParentPhotos": 355,
+  "parentBalancedTrainingWeights": {
+    "original": 0.5,
+    "crop": 0.5,
+    "recommendation": "Weight each accepted parent-photo group equally, splitting its weight evenly across original and crop pairs."
+  },
+  "duplicateCropHashesSkipped": 0,
+  "validationTestCropCount": 0,
+  "negativeCropCount": 0,
+  "parentCropCosine": {
+    "count": 355,
+    "mean": 0.96458109,
+    "minimum": 0.80696471,
+    "maximum": 0.99245239
+  },
+  "meaningVectorCount": 136,
+  "artifacts": {
+    "manifest": "tests/fixtures/image-crops/manifest.json",
+    "embeddings": "tests/fixtures/image-crops/embeddings.json.gz"
+  }
+}

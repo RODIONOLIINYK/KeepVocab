@@ -1,0 +1,1145 @@
+{
+  "configurationCount": 65,
+  "newConfigurations": 64,
+  "validationGoalMet": false,
+  "selected": {
+    "config": {
+      "hidden": 32,
+      "preprocess": "scaled",
+      "center": true,
+      "l2": 0.018167854767792153,
+      "weightPower": 0.8588010909157829,
+      "maxIterations": 400,
+      "trial": 62,
+      "phase": "narrow"
+    },
+    "cv": {
+      "count": 244,
+      "macroF1": 0.8355805407066574,
+      "microF1": 0.8298887122416534,
+      "exactMatch": 0.6639344262295082,
+      "bce": 0.19792916592017798,
+      "brier": 0.05469249877440518,
+      "macroAveragePrecision": 0.913438996728749,
+      "threshold": 0.5,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 98,
+          "predictedPositive": 105,
+          "tp": 91,
+          "fp": 14,
+          "fn": 7,
+          "precision": 0.8666666666666667,
+          "recall": 0.9285714285714286,
+          "f1": 0.896551724137931,
+          "averagePrecision": 0.9821263217832134
+        },
+        "place": {
+          "positiveSupport": 26,
+          "predictedPositive": 25,
+          "tp": 25,
+          "fp": 0,
+          "fn": 1,
+          "precision": 1.0,
+          "recall": 0.9615384615384616,
+          "f1": 0.9803921568627451,
+          "averagePrecision": 0.9985754985754985
+        },
+        "action": {
+          "positiveSupport": 34,
+          "predictedPositive": 35,
+          "tp": 28,
+          "fp": 7,
+          "fn": 6,
+          "precision": 0.8,
+          "recall": 0.8235294117647058,
+          "f1": 0.8115942028985508,
+          "averagePrecision": 0.9036602202690471
+        },
+        "state": {
+          "positiveSupport": 46,
+          "predictedPositive": 40,
+          "tp": 26,
+          "fp": 14,
+          "fn": 20,
+          "precision": 0.65,
+          "recall": 0.5652173913043478,
+          "f1": 0.6046511627906976,
+          "averagePrecision": 0.7403539411439904
+        },
+        "relation": {
+          "positiveSupport": 75,
+          "predictedPositive": 83,
+          "tp": 62,
+          "fp": 21,
+          "fn": 13,
+          "precision": 0.7469879518072289,
+          "recall": 0.8266666666666667,
+          "f1": 0.7848101265822784,
+          "averagePrecision": 0.8729850908946508
+        },
+        "abstract": {
+          "positiveSupport": 32,
+          "predictedPositive": 30,
+          "tp": 29,
+          "fp": 1,
+          "fn": 3,
+          "precision": 0.9666666666666667,
+          "recall": 0.90625,
+          "f1": 0.9354838709677419,
+          "averagePrecision": 0.9829329077060932
+        }
+      }
+    },
+    "oofTarget": {
+      "threshold": 0.7847772867103141,
+      "microPrecision": 0.9710144927536232,
+      "macroPrecision": 0.9697666286540967,
+      "microRecall": 0.6463022508038585,
+      "macroF1": 0.7414731958523532,
+      "exactMatch": 0.5942622950819673,
+      "positivePredictions": 207,
+      "falsePositives": 6,
+      "perClassPositivePredictions": [
+        84,
+        15,
+        22,
+        17,
+        46,
+        23
+      ],
+      "allClassesHaveAtLeastThreePredictions": true,
+      "meaningsWithAnyPositiveLabel": 187
+    },
+    "calibration": {
+      "method": "temperature-global-bias",
+      "temperature": 0.6413816561810906,
+      "offsets": [
+        -0.38494132782057283,
+        -0.38494132782057283,
+        -0.38494132782057283,
+        -0.38494132782057283,
+        -0.38494132782057283,
+        -0.38494132782057283
+      ],
+      "fitLoss": 0.16861967689317542,
+      "fitRows": 244,
+      "fitScope": "training-only grouped out-of-fold predictions"
+    },
+    "validationAtDefault": {
+      "count": 91,
+      "macroF1": 0.8286084543028989,
+      "microF1": 0.8275862068965517,
+      "exactMatch": 0.6703296703296703,
+      "bce": 0.18034653983907237,
+      "brier": 0.05460437919270889,
+      "macroAveragePrecision": 0.897455468224484,
+      "threshold": 0.5,
+      "perClass": {
+        "entity": {
+          "positiveSupport": 41,
+          "predictedPositive": 40,
+          "tp": 38,
+          "fp": 2,
+          "fn": 3,
+          "precision": 0.95,
+          "recall": 0.926829268292683,
+          "f1": 0.9382716049382716,
+          "averagePrecision": 0.9920390357213675
+        },
+        "place": {
+          "positiveSupport": 7,
+          "predictedPositive": 8,
+          "tp": 7,
+          "fp": 1,
+          "fn": 0,
+          "precision": 0.875,
+          "recall": 1.0,
+          "f1": 0.9333333333333333,
+          "averagePrecision": 0.9617346938775511
+        },
+        "action": {
+          "positiveSupport": 15,
+          "predictedPositive": 13,
+          "tp": 13,
+          "fp": 0,
+          "fn": 2,
+          "precision": 1.0,
+          "recall": 0.8666666666666667,
+          "f1": 0.9285714285714286,
+          "averagePrecision": 0.9958333333333333
+        },
+        "state": {
+          "positiveSupport": 16,
+          "predictedPositive": 16,
+          "tp": 9,
+          "fp": 7,
+          "fn": 7,
+          "precision": 0.5625,
+          "recall": 0.5625,
+          "f1": 0.5625,
+          "averagePrecision": 0.6805720325636816
+        },
+        "relation": {
+          "positiveSupport": 22,
+          "predictedPositive": 30,
+          "tp": 18,
+          "fp": 12,
+          "fn": 4,
+          "precision": 0.6,
+          "recall": 0.8181818181818182,
+          "f1": 0.6923076923076923,
+          "averagePrecision": 0.7600482193454758
+        },
+        "abstract": {
+          "positiveSupport": 13,
+          "predictedPositive": 11,
+          "tp": 11,
+          "fp": 0,
+          "fn": 2,
+          "precision": 1.0,
+          "recall": 0.8461538461538461,
+          "f1": 0.9166666666666666,
+          "averagePrecision": 0.9945054945054945
+        }
+      }
+    },
+    "validationAtOOFTarget": {
+      "threshold": 0.8364642150280708,
+      "microPrecision": 0.9036144578313253,
+      "macroPrecision": 0.9037037037037038,
+      "microRecall": 0.6578947368421053,
+      "macroF1": 0.7213882976926455,
+      "exactMatch": 0.6483516483516484,
+      "positivePredictions": 83,
+      "falsePositives": 8,
+      "perClassPositivePredictions": [
+        34,
+        4,
+        7,
+        10,
+        18,
+        10
+      ],
+      "allClassesHaveAtLeastThreePredictions": true,
+      "meaningsWithAnyPositiveLabel": 74
+    },
+    "evaluationThreshold": 0.8364642150280708,
+    "calibrationParametersFitOn": "training OOF only",
+    "validationGoalMet": false
+  },
+  "allFinalists": [
+    {
+      "config": {
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.019255672028359934,
+        "weightPower": 0.975468022924403,
+        "maxIterations": 400,
+        "trial": 32,
+        "phase": "narrow"
+      },
+      "cv": {
+        "count": 244,
+        "macroF1": 0.839271334422485,
+        "microF1": 0.8320251177394035,
+        "exactMatch": 0.6598360655737705,
+        "bce": 0.20511914516236202,
+        "brier": 0.05648871439130874,
+        "macroAveragePrecision": 0.9133249131519969,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 107,
+            "tp": 92,
+            "fp": 15,
+            "fn": 6,
+            "precision": 0.8598130841121495,
+            "recall": 0.9387755102040817,
+            "f1": 0.8975609756097561,
+            "averagePrecision": 0.9819930800612675
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 25,
+            "tp": 25,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.9615384615384616,
+            "f1": 0.9803921568627451,
+            "averagePrecision": 0.9972527472527474
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 36,
+            "tp": 29,
+            "fp": 7,
+            "fn": 5,
+            "precision": 0.8055555555555556,
+            "recall": 0.8529411764705882,
+            "f1": 0.8285714285714286,
+            "averagePrecision": 0.9046469786087467
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 43,
+            "tp": 26,
+            "fp": 17,
+            "fn": 20,
+            "precision": 0.6046511627906976,
+            "recall": 0.5652173913043478,
+            "f1": 0.5842696629213483,
+            "averagePrecision": 0.7384015776540774
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 84,
+            "tp": 63,
+            "fp": 21,
+            "fn": 12,
+            "precision": 0.75,
+            "recall": 0.84,
+            "f1": 0.7924528301886793,
+            "averagePrecision": 0.8730676023080393
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 31,
+            "tp": 30,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.967741935483871,
+            "recall": 0.9375,
+            "f1": 0.9523809523809523,
+            "averagePrecision": 0.984587493027103
+          }
+        }
+      },
+      "oofTarget": {
+        "threshold": 0.7924747394902468,
+        "microPrecision": 0.9711538461538461,
+        "macroPrecision": 0.964592213697073,
+        "microRecall": 0.6495176848874598,
+        "macroF1": 0.7468255506784148,
+        "exactMatch": 0.6024590163934426,
+        "positivePredictions": 208,
+        "falsePositives": 6,
+        "perClassPositivePredictions": [
+          83,
+          16,
+          23,
+          17,
+          45,
+          24
+        ],
+        "allClassesHaveAtLeastThreePredictions": true,
+        "meaningsWithAnyPositiveLabel": 189
+      },
+      "calibration": {
+        "method": "temperature-global-bias",
+        "temperature": 0.623105097417877,
+        "offsets": [
+          -0.5239768420403784,
+          -0.5239768420403784,
+          -0.5239768420403784,
+          -0.5239768420403784,
+          -0.5239768420403784,
+          -0.5239768420403784
+        ],
+        "fitLoss": 0.16893637909232498,
+        "fitRows": 244,
+        "fitScope": "training-only grouped out-of-fold predictions"
+      },
+      "validationAtDefault": {
+        "count": 91,
+        "macroF1": 0.8230104572846509,
+        "microF1": 0.8173913043478261,
+        "exactMatch": 0.6593406593406593,
+        "bce": 0.1809314396864482,
+        "brier": 0.05495929999533739,
+        "macroAveragePrecision": 0.8941052209453396,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 39,
+            "tp": 37,
+            "fp": 2,
+            "fn": 4,
+            "precision": 0.9487179487179487,
+            "recall": 0.9024390243902439,
+            "f1": 0.925,
+            "averagePrecision": 0.9920390357213675
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 8,
+            "tp": 7,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.875,
+            "recall": 1.0,
+            "f1": 0.9333333333333333,
+            "averagePrecision": 0.9617346938775511
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9958333333333333
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 15,
+            "tp": 9,
+            "fp": 6,
+            "fn": 7,
+            "precision": 0.6,
+            "recall": 0.5625,
+            "f1": 0.5806451612903226,
+            "averagePrecision": 0.6709767594249896
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 30,
+            "tp": 17,
+            "fp": 13,
+            "fn": 5,
+            "precision": 0.5666666666666667,
+            "recall": 0.7727272727272727,
+            "f1": 0.6538461538461539,
+            "averagePrecision": 0.7495420088093021
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 0.9945054945054945
+          }
+        }
+      },
+      "validationAtOOFTarget": {
+        "threshold": 0.835675170304112,
+        "microPrecision": 0.9047619047619048,
+        "macroPrecision": 0.9037037037037038,
+        "microRecall": 0.6666666666666666,
+        "macroF1": 0.737865229169577,
+        "exactMatch": 0.6483516483516484,
+        "positivePredictions": 84,
+        "falsePositives": 8,
+        "perClassPositivePredictions": [
+          33,
+          4,
+          9,
+          10,
+          18,
+          10
+        ],
+        "allClassesHaveAtLeastThreePredictions": true,
+        "meaningsWithAnyPositiveLabel": 75
+      },
+      "evaluationThreshold": 0.835675170304112,
+      "calibrationParametersFitOn": "training OOF only",
+      "validationGoalMet": false
+    },
+    {
+      "config": {
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.018167854767792153,
+        "weightPower": 0.8588010909157829,
+        "maxIterations": 400,
+        "trial": 62,
+        "phase": "narrow"
+      },
+      "cv": {
+        "count": 244,
+        "macroF1": 0.8355805407066574,
+        "microF1": 0.8298887122416534,
+        "exactMatch": 0.6639344262295082,
+        "bce": 0.19792916592017798,
+        "brier": 0.05469249877440518,
+        "macroAveragePrecision": 0.913438996728749,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 105,
+            "tp": 91,
+            "fp": 14,
+            "fn": 7,
+            "precision": 0.8666666666666667,
+            "recall": 0.9285714285714286,
+            "f1": 0.896551724137931,
+            "averagePrecision": 0.9821263217832134
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 25,
+            "tp": 25,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.9615384615384616,
+            "f1": 0.9803921568627451,
+            "averagePrecision": 0.9985754985754985
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 35,
+            "tp": 28,
+            "fp": 7,
+            "fn": 6,
+            "precision": 0.8,
+            "recall": 0.8235294117647058,
+            "f1": 0.8115942028985508,
+            "averagePrecision": 0.9036602202690471
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 40,
+            "tp": 26,
+            "fp": 14,
+            "fn": 20,
+            "precision": 0.65,
+            "recall": 0.5652173913043478,
+            "f1": 0.6046511627906976,
+            "averagePrecision": 0.7403539411439904
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 83,
+            "tp": 62,
+            "fp": 21,
+            "fn": 13,
+            "precision": 0.7469879518072289,
+            "recall": 0.8266666666666667,
+            "f1": 0.7848101265822784,
+            "averagePrecision": 0.8729850908946508
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 30,
+            "tp": 29,
+            "fp": 1,
+            "fn": 3,
+            "precision": 0.9666666666666667,
+            "recall": 0.90625,
+            "f1": 0.9354838709677419,
+            "averagePrecision": 0.9829329077060932
+          }
+        }
+      },
+      "oofTarget": {
+        "threshold": 0.7847772867103141,
+        "microPrecision": 0.9710144927536232,
+        "macroPrecision": 0.9697666286540967,
+        "microRecall": 0.6463022508038585,
+        "macroF1": 0.7414731958523532,
+        "exactMatch": 0.5942622950819673,
+        "positivePredictions": 207,
+        "falsePositives": 6,
+        "perClassPositivePredictions": [
+          84,
+          15,
+          22,
+          17,
+          46,
+          23
+        ],
+        "allClassesHaveAtLeastThreePredictions": true,
+        "meaningsWithAnyPositiveLabel": 187
+      },
+      "calibration": {
+        "method": "temperature-global-bias",
+        "temperature": 0.6413816561810906,
+        "offsets": [
+          -0.38494132782057283,
+          -0.38494132782057283,
+          -0.38494132782057283,
+          -0.38494132782057283,
+          -0.38494132782057283,
+          -0.38494132782057283
+        ],
+        "fitLoss": 0.16861967689317542,
+        "fitRows": 244,
+        "fitScope": "training-only grouped out-of-fold predictions"
+      },
+      "validationAtDefault": {
+        "count": 91,
+        "macroF1": 0.8286084543028989,
+        "microF1": 0.8275862068965517,
+        "exactMatch": 0.6703296703296703,
+        "bce": 0.18034653983907237,
+        "brier": 0.05460437919270889,
+        "macroAveragePrecision": 0.897455468224484,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 40,
+            "tp": 38,
+            "fp": 2,
+            "fn": 3,
+            "precision": 0.95,
+            "recall": 0.926829268292683,
+            "f1": 0.9382716049382716,
+            "averagePrecision": 0.9920390357213675
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 8,
+            "tp": 7,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.875,
+            "recall": 1.0,
+            "f1": 0.9333333333333333,
+            "averagePrecision": 0.9617346938775511
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9958333333333333
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 16,
+            "tp": 9,
+            "fp": 7,
+            "fn": 7,
+            "precision": 0.5625,
+            "recall": 0.5625,
+            "f1": 0.5625,
+            "averagePrecision": 0.6805720325636816
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 30,
+            "tp": 18,
+            "fp": 12,
+            "fn": 4,
+            "precision": 0.6,
+            "recall": 0.8181818181818182,
+            "f1": 0.6923076923076923,
+            "averagePrecision": 0.7600482193454758
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 0.9945054945054945
+          }
+        }
+      },
+      "validationAtOOFTarget": {
+        "threshold": 0.8364642150280708,
+        "microPrecision": 0.9036144578313253,
+        "macroPrecision": 0.9037037037037038,
+        "microRecall": 0.6578947368421053,
+        "macroF1": 0.7213882976926455,
+        "exactMatch": 0.6483516483516484,
+        "positivePredictions": 83,
+        "falsePositives": 8,
+        "perClassPositivePredictions": [
+          34,
+          4,
+          7,
+          10,
+          18,
+          10
+        ],
+        "allClassesHaveAtLeastThreePredictions": true,
+        "meaningsWithAnyPositiveLabel": 74
+      },
+      "evaluationThreshold": 0.8364642150280708,
+      "calibrationParametersFitOn": "training OOF only",
+      "validationGoalMet": false
+    },
+    {
+      "config": {
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.018348739285373995,
+        "weightPower": 1.0,
+        "maxIterations": 400,
+        "trial": 13,
+        "phase": "broad"
+      },
+      "cv": {
+        "count": 244,
+        "macroF1": 0.8353035801703245,
+        "microF1": 0.8294209702660407,
+        "exactMatch": 0.6557377049180327,
+        "bce": 0.20332801034226144,
+        "brier": 0.05613214389601289,
+        "macroAveragePrecision": 0.9133087586488284,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 107,
+            "tp": 92,
+            "fp": 15,
+            "fn": 6,
+            "precision": 0.8598130841121495,
+            "recall": 0.9387755102040817,
+            "f1": 0.8975609756097561,
+            "averagePrecision": 0.9820452872167971
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 26,
+            "tp": 25,
+            "fp": 1,
+            "fn": 1,
+            "precision": 0.9615384615384616,
+            "recall": 0.9615384615384616,
+            "f1": 0.9615384615384616,
+            "averagePrecision": 0.9972527472527474
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 36,
+            "tp": 29,
+            "fp": 7,
+            "fn": 5,
+            "precision": 0.8055555555555556,
+            "recall": 0.8529411764705882,
+            "f1": 0.8285714285714286,
+            "averagePrecision": 0.9047746599162033
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 43,
+            "tp": 26,
+            "fp": 17,
+            "fn": 20,
+            "precision": 0.6046511627906976,
+            "recall": 0.5652173913043478,
+            "f1": 0.5842696629213483,
+            "averagePrecision": 0.7398256845947059
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 85,
+            "tp": 63,
+            "fp": 22,
+            "fn": 12,
+            "precision": 0.7411764705882353,
+            "recall": 0.84,
+            "f1": 0.7875,
+            "averagePrecision": 0.8712415436487415
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 31,
+            "tp": 30,
+            "fp": 1,
+            "fn": 2,
+            "precision": 0.967741935483871,
+            "recall": 0.9375,
+            "f1": 0.9523809523809523,
+            "averagePrecision": 0.9847126292637752
+          }
+        }
+      },
+      "oofTarget": {
+        "threshold": 0.7977439175042037,
+        "microPrecision": 0.970873786407767,
+        "macroPrecision": 0.9640754178314399,
+        "microRecall": 0.6430868167202572,
+        "macroF1": 0.7431532342942341,
+        "exactMatch": 0.5942622950819673,
+        "positivePredictions": 206,
+        "falsePositives": 6,
+        "perClassPositivePredictions": [
+          83,
+          16,
+          23,
+          17,
+          43,
+          24
+        ],
+        "allClassesHaveAtLeastThreePredictions": true,
+        "meaningsWithAnyPositiveLabel": 189
+      },
+      "calibration": {
+        "method": "temperature-global-bias",
+        "temperature": 0.6322864690446437,
+        "offsets": [
+          -0.5352956165812224,
+          -0.5352956165812224,
+          -0.5352956165812224,
+          -0.5352956165812224,
+          -0.5352956165812224,
+          -0.5352956165812224
+        ],
+        "fitLoss": 0.16838247420578473,
+        "fitRows": 244,
+        "fitScope": "training-only grouped out-of-fold predictions"
+      },
+      "validationAtDefault": {
+        "count": 91,
+        "macroF1": 0.8221230158730161,
+        "microF1": 0.8173913043478261,
+        "exactMatch": 0.6703296703296703,
+        "bce": 0.18088337102059976,
+        "brier": 0.05485523425777865,
+        "macroAveragePrecision": 0.8970507383840757,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 39,
+            "tp": 37,
+            "fp": 2,
+            "fn": 4,
+            "precision": 0.9487179487179487,
+            "recall": 0.9024390243902439,
+            "f1": 0.925,
+            "averagePrecision": 0.9920390357213675
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 8,
+            "tp": 7,
+            "fp": 1,
+            "fn": 0,
+            "precision": 0.875,
+            "recall": 1.0,
+            "f1": 0.9333333333333333,
+            "averagePrecision": 0.9617346938775511
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9958333333333333
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 16,
+            "tp": 9,
+            "fp": 7,
+            "fn": 7,
+            "precision": 0.5625,
+            "recall": 0.5625,
+            "f1": 0.5625,
+            "averagePrecision": 0.6791612832345134
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 29,
+            "tp": 17,
+            "fp": 12,
+            "fn": 5,
+            "precision": 0.5862068965517241,
+            "recall": 0.7727272727272727,
+            "f1": 0.6666666666666666,
+            "averagePrecision": 0.7590305896321939
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 0.9945054945054945
+          }
+        }
+      },
+      "validationAtOOFTarget": {
+        "threshold": 0.8368544006345388,
+        "microPrecision": 0.9047619047619048,
+        "macroPrecision": 0.9037037037037038,
+        "microRecall": 0.6666666666666666,
+        "macroF1": 0.737865229169577,
+        "exactMatch": 0.6483516483516484,
+        "positivePredictions": 84,
+        "falsePositives": 8,
+        "perClassPositivePredictions": [
+          33,
+          4,
+          9,
+          10,
+          18,
+          10
+        ],
+        "allClassesHaveAtLeastThreePredictions": true,
+        "meaningsWithAnyPositiveLabel": 75
+      },
+      "evaluationThreshold": 0.8368544006345388,
+      "calibrationParametersFitOn": "training OOF only",
+      "validationGoalMet": false
+    },
+    {
+      "config": {
+        "trial": -1,
+        "phase": "preservedBaseline",
+        "hidden": 32,
+        "preprocess": "scaled",
+        "center": true,
+        "l2": 0.0001228156082236678,
+        "weightPower": 1.0,
+        "maxIterations": 400
+      },
+      "cv": {
+        "count": 244,
+        "macroF1": 0.8569157581892927,
+        "microF1": 0.8534201954397395,
+        "exactMatch": 0.7131147540983607,
+        "bce": 0.210203983949534,
+        "brier": 0.05149054835182165,
+        "macroAveragePrecision": 0.9176184618759042,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 98,
+            "predictedPositive": 104,
+            "tp": 92,
+            "fp": 12,
+            "fn": 6,
+            "precision": 0.8846153846153846,
+            "recall": 0.9387755102040817,
+            "f1": 0.9108910891089109,
+            "averagePrecision": 0.9831271635432463
+          },
+          "place": {
+            "positiveSupport": 26,
+            "predictedPositive": 25,
+            "tp": 25,
+            "fp": 0,
+            "fn": 1,
+            "precision": 1.0,
+            "recall": 0.9615384615384616,
+            "f1": 0.9803921568627451,
+            "averagePrecision": 0.9960212201591511
+          },
+          "action": {
+            "positiveSupport": 34,
+            "predictedPositive": 38,
+            "tp": 31,
+            "fp": 7,
+            "fn": 3,
+            "precision": 0.8157894736842105,
+            "recall": 0.9117647058823529,
+            "f1": 0.8611111111111112,
+            "averagePrecision": 0.9234107109767303
+          },
+          "state": {
+            "positiveSupport": 46,
+            "predictedPositive": 33,
+            "tp": 25,
+            "fp": 8,
+            "fn": 21,
+            "precision": 0.7575757575757576,
+            "recall": 0.5434782608695652,
+            "f1": 0.6329113924050633,
+            "averagePrecision": 0.7351648120938291
+          },
+          "relation": {
+            "positiveSupport": 75,
+            "predictedPositive": 74,
+            "tp": 60,
+            "fp": 14,
+            "fn": 15,
+            "precision": 0.8108108108108109,
+            "recall": 0.8,
+            "f1": 0.8053691275167785,
+            "averagePrecision": 0.886268114482469
+          },
+          "abstract": {
+            "positiveSupport": 32,
+            "predictedPositive": 29,
+            "tp": 29,
+            "fp": 0,
+            "fn": 3,
+            "precision": 1.0,
+            "recall": 0.90625,
+            "f1": 0.9508196721311475,
+            "averagePrecision": 0.98171875
+          }
+        }
+      },
+      "oofTarget": {
+        "threshold": 0.991852156272599,
+        "microPrecision": 0.972972972972973,
+        "macroPrecision": 0.973903873903874,
+        "microRecall": 0.5787781350482315,
+        "macroF1": 0.6743848867577681,
+        "exactMatch": 0.5286885245901639,
+        "positivePredictions": 185,
+        "falsePositives": 5,
+        "perClassPositivePredictions": [
+          77,
+          11,
+          16,
+          13,
+          45,
+          23
+        ],
+        "allClassesHaveAtLeastThreePredictions": true,
+        "meaningsWithAnyPositiveLabel": 168
+      },
+      "calibration": {
+        "method": "temperature-global-bias",
+        "temperature": 1.8055931177709652,
+        "offsets": [
+          -0.2712299184649808,
+          -0.2712299184649808,
+          -0.2712299184649808,
+          -0.2712299184649808,
+          -0.2712299184649808,
+          -0.2712299184649808
+        ],
+        "fitLoss": 0.1703301057169927,
+        "fitRows": 244,
+        "fitScope": "training-only grouped out-of-fold predictions"
+      },
+      "validationAtDefault": {
+        "count": 91,
+        "macroF1": 0.821530034778139,
+        "microF1": 0.8240343347639485,
+        "exactMatch": 0.6483516483516484,
+        "bce": 0.18490324125601085,
+        "brier": 0.05295153004033814,
+        "macroAveragePrecision": 0.9050847014609157,
+        "threshold": 0.5,
+        "perClass": {
+          "entity": {
+            "positiveSupport": 41,
+            "predictedPositive": 41,
+            "tp": 38,
+            "fp": 3,
+            "fn": 3,
+            "precision": 0.926829268292683,
+            "recall": 0.926829268292683,
+            "f1": 0.926829268292683,
+            "averagePrecision": 0.9921699191582541
+          },
+          "place": {
+            "positiveSupport": 7,
+            "predictedPositive": 9,
+            "tp": 7,
+            "fp": 2,
+            "fn": 0,
+            "precision": 0.7777777777777778,
+            "recall": 1.0,
+            "f1": 0.875,
+            "averagePrecision": 1.0
+          },
+          "action": {
+            "positiveSupport": 15,
+            "predictedPositive": 13,
+            "tp": 13,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8666666666666667,
+            "f1": 0.9285714285714286,
+            "averagePrecision": 0.9877124183006536
+          },
+          "state": {
+            "positiveSupport": 16,
+            "predictedPositive": 18,
+            "tp": 10,
+            "fp": 8,
+            "fn": 6,
+            "precision": 0.5555555555555556,
+            "recall": 0.625,
+            "f1": 0.5882352941176471,
+            "averagePrecision": 0.6890550026483973
+          },
+          "relation": {
+            "positiveSupport": 22,
+            "predictedPositive": 27,
+            "tp": 17,
+            "fp": 10,
+            "fn": 5,
+            "precision": 0.6296296296296297,
+            "recall": 0.7727272727272727,
+            "f1": 0.6938775510204082,
+            "averagePrecision": 0.7718272789145996
+          },
+          "abstract": {
+            "positiveSupport": 13,
+            "predictedPositive": 11,
+            "tp": 11,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.8461538461538461,
+            "f1": 0.9166666666666666,
+            "averagePrecision": 0.9897435897435898
+          }
+        }
+      },
+      "validationAtOOFTarget": {
+        "threshold": 0.915921879565896,
+        "microPrecision": 0.9295774647887324,
+        "macroPrecision": 0.9226190476190476,
+        "microRecall": 0.5789473684210527,
+        "macroF1": 0.6644207897632555,
+        "exactMatch": 0.5934065934065934,
+        "positivePredictions": 71,
+        "falsePositives": 5,
+        "perClassPositivePredictions": [
+          32,
+          4,
+          6,
+          8,
+          14,
+          7
+        ],
+        "allClassesHaveAtLeastThreePredictions": true,
+        "meaningsWithAnyPositiveLabel": 66
+      },
+      "evaluationThreshold": 0.915921879565896,
+      "calibrationParametersFitOn": "training OOF only",
+      "validationGoalMet": false
+    }
+  ],
+  "testUsed": false,
+  "labelsChanged": false,
+  "originalModelChanged": false,
+  "caveats": [
+    "97% development precision is not 97% full label-set accuracy or a deployment guarantee.",
+    "Reused validation is not independent confirmation. Recall and per-class support accompany the precision target.",
+    "The test set and ground-truth annotations were not used to refine this search."
+  ]
+}

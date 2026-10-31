@@ -1,0 +1,552 @@
+{
+  "schemaVersion": 1,
+  "reviewType": "AI semantic review; not human-expert ground truth",
+  "reviewedCount": 57,
+  "datasetFileSha256": "013afb4aa1cd67e96c69203bd8eafe4055f9a42e939b81769b3f0ae3d2c1ab24",
+  "decisions": [
+    {
+      "id": "supp-wrinkled",
+      "originalWord": "wrinkled",
+      "changed": false,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "The folds are the defining visible condition, rather than an event."
+    },
+    {
+      "id": "supp-pitted",
+      "originalWord": "rusty",
+      "changed": true,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "Surface texture is the target; no corrosion event or material identity is required."
+    },
+    {
+      "id": "supp-translucent",
+      "originalWord": "translucent",
+      "changed": false,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "The defining property is visible light transmission."
+    },
+    {
+      "id": "supp-opaque",
+      "originalWord": "opaque",
+      "changed": false,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "Opacity is a condition of the material, not a process."
+    },
+    {
+      "id": "supp-curved",
+      "originalWord": "curved",
+      "changed": false,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "The shape itself is the defining visible condition."
+    },
+    {
+      "id": "supp-hollow",
+      "originalWord": "hollow",
+      "changed": true,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "The internal cavity describes the target shape/condition; do not add relation for every object with an inside."
+    },
+    {
+      "id": "supp-stained",
+      "originalWord": "stained",
+      "changed": false,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "The persistent discoloration is the target evidence; its cause need not be shown."
+    },
+    {
+      "id": "supp-overheated",
+      "originalWord": "overheated",
+      "changed": true,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "The target is a temperature condition; a still photo needs contextual cues and cannot prove a temperature measurement."
+    },
+    {
+      "id": "supp-deflated",
+      "originalWord": "deflated",
+      "changed": true,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "The adjective names the collapsed result; its preceding process does not require an action label."
+    },
+    {
+      "id": "supp-dented",
+      "originalWord": "dented",
+      "changed": false,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "A lasting surface deformation defines the meaning; the impact is incidental."
+    },
+    {
+      "id": "supp-asleep",
+      "originalWord": "asleep",
+      "changed": false,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "The meaning is a condition, although outward cues only suggest it."
+    },
+    {
+      "id": "supp-awake",
+      "originalWord": "awake",
+      "changed": false,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "Awareness is the defined condition; response may provide visible evidence."
+    },
+    {
+      "id": "supp-overcast",
+      "originalWord": "overcast",
+      "changed": true,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "Cloud cover is an atmospheric condition; the sky as its setting is incidental to the state route."
+    },
+    {
+      "id": "supp-jammed",
+      "originalWord": "jammed",
+      "changed": true,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "The defining malfunction is a condition; a second obstructing object is not entailed by this wording."
+    },
+    {
+      "id": "supp-detached",
+      "originalWord": "detached",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The separated configuration relative to another referent defines it; do not add state to every relation."
+    },
+    {
+      "id": "supp-crooked",
+      "originalWord": "crooked",
+      "changed": true,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "This selected sense describes a bent shape, independent of alignment with another object."
+    },
+    {
+      "id": "supp-stale",
+      "originalWord": "stale",
+      "changed": false,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "Loss of freshness is a resulting condition; the prior change is not itself required."
+    },
+    {
+      "id": "supp-saturated",
+      "originalWord": "saturated",
+      "changed": false,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "The defining condition is maximum liquid content, potentially visible in material appearance."
+    },
+    {
+      "id": "supp-unbalanced",
+      "originalWord": "unbalanced",
+      "changed": false,
+      "finalLabels": [
+        "state",
+        "relation"
+      ],
+      "reason": "The unstable condition arises from unequal distribution among parts."
+    },
+    {
+      "id": "supp-radiating-from",
+      "originalWord": "wedged between",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The outward arrangement relative to a shared center defines the meaning."
+    },
+    {
+      "id": "supp-threaded-through",
+      "originalWord": "threaded through",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route."
+    },
+    {
+      "id": "supp-concentric",
+      "originalWord": "bolted to",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The common center of multiple shapes is defining."
+    },
+    {
+      "id": "supp-staggered",
+      "originalWord": "entangled with",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The relative offset among rows defines the arrangement."
+    },
+    {
+      "id": "supp-covering",
+      "originalWord": "covering",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route."
+    },
+    {
+      "id": "supp-caught-under",
+      "originalWord": "caught under",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route."
+    },
+    {
+      "id": "supp-nested-inside",
+      "originalWord": "nested inside",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route."
+    },
+    {
+      "id": "supp-threaded-onto",
+      "originalWord": "threaded onto",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route."
+    },
+    {
+      "id": "supp-overhanging",
+      "originalWord": "overhanging",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route."
+    },
+    {
+      "id": "supp-tapering-toward",
+      "originalWord": "wedged beneath",
+      "changed": true,
+      "finalLabels": [
+        "state",
+        "relation"
+      ],
+      "reason": "Changing width is an appearance; its direction relative to an end is also defining."
+    },
+    {
+      "id": "supp-bisecting",
+      "originalWord": "bisecting",
+      "changed": true,
+      "finalLabels": [
+        "action",
+        "relation"
+      ],
+      "reason": "A dividing line and its equal-part relation define the concept; the geometric operation may be depicted statically."
+    },
+    {
+      "id": "supp-linked-by",
+      "originalWord": "linked by",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route."
+    },
+    {
+      "id": "supp-tied-to",
+      "originalWord": "tied to",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The definition requires the stated configuration between referents; the persistence of that configuration does not add an independent state route."
+    },
+    {
+      "id": "supp-tangent-to",
+      "originalWord": "interwoven with",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The precise touching configuration defines this spatial relation."
+    },
+    {
+      "id": "supp-alternating",
+      "originalWord": "overlaid with",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "The order among multiple items, rather than the appearance of one, defines it."
+    },
+    {
+      "id": "supp-equidistant",
+      "originalWord": "anchored to",
+      "changed": true,
+      "finalLabels": [
+        "relation"
+      ],
+      "reason": "Comparing distances between referents is essential."
+    },
+    {
+      "id": "supp-squeezed-between",
+      "originalWord": "squeezed between",
+      "changed": true,
+      "finalLabels": [
+        "state",
+        "relation"
+      ],
+      "reason": "The position between opposing surfaces and the additional compressed/deformed condition both matter."
+    },
+    {
+      "id": "supp-threading",
+      "originalWord": "threading",
+      "changed": false,
+      "finalLabels": [
+        "action",
+        "relation"
+      ],
+      "reason": "The act of passage and the object-opening relation jointly define the event."
+    },
+    {
+      "id": "supp-condense",
+      "originalWord": "condense",
+      "changed": false,
+      "finalLabels": [
+        "action"
+      ],
+      "reason": "A material phase change over time is the core event."
+    },
+    {
+      "id": "supp-fracture",
+      "originalWord": "fracture",
+      "changed": false,
+      "finalLabels": [
+        "action"
+      ],
+      "reason": "The sudden breakage is a change process, not merely a damaged state."
+    },
+    {
+      "id": "supp-spiral",
+      "originalWord": "spiral",
+      "changed": false,
+      "finalLabels": [
+        "action"
+      ],
+      "reason": "The movement along a changing path is essential."
+    },
+    {
+      "id": "supp-collide",
+      "originalWord": "collide",
+      "changed": false,
+      "finalLabels": [
+        "action",
+        "relation"
+      ],
+      "reason": "The impact event and interaction between participants both matter."
+    },
+    {
+      "id": "supp-ferment",
+      "originalWord": "ferment",
+      "changed": true,
+      "finalLabels": [
+        "action"
+      ],
+      "reason": "Microorganisms converting sugars define a chemical process; heating and temperature are not entailed."
+    },
+    {
+      "id": "supp-unzip",
+      "originalWord": "unzip",
+      "changed": false,
+      "finalLabels": [
+        "action",
+        "relation"
+      ],
+      "reason": "The movement changes the connection between two sides of a fastening."
+    },
+    {
+      "id": "supp-drip",
+      "originalWord": "drip",
+      "changed": false,
+      "finalLabels": [
+        "action"
+      ],
+      "reason": "Repeated falling of liquid is the defining event; a person is unnecessary."
+    },
+    {
+      "id": "supp-compress",
+      "originalWord": "compress",
+      "changed": true,
+      "finalLabels": [
+        "action"
+      ],
+      "reason": "Pressing to reduce volume defines a changing process, not filling a container."
+    },
+    {
+      "id": "supp-crystallize",
+      "originalWord": "crystallize",
+      "changed": true,
+      "finalLabels": [
+        "action"
+      ],
+      "reason": "Formation of solid crystals is the target phase-change process; erosion is unrelated."
+    },
+    {
+      "id": "supp-rotate",
+      "originalWord": "rotate",
+      "changed": false,
+      "finalLabels": [
+        "action"
+      ],
+      "reason": "Change in orientation over time is the defining movement."
+    },
+    {
+      "id": "supp-compass",
+      "originalWord": "compass",
+      "changed": false,
+      "finalLabels": [
+        "entity"
+      ],
+      "reason": "A physical instrument is the central referent, even though its function communicates information."
+    },
+    {
+      "id": "supp-planetarium",
+      "originalWord": "planetarium",
+      "changed": true,
+      "finalLabels": [
+        "place"
+      ],
+      "reason": "The definition identifies a specialized setting; a separate object route is not required."
+    },
+    {
+      "id": "supp-viaduct",
+      "originalWord": "viaduct",
+      "changed": true,
+      "finalLabels": [
+        "place"
+      ],
+      "reason": "The selected sense identifies a constructed passage across terrain, so the environmental structure route is appropriate."
+    },
+    {
+      "id": "supp-observatory",
+      "originalWord": "observatory",
+      "changed": true,
+      "finalLabels": [
+        "place"
+      ],
+      "reason": "The definition identifies an equipped site/setting; entity is not added merely because a building is physical."
+    },
+    {
+      "id": "supp-geyser",
+      "originalWord": "geyser",
+      "changed": false,
+      "finalLabels": [
+        "entity",
+        "action"
+      ],
+      "reason": "The natural feature and its characteristic eruptive event both contribute."
+    },
+    {
+      "id": "supp-echo",
+      "originalWord": "echo",
+      "changed": true,
+      "finalLabels": [
+        "action",
+        "relation"
+      ],
+      "reason": "A repeated sound event and its reflection path define this meaning; a still image alone cannot establish an audible echo."
+    },
+    {
+      "id": "supp-congestion",
+      "originalWord": "congestion",
+      "changed": true,
+      "finalLabels": [
+        "state"
+      ],
+      "reason": "Excess crowding and obstructed flow describe a condition; individual participant identities are incidental."
+    },
+    {
+      "id": "supp-deadline",
+      "originalWord": "deadline",
+      "changed": false,
+      "finalLabels": [
+        "abstract"
+      ],
+      "reason": "A time-bound requirement is conceptual and cannot be identified by appearance alone."
+    },
+    {
+      "id": "supp-reputation",
+      "originalWord": "reputation",
+      "changed": false,
+      "finalLabels": [
+        "abstract"
+      ],
+      "reason": "The social evaluation is conceptual; any portrait or rating display is only a carrier."
+    },
+    {
+      "id": "supp-coincidence",
+      "originalWord": "coincidence",
+      "changed": true,
+      "finalLabels": [
+        "relation",
+        "abstract"
+      ],
+      "reason": "The interpretation of multiple events as coinciding without an apparent causal connection is conceptual and relational."
+    }
+  ],
+  "limitations": [
+    "Semantic overlap remains possible across different words; exact lemma/family checks do not prove independence.",
+    "Added examples address category boundaries, not true personal image preferences."
+  ],
+  "secondaryReview": {
+    "reviewer": "Luna, policy and test-paraphrase review after primary corrections",
+    "excludedAfterReview": [
+      {
+        "word": "braced against",
+        "reason": "Potential paraphrase or close support/contact overlap with a known test meaning; excluded from extension."
+      },
+      {
+        "word": "interposed between",
+        "reason": "Potential paraphrase or close support/contact overlap with a known test meaning; excluded from extension."
+      },
+      {
+        "word": "unoccupied",
+        "reason": "Potential paraphrase or close support/contact overlap with a known test meaning; excluded from extension."
+      }
+    ]
+  }
+}

@@ -153,7 +153,7 @@ def objective(theta, x, y, hidden, l2, weight_power):
     return loss, np.concatenate(gradients)
 
 
-def fit(x, y, config, seed=7919):
+def fit(x, y, config, seed=7919, max_iterations=None, callback=None):
     mean, scale = preprocessing(x, config)
     transformed = np.ascontiguousarray((x - mean) / scale)
     hidden = config['hidden']
@@ -165,9 +165,10 @@ def fit(x, y, config, seed=7919):
         w = rng.normal(0, np.sqrt(2 / (a + b)), (a, b)) if hidden else np.zeros((a, b))
         bias = np.log(prevalence / (1 - prevalence)) if i == len(dimensions) - 2 else np.zeros(b)
         pieces += [w.ravel(), bias]
+    limit = max_iterations if max_iterations is not None else config.get('maxIterations', 400)
     result = minimize(objective, np.concatenate(pieces), args=(transformed, y, hidden, config['l2'], config['weightPower']),
-                      method='L-BFGS-B', jac=True,
-                      options={'maxiter': 400, 'maxfun': 1200, 'gtol': 1e-7, 'ftol': 1e-11, 'maxls': 30})
+                      method='L-BFGS-B', jac=True, callback=callback,
+                      options={'maxiter': limit, 'maxfun': max(1200, 3 * limit), 'gtol': 1e-7, 'ftol': 1e-11, 'maxls': 30})
     if not np.isfinite(result.fun) or not np.isfinite(result.x).all():
         raise ValueError('Non-finite fit.')
     return {'mean': mean, 'scale': scale, 'layers': unpack(result.x, x.shape[1], hidden),
