@@ -2,11 +2,16 @@
   "schemaVersion": 1,
   "role": "current-meaning-category-classifier",
   "modelType": "mlp",
-  "annotationPolicyVersion": "v2",
-  "policyFileSha256": "7627d45f79b0944aa9d90b80f76fd305f5fda89a64705d6263b97f32a0d2ca44",
-  "artifact": "tests/fixtures/meaning-taxonomy/policy-v2/classifier-selected.json",
-  "artifactFileSha256": "a8f61940cdaaadd235f133775a9d7b0096f4efd38dc2f5cbf7490f6a586c4005",
-  "selection": "docs/meaning-taxonomy-training/policy-v2/selection.json",
-  "confirmation": "docs/meaning-taxonomy-training/policy-v2/report.json",
-  "productionPersonalizerChanged": false
+  "annotationPolicyVersion": "original-v1",
+  "artifact": "tests/fixtures/meaning-taxonomy/regularized-expansion/classifier-regularized-selected.json",
+  "artifactFileSha256": "5103d5c097acf38f87b5e58767d889e613eeadf0a750a9a5e11b426af1ed1722",
+  "selection": "docs/meaning-taxonomy-training/regularized-expansion/selection.json",
+  "confirmation": "docs/meaning-taxonomy-training/regularized-expansion/report.json",
+  "productionPersonalizerChanged": false,
+  "restoration": {
+    "reason": "User selected the original label policy and its 72.50% benchmark. V2 uses different semantics; normalization candidates remain experimental.",
+    "audit": "docs/meaning-taxonomy-training/normalization-original/report.json",
+    "experimentalCandidatePromoted": false,
+    "freshConfirmationRequired": true
+  }
 }

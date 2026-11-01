@@ -1,6 +1,6 @@
 {
   "name": "keepvocab",
-  "version": "1.12.18",
+  "version": "1.12.19",
   "private": true,
   "type": "module",
   "description": "A local-first vocabulary gym with Google Drive backup.",

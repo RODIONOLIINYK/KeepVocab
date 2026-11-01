@@ -49,10 +49,9 @@ test('v2 heads reproduce Python probabilities and confusion counts on the same f
   }
 });
 
-test('current head is bound to v2 policy, frozen economic choice, convergence and confirmation', async () => {
-  const [selection, protocol, report, registry] = await Promise.all([
-    json(`${output}selection.json`), json(`${output}protocol.json`), json(`${output}report.json`),
-    json('tests/fixtures/meaning-taxonomy/current-classifier.json')
+test('historical v2 head is bound to its policy, frozen choice, convergence and confirmation', async () => {
+  const [selection, protocol, report] = await Promise.all([
+    json(`${output}selection.json`), json(`${output}protocol.json`), json(`${output}report.json`)
   ]);
   assert.equal(selection.decisionFrozenBeforeTest, true);
   assert.equal(selection.testUsedForSelection, false);
@@ -72,10 +71,8 @@ test('current head is bound to v2 policy, frozen economic choice, convergence an
   assert.equal(selected.annotationPolicyVersion, 'v2');
   assert.equal(selected.annotationPolicyFileSha256, selection.policyFileSha256);
   const expected = report.promotionGate.passed ? selection.selected : selection.currentClassifier;
-  assert.equal(registry.artifact, expected.artifact);
-  assert.equal(registry.artifactFileSha256, hash(await bytes(expected.artifact)));
-  assert.equal(registry.productionPersonalizerChanged, false);
-  if (report.promotionGate.passed) assert.equal(registry.annotationPolicyVersion, 'v2');
+  assert.equal(expected.artifactFileSha256, hash(await bytes(expected.artifact)));
+  if (report.promotionGate.passed) assert.equal((await json(expected.artifact)).annotationPolicyVersion, 'v2');
   for (const finalist of selection.finalists) {
     assert.deepEqual(finalist.models.map(row => row.seed), selection.seeds);
     for (const record of finalist.models) {

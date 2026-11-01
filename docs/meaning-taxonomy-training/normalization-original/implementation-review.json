@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "trainingSourceSha256": "517a617c7101e8b8c6f60baaa745705a87a1d4f3c35f2f7d94cde88072697514",
+  "currentSourceSha256": "bf01b054d223e67f4a349c93bdb7145259536a9dcc8e2bd0a435a5ce2573c4c4",
+  "trainingSourceSnapshot": "trainer-source.py",
+  "change": "Post-run edge-case fix: clamp the number of chunks to floor(n/2) so a synthetic n=3/batchSize=2 cannot create a singleton BN batch. No hyperparameter or fitting recipe change.",
+  "checkedFitPartitions": 656,
+  "smallestActualFitRows": 526,
+  "smallestActualBatchSize": 16,
+  "allExperimentBatchPartitionsUnchanged": true,
+  "modelOrSelectionRecomputed": false,
+  "testTuning": false
+}

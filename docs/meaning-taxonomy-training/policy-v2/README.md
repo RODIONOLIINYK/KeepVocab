@@ -1,8 +1,10 @@
 # Policy-v2 revision, paired retraining and fresh confirmation
 
 Completed offline on 2026-11-01; released with KeepVocab 1.12.18.
-The current **offline meaning classifier** is the selected v2 32-unit L2 head.
-It passed the frozen validation and fresh confirmation gates. Production image
+The selected v2 32-unit L2 head passed this revision's validation and fresh
+confirmation gates. The later [original-policy experiment](../normalization-original/README.md)
+restores the original-policy offline head at the user's request. V2 scores below
+remain a historical policy-specific snapshot. Production image
 filtering, personal ranking and CLIP transforms are not activated or changed.
 
 **Every score in the main result table uses the same new 120 meanings with the
@@ -198,7 +200,7 @@ no gold labels, thresholds or model choice were changed after seeing it.
 held-out coverage improve the measurement; they do not remove the limitations
 of frozen CLIP text features or AI annotation.
 
-The offline registry is updated to the selected v2 head. Adapter-data routing
+At the time of this revision the registry was updated to the v2 head. Adapter-data routing
 probabilities/provenance were regenerated, while all underlying image/text
 vectors, semantic image labels, crops, pairs, groups and weights remain identical.
 No image/text adapters or production personal ranker are trained or activated.

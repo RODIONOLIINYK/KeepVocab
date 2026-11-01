@@ -32,11 +32,16 @@ labels fixed and compares matched Adam controls with dropout across three seeds.
 It does not replace the current stronger-L2 head: improvements are inconsistent
 across precision, recall and the two fixed regression cohorts.
 
-The latest [policy-v2 revision](policy-v2/README.md) applies consistent category
+The [policy-v2 revision](policy-v2/README.md) applies consistent category
 rules, reviews every original meaning unit, adds 360 meanings and confirms on
-a fresh grouped 120-example cohort. Its 32-unit head is the current offline
-classifier. All comparisons in that report use identical v2 gold labels; older
+a fresh grouped 120-example cohort. All comparisons in that report use identical v2 gold labels; older
 policy scores below remain historical snapshots.
+
+The latest [original-policy normalization experiment](normalization-original/README.md)
+tests 76 configurations including 30 matched BN/plain pairs. The user selected
+the original labeling policy and its 72.50% benchmark. That original 32-unit L2
+head is restored as the current offline reference. The 74.17% BN candidate stays
+experimental because grouped-CV and per-class checks are mixed.
 
 ## Result and interpretation
 

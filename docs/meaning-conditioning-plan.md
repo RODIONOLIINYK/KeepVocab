@@ -121,8 +121,8 @@ claim. Dropout is training-only and adds no deployed parameters.
 
 ## Consistent annotation policy and fresh confirmation (2026-11-01)
 
-The [policy-v2 revision](meaning-taxonomy-training/policy-v2/README.md) supersedes
-inconsistent conventions in earlier pilots. It reviews 1,280 source meaning
+The historical [policy-v2 revision](meaning-taxonomy-training/policy-v2/README.md)
+proposes revised conventions for earlier pilots. It reviews 1,280 source meaning
 units, revises 250 units (255 rows including known paraphrases), adds 360 reviewed
 meanings and quarantines five unresolved source meanings. Old files remain
 intact. The corpus has 1,780 rows, including 1,031 training rows (891 operational
@@ -137,8 +137,29 @@ head wins the predeclared practical replacement rule. It retains L2 and global
 temperature/bias calibration; per-class bias calibration did not establish a
 large enough validation benefit to justify extra parameters. State and relation
 remain the main weaknesses. No 97% result or human-expert label accuracy is
-established. The offline registry and routing cache refer to the v2 head;
+established. At that revision the registry and routing cache referred to the v2 head;
 production personal ranking and CLIP image/text transforms remain unchanged.
+
+## Original-policy normalization experiment (2026-11-01)
+
+The user explicitly selected the original labeling policy and its 72.50%
+benchmark. The [controlled experiment](meaning-taxonomy-training/normalization-original/README.md)
+keeps all original labels, vectors and partitions fixed and tests 76 settings:
+linear/MLP L-BFGS-B controls and 30 exact Adam BatchNorm/plain pairs, including
+16/32/64 widths, four batch sizes, learning-rate/L2/weighting/scaling choices and
+three-seed finalist confirmation. No dropout is introduced.
+
+The validation-selected BN head reaches 74.17% exact / 86.45% macro F1 versus
+72.50% / 84.44% for the original head on identical original120 targets. But BN
+loses CV F1 in 29/30 matched pairs, its selected configuration is below baseline
+CV, and entity F1 falls 8.33 points on the other 48-meaning test. Both tests are
+historically exposed regression sets. This candidate stays experimental.
+
+The offline registry and routing cache are restored to the original-policy
+32-unit L2 head. V2 artifacts remain historical. Next steps are independently
+reviewed original-policy entity/relation contrasts and a new untouched grouped
+confirmation set before promoting another head. Never change labels to match
+predictions or silently switch policies in a performance comparison.
 
 ## Categories describe required visual evidence
 
