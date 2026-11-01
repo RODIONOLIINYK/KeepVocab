@@ -46,11 +46,18 @@ experimental because grouped-CV and per-class checks are mixed.
 The [exact-accuracy architecture search](exact-accuracy-search/README.md) tests
 204 configurations, three-seed finalists and two ensembles against the user's
 explicit target of more than 90% **exact label-set accuracy**. The preselected
-ensemble reaches 76.67% / 75.00% on the unchanged original120 / other48 tests.
+ensemble reaches 76.67% / 75.00% on the unchanged original 120 / other 48 tests.
 The [internet-research follow-up](joint-label-search/README.md) adds 78 PCC,
 pairwise-CRF and matched-control configurations plus joint-decoding comparisons.
 The selected compact CRF reaches 78.33% / 72.92%, with a relation-class regression.
 Neither reaches the target or replaces the original offline reference.
+
+The [compact-head hyperparameter refinement](joint-tuning/README.md) adds 128
+training configurations, nested joint calibration and two small ensembles.
+The selected CRF retains 3,093 classifier coefficients and unchanged inference
+structure. Original 120 F1 improves 84.91%→85.46% and BCE 0.1510→0.1419, while exact
+accuracy stays 78.33% / 72.92% across the two tests. The target remains unmet and
+the original reference remains selected.
 
 ## Result and interpretation
 

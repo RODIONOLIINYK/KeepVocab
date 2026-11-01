@@ -1,0 +1,1453 @@
+{
+  "postSelectionDiagnosisOnly": true,
+  "usedForRelabelingOrRetuning": false,
+  "errors": {
+    "original120": [
+      {
+        "id": "expanded-059b9ba3ddd886ea",
+        "word": "mercury",
+        "definition": "A dense silvery metal that is liquid at ordinary room temperature.",
+        "targets": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.26662470312762043,
+          0.040158935308850716,
+          0.08676577845435005,
+          0.5860872372922589,
+          0.008531244782411556,
+          0.006328078464891544
+        ]
+      },
+      {
+        "id": "expanded-3ef3f6324dfafd2d",
+        "word": "cry",
+        "definition": "To shed tears, often while making sounds of distress.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.0004581210738614699,
+          0.00031196400109318226,
+          0.4002318281482606,
+          0.8205093930600658,
+          0.010779825070128334,
+          0.021082822517687727
+        ]
+      },
+      {
+        "id": "expanded-45a55ea3c24b281e",
+        "word": "yawn",
+        "definition": "To open the mouth widely while breathing in, often when tired.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.009418374008892894,
+          0.002175730293090439,
+          0.4223935284407834,
+          0.8147931794868044,
+          0.004131696324922267,
+          0.019504812024923695
+        ]
+      },
+      {
+        "id": "expanded-00a289d511fa6e90",
+        "word": "gush",
+        "definition": "To flow out suddenly and in a large amount.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "selectedMarginals": [
+          0.00011697669115660734,
+          7.65900881609409e-05,
+          0.9966586217370849,
+          0.003920914651061147,
+          0.559149925597937,
+          0.006287606447891142
+        ]
+      },
+      {
+        "id": "expanded-ed0c4afbf321d01f",
+        "word": "hatch",
+        "definition": "To emerge from an egg.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "selectedMarginals": [
+          0.0019463072459964773,
+          0.0001908388475244704,
+          0.9909027505279355,
+          0.005674400986949392,
+          0.5367066228562186,
+          0.0009955041463967497
+        ]
+      },
+      {
+        "id": "expanded-9cdb09e9baafcaeb",
+        "word": "in tandem",
+        "definition": "With one participant behind another while they move or work together.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "selectedMarginals": [
+          0.040369267065237587,
+          0.006929017456264386,
+          0.2748085861226019,
+          0.030312923193210224,
+          0.80126530083741,
+          0.35208657806413385
+        ]
+      },
+      {
+        "id": "expanded-3b05b0c97396d945",
+        "word": "flanking",
+        "definition": "Standing or lying on both sides of a central person or thing.",
+        "targets": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.0015800232566008808,
+          0.005522713146459469,
+          0.12698441972965427,
+          0.6111631112906931,
+          0.2910814388828326,
+          0.01710652047904208
+        ]
+      },
+      {
+        "id": "expanded-88da7f1d7050af77",
+        "word": "flush with",
+        "definition": "Level with an adjoining surface so that neither projects beyond the other.",
+        "targets": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.009685812324647766,
+          0.016237690211529748,
+          0.07552485622690969,
+          0.4977890527813915,
+          0.5002790073892128,
+          0.006817672585408059
+        ]
+      },
+      {
+        "id": "expanded-b5c0a415fc0a5d8f",
+        "word": "diagonal to",
+        "definition": "Running at a slant relative to the edges or usual directions of another shape.",
+        "targets": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.01708138663206179,
+          0.00840909670207791,
+          0.0835744054197382,
+          0.7215344612307197,
+          0.14760358899794046,
+          0.004916742483287601
+        ]
+      },
+      {
+        "id": "expanded-52a141bfecaea9fd",
+        "word": "senior to",
+        "definition": "Higher than another person in rank or length of service.",
+        "targets": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedMarginals": [
+          0.009328479429273458,
+          0.002550167764928387,
+          0.03909017629455475,
+          0.19471357776630183,
+          0.07401135314179653,
+          0.9030157339870647
+        ]
+      },
+      {
+        "id": "expanded-364aa7b9fe9d2dd4",
+        "word": "junior to",
+        "definition": "Lower than another person in rank or length of service.",
+        "targets": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedMarginals": [
+          0.013664558588813772,
+          0.0027221624805507543,
+          0.0500237992058512,
+          0.133030751340806,
+          0.18589001226949833,
+          0.8985509894644135
+        ]
+      },
+      {
+        "id": "expanded-758183ef2ed17c25",
+        "word": "sibling",
+        "definition": "A person who has one or both parents in common with another person.",
+        "targets": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedMarginals": [
+          0.26001929561991843,
+          0.0074030513292068405,
+          0.017028826912335454,
+          0.004296295879626253,
+          0.5298777325979901,
+          0.6997160173321971
+        ]
+      },
+      {
+        "id": "expanded-f2509463b0241977",
+        "word": "cousin",
+        "definition": "A relative who shares a grandparent or another recent ancestor but is not a sibling.",
+        "targets": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedMarginals": [
+          0.1508276934696991,
+          0.004423764594780024,
+          0.004924683239464439,
+          0.024033904255487116,
+          0.2303276369439113,
+          0.8965429770916338
+        ]
+      },
+      {
+        "id": "expanded-b2cc85052d47d8ea",
+        "word": "neighbor",
+        "definition": "A person whose home is near another person\u2019s home.",
+        "targets": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedMarginals": [
+          0.21413847397618913,
+          0.017776637891179423,
+          0.030160372362163422,
+          0.0010894270949666103,
+          0.6936213701249159,
+          0.7355441647593775
+        ]
+      },
+      {
+        "id": "expanded-3528237dd8a0e0bd",
+        "word": "supervisor",
+        "definition": "A person responsible for overseeing the work of other people.",
+        "targets": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedMarginals": [
+          0.03960895170416528,
+          0.0008154932758009062,
+          0.01246141855333029,
+          0.012638295348503895,
+          0.5055699705368966,
+          0.9869326356513987
+        ]
+      },
+      {
+        "id": "expanded-135a5cd376fee9a7",
+        "word": "colleague",
+        "definition": "A person working alongside another in the same organization or profession.",
+        "targets": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedMarginals": [
+          0.20367052189209106,
+          0.002698825271817537,
+          0.01576686312620587,
+          0.003161086518877798,
+          0.7642498678390477,
+          0.7936137890621655
+        ]
+      },
+      {
+        "id": "expanded-5dce5029bee9fb3e",
+        "word": "beneficiary",
+        "definition": "A person or group entitled to receive a benefit from another party\u2019s arrangement.",
+        "targets": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedMarginals": [
+          0.04097670476420671,
+          0.002183728464576278,
+          0.005753530367870537,
+          0.001329755764116414,
+          0.7290408421865393,
+          0.9882629351990706
+        ]
+      },
+      {
+        "id": "expanded-9bf2a657499fde12",
+        "word": "teamwork",
+        "definition": "Coordinated effort by people working toward a shared goal.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedMarginals": [
+          0.013986623648131876,
+          0.0008292290195529001,
+          0.03924507817010822,
+          0.009239066459355913,
+          0.8682779623294165,
+          0.9714161436655897
+        ]
+      },
+      {
+        "id": "expanded-d322e4249439c32a",
+        "word": "cooperation",
+        "definition": "Working together willingly to achieve a shared result.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedMarginals": [
+          0.006589883325223237,
+          0.00028091299151641023,
+          0.0064326118242185775,
+          0.0027504629432581825,
+          0.9389487433420044,
+          0.9863351254648363
+        ]
+      },
+      {
+        "id": "expanded-97364debf4e468f4",
+        "word": "method",
+        "definition": "An organized way of doing or investigating something.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedMarginals": [
+          0.008415246548022714,
+          0.016278485999181493,
+          0.032853249862321,
+          0.013594771293874125,
+          0.5618431059103879,
+          0.8398266487939
+        ]
+      },
+      {
+        "id": "expanded-834b41197fe6c981",
+        "word": "process",
+        "definition": "A series of steps or changes that leads toward a result.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedMarginals": [
+          0.04319832002229971,
+          0.017416603195076222,
+          0.3524990347767792,
+          0.008602467749410389,
+          0.026271534846826997,
+          0.8680844336686934
+        ]
+      },
+      {
+        "id": "expanded-b42277020e6b367c",
+        "word": "otherwise",
+        "definition": "In a different way or under different circumstances.",
+        "targets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedMarginals": [
+          0.0005502325256558864,
+          0.0007562140256053734,
+          0.007613627188871382,
+          0.10658083359263162,
+          0.5445563406926619,
+          0.9307812155716298
+        ]
+      },
+      {
+        "id": "expanded-73a20a5f4f116a27",
+        "word": "exactly",
+        "definition": "In every detail or respect required by the comparison or statement.",
+        "targets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedMarginals": [
+          0.00017490240855714574,
+          0.00024554708349542036,
+          0.0037335882855039394,
+          0.040199557478133044,
+          0.5922759709569017,
+          0.925556183892587
+        ]
+      },
+      {
+        "id": "expanded-a64c8be672c45ba5",
+        "word": "roughly",
+        "definition": "Approximately, without claiming exact measurement.",
+        "targets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.012657428660453851,
+          0.008175207190563439,
+          0.03864251291722363,
+          0.45687025847776785,
+          0.2545548087016001,
+          0.20551242340425224
+        ]
+      },
+      {
+        "id": "expanded-fbbd20224334d85b",
+        "word": "gradual",
+        "definition": "Happening by small degrees over a period of time.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.0008702099834113897,
+          0.0031955072176426797,
+          0.05357943383966086,
+          0.5815235637762654,
+          0.06032692482197551,
+          0.5200218267881191
+        ]
+      },
+      {
+        "id": "expanded-ca44378ab719e5fc",
+        "word": "occur",
+        "definition": "To happen at a particular time or under particular conditions.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedMarginals": [
+          0.0005330494645041242,
+          0.00031838772950217823,
+          0.45241761911216793,
+          0.027754026782020963,
+          0.12483349851720704,
+          0.8554528235570964
+        ]
+      }
+    ],
+    "other48": [
+      {
+        "id": "regphys-place-015",
+        "word": "colonnade",
+        "definition": "A row of columns supporting a roof or other structure.",
+        "targets": [
+          1,
+          1,
+          0,
+          0,
+          1,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.5375814077839653,
+          0.6430589952370255,
+          0.001178888866939651,
+          0.0024929042509171176,
+          0.012947213600378366,
+          0.0009006841611501227
+        ]
+      },
+      {
+        "id": "regphys-place-016",
+        "word": "washhouse",
+        "definition": "A separate building used for washing clothes.",
+        "targets": [
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "selectedLabels": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.790730410591449,
+          0.31752751174940697,
+          0.017410791057370145,
+          0.0002576533512010365,
+          0.015492414599693865,
+          0.0018049085897963743
+        ]
+      },
+      {
+        "id": "reg-new-006",
+        "word": "hibernate",
+        "definition": "For an animal to pass a season in a prolonged period of reduced activity and metabolism.",
+        "targets": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.000548442804380772,
+          0.005558335832185153,
+          0.9434433966342749,
+          0.01828392288172156,
+          0.04139382447887103,
+          0.1344599900919064
+        ]
+      },
+      {
+        "id": "reg-new-024",
+        "word": "spurt",
+        "definition": "To shoot out in a brief, sudden stream.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        "selectedMarginals": [
+          0.0006621700256547327,
+          0.0007650181149022212,
+          0.9854924508642211,
+          0.000999090345399713,
+          0.5415192280260462,
+          0.008411711370893965
+        ]
+      },
+      {
+        "id": "reg-new-068",
+        "word": "granular",
+        "definition": "Made of or covered with distinct small grains.",
+        "targets": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedLabels": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.5575798136614254,
+          0.013585043203402382,
+          0.0521070904569591,
+          0.30694035466936864,
+          0.01147067722919049,
+          0.022195623984791763
+        ]
+      },
+      {
+        "id": "relabs-new-004",
+        "word": "keyed",
+        "definition": "Fitted together by matching grooves or projections that prevent unwanted movement.",
+        "targets": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.0019418656658512059,
+          0.004275881986212257,
+          0.031495013619811246,
+          0.8424447818159628,
+          0.17979249638922584,
+          0.008165152173308668
+        ]
+      },
+      {
+        "id": "relabs-new-005",
+        "word": "buttressed",
+        "definition": "Reinforced by a support that braces a wall or structure from the side.",
+        "targets": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.22943594492882194,
+          0.016336882232686836,
+          0.003680807597693963,
+          0.5140883693850903,
+          0.3799746616894141,
+          0.002774365565944648
+        ]
+      },
+      {
+        "id": "relabs-new-015",
+        "word": "fastener",
+        "definition": "A device that joins two or more parts so they stay together.",
+        "targets": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "selectedLabels": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "previousCRFLabels": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "selectedMarginals": [
+          0.9296385386512632,
+          0.006036128371838169,
+          0.0041835566116316,
+          0.011433125786639645,
+          0.21523798468807295,
+          0.0046539811555675
+        ]
+      },
+      {
+        "id": "relabs-new-016",
+        "word": "guardian",
+        "definition": "A person legally responsible for caring for someone who cannot fully care for themselves.",
+        "targets": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedMarginals": [
+          0.047966652795905625,
+          0.001158180191786415,
+          0.003134769418595528,
+          0.0853323985837998,
+          0.11436477164684641,
+          0.9954537036881049
+        ]
+      },
+      {
+        "id": "relabs-new-017",
+        "word": "tenant",
+        "definition": "A person or organization that pays to occupy property owned by someone else.",
+        "targets": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedMarginals": [
+          0.16649247030897046,
+          0.005768649984035917,
+          0.00888993082178759,
+          0.0022359995826606396,
+          0.6298559737493722,
+          0.9159151463819168
+        ]
+      },
+      {
+        "id": "relabs-new-018",
+        "word": "landlord",
+        "definition": "A person or organization that rents property to a tenant.",
+        "targets": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedMarginals": [
+          0.16347034404998814,
+          0.017571723917628984,
+          0.016831721412602578,
+          0.008474319958163503,
+          0.30045440978829185,
+          0.8593530029953195
+        ]
+      },
+      {
+        "id": "relabs-new-049",
+        "word": "hierarchy",
+        "definition": "An arrangement of people or things into levels of rank or authority.",
+        "targets": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedMarginals": [
+          0.008032715045103094,
+          0.008799531773243349,
+          0.009805308413865491,
+          0.018800991167740373,
+          0.44662964706289987,
+          0.9793605019925125
+        ]
+      },
+      {
+        "id": "relabs-new-075",
+        "word": "handoff",
+        "definition": "The transfer of responsibility, authority, or an object from one person or group to another.",
+        "targets": [
+          0,
+          0,
+          1,
+          0,
+          1,
+          1
+        ],
+        "selectedLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "previousCRFLabels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "selectedMarginals": [
+          0.029131217231970423,
+          0.0015137997271605552,
+          0.030829409436372076,
+          0.0027731431783550656,
+          0.47704510623250296,
+          0.9623215001958025
+        ]
+      }
+    ]
+  }
+}

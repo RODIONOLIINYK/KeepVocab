@@ -1,0 +1,53 @@
+{
+  "machine": "arm64",
+  "chip": "Apple M5",
+  "python": "3.12.14",
+  "numpy": "2.3.5",
+  "timing": "float64 NumPy, preloaded head, one BLAS thread, batch1, 20 warmups, median7x100 calls. Includes joint/marginal/decision computation; excludes encoder/model load/RPC/network. Not a phone or battery measurement.",
+  "fp32Memory": "Estimated dense inference tensors only, includes preprocessing/reference vectors, excludes serialization/metadata. Timed runtime uses float64.",
+  "selectedInferenceClassifierParameters": 3093,
+  "configurationCount": 128,
+  "cvRuns": 140,
+  "outerFits": 560,
+  "innerFits": 560,
+  "unsuccessfulModelOptimizers": 0,
+  "unsuccessfulInnerCalibrators": 0,
+  "selectionElapsedSeconds": 96.82358858297812,
+  "inference": {
+    "selected": {
+      "fp32NumericTensorKiB": 16.08203125,
+      "medianMicroseconds": 7.57291,
+      "minMicroseconds": 7.52959,
+      "maxMicroseconds": 7.7125
+    },
+    "tuned-crf": {
+      "fp32NumericTensorKiB": 16.08203125,
+      "medianMicroseconds": 7.51041,
+      "minMicroseconds": 7.5054099999999995,
+      "maxMicroseconds": 7.5283299999999995
+    },
+    "tuned-pcc": {
+      "fp32NumericTensorKiB": 260.08203125,
+      "medianMicroseconds": 46.6,
+      "minMicroseconds": 46.08875,
+      "maxMicroseconds": 47.31583
+    },
+    "probability-mixture": {
+      "fp32NumericTensorKiB": 48.24609375,
+      "medianMicroseconds": 24.26584,
+      "minMicroseconds": 24.14083,
+      "maxMicroseconds": 24.55625
+    },
+    "coefficient-average": {
+      "fp32NumericTensorKiB": 16.08203125,
+      "medianMicroseconds": 7.56208,
+      "minMicroseconds": 7.55667,
+      "maxMicroseconds": 7.60833
+    },
+    "previous-crf": {
+      "medianMicroseconds": 7.53,
+      "minMicroseconds": 7.48458,
+      "maxMicroseconds": 7.75125
+    }
+  }
+}

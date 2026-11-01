@@ -150,7 +150,7 @@ linear/MLP L-BFGS-B controls and 30 exact Adam BatchNorm/plain pairs, including
 three-seed finalist confirmation. No dropout is introduced.
 
 The validation-selected BN head reaches 74.17% exact / 86.45% macro F1 versus
-72.50% / 84.44% for the original head on identical original120 targets. But BN
+72.50% / 84.44% for the original head on identical original 120 targets. But BN
 loses CV F1 in 29/30 matched pairs, its selected configuration is below baseline
 CV, and entity F1 falls 8.33 points on the other 48-meaning test. Both tests are
 historically exposed regression sets. This candidate stays experimental.
@@ -168,13 +168,13 @@ correct for each meaning**, rather than precision or per-label accuracy. The
 [204-configuration search](meaning-taxonomy-training/exact-accuracy-search/README.md)
 tests wider/deeper MLPs, activations, focal loss/smoothing, joint-label models,
 RBF features, neighbors and ensembles. Selection freezes before regression tests.
-Its preselected ensemble scores 76.67% original120 / 75.00% other48 exact.
+Its preselected ensemble scores 76.67% original 120 / 75.00% other 48 exact.
 
 The [research follow-up](meaning-taxonomy-training/joint-label-search/README.md)
 tests 78 more PCC/CRF/control configurations and MAP versus marginal decoding,
 based on primary research about exact-set decisions. All six probabilities are
 retained. A compact 3,093-parameter CRF scores 78.33% / 72.92%, but regresses on
-other48 relation F1. No configuration reaches the requested target. No label,
+other 48 relation F1. No configuration reaches the requested target. No label,
 encoder, split, registry, routing cache or production model is changed.
 
 Next: independently reviewed original-policy relation/action/state combinations,
@@ -182,6 +182,21 @@ a new untouched grouped confirmation set, and a separately versioned experiment
 with alternative text representations or CLIP adapters if these inputs plateau.
 TabPFN and full kernel SVM were researched as references, not benchmarked here.
 Do not reuse precision/Hamming accuracy as evidence that exact accuracy passed.
+
+## Compact-head refinement (2026-11-01)
+
+The [128-configuration refinement](meaning-taxonomy-training/joint-tuning/README.md)
+tests relation/state-specific penalties, rare-label weighting, auxiliary label
+loss, graph constraints, joint calibration and compact CRF ensembles. Original
+labels, embeddings and partitions stay fixed. Calibration is nested within
+outer CV training and folds into existing CRF coefficients for inference.
+
+The selected original CRF with unary calibration improves original 120 F1 from
+84.91% to 85.46% and probability loss from 0.1510 to 0.1419. Exact accuracy remains
+78.33% / 72.92% on original 120 / other 48. It still fails other 48 class-level
+acceptance checks relative to the original 32-unit reference. No activation or
+registry change follows. Tuning can improve a fixed architecture, but this run
+does not establish the requested 90% exact accuracy or a major precision gain.
 
 ## Categories describe required visual evidence
 
