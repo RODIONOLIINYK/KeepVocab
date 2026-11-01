@@ -1,0 +1,31 @@
+{
+  "python": "3.12.14",
+  "numpy": "2.3.5",
+  "scipy": "1.16.3",
+  "machine": "arm64",
+  "searchConfigs": 76,
+  "sourceOnlyControlConfigs": 1,
+  "cvRuns": 94,
+  "cvFits": 376,
+  "cvFitsAtStoppingLimitOrUnsuccessful": 31,
+  "allFinalFullFitsConverged": true,
+  "selectedParameterCount": 16614,
+  "selectedCalibration": {
+    "method": "temperature-global-bias",
+    "temperature": 1.4062195116899836,
+    "offsets": [
+      -0.350862885472314,
+      -0.350862885472314,
+      -0.350862885472314,
+      -0.350862885472314,
+      -0.350862885472314,
+      -0.350862885472314
+    ],
+    "fitLoss": 0.1587413934414674,
+    "fitRows": 891,
+    "fitScope": "training-only grouped out-of-fold predictions"
+  },
+  "selectedThreshold": 0.42500000000000004,
+  "elapsedSeconds": 37.47073633398395,
+  "requirements": "scripts/requirements-meaning-taxonomy.txt"
+}

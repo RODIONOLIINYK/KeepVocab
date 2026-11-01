@@ -119,6 +119,27 @@ and built-structure/place rules in a separate versioned annotation revision,
 then obtain independent confirmation meanings before another generalization
 claim. Dropout is training-only and adds no deployed parameters.
 
+## Consistent annotation policy and fresh confirmation (2026-11-01)
+
+The [policy-v2 revision](meaning-taxonomy-training/policy-v2/README.md) supersedes
+inconsistent conventions in earlier pilots. It reviews 1,280 source meaning
+units, revises 250 units (255 rows including known paraphrases), adds 360 reviewed
+meanings and quarantines five unresolved source meanings. Old files remain
+intact. The corpus has 1,780 rows, including 1,031 training rows (891 operational
+meaning units), 60 fresh validation and 120 fresh test examples. Related records
+share families; unit counts do not imply independently expert-adjudicated senses.
+
+On the identical new 120-example v2 test, the old v1 head scores 50.00% exact
+match / 77.00% macro F1; the selected v2 32-unit head scores 67.50% / 86.73%, and
+the new linear head 62.50% / 84.23%. These are new target conventions and a new
+cohort, not a regression comparison with the old 70% benchmark. The nonlinear
+head wins the predeclared practical replacement rule. It retains L2 and global
+temperature/bias calibration; per-class bias calibration did not establish a
+large enough validation benefit to justify extra parameters. State and relation
+remain the main weaknesses. No 97% result or human-expert label accuracy is
+established. The offline registry and routing cache refer to the v2 head;
+production personal ranking and CLIP image/text transforms remain unchanged.
+
 ## Categories describe required visual evidence
 
 | Output ID | Evidence focus | Examples |

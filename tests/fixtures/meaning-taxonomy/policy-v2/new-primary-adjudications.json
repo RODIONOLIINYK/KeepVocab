@@ -1,0 +1,677 @@
+[
+  {
+    "draftId": "v2phys-entity-001",
+    "oldWord": "colander",
+    "word": "brass",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-002",
+    "oldWord": "corkscrew",
+    "word": "tin",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-003",
+    "oldWord": "stapler",
+    "word": "zinc",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-004",
+    "oldWord": "pliers",
+    "word": "aluminium",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-005",
+    "oldWord": "wrench",
+    "word": "felt",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-006",
+    "oldWord": "chisel",
+    "word": "burlap",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-007",
+    "oldWord": "vise",
+    "word": "rattan",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-008",
+    "oldWord": "thimble",
+    "word": "ivory",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-009",
+    "oldWord": "spool",
+    "word": "jade",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-010",
+    "oldWord": "button",
+    "word": "cement",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-011",
+    "oldWord": "zipper",
+    "word": "squirrel",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-012",
+    "oldWord": "clothespin",
+    "word": "otter",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-013",
+    "oldWord": "padlock",
+    "word": "badger",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-014",
+    "oldWord": "doorknob",
+    "word": "beaver",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-015",
+    "oldWord": "faucet",
+    "word": "mole",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-016",
+    "oldWord": "pulley",
+    "word": "hedgehog",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-017",
+    "oldWord": "winch",
+    "word": "raccoon",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-018",
+    "oldWord": "protractor",
+    "word": "llama",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-019",
+    "oldWord": "awl",
+    "word": "camel",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-entity-020",
+    "oldWord": "trowel",
+    "word": "leopard",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-015",
+    "oldWord": "boiler room",
+    "word": "butte",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-017",
+    "oldWord": "pump room",
+    "word": "mesa",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-018",
+    "oldWord": "utility room",
+    "word": "drumlin",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-019",
+    "oldWord": "laundry room",
+    "word": "esker",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-020",
+    "oldWord": "linen closet",
+    "word": "moraine",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-021",
+    "oldWord": "server room",
+    "word": "cirque",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-023",
+    "oldWord": "archive room",
+    "word": "arete",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-027",
+    "oldWord": "bandstand",
+    "word": "tarn",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-033",
+    "oldWord": "layover",
+    "word": "pingo",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-034",
+    "oldWord": "rail siding",
+    "word": "polynya",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-035",
+    "oldWord": "spur track",
+    "word": "ria",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-037",
+    "oldWord": "trestle",
+    "word": "bight",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-038",
+    "oldWord": "bridleway",
+    "word": "headwaters",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-040",
+    "oldWord": "cycleway",
+    "word": "alluvial fan",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-044",
+    "oldWord": "service road",
+    "word": "oxbow lake",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-046",
+    "oldWord": "turnpike",
+    "word": "riverbend",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-050",
+    "oldWord": "freight terminal",
+    "word": "fumarole",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-051",
+    "oldWord": "weigh station",
+    "word": "nunatak",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-054",
+    "oldWord": "gatehouse",
+    "word": "tor",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-057",
+    "oldWord": "windmill",
+    "word": "badlands",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "policy-v2-state-106",
+    "oldWord": "homesick",
+    "word": "sweaty",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "policy-v2-state-107",
+    "oldWord": "grumpy",
+    "word": "clammy",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "policy-v2-state-108",
+    "oldWord": "puzzled",
+    "word": "hoarse",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "policy-v2-state-109",
+    "oldWord": "irritable",
+    "word": "blistered",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "policy-v2-state-110",
+    "oldWord": "calm",
+    "word": "gaunt",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "policy-v2-state-111",
+    "oldWord": "jealous",
+    "word": "limber",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "policy-v2-state-112",
+    "oldWord": "resentful",
+    "word": "flaccid",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "policy-v2-state-113",
+    "oldWord": "amused",
+    "word": "ridged",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "policy-v2-state-114",
+    "oldWord": "indifferent",
+    "word": "serrated",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "policy-v2-state-115",
+    "oldWord": "apprehensive",
+    "word": "sooty",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-0",
+    "oldWord": null,
+    "word": "cantilevered",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-1",
+    "oldWord": null,
+    "word": "interdigitated",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-2",
+    "oldWord": null,
+    "word": "rabbet joint",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-3",
+    "oldWord": null,
+    "word": "scarfed",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-4",
+    "oldWord": null,
+    "word": "mitred",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-5",
+    "oldWord": null,
+    "word": "upstream",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-6",
+    "oldWord": null,
+    "word": "downstream",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-7",
+    "oldWord": null,
+    "word": "upwind",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-8",
+    "oldWord": null,
+    "word": "downwind",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-9",
+    "oldWord": null,
+    "word": "windward",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-10",
+    "oldWord": null,
+    "word": "leeward",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-11",
+    "oldWord": null,
+    "word": "starboard",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-12",
+    "oldWord": null,
+    "word": "port",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-13",
+    "oldWord": null,
+    "word": "aft",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-14",
+    "oldWord": null,
+    "word": "astern",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-15",
+    "oldWord": null,
+    "word": "athwart",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-16",
+    "oldWord": null,
+    "word": "abreast",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-17",
+    "oldWord": null,
+    "word": "broadside to",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-18",
+    "oldWord": null,
+    "word": "edge-on to",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-19",
+    "oldWord": null,
+    "word": "end-on to",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-20",
+    "oldWord": null,
+    "word": "head-on",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-21",
+    "oldWord": null,
+    "word": "recessed",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-22",
+    "oldWord": null,
+    "word": "proud of",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-23",
+    "oldWord": null,
+    "word": "inset",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-24",
+    "oldWord": null,
+    "word": "subcutaneous",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-25",
+    "oldWord": null,
+    "word": "intravenous",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-26",
+    "oldWord": null,
+    "word": "intramuscular",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-27",
+    "oldWord": null,
+    "word": "intervertebral",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-28",
+    "oldWord": null,
+    "word": "ipsilateral",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "primary-spatial-29",
+    "oldWord": null,
+    "word": "contralateral",
+    "reason": "Primary semantic/freshness/coverage adjudication before split/model fitting."
+  },
+  {
+    "draftId": "v2phys-place-010",
+    "word": "pantry",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2phys-place-030",
+    "word": "carport",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2phys-place-008",
+    "word": "alcove",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2phys-place-005",
+    "word": "loggia",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2phys-place-011",
+    "word": "scullery",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2phys-place-012",
+    "word": "mudroom",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2phys-place-014",
+    "word": "crawlspace",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2phys-place-060",
+    "word": "playground",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-021",
+    "word": "rattle",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-022",
+    "word": "clatter",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-024",
+    "word": "clank",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-025",
+    "word": "thud",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-029",
+    "word": "skate",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-030",
+    "word": "dive",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-031",
+    "word": "wade",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-032",
+    "word": "paddle",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-033",
+    "word": "row",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-034",
+    "word": "pedal",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-057",
+    "word": "squirt",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-039",
+    "word": "wince",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-040",
+    "word": "squint",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-action-041",
+    "word": "grimace",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-state-090",
+    "word": "barren",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-state-091",
+    "word": "lush",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-state-093",
+    "word": "fallow",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-state-094",
+    "word": "overgrown",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-state-118",
+    "word": "sore",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-state-119",
+    "word": "cramped",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-state-117",
+    "word": "groggy",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-state-062",
+    "word": "crumbly",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-state-116",
+    "word": "jittery",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "policy-v2-state-099",
+    "word": "sunken",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2abs-014",
+    "word": "apprehension",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2abs-019",
+    "word": "sufficiency",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2abs-021",
+    "word": "disjunction",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2abs-024",
+    "word": "exclusivity",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2abs-031",
+    "word": "variance",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2abs-033",
+    "word": "fungibility",
+    "reason": "Primary policy-v2 selected-definition correction."
+  },
+  {
+    "draftId": "v2abs-042",
+    "word": "counterintuitive",
+    "reason": "Primary policy-v2 selected-definition correction."
+  }
+]

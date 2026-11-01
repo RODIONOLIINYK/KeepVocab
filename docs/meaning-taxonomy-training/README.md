@@ -32,6 +32,12 @@ labels fixed and compares matched Adam controls with dropout across three seeds.
 It does not replace the current stronger-L2 head: improvements are inconsistent
 across precision, recall and the two fixed regression cohorts.
 
+The latest [policy-v2 revision](policy-v2/README.md) applies consistent category
+rules, reviews every original meaning unit, adds 360 meanings and confirms on
+a fresh grouped 120-example cohort. Its 32-unit head is the current offline
+classifier. All comparisons in that report use identical v2 gold labels; older
+policy scores below remain historical snapshots.
+
 ## Result and interpretation
 
 | Validation-selected model | Validation macro-F1 | Test macro-F1 | Test exact label-set match | Parameters |

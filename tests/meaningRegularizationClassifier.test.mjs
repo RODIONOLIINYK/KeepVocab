@@ -48,10 +48,9 @@ test('regularized and frozen previous heads reproduce Python probabilities and t
   }
 });
 
-test('current head follows the frozen economical architecture rule and both confirmation gates', async () => {
-  const [selection, report, protocol, registry] = await Promise.all([
-    json(`${output}selection.json`), json(`${output}report.json`), json(`${output}protocol.json`),
-    json('tests/fixtures/meaning-taxonomy/current-classifier.json')
+test('historical regularization head follows its frozen architecture decision and confirmation gates', async () => {
+  const [selection, report, protocol] = await Promise.all([
+    json(`${output}selection.json`), json(`${output}report.json`), json(`${output}protocol.json`)
   ]);
   assert.equal(selection.decisionFrozenBeforeTest, true);
   assert.equal(selection.testUsedForSelection, false);
@@ -67,9 +66,9 @@ test('current head follows the frozen economical architecture rule and both conf
     selection.validationPromotionGate.passed && Object.values(report.promotionGate.testChecks).every(Boolean));
   const expectedPath = report.promotionGate.eligibleForRegistryUpdate
     ? selection.selectedArtifact : selection.currentArtifactPath;
-  assert.equal(registry.artifact, expectedPath);
-  assert.equal(registry.artifactFileSha256, hash(await bytes(expectedPath)));
-  assert.equal(registry.productionPersonalizerChanged, false);
+  const expectedHash = report.promotionGate.eligibleForRegistryUpdate
+    ? selection.selected.artifactCopySha256 : selection.currentArtifactSha256;
+  assert.equal(expectedHash, hash(await bytes(expectedPath)));
   assert.equal(protocol.scoredOriginalRows, 750);
   assert.equal(protocol.trainingRows, 890);
   assert.equal(protocol.validationRows, 48);

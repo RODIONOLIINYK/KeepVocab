@@ -62,10 +62,10 @@ test('dropout experiment inference matches Python on each fixed regression cohor
   }
 });
 
-test('dropout selection, label freeze and current registry are content-bound', async () => {
-  const [selection, protocol, report, audit, registry] = await Promise.all([
+test('historical dropout selection and label freeze are content-bound', async () => {
+  const [selection, protocol, report, audit] = await Promise.all([
     json(`${output}selection.json`), json(`${output}protocol.json`), json(`${output}report.json`),
-    json(`${output}label-audit.json`), json('tests/fixtures/meaning-taxonomy/current-classifier.json')
+    json(`${output}label-audit.json`)
   ]);
   assert.equal(selection.decisionFrozenBeforeTest, true);
   assert.equal(selection.testUsedForSelection, false);
@@ -85,8 +85,7 @@ test('dropout selection, label freeze and current registry are content-bound', a
   assert.deepEqual(selection.seeds, [7919, 104729, 130363]);
   assert.equal(selection.selected.fixedSeed, 7919);
   const expected = report.offlinePromotionEligible ? selection.selected : selection.currentClassifier;
-  assert.equal(registry.artifact, expected.artifact);
-  assert.equal(registry.artifactFileSha256, hash(await bytes(expected.artifact)));
+  assert.equal(expected.artifactFileSha256, hash(await bytes(expected.artifact)));
   assert.equal(selection.selected.artifactFileSha256, hash(await bytes(selection.selected.artifact)));
   for (const finalist of selection.finalists) {
     assert.deepEqual(finalist.models.map(row => row.seed), selection.seeds);

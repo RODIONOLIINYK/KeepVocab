@@ -1,0 +1,1183 @@
+{
+  "scope": "Post-confirmation diagnostics only. No gold labels or selected models changed.",
+  "categories": [
+    "entity",
+    "place",
+    "action",
+    "state",
+    "relation",
+    "abstract"
+  ],
+  "errors": [
+    {
+      "id": "v2-new-e4684cf7c26a802d",
+      "word": "ivory",
+      "definition": "A hard pale material forming the tusks or large teeth of certain animals.",
+      "targets": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "entity",
+        "state"
+      ],
+      "goldLabels": [
+        "entity"
+      ],
+      "probabilities": [
+        0.6345903597884961,
+        0.03486895109221283,
+        0.006974011757546646,
+        0.4360952634320429,
+        0.0032624986444790157,
+        0.0076919918361383535
+      ],
+      "domain": "material",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-bb53c3b20a3640d4",
+      "word": "clamp",
+      "definition": "A device with jaws or arms that presses objects together and holds them in place.",
+      "targets": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "entity"
+      ],
+      "goldLabels": [
+        "entity",
+        "relation"
+      ],
+      "probabilities": [
+        0.9767819423465584,
+        0.005993509130379579,
+        0.02052110494822142,
+        0.00844950525892418,
+        0.019822720443578256,
+        0.01193767152835724
+      ],
+      "domain": "artifact",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-9637d94783353c42",
+      "word": "keyring",
+      "definition": "A small metal ring or loop used to keep several keys together.",
+      "targets": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "entity"
+      ],
+      "goldLabels": [
+        "entity",
+        "relation"
+      ],
+      "probabilities": [
+        0.9625492222734057,
+        0.010510209343297272,
+        0.011822370062033466,
+        0.006328338222849701,
+        0.0274415647945203,
+        0.009590786275120418
+      ],
+      "domain": "artifact",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-99b28db80839921a",
+      "word": "pantry",
+      "definition": "A small room used to store food and kitchen supplies.",
+      "targets": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "entity",
+        "place"
+      ],
+      "goldLabels": [
+        "place"
+      ],
+      "probabilities": [
+        0.4687782622181926,
+        0.8933482327698083,
+        0.016174728769138735,
+        0.002164794613126408,
+        0.03187491947360199,
+        0.015111501656342936
+      ],
+      "domain": "built-place",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-75b26466292c4210",
+      "word": "mudroom",
+      "definition": "A room near an entrance where shoes, coats, and outdoor gear are left.",
+      "targets": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "entity",
+        "place"
+      ],
+      "goldLabels": [
+        "place",
+        "relation"
+      ],
+      "probabilities": [
+        0.45782087213621087,
+        0.9286442143970375,
+        0.04128739797466057,
+        0.002594740937353938,
+        0.05196006070967105,
+        0.006494974719361076
+      ],
+      "domain": "built-place",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-fd5e263c7e12e747",
+      "word": "vault",
+      "definition": "A strongly secured room or chamber used to protect valuables.",
+      "targets": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "entity",
+        "place"
+      ],
+      "goldLabels": [
+        "place"
+      ],
+      "probabilities": [
+        0.8757806898299243,
+        0.45628386711995234,
+        0.05938442742610817,
+        0.00042013827614124184,
+        0.09664541524432596,
+        0.04863338974383219
+      ],
+      "domain": "built-place",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-137318487738846a",
+      "word": "bandshell",
+      "definition": "An outdoor stage structure with a curved roof or wall that directs sound toward an audience.",
+      "targets": [
+        1,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "entity",
+        "place"
+      ],
+      "goldLabels": [
+        "entity",
+        "place",
+        "relation"
+      ],
+      "probabilities": [
+        0.9761481166889866,
+        0.9395667536265654,
+        0.009195845133894402,
+        0.0030365209507591654,
+        0.11704384382962642,
+        0.003923759482716003
+      ],
+      "domain": "built-place",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-037ea09247222ee8",
+      "word": "alluvial fan",
+      "definition": "A fan-shaped deposit of sediment where a stream spreads out from a narrow valley.",
+      "targets": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "place"
+      ],
+      "goldLabels": [
+        "place",
+        "relation"
+      ],
+      "probabilities": [
+        0.049796639447502226,
+        0.9036717341731059,
+        0.03270156879383383,
+        0.006381453864824821,
+        0.029192277801915974,
+        0.008823432195458898
+      ],
+      "domain": "natural-place",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-1dd93328135d34c1",
+      "word": "riverbend",
+      "definition": "A curved section of a river where its channel changes direction.",
+      "targets": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "place",
+        "relation"
+      ],
+      "goldLabels": [
+        "place"
+      ],
+      "probabilities": [
+        0.06597729615789746,
+        0.9453383040373226,
+        0.012281087774077631,
+        0.005639323717958118,
+        0.9103874041979391,
+        0.0076370087527103695
+      ],
+      "domain": "natural-place",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-81f3c496c4632cc8",
+      "word": "nunatak",
+      "definition": "A rocky peak projecting above and surrounded by a glacier or ice sheet.",
+      "targets": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "place"
+      ],
+      "goldLabels": [
+        "place",
+        "relation"
+      ],
+      "probabilities": [
+        0.014146709768835085,
+        0.9722798920577858,
+        0.03996325308275244,
+        0.00617675381016605,
+        0.06871102841300486,
+        0.016504320939475743
+      ],
+      "domain": "natural-place",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-f7a3872a0bbb3776",
+      "word": "ice rink",
+      "definition": "A prepared surface of ice used for skating, indoors or outdoors.",
+      "targets": [
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "entity"
+      ],
+      "goldLabels": [
+        "entity",
+        "place"
+      ],
+      "probabilities": [
+        0.7744397516133691,
+        0.20583204528234722,
+        0.40575163673619713,
+        0.008283596250528472,
+        0.03647075629002913,
+        0.0021765152015063333
+      ],
+      "domain": "built-place",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-70505e672a6d9b53",
+      "word": "burp",
+      "definition": "To release gas from the stomach through the mouth, making a short sound.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "action",
+        "relation"
+      ],
+      "goldLabels": [
+        "action"
+      ],
+      "probabilities": [
+        0.0076172882782007,
+        0.011574206562917947,
+        0.984516055172926,
+        0.013727262279119086,
+        0.5497748527569152,
+        0.007803176886397508
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-f0019d127a3a2474",
+      "word": "spit",
+      "definition": "To force saliva out of the mouth.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "action",
+        "relation"
+      ],
+      "goldLabels": [
+        "action"
+      ],
+      "probabilities": [
+        0.008603606455255498,
+        0.014260833771361761,
+        0.9764363659526563,
+        0.013219921946898512,
+        0.9042562859549893,
+        0.009300801860017254
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-1bcaf9dac9d1d9bc",
+      "word": "clatter",
+      "definition": "To make a series of loud, hard impacts as objects strike or fall against one another.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "action"
+      ],
+      "goldLabels": [
+        "action",
+        "relation"
+      ],
+      "probabilities": [
+        0.008365949063053426,
+        0.009644184668592166,
+        0.9784640874553374,
+        0.006800052028584915,
+        0.33612102006392197,
+        0.021129454743797505
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-7132488e2e1e0194",
+      "word": "clank",
+      "definition": "For metal parts to strike and make a loud ringing impact.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "action"
+      ],
+      "goldLabels": [
+        "action",
+        "relation"
+      ],
+      "probabilities": [
+        0.15095716140369062,
+        0.007457180536115999,
+        0.9657965279007152,
+        0.006178621370485712,
+        0.03382450817373461,
+        0.0055041450112363515
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-98ae7d69dc471698",
+      "word": "thud",
+      "definition": "A heavy object striking a surface with a low, dull impact.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [],
+      "goldLabels": [
+        "action",
+        "relation"
+      ],
+      "probabilities": [
+        0.05913241375833221,
+        0.008245140757487007,
+        0.21034643338143458,
+        0.2558918635141314,
+        0.012715244558440947,
+        0.006460244795037502
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-d5ebcc376a30a0a8",
+      "word": "wince",
+      "definition": "To briefly tighten the face in response to pain or discomfort.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "action"
+      ],
+      "goldLabels": [
+        "state"
+      ],
+      "probabilities": [
+        0.0056448710020717855,
+        0.0029435901773037392,
+        0.9145932519746832,
+        0.06732908024854967,
+        0.02159150361348574,
+        0.03673196262496643
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-ad6088675cedbb72",
+      "word": "grimace",
+      "definition": "To twist the face into an expression of pain or disgust.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "action"
+      ],
+      "goldLabels": [
+        "state"
+      ],
+      "probabilities": [
+        0.002881451089124807,
+        0.014733117669414073,
+        0.8949845236148827,
+        0.20529558015382138,
+        0.08820593260979145,
+        0.011088261263131454
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-0a1ce70fe87d9c35",
+      "word": "swerve",
+      "definition": "To change direction suddenly while moving, often to avoid something.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "action",
+        "relation"
+      ],
+      "goldLabels": [
+        "action"
+      ],
+      "probabilities": [
+        0.007537215993848096,
+        0.009945233044005764,
+        0.9593832403066637,
+        0.009183655783074824,
+        0.8378717461440387,
+        0.0137689845378602
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-463835c287c83865",
+      "word": "knock",
+      "definition": "To strike a door or other surface with the knuckles to make a short sound.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "action"
+      ],
+      "goldLabels": [
+        "action",
+        "relation"
+      ],
+      "probabilities": [
+        0.011453311001779943,
+        0.01045521034994409,
+        0.9849847820710502,
+        0.014472120823474589,
+        0.02626515553766763,
+        0.007009950855065247
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-4172cf0a7b4b8461",
+      "word": "spongy",
+      "definition": "Soft and porous, compressing under pressure and springing back.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "action",
+        "relation"
+      ],
+      "goldLabels": [
+        "state"
+      ],
+      "probabilities": [
+        0.013845476804095692,
+        0.0012072996782842853,
+        0.4621858689704877,
+        0.2425891685146484,
+        0.4707790875811826,
+        0.025962436143675563
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-dd55b9d0003eb1af",
+      "word": "fallow",
+      "definition": "Of farmland left uncultivated for a season or longer.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "place"
+      ],
+      "goldLabels": [
+        "state"
+      ],
+      "probabilities": [
+        0.009108215677004608,
+        0.7423612197863028,
+        0.007485315279818509,
+        0.08500527362695874,
+        0.029295151911686454,
+        0.019495647024275857
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-6d2710d497bb40f1",
+      "word": "overgrown",
+      "definition": "Covered with dense vegetation that has grown beyond control.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "predictedLabels": [
+        "place"
+      ],
+      "goldLabels": [
+        "state"
+      ],
+      "probabilities": [
+        0.004107509247708867,
+        0.6794027871651419,
+        0.009136223163031426,
+        0.21620651165547797,
+        0.026135509288347004,
+        0.015577888666943575
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-7bd497a7296e2078",
+      "word": "serrated",
+      "definition": "Having an edge cut into a row of small sawlike teeth.",
+      "targets": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "predictedLabels": [],
+      "goldLabels": [
+        "state"
+      ],
+      "probabilities": [
+        0.20811468304632802,
+        0.005479006639841452,
+        0.4087306150599825,
+        0.1422134305612742,
+        0.13031912653711555,
+        0.00622062293712747
+      ],
+      "domain": "physical-condition",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-037efadb5cb572f6",
+      "word": "pledgee",
+      "definition": "A person or organization that receives property as security for another party’s debt or obligation.",
+      "targets": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "goldLabels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.13107080214339903,
+        0.017776510813885232,
+        0.010381685692972318,
+        0.0007584900957670895,
+        0.9174335763671927,
+        0.9648496222815008
+      ],
+      "domain": "social-role",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-48ecffc54b794dd2",
+      "word": "curator",
+      "definition": "A person responsible for selecting and caring for items in a museum or collection.",
+      "targets": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "predictedLabels": [
+        "entity",
+        "abstract"
+      ],
+      "goldLabels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.9597859836519629,
+        0.04926134136581339,
+        0.002901928761535825,
+        0.0006282222982645313,
+        0.14835363516759945,
+        0.6336343752301061
+      ],
+      "domain": "social-role",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-97a5d97cfccf4e56",
+      "word": "client",
+      "definition": "A person or organization that pays a professional or firm for services.",
+      "targets": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "predictedLabels": [
+        "entity",
+        "abstract"
+      ],
+      "goldLabels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.8738127986749086,
+        0.014711126796058066,
+        0.002352918540407452,
+        0.0018073457451343333,
+        0.11587591095423737,
+        0.9452501815515174
+      ],
+      "domain": "social-role",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-372e9ab0f2dc13b9",
+      "word": "consultant",
+      "definition": "A person hired to provide specialized advice or analysis to a client.",
+      "targets": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "predictedLabels": [
+        "entity",
+        "abstract"
+      ],
+      "goldLabels": [
+        "entity",
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.7282626032570373,
+        0.014962157441921323,
+        0.001046284210075418,
+        0.0027956313903810277,
+        0.41892461268933984,
+        0.9623862245500837
+      ],
+      "domain": "social-role",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-536ac225b3d6d5a1",
+      "word": "edge-on to",
+      "definition": "Oriented so that a thin edge faces a specified viewer or object.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "state",
+        "relation"
+      ],
+      "goldLabels": [
+        "relation"
+      ],
+      "probabilities": [
+        0.004138117192084197,
+        0.011974250655494517,
+        0.020894840878926863,
+        0.43084653932473355,
+        0.6021059690845089,
+        0.014969928512033433
+      ],
+      "domain": "physical-relation",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-a8a96c7c54f438c1",
+      "word": "head-on",
+      "definition": "Moving directly toward another participant with the fronts facing one another.",
+      "targets": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "relation"
+      ],
+      "goldLabels": [
+        "action",
+        "relation"
+      ],
+      "probabilities": [
+        0.0156713429973263,
+        0.003926769927995626,
+        0.13403130475308214,
+        0.033332338155055416,
+        0.9696823879080394,
+        0.09222263751270794
+      ],
+      "domain": "physical-relation",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-d34b8e186f7949de",
+      "word": "subcutaneous",
+      "definition": "Located beneath the skin rather than on its outer surface.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "state"
+      ],
+      "goldLabels": [
+        "relation"
+      ],
+      "probabilities": [
+        0.011108372409935343,
+        0.01587123139905352,
+        0.009949708222132246,
+        0.9518839992982009,
+        0.03066002406541163,
+        0.005615040486583881
+      ],
+      "domain": "physical-relation",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-2ccae792b1458480",
+      "word": "intramuscular",
+      "definition": "Located within the body of a muscle.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "predictedLabels": [
+        "state"
+      ],
+      "goldLabels": [
+        "relation"
+      ],
+      "probabilities": [
+        0.02853724269143134,
+        0.015580208874024316,
+        0.0399142605166469,
+        0.7125662781131805,
+        0.0014479335522376582,
+        0.004540496776402062
+      ],
+      "domain": "physical-relation",
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-ba734e59b95de969",
+      "word": "entailment",
+      "definition": "A logical consequence that must be true whenever specified premises are true.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "predictedLabels": [
+        "abstract"
+      ],
+      "goldLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.036391051947979744,
+        0.026154667020301194,
+        0.005758416857674091,
+        0.0032117609829509864,
+        0.1655405601815255,
+        0.9445077241726944
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-be13551002426242",
+      "word": "transitivity",
+      "definition": "A property of a relation where, if it links A to B and B to C, it also links A to C.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "predictedLabels": [
+        "abstract"
+      ],
+      "goldLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.012018619674098396,
+        0.010853735107366019,
+        0.028464657679131065,
+        0.0038511898247391508,
+        0.14833300008677797,
+        0.7849046414868938
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-58907eebc729a146",
+      "word": "intransigence",
+      "definition": "A refusal to change one’s position or compromise despite pressure.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "predictedLabels": [
+        "relation",
+        "abstract"
+      ],
+      "goldLabels": [
+        "abstract"
+      ],
+      "probabilities": [
+        0.01011599643319674,
+        0.005423090873617581,
+        0.0098765546998715,
+        0.0035845532837058356,
+        0.7518163813053548,
+        0.9836000348222287
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-02703077750b10b5",
+      "word": "defeasible",
+      "definition": "Able to be overturned or withdrawn if stronger evidence or a specified condition emerges.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "predictedLabels": [
+        "relation"
+      ],
+      "goldLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.004643104800972372,
+        0.002790719921407711,
+        0.01525699516315409,
+        0.409910889641825,
+        0.7423838661666893,
+        0.37230782793923684
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-2b84715415532d58",
+      "word": "noncommutative",
+      "definition": "Describing an operation whose result can change when the order of its inputs is reversed.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "predictedLabels": [
+        "abstract"
+      ],
+      "goldLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.0070345706079408595,
+        0.005360914343602306,
+        0.035069066367867725,
+        0.009099430986486558,
+        0.39130756235723013,
+        0.9245085641776384
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-32b702fb9b1d62d0",
+      "word": "as soon as",
+      "definition": "At the first moment when a stated event or condition occurs.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "predictedLabels": [
+        "abstract"
+      ],
+      "goldLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.011822537979837643,
+        0.007494175575543188,
+        0.007245178039972452,
+        0.016077747453014622,
+        0.33923146094604273,
+        0.7412444211699721
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    },
+    {
+      "id": "v2-new-13ff5111c941227c",
+      "word": "lest",
+      "definition": "For fear that an undesirable event might occur.",
+      "targets": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "predictedLabels": [
+        "abstract"
+      ],
+      "goldLabels": [
+        "relation",
+        "abstract"
+      ],
+      "probabilities": [
+        0.015833999520734093,
+        0.004661222656565985,
+        0.018933984017452728,
+        0.005605605281224912,
+        0.16461386063988662,
+        0.9429169098854671
+      ],
+      "domain": null,
+      "goldChangedAfterPrediction": false
+    }
+  ]
+}

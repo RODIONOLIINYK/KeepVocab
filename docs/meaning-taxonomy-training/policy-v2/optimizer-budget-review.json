@@ -1,0 +1,274 @@
+{
+  "reason": "The first strongest neural fits reached the800-iteration cap. Increase all finalists to3000 for allOOF and fullfits before calibration and finalselection.",
+  "freshTestOpened": false,
+  "datasetFileSha256": "b727b7a2856d31049f6950b99fac51a166311bc1fdebc9fd89cd5e14f5f6f36b",
+  "originalSelectedTrial": 70,
+  "oldMaxIterations": 800,
+  "confirmationMaxIterations": 3000,
+  "initialFullFitStatus": [
+    {
+      "trial": 60,
+      "seeds": [
+        {
+          "seed": 7919,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+            "iterations": 99,
+            "evaluations": 106,
+            "loss": 0.10221485465578774,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.10221485465578774
+          }
+        },
+        {
+          "seed": 104729,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+            "iterations": 99,
+            "evaluations": 106,
+            "loss": 0.10221485465578774,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.10221485465578774
+          }
+        },
+        {
+          "seed": 130363,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+            "iterations": 99,
+            "evaluations": 106,
+            "loss": 0.10221485465578774,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.10221485465578774
+          }
+        }
+      ]
+    },
+    {
+      "trial": 57,
+      "seeds": [
+        {
+          "seed": 7919,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+            "iterations": 110,
+            "evaluations": 117,
+            "loss": 0.09570492486994525,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.09570492486994525
+          }
+        },
+        {
+          "seed": 104729,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+            "iterations": 110,
+            "evaluations": 117,
+            "loss": 0.09570492486994525,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.09570492486994525
+          }
+        },
+        {
+          "seed": 130363,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+            "iterations": 110,
+            "evaluations": 117,
+            "loss": 0.09570492486994525,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.09570492486994525
+          }
+        }
+      ]
+    },
+    {
+      "trial": 70,
+      "seeds": [
+        {
+          "seed": 7919,
+          "optimizer": {
+            "success": false,
+            "message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+            "iterations": 800,
+            "evaluations": 851,
+            "loss": 0.0481159117706405,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.0481159117706405
+          }
+        },
+        {
+          "seed": 104729,
+          "optimizer": {
+            "success": false,
+            "message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+            "iterations": 800,
+            "evaluations": 861,
+            "loss": 0.04830720419742335,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.04830720419742335
+          }
+        },
+        {
+          "seed": 130363,
+          "optimizer": {
+            "success": false,
+            "message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+            "iterations": 800,
+            "evaluations": 847,
+            "loss": 0.048496323104555907,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.048496323104555907
+          }
+        }
+      ]
+    },
+    {
+      "trial": 73,
+      "seeds": [
+        {
+          "seed": 7919,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+            "iterations": 784,
+            "evaluations": 839,
+            "loss": 0.062483278583470823,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.062483278583470823
+          }
+        },
+        {
+          "seed": 104729,
+          "optimizer": {
+            "success": false,
+            "message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+            "iterations": 800,
+            "evaluations": 876,
+            "loss": 0.06246182719869929,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.06246182719869929
+          }
+        },
+        {
+          "seed": 130363,
+          "optimizer": {
+            "success": false,
+            "message": "STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT",
+            "iterations": 800,
+            "evaluations": 865,
+            "loss": 0.06260437860678028,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.06260437860678028
+          }
+        }
+      ]
+    },
+    {
+      "trial": 3,
+      "seeds": [
+        {
+          "seed": 7919,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+            "iterations": 143,
+            "evaluations": 150,
+            "loss": 0.3435240051518887,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.3435240051518887
+          }
+        },
+        {
+          "seed": 104729,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+            "iterations": 196,
+            "evaluations": 203,
+            "loss": 0.34377594231635783,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.34377594231635783
+          }
+        },
+        {
+          "seed": 130363,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+            "iterations": 186,
+            "evaluations": 197,
+            "loss": 0.3435848519359697,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.3435848519359697
+          }
+        }
+      ]
+    },
+    {
+      "trial": 76,
+      "seeds": [
+        {
+          "seed": 7919,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+            "iterations": 128,
+            "evaluations": 131,
+            "loss": 0.33839201723984974,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.33839201723984974
+          }
+        },
+        {
+          "seed": 104729,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+            "iterations": 196,
+            "evaluations": 206,
+            "loss": 0.3381754382193258,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.3381754382193258
+          }
+        },
+        {
+          "seed": 130363,
+          "optimizer": {
+            "success": true,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+            "iterations": 207,
+            "evaluations": 214,
+            "loss": 0.3380213982039886,
+            "regularizationSolver": "L-BFGS-B weighted BCE+L2; biases free",
+            "splitPenaltyGap": 0,
+            "trueL1Objective": 0.3380213982039886
+          }
+        }
+      ]
+    }
+  ]
+}

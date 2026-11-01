@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "annotationPolicyVersion": "v2",
+  "reviewType": "AI semantic review; not human-expert ground truth",
+  "sourceDatasetFileSha256": "c6ac49bf923f3166ddde12faa54d1f345e66597cdb59bc4d61a9fa7446ba8b4a",
+  "policyFileSha256": "7627d45f79b0944aa9d90b80f76fd305f5fda89a64705d6263b97f32a0d2ca44",
+  "decisionsFileSha256": "6d2a27e6176dd3b58fa256cf22a35644df6a826e2597cf3a8962a315d5983110",
+  "newAnnotationsFileSha256": "80f7356ea9d42559cf58bbee1d7fa3211507c3277cb71286acb92d59bd5b3e3e",
+  "reviewedSourceMeaningUnits": 1280,
+  "newMeaningCount": 360,
+  "oldSourceRows": 1420,
+  "primaryCoverage": "All proposed label changes, ambiguity flags and cited counterparts; all new360 definitions/memberships; root281 relation/abstract definitions and old place/multilabel definitions individually inspected. Simple unchanged physical/action/state records checked by category policy and source integrity.",
+  "sourceChangedUnits": 250,
+  "ambiguousSourceUnits": 5,
+  "blindToModelPredictions": true,
+  "oldBenchmarksModified": false,
+  "labelAccuracyEstimate": null,
+  "limitations": [
+    "Project taxonomy revision, not human-expert linguistic ground truth.",
+    "No label was changed because it was a validation/test prediction error.",
+    "Scores under new labels are not directly comparable with old-policy percentages on other cohorts."
+  ],
+  "freshnessReview": {
+    "method": "Review of source-word/family identities and top35 old-meaning cosine neighbors; no model predictions or performance used.",
+    "newProtectedLinks": [
+      {
+        "word": "sewing machine",
+        "sourceWord": "sew",
+        "reason": "Pre-training nearest-neighbor/lexical-family review; protect close emission synonyms and activity-specific tool compounds."
+      },
+      {
+        "word": "knitting needle",
+        "sourceWord": "knit",
+        "reason": "Pre-training nearest-neighbor/lexical-family review; protect close emission synonyms and activity-specific tool compounds."
+      },
+      {
+        "word": "paintbrush",
+        "sourceWord": "paint",
+        "reason": "Pre-training nearest-neighbor/lexical-family review; protect close emission synonyms and activity-specific tool compounds."
+      },
+      {
+        "word": "paint roller",
+        "sourceWord": "paint",
+        "reason": "Pre-training nearest-neighbor/lexical-family review; protect close emission synonyms and activity-specific tool compounds."
+      },
+      {
+        "word": "squirt",
+        "sourceWord": "spurt",
+        "reason": "Pre-training nearest-neighbor/lexical-family review; protect close emission synonyms and activity-specific tool compounds."
+      }
+    ],
+    "embeddingSimilarityIsNotSemanticEquivalence": true
+  }
+}
