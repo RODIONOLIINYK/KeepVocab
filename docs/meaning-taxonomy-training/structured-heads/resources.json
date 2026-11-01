@@ -1,0 +1,144 @@
+{
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "machine": "arm64",
+  "processor": "Apple M5",
+  "dtype": "float64",
+  "blasThreads": 1,
+  "method": "Preloaded, restored model;20 warmups,7 repeats of100 batch1 calls. Includes preprocessing, joint probabilities, six marginals and MAP. Excludes CLIP, loading, RPC and network. Not phone/battery measurement.",
+  "storage": "FP32 numeric inference tensor estimate; includes feature statistics/PCA/supports. Support data and derived transforms are not counted as learned head coefficients. JSON/optimizer/training traces excluded.",
+  "models": {
+    "selected": {
+      "artifact": "tests/fixtures/meaning-taxonomy/structured-heads/classifier-experimental-selected.json.gz",
+      "artifactFileSha256": "18617134f032dfe5a8294aaae2441992bc4a00efa4173e33b3f58d1709ab637f",
+      "compressedArtifactBytes": 49054,
+      "learnedHeadCoefficientCount": 3093,
+      "dataDerivedSupportVectorCount": 0,
+      "inferenceNumericValueCount": 4117,
+      "estimatedFP32KiB": 16.08203125,
+      "medianBatch1Microseconds": 8.489169995300472,
+      "repeatMeansMicroseconds": [
+        8.489169995300472,
+        8.486250299029052,
+        8.533750078640878,
+        9.013749659061432,
+        8.743330254219472,
+        8.360419888049364,
+        8.337500039488077
+      ]
+    },
+    "neural-global": {
+      "artifact": "tests/fixtures/meaning-taxonomy/structured-heads/candidate-98-seed-7919.json.gz",
+      "artifactFileSha256": "3445a9fbc5a00b808a60c139bbcdc3140e06ba1287360c8b6f991dbba2185662",
+      "compressedArtifactBytes": 177866,
+      "learnedHeadCoefficientCount": 16629,
+      "dataDerivedSupportVectorCount": 0,
+      "inferenceNumericValueCount": 17653,
+      "estimatedFP32KiB": 68.95703125,
+      "medianBatch1Microseconds": 16.132090240716934,
+      "repeatMeansMicroseconds": [
+        16.344169853255153,
+        16.132090240716934,
+        16.008749953471124,
+        15.984579804353416,
+        16.552499728277326,
+        16.027920064516366,
+        16.83874987065792
+      ]
+    },
+    "neural-context": {
+      "artifact": "tests/fixtures/meaning-taxonomy/structured-heads/candidate-110-seed-7919.json.gz",
+      "artifactFileSha256": "865c55684e781138f1c26bc0ffa5dce358213584b72d3eaa071414b308aaad27",
+      "compressedArtifactBytes": 336806,
+      "learnedHeadCoefficientCount": 34197,
+      "dataDerivedSupportVectorCount": 0,
+      "inferenceNumericValueCount": 35221,
+      "estimatedFP32KiB": 137.58203125,
+      "medianBatch1Microseconds": 17.3445901600644,
+      "repeatMeansMicroseconds": [
+        17.67084002494812,
+        17.158330301754177,
+        17.197499983012676,
+        17.14707992505282,
+        17.752079875208437,
+        17.57292018737644,
+        17.3445901600644
+      ]
+    },
+    "residual": {
+      "artifact": "tests/fixtures/meaning-taxonomy/structured-heads/candidate-116-seed-7919.json.gz",
+      "artifactFileSha256": "63703bb8caf4f952930c0de2b37ab9fd7a7ea151df8b899a3b97823210ab8fa6",
+      "compressedArtifactBytes": 85192,
+      "learnedHeadCoefficientCount": 7245,
+      "dataDerivedSupportVectorCount": 0,
+      "inferenceNumericValueCount": 8269,
+      "estimatedFP32KiB": 32.30078125,
+      "medianBatch1Microseconds": 15.224580420181155,
+      "repeatMeansMicroseconds": [
+        15.224580420181155,
+        15.358749660663307,
+        15.19541023299098,
+        15.332920011132956,
+        15.073750400915742,
+        15.201250207610428,
+        15.42292011436075
+      ]
+    },
+    "context-linear": {
+      "artifact": "tests/fixtures/meaning-taxonomy/structured-heads/candidate-75-seed-7919.json.gz",
+      "artifactFileSha256": "52caa6a0d79a12f6c29ca3d3b226a3ea6bc363a50d03ab2a29bac9afd363de43",
+      "compressedArtifactBytes": 97116,
+      "learnedHeadCoefficientCount": 357,
+      "dataDerivedSupportVectorCount": 0,
+      "inferenceNumericValueCount": 9589,
+      "estimatedFP32KiB": 37.45703125,
+      "medianBatch1Microseconds": 10.53333980962634,
+      "repeatMeansMicroseconds": [
+        10.53333980962634,
+        10.458750184625387,
+        10.443750070407987,
+        10.414579883217812,
+        10.668750037439167,
+        10.772499954327941,
+        10.697499965317547
+      ]
+    },
+    "svm": {
+      "artifact": "tests/fixtures/meaning-taxonomy/structured-heads/candidate-133-seed-7919.json.gz",
+      "artifactFileSha256": "ea25dda15f466a61c136c37616fd9ba0cf914a20803f63dade09ff266eea0123",
+      "compressedArtifactBytes": 1646179,
+      "learnedHeadCoefficientCount": 5185,
+      "dataDerivedSupportVectorCount": 861,
+      "inferenceNumericValueCount": 182081,
+      "estimatedFP32KiB": 711.25390625,
+      "medianBatch1Microseconds": 65.52790990099311,
+      "repeatMeansMicroseconds": [
+        67.64124962501228,
+        67.61915981769562,
+        68.24416981544346,
+        65.01458992715925,
+        65.4312502592802,
+        65.36000000778586,
+        65.52790990099311
+      ]
+    },
+    "prior-compact": {
+      "artifact": "tests/fixtures/meaning-taxonomy/structured-heads/prior-compact.json.gz",
+      "artifactFileSha256": "18617134f032dfe5a8294aaae2441992bc4a00efa4173e33b3f58d1709ab637f",
+      "compressedArtifactBytes": 49054,
+      "learnedHeadCoefficientCount": 3093,
+      "dataDerivedSupportVectorCount": 0,
+      "inferenceNumericValueCount": 4117,
+      "estimatedFP32KiB": 16.08203125,
+      "medianBatch1Microseconds": 8.30666976980865,
+      "repeatMeansMicroseconds": [
+        8.366670226678252,
+        8.369159768335521,
+        8.382920059375465,
+        8.279999601654708,
+        8.277500164695084,
+        8.297919994220138,
+        8.30666976980865
+      ]
+    }
+  }
+}

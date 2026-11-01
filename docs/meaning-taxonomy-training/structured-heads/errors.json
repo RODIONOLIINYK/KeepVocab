@@ -1,0 +1,1202 @@
+{
+  "usedForTrainingOrSelection": false,
+  "labelChanges": false,
+  "cohorts": {
+    "original120": {
+      "selectedErrors": [
+        {
+          "id": "expanded-059b9ba3ddd886ea",
+          "word": "mercury",
+          "meaning": "A dense silvery metal that is liquid at ordinary room temperature.",
+          "targets": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.5657083982256931,
+          "missed": [
+            "entity"
+          ],
+          "extra": [
+            "state"
+          ]
+        },
+        {
+          "id": "expanded-3ef3f6324dfafd2d",
+          "word": "cry",
+          "meaning": "To shed tears, often while making sounds of distress.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.5742401061801051,
+          "missed": [
+            "action"
+          ],
+          "extra": [
+            "state"
+          ]
+        },
+        {
+          "id": "expanded-45a55ea3c24b281e",
+          "word": "yawn",
+          "meaning": "To open the mouth widely while breathing in, often when tired.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.5472056258042189,
+          "missed": [
+            "action"
+          ],
+          "extra": [
+            "state"
+          ]
+        },
+        {
+          "id": "expanded-00a289d511fa6e90",
+          "word": "gush",
+          "meaning": "To flow out suddenly and in a large amount.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          "MAPConfidence": 0.5551748790328181,
+          "missed": [],
+          "extra": [
+            "relation"
+          ]
+        },
+        {
+          "id": "expanded-ed0c4afbf321d01f",
+          "word": "hatch",
+          "meaning": "To emerge from an egg.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          "MAPConfidence": 0.5298317715290217,
+          "missed": [],
+          "extra": [
+            "relation"
+          ]
+        },
+        {
+          "id": "expanded-9cdb09e9baafcaeb",
+          "word": "in tandem",
+          "meaning": "With one participant behind another while they move or work together.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            1,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          "MAPConfidence": 0.29808688030262936,
+          "missed": [
+            "action"
+          ],
+          "extra": []
+        },
+        {
+          "id": "expanded-3b05b0c97396d945",
+          "word": "flanking",
+          "meaning": "Standing or lying on both sides of a central person or thing.",
+          "targets": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.5541934855152061,
+          "missed": [
+            "relation"
+          ],
+          "extra": [
+            "state"
+          ]
+        },
+        {
+          "id": "expanded-88da7f1d7050af77",
+          "word": "flush with",
+          "meaning": "Level with an adjoining surface so that neither projects beyond the other.",
+          "targets": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.406937627529769,
+          "missed": [
+            "relation"
+          ],
+          "extra": [
+            "state"
+          ]
+        },
+        {
+          "id": "expanded-b5c0a415fc0a5d8f",
+          "word": "diagonal to",
+          "meaning": "Running at a slant relative to the edges or usual directions of another shape.",
+          "targets": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.689892344288593,
+          "missed": [
+            "relation"
+          ],
+          "extra": [
+            "state"
+          ]
+        },
+        {
+          "id": "expanded-52a141bfecaea9fd",
+          "word": "senior to",
+          "meaning": "Higher than another person in rank or length of service.",
+          "targets": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "MAPConfidence": 0.6702275264705868,
+          "missed": [
+            "relation"
+          ],
+          "extra": []
+        },
+        {
+          "id": "expanded-364aa7b9fe9d2dd4",
+          "word": "junior to",
+          "meaning": "Lower than another person in rank or length of service.",
+          "targets": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "MAPConfidence": 0.6099952609037647,
+          "missed": [
+            "relation"
+          ],
+          "extra": []
+        },
+        {
+          "id": "expanded-758183ef2ed17c25",
+          "word": "sibling",
+          "meaning": "A person who has one or both parents in common with another person.",
+          "targets": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "MAPConfidence": 0.3718162382024829,
+          "missed": [
+            "entity"
+          ],
+          "extra": []
+        },
+        {
+          "id": "expanded-f2509463b0241977",
+          "word": "cousin",
+          "meaning": "A relative who shares a grandparent or another recent ancestor but is not a sibling.",
+          "targets": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "MAPConfidence": 0.5923976442837225,
+          "missed": [
+            "entity",
+            "relation"
+          ],
+          "extra": []
+        },
+        {
+          "id": "expanded-b2cc85052d47d8ea",
+          "word": "neighbor",
+          "meaning": "A person whose home is near another person\u2019s home.",
+          "targets": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "MAPConfidence": 0.5056088714606339,
+          "missed": [
+            "entity"
+          ],
+          "extra": []
+        },
+        {
+          "id": "expanded-3528237dd8a0e0bd",
+          "word": "supervisor",
+          "meaning": "A person responsible for overseeing the work of other people.",
+          "targets": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "MAPConfidence": 0.49324825433712327,
+          "missed": [
+            "entity"
+          ],
+          "extra": []
+        },
+        {
+          "id": "expanded-135a5cd376fee9a7",
+          "word": "colleague",
+          "meaning": "A person working alongside another in the same organization or profession.",
+          "targets": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "MAPConfidence": 0.5929904172755492,
+          "missed": [
+            "entity"
+          ],
+          "extra": []
+        },
+        {
+          "id": "expanded-5dce5029bee9fb3e",
+          "word": "beneficiary",
+          "meaning": "A person or group entitled to receive a benefit from another party\u2019s arrangement.",
+          "targets": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "MAPConfidence": 0.7107964042489571,
+          "missed": [
+            "entity"
+          ],
+          "extra": []
+        },
+        {
+          "id": "expanded-9bf2a657499fde12",
+          "word": "teamwork",
+          "meaning": "Coordinated effort by people working toward a shared goal.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "MAPConfidence": 0.8212313567984851,
+          "missed": [
+            "action"
+          ],
+          "extra": [
+            "relation"
+          ]
+        },
+        {
+          "id": "expanded-d322e4249439c32a",
+          "word": "cooperation",
+          "meaning": "Working together willingly to achieve a shared result.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "MAPConfidence": 0.9187903104785367,
+          "missed": [
+            "action"
+          ],
+          "extra": [
+            "relation"
+          ]
+        },
+        {
+          "id": "expanded-97364debf4e468f4",
+          "word": "method",
+          "meaning": "An organized way of doing or investigating something.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "MAPConfidence": 0.450599880827208,
+          "missed": [
+            "action"
+          ],
+          "extra": [
+            "relation"
+          ]
+        },
+        {
+          "id": "expanded-834b41197fe6c981",
+          "word": "process",
+          "meaning": "A series of steps or changes that leads toward a result.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "MAPConfidence": 0.5526660560325773,
+          "missed": [
+            "action"
+          ],
+          "extra": []
+        },
+        {
+          "id": "expanded-b42277020e6b367c",
+          "word": "otherwise",
+          "meaning": "In a different way or under different circumstances.",
+          "targets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "MAPConfidence": 0.5012396605064517,
+          "missed": [],
+          "extra": [
+            "relation"
+          ]
+        },
+        {
+          "id": "expanded-73a20a5f4f116a27",
+          "word": "exactly",
+          "meaning": "In every detail or respect required by the comparison or statement.",
+          "targets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "MAPConfidence": 0.5361054000849144,
+          "missed": [],
+          "extra": [
+            "relation"
+          ]
+        },
+        {
+          "id": "expanded-a64c8be672c45ba5",
+          "word": "roughly",
+          "meaning": "Approximately, without claiming exact measurement.",
+          "targets": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.41579056185927527,
+          "missed": [
+            "abstract"
+          ],
+          "extra": [
+            "state"
+          ]
+        },
+        {
+          "id": "expanded-fbbd20224334d85b",
+          "word": "gradual",
+          "meaning": "Happening by small degrees over a period of time.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.38157515969773353,
+          "missed": [
+            "action",
+            "abstract"
+          ],
+          "extra": [
+            "state"
+          ]
+        },
+        {
+          "id": "expanded-ca44378ab719e5fc",
+          "word": "occur",
+          "meaning": "To happen at a particular time or under particular conditions.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "MAPConfidence": 0.41989451340216455,
+          "missed": [
+            "action"
+          ],
+          "extra": []
+        }
+      ],
+      "perClass": {
+        "entity": {
+          "positiveSupport": 26,
+          "predictedPositive": 19,
+          "tp": 19,
+          "fp": 0,
+          "fn": 7,
+          "precision": 1.0,
+          "recall": 0.7307692307692307,
+          "f1": 0.8444444444444444,
+          "averagePrecision": 0.9473092236637387
+        },
+        "place": {
+          "positiveSupport": 20,
+          "predictedPositive": 20,
+          "tp": 20,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "averagePrecision": 1.0
+        },
+        "action": {
+          "positiveSupport": 27,
+          "predictedPositive": 18,
+          "tp": 18,
+          "fp": 0,
+          "fn": 9,
+          "precision": 1.0,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "averagePrecision": 0.9232138634218681
+        },
+        "state": {
+          "positiveSupport": 20,
+          "predictedPositive": 28,
+          "tp": 20,
+          "fp": 8,
+          "fn": 0,
+          "precision": 0.7142857142857143,
+          "recall": 1.0,
+          "f1": 0.8333333333333334,
+          "averagePrecision": 0.963681786050207
+        },
+        "relation": {
+          "positiveSupport": 20,
+          "predictedPositive": 21,
+          "tp": 14,
+          "fp": 7,
+          "fn": 6,
+          "precision": 0.6666666666666666,
+          "recall": 0.7,
+          "f1": 0.6829268292682927,
+          "averagePrecision": 0.6399573464081649
+        },
+        "abstract": {
+          "positiveSupport": 31,
+          "predictedPositive": 29,
+          "tp": 29,
+          "fp": 0,
+          "fn": 2,
+          "precision": 1.0,
+          "recall": 0.9354838709677419,
+          "f1": 0.9666666666666667,
+          "averagePrecision": 0.9955197132616488
+        }
+      }
+    },
+    "other48": {
+      "selectedErrors": [
+        {
+          "id": "regphys-place-015",
+          "word": "colonnade",
+          "meaning": "A row of columns supporting a roof or other structure.",
+          "targets": [
+            1,
+            1,
+            0,
+            0,
+            1,
+            0
+          ],
+          "predicted": [
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.4502062542264509,
+          "missed": [
+            "entity",
+            "relation"
+          ],
+          "extra": []
+        },
+        {
+          "id": "regphys-place-016",
+          "word": "washhouse",
+          "meaning": "A separate building used for washing clothes.",
+          "targets": [
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "predicted": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.6467708231645116,
+          "missed": [
+            "place"
+          ],
+          "extra": [
+            "entity"
+          ]
+        },
+        {
+          "id": "reg-new-006",
+          "word": "hibernate",
+          "meaning": "For an animal to pass a season in a prolonged period of reduced activity and metabolism.",
+          "targets": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.7980920156912089,
+          "missed": [
+            "state"
+          ],
+          "extra": [
+            "action"
+          ]
+        },
+        {
+          "id": "reg-new-024",
+          "word": "spurt",
+          "meaning": "To shoot out in a brief, sudden stream.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          "MAPConfidence": 0.5285474033945035,
+          "missed": [],
+          "extra": [
+            "relation"
+          ]
+        },
+        {
+          "id": "reg-new-068",
+          "word": "granular",
+          "meaning": "Made of or covered with distinct small grains.",
+          "targets": [
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "predicted": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.5439592378402756,
+          "missed": [
+            "state"
+          ],
+          "extra": [
+            "entity"
+          ]
+        },
+        {
+          "id": "relabs-new-004",
+          "word": "keyed",
+          "meaning": "Fitted together by matching grooves or projections that prevent unwanted movement.",
+          "targets": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.7634138208827558,
+          "missed": [
+            "relation"
+          ],
+          "extra": [
+            "state"
+          ]
+        },
+        {
+          "id": "relabs-new-005",
+          "word": "buttressed",
+          "meaning": "Reinforced by a support that braces a wall or structure from the side.",
+          "targets": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.4359167762539519,
+          "missed": [
+            "relation"
+          ],
+          "extra": [
+            "state"
+          ]
+        },
+        {
+          "id": "relabs-new-015",
+          "word": "fastener",
+          "meaning": "A device that joins two or more parts so they stay together.",
+          "targets": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "predicted": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "MAPConfidence": 0.7478395090999507,
+          "missed": [
+            "relation"
+          ],
+          "extra": []
+        },
+        {
+          "id": "relabs-new-016",
+          "word": "guardian",
+          "meaning": "A person legally responsible for caring for someone who cannot fully care for themselves.",
+          "targets": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "MAPConfidence": 0.7488363302279522,
+          "missed": [
+            "entity",
+            "relation"
+          ],
+          "extra": []
+        },
+        {
+          "id": "relabs-new-017",
+          "word": "tenant",
+          "meaning": "A person or organization that pays to occupy property owned by someone else.",
+          "targets": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "MAPConfidence": 0.5606541566777579,
+          "missed": [
+            "entity"
+          ],
+          "extra": []
+        },
+        {
+          "id": "relabs-new-018",
+          "word": "landlord",
+          "meaning": "A person or organization that rents property to a tenant.",
+          "targets": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "MAPConfidence": 0.5112442263446181,
+          "missed": [
+            "entity",
+            "relation"
+          ],
+          "extra": []
+        },
+        {
+          "id": "relabs-new-049",
+          "word": "hierarchy",
+          "meaning": "An arrangement of people or things into levels of rank or authority.",
+          "targets": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "MAPConfidence": 0.510392225674323,
+          "missed": [
+            "relation"
+          ],
+          "extra": []
+        },
+        {
+          "id": "relabs-new-075",
+          "word": "handoff",
+          "meaning": "The transfer of responsibility, authority, or an object from one person or group to another.",
+          "targets": [
+            0,
+            0,
+            1,
+            0,
+            1,
+            1
+          ],
+          "predicted": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "MAPConfidence": 0.46738870376131,
+          "missed": [
+            "action",
+            "relation"
+          ],
+          "extra": []
+        }
+      ],
+      "perClass": {
+        "entity": {
+          "positiveSupport": 13,
+          "predictedPositive": 11,
+          "tp": 9,
+          "fp": 2,
+          "fn": 4,
+          "precision": 0.8181818181818182,
+          "recall": 0.6923076923076923,
+          "f1": 0.75,
+          "averagePrecision": 0.9135935143288084
+        },
+        "place": {
+          "positiveSupport": 8,
+          "predictedPositive": 7,
+          "tp": 7,
+          "fp": 0,
+          "fn": 1,
+          "precision": 1.0,
+          "recall": 0.875,
+          "f1": 0.9333333333333333,
+          "averagePrecision": 1.0
+        },
+        "action": {
+          "positiveSupport": 10,
+          "predictedPositive": 10,
+          "tp": 9,
+          "fp": 1,
+          "fn": 1,
+          "precision": 0.9,
+          "recall": 0.9,
+          "f1": 0.9,
+          "averagePrecision": 0.9021031746031746
+        },
+        "state": {
+          "positiveSupport": 8,
+          "predictedPositive": 8,
+          "tp": 6,
+          "fp": 2,
+          "fn": 2,
+          "precision": 0.75,
+          "recall": 0.75,
+          "f1": 0.75,
+          "averagePrecision": 0.8501498501498501
+        },
+        "relation": {
+          "positiveSupport": 10,
+          "predictedPositive": 3,
+          "tp": 2,
+          "fp": 1,
+          "fn": 8,
+          "precision": 0.6666666666666666,
+          "recall": 0.2,
+          "f1": 0.3076923076923077,
+          "averagePrecision": 0.7322077922077922
+        },
+        "abstract": {
+          "positiveSupport": 12,
+          "predictedPositive": 12,
+          "tp": 12,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "averagePrecision": 1.0
+        }
+      }
+    }
+  }
+}

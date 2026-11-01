@@ -32,6 +32,16 @@ Steps 1 and 2 are complete as an offline pilot. The
 search, grouped evaluation, learned models and limitations. Image/text adapter
 training and app integration remain subsequent milestones.
 
+The [structured-head/capacity follow-up](meaning-taxonomy-training/structured-heads/README.md)
+tests136 configurations including input-conditioned pairwise interactions,
+shared nonlinear features, residual linear paths and an RBF-SVM reference.
+The compact CRF remains the selected experimental model under frozen validation
+guards. A separate fixed-budget66-fit capacity sweep spans540–531,477 learned
+coefficients, three seeds and zero/0.001 L2 to examine the user's double-descent
+hypothesis. Preserve all six probabilities. Training/validation curves are
+diagnostic; reused validation and retired tests do not establish fresh accuracy.
+No classifier, image/text adapter or personal ranker is activated by this work.
+
 The follow-up [capacity/confidence diagnostics](meaning-taxonomy-training/diagnostics/README.md)
 check real-batch memorization, learning curves, confident mistakes, probability
 calibration, mobile head cost, and a further precision-targeted search. The

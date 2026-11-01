@@ -59,6 +59,15 @@ structure. Original 120 F1 improves 84.91%→85.46% and BCE 0.1510→0.1419, whi
 accuracy stays 78.33% / 72.92% across the two tests. The target remains unmet and
 the original reference remains selected.
 
+The [structured-head and capacity experiment](structured-heads/README.md) adds136
+configurations spanning shared neural, input-conditioned pairwise, residual,
+conditional-linear/PCA and RBF-SVM heads. No new candidate passes all validation
+guards, so the compact CRF remains the selected experimental candidate. A
+separate66-fit sweep tests540–531,477 parameters with fixed1,000-epoch budgets,
+zero/0.001 L2 and no early stopping to investigate double descent. Training,
+validation, capacity and loss curves are saved with source hashes and replay
+checks; neither experiment changes the offline reference or activates routing.
+
 ## Result and interpretation
 
 | Validation-selected model | Validation macro-F1 | Test macro-F1 | Test exact label-set match | Parameters |
