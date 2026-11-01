@@ -1,0 +1,37 @@
+{
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "machine": "arm64",
+  "dtype": "float64",
+  "blasThreads": 1,
+  "models": {
+    "early-and-l2": {
+      "estimatedFP32KiB": 68.95703125,
+      "inferenceNumericValueCount": 17653,
+      "medianBatch1Microseconds": 11.300000478513539,
+      "repeatMeansMicroseconds": [
+        12.995419674552977,
+        12.401669519022107,
+        11.073749628849328,
+        11.300000478513539,
+        11.226659989915788,
+        11.415409971959889,
+        11.095419758930802
+      ]
+    },
+    "prior-compact": {
+      "estimatedFP32KiB": 16.08203125,
+      "inferenceNumericValueCount": 4117,
+      "medianBatch1Microseconds": 9.550830000080168,
+      "repeatMeansMicroseconds": [
+        9.30124951992184,
+        12.829999905079603,
+        9.891249937936664,
+        8.583750459365547,
+        8.909160387702286,
+        9.550830000080168,
+        10.537920170463622
+      ]
+    }
+  },
+  "method": "Preloaded model,20 warmups,median of7x100 batch1 calls. Includes preprocessing,joint probabilities,marginals,MAP. Excludes CLIP/loading/RPC/network. FP32 storage estimate includes preprocessing. Not mobile battery/latency evidence."
+}

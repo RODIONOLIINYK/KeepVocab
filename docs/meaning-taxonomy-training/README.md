@@ -68,6 +68,14 @@ zero/0.001 L2 and no early stopping to investigate double descent. Training,
 validation, capacity and loss curves are saved with source hashes and replay
 checks; neither experiment changes the offline reference or activates routing.
 
+The [restore-best early-stopping + L2 experiment](early-l2/README.md) applies
+both controls to a 32-unit joint head. Unlike epoch selection followed by a
+full-data refit, it exports the actual best checkpoint trained on 600 original
+meanings, holding 150 training-only originals aside for stopping. Four matched
+conditions share fitting rows and seeds. The combination improves mean
+validation exact accuracy 70.14%→72.92% and joint loss 2.663→1.202 against its
+uncontrolled fit, but fails broader reference safeguards and remains experimental.
+
 ## Result and interpretation
 
 | Validation-selected model | Validation macro-F1 | Test macro-F1 | Test exact label-set match | Parameters |

@@ -42,6 +42,13 @@ hypothesis. Preserve all six probabilities. Training/validation curves are
 diagnostic; reused validation and retired tests do not establish fresh accuracy.
 No classifier, image/text adapter or personal ranker is activated by this work.
 
+The [restore-best early-stopping/L2 follow-up](meaning-taxonomy-training/early-l2/README.md)
+adds explicit checkpoint restoration and matched four-way controls. The selected
+experimental joint head uses 32 tanh units, L2=0.1 and patience 15, monitoring
+training-only grouped meanings. It improves over the matched uncontrolled fit
+but fails reference safeguards; retain the existing reference and all six
+probabilities. Its stored best checkpoint is not refitted on its stopping set.
+
 The follow-up [capacity/confidence diagnostics](meaning-taxonomy-training/diagnostics/README.md)
 check real-batch memorization, learning curves, confident mistakes, probability
 calibration, mobile head cost, and a further precision-targeted search. The
