@@ -161,6 +161,28 @@ reviewed original-policy entity/relation contrasts and a new untouched grouped
 confirmation set before promoting another head. Never change labels to match
 predictions or silently switch policies in a performance comparison.
 
+## Exact-accuracy target and research follow-up (2026-11-01)
+
+The user clarified the goal as **more than 90% exact accuracy: all memberships
+correct for each meaning**, rather than precision or per-label accuracy. The
+[204-configuration search](meaning-taxonomy-training/exact-accuracy-search/README.md)
+tests wider/deeper MLPs, activations, focal loss/smoothing, joint-label models,
+RBF features, neighbors and ensembles. Selection freezes before regression tests.
+Its preselected ensemble scores 76.67% original120 / 75.00% other48 exact.
+
+The [research follow-up](meaning-taxonomy-training/joint-label-search/README.md)
+tests 78 more PCC/CRF/control configurations and MAP versus marginal decoding,
+based on primary research about exact-set decisions. All six probabilities are
+retained. A compact 3,093-parameter CRF scores 78.33% / 72.92%, but regresses on
+other48 relation F1. No configuration reaches the requested target. No label,
+encoder, split, registry, routing cache or production model is changed.
+
+Next: independently reviewed original-policy relation/action/state combinations,
+a new untouched grouped confirmation set, and a separately versioned experiment
+with alternative text representations or CLIP adapters if these inputs plateau.
+TabPFN and full kernel SVM were researched as references, not benchmarked here.
+Do not reuse precision/Hamming accuracy as evidence that exact accuracy passed.
+
 ## Categories describe required visual evidence
 
 | Output ID | Evidence focus | Examples |

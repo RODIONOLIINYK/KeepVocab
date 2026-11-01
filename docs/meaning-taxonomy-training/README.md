@@ -43,6 +43,15 @@ the original labeling policy and its 72.50% benchmark. That original 32-unit L2
 head is restored as the current offline reference. The 74.17% BN candidate stays
 experimental because grouped-CV and per-class checks are mixed.
 
+The [exact-accuracy architecture search](exact-accuracy-search/README.md) tests
+204 configurations, three-seed finalists and two ensembles against the user's
+explicit target of more than 90% **exact label-set accuracy**. The preselected
+ensemble reaches 76.67% / 75.00% on the unchanged original120 / other48 tests.
+The [internet-research follow-up](joint-label-search/README.md) adds 78 PCC,
+pairwise-CRF and matched-control configurations plus joint-decoding comparisons.
+The selected compact CRF reaches 78.33% / 72.92%, with a relation-class regression.
+Neither reaches the target or replaces the original offline reference.
+
 ## Result and interpretation
 
 | Validation-selected model | Validation macro-F1 | Test macro-F1 | Test exact label-set match | Parameters |

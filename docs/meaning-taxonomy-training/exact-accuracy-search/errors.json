@@ -1,0 +1,936 @@
+{
+  "schemaVersion": 1,
+  "reportFileSha256": "f6ed2419a25b31a7bf478e5c23ec601009609f8a64494df7f1a2177091948dad",
+  "postSelectionDiagnosisOnly": true,
+  "usedForRelabelingOrTuning": false,
+  "errors": {
+    "retired-original-120-v1": [
+      {
+        "id": "expanded-2b9ec28103482ca4",
+        "word": "coral",
+        "definition": "A marine animal colony that builds a hard branching skeleton.",
+        "goldLabels": [
+          "entity"
+        ],
+        "predictedLabels": [],
+        "probabilities": {
+          "entity": 0.33032378704270177,
+          "place": 0.5571907609472477,
+          "action": 0.013940161519467151,
+          "state": 0.002551942315626426,
+          "relation": 0.005397242344725969,
+          "abstract": 0.0024296573353528223
+        },
+        "wrongLabels": [
+          "entity"
+        ]
+      },
+      {
+        "id": "expanded-f9be937835c494d6",
+        "word": "centipede",
+        "definition": "A long segmented arthropod with one pair of legs on each body segment.",
+        "goldLabels": [
+          "entity"
+        ],
+        "predictedLabels": [],
+        "probabilities": {
+          "entity": 0.3199434106139418,
+          "place": 0.026461634653233933,
+          "action": 0.34397556134833507,
+          "state": 0.10112432877668115,
+          "relation": 0.16614713520785537,
+          "abstract": 0.008370361126601139
+        },
+        "wrongLabels": [
+          "entity"
+        ]
+      },
+      {
+        "id": "expanded-f8950c569f8fb0d2",
+        "word": "saddle",
+        "definition": "A low point along a ridge between two higher peaks.",
+        "goldLabels": [
+          "place"
+        ],
+        "predictedLabels": [],
+        "probabilities": {
+          "entity": 0.3293842203206218,
+          "place": 0.5019173274988876,
+          "action": 0.0421177847869136,
+          "state": 0.01258688712113049,
+          "relation": 0.031717791750619805,
+          "abstract": 0.007732626687102663
+        },
+        "wrongLabels": [
+          "place"
+        ]
+      },
+      {
+        "id": "expanded-3ef3f6324dfafd2d",
+        "word": "cry",
+        "definition": "To shed tears, often while making sounds of distress.",
+        "goldLabels": [
+          "action"
+        ],
+        "predictedLabels": [
+          "action",
+          "state"
+        ],
+        "probabilities": {
+          "entity": 0.0024368580929298857,
+          "place": 0.004011761509854088,
+          "action": 0.8250245461260644,
+          "state": 0.6051102685051816,
+          "relation": 0.03881278182443646,
+          "abstract": 0.04601708560949935
+        },
+        "wrongLabels": [
+          "state"
+        ]
+      },
+      {
+        "id": "expanded-45a55ea3c24b281e",
+        "word": "yawn",
+        "definition": "To open the mouth widely while breathing in, often when tired.",
+        "goldLabels": [
+          "action"
+        ],
+        "predictedLabels": [
+          "action",
+          "state"
+        ],
+        "probabilities": {
+          "entity": 0.019377824997332958,
+          "place": 0.004709138798746377,
+          "action": 0.616422048498023,
+          "state": 0.7538193182764582,
+          "relation": 0.19280607568444927,
+          "abstract": 0.0451981244770596
+        },
+        "wrongLabels": [
+          "state"
+        ]
+      },
+      {
+        "id": "expanded-bd9c447cf37ada51",
+        "word": "nod",
+        "definition": "To move the head briefly up and down to signal agreement or attention.",
+        "goldLabels": [
+          "action"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.008563714742749612,
+          "place": 0.006178260556676655,
+          "action": 0.3005815779646741,
+          "state": 0.14240302311455244,
+          "relation": 0.2313069046318037,
+          "abstract": 0.42192291344698324
+        },
+        "wrongLabels": [
+          "action",
+          "abstract"
+        ]
+      },
+      {
+        "id": "expanded-ed0c4afbf321d01f",
+        "word": "hatch",
+        "definition": "To emerge from an egg.",
+        "goldLabels": [
+          "action"
+        ],
+        "predictedLabels": [
+          "action",
+          "relation"
+        ],
+        "probabilities": {
+          "entity": 0.0013058109160823776,
+          "place": 0.0009722689604969572,
+          "action": 0.996973898155315,
+          "state": 0.01775650741842553,
+          "relation": 0.7833017091955695,
+          "abstract": 0.0024592475328280472
+        },
+        "wrongLabels": [
+          "relation"
+        ]
+      },
+      {
+        "id": "expanded-8dedb59f6bb47815",
+        "word": "motionless",
+        "definition": "Not moving or changing position.",
+        "goldLabels": [
+          "state"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.0034326700024574475,
+          "place": 0.007029303351950538,
+          "action": 0.06209695311153233,
+          "state": 0.3373127894648609,
+          "relation": 0.07268733810677912,
+          "abstract": 0.46208698109229607
+        },
+        "wrongLabels": [
+          "state",
+          "abstract"
+        ]
+      },
+      {
+        "id": "expanded-de99fb1c9b2af8b3",
+        "word": "porous",
+        "definition": "Having many small holes that allow air or liquid to pass through.",
+        "goldLabels": [
+          "state"
+        ],
+        "predictedLabels": [],
+        "probabilities": {
+          "entity": 0.15845278531852844,
+          "place": 0.002894297166242892,
+          "action": 0.34629587043361826,
+          "state": 0.2985378754950611,
+          "relation": 0.5334789775025467,
+          "abstract": 0.00617791978823968
+        },
+        "wrongLabels": [
+          "state"
+        ]
+      },
+      {
+        "id": "expanded-9cdb09e9baafcaeb",
+        "word": "in tandem",
+        "definition": "With one participant behind another while they move or work together.",
+        "goldLabels": [
+          "action",
+          "relation"
+        ],
+        "predictedLabels": [
+          "relation"
+        ],
+        "probabilities": {
+          "entity": 0.032120530697068876,
+          "place": 0.004828310314914176,
+          "action": 0.3204579812408482,
+          "state": 0.04562371177287166,
+          "relation": 0.9332842061269472,
+          "abstract": 0.3238549328803227
+        },
+        "wrongLabels": [
+          "action"
+        ]
+      },
+      {
+        "id": "expanded-0c355539abb9d122",
+        "word": "coaxial",
+        "definition": "Having a common central axis with another cylindrical or rotating part.",
+        "goldLabels": [
+          "relation"
+        ],
+        "predictedLabels": [],
+        "probabilities": {
+          "entity": 0.05142887383897419,
+          "place": 0.02193525663453234,
+          "action": 0.1524611983868176,
+          "state": 0.06604982544279862,
+          "relation": 0.42231973122993366,
+          "abstract": 0.021620834074412888
+        },
+        "wrongLabels": [
+          "relation"
+        ]
+      },
+      {
+        "id": "expanded-b5c0a415fc0a5d8f",
+        "word": "diagonal to",
+        "definition": "Running at a slant relative to the edges or usual directions of another shape.",
+        "goldLabels": [
+          "relation"
+        ],
+        "predictedLabels": [
+          "state"
+        ],
+        "probabilities": {
+          "entity": 0.00919209036570085,
+          "place": 0.01008731459529001,
+          "action": 0.036552121968586204,
+          "state": 0.7222523620559276,
+          "relation": 0.2951099703642868,
+          "abstract": 0.005035420117652432
+        },
+        "wrongLabels": [
+          "state",
+          "relation"
+        ]
+      },
+      {
+        "id": "expanded-290a454e6a7f612b",
+        "word": "complementary",
+        "definition": "Different in ways that allow two parts to complete or support each other.",
+        "goldLabels": [
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.0028329731410993704,
+          "place": 0.0025180881633818856,
+          "action": 0.006557704372402916,
+          "state": 0.011061112697269263,
+          "relation": 0.5116519715560767,
+          "abstract": 0.9289386842984704
+        },
+        "wrongLabels": [
+          "relation"
+        ]
+      },
+      {
+        "id": "expanded-52a141bfecaea9fd",
+        "word": "senior to",
+        "definition": "Higher than another person in rank or length of service.",
+        "goldLabels": [
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.0212717942264091,
+          "place": 0.012314312250217981,
+          "action": 0.11525376736105812,
+          "state": 0.1677778027147611,
+          "relation": 0.180370061303477,
+          "abstract": 0.895836720651873
+        },
+        "wrongLabels": [
+          "relation"
+        ]
+      },
+      {
+        "id": "expanded-364aa7b9fe9d2dd4",
+        "word": "junior to",
+        "definition": "Lower than another person in rank or length of service.",
+        "goldLabels": [
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.015513979570960167,
+          "place": 0.007984837159623613,
+          "action": 0.10172861104580076,
+          "state": 0.07506542146373876,
+          "relation": 0.37482522644481425,
+          "abstract": 0.8460389077725855
+        },
+        "wrongLabels": [
+          "relation"
+        ]
+      },
+      {
+        "id": "expanded-758183ef2ed17c25",
+        "word": "sibling",
+        "definition": "A person who has one or both parents in common with another person.",
+        "goldLabels": [
+          "entity",
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "entity",
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.41572232157673056,
+          "place": 0.024844600456531685,
+          "action": 0.03930127687033754,
+          "state": 0.00851859074596109,
+          "relation": 0.5283045729618093,
+          "abstract": 0.7922805719741163
+        },
+        "wrongLabels": [
+          "relation"
+        ]
+      },
+      {
+        "id": "expanded-f2509463b0241977",
+        "word": "cousin",
+        "definition": "A relative who shares a grandparent or another recent ancestor but is not a sibling.",
+        "goldLabels": [
+          "entity",
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.18641977400686063,
+          "place": 0.011797726150219998,
+          "action": 0.018448701451447096,
+          "state": 0.020122089724748275,
+          "relation": 0.590413200483668,
+          "abstract": 0.9520005785315714
+        },
+        "wrongLabels": [
+          "entity",
+          "relation"
+        ]
+      },
+      {
+        "id": "expanded-3528237dd8a0e0bd",
+        "word": "supervisor",
+        "definition": "A person responsible for overseeing the work of other people.",
+        "goldLabels": [
+          "entity",
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "relation",
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.09612766367976759,
+          "place": 0.004487900486721422,
+          "action": 0.02208055887518807,
+          "state": 0.006676215779369207,
+          "relation": 0.7298139853732212,
+          "abstract": 0.9904413516425263
+        },
+        "wrongLabels": [
+          "entity"
+        ]
+      },
+      {
+        "id": "expanded-135a5cd376fee9a7",
+        "word": "colleague",
+        "definition": "A person working alongside another in the same organization or profession.",
+        "goldLabels": [
+          "entity",
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "relation",
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.3553169251828156,
+          "place": 0.007398629348211442,
+          "action": 0.029922390789941234,
+          "state": 0.004482541049267265,
+          "relation": 0.9111909796172827,
+          "abstract": 0.9516397023246169
+        },
+        "wrongLabels": [
+          "entity"
+        ]
+      },
+      {
+        "id": "expanded-5dce5029bee9fb3e",
+        "word": "beneficiary",
+        "definition": "A person or group entitled to receive a benefit from another party\u2019s arrangement.",
+        "goldLabels": [
+          "entity",
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "relation",
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.3049500763966943,
+          "place": 0.008176706891746268,
+          "action": 0.010531353397000565,
+          "state": 0.0010979016793573155,
+          "relation": 0.701391265140049,
+          "abstract": 0.9947431316749319
+        },
+        "wrongLabels": [
+          "entity"
+        ]
+      },
+      {
+        "id": "expanded-9bf2a657499fde12",
+        "word": "teamwork",
+        "definition": "Coordinated effort by people working toward a shared goal.",
+        "goldLabels": [
+          "action",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "relation",
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.06845300754946639,
+          "place": 0.006832586053169356,
+          "action": 0.18737061714655975,
+          "state": 0.02015407662589438,
+          "relation": 0.8405970290980561,
+          "abstract": 0.9547805212393836
+        },
+        "wrongLabels": [
+          "action",
+          "relation"
+        ]
+      },
+      {
+        "id": "expanded-d322e4249439c32a",
+        "word": "cooperation",
+        "definition": "Working together willingly to achieve a shared result.",
+        "goldLabels": [
+          "action",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "relation",
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.04709715447229714,
+          "place": 0.003571663840432865,
+          "action": 0.020789727349638357,
+          "state": 0.008466737079832367,
+          "relation": 0.9304154342097007,
+          "abstract": 0.9826569546326945
+        },
+        "wrongLabels": [
+          "action",
+          "relation"
+        ]
+      },
+      {
+        "id": "expanded-97364debf4e468f4",
+        "word": "method",
+        "definition": "An organized way of doing or investigating something.",
+        "goldLabels": [
+          "action",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.004921692314353209,
+          "place": 0.005759946152752697,
+          "action": 0.04801241764955108,
+          "state": 0.005719881480689768,
+          "relation": 0.3963813362871829,
+          "abstract": 0.8660776586615139
+        },
+        "wrongLabels": [
+          "action"
+        ]
+      },
+      {
+        "id": "expanded-834b41197fe6c981",
+        "word": "process",
+        "definition": "A series of steps or changes that leads toward a result.",
+        "goldLabels": [
+          "action",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.020723756638482343,
+          "place": 0.031507500272489365,
+          "action": 0.5013674861050452,
+          "state": 0.005731118681815368,
+          "relation": 0.0161100333398496,
+          "abstract": 0.9523384645257043
+        },
+        "wrongLabels": [
+          "action"
+        ]
+      },
+      {
+        "id": "expanded-b42277020e6b367c",
+        "word": "otherwise",
+        "definition": "In a different way or under different circumstances.",
+        "goldLabels": [
+          "abstract"
+        ],
+        "predictedLabels": [
+          "relation",
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.0025592868601903096,
+          "place": 0.0018647368112104622,
+          "action": 0.013703082207180034,
+          "state": 0.020742615816741947,
+          "relation": 0.680196245029829,
+          "abstract": 0.9428747452822644
+        },
+        "wrongLabels": [
+          "relation"
+        ]
+      },
+      {
+        "id": "expanded-a64c8be672c45ba5",
+        "word": "roughly",
+        "definition": "Approximately, without claiming exact measurement.",
+        "goldLabels": [
+          "abstract"
+        ],
+        "predictedLabels": [],
+        "probabilities": {
+          "entity": 0.007541950000859427,
+          "place": 0.011436639557227913,
+          "action": 0.02353629101914668,
+          "state": 0.13025610678653127,
+          "relation": 0.2513901118943586,
+          "abstract": 0.2743316091445466
+        },
+        "wrongLabels": [
+          "abstract"
+        ]
+      },
+      {
+        "id": "expanded-fbbd20224334d85b",
+        "word": "gradual",
+        "definition": "Happening by small degrees over a period of time.",
+        "goldLabels": [
+          "action",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.004631464239507595,
+          "place": 0.009054031594212005,
+          "action": 0.12034783234175166,
+          "state": 0.5342168575227557,
+          "relation": 0.06530017304540796,
+          "abstract": 0.44224569094782984
+        },
+        "wrongLabels": [
+          "action"
+        ]
+      },
+      {
+        "id": "expanded-ca44378ab719e5fc",
+        "word": "occur",
+        "definition": "To happen at a particular time or under particular conditions.",
+        "goldLabels": [
+          "action",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.004171801453514202,
+          "place": 0.0033277388638985046,
+          "action": 0.4154177862929543,
+          "state": 0.017729661342089826,
+          "relation": 0.09618050627277357,
+          "abstract": 0.9309694582930454
+        },
+        "wrongLabels": [
+          "action"
+        ]
+      }
+    ],
+    "retired-new-48-v1": [
+      {
+        "id": "regphys-place-015",
+        "word": "colonnade",
+        "definition": "A row of columns supporting a roof or other structure.",
+        "goldLabels": [
+          "entity",
+          "place",
+          "relation"
+        ],
+        "predictedLabels": [
+          "entity",
+          "place"
+        ],
+        "probabilities": {
+          "entity": 0.49113646741777656,
+          "place": 0.9299884796969652,
+          "action": 0.004274913833834395,
+          "state": 0.003332837778991077,
+          "relation": 0.024382513099989418,
+          "abstract": 0.0035355111706531247
+        },
+        "wrongLabels": [
+          "relation"
+        ]
+      },
+      {
+        "id": "regphys-place-016",
+        "word": "washhouse",
+        "definition": "A separate building used for washing clothes.",
+        "goldLabels": [
+          "place"
+        ],
+        "predictedLabels": [
+          "entity",
+          "place"
+        ],
+        "probabilities": {
+          "entity": 0.5588296628714658,
+          "place": 0.7241359092395071,
+          "action": 0.015647243460359356,
+          "state": 0.0010642161958514288,
+          "relation": 0.01717432835836014,
+          "abstract": 0.003250578511595515
+        },
+        "wrongLabels": [
+          "entity"
+        ]
+      },
+      {
+        "id": "regphys-place-017",
+        "word": "icehouse",
+        "definition": "A building designed to store ice for later use.",
+        "goldLabels": [
+          "place"
+        ],
+        "predictedLabels": [
+          "entity",
+          "place"
+        ],
+        "probabilities": {
+          "entity": 0.5875311634998168,
+          "place": 0.8599908305393827,
+          "action": 0.030672784258004227,
+          "state": 0.0046727120810484985,
+          "relation": 0.03660347257472744,
+          "abstract": 0.010533686354725338
+        },
+        "wrongLabels": [
+          "entity"
+        ]
+      },
+      {
+        "id": "reg-new-006",
+        "word": "hibernate",
+        "definition": "For an animal to pass a season in a prolonged period of reduced activity and metabolism.",
+        "goldLabels": [
+          "state"
+        ],
+        "predictedLabels": [
+          "action"
+        ],
+        "probabilities": {
+          "entity": 0.0054279931922803755,
+          "place": 0.01978344590071091,
+          "action": 0.9036138730002884,
+          "state": 0.024281705362166003,
+          "relation": 0.0429808634395275,
+          "abstract": 0.15169948383166124
+        },
+        "wrongLabels": [
+          "action",
+          "state"
+        ]
+      },
+      {
+        "id": "reg-new-068",
+        "word": "granular",
+        "definition": "Made of or covered with distinct small grains.",
+        "goldLabels": [
+          "state"
+        ],
+        "predictedLabels": [
+          "entity"
+        ],
+        "probabilities": {
+          "entity": 0.4132240756898314,
+          "place": 0.009151062293931813,
+          "action": 0.04011801833534262,
+          "state": 0.28614708975435443,
+          "relation": 0.026686280728609218,
+          "abstract": 0.04717450322807462
+        },
+        "wrongLabels": [
+          "entity",
+          "state"
+        ]
+      },
+      {
+        "id": "relabs-new-004",
+        "word": "keyed",
+        "definition": "Fitted together by matching grooves or projections that prevent unwanted movement.",
+        "goldLabels": [
+          "relation"
+        ],
+        "predictedLabels": [
+          "state"
+        ],
+        "probabilities": {
+          "entity": 0.0015717234947701351,
+          "place": 0.008691406403184056,
+          "action": 0.019564130239239544,
+          "state": 0.9044611639463245,
+          "relation": 0.3362812808524131,
+          "abstract": 0.011438720282882215
+        },
+        "wrongLabels": [
+          "state",
+          "relation"
+        ]
+      },
+      {
+        "id": "relabs-new-005",
+        "word": "buttressed",
+        "definition": "Reinforced by a support that braces a wall or structure from the side.",
+        "goldLabels": [
+          "relation"
+        ],
+        "predictedLabels": [
+          "state"
+        ],
+        "probabilities": {
+          "entity": 0.17309895286174626,
+          "place": 0.015217102541290226,
+          "action": 0.0022831442497475217,
+          "state": 0.6556527888754836,
+          "relation": 0.34662342298304,
+          "abstract": 0.006479907284139633
+        },
+        "wrongLabels": [
+          "state",
+          "relation"
+        ]
+      },
+      {
+        "id": "relabs-new-015",
+        "word": "fastener",
+        "definition": "A device that joins two or more parts so they stay together.",
+        "goldLabels": [
+          "entity",
+          "relation"
+        ],
+        "predictedLabels": [
+          "entity"
+        ],
+        "probabilities": {
+          "entity": 0.9518642642446714,
+          "place": 0.008109290868252572,
+          "action": 0.009645927205832875,
+          "state": 0.00490528580391638,
+          "relation": 0.1001483592039553,
+          "abstract": 0.0212456435253756
+        },
+        "wrongLabels": [
+          "relation"
+        ]
+      },
+      {
+        "id": "relabs-new-016",
+        "word": "guardian",
+        "definition": "A person legally responsible for caring for someone who cannot fully care for themselves.",
+        "goldLabels": [
+          "entity",
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.05106665009061986,
+          "place": 0.008165193059665553,
+          "action": 0.008918101216624992,
+          "state": 0.15430667756924657,
+          "relation": 0.2416912943017151,
+          "abstract": 0.9887942280802847
+        },
+        "wrongLabels": [
+          "entity",
+          "relation"
+        ]
+      },
+      {
+        "id": "relabs-new-018",
+        "word": "landlord",
+        "definition": "A person or organization that rents property to a tenant.",
+        "goldLabels": [
+          "entity",
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "entity",
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.4996978208112341,
+          "place": 0.027091481737742697,
+          "action": 0.015031215499147564,
+          "state": 0.006729133623661693,
+          "relation": 0.5222034822288179,
+          "abstract": 0.9132508708858547
+        },
+        "wrongLabels": [
+          "relation"
+        ]
+      },
+      {
+        "id": "relabs-new-049",
+        "word": "hierarchy",
+        "definition": "An arrangement of people or things into levels of rank or authority.",
+        "goldLabels": [
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.0444328636300707,
+          "place": 0.040514395609794134,
+          "action": 0.03125680671402101,
+          "state": 0.03235791926060116,
+          "relation": 0.5288099859360558,
+          "abstract": 0.9528430325193774
+        },
+        "wrongLabels": [
+          "relation"
+        ]
+      },
+      {
+        "id": "relabs-new-075",
+        "word": "handoff",
+        "definition": "The transfer of responsibility, authority, or an object from one person or group to another.",
+        "goldLabels": [
+          "action",
+          "relation",
+          "abstract"
+        ],
+        "predictedLabels": [
+          "relation",
+          "abstract"
+        ],
+        "probabilities": {
+          "entity": 0.04040046565731404,
+          "place": 0.0034704593915980734,
+          "action": 0.03037244001237821,
+          "state": 0.004243795809677635,
+          "relation": 0.6414636725642977,
+          "abstract": 0.9784461153717281
+        },
+        "wrongLabels": [
+          "action"
+        ]
+      }
+    ]
+  }
+}
