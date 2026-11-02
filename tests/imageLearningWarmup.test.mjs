@@ -313,19 +313,19 @@ test('a picker cancelled while waiting for startup warmup never sends scoring re
   assert.equal(getImageLearningStatus().phase, 'ready');
 });
 
-test('the foreground picker screens thirty photos and never appends unscored pool entries', async context => {
+test('the foreground picker screens forty-five photos and never appends unscored pool entries', async context => {
   const env = setup(context, { config: { enabled: true } });
-  const candidates = Array.from({length:35},(_,i)=>({...photo,url:`https://images.example/pool-${i}.jpg`}));
+  const candidates = Array.from({length:50},(_,i)=>({...photo,url:`https://images.example/pool-${i}.jpg`}));
   const images = await rankImagesLocally(meaning, candidates, {
     storage: env.storage,
     fetchImpl: async () => new Response('image pixels', { headers: { 'content-type': 'image/jpeg' } }),
     decode: async () => ({ width:64, height:64 }),
     resize: () => assert.fail('Small photos need no resize')
   });
-  assert.equal(env.workers[0].messages.filter(message=>message.type==='image').length,30);
+  assert.equal(env.workers[0].messages.filter(message=>message.type==='image').length,45);
   assert.ok(images.length>0);
   assert.ok(images.every(image=>image.ml?.model===CLIP_TAG));
-  assert.ok(images.every(image=>Number(/pool-(\d+)/.exec(image.url)[1])<30));
+  assert.ok(images.every(image=>Number(/pool-(\d+)/.exec(image.url)[1])<45));
 });
 
 // Keep last: CPU fallback is intentionally remembered for this service session.

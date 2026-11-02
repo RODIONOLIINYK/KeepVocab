@@ -90,8 +90,8 @@ const offline = () => { throw new Error('Unexpected network request'); };
 const makeService = storage => new DriveSyncService(storage || new MemoryStorage(), offline);
 
 function sceneRecord(word) {
-  return { version: 1, generatorVersion: '3', fingerprint: imageSenseFingerprint(word), source: 'gemini',
-    scenes: ['person balancing stones beside quiet water'], generatedAt: '2026-05-12T09:00:00.000Z' };
+  return { version: 1, generatorVersion: '4', fingerprint: imageSenseFingerprint(word), source: 'gemini',
+    scenes: ['person balancing stones beside quiet water', 'hands stacking smooth rocks beside a stream'], generatedAt: '2026-05-12T09:00:00.000Z' };
 }
 
 function learningWord(overrides = {}) {

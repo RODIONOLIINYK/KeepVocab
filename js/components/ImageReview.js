@@ -46,7 +46,7 @@ export function mountImageReview(container, words, {
     // must restore its real saved image state, rather than accept that proposal.
     if (Array.isArray(originalWords)) Object.assign(original, imageSelectionPatch(currentImage(originalWords[index] || {})));
     const automatic = canAutoSelectImage(candidates);
-    return { original, proposal, candidates, visibleCount: 9, automatic, explicit: false, decision: automatic ? 'keep' : 'pending', viewed: new Set(), seen: new Set([...identities(proposal), ...candidates.flatMap(identities)]), page: Array.isArray(word.imageCandidates) && word.imageCandidates.length ? 1 : 0, revision: 0, controller: null, loading: false, error: '' };
+    return { original, proposal, candidates, visibleCount: 45, automatic, explicit: false, decision: automatic ? 'keep' : 'pending', viewed: new Set(), seen: new Set([...identities(proposal), ...candidates.flatMap(identities)]), page: Array.isArray(word.imageCandidates) && word.imageCandidates.length ? 1 : 0, revision: 0, controller: null, loading: false, error: '' };
   });
   let active = true;
   let applying = false;
@@ -142,7 +142,7 @@ export function mountImageReview(container, words, {
     const excluded = new Set([...reserved(index), ...row.seen]);
     render();
     try {
-      const candidates = await findImages(clone(row.original), { limit: 30, page: row.page, excludeUrls: [...excluded], signal: controller.signal });
+      const candidates = await findImages(clone(row.original), { limit: 45, page: row.page, excludeUrls: [...excluded], signal: controller.signal });
       if (!active || revision !== row.revision || controller.signal.aborted) return;
       const candidate = (Array.isArray(candidates) ? candidates : []).find(image => safeImage(image?.url)
         && !identities(image).some(url => excluded.has(url)) && !conflict(index, image));
@@ -150,8 +150,8 @@ export function mountImageReview(container, words, {
         row.error = 'No different image found. Try another search or save without a new image.';
       } else {
         const fresh = candidates.filter(image => safeImage(image?.url) && !identities(image).some(url => excluded.has(url)) && !conflict(index, image)).map(clone);
-        row.visibleCount = Math.min(row.visibleCount, row.candidates.length) + 9;
         row.candidates = [...row.candidates, ...fresh];
+        row.visibleCount = row.candidates.length;
         if (!kept) row.proposal = clone(candidate);
         row.automatic = !kept && canAutoSelectImage(row.candidates);
         if (!kept) row.explicit = false;

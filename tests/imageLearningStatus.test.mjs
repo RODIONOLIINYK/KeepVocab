@@ -110,3 +110,31 @@ test('lazy local scoring marks the model installed when its worker becomes ready
   assert.equal(getImageLearningStatus().installed, true);
   assert.ok(states.some(state => state.phase === 'ready' && state.installed === true));
 });
+
+test('CLIP scores all forty-five scene candidates and rejects failures before display', async context => {
+  await setup(context); let imageCalls = 0;
+  const vector = axis => Array.from({ length: 512 }, (_, i) => Number(i === axis));
+  globalThis.Worker = class {
+    postMessage(data) {
+      let result;
+      if (data.type === 'texts') result = data.payload.texts.map((_, i) => vector(i ? 1 : 0));
+      else {
+        const index = imageCalls++;
+        result = index === 44 ? vector(1) : vector(index + 2).map((value, i) => i === 0 ? .6 : value * .8);
+      }
+      queueMicrotask(() => {
+        if (data.type === 'texts') this.onmessage({ data: { type: 'status', phase: 'ready', backend: 'wasm' } });
+        this.onmessage({ data: { id: data.id, result } });
+      });
+    }
+    terminate() {}
+  };
+  const candidates = Array.from({ length: 45 }, (_, i) => ({ url: `https://clip45.test/${i}.jpg`, title: `River scene ${i}`, visualScene: `scene ${i % 3}` }));
+  const results = await rankImagesLocally(meaning, candidates, {
+    fetchImpl: async () => new Response('pixels', { headers: { 'content-type': 'image/jpeg' } }),
+    decode: async () => ({ width: 64, height: 64 }), resize: () => assert.fail('Small images need no resize')
+  });
+  assert.equal(imageCalls, 45);
+  assert.equal(results.length, 44);
+  assert.ok(!results.some(image => image.url === candidates[44].url));
+});

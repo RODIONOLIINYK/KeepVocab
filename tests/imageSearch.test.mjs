@@ -147,7 +147,7 @@ test('physical object meanings search the object name without inventing a scene'
   assert.equal(isPhysicalObjectSense(laptops), true);
   assert.equal(isConcreteVisualScene('wrench', wrench), true);
   assert.equal(isConcreteVisualScene('conquest', { word: 'conquest', partOfSpeech: 'noun', definition: 'A victory gained through force.' }), false);
-  assert.deepEqual(scenes, ['wrench']);
+  assert.deepEqual(scenes, ['wrench', 'close up view of wrench']);
   assert.equal(buildVisualSearchQueries(wrench)[0], 'wrench');
   assert.equal(buildVisualSearchQueries(laptops)[0], 'laptops');
 });

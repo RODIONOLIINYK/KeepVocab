@@ -3,7 +3,7 @@
 // lower than a known contrast or different-category sense (margin >= 0).
 export const IMAGE_SEMANTIC_FILTER = Object.freeze({
   minimumSimilarity: .19,
-  candidatePoolSize: 30
+  candidatePoolSize: 45
 });
 
 export function passesImageSemanticGate(semantic, policy = IMAGE_SEMANTIC_FILTER) {

@@ -305,7 +305,7 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     const meaningFeatures = encodeMeaning(texts[0]);
     const items = [];
     // Oversample in bounded worker batches; only screened photos reach the UI.
-    const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(40,
+    const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(45,
       Number(options.localCandidateLimit) || IMAGE_SEMANTIC_FILTER.candidatePoolSize)));
     const prepareBatch = start => start < scoringLimit
       ? prepareImageThumbnails(candidates.slice(start, Math.min(start + 4, scoringLimit)), { ...options, preferOriginal: true, timeoutMs: options.timeoutMs || 2800 })

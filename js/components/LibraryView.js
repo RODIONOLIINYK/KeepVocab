@@ -183,15 +183,9 @@ export function renderLibraryView(container) {
     const latest = driveSync.getWords().find(item => item.id === wordId);
     if (preparedWord.imageScenes && latest && imageSenseFingerprint(latest) === imageSenseFingerprint(word)) driveSync.updateWord(wordId, { imageScenes: preparedWord.imageScenes });
     word = preparedWord;
-    if (!activeImageConcept) activeImageConcept = suggestedImageScenes[0] || '';
-    if (refresh) {
-      if (customActive) imageResultPage += 1;
-      else {
-        const next = nextImageSuggestionState(suggestedImageScenes, activeImageConcept, imageResultPage);
-        activeImageConcept = next.concept;
-        imageResultPage = next.page;
-      }
-    }
+    // Empty selection means all suggested scenes. A scene is narrowed only
+    // after an explicit click, never just because it is first in the list.
+    if (refresh) imageResultPage += 1;
     render();
     const sceneQueries = activeImageSearchQueries(activeImageConcept);
     const results = await findRelevantImages(word, {
@@ -204,7 +198,7 @@ export function renderLibraryView(container) {
       pexelsApiKey: imageProviderSettings.pexelsApiKey,
       otherDefinitions,
       page: imageResultPage,
-      limit: 30
+      limit: 45
     });
     if (container.libraryViewOwner !== viewOwner || !container.querySelector('#library-edit-form') || editId !== wordId || requestId !== imageRequestId) return;
     if (!meaningStillCurrent()) return;
@@ -218,11 +212,11 @@ export function renderLibraryView(container) {
       searchQuery: word.imageSearchQuery || activeImageConcept,
       imageKind: word.imageKind || 'external'
     } : null;
-    const fresh = activeImageResultCandidates(currentImage, results, 30)
+    const fresh = activeImageResultCandidates(currentImage, results, 45)
       .filter(image => !imageIdentityKeys(image).some(key => imageSeen.has(key)));
     for (const image of fresh) for (const key of imageIdentityKeys(image)) imageSeen.add(key);
     imageCandidatePool = refresh ? [...imageCandidatePool, ...fresh] : fresh;
-    imageCandidates = imageCandidatePool.slice(0, refresh ? imageCandidates.length + 9 : 9);
+    imageCandidates = [...imageCandidatePool];
     imageQuery = imageCandidates[0]?.searchQuery || activeImageConcept;
     imageLoading = false;
     imageError = imageCandidates.length ? '' : customActive
@@ -245,6 +239,7 @@ export function renderLibraryView(container) {
     imageQuery = '';
     activeImageConcept = '';
     customImageConcept = String(driveSync.getWords().find(item => item.id === wordId)?.imageCustomConcept || '');
+    activeImageConcept = customImageConcept;
     suggestedImageScenes = [];
     imageResultPage = 1;
     render();
@@ -431,7 +426,6 @@ export function renderLibraryView(container) {
     const savedEditing = editId ? driveSync.getWords().find(word => word.id === editId) : null;
     const editing = savedEditing ? { ...savedEditing, ...editDraft } : null;
     const imageConcepts = [...new Set([customImageConcept, ...suggestedImageScenes].filter(Boolean))];
-    if (editing && !activeImageConcept) activeImageConcept = imageConcepts[0] || '';
     const currentImageUrl = removeImage ? '' : (selectedImage?.url || editing?.imageUrl || '');
     imageReviewController?.destroy();
     imageReviewController = null;
@@ -480,13 +474,13 @@ export function renderLibraryView(container) {
                 <button type="button" class="status-pill connected" id="use-custom-image-concept">Use custom concept</button>
                 ${customImageConcept ? '<button type="button" class="status-pill offline" id="clear-custom-image-concept">Remove custom</button>' : ''}
               </div>
-              ${imageConcepts.length ? `<div>${imageConcepts.map(concept => `<button type="button" class="${activeImageConcept === concept ? 'active' : ''}" data-image-concept="${escapeHtml(concept)}">${escapeHtml(concept)}${customImageConcept === concept ? ' · custom' : ''}</button>`).join('')}</div>` : ''}
-              <small>Choose a suggested scene or describe your own. “More options” explores the next scene, then more results.</small>
+              ${imageConcepts.length ? `<div><button type="button" class="${!activeImageConcept ? 'active' : ''}" data-image-concept="">All suggested scenes</button>${imageConcepts.map(concept => `<button type="button" class="${activeImageConcept === concept ? 'active' : ''}" data-image-concept="${escapeHtml(concept)}">${escapeHtml(concept)}${customImageConcept === concept ? ' · custom' : ''}</button>`).join('')}</div>` : ''}
+              <small>Suggestions combine every scene. Choose one to narrow the search, or describe your own. “More options” loads the next page.</small>
               ${activeImageConcept ? `<small class="active-image-search-state">Searching: “${escapeHtml(activeImageConcept)}” · page ${imageResultPage}</small>` : ''}
             </div>
             </div></details>
             ${currentImageUrl ? `<div class="selected-image-preview"><img src="${escapeHtml(currentImageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current saved image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span><button type="button" class="image-text-action" id="image-wrong"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i>Hide this photo</button></div></div>` : ''}
-            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching for “${escapeHtml(activeImageConcept || editing.word)}” · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-results-heading"><strong>Results for “${escapeHtml(activeImageConcept || imageQuery)}”</strong><span>${imageCandidates.length} images · page ${imageResultPage}</span></div><div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.thumbnailUrl || image.url)}" alt="${escapeHtml(image.title)}" loading="lazy" decoding="async"><span>${escapeHtml(image.title)}</span><small>${escapeHtml(image.source || 'Public image')}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
+            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching ${activeImageConcept ? `for “${escapeHtml(activeImageConcept)}”` : 'all suggested scenes'} · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-results-heading"><strong>${activeImageConcept ? `Results for “${escapeHtml(activeImageConcept)}”` : 'Results from all suggested scenes'}</strong><span>${imageCandidates.length} images · page ${imageResultPage}</span></div><div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.thumbnailUrl || image.url)}" alt="${escapeHtml(image.title)}" loading="lazy" decoding="async"><span>${escapeHtml(image.title)}</span><small>${escapeHtml(image.source || 'Public image')}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
             <p class="image-license-note">${imageCandidates.some(image => image.source === 'Pexels') ? '<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Photos provided by Pexels</a>. ' : ''}</p>
           </section>
           <div class="inline-actions"><button class="btn-green-solid" type="submit">Save changes</button></div>
@@ -619,7 +613,7 @@ export function renderLibraryView(container) {
     container.querySelector('#clear-custom-image-concept')?.addEventListener('click', () => {
       const removed = customImageConcept;
       customImageConcept = '';
-      if (activeImageConcept === removed) activeImageConcept = suggestedImageScenes[0] || '';
+      if (activeImageConcept === removed) activeImageConcept = '';
       imageResultPage = 1;
       loadImageCandidates(editId);
     });

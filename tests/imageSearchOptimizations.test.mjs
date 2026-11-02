@@ -7,6 +7,8 @@ function storage() {
   return { getItem: key => data.get(key) || null, setItem: (key, value) => data.set(key, value) };
 }
 const scene = 'person balancing stones beside quiet water';
+const alternate = 'hands stacking smooth rocks beside a stream';
+const pair = [scene, alternate];
 const response = result => ({ ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(result) }] } }] }) });
 const requestedSenses = options => JSON.parse(JSON.parse(options.body).contents[0].parts[0].text.split('Senses: ')[1].split('\n')[0]);
 const sense = id => ({ word: `imageprobe${id}`, partOfSpeech: 'adjective', definition: `A particular difficult meaning number ${id} which needs an exact visible illustration.` });
@@ -15,13 +17,13 @@ test('physical objects and reviewed exact curated meanings avoid API calls; broa
   const words = [{ word: 'wrench', partOfSpeech: 'noun', definition: 'A metal tool used for gripping and turning nuts and bolts.' }, { word: 'conquest', definition: 'A victory gained through force.' }];
   const results = await prepareImageScenes(words, { storage: storage(), fetchImpl: () => assert.fail('Safe local scenes need no API call') });
   assert.deepEqual(results.map(word => word.imageScenes.source), ['object', 'curated']);
-  assert.deepEqual(results[0].imageScenes.scenes, ['wrench']);
+  assert.deepEqual(results[0].imageScenes.scenes, ['wrench', 'close up view of wrench']);
   assert.deepEqual(buildVisualSceneDescriptions({ word: 'permanent', definition: 'Lasting forever, with no end.' }), []);
   assert.deepEqual(buildVisualSceneDescriptions({ word: 'feeling', definition: 'An emotion or mood.' }), []);
   assert.ok(buildVisualSceneDescriptions({ word: 'disdain', definition: 'A feeling of contempt or scorn.' }).every(item => /curled lip|dismissive|rolling eyes/.test(item)));
   let calls = 0;
   const [bat] = await prepareImageScenes([{ word: 'bat', partOfSpeech: 'noun', definition: 'A wooden tool used to hit a ball in baseball.' }], {
-    storage: storage(), fetchImpl: async () => { calls++; return response({ scenes: ['player swinging wooden club toward baseball'] }); }
+    storage: storage(), fetchImpl: async () => { calls++; return response({ scenes: ['player swinging wooden club toward baseball', 'child hitting ball across a grassy field'] }); }
   });
   assert.equal(calls, 1);
   assert.equal(bat.imageScenes.source, 'gemini');
@@ -30,7 +32,7 @@ test('physical objects and reviewed exact curated meanings avoid API calls; broa
 test('scene records survive renderer restart and wording edits, but semantic and generator changes invalidate them', async () => {
   const saved = storage(); const word = { ...sense('cache'), sourceDefinition: 'An unfamiliar quality that requires careful visible interpretation.' };
   let calls = 0;
-  const fetchImpl = async () => { calls++; return response({ scenes: [scene] }); };
+  const fetchImpl = async () => { calls++; return response({ scenes: pair }); };
   const [prepared] = await prepareImageScenes([word], { storage: saved, fetchImpl });
   assert.equal(prepared.definition, word.definition);
   assert.equal(word.imageScenes, undefined);
@@ -52,14 +54,14 @@ test('bulk scene generation batches twenty distinct senses and shares concurrent
   const fetchImpl = async (_url, options) => {
     const items = requestedSenses(options); batches.push(items);
     await new Promise(resolve => setTimeout(resolve, 1));
-    return response({ items: items.map(item => ({ id: item.id, scenes: [scene] })) });
+    return response({ items: items.map(item => ({ id: item.id, scenes: pair })) });
   };
   const bulk = prepareImageScenes(words, { storage: saved, fetchImpl, sceneBatchSize: 20 });
   const single = generateVisualScenesWithGemini(words[0], { storage: saved, fetchImpl });
   const [prepared, scenes] = await Promise.all([bulk, single]);
   assert.deepEqual(batches.map(batch => batch.length), [20, 5]);
   assert.ok(prepared.every(word => word.imageScenes.scenes[0] === scene));
-  assert.deepEqual(scenes, [scene]);
+  assert.deepEqual(scenes, pair);
 
   const distinctSingles = [sense('coalesce0'), sense('coalesce1'), sense('coalesce2')];
   const coalesced = await Promise.all(distinctSingles.map(item => generateVisualScenesWithGemini(item, { storage: saved, fetchImpl })));
@@ -72,8 +74,8 @@ test('partial batches retry only failed IDs once and do not persist malformed or
   const batches = []; const saved = storage();
   const fetchImpl = async (_url, options) => {
     const items = requestedSenses(options); batches.push(items.map(item => item.id));
-    if (batches.length === 1) return response({ items: [{ id: items[0].id, scenes: [scene] }] });
-    return response({ items: [{ id: items[0].id, scenes: [scene] }, { id: items[0].id, scenes: [scene] }, { id: items[1].id, scenes: [scene] }] });
+    if (batches.length === 1) return response({ items: [{ id: items[0].id, scenes: pair }] });
+    return response({ items: [{ id: items[0].id, scenes: pair }, { id: items[0].id, scenes: pair }, { id: items[1].id, scenes: pair }] });
   };
   const result = await prepareImageScenes(words, { storage: saved, fetchImpl });
   assert.deepEqual(batches, [['sense-0', 'sense-1', 'sense-2'], ['sense-1', 'sense-2']]);
@@ -96,7 +98,7 @@ test('quota failures stop later batches and one dismissed consumer does not canc
     calls++;
     await new Promise(resolve => { release = resolve; });
     assert.equal(options.signal.aborted, false);
-    return response({ scenes: [scene] });
+    return response({ scenes: pair });
   };
   const dismissed = prepareImageScenes([word], { storage: saved, fetchImpl, signal: controller.signal });
   const needed = prepareImageScenes([word], { storage: saved, fetchImpl });
@@ -174,11 +176,11 @@ test('search keeps the exact prompt after rejecting one of its results', async (
 
 test('search ranks the whole bounded candidate pool before choosing a small result set and avoids needless pixel loads', async () => {
   let loads = 0;
-  const images = Array.from({ length: 40 }, (_, index) => ({ title: index === 39 ? 'Unique pool river bank scene' : `River bank ${index}`, thumbnail: `https://pool.test/${index}.jpg`, foreign_landing_url: `https://pool.test/source/${index}`, tags: ['river', 'bank'] }));
+  const images = Array.from({ length: 40 }, (_, index) => ({ title: index === 14 ? 'Unique pool river bank scene' : `River bank ${index}`, thumbnail: `https://pool.test/${index}.jpg`, foreign_landing_url: `https://pool.test/source/${index}`, tags: ['river', 'bank'] }));
   const found = await findRelevantImages(sense('widepool'), { aiScenes: false, extraQueries: ['unique pool river bank scene'], onlyExtraQueries: true, limit: 1,
     fetchImpl: async () => ({ ok: true, json: async () => ({ results: images }) }), loadImage: async () => { loads++; return true; }
   });
-  assert.equal(found[0].url, 'https://pool.test/39.jpg');
+  assert.equal(found[0].url, 'https://pool.test/14.jpg');
   assert.ok(loads <= 2);
 });
 
@@ -242,10 +244,10 @@ test('prepared meaning prompts drive image searches without another AI call or r
     assert.deepEqual(items[0].otherDefinitions, [words[1].definition]);
     assert.deepEqual(items[1].otherDefinitions, [words[0].definition]);
     // The mapping must follow IDs even if the model reverses its response.
-    return response({ items: items.map((item, index) => ({ id: item.id, scenes: [scenes[index]] })).reverse() });
+    return response({ items: items.map((item, index) => ({ id: item.id, scenes: [scenes[index], index === 0 ? 'children skipping stones beside a winding river' : 'teller handing coins across a service counter'] })).reverse() });
   } });
   assert.equal(calls, 1);
-  assert.deepEqual(prepared.map(word => word.imageScenes.scenes), scenes.map(scene => [scene]));
+  assert.deepEqual(prepared.map(word => word.imageScenes.scenes[0]), scenes);
   for (const [index, word] of prepared.entries()) {
     const queries = [];
     const fetchImpl = async url => {
@@ -258,7 +260,7 @@ test('prepared meaning prompts drive image searches without another AI call or r
     // Also cover a renderer that only has the persisted scene cache.
     await findRelevantImages(words[index], { aiScenes: false, storage: saved, fetchImpl, validateImages: false });
     assert.ok(queries.length > 0);
-    assert.deepEqual([...new Set(queries)], [compactVisualSearchQuery(scenes[index])]);
+    assert.deepEqual([...new Set(queries)], prepared[index].imageScenes.scenes.map(compactVisualSearchQuery));
   }
 });
 
@@ -269,19 +271,20 @@ test('generation receives meaning restrictions and retries duplicate depictions 
     { word: 'sceneambiguity', partOfSpeech: 'noun', definition: 'A supporting structure beneath a machine.' }
   ];
   const scenes = ['person mounting wooden notice beside entrance', 'mechanic fitting metal support beneath heavy machine'];
+  const alternatives = ['worker hanging a warning board outside doorway', 'engineer adjusting steel platform below a motor'];
   const batches = [];
   const prepared = await prepareImageScenes(words, { storage: saved, fetchImpl: async (_url, options) => {
     const items = requestedSenses(options); batches.push(items);
-    if (batches.length === 1) return response({ items: items.map(item => ({ id: item.id, scenes: [scenes[0]] })) });
-    return response({ items: [{ id: items[0].id, scenes: [scenes[1]] }] });
+    if (batches.length === 1) return response({ items: items.map(item => ({ id: item.id, scenes: [scenes[0], alternatives[0]] })) });
+    return response({ items: [{ id: items[0].id, scenes: [scenes[1], alternatives[1]] }] });
   } });
   assert.equal(batches.length, 2);
   assert.equal(batches[0][0].definition, words[0].sourceDefinition);
   assert.equal(batches[0][0].learnerDefinition, words[0].definition);
   assert.equal(batches[0][0].usageNote, words[0].usageNote);
   assert.deepEqual(batches[0][0].labels, ['literal']);
-  assert.deepEqual(batches[1][0].avoidScenes, [scenes[0]]);
-  assert.deepEqual(prepared.map(word => word.imageScenes.scenes), scenes.map(scene => [scene]));
+  assert.deepEqual(batches[1][0].avoidScenes, [scenes[0], alternatives[0]]);
+  assert.deepEqual(prepared.map(word => word.imageScenes.scenes[0]), scenes);
 });
 
 test('longer prompts keep final disambiguating details and search retains actions and negation', () => {
@@ -311,4 +314,72 @@ test('skipping images aborts provider requests and an already-cancelled search m
   assert.ok(signals.length > 0);
   assert.ok(signals.every(signal => signal.aborted));
   assert.deepEqual(await findRelevantImages(sense('already-cancelled'), { signal: controller.signal, fetchImpl: () => assert.fail('No cancelled network work') }), []);
+});
+
+test('one-scene and duplicate-only generations are retried, never persisted as a complete scene set', async () => {
+  const saved = storage(); const word = sense('two-required'); let calls = 0;
+  const [prepared] = await prepareImageScenes([word], { storage: saved, fetchImpl: async () => {
+    calls++;
+    return response({ scenes: calls === 1 ? [scene, scene.toUpperCase()] : pair });
+  } });
+  assert.equal(calls, 2);
+  assert.deepEqual(prepared.imageScenes.scenes, pair);
+  assert.equal(imageSceneRecordFor({ ...sense('invalid-single'), imageScenes: { ...prepared.imageScenes,
+    fingerprint: imageSenseFingerprint(sense('invalid-single')), scenes: [scene] } }, { storage: saved }), null);
+});
+
+test('all prepared prompts contribute fifteen unique candidates before the result limit', async () => {
+  const saved = storage(); const scenes = [...pair, 'child arranging pebbles beside a garden pond'];
+  const [word] = await prepareImageScenes([sense('fifteen-per-scene')], { storage: saved, fetchImpl: async () => response({ scenes }) });
+  const requests = [];
+  const found = await findRelevantImages(word, { storage: saved, aiScenes: false, provider: 'pexels', pexelsApiKey: 'synthetic', limit: 45, validateImages: false,
+    fetchImpl: async value => {
+      const url = new URL(value); requests.push(url);
+      assert.equal(url.hostname, 'api.pexels.com', 'full prompt pools need no fallback');
+      assert.equal(url.searchParams.get('per_page'), '15');
+      const index = scenes.map(compactVisualSearchQuery).indexOf(url.searchParams.get('query'));
+      assert.ok(index >= 0);
+      return { ok: true, json: async () => ({ photos: Array.from({ length: 30 }, (_, i) => ({
+        url: `https://pexels.test/fifteen/${index}/${i}`, alt: `${scenes[index]} frame ${i}`,
+        src: { medium: `https://photos.test/fifteen/${index}/${i}.jpg` }
+      })) }) };
+    }
+  });
+  assert.equal(requests.length, 3);
+  assert.equal(found.length, 45);
+  assert.deepEqual(scenes.map(scene => found.filter(image => image.visualScene === scene).length), [15, 15, 15]);
+});
+
+test('a full first prompt does not suppress fallback searches for an empty second prompt', async () => {
+  const queries = ['first prompt unique stock sample', 'second prompt empty stock sample']; const requested = [];
+  const results = await findRelevantImages(sense('per-scene-fallback'), { aiScenes: false, onlyExtraQueries: true, extraQueries: queries,
+    provider: 'pexels', pexelsApiKey: 'synthetic', limit: 45, validateImages: false,
+    fetchImpl: async value => {
+      const url = new URL(value); const query = url.searchParams.get('query') || url.searchParams.get('q') || url.searchParams.get('gsrsearch');
+      requested.push({ host: url.hostname, query });
+      if (url.hostname === 'api.pexels.com') return { ok: true, json: async () => ({ photos: query === queries[0] ? Array.from({ length: 40 }, (_, i) => ({
+        url: `https://pexels.test/fallback/${i}`, alt: `${queries[0]} frame ${i}`, src: { medium: `https://photos.test/fallback/${i}.jpg` }
+      })) : [] }) };
+      return { ok: true, json: async () => url.hostname === 'api.openverse.org' ? { results: Array.from({ length: 15 }, (_, i) => ({
+        thumbnail: `https://fallback.test/${i}.jpg`, foreign_landing_url: `https://fallback.test/source/${i}`, title: `${queries[1]} frame ${i}`
+      })) } : {} };
+    }
+  });
+  assert.equal(results.length, 30);
+  assert.ok(requested.some(r => r.host === 'api.openverse.org' && r.query === queries[1]));
+  assert.ok(requested.filter(r => r.host !== 'api.pexels.com').every(r => r.query === queries[1]));
+});
+
+test('different stock photos with identical alt captions remain eligible across prompts', async () => {
+  const query = 'identical caption unique stock photos';
+  const results = await findRelevantImages(sense('stock-captions'), { aiScenes: false, onlyExtraQueries: true, extraQueries: [query],
+    provider: 'pexels', pexelsApiKey: 'synthetic', limit: 45, validateImages: false,
+    fetchImpl: async value => {
+      assert.equal(new URL(value).hostname, 'api.pexels.com');
+      return { ok: true, json: async () => ({ photos: Array.from({ length: 15 }, (_, i) => ({
+        url: `https://pexels.test/same-caption/${i}`, alt: 'A person outside', src: { medium: `https://photos.test/same-caption/${i}.jpg` }
+      })) }) };
+    }
+  });
+  assert.equal(results.length, 15);
 });

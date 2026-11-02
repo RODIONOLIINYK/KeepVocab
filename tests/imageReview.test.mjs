@@ -308,10 +308,10 @@ test('Save without image saves a new single word immediately, with no label or e
   assert.equal(saved[0].imageUrl, '');
 });
 
-test('the gallery initially shows up to nine options', () => {
+test('the gallery initially shows every screened option', () => {
   const container = new Container();
   mountImageReview(container, [{ ...word('many', false), imageCandidates: Array.from({ length: 12 }, (_, i) => image('option-'+i)) }]);
-  assert.equal((container.innerHTML.match(/data-image-review-action="choose"/g) || []).length, 9);
+  assert.equal((container.innerHTML.match(/data-image-review-action="choose"/g) || []).length, 12);
   assert.doesNotMatch(container.innerHTML, /image-review__preview|max-height:62vh/);
 });
 
@@ -388,18 +388,15 @@ test('the normal picker contains only image choices and useful save/search contr
 });
 
 
-test('nine-image pages consume screened survivors before fetching and continue beyond forty', async () => {
+test('review displays all screened survivors and appends the next complete page', async () => {
   const container = new Container(); let calls = 0; const requests = [];
   mountImageReview(container, [{ ...word('pages', false), imageCandidates: Array.from({length:30},(_,i)=>image(`first-${i}`)) }], {
     findImages: async (_word, options) => { requests.push(options); calls++; return Array.from({length:30},(_,i)=>image(`page-${calls}-${i}`)); }
   });
   const count = () => (container.innerHTML.match(/data-image-review-action="choose"/g)||[]).length;
-  assert.equal(count(),9);
-  for (const n of [18,27,30]) { await container.click('next'); assert.equal(count(),n); }
-  assert.equal(calls,0);
-  await container.click('next'); assert.equal(count(),39); assert.equal(calls,1);
-  assert.equal(requests[0].limit,30); assert.equal(requests[0].page,2);
+  assert.equal(count(),30); assert.equal(calls,0);
+  await container.click('next'); assert.equal(count(),60); assert.equal(calls,1);
+  assert.equal(requests[0].limit,45); assert.equal(requests[0].page,2);
   assert.ok(requests[0].excludeUrls.includes(image('first-29').url));
-  await container.click('next'); assert.equal(count(),48); assert.equal(calls,1);
-  assert.match(container.innerHTML,/page-1-17-thumb/);
+  assert.match(container.innerHTML,/page-1-29-thumb/);
 });

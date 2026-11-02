@@ -12,7 +12,7 @@ test('shared save pipeline attaches an image to each chosen meaning and preserve
     findImages: async (item, options) => {
       assert.equal(item.definition, entry.senses[0].definition);
       assert.deepEqual(options.excludeUrls, ['https://example.test/old.jpg']);
-      assert.equal(options.limit, 30);
+      assert.equal(options.limit, 45);
       assert.equal(options.aiScenes, false);
       return [{ url: 'https://example.test/coffee.jpg', attribution: 'Photo author', license: 'CC0' }];
     }
@@ -36,6 +36,7 @@ test('saving generates image prompts together for every exact meaning and reuses
   const before = structuredClone(words);
   const otherMeaning = 'A short written announcement displayed publicly.';
   const scenes = ['tenant reading eviction letter beside apartment doorway', 'teacher listening closely beside child holding toy'];
+  const alternatives = ['landlord handing a folded warning letter to tenant', 'listener leaning forward while another person speaks'];
   let requests = 0;
   const options = {
     storage, translationLanguage: 'en', existingWords: [{ word: 'notice', definition: otherMeaning }],
@@ -48,18 +49,18 @@ test('saving generates image prompts together for every exact meaning and reuses
         assert.equal(item.definition || item.sourceDefinition, words[index].sourceDefinition);
         assert.ok(item.otherDefinitions.includes(otherMeaning));
       }
-      return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify({ items: items.map((item, index) => ({ id: item.id, scenes: [scenes[index]] })).reverse() }) }] } }] }) };
+      return { ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify({ items: items.map((item, index) => ({ id: item.id, scenes: [scenes[index], alternatives[index]] })).reverse() }) }] } }] }) };
     },
     findImages: async (item, searchOptions) => {
       const index = words.findIndex(word => word.sourceDefinition === item.sourceDefinition);
-      assert.deepEqual(item.imageScenes.scenes, [scenes[index]]);
+      assert.deepEqual(item.imageScenes.scenes, [scenes[index], alternatives[index]]);
       assert.equal(searchOptions.aiScenes, false, 'provider searches reuse prepared scenes without another paid request');
       return [{ url: `https://example.test/notice-${index}.jpg`, searchQuery: scenes[index] }];
     }
   };
   const saved = await prepareWordsForLibrary(words, options);
   assert.equal(requests, 1);
-  assert.deepEqual(saved.map(word => word.imageScenes.scenes), scenes.map(scene => [scene]));
+  assert.deepEqual(saved.map(word => word.imageScenes.scenes), scenes.map((scene, index) => [scene, alternatives[index]]));
   assert.equal(new Set(saved.map(word => word.imageUrl)).size, 2);
   await prepareWordsForLibrary(saved, options);
   assert.equal(requests, 1, 'valid prepared scenes survive saving and do not regenerate');
@@ -199,7 +200,7 @@ test('bulk image Skip completes the shared save pipeline before the provider fin
     { word: 'bank', definition: 'Land beside a river.', example: '' }
   ], {
     translationLanguage: 'uk', translate: async () => 'Підготовлений переклад.', skipImagesSignal: controller.signal,
-    findImages: (_word, options) => { assert.equal(options.limit, 30); started(); return new Promise(resolve => { finishLate = resolve; }); }
+    findImages: (_word, options) => { assert.equal(options.limit, 45); started(); return new Promise(resolve => { finishLate = resolve; }); }
   });
   await searching;
   controller.abort();

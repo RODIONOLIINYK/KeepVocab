@@ -28,10 +28,10 @@ class LibraryContainer {
     return this.control(selector);
   }
   querySelectorAll(selector) {
-    if (!['[data-edit-word]', '[data-library-image]'].includes(selector)) return [];
+    if (!['[data-edit-word]', '[data-library-image]', '[data-image-concept]'].includes(selector)) return [];
     const attribute = selector.slice(1, -1);
     const property = attribute.slice(5).replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
-    return [...this.markup.matchAll(new RegExp(`${attribute}="([^"]+)"`, 'g'))]
+    return [...this.markup.matchAll(new RegExp(`${attribute}="([^"]*)"`, 'g'))]
       .map(match => this.control(`${attribute}:${match[1]}`, { [property]: match[1] }));
   }
   click(selector, index = 0) {
@@ -258,14 +258,35 @@ test('a synced meaning change during scene preparation cancels the obsolete phot
 });
 
 
-test('library reveals nine ranked results at a time without refetching the retained pool', async context => {
+test('library displays the complete screened prompt pool before requesting another page', async context => {
   const {container,requests}=installImageEditor(context,'fox running pagination trial',30);
   await container.click('[data-edit-word]'); await finishImageSearch(container);
   const count=()=>(container.innerHTML.match(/data-library-image="/g)||[]).length;
-  assert.equal(count(),9); const before=requests.length;
-  await container.click('#refresh-library-images'); assert.equal(count(),18); assert.equal(requests.length,before);
-  await container.click('#refresh-library-images'); assert.equal(count(),27); assert.equal(requests.length,before);
-  await container.click('#refresh-library-images'); assert.equal(count(),30); assert.equal(requests.length,before);
+  assert.equal(count(),15); const before=requests.length;
   await container.click('#refresh-library-images'); await finishImageSearch(container);
-  assert.ok(requests.length>before); assert.equal(count(),30,'duplicate-only new search cannot add repeated images');
+  assert.ok(requests.length>before); assert.equal(count(),30,'excluded photos are replaced by remaining distinct results');
+});
+
+test('the library initially combines all prepared scenes instead of silently selecting scene one', async context => {
+  const { container, word } = installImageEditor(context, '');
+  Object.assign(word, { word: 'conquest', definition: 'A victory gained through force.', partOfSpeech: 'noun' });
+  const queries = [];
+  replaceGlobal(context, 'fetch', async value => {
+    const url = new URL(value); const q = url.searchParams.get('q');
+    if (url.hostname !== 'api.openverse.org') return { ok: true, json: async () => ({}) };
+    queries.push(q);
+    return { ok: true, json: async () => ({ results: Array.from({ length: 15 }, (_, i) => ({
+      title: `${q} frame ${i}`, thumbnail: `https://all-scenes.test/${encodeURIComponent(q)}/${i}.jpg`,
+      foreign_landing_url: `https://all-scenes.test/source/${encodeURIComponent(q)}/${i}`
+    })) }) };
+  });
+  await container.click('[data-edit-word]'); await finishImageSearch(container);
+  assert.equal(new Set(queries).size, 3);
+  assert.match(container.innerHTML, /Results from all suggested scenes/);
+  assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 45);
+  await container.click('[data-image-concept]', 1); await finishImageSearch(container);
+  assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 15);
+  await container.click('[data-image-concept]', 0); await finishImageSearch(container);
+  assert.match(container.innerHTML, /Results from all suggested scenes/);
+  assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 45);
 });
