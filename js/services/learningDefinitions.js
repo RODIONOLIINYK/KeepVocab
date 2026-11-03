@@ -1,8 +1,8 @@
-import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18900';
-import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18900';
-import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18900';
-import { hasExampleSenseConflict, isModernUsageExample } from './exampleSearch.js?v=18900';
-export { isModernUsageExample } from './exampleSearch.js?v=18900';
+import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18904';
+import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18904';
+import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18904';
+import { hasExampleSenseConflict, isModernUsageExample } from './exampleSearch.js?v=18904';
+export { isModernUsageExample } from './exampleSearch.js?v=18904';
 
 const CACHE_KEY = 'keepvocab_learner_explanations_v2';
 const text = value => String(value || '').replace(/\s+/g, ' ').trim();
@@ -73,6 +73,15 @@ export function areSensesNearDuplicate(left, right) {
 export function originalSenses(sense) {
   return (Array.isArray(sense?.groupedSenses) && sense.groupedSenses.length ? sense.groupedSenses : [sense])
     .filter(Boolean).map(({ groupedSenses, mergedSenseIds, ...original }) => ({ ...original }));
+}
+
+export function allEntrySenses(entry) {
+  return [...(entry?.senses?.length ? entry.senses : entry ? [entry] : []), ...(entry?.additionalSenses || [])];
+}
+
+export function entrySensesForMode(entry, mode = 'grouped') {
+  if (mode === 'raw') return entry?.rawDictionarySenses?.length ? entry.rawDictionarySenses : entry?.aiGenerated ? [] : allEntrySenses(entry).flatMap(originalSenses);
+  return allEntrySenses(entry);
 }
 
 export function normalizeGroupedSenses(value) {

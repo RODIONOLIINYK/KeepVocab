@@ -1,13 +1,13 @@
 // Fast dictionary lookup with a maintained Wiktionary source, a short fallback, and offline cache.
 
-import { isModernUsageExample, sanitizeExistingExamples } from './exampleSearch.js?v=18900';
-import { groupSimilarSenses } from './learningDefinitions.js?v=18900';
-import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18900';
-import { getTranslationLanguage, normalizeTranslationLanguage } from './translationSettings.js?v=18900';
+import { isModernUsageExample, sanitizeExistingExamples } from './exampleSearch.js?v=18904';
+import { groupSimilarSenses } from './learningDefinitions.js?v=18904';
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18904';
+import { getTranslationLanguage, normalizeTranslationLanguage } from './translationSettings.js?v=18904';
 
 const PRIMARY_API_BASE = 'https://freedictionaryapi.com/api/v1/entries/en/';
 const FALLBACK_API_BASE = 'https://api.datamuse.com/words';
-const CACHE_KEY = 'keepvocab_dictionary_cache_v4';
+const CACHE_KEY = 'keepvocab_dictionary_cache_v5';
 const CACHE_MAX_ENTRIES = 250;
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const DEFAULT_TIMEOUT_MS = 3200;
@@ -184,13 +184,21 @@ function distinctSenses(senses, word) {
     needsExample: !isModernUsageExample(word, sense.example) })), { word }).slice(0, 30);
 }
 
-function finishResult(word, phonetic, audioUrl, senses, source) {
+function rawDictionarySenses(senses) {
+  return senses.filter(s => typeof s.definition === 'string' && s.definition.trim()).map((s, index) => ({
+    ...s, id: `dictionary-raw-${index}`, sourceDefinition: s.definition,
+    labels: [...new Set([...sourceLabels(s.tags), ...sourceLabels(s.labels), ...sourceLabels(s.categories)])]
+  }));
+}
+
+function finishResult(word, phonetic, audioUrl, senses, source, rawSenses = senses) {
   const firstSense = senses[0];
   return {
     word,
     phonetic: phonetic || '',
     audioUrl: audioUrl || '',
     senses,
+    rawDictionarySenses: rawDictionarySenses(rawSenses),
     ...firstSense,
     imageUrl: '',
     source
@@ -222,7 +230,7 @@ function parseLegacyEntries(payload, cleanWord) {
     }))
   ));
   const word = String(entries[0].word || cleanWord).toLowerCase();
-  return finishResult(word, phonetic, audioUrl, distinctSenses(senses, word), 'dictionary');
+  return finishResult(word, phonetic, audioUrl, distinctSenses(senses, word), 'dictionary', senses);
 }
 
 function flattenFreeApiSense(entry, sense, inherited = {}) {
@@ -251,7 +259,7 @@ function parseFreeDictionary(payload, cleanWord) {
   const senses = entries.flatMap(entry => (entry.senses || []).flatMap(sense => flattenFreeApiSense({ ...entry, lookupWord: payload.word || cleanWord }, sense, { ...entry,
     sourceUrl: payload.source?.url || '', attribution: payload.source?.license?.name || '' })));
   const word = String(payload.word || cleanWord).toLowerCase();
-  return finishResult(word, pronunciation, '', distinctSenses(senses, word), 'freedictionaryapi.com');
+  return finishResult(word, pronunciation, '', distinctSenses(senses, word), 'freedictionaryapi.com', senses);
 }
 
 function parseDatamuse(payload, cleanWord) {
@@ -267,7 +275,7 @@ function parseDatamuse(payload, cleanWord) {
       definition: definitionParts.join(' ').trim()
     };
   });
-  return finishResult(cleanWord, '', '', distinctSenses(senses, cleanWord), 'datamuse');
+  return finishResult(cleanWord, '', '', distinctSenses(senses, cleanWord), 'datamuse', senses);
 }
 
 async function requestJson(url, fetchImpl, timeoutMs, signal) {

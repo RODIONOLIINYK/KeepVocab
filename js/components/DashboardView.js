@@ -1,8 +1,8 @@
-import { ensureDailyStudyPlan, getActivePracticeWords, getScheduledPracticeWords } from '../services/wordSelection.js?v=18900';
-import { driveSync } from '../services/driveSync.js?v=18900';
-import { buildScheduledPracticeSession, evaluateDailyStudyPlan, weaknessScore } from '../services/dailySession.js?v=18900';
-import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18900';
-import { completedExercisesToday } from '../services/learningStats.js?v=18900';
+import { ensureDailyStudyPlan, getActivePracticeWords, getScheduledPracticeWords } from '../services/wordSelection.js?v=18904';
+import { driveSync } from '../services/driveSync.js?v=18904';
+import { buildScheduledPracticeSession, evaluateDailyStudyPlan, weaknessScore } from '../services/dailySession.js?v=18904';
+import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18904';
+import { completedExercisesToday } from '../services/learningStats.js?v=18904';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 

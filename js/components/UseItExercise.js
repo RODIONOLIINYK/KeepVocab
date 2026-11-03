@@ -1,9 +1,9 @@
-import { definitionForLearning } from '../services/learningDefinitions.js?v=18900';
-import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18900';
-import { getGeminiSettings } from '../services/geminiSettings.js?v=18900';
-import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=18900';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18904';
+import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18904';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18904';
+import { canRecordForGemini, createSpeechRecorder, transcribeAudioBlob } from '../services/speechInput.js?v=18904';
 import { escapeHtml } from '../utils/html.js';
-import { focusPracticeInput } from './PracticeElements.js?v=18900';
+import { focusPracticeInput } from './PracticeElements.js?v=18904';
 
 export function mountUseItExercise(root, options) {
   let sentence = String(options.sentence || '');

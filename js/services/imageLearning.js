@@ -1,5 +1,5 @@
-import { driveSync } from './driveSync.js?v=18900';
-import { prepareImageThumbnails } from './imageThumbnails.js?v=18900';
+import { driveSync } from './driveSync.js?v=18904';
+import { prepareImageThumbnails } from './imageThumbnails.js?v=18904';
 import { base64ToBytes } from '../utils/base64.js';
 import { CLIP_TAG, CLIP_CACHE, CLIP_DOWNLOAD_URLS, VECTOR_DB, MODEL_DOWNLOAD_MB } from '../ml/clipConfig.js';
 import { cosine, preferenceFeatures, encodeFullFeatures, decodeFeatures, mergeImageLearning, preferenceProbability } from './imagePreferences.js';

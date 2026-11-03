@@ -1,4 +1,4 @@
-import { driveSync } from './driveSync.js?v=18900';
+import { driveSync } from './driveSync.js?v=18904';
 import { localDateKey } from '../utils/dates.js';
 
 const MAX_SESSION_HISTORY = 60;

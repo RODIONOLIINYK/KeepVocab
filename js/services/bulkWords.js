@@ -1,5 +1,6 @@
-import { imageSelectionPatch } from './imageSearch.js?v=18900';
-import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18900';
+import { imageSelectionPatch } from './imageSearch.js?v=18904';
+import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18904';
+import { allEntrySenses, entrySensesForMode } from './learningDefinitions.js?v=18904';
 
 export const MAX_BULK_WORDS = 100;
 // Lookups remain sequential, with a short pacing gap instead of adding almost
@@ -145,7 +146,7 @@ export async function attachImagesSequentially(words, findImages, options = {}) 
 export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '', manualTranslation = result?.manualTranslation || '') {
   if (result?.status === 'ready') {
     const data = result.data || {};
-    const senses = Array.isArray(data.senses) && data.senses.length ? data.senses : [data];
+    const senses = entrySensesForMode(data, result.meaningMode);
     const sense = senses[Math.max(0, Math.min(Math.floor(Number(senseIndex)) || 0, senses.length - 1))] || {};
     return {
       word: data.word || result.term,
@@ -158,6 +159,7 @@ export function bulkResultToWord(result, senseIndex = 0, manualDefinition = '', 
       sourceDefinition: sense.sourceDefinition || sense.definition || '',
       sourceDefinitions: sense.sourceDefinitions || [],
       groupedSenses: sense.groupedSenses || [],
+      meaningGroup: sense.meaningGroup,
       sourceFingerprint: sense.sourceFingerprint || '',
       explanationSource: sense.explanationSource || '',
       explanationModel: sense.explanationModel || '',

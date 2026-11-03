@@ -1,9 +1,9 @@
-import { definitionForLearning } from '../services/learningDefinitions.js?v=18900';
-import { driveSync } from '../services/driveSync.js?v=18900';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18900';
-import { playInteractionSound } from '../services/interactionSound.js?v=18900';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18904';
+import { driveSync } from '../services/driveSync.js?v=18904';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18904';
+import { playInteractionSound } from '../services/interactionSound.js?v=18904';
 import { escapeHtml } from '../utils/html.js';
-import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18900';
+import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18904';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 

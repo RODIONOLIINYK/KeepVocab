@@ -1,8 +1,8 @@
-import { DictionaryApiError, fetchWordDetails, normalizeQuery, withEntryTranslations, entryTranslationLanguage } from './dictionaryApi.js?v=18900';
-import { defaultGeminiThinkingConfig, generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18900';
-import { sanitizeExistingExamples } from './exampleSearch.js?v=18900';
-import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18900';
-import { groupSimilarSenses } from './learningDefinitions.js?v=18900';
+import { DictionaryApiError, fetchWordDetails, normalizeQuery, withEntryTranslations, entryTranslationLanguage } from './dictionaryApi.js?v=18904';
+import { defaultGeminiThinkingConfig, generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18904';
+import { sanitizeExistingExamples } from './exampleSearch.js?v=18904';
+import { cacheEntryIsFresh, readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18904';
+import { groupSimilarSenses } from './learningDefinitions.js?v=18904';
 
 const CACHE_KEY = 'keepvocab_english_ai_entry_cache_v2';
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -67,7 +67,7 @@ export async function fetchEnglishEntry(term, options = {}) {
   } catch (error) {
     // Input validation and missing configuration should retain the dictionary's error.
     options.signal?.throwIfAborted();
-    if (error.code === 'INVALID_WORD' || !aiSettings(options).enabled) throw error;
+    if (error.code !== 'NOT_FOUND' || !aiSettings(options).enabled) throw error;
     return enrichEnglishEntry(term, { ...options, allowSpellingCorrection: error.code === 'NOT_FOUND' });
   }
 }

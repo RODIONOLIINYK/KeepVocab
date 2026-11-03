@@ -1,5 +1,5 @@
 import { localDateKey } from '../utils/dates.js';
-import { playInteractionSound } from '../services/interactionSound.js?v=18900';
+import { playInteractionSound } from '../services/interactionSound.js?v=18904';
 
 // Duolingo-style "streak extended" moment. It appears once per local day,
 // after the first completed exercise, and never blocks saving that exercise.

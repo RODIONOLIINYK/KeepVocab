@@ -1,19 +1,19 @@
-import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18900';
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18900';
-import { ensureDailyStudyPlan, getActivePracticeWords, getScheduledPracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18900';
-import { driveSync } from '../services/driveSync.js?v=18900';
-import { buildScheduledPracticeSession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=18900';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18900';
-import { recordSessionCompletion } from '../services/learningStats.js?v=18900';
-import { speakWord } from '../services/speechService.js?v=18900';
-import { playInteractionSound } from '../services/interactionSound.js?v=18900';
-import { buildWordChoices } from '../services/wordChoices.js?v=18900';
+import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18904';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18904';
+import { ensureDailyStudyPlan, getActivePracticeWords, getScheduledPracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18904';
+import { driveSync } from '../services/driveSync.js?v=18904';
+import { buildScheduledPracticeSession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=18904';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18904';
+import { recordSessionCompletion } from '../services/learningStats.js?v=18904';
+import { speakWord } from '../services/speechService.js?v=18904';
+import { playInteractionSound } from '../services/interactionSound.js?v=18904';
+import { buildWordChoices } from '../services/wordChoices.js?v=18904';
 import { escapeHtml } from '../utils/html.js';
-import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=18900';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18900';
-import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18900';
-import { mountUseItExercise } from './UseItExercise.js?v=18900';
-import { renderPracticeHeader, focusPracticeInput } from './PracticeElements.js?v=18900';
+import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=18904';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18904';
+import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18904';
+import { mountUseItExercise } from './UseItExercise.js?v=18904';
+import { renderPracticeHeader, focusPracticeInput } from './PracticeElements.js?v=18904';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {

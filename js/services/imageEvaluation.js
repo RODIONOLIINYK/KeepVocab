@@ -1,4 +1,4 @@
-import { imageClipPrompts, semanticScores, rankEmbeddedImages } from './imageLearning.js?v=18900';
+import { imageClipPrompts, semanticScores, rankEmbeddedImages } from './imageLearning.js?v=18904';
 import { encodeFullFeatures, preferenceFeatures } from './imagePreferences.js';
 import { encodeMeaning, IMAGE_PREPROCESSING } from './imagePersonalizer.js';
 import { CLIP_TAG } from '../ml/clipConfig.js';

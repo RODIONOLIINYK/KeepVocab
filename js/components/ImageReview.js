@@ -1,7 +1,7 @@
 import { canAutoSelectImage, imageChoiceLabels } from '../services/imageChoicePolicy.js';
-import { recordImagePreference } from '../services/imageLearning.js?v=18900';
-import { escapeHtml } from '../utils/html.js?v=18900';
-import { findRelevantImages, imageSelectionPatch, imageIdentityKeys } from '../services/imageSearch.js?v=18900';
+import { recordImagePreference } from '../services/imageLearning.js?v=18904';
+import { escapeHtml } from '../utils/html.js?v=18904';
+import { findRelevantImages, imageSelectionPatch, imageIdentityKeys } from '../services/imageSearch.js?v=18904';
 
 let reviewId = 0;
 const clone = value => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));

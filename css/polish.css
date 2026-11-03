@@ -668,3 +668,12 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
   .streak-digit-roll { transform: translateY(-1em); }
   .streak-spark { display: none; }
 }
+
+/* Definition view switch uses the same quiet segmented surface as Add Word tabs. */
+.sense-picker-heading > .sense-mode-toolbar { flex-direction: row; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+.meaning-mode-switch { display: inline-flex; align-items: center; gap: 3px; padding: 4px; border-radius: 11px; background: var(--bg-subtle); }
+.meaning-mode-switch button { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 6px 11px; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); font: 700 .76rem var(--font-body, 'Nunito', sans-serif); cursor: pointer; transition: background .15s, color .15s, box-shadow .15s; }
+.meaning-mode-switch button[aria-pressed="true"] { background: var(--bg-card, #fff); color: var(--primary-green-hover); box-shadow: 0 2px 6px rgba(31, 49, 35, .09); }
+.meaning-mode-switch button:hover { color: var(--primary-green-hover); }
+.meaning-mode-switch button:focus-visible { outline: 2px solid var(--primary-green); outline-offset: 2px; }
+@media (max-width: 480px) { .sense-picker-heading { flex-wrap: wrap; } .sense-picker-heading > .sense-mode-toolbar { width: 100%; justify-content: space-between; } }

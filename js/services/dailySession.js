@@ -1,6 +1,6 @@
-import { completedExercisesToday } from './learningStats.js?v=18900';
-import { getDueWords } from './srsEngine.js?v=18900';
-import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=18900';
+import { completedExercisesToday } from './learningStats.js?v=18904';
+import { getDueWords } from './srsEngine.js?v=18904';
+import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=18904';
 import {
   ensureDailyStudyPlan,
   evaluateDailyStudyPlan,
@@ -8,7 +8,7 @@ import {
   normalizeWordPracticeStats,
   selectModeWords,
   wordRecommendationScore
-} from './wordSelection.js?v=18900';
+} from './wordSelection.js?v=18904';
 
 export { ensureDailyStudyPlan, evaluateDailyStudyPlan };
 

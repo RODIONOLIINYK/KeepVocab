@@ -1,11 +1,11 @@
 import { getFsrsLearningStatus, subscribeFsrsLearning, saveFsrsPreferences } from '../services/fsrsLearning.js';
-import { getImageLearningStatus, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18900';
-import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18900';
-import { driveSync } from '../services/driveSync.js?v=18900';
-import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18900';
-import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18900';
-import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18900';
-import { completedExercisesToday } from '../services/learningStats.js?v=18900';
+import { getImageLearningStatus, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18904';
+import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18904';
+import { driveSync } from '../services/driveSync.js?v=18904';
+import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18904';
+import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18904';
+import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18904';
+import { completedExercisesToday } from '../services/learningStats.js?v=18904';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 

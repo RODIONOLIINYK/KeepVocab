@@ -1,14 +1,14 @@
-import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18900';
-import { withEntryTranslations } from './dictionaryApi.js?v=18900';
-import { bulkResultToWord, attachImagesSequentially, withSkippableImages } from './bulkWords.js?v=18900';
-import { sanitizeExistingExamples } from './exampleSearch.js?v=18900';
-import { findRelevantImages, imageUrlsForWords, prepareImageScenes } from './imageSearch.js?v=18900';
-import { withLearnerExplanations } from './learningDefinitions.js?v=18900';
-import { groupEntrySensesLocally } from './localSenseGrouping.js?v=18900';
+import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18904';
+import { withEntryTranslations } from './dictionaryApi.js?v=18904';
+import { bulkResultToWord, attachImagesSequentially, withSkippableImages } from './bulkWords.js?v=18904';
+import { sanitizeExistingExamples } from './exampleSearch.js?v=18904';
+import { findRelevantImages, imageUrlsForWords, prepareImageScenes } from './imageSearch.js?v=18904';
+import { withLearnerExplanations, allEntrySenses } from './learningDefinitions.js?v=18904';
+import { groupEntrySensesLocally, consolidateEntrySenses } from './localSenseGrouping.js?v=18904';
 
 export async function fetchWordEntry(word, _courseId = 'english', options = {}) {
-  const entry = await groupEntrySensesLocally(await fetchEnglishEntry(word, options), options);
-  return withLearnerExplanations(entry, entry.aiGenerated ? { ...options, learnerExplanations: false } : options);
+  const entry = await consolidateEntrySenses(await fetchEnglishEntry(word, options), options);
+  return withLearnerExplanations(entry, { ...options, learnerExplanations: false });
 }
 
 // Explicit requests bypass dictionary results and the AI cache for a fresh suggestion.
@@ -22,27 +22,29 @@ export async function fetchAiWordEntry(word, _courseId = 'english', options = {}
 // so difficult senses share a request instead of making one per word.
 export async function prepareBulkLearnerExplanations(results, options = {}) {
   const selected = results.flatMap((result, index) => {
-    if (result.status !== 'ready') return [];
-    const senses = result.data.senses?.length ? result.data.senses : [result.data];
+    if (result.status !== 'ready' || result.meaningMode === 'raw') return [];
+    const senses = allEntrySenses(result.data);
     const senseIndex = Math.max(0, Math.min(Math.floor(Number(result.selectedSenseIndex)) || 0, senses.length - 1));
+    if (senses[senseIndex]?.meaningGroup) return [];
     return [{ index, senseIndex, sense: { ...senses[senseIndex], word: result.data.word || result.term } }];
   });
   if (!selected.length) return results;
   // Bulk rows import one chosen meaning; rewriting every unselected dictionary
   // sense can multiply the request cost before the learner has chosen it.
-  const explained = await withLearnerExplanations({ senses: selected.map(item => item.sense) }, { explanationBatchSize: 20, ...options });
+  const explained = await withLearnerExplanations({ senses: selected.map(item => item.sense) }, { explanationBatchSize: 20, ...options, learnerExplanations: options.learnerExplanations === true });
   const replacements = new Map(selected.map((item, index) => [item.index, { ...item, sense: explained.senses[index] }]));
   return results.map((result, index) => {
     const replacement = replacements.get(index);
     if (!replacement) return result;
-    const updated = [...(result.data.senses?.length ? result.data.senses : [result.data])];
+    const updated = allEntrySenses(result.data);
     updated[replacement.senseIndex] = replacement.sense;
-    return { ...result, data: { ...result.data, senses: updated, ...updated[0] } };
+    const count = result.data.senses?.length || 1;
+    return { ...result, data: { ...result.data, senses: updated.slice(0, count), additionalSenses: updated.slice(count), ...updated[0] } };
   });
 }
 
 export function wordEntryToWord(entry, senseIndex = 0) {
-  const sense = entry.senses?.[senseIndex];
+  const sense = allEntrySenses(entry)[senseIndex];
   if (!sense) throw new Error(`No meaning found for “${entry.word}”.`);
   return { ...bulkResultToWord({ term: entry.word, status: 'ready', data: entry }, senseIndex),
     courseId: 'english', sourceUrl: sense.sourceUrl || entry.sourceUrl,

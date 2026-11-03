@@ -1,11 +1,11 @@
-import { driveSync } from '../services/driveSync.js?v=18900';
-import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibrary, prepareBulkLearnerExplanations } from '../services/wordEntry.js?v=18900';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18900';
-import { mountImageReview } from './ImageReview.js?v=18900';
-import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18900';
-import { definitionForLearning, exampleForLearning, originalSenses } from '../services/learningDefinitions.js?v=18900';
+import { driveSync } from '../services/driveSync.js?v=18904';
+import { fetchWordEntry, wordEntryToWord, prepareWordsForLibrary, prepareBulkLearnerExplanations } from '../services/wordEntry.js?v=18904';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18904';
+import { mountImageReview } from './ImageReview.js?v=18904';
+import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18904';
+import { definitionForLearning, exampleForLearning, originalSenses, allEntrySenses, entrySensesForMode } from '../services/learningDefinitions.js?v=18904';
 import { canAutoSelectImage } from '../services/imageChoicePolicy.js';
-import { recordImagePreference, warmImageLearning } from '../services/imageLearning.js?v=18900';
+import { recordImagePreference, warmImageLearning } from '../services/imageLearning.js?v=18904';
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
   <div class="modal-backdrop" id="add-word-modal">
@@ -28,12 +28,16 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
           <input type="text" id="add-word-input" aria-label="English word or phrase" placeholder="Type a word, then press Enter" enterkeyhint="search" autocomplete="off" autocapitalize="none" autofocus style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 0.95rem;">
           <button type="submit" class="btn-green-solid" id="btn-auto-fetch-word" style="padding: 10px 16px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings</button>
         </form>
-        <button type="button" class="text-action" id="btn-ai-fetch-word" style="align-self: flex-end;"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Ask Gemini</button>
 
         <div id="add-word-preview" class="sense-picker-preview" style="display: none;">
           <div class="sense-picker-heading">
             <div><strong id="prev-w-title">Serendipity</strong><span id="prev-w-phonetic">/ˌser.ənˈdɪp.ə.ti/</span></div>
-            <span id="sense-count-label">Choose a meaning</span>
+            <div class="sense-mode-toolbar"><span id="sense-count-label">Choose a meaning</span>
+              <div class="meaning-mode-switch" role="group" aria-label="Definition mode">
+                <button type="button" data-meaning-mode="grouped" aria-pressed="true">Grouped</button>
+                <button type="button" data-meaning-mode="raw" aria-pressed="false">Raw</button>
+              </div>
+            </div>
           </div>
           <p class="sense-helper">Select every meaning you want. KeepVocab groups them under one word card and tracks each meaning separately.</p>
           <div id="add-word-sense-list" class="sense-option-list" role="group" aria-label="Dictionary meanings"></div>
@@ -115,7 +119,6 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   const btnClose = document.getElementById('btn-close-add-modal');
   const btnCancel = document.getElementById('btn-cancel-add-modal');
   const btnFetch = document.getElementById('btn-auto-fetch-word');
-  const btnAiFetch = document.getElementById('btn-ai-fetch-word');
   const btnSave = document.getElementById('btn-save-new-word');
   const input = document.getElementById('add-word-input');
   const preview = document.getElementById('add-word-preview');
@@ -153,6 +156,8 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   let selectedSenseIds = new Set();
   let focusedSenseId = null;
   let showAllSenses = false;
+  let meaningMode = 'grouped';
+  let modeStates = new Map();
   let bulkResults = [];
 
   showToast ||= message => { (bulkPanel.hidden ? formStatus : bulkStatus).textContent = message; };
@@ -187,7 +192,6 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     bulkSkipImages.hidden = true;
     bulkSkipImages.disabled = false;
     btnFetch.disabled = false;
-    btnAiFetch.disabled = false;
     btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
     btnSave.disabled = false;
     btnSave.innerHTML = '<i class="fa-solid fa-bookmark"></i> Save meaning';
@@ -271,9 +275,31 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       }
       heading.append(titleGroup, remove);
       row.appendChild(heading);
+      if (result.data?.senseConsolidation) {
+        const summary = document.createElement('p');
+        summary.className = 'sense-helper';
+        summary.textContent = `${result.data.senses.length} grouped meanings cover ${result.data.senseConsolidation.originalCount} dictionary definitions`;
+        row.appendChild(summary);
+      } else if (result.data?.consolidationWarning) {
+        const warning = document.createElement('p');
+        warning.className = 'sense-helper';
+        warning.textContent = 'Automatic grouping is unavailable. Original dictionary meanings are shown.';
+        row.appendChild(warning);
+      }
 
       if (result.status === 'ready') {
-        const senses = Array.isArray(result.data?.senses) && result.data.senses.length ? result.data.senses : [result.data];
+        const senses = entrySensesForMode(result.data, result.meaningMode);
+        const modes = document.createElement('div'); modes.className = 'meaning-mode-switch'; modes.setAttribute('role', 'group'); modes.setAttribute('aria-label', `Definition mode for ${result.term}`);
+        for (const mode of ['grouped', 'raw']) {
+          const button = document.createElement('button'); button.type = 'button'; button.textContent = mode === 'raw' ? 'Raw' : 'Grouped';
+          button.setAttribute('aria-pressed', String((result.meaningMode || 'grouped') === mode));
+          button.disabled = mode === 'raw' && !entrySensesForMode(result.data, 'raw').length;
+          button.addEventListener('click', () => {
+            result.modeSelections ||= {}; result.modeSelections[result.meaningMode || 'grouped'] = result.selectedSenseIndex || 0;
+            result.meaningMode = mode; result.selectedSenseIndex = result.modeSelections[mode] || 0; renderBulkResults();
+          }); modes.appendChild(button);
+        }
+        row.appendChild(modes);
         const label = document.createElement('label');
         label.textContent = 'Meaning to import';
         const select = document.createElement('select');
@@ -281,7 +307,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         senses.forEach((sense, senseIndex) => {
           const option = document.createElement('option');
           option.value = String(senseIndex);
-          option.textContent = `${sense.partOfSpeech || 'word'} — ${definitionForLearning({ ...sense, word: result.data?.word || result.term }) || 'Definition unavailable'}${isUkrainianTranslationEnabled() && sense.translationLanguage === 'uk' && sense.translation ? ` · ${sense.translation}` : ''}`;
+          option.textContent = `${sense.partOfSpeech || 'word'} — ${(result.meaningMode === 'raw' ? sense.definition : definitionForLearning({ ...sense, word: result.data?.word || result.term })) || 'Definition unavailable'}${isUkrainianTranslationEnabled() && sense.translationLanguage === 'uk' && sense.translation ? ` · ${sense.translation}` : ''}`;
           select.appendChild(option);
         });
         select.value = String(result.selectedSenseIndex || 0);
@@ -308,24 +334,16 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         if (selected?.groupedSenses?.length > 1) {
           const details = document.createElement('details');
           const summary = document.createElement('summary');
-          summary.textContent = `${selected.groupedSenses.length} grouped originals`;
+          summary.textContent = `Show original definitions (${selected.groupedSenses.length})`;
           details.appendChild(summary);
           for (const original of originalSenses(selected)) {
             const p = document.createElement('p');
             p.textContent = `${original.definition}${original.attribution ? ` · ${original.attribution}` : ''}`;
             details.appendChild(p);
           }
-          const separate = document.createElement('button');
-          separate.type = 'button'; separate.className = 'text-action';
-          separate.textContent = 'Choose originals separately';
-          separate.addEventListener('click', () => {
-            const index = Number(select.value) || 0;
-            result.data.senses = senses.flatMap((item, i) => i === index ? originalSenses(item) : [item]);
-            result.selectedSenseIndex = index;
-            renderBulkResults();
-          });
-          details.appendChild(separate); row.appendChild(details);
+          row.appendChild(details);
         }
+
       } else {
         const note = document.createElement('p');
         note.textContent = result.error || 'No dictionary meaning was found.';
@@ -353,7 +371,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       exampleLabel.textContent = 'English example (optional)';
       const exampleInput = document.createElement('textarea');
       exampleInput.rows = 2;
-      const selectedSense = () => result.data?.senses?.[result.selectedSenseIndex || 0] || result.data;
+      const selectedSense = () => entrySensesForMode(result.data, result.meaningMode)[result.selectedSenseIndex || 0] || result.data;
       exampleInput.value = result.status === 'ready' ? exampleForLearning({ ...selectedSense(), word: result.data?.word || result.term }) : result.manualExample || '';
       exampleInput.placeholder = 'Dictionary examples are used when available; you can leave this blank.';
       exampleInput.addEventListener('input', () => {
@@ -373,6 +391,8 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   };
 
   const clearSenseState = () => {
+    meaningMode = 'grouped';
+    modeStates = new Map();
     senseDrafts = new Map();
     selectedSenseIds = new Set();
     focusedSenseId = null;
@@ -517,6 +537,10 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     const senses = [...senseDrafts.values()];
     document.getElementById('sense-count-label').textContent = `${selectedSenseIds.size} of ${senses.length} selected`;
     btnSave.innerHTML = `<i class="fa-solid fa-bookmark"></i> Save ${selectedSenseIds.size} meaning${selectedSenseIds.size === 1 ? '' : 's'}`;
+    document.querySelectorAll('[data-meaning-mode]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.meaningMode === meaningMode));
+      button.disabled = button.dataset.meaningMode === 'raw' && !entrySensesForMode(currentFetchedData, 'raw').length;
+    });
     toggleSenses.hidden = senses.length <= 5;
     toggleSenses.setAttribute('aria-expanded', String(showAllSenses));
     toggleSenses.textContent = showAllSenses ? 'Show fewer meanings' : `Show all ${senses.length} meanings`;
@@ -535,9 +559,9 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       body.className = 'sense-option-body';
       const meta = document.createElement('span');
       meta.className = 'sense-option-meta';
-      meta.textContent = `${index + 1}. ${sense.partOfSpeech || 'unknown'}${sense.source ? ` · ${sense.source}` : ''}`;
+      meta.textContent = `${index + 1}. ${meaningMode === 'raw' ? sense.rawPartOfSpeech || sense.partOfSpeech || 'unknown' : sense.partOfSpeech || 'unknown'}`;
       const definition = document.createElement('strong');
-      definition.textContent = definitionForLearning({ ...sense, word: currentFetchedData?.word || input.value.trim() });
+      definition.textContent = meaningMode === 'raw' ? sense.rawDefinition : definitionForLearning({ ...sense, word: currentFetchedData?.word || input.value.trim() });
       body.append(meta, definition);
       if (sense.usageNote) { const usage = document.createElement('small'); usage.textContent = `When to use it: ${sense.usageNote}`; body.appendChild(usage); }
       if (isUkrainianTranslationEnabled() && sense.translationLanguage === 'uk' && sense.translation) {
@@ -566,32 +590,23 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       if (sense.groupedSenses?.length > 1) {
         const details = document.createElement('details');
         const summary = document.createElement('summary');
-        summary.textContent = `${sense.groupedSenses.length} grouped originals`;
+        summary.textContent = `Show original definitions (${sense.groupedSenses.length})`;
         details.appendChild(summary);
         for (const original of originalSenses(sense)) {
           const p = document.createElement('p');
           p.textContent = `${original.definition}${original.example ? ` — ${original.example}` : ''}${original.attribution ? ` · ${original.attribution}` : ''}`;
           details.appendChild(p);
         }
-        const separate = document.createElement('button');
-        separate.type = 'button'; separate.className = 'text-action';
-        separate.textContent = 'Choose originals separately';
-        separate.addEventListener('click', () => {
-          persistFocusedDraft();
-          const originals = originalSenses(sense).map((item, i) => ({ ...item, id: `${sense.id}-original-${i}` }));
-          senseDrafts = new Map([...senseDrafts.values()].flatMap(item => item.id === sense.id ? originals : [item]).map(item => [item.id, item]));
-          selectedSenseIds.delete(sense.id); selectedSenseIds.add(originals[0].id);
-          focusedSenseId = originals[0].id; showAllSenses = true;
-          renderSenseOptions(); loadFocusedDraft();
-        });
-        details.appendChild(separate); senseList.appendChild(details);
+        senseList.appendChild(details);
       }
     });
   };
 
   const renderSenses = data => {
     showAllSenses = false;
-    const senses = Array.isArray(data.senses) && data.senses.length ? data.senses : [data];
+    meaningMode = 'grouped';
+    modeStates = new Map();
+    const senses = entrySensesForMode(data);
     senseDrafts = new Map(senses.map((sense, index) => {
       const id = String(sense.id || index);
       return [id, { ...sense, id, phonetic: data.phonetic || '', audioUrl: data.audioUrl || '' }];
@@ -600,8 +615,31 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     selectedSenseIds = new Set(focusedSenseId ? [focusedSenseId] : []);
     renderSenseOptions();
     loadFocusedDraft();
-    formStatus.textContent = 'Choose the meanings you use. Dictionary examples are included when available; you can save without an example.';
+    formStatus.textContent = data.senseConsolidation
+      ? `${data.senseConsolidation.coreCount} grouped meanings cover ${data.senseConsolidation.originalCount} dictionary definitions. Switch to Raw to inspect the dictionary definitions.`
+      : data.consolidationWarning ? 'Automatic meaning grouping is unavailable. Dictionary meanings are shown so you can still choose and save.'
+        : 'Choose the meanings you use. Dictionary examples are included when available; you can save without an example.';
   };
+
+  document.querySelectorAll('[data-meaning-mode]').forEach(button => button.addEventListener('click', () => {
+    const next = button.dataset.meaningMode;
+    if (next === meaningMode || !currentFetchedData) return;
+    persistFocusedDraft();
+    modeStates.set(meaningMode, { senseDrafts, selectedSenseIds, focusedSenseId, showAllSenses });
+    meaningMode = next;
+    let state = modeStates.get(next);
+    if (!state) {
+      const drafts = entrySensesForMode(currentFetchedData, next).map((sense, index) => {
+        const id = `${next}-${index}`;
+        return [id, { ...sense, id, rawDefinition: sense.definition, rawPartOfSpeech: sense.partOfSpeech }];
+      });
+      const first = drafts[0]?.[0] || null;
+      state = { senseDrafts: new Map(drafts), selectedSenseIds: new Set(first ? [first] : []), focusedSenseId: first, showAllSenses: false };
+    }
+    ({ senseDrafts, selectedSenseIds, focusedSenseId, showAllSenses } = state);
+    renderSenseOptions(); loadFocusedDraft();
+    formStatus.textContent = next === 'raw' ? 'Original dictionary definitions. Select the definitions you want to save.' : 'Grouped meanings cover the dictionary definitions. Select the meanings you want to save.';
+  }));
 
   btnOpen?.addEventListener('click', openModal);
   toggleSenses.addEventListener('click', () => {
@@ -790,18 +828,17 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     formStatus.textContent = 'The spelling changed. Fetch meanings again, or enter the intended meaning manually.';
   });
 
-  async function lookupSingleWord(useAi = false) {
+  async function lookupSingleWord() {
     if (btnFetch.disabled) return;
     const w = input.value.trim();
     if (!w) { input.focus(); return; }
 
-    const { isCurrent, lookup, courseId, translationLanguage } = beginOperation();
+    const { isCurrent, lookup } = beginOperation();
     btnFetch.disabled = true;
-    btnAiFetch.disabled = true;
-    btnFetch.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${useAi ? 'Asking Gemini…' : 'Finding meanings…'}`;
+    btnFetch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finding meanings…';
 
     try {
-      const data = await (useAi ? fetchAiWordEntry(w, courseId, { translationLanguage }) : lookup(w));
+      const data = await lookup(w);
       if (!isCurrent()) return;
       currentFetchedData = data;
       input.value = currentFetchedData.word;
@@ -816,18 +853,16 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       preview.style.display = 'block';
     } catch (err) {
       if (!isCurrent()) return;
-      if (!useAi) { currentFetchedData = null; preview.style.display = 'none'; }
+      currentFetchedData = null; preview.style.display = 'none';
       formStatus.textContent = err.message || 'Lookup failed. You can still enter the exact meaning manually below.';
       showToast(err.message || 'Could not fetch word details.', 'error');
     } finally {
       if (!isCurrent()) return;
       btnFetch.disabled = false;
-      btnAiFetch.disabled = false;
-      btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
+        btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
     }
   }
   lookupForm.addEventListener('submit', event => { event.preventDefault(); lookupSingleWord(); });
-  btnAiFetch.addEventListener('click', () => lookupSingleWord(true));
 
   btnSave.addEventListener('click', async () => {
     const wordText = input.value.trim();
@@ -835,7 +870,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
 
     persistFocusedDraft();
     const selectedDrafts = [...selectedSenseIds].map(id => senseDrafts.get(id)).filter(Boolean);
-    const items = currentFetchedData && selectedDrafts.length ? selectedDrafts.map(sense => wordEntryToWord({ ...currentFetchedData, senses: [sense] }, 0, driveSync.getActiveCourseId())) : [{
+    const items = currentFetchedData && selectedDrafts.length ? selectedDrafts.map(sense => wordEntryToWord({ ...currentFetchedData, senses: [sense], additionalSenses: [] }, 0, driveSync.getActiveCourseId())) : [{
       word: wordText,
       phonetic: phoneticInput.value.trim(),
       partOfSpeech: posInput.value.trim() || 'unknown',
