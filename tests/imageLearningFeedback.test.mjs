@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { driveSync, MemoryStorage } from '../js/services/driveSync.js?v=18900';
-import { recordImagePreference, getImageLearningStatus, getImageLearningTrainingData, resetImagePreferences, rankImagesLocally, disableImageLearning } from '../js/services/imageLearning.js?v=18900';
+import { driveSync, MemoryStorage } from '../js/services/driveSync.js?v=18908';
+import { recordImagePreference, getImageLearningStatus, getImageLearningTrainingData, resetImagePreferences, rankImagesLocally, disableImageLearning } from '../js/services/imageLearning.js?v=18908';
 import { imageChoiceLabels, imageReplacementLabels } from '../js/services/imageChoicePolicy.js';
-import { imageSenseFingerprint } from '../js/services/imageSearch.js?v=18900';
+import { imageSenseFingerprint } from '../js/services/imageSearch.js?v=18908';
 import { encodeFeatures, preferenceFeatures } from '../js/services/imagePreferences.js';
 import { IMAGE_PREPROCESSING, encodeMeaning } from '../js/services/imagePersonalizer.js';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';

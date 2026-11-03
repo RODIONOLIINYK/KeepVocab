@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { canAutoSelectImage, imageChoiceLabels, imageReplacementLabels } from '../js/services/imageChoicePolicy.js';
+import { canAutoSelectImage, isUncertainImageMatch, imageChoiceLabels, imageReplacementLabels } from '../js/services/imageChoicePolicy.js';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
 
 function candidates(patch = {}) {
@@ -54,4 +54,14 @@ test('ordinary choices create bounded relative preferences only for supplied vie
   assert.deepEqual(imageChoiceLabels(word, selected).map(item => item.action), ['good']);
   assert.deepEqual(imageChoiceLabels(word, null, viewed), []);
   assert.deepEqual(imageReplacementLabels(word, viewed[2], selected).map(item => item.action), ['good', 'less-preferred']);
+});
+
+test('below-threshold review candidates never become automatic selections',()=>{
+ assert.equal(canAutoSelectImage(candidates({belowThreshold:true})),false);
+});
+
+test('uncertainty-triggered active learning flags tight margins and boundary candidates while passing confident winners', () => {
+  assert.equal(isUncertainImageMatch(candidates({ preference: 0.78, selected: 0.42, margin: 0.2, score: 0.52 })).uncertain, false);
+  assert.equal(isUncertainImageMatch(candidates({ score: 0.43 })).uncertain, true);
+  assert.equal(isUncertainImageMatch(candidates({ margin: 0.082 })).uncertain, true);
 });

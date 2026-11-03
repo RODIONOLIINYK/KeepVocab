@@ -1,11 +1,11 @@
 import { reviewChannel } from './fsrsConfig.js';
 import { requestSchedulerTraining } from './fsrsLearning.js';
-import { sourceDefinitionFingerprint } from './learningDefinitions.js?v=18904';
+import { sourceDefinitionFingerprint } from './learningDefinitions.js?v=18908';
 import { memoryContextFeatures } from './memoryFeatures.js';
-import { driveSync } from './driveSync.js?v=18904';
-import { migrateSrsState, scheduleWordReviewDetailed } from './srsEngine.js?v=18904';
-import { recordLearningExercise } from './learningStats.js?v=18904';
-import { normalizeWordPracticeStats, updateWordPracticeStats } from './wordSelection.js?v=18904';
+import { driveSync } from './driveSync.js?v=18908';
+import { migrateSrsState, scheduleWordReviewDetailed } from './srsEngine.js?v=18908';
+import { recordLearningExercise } from './learningStats.js?v=18908';
+import { normalizeWordPracticeStats, updateWordPracticeStats } from './wordSelection.js?v=18908';
 
 export const EXERCISE_RESULT_VERSION = 2;
 const resultId = () => globalThis.crypto?.randomUUID?.() || `review-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;

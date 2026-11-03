@@ -1,5 +1,4 @@
-import { normalizeVisualFocus } from './visualFocus.js';
-import { replayWordFsrsHistory } from './srsEngine.js?v=18904';
+import { replayWordFsrsHistory } from './srsEngine.js?v=18908';
 import { ReviewHistoryStore, mergeReviewEvents } from './reviewHistory.js';
 import { ImageLearningHistoryStore, mergeImageEvents, IMAGE_HISTORY_CHUNK } from './imageLearningHistory.js';
 import { CLIP_TAG, LEGACY_CLIP_TAG } from '../ml/clipConfig.js';
@@ -7,14 +6,14 @@ import { mergeFsrsConfig } from './fsrsConfig.js';
 import { mergeImageLearning } from './imagePreferences.js';
 // Local-first vocabulary persistence with reinstall-safe Google Drive backup.
 
-import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18904';
-import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18904';
+import { getGeminiBackupRecord, restoreGeminiBackupRecord } from './geminiSettings.js?v=18908';
+import { getImageProviderBackupRecord, restoreImageProviderBackupRecord } from './imageSearch.js?v=18908';
 import { activityByDevice, aggregateActivity, normalizedActivity, streakFromActivity, currentStudyStats } from './studyActivity.js';
 import { localDateKey } from '../utils/dates.js';
 import { getCourseDefinition, isCourseId } from '../data/courses.js';
 import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles, stampPracticePreferences } from './courseProfiles.js';
-import { normalizeWordPracticeStats } from './wordSelection.js?v=18904';
-import { areSensesNearDuplicate, normalizeMeaningSupport, normalizeGroupedSenses, originalSenses, sourceDefinitionFingerprint } from './learningDefinitions.js?v=18904';
+import { normalizeWordPracticeStats } from './wordSelection.js?v=18908';
+import { areSensesNearDuplicate, normalizeMeaningSupport, normalizeGroupedSenses, originalSenses, sourceDefinitionFingerprint } from './learningDefinitions.js?v=18908';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
@@ -91,10 +90,9 @@ function normalizeImageScenes(value) {
   if (!value || typeof value !== 'object' || Number(value.version) !== 1 || !value.fingerprint || !value.generatorVersion || !Array.isArray(value.scenes)) return undefined;
   const scenes = [...new Set(value.scenes.filter(scene => typeof scene === 'string').map(scene => scene.trim()).filter(scene => scene && scene.length <= 180))].slice(0, 3);
   if (!scenes.length || !['object', 'curated', 'gemini'].includes(value.source)) return undefined;
-  const focus = normalizeVisualFocus(value.focus);
   const contrasts = [...new Set((Array.isArray(value.contrasts) ? value.contrasts : []).filter(s => typeof s === 'string' && s.trim() && s.length <= 180))].slice(0, 3);
   return { version: 1, generatorVersion: String(value.generatorVersion || ''), fingerprint: String(value.fingerprint),
-    source: value.source, scenes, ...(focus ? { focus } : {}), ...(contrasts.length ? { contrasts } : {}), generatedAt: validIso(value.generatedAt) };
+    source: value.source, scenes, ...(contrasts.length ? { contrasts } : {}), generatedAt: validIso(value.generatedAt) };
 }
 
 function makeSenseId(word, partOfSpeech, definition) {

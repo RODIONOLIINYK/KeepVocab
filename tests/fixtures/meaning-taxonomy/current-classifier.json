@@ -1,17 +1,14 @@
 {
   "schemaVersion": 1,
   "role": "current-meaning-category-classifier",
-  "modelType": "mlp",
+  "modelType": "mlp-crf",
   "annotationPolicyVersion": "original-v1",
-  "artifact": "tests/fixtures/meaning-taxonomy/regularized-expansion/classifier-regularized-selected.json",
-  "artifactFileSha256": "5103d5c097acf38f87b5e58767d889e613eeadf0a750a9a5e11b426af1ed1722",
-  "selection": "docs/meaning-taxonomy-training/regularized-expansion/selection.json",
-  "confirmation": "docs/meaning-taxonomy-training/regularized-expansion/report.json",
+  "artifact": "models/meaning-category/classifier.json",
+  "artifactFileSha256": "e6efd0e3f458f5a326637d5a54a43a884efd0a49e2a3465dc5b5308c32fa6895",
+  "selection": "models/meaning-category/training-recipe.json",
+  "confirmation": "docs/meaning-taxonomy-training/vector-expansion/report.json",
   "productionPersonalizerChanged": false,
-  "restoration": {
-    "reason": "User selected the original label policy and its 72.50% benchmark. V2 uses different semantics; normalization candidates remain experimental.",
-    "audit": "docs/meaning-taxonomy-training/normalization-original/report.json",
-    "experimentalCandidatePromoted": false,
-    "freshConfirmationRequired": true
-  }
+  "productionActivated": false,
+  "selectionReason": "User selected the clean32-unit tanh + pairwise CRF after reviewing comparisons; saved2026-11-02. Not a >90% exact-accuracy claim.",
+  "historicalReferenceArchive": "archive/meaning-training-2026-11-02.tar.gz"
 }

@@ -35,3 +35,14 @@ test('a full configured Pexels pool avoids unrelated catalog requests',async()=>
   });
   assert.equal(results.length,6);assert.deepEqual(calls,['api.pexels.com']);
 });
+
+test('if every scored image fails, the optional review fallback contains the nine highest cosine matches without preference or diversity reranking',()=>{
+ const items=Array.from({length:12},(_,i)=>({candidate:{id:i},vector:vector(i),semantic:{selected:.1,unwanted:.2,margin:0,contrast:null,score:100-i,cosine:(11-i)/20}}));
+ const reversed=[...items].reverse();
+ const ranked=rankEmbeddedImages(reversed,null,{semanticFilter:true,fallbackLimit:9});
+ assert.equal(ranked.length,9);
+ assert.deepEqual(ranked.map(r=>r.candidate.id),[0,1,2,3,4,5,6,7,8]);
+ assert.ok(ranked.every(r=>r.belowThreshold&&r.score===r.semantic.cosine));
+ const passing={candidate:{id:'passes'},vector:vector(20),semantic:{selected:.3,unwanted:.1,margin:.1,contrast:.2,score:.3,cosine:.3}};
+ assert.deepEqual(rankEmbeddedImages([...items,passing],null,{semanticFilter:true,fallbackLimit:9}).map(r=>r.candidate.id),['passes']);
+});

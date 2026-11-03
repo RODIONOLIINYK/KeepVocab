@@ -1,0 +1,328 @@
+{
+  "entry": {
+    "word": "plastic",
+    "phonetic": "/ˈplæstɪk/",
+    "audioUrl": "",
+    "senses": [
+      {
+        "id": "sense-0",
+        "partOfSpeech": "noun",
+        "definition": "A synthetic, solid, hydrocarbon-based polymer, whether thermoplastic or thermosetting.",
+        "sourceDefinition": "A synthetic, solid, hydrocarbon-based polymer, whether thermoplastic or thermosetting.",
+        "labels": [
+          "countable",
+          "uncountable"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "Reducing plastic waste is a crucial problem for today’s environment, and whether it’s recyclable and biodegradable phone cases or sustainable fashion, there are plenty of eco-friendly products that can help you reduce your footprint.",
+        "synonyms": [],
+        "antonyms": [],
+        "needsExample": false
+      },
+      {
+        "id": "sense-1",
+        "partOfSpeech": "noun",
+        "definition": "(colloquial, metonymic) Credit or debit cards used in place of cash to buy goods and services.",
+        "sourceDefinition": "(colloquial, metonymic) Credit or debit cards used in place of cash to buy goods and services.",
+        "labels": [
+          "colloquial",
+          "countable",
+          "metonymically",
+          "uncountable"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "I knew the war between cash and credit cards was over and plastic had won, hands down, when even Mickey D's started taking credit and debit cards.",
+        "synonyms": [],
+        "antonyms": [],
+        "needsExample": false
+      },
+      {
+        "id": "sense-2",
+        "partOfSpeech": "noun",
+        "definition": "(figurative, slang) Insincerity; fakeness; a person who is fake or arrogant, or believes that they are better than the rest of the population; a narcissistic, affected person.",
+        "sourceDefinition": "(figurative, slang) Insincerity; fakeness; a person who is fake or arrogant, or believes that they are better than the rest of the population; a narcissistic, affected person.",
+        "labels": [
+          "countable",
+          "figuratively",
+          "slang",
+          "uncountable"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "Tessa: Pretty ironic that a box full of rubbers landed me to a town full of plastic.",
+        "synonyms": [],
+        "antonyms": [],
+        "needsExample": false
+      },
+      {
+        "id": "sense-3",
+        "partOfSpeech": "noun",
+        "definition": "(slang, countable) An instance of plastic surgery.",
+        "sourceDefinition": "(slang, countable) An instance of plastic surgery.",
+        "labels": [
+          "countable",
+          "slang"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "Somebody's had a plastic done on his nose, I think, or else somebody bent it out of shape since I last saw it.",
+        "synonyms": [],
+        "antonyms": [],
+        "needsExample": false
+      },
+      {
+        "id": "sense-6",
+        "partOfSpeech": "noun",
+        "definition": "(slang) Synonym of Plastic Paddy.",
+        "sourceDefinition": "(slang) Synonym of Plastic Paddy.",
+        "labels": [
+          "countable",
+          "slang",
+          "uncountable"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "",
+        "synonyms": [
+          "Plastic Paddy"
+        ],
+        "antonyms": [],
+        "needsExample": true
+      },
+      {
+        "id": "sense-7",
+        "partOfSpeech": "adjective",
+        "definition": "Capable of being moulded; malleable, flexible, pliant.",
+        "sourceDefinition": "Capable of being moulded; malleable, flexible, pliant.",
+        "labels": [],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "[A]nd it is highly probable that along with more splendid habits of life entered a more lavish use of the gorgeous stores laid open to the plastic powers of fiction.",
+        "synonyms": [
+          "malleable",
+          "flexible",
+          "pliant",
+          "ductile",
+          "fictile",
+          "formable"
+        ],
+        "antonyms": [
+          "elastic"
+        ],
+        "needsExample": false
+      },
+      {
+        "id": "sense-10",
+        "partOfSpeech": "adjective",
+        "definition": "(biology) Capable of adapting to varying conditions; characterized by environmental adaptability.",
+        "sourceDefinition": "(biology) Capable of adapting to varying conditions; characterized by environmental adaptability.",
+        "labels": [],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "",
+        "synonyms": [],
+        "antonyms": [],
+        "needsExample": true
+      },
+      {
+        "id": "sense-11",
+        "partOfSpeech": "adjective",
+        "definition": "Of or pertaining to the inelastic, non-brittle, deformation of a material.",
+        "sourceDefinition": "Of or pertaining to the inelastic, non-brittle, deformation of a material.",
+        "labels": [],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "",
+        "synonyms": [],
+        "antonyms": [],
+        "needsExample": true
+      },
+      {
+        "id": "sense-12",
+        "partOfSpeech": "adjective",
+        "definition": "Made of plastic.",
+        "sourceDefinition": "Made of plastic.",
+        "labels": [],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "",
+        "synonyms": [],
+        "antonyms": [],
+        "needsExample": true
+      },
+      {
+        "id": "sense-13",
+        "partOfSpeech": "adjective",
+        "definition": "(figurative, derogatory) Inferior or not the real thing.",
+        "sourceDefinition": "(figurative, derogatory) Inferior or not the real thing.",
+        "labels": [
+          "derogatory",
+          "figuratively"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "The Hippie has been replaced by the pseudo-Hippie, the plastic Hippie, the weekend Hippie",
+        "synonyms": [
+          "ersatz"
+        ],
+        "antonyms": [],
+        "needsExample": false
+      },
+      {
+        "id": "sense-14",
+        "partOfSpeech": "adjective",
+        "definition": "(figurative, informal, of a person) Fake, insincere, especially in a shallow and conformist way pretending to smoothness and glossy flawlessness.",
+        "sourceDefinition": "(figurative, informal, of a person) Fake, insincere, especially in a shallow and conformist way pretending to smoothness and glossy flawlessness.",
+        "labels": [
+          "figuratively",
+          "informal"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "He kissed the white woman once, and it was so artificial, so plastic (that's the word, plastic) that one wondered why did they bother at all.",
+        "synonyms": [
+          "fake",
+          "insincere"
+        ],
+        "antonyms": [
+          "genuine",
+          "sincere"
+        ],
+        "needsExample": false
+      },
+      {
+        "id": "sense-15",
+        "partOfSpeech": "adjective",
+        "definition": "(informal, birdwatching, of an individual bird) Escaped from captivity, rather than wild.",
+        "sourceDefinition": "(informal, birdwatching, of an individual bird) Escaped from captivity, rather than wild.",
+        "labels": [
+          "informal"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "A superb — and apparently wild, not plastic — Baikal Teal was located at RSPB Greylake in Somerset[.]",
+        "synonyms": [],
+        "antonyms": [],
+        "needsExample": false
+      },
+      {
+        "id": "sense-16",
+        "partOfSpeech": "adjective",
+        "definition": "(informal, birdwatching, of a species or individual bird) Introduced, rather than native or naturally vagrant.",
+        "sourceDefinition": "(informal, birdwatching, of a species or individual bird) Introduced, rather than native or naturally vagrant.",
+        "labels": [
+          "informal"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+        "attribution": "CC BY-SA 4.0",
+        "example": "I was checking into my motel while a Red-whiskered Bulbul called outside – a Queensland plastic rarity which was somewhat amusing.",
+        "synonyms": [],
+        "antonyms": [],
+        "needsExample": false
+      }
+    ],
+    "id": "sense-0",
+    "partOfSpeech": "noun",
+    "definition": "A synthetic, solid, hydrocarbon-based polymer, whether thermoplastic or thermosetting.",
+    "sourceDefinition": "A synthetic, solid, hydrocarbon-based polymer, whether thermoplastic or thermosetting.",
+    "labels": [
+      "countable",
+      "uncountable"
+    ],
+    "usageNote": "",
+    "sourceUrl": "https://en.wiktionary.org/wiki/plastic",
+    "attribution": "CC BY-SA 4.0",
+    "example": "Reducing plastic waste is a crucial problem for today’s environment, and whether it’s recyclable and biodegradable phone cases or sustainable fashion, there are plenty of eco-friendly products that can help you reduce your footprint.",
+    "synonyms": [],
+    "antonyms": [],
+    "needsExample": false,
+    "imageUrl": "",
+    "source": "freedictionaryapi.com"
+  },
+  "groups": [
+    {
+      "members": [
+        "0"
+      ],
+      "priority": "core",
+      "definition": "a synthetic, solid, hydrocarbon-based polymer",
+      "usageNote": "available as thermoplastic or thermosetting forms"
+    },
+    {
+      "members": [
+        "1"
+      ],
+      "priority": "core",
+      "definition": "credit or debit cards used in place of cash",
+      "usageNote": "used colloquially and metonymically"
+    },
+    {
+      "members": [
+        "2"
+      ],
+      "priority": "core",
+      "definition": "insincerity or fakeness, or an arrogant and affected person",
+      "usageNote": "used figuratively and as slang"
+    },
+    {
+      "members": [
+        "3"
+      ],
+      "priority": "specialized",
+      "definition": "an instance of plastic surgery",
+      "usageNote": "used as countable slang"
+    },
+    {
+      "members": [
+        "4",
+        "5",
+        "6"
+      ],
+      "priority": "core",
+      "definition": "capable of being shaped, moulded, or adapting to varying conditions without breaking",
+      "usageNote": "applies to malleable physical materials, biological adaptability, and permanent material deformation"
+    },
+    {
+      "members": [
+        "7"
+      ],
+      "priority": "core",
+      "definition": "made of plastic material",
+      "usageNote": ""
+    },
+    {
+      "members": [
+        "8",
+        "9"
+      ],
+      "priority": "core",
+      "definition": "fake, insincere, or inferior",
+      "usageNote": "used figuratively and derogatorily for things and people"
+    },
+    {
+      "members": [
+        "10",
+        "11"
+      ],
+      "priority": "specialized",
+      "definition": "an escaped captive or introduced bird rather than a wild, native, or naturally vagrant one",
+      "usageNote": "used informally in birdwatching"
+    }
+  ],
+  "model": "gemini-3.5-flash-lite"
+}

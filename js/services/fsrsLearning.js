@@ -1,8 +1,8 @@
-import { driveSync } from './driveSync.js?v=18904';
+import { driveSync } from './driveSync.js?v=18908';
 import { readFsrsConfig, normalizeFsrsConfig } from './fsrsConfig.js';
 import { optimizeFsrsChannel, reviewDatasetFingerprint, MIN_TRAINING_REVIEWS, MIN_TRAINING_WORDS } from './fsrsOptimizer.js';
-import { replayWordFsrsHistory } from './srsEngine.js?v=18904';
-import { sourceDefinitionFingerprint } from './learningDefinitions.js?v=18904';
+import { replayWordFsrsHistory } from './srsEngine.js?v=18908';
+import { sourceDefinitionFingerprint } from './learningDefinitions.js?v=18908';
 const ATTEMPT_KEY = 'keepvocab_fsrs_training_attempt_v1';
 const listeners = new Set();
 const scheduled = new WeakMap();

@@ -1,15 +1,15 @@
-import { definitionForLearning } from '../services/learningDefinitions.js?v=18904';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18904';
-import { driveSync } from '../services/driveSync.js?v=18904';
-import { findRelevantImages, prepareImageScenes, imageSenseFingerprint, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18904';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18908';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18908';
+import { driveSync } from '../services/driveSync.js?v=18908';
+import { findRelevantImages, prepareImageScenes, imageSenseFingerprint, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18908';
 import { imageReplacementLabels } from '../services/imageChoicePolicy.js';
-import { recordImagePreference } from '../services/imageLearning.js?v=18904';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18904';
-import { playInteractionSound } from '../services/interactionSound.js?v=18904';
+import { recordImagePreference } from '../services/imageLearning.js?v=18908';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
+import { playInteractionSound } from '../services/interactionSound.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18904';
-import { stableWordChoices } from '../services/wordChoices.js?v=18904';
-import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18904';
+import { evaluateChoiceAnswer } from '../services/exerciseEvaluation.js?v=18908';
+import { stableWordChoices } from '../services/wordChoices.js?v=18908';
+import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -72,7 +72,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
         if (!isCurrent()) return;
         const latest = driveSync.getWords().find(item => item.id === word.id);
         if (!latest || imageSenseFingerprint(latest) !== imageSenseFingerprint(word)) continue;
-        const image = candidates.find(candidate => !reservedImageUrls.has(candidate.url) && !reservedImageUrls.has(candidate.sourceUrl));
+        const image = candidates.find(candidate => !candidate.ml?.belowThreshold && !reservedImageUrls.has(candidate.url) && !reservedImageUrls.has(candidate.sourceUrl));
         if (image) {
           reservedImageUrls.add(image.url);
           reservedImageUrls.add(image.sourceUrl);
@@ -115,7 +115,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
     const query = searchOverride || word.imageSearchQuery || '';
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images fa-beat-fade"></i><h2>Finding images for “${escapeHtml(word.word)}”</h2><p>${escapeHtml(word.partOfSpeech || 'unknown')}: ${escapeHtml(word.definition)}</p></div></section>`;
     const excludeUrls = new Set(imageUrlsForWords(driveSync.getWords()));
-    const candidates = await findRelevantImages(word, { aiScenes: false, extraQueries: query ? [query] : [], excludeUrls });
+    const candidates = await findRelevantImages(word, { aiScenes: false, extraQueries: query ? [query] : [], onlyExtraQueries: Boolean(searchOverride), excludeUrls });
     if (!isCurrent()) return;
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card image-picker-shell">
       <div class="practice-topline"><button class="status-pill offline" id="visual-setup-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${forcedWord ? 'Replace visual cue' : `Visual setup ${position + 1} of ${missing.length}`}</span><strong>${prepared.length} selected</strong></div>

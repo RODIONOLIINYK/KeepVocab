@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112026-modes-final2';
+const CACHE_NAME = 'keepvocab-v112027-classfree-winv-weq';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -21,7 +21,7 @@ const ASSETS_TO_CACHE = [
   './js/services/wordEntry.js',
   './js/services/learningDefinitions.js',
   './js/services/localSenseGrouping.js',
-  './js/services/visualFocus.js',
+  './js/services/imageSearchPlan.js',
   './js/services/dictionaryApi.js',
   './js/services/englishEnrichment.js',
   './js/services/speechService.js',

@@ -1,10 +1,10 @@
-import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18904';
-import { withEntryTranslations } from './dictionaryApi.js?v=18904';
-import { bulkResultToWord, attachImagesSequentially, withSkippableImages } from './bulkWords.js?v=18904';
-import { sanitizeExistingExamples } from './exampleSearch.js?v=18904';
-import { findRelevantImages, imageUrlsForWords, prepareImageScenes } from './imageSearch.js?v=18904';
-import { withLearnerExplanations, allEntrySenses } from './learningDefinitions.js?v=18904';
-import { groupEntrySensesLocally, consolidateEntrySenses } from './localSenseGrouping.js?v=18904';
+import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18908';
+import { withEntryTranslations } from './dictionaryApi.js?v=18908';
+import { bulkResultToWord, attachImagesSequentially, withSkippableImages } from './bulkWords.js?v=18908';
+import { sanitizeExistingExamples } from './exampleSearch.js?v=18908';
+import { findRelevantImages, imageUrlsForWords, prepareImageScenes } from './imageSearch.js?v=18908';
+import { withLearnerExplanations, allEntrySenses } from './learningDefinitions.js?v=18908';
+import { groupEntrySensesLocally, consolidateEntrySenses } from './localSenseGrouping.js?v=18908';
 
 export async function fetchWordEntry(word, _courseId = 'english', options = {}) {
   const entry = await consolidateEntrySenses(await fetchEnglishEntry(word, options), options);

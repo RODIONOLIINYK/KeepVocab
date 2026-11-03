@@ -1,0 +1,122 @@
+{
+  "entry": {
+    "word": "outlandish",
+    "phonetic": "/ˌaʊtˈlændɪʃ/",
+    "audioUrl": "",
+    "senses": [
+      {
+        "id": "sense-1",
+        "partOfSpeech": "adjective",
+        "definition": "Appearing to be foreign; strange, unfamiliar.",
+        "sourceDefinition": "Appearing to be foreign; strange, unfamiliar.",
+        "labels": [
+          "broadly"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/outlandish",
+        "attribution": "CC BY-SA 4.0",
+        "example": "Roast beef and plum pudding are also held in superstitious veneration, and port and sherry maintain their grounds as the only true English wines; all others being considered vile outlandish beverages.",
+        "synonyms": [],
+        "antonyms": [],
+        "needsExample": false
+      },
+      {
+        "id": "sense-2",
+        "partOfSpeech": "adjective",
+        "definition": "Greatly different from common experience; bizarre, outrageous, strange.",
+        "sourceDefinition": "Greatly different from common experience; bizarre, outrageous, strange.",
+        "labels": [
+          "broadly"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/outlandish",
+        "attribution": "CC BY-SA 4.0",
+        "example": "The rock star wore black with outlandish pink and green spiked hair.",
+        "synonyms": [
+          "aberrant",
+          "abnormal",
+          "alien",
+          "anomalous",
+          "as queer as Dick's hatband",
+          "bizarre"
+        ],
+        "antonyms": [
+          "unoutlandish",
+          "average",
+          "medial",
+          "basic",
+          "bog-standard",
+          "common"
+        ],
+        "needsExample": false
+      },
+      {
+        "id": "sense-3",
+        "partOfSpeech": "adjective",
+        "definition": "Of a place: far away from where most people are located; in the middle of nowhere, out of the way, remote.",
+        "sourceDefinition": "Of a place: far away from where most people are located; in the middle of nowhere, out of the way, remote.",
+        "labels": [
+          "broadly",
+          "derogatory"
+        ],
+        "usageNote": "",
+        "sourceUrl": "https://en.wiktionary.org/wiki/outlandish",
+        "attribution": "CC BY-SA 4.0",
+        "example": "",
+        "synonyms": [
+          "in the boondocks",
+          "distant",
+          "far",
+          "far-flung",
+          "far-off",
+          "faraway"
+        ],
+        "antonyms": [
+          "around the corner",
+          "citerior",
+          "close",
+          "close by",
+          "immediate",
+          "near"
+        ],
+        "needsExample": true
+      }
+    ],
+    "id": "sense-1",
+    "partOfSpeech": "adjective",
+    "definition": "Appearing to be foreign; strange, unfamiliar.",
+    "sourceDefinition": "Appearing to be foreign; strange, unfamiliar.",
+    "labels": [
+      "broadly"
+    ],
+    "usageNote": "",
+    "sourceUrl": "https://en.wiktionary.org/wiki/outlandish",
+    "attribution": "CC BY-SA 4.0",
+    "example": "Roast beef and plum pudding are also held in superstitious veneration, and port and sherry maintain their grounds as the only true English wines; all others being considered vile outlandish beverages.",
+    "synonyms": [],
+    "antonyms": [],
+    "needsExample": false,
+    "imageUrl": "",
+    "source": "freedictionaryapi.com"
+  },
+  "groups": [
+    {
+      "members": [
+        "0",
+        "1"
+      ],
+      "priority": "core",
+      "definition": "Looking or behaving in a way that is very strange, unusual, or shocking.",
+      "usageNote": "Can describe people, things, or ideas that seem completely foreign or out of the ordinary."
+    },
+    {
+      "members": [
+        "2"
+      ],
+      "priority": "specialized",
+      "definition": "Located in a remote place far away from civilization.",
+      "usageNote": "Often used in a derogatory way to describe an isolated location."
+    }
+  ],
+  "model": "gemini-3.5-flash-lite"
+}

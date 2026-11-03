@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fullFrameGeometry, fullFrameImage } from '../js/services/imagePreprocessing.js';
+import { fullFrameGeometry, fullFrameImage, centerCropGeometry, centerCropImage } from '../js/services/imagePreprocessing.js';
 
 test('full-frame preprocessing keeps wide, tall and small images without zooming or distortion', () => {
   assert.deepEqual(fullFrameGeometry(1600, 900), { width: 256, height: 144, left: 0, top: 56, size: 256 });
@@ -15,4 +15,8 @@ test('pixels at both image edges survive padding; transparent pixels use the sam
   const pixel = (x, y) => [...image.data.slice((y * 4 + x) * 3, (y * 4 + x) * 3 + 3)];
   assert.deepEqual(pixel(1, 1), [255, 0, 0]); assert.deepEqual(pixel(2, 1), [128, 128, 128]);
   assert.deepEqual(pixel(0, 0), [128, 128, 128]);
+  assert.deepEqual(centerCropGeometry(100, 100, 0.68), { width: 68, height: 68, left: 16, top: 16 });
+  const cropped = await centerCropImage(source, Raw, 4, 0.5);
+  assert.equal(cropped.width, 4);
+  assert.equal(cropped.height, 4);
 });

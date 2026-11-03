@@ -1,11 +1,11 @@
-import { driveSync } from '../services/driveSync.js?v=18904';
-import { fetchWordEntry, wordEntryToWord, prepareWordsForLibrary, prepareBulkLearnerExplanations } from '../services/wordEntry.js?v=18904';
-import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18904';
-import { mountImageReview } from './ImageReview.js?v=18904';
-import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18904';
-import { definitionForLearning, exampleForLearning, originalSenses, allEntrySenses, entrySensesForMode } from '../services/learningDefinitions.js?v=18904';
+import { driveSync } from '../services/driveSync.js?v=18908';
+import { fetchWordEntry, wordEntryToWord, prepareWordsForLibrary, prepareBulkLearnerExplanations } from '../services/wordEntry.js?v=18908';
+import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18908';
+import { mountImageReview } from './ImageReview.js?v=18908';
+import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
+import { definitionForLearning, exampleForLearning, entrySensesForMode } from '../services/learningDefinitions.js?v=18908';
 import { canAutoSelectImage } from '../services/imageChoicePolicy.js';
-import { recordImagePreference, warmImageLearning } from '../services/imageLearning.js?v=18904';
+import { recordImagePreference, warmImageLearning } from '../services/imageLearning.js?v=18908';
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
   <div class="modal-backdrop" id="add-word-modal">
@@ -330,19 +330,6 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         });
         translationLabel.appendChild(translation);
         row.append(label, translationLabel);
-        const selected = senses[Number(select.value) || 0];
-        if (selected?.groupedSenses?.length > 1) {
-          const details = document.createElement('details');
-          const summary = document.createElement('summary');
-          summary.textContent = `Show original definitions (${selected.groupedSenses.length})`;
-          details.appendChild(summary);
-          for (const original of originalSenses(selected)) {
-            const p = document.createElement('p');
-            p.textContent = `${original.definition}${original.attribution ? ` · ${original.attribution}` : ''}`;
-            details.appendChild(p);
-          }
-          row.appendChild(details);
-        }
 
       } else {
         const note = document.createElement('p');
@@ -587,18 +574,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         formStatus.textContent = `${selectedSenseIds.size} meaning${selectedSenseIds.size === 1 ? '' : 's'} selected. Each keeps its own definition, example, and review progress.`;
       });
       senseList.appendChild(button);
-      if (sense.groupedSenses?.length > 1) {
-        const details = document.createElement('details');
-        const summary = document.createElement('summary');
-        summary.textContent = `Show original definitions (${sense.groupedSenses.length})`;
-        details.appendChild(summary);
-        for (const original of originalSenses(sense)) {
-          const p = document.createElement('p');
-          p.textContent = `${original.definition}${original.example ? ` — ${original.example}` : ''}${original.attribution ? ` · ${original.attribution}` : ''}`;
-          details.appendChild(p);
-        }
-        senseList.appendChild(details);
-      }
+
     });
   };
 

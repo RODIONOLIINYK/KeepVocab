@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { activeImageResultCandidates, activeImageSearchQueries, groupWordCards, imageUrlsUsedByOtherWords, nextImageSuggestionState, remainingImageCandidates, renderLibraryView, reusedImageUrls, reviewedImagePatch } from '../js/components/LibraryView.js';
-import { driveSync } from '../js/services/driveSync.js?v=18900';
+import { imageSenseFingerprint } from '../js/services/imageSearch.js';
+import { driveSync } from '../js/services/driveSync.js?v=18908';
 
 // Exercise the real editor callbacks with only the DOM operations they use.
 // Rendering replaces controls, as a browser's innerHTML assignment does.
@@ -269,7 +270,9 @@ test('library displays the complete screened prompt pool before requesting anoth
 
 test('the library initially combines all prepared scenes instead of silently selecting scene one', async context => {
   const { container, word } = installImageEditor(context, '');
+  globalThis.localStorage.setItem('keepvocab_gemini_live_key_v1', 'synthetic-library-scene-key');
   Object.assign(word, { word: 'conquest', definition: 'A victory gained through force.', partOfSpeech: 'noun' });
+  word.imageScenes = { version: 1, generatorVersion: '5', source: 'gemini', fingerprint: imageSenseFingerprint(word), generatedAt: new Date().toISOString(), scenes: ['soldier planting a flag on a captured ridge', 'troops entering a fortified city after battle', 'army raising a banner over a captured fortress'] }; 
   const queries = [];
   replaceGlobal(context, 'fetch', async value => {
     const url = new URL(value); const q = url.searchParams.get('q');
@@ -282,11 +285,11 @@ test('the library initially combines all prepared scenes instead of silently sel
   });
   await container.click('[data-edit-word]'); await finishImageSearch(container);
   assert.equal(new Set(queries).size, 3);
-  assert.match(container.innerHTML, /Results from all suggested scenes/);
+  assert.match(container.innerHTML, /Results from all search prompts/);
   assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 45);
   await container.click('[data-image-concept]', 1); await finishImageSearch(container);
   assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 15);
   await container.click('[data-image-concept]', 0); await finishImageSearch(container);
-  assert.match(container.innerHTML, /Results from all suggested scenes/);
+  assert.match(container.innerHTML, /Results from all search prompts/);
   assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 45);
 });

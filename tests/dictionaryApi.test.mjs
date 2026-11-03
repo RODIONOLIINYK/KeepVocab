@@ -227,7 +227,7 @@ test('historical attestation quotes never become modern learner examples, includ
   assert.equal(result.definition, 'Appearing to be foreign; strange, unfamiliar.');
   assert.equal(result.example, '');
   assert.equal(result.needsExample, true);
-  storage.setItem('keepvocab_dictionary_cache_v4', JSON.stringify({ outlandish: { cachedAt: Date.now(), data: {
+  storage.setItem('keepvocab_dictionary_cache_v5', JSON.stringify({ outlandish: { cachedAt: Date.now(), data: {
     word: 'outlandish', senses: [{ definition: result.definition, example: historical }]
   } } }));
   const cached = await fetchWordDetails('outlandish', { storage, fetchImpl: async () => assert.fail('Use cache') });

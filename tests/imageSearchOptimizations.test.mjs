@@ -383,3 +383,66 @@ test('different stock photos with identical alt captions remain eligible across 
   });
   assert.equal(results.length, 15);
 });
+
+test('Gemini scene prompt enforces prominent foreground framing without 6-class taxonomy overhead', async () => {
+  const saved = storage();
+  const word = sense('prominent-contract');
+  let calls = 0;
+  const fetchImpl = async (_url, options) => {
+    calls++;
+    const prompt = JSON.parse(options.body).contents[0].parts[0].text;
+    assert.doesNotMatch(prompt, /focus_classes/);
+    assert.match(prompt, /Distant, tiny, background-only or incidental targets are unsuitable/);
+    return response({ scenes: pair, contrasts: ['lone stone resting on dry sand'] });
+  };
+  const [prepared] = await prepareImageScenes([word], { storage: saved, fetchImpl });
+  assert.equal(prepared.imageScenes.focus, undefined);
+  assert.deepEqual(prepared.imageScenes.contrasts, ['lone stone resting on dry sand']);
+  const { DriveSyncService, MemoryStorage } = await import('../js/services/driveSync.js');
+  const service = new DriveSyncService(new MemoryStorage());
+  const stored = service.addWord(prepared);
+  assert.equal(stored.imageScenes.focus, undefined);
+  const [cached] = await prepareImageScenes([{ ...word, imageScenes: stored.imageScenes }], { storage: saved, fetchImpl });
+  assert.equal(cached.imageScenes.focus, undefined);
+  assert.equal(calls, 1);
+  const { imageClipPrompts } = await import('../js/services/imageLearning.js');
+  assert.ok(imageClipPrompts(cached).texts.every(text => !text.includes('focus_classes')));
+});
+
+test('cached Gemini scenes remain usable without a key, without generating new descriptions', async () => {
+  const saved = storage();
+  const word = { word: 'in front of', partOfSpeech: 'preposition', definition: 'Positioned ahead of another object.' };
+  const [prepared] = await prepareImageScenes([word], { storage: saved, fetchImpl: async () => response({
+    scenes: ['person standing before a parked bus', 'cyclist waiting ahead of a delivery truck']
+  }) });
+  assert.equal(prepared.imageScenes.scenes.length, 2);
+  saved.setItem('keepvocab_gemini_live_key_v1', '');
+  const [keyless] = await prepareImageScenes([prepared], { storage: saved, fetchImpl: () => assert.fail('No Gemini request without a key') });
+  assert.deepEqual(keyless.imageScenes.scenes, prepared.imageScenes.scenes);
+  assert.equal(prepared.imageScenes.scenes.length, 2, 'Do not mutate the supplied or cached scene record');
+  const queries = [];
+  await findRelevantImages(prepared, { storage: saved, validateImages: false, provider: 'pexels', pexelsApiKey: 'synthetic-pexels-key',
+    fetchImpl: async value => {
+      const url = new URL(value);
+      assert.ok(!url.hostname.includes('generativelanguage'), 'No hidden Gemini request');
+      queries.push(url.searchParams.get('query') || url.searchParams.get('q') || url.searchParams.get('gsrsearch'));
+      return { ok: true, json: async () => ({ photos: [], results: [], query: { pages: {} }, collection: { items: [] } }) };
+    }
+  });
+  assert.equal(queries.length, 10);
+  assert.deepEqual([...new Set(queries)], prepared.imageScenes.scenes.map(compactVisualSearchQuery));
+});
+
+test('without Gemini scenes, word and exact meaning each receive fifteen candidate slots before ranking',async()=>{
+ const word={word:'balancedretrievalprobe',partOfSpeech:'noun',definition:'The activity of imparting and acquiring skills.'};
+ for(const saved of [storage(),{getItem:()=>null,setItem:()=>{}}]){
+  const requests=[];
+  const results=await findRelevantImages(word,{storage:saved,aiScenes:false,provider:'pexels',pexelsApiKey:'synthetic-balance-key',limit:45,validateImages:false,refresh:true,
+   fetchImpl:async value=>{const url=new URL(value);assert.equal(url.hostname,'api.pexels.com');requests.push(url.searchParams.get('query'));assert.equal(url.searchParams.get('per_page'),'15');const branch=url.searchParams.get('query')===word.word?'word':'meaning';return{ok:true,json:async()=>({photos:Array.from({length:15},(_,i)=>({id:`${branch}-${i}`,url:`https://balance.test/${branch}/${i}`,alt:`${url.searchParams.get('query')} frame ${i}`,src:{medium:`https://balance.test/${branch}/${i}.jpg`}}))})};}
+  });
+  if(requests.length) assert.deepEqual([...new Set(requests)],['balancedretrievalprobe','the activity of imparting and acquiring skills']);
+  assert.equal(results.length,30);
+  assert.equal(results.filter(r=>r.retrievalQueryType==='word').length,15);
+  assert.equal(results.filter(r=>r.retrievalQueryType==='meaning').length,15);
+ }
+});

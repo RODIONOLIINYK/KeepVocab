@@ -1,5 +1,5 @@
 // FSRS-6 memory states, with separate recall, recognition and assisted streams.
-import { normalizeWordPracticeStats } from './wordSelection.js?v=18904';
+import { normalizeWordPracticeStats } from './wordSelection.js?v=18908';
 import { FSRS_MODEL, readFsrsConfig, createEmptyCard, State, deserializeFsrsCard, serializeFsrsCard,
   fsrsScheduler, reviewChannel } from './fsrsConfig.js';
 

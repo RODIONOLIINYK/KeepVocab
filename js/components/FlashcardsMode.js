@@ -1,11 +1,11 @@
-import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18904';
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18904';
-import { driveSync } from '../services/driveSync.js?v=18904';
-import { speakWord } from '../services/speechService.js?v=18904';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18904';
-import { getRatingPreviews } from '../services/srsEngine.js?v=18904';
+import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18908';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
+import { driveSync } from '../services/driveSync.js?v=18908';
+import { speakWord } from '../services/speechService.js?v=18908';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
+import { getRatingPreviews } from '../services/srsEngine.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
-import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18904';
+import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function renderFlashcardsMode(container, onNavigate) {

@@ -179,7 +179,7 @@ test('English validation allows apostrophe typography while retaining the exact 
   }
 });
 
-test('dictionary timeouts still fall back to Gemini when enabled', async () => {
+test('dictionary timeouts retain the network error instead of asking Gemini for a meaning', async () => {
   const options = fixture(valid);
   const originalFetch = options.fetchImpl;
   options.fetchImpl = async (url, request) => {
@@ -187,9 +187,8 @@ test('dictionary timeouts still fall back to Gemini when enabled', async () => {
     options.calls.push(url);
     throw Object.assign(new Error('Timed out.'), { name: 'AbortError' });
   };
-  const entry = await fetchWordEntry('break the ice', 'english', options);
-  assert.equal(entry.aiGenerated, true);
-  assert.equal(options.calls.filter(url => url.includes('generativelanguage')).length, 1);
+  await assert.rejects(fetchWordEntry('break the ice', 'english', options), { code: 'NETWORK' });
+  assert.equal(options.calls.filter(url => url.includes('generativelanguage')).length, 0);
 });
 
 test('disabled, blank-key, and cancelled lookup paths never start Gemini fallback requests', async () => {
@@ -236,7 +235,7 @@ test('English dictionary hits never call Gemini', async () => {
 
 test('cached English dictionary meanings are backfilled with Ukrainian translations', async () => {
   const options = fixture(valid);
-  options.storage.setItem('keepvocab_dictionary_cache_v4', JSON.stringify({ 'break the ice': {
+  options.storage.setItem('keepvocab_dictionary_cache_v5', JSON.stringify({ 'break the ice': {
     cachedAt: Date.now(), data: { word: 'break the ice', source: 'dictionary', senses: [
       { definition: 'Make people feel at ease.', translation: 'Make people feel at ease.', example: 'We played a game to break the ice.' }
     ] }

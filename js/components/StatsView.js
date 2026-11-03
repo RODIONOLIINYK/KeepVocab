@@ -1,11 +1,11 @@
-import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=18904';
+import { normalizeWordPracticeStats } from '../services/wordSelection.js?v=18908';
 import { readFsrsConfig } from '../services/fsrsConfig.js';
-import { definitionForLearning } from '../services/learningDefinitions.js?v=18904';
-import { driveSync } from '../services/driveSync.js?v=18904';
-import { getDueWords } from '../services/srsEngine.js?v=18904';
-import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18904';
-import { normalizeLearningStats } from '../services/learningStats.js?v=18904';
-import { weaknessScore } from '../services/dailySession.js?v=18904';
+import { definitionForLearning } from '../services/learningDefinitions.js?v=18908';
+import { driveSync } from '../services/driveSync.js?v=18908';
+import { getDueWords } from '../services/srsEngine.js?v=18908';
+import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18908';
+import { normalizeLearningStats } from '../services/learningStats.js?v=18908';
+import { weaknessScore } from '../services/dailySession.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 

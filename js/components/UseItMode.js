@@ -1,12 +1,12 @@
-import { driveSync } from '../services/driveSync.js?v=18904';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18904';
-import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18904';
-import { playInteractionSound } from '../services/interactionSound.js?v=18904';
-import { mountUseItExercise } from './UseItExercise.js?v=18904';
-import { createSpeechRecordingSession } from '../services/speechInput.js?v=18904';
+import { driveSync } from '../services/driveSync.js?v=18908';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
+import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
+import { playInteractionSound } from '../services/interactionSound.js?v=18908';
+import { mountUseItExercise } from './UseItExercise.js?v=18908';
+import { createSpeechRecordingSession } from '../services/speechInput.js?v=18908';
 import { navigateTo as go } from '../utils/navigation.js';
 
-export { evaluateUseItFallback, evaluateUseItSentence } from '../services/useItEvaluation.js?v=18904';
+export { evaluateUseItFallback, evaluateUseItSentence } from '../services/useItEvaluation.js?v=18908';
 
 let activeSpeechSession = null;
 

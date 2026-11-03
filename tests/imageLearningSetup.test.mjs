@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
-import { MemoryStorage } from '../js/services/driveSync.js?v=18900';
-import { initializeImageLearning, hasDownloadedImageModel, imageLearningEnabled, enableImageLearning, disableImageLearning } from '../js/services/imageLearning.js?v=18900';
+import { MemoryStorage } from '../js/services/driveSync.js?v=18908';
+import { initializeImageLearning, hasDownloadedImageModel, imageLearningEnabled, enableImageLearning, disableImageLearning } from '../js/services/imageLearning.js?v=18908';
 import { CLIP_CACHE, CLIP_DOWNLOAD_URLS, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE } from '../js/ml/clipConfig.js';
 
 const CONFIG_KEY = 'keepvocab_image_learning_device_v1';

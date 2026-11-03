@@ -1,7 +1,7 @@
 import { canAutoSelectImage, imageChoiceLabels } from '../services/imageChoicePolicy.js';
-import { recordImagePreference } from '../services/imageLearning.js?v=18904';
-import { escapeHtml } from '../utils/html.js?v=18904';
-import { findRelevantImages, imageSelectionPatch, imageIdentityKeys } from '../services/imageSearch.js?v=18904';
+import { recordImagePreference } from '../services/imageLearning.js?v=18908';
+import { escapeHtml } from '../utils/html.js?v=18908';
+import { findRelevantImages, imageSelectionPatch, imageIdentityKeys } from '../services/imageSearch.js?v=18908';
 
 let reviewId = 0;
 const clone = value => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
@@ -104,7 +104,7 @@ export function mountImageReview(container, words, {
         const chosen = row.decision === 'keep' ? row.proposal : null;
         const existing = currentImage(row.original);
         const firstAvailable = row.candidates.findIndex(candidate => !conflict(index, candidate));
-        const status = row.loading ? 'Finding more images…' : row.error || (row.decision === 'skip' ? (existing ? 'Current image kept.' : 'No image. Your word and meaning will still be saved.') : chosen ? (row.automatic && !row.explicit ? 'Suggested photo. You can change it.' : 'Selected. Save to use this image.') : 'Tap an image to select it.');
+        const status = row.loading ? 'Finding more images…' : row.error || (row.decision === 'skip' ? (existing ? 'Current image kept.' : 'No image. Your word and meaning will still be saved.') : chosen ? (row.automatic && !row.explicit ? 'Suggested photo. You can change it.' : 'Selected. Save to use this image.') : row.candidates[0]?.ml?.belowThreshold ? 'No images passed the match threshold. Choose from the closest matches.' : 'Tap an image to select it.');
         return `<article class="image-review__card ${chosen ? 'is-kept' : row.decision === 'skip' ? 'is-without-image' : ''}" aria-busy="${row.loading}">
           <div class="image-review__meaning"><h3>${escapeHtml(row.original.word)}</h3><p>${escapeHtml(row.original.definition)}</p></div>
           ${row.candidates.length ? `<div class="image-review__choices" role="radiogroup" aria-label="Image options for ${escapeHtml(row.original.word)}">${row.candidates.slice(0, row.visibleCount).map((candidate, candidateIndex) => {

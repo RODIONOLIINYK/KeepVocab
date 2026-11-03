@@ -210,3 +210,10 @@ test('skipping before imagery starts avoids all searches and drops stale candida
   assert.equal(result[0].imageUrl, 'https://example.test/original.jpg');
   assert.equal(result[0].imageCandidates, undefined);
 });
+
+test('below-threshold suggestions remain available for review without being attached as the word image',async()=>{
+ const photo={url:'https://review.test/low-cosine.jpg',ml:{belowThreshold:true,cosine:.18}};
+ const words=await attachImagesSequentially([{word:'probe',definition:'An exact meaning.'}],async()=>[photo]);
+ assert.equal(words[0].imageUrl,undefined);
+ assert.deepEqual(words[0].imageCandidates,[photo]);
+});

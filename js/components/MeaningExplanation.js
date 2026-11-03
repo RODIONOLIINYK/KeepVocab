@@ -1,5 +1,5 @@
 import { escapeHtml } from '../utils/html.js';
-import { exampleForLearning, meaningSupportFor } from '../services/learningDefinitions.js?v=18904';
+import { exampleForLearning, meaningSupportFor } from '../services/learningDefinitions.js?v=18908';
 
 export function renderMeaningExplanation(word, { showSource = true, showSupport = true, showUsage = true } = {}) {
   const source = String(word.sourceDefinition || '');

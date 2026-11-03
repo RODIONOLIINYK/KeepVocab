@@ -1,16 +1,17 @@
-import { recordImagePreference } from '../services/imageLearning.js?v=18904';
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18904';
-import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18904';
-import { speakWord } from '../services/speechService.js?v=18904';
-import { buildVisualSceneDescriptions, clearImageSelectionPatch, findRelevantImages, prepareImageScenes, imageSenseFingerprint, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback, imageIdentityKeys } from '../services/imageSearch.js?v=18904';
-import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18904';
+import { fallbackImageSearchPlan, hasGeminiSceneDescription } from '../services/imageSearchPlan.js';
+import { recordImagePreference } from '../services/imageLearning.js?v=18908';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
+import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18908';
+import { speakWord } from '../services/speechService.js?v=18908';
+import { clearImageSelectionPatch, findRelevantImages, prepareImageScenes, imageSenseFingerprint, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback, imageIdentityKeys } from '../services/imageSearch.js?v=18908';
+import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18908';
 import { imageChoiceLabels } from '../services/imageChoicePolicy.js';
-import { getPracticeReadiness } from '../services/reminderService.js?v=18904';
+import { getPracticeReadiness } from '../services/reminderService.js?v=18908';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
-import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, meaningSupportFor, groupSimilarSenses, originalSenses } from '../services/learningDefinitions.js?v=18904';
-import { renderMeaningExplanation, renderExplanationReview, renderInlineExplanation, applyReviewedExplanations } from './MeaningExplanation.js?v=18904';
-import { mountImageReview } from './ImageReview.js?v=18904';
-import { attachImagesSequentially } from '../services/bulkWords.js?v=18904';
+import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, meaningSupportFor, groupSimilarSenses } from '../services/learningDefinitions.js?v=18908';
+import { renderMeaningExplanation, renderExplanationReview, renderInlineExplanation, applyReviewedExplanations } from './MeaningExplanation.js?v=18908';
+import { mountImageReview } from './ImageReview.js?v=18908';
+import { attachImagesSequentially } from '../services/bulkWords.js?v=18908';
 import { animateDisclosures } from '../utils/disclosureMotion.js';
 
 function readFileAsDataUrl(file) {
@@ -175,15 +176,14 @@ export function renderLibraryView(container) {
     // A saved custom search remains selected while automatic depictions stay
     // available as alternatives. Valid scenes are reused on subsequent opens.
     const [preparedWord] = await prepareImageScenes([word]);
-    const aiScenes = preparedWord.imageScenes?.scenes || [];
+    const aiScenes = hasGeminiSceneDescription(preparedWord.imageScenes) ? preparedWord.imageScenes.scenes : [];
     if (container.libraryViewOwner !== viewOwner || !container.querySelector('#library-edit-form') || editId !== wordId || requestId !== imageRequestId) return;
     if (!meaningStillCurrent()) return;
-    const curatedScenes = buildVisualSceneDescriptions(word);
-    suggestedImageScenes = [...new Set(aiScenes.length ? aiScenes : curatedScenes)].slice(0, 3);
+    suggestedImageScenes = [...new Set(aiScenes.length ? aiScenes : fallbackImageSearchPlan(word).map(item => item.prompt))].filter(Boolean).slice(0, 3);
     const latest = driveSync.getWords().find(item => item.id === wordId);
     if (preparedWord.imageScenes && latest && imageSenseFingerprint(latest) === imageSenseFingerprint(word)) driveSync.updateWord(wordId, { imageScenes: preparedWord.imageScenes });
     word = preparedWord;
-    // Empty selection means all suggested scenes. A scene is narrowed only
+    // Empty selection means all search prompts. A scene is narrowed only
     // after an explicit click, never just because it is first in the list.
     if (refresh) imageResultPage += 1;
     render();
@@ -274,7 +274,6 @@ export function renderLibraryView(container) {
         ${meaning.imageUrl && !hasDuplicateImage ? `<img class="library-word-image" src="${escapeHtml(meaning.imageUrl)}" alt="Visual cue for ${escapeHtml(meaning.word)} meaning ${meaningIndex + 1}">` : hasDuplicateImage ? `<div class="duplicate-image-warning"><i class="fa-solid fa-images"></i><span><strong>Reused visual cue</strong>Choose a distinct image for this meaning.</span></div>` : ''}
         ${renderMeaningExplanation(meaning)}${isUkrainianTranslationEnabled() && meaning.translationLanguage === 'uk' && meaning.translation ? `<p class="word-translation" lang="uk">${escapeHtml(meaning.translation)}</p>` : ''}
         ${exampleForLearning(meaning) ? `<blockquote>“${escapeHtml(exampleForLearning(meaning))}”</blockquote>` : ''}
-        ${meaning.groupedSenses?.length > 1 ? `<details class="grouped-originals"><summary>Show original definitions (${meaning.groupedSenses.length})</summary>${originalSenses(meaning).map((original, index) => `<p>${escapeHtml(original.definition)}${original.example ? ` — ${escapeHtml(original.example)}` : ''}${original.attribution ? ` · ${escapeHtml(original.attribution)}` : ''}</p><button class="text-action" data-restore-original="${escapeHtml(meaning.id)}" data-original-index="${index}">Save as a separate meaning</button>`).join('')}</details>` : ''}
         <div class="library-card-footer"><span>${meaning.mastered ? 'Mastered' : (readiness.readyNowCount ? 'Due now' : 'Learning')}</span></div>
         ${deleteId === meaning.id ? `<div class="delete-confirm"><span>Delete this meaning of “${escapeHtml(meaning.word)}”?</span><button data-cancel-delete>Cancel</button><button data-confirm-delete="${escapeHtml(meaning.id)}">Delete</button></div>` : `<div class="library-card-actions"><button data-edit-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-pen"></i> Edit</button><button class="library-delete-action" data-delete-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-trash"></i> Delete</button><details class="library-card-menu" data-motion><summary>More <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary><div class="disclosure-body"><button data-explain-meaning="${escapeHtml(meaning.id)}" ${explaining ? 'disabled' : ''}><i class="fa-solid fa-lightbulb"></i> Understand meaning</button></div></details></div>`}
         ${explaining && explanationWordIds.has(meaning.id) ? '<p class="meaning-help-status" role="status">Building a concrete explanation and example…</p>' : ''}
@@ -392,16 +391,6 @@ export function renderLibraryView(container) {
       const previous = explanationReview.find(item => item.original.id === word?.id)?.candidate;
       if (word) requestExplanations([word], false, question, previous ? { definition: previous.definition, example: previous.example, why: meaningSupportFor(previous)?.exampleExplanation || '' } : null);
     }));
-    container.querySelectorAll('[data-restore-original]').forEach(button => button.addEventListener('click', () => {
-      try {
-        const word = driveSync.getWords().find(item => item.id === button.dataset.restoreOriginal);
-        const original = originalSenses(word)[Number(button.dataset.originalIndex)];
-        if (!word || !original) return;
-        const { id, ...fields } = original;
-        driveSync.addWord({ ...fields, word: word.word, courseId: word.courseId, groupedSenses: [] }, word.notebook);
-        explanationStatus = 'Original saved as a separate meaning.'; render();
-      } catch (error) { explanationStatus = error.message; render(); }
-    }));
     container.querySelectorAll('[data-merge-meanings]').forEach(button => button.addEventListener('click', () => {
       try {
         driveSync.mergeWordMeanings(button.dataset.mergeMeanings.split('|'));
@@ -471,7 +460,7 @@ export function renderLibraryView(container) {
               <div><strong id="library-image-heading">Image</strong></div>
               <button type="button" class="image-text-action" id="refresh-library-images"><i class="fa-solid fa-rotate"></i> More options</button>
             </div>
-            <details class="image-search-options" data-motion><summary>Search or upload <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary><div class="disclosure-body">
+            <details class="image-search-options" data-motion open><summary>Search or upload <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary><div class="disclosure-body">
             <div class="custom-image-source">
               <label for="custom-image-url">Custom image link</label>
               <div><input id="custom-image-url" type="url" inputmode="url" placeholder="https://example.com/image.jpg"><button type="button" class="status-pill connected" id="use-custom-image-url">Use link</button></div>
@@ -479,19 +468,19 @@ export function renderLibraryView(container) {
               ${currentImageUrl ? '<button type="button" class="status-pill offline" id="remove-library-image"><i class="fa-solid fa-trash"></i> Remove image</button>' : ''}
             </div>
             <div class="image-concept-picker">
-              <span>This exact meaning is interpreted as:</span>
+              <span>Search prompts for this meaning:</span>
               <div class="custom-image-concept-controls">
                 <input id="custom-image-concept-input" maxlength="160" value="${escapeHtml(customImageConcept)}" placeholder="Describe the scene you want, e.g. a conductor slowing an orchestra" aria-label="Custom visual interpretation">
                 <button type="button" class="status-pill connected" id="use-custom-image-concept">Use custom concept</button>
                 ${customImageConcept ? '<button type="button" class="status-pill offline" id="clear-custom-image-concept">Remove custom</button>' : ''}
               </div>
-              ${imageConcepts.length ? `<div><button type="button" class="${!activeImageConcept ? 'active' : ''}" data-image-concept="">All suggested scenes</button>${imageConcepts.map(concept => `<button type="button" class="${activeImageConcept === concept ? 'active' : ''}" data-image-concept="${escapeHtml(concept)}">${escapeHtml(concept)}${customImageConcept === concept ? ' · custom' : ''}</button>`).join('')}</div>` : ''}
-              <small>Suggestions combine every scene. Choose one to narrow the search, or describe your own. “More options” loads the next page.</small>
+              ${imageConcepts.length ? `<div><button type="button" class="${!activeImageConcept ? 'active' : ''}" data-image-concept="">All search prompts</button>${imageConcepts.map(concept => `<button type="button" class="${activeImageConcept === concept ? 'active' : ''}" data-image-concept="${escapeHtml(concept)}">${escapeHtml(concept)}${customImageConcept === concept ? ' · custom' : ''}</button>`).join('')}</div>` : ''}
+              <small>Suggestions combine every search prompt. Choose one to narrow the search, or describe your own. “More options” loads the next page.</small>
               ${activeImageConcept ? `<small class="active-image-search-state">Searching: “${escapeHtml(activeImageConcept)}” · page ${imageResultPage}</small>` : ''}
             </div>
             </div></details>
             ${currentImageUrl ? `<div class="selected-image-preview"><img src="${escapeHtml(currentImageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current saved image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span><button type="button" class="image-text-action" id="image-wrong"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i>Hide this photo</button></div></div>` : ''}
-            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching ${activeImageConcept ? `for “${escapeHtml(activeImageConcept)}”` : 'all suggested scenes'} · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-results-heading"><strong>${activeImageConcept ? `Results for “${escapeHtml(activeImageConcept)}”` : 'Results from all suggested scenes'}</strong><span>${imageCandidates.length} images · page ${imageResultPage}</span></div><div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.thumbnailUrl || image.url)}" alt="${escapeHtml(image.title)}" loading="lazy" decoding="async"><span>${escapeHtml(image.title)}</span><small>${escapeHtml(image.source || 'Public image')}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
+            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching ${activeImageConcept ? `for “${escapeHtml(activeImageConcept)}”` : 'all search prompts'} · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-results-heading"><strong>${activeImageConcept ? `Results for “${escapeHtml(activeImageConcept)}”` : 'Results from all search prompts'}</strong><span>${imageCandidates.length} images · page ${imageResultPage}</span></div><div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.thumbnailUrl || image.url)}" alt="${escapeHtml(image.title)}" loading="lazy" decoding="async"><span>${escapeHtml(image.title)}</span><small>${escapeHtml(image.source || 'Public image')}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
             <p class="image-license-note">${imageCandidates.some(image => image.source === 'Pexels') ? '<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Photos provided by Pexels</a>. ' : ''}</p>
           </section>
           <div class="inline-actions"><button class="btn-green-solid" type="submit">Save changes</button></div>

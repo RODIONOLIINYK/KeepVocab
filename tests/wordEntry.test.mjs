@@ -149,7 +149,7 @@ test('bulk clarity preparation shares one compact request and preserves failed r
   ];
   const before = structuredClone(rows);
   let requests = 0;
-  const result = await prepareBulkLearnerExplanations(rows, { storage, fetchImpl: async (_url, options) => {
+  const result = await prepareBulkLearnerExplanations(rows, { storage, learnerExplanations: true, fetchImpl: async (_url, options) => {
     requests += 1;
     const body = JSON.parse(options.body);
     assert.ok(body.generationConfig.maxOutputTokens < 3072);
@@ -176,7 +176,7 @@ test('bulk clarity preparation only rewrites the selected meaning, leaving unuse
   const selected = { id: 'selected', definition: 'Characterized by attention and caution.' };
   let requested = 0;
   const [result] = await prepareBulkLearnerExplanations([{ term: 'careful', status: 'ready', selectedSenseIndex: 1, data: { word: 'careful', senses: [unused, selected] } }], {
-    storage, fetchImpl: async (_url, options) => {
+    storage, learnerExplanations: true, fetchImpl: async (_url, options) => {
       const prompt = JSON.parse(options.body).contents[0].parts[0].text;
       const senses = JSON.parse(prompt.slice(prompt.lastIndexOf('\nSenses: ') + 9));
       requested += senses.length;

@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MemoryStorage, driveSync } from '../js/services/driveSync.js?v=18900';
+import { MemoryStorage, driveSync } from '../js/services/driveSync.js?v=18908';
 import { initializeImageLearning, warmImageLearning, enableImageLearning, disableImageLearning,
-  getImageLearningStatus, rankImagesLocally } from '../js/services/imageLearning.js?v=18900';
+  getImageLearningStatus, rankImagesLocally } from '../js/services/imageLearning.js?v=18908';
 import { CLIP_CACHE, CLIP_DOWNLOAD_URLS, CLIP_TAG } from '../js/ml/clipConfig.js';
 
 const CONFIG_KEY = 'keepvocab_image_learning_device_v1';

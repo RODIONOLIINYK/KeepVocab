@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { evaluateImagePipeline } from '../js/services/imageEvaluation.js';
-import { imageClipPrompts } from '../js/services/imageLearning.js?v=18900';
+import { imageClipPrompts } from '../js/services/imageLearning.js?v=18908';
 import { getPretrainedImageModel,getImagePersonalizerInitialization,PRETRAINED_IMAGE_REPORT } from '../js/ml/pretrainedImagePersonalizer.js';
 import { splitImageDecisions,personalizerScore } from '../js/services/imagePersonalizer.js';
 const vector=axis=>Array.from({length:512},(_,i)=>Number(i===axis));

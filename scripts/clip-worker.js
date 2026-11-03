@@ -1,7 +1,7 @@
 import { AutoTokenizer, AutoProcessor, CLIPTextModelWithProjection, CLIPVisionModelWithProjection, RawImage, env } from '@huggingface/transformers';
 import { CLIP_MODEL, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE } from '../js/ml/clipConfig.js';
 import { normalizedVector } from '../js/services/imagePreferences.js';
-import { fullFrameImage } from '../js/services/imagePreprocessing.js';
+import { fullFrameImage, centerCropImage } from '../js/services/imagePreprocessing.js';
 import { IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
 
 env.allowLocalModels = false;
@@ -157,18 +157,32 @@ async function run({ type, payload, device }) {
     const blob = payload.blob;
     if (!(blob instanceof Blob) || blob.size > 128_000 || !/^image\/(png|jpeg|webp)$/.test(blob.type)) throw new Error('Invalid thumbnail.');
     const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())), value => value.toString(16).padStart(2, '0')).join('');
-    return cached(`${CLIP_TAG}:${IMAGE_PREPROCESSING}:image:${digest}`, async () => {
-      const image = await RawImage.fromBlob(blob);
-      if (image.width > 384 || image.height > 384) throw new Error('Thumbnail is too large.');
-      const fullFrame = await fullFrameImage(image, RawImage);
-      // Already square with the complete frame: the model's standard center
-      // crop cannot discard the subject's feet, hands or surrounding objects.
-      const inputs = await model.processor(fullFrame);
+    let decodedImage = null;
+    const decodeOnce = async () => {
+      if (!decodedImage) {
+        decodedImage = await RawImage.fromBlob(blob);
+        if (decodedImage.width > 384 || decodedImage.height > 384) throw new Error('Thumbnail is too large.');
+      }
+      return decodedImage;
+    };
+    const embedFrame = async frame => {
+      const inputs = await model.processor(frame);
       const output = await model.visionModel(inputs);
       const vector = Array.from(output.image_embeds.data);
       for (const tensor of [...Object.values(inputs), ...Object.values(output)]) tensor?.dispose?.();
       return vector;
+    };
+    const fullVector = await cached(`${CLIP_TAG}:${IMAGE_PREPROCESSING}:image:${digest}`, async () => {
+      const image = await decodeOnce();
+      return embedFrame(await fullFrameImage(image, RawImage));
     });
+    if (!payload.multiView) return fullVector;
+    const cropVector = await cached(`${CLIP_TAG}:${IMAGE_PREPROCESSING}:crop68:${digest}`, async () => {
+      const image = await decodeOnce();
+      return embedFrame(await centerCropImage(image, RawImage, 256, 0.68));
+    });
+    const blendVector = normalizedVector(fullVector.map((v, i) => 0.55 * v + 0.45 * cropVector[i]));
+    return { vector: blendVector, fullVector, cropVector };
   }
   throw new Error('Unsupported model request.');
 }

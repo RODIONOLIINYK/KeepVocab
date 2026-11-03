@@ -19,13 +19,36 @@ export function imageRankingAcceptance(result) {
 export function canAutoSelectImage(candidates) {
   const [first, ...others] = candidates || [];
   const ml = first?.ml;
-  return Boolean(first?.url && ml?.model === CLIP_TAG && typeof ml.sense === 'string' && ml.sense && others.length
+  return Boolean(first?.url && !ml?.belowThreshold && ml?.model === CLIP_TAG && typeof ml.sense === 'string' && ml.sense && others.length
     && others.every(item => item?.url && item.ml?.model === CLIP_TAG && ml.sense === item.ml.sense
       && [item.ml.selected, item.ml.margin, item.ml.unwanted, item.ml.score].every(Number.isFinite))
     && [ml.selected, ml.margin, ml.unwanted, ml.score].every(Number.isFinite)
     && ml.selected >= 0.3
     && (ml.contrast === null ? ml.selected >= 0.38 : ml.margin >= 0.08)
     && ml.unwanted < 0.2 && ml.score - Math.max(...others.map(item => item.ml.score)) >= 0.04);
+}
+
+// Active learning query criterion: detects when top candidates are near the
+// decision boundary or have tight competing margins so user feedback is prompted.
+export function isUncertainImageMatch(candidates) {
+  const [first, ...others] = candidates || [];
+  const ml = first?.ml;
+  if (!first?.url || !ml || ml.model !== CLIP_TAG) {
+    return { uncertain: true, reason: 'Unscored candidate pool.', topMargin: 0 };
+  }
+  const secondScore = others.length ? Math.max(...others.map(item => Number(item?.ml?.score) || -Infinity)) : -Infinity;
+  const topMargin = Number.isFinite(secondScore) ? (Number(ml.score) || 0) - secondScore : 0;
+  const prefDistance = Math.abs((Number(ml.preference) || 0.5) - 0.5);
+  const uncertain = Boolean(!canAutoSelectImage(candidates)
+    || ml.uncertain
+    || topMargin < 0.055
+    || (ml.contrast !== null && Number(ml.margin) < 0.09)
+    || (prefDistance < 0.18 && Number(ml.selected) < 0.36));
+  const reason = !canAutoSelectImage(candidates) ? 'Below automatic selection confidence.'
+    : topMargin < 0.055 ? 'Top two photos have nearly tied scores.'
+    : (ml.contrast !== null && Number(ml.margin) < 0.09) ? 'Close to a competing meaning contrast.'
+    : prefDistance < 0.18 ? 'Near the learned preference boundary.' : 'Confident match.';
+  return { uncertain, reason, topMargin };
 }
 
 const sameImage = (left, right) => Boolean(left?.url && right?.url && (left.url === right.url

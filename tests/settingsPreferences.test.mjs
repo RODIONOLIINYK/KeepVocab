@@ -2,8 +2,8 @@ import test from 'node:test';
 import { MODEL_DOWNLOAD_MB } from '../js/ml/clipConfig.js';
 import assert from 'node:assert/strict';
 import { renderSettingsView } from '../js/components/SettingsView.js';
-import { MemoryStorage } from '../js/services/driveSync.js?v=18900';
-import { initializeImageLearning, disableImageLearning } from '../js/services/imageLearning.js?v=18900';
+import { MemoryStorage } from '../js/services/driveSync.js?v=18908';
+import { initializeImageLearning, disableImageLearning } from '../js/services/imageLearning.js?v=18908';
 import { getFsrsLearningStatus } from '../js/services/fsrsLearning.js';
 
 async function setup(t) {

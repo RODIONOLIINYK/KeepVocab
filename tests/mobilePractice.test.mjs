@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { focusPracticeInput } from '../js/components/PracticeElements.js';
 import { renderSpellingMode } from '../js/components/PracticeModes.js';
 import { mountUseItExercise } from '../js/components/UseItExercise.js';
-import { DriveSyncService, MemoryStorage, driveSync } from '../js/services/driveSync.js?v=18900';
+import { DriveSyncService, MemoryStorage, driveSync } from '../js/services/driveSync.js?v=18908';
 
 function replaceGlobal(context, name, value) {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, name);

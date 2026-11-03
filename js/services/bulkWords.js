@@ -1,6 +1,6 @@
-import { imageSelectionPatch } from './imageSearch.js?v=18904';
-import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18904';
-import { allEntrySenses, entrySensesForMode } from './learningDefinitions.js?v=18904';
+import { imageSelectionPatch } from './imageSearch.js?v=18908';
+import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18908';
+import { allEntrySenses, entrySensesForMode } from './learningDefinitions.js?v=18908';
 
 export const MAX_BULK_WORDS = 100;
 // Lookups remain sequential, with a short pacing gap instead of adding almost
@@ -127,7 +127,7 @@ export async function attachImagesSequentially(words, findImages, options = {}) 
         // instead of making the learner wait for another search after every skip.
         word.imageCandidates = candidates;
         const [image] = candidates;
-        if (image?.url) {
+        if (image?.url && !image.ml?.belowThreshold) {
           Object.assign(word, imageSelectionPatch(image));
           excluded.add(image.url);
           if (image.sourceUrl) excluded.add(image.sourceUrl);

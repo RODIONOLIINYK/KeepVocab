@@ -1,7 +1,7 @@
-import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18904';
-import { sentenceUsesTargetForm, targetWordForms } from '../utils/wordForms.js?v=18904';
-import { getTranslationName, isUkrainianTranslationEnabled } from './translationSettings.js?v=18904';
-import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18904';
+import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18908';
+import { sentenceUsesTargetForm, targetWordForms } from '../utils/wordForms.js?v=18908';
+import { getTranslationName, isUkrainianTranslationEnabled } from './translationSettings.js?v=18908';
+import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18908';
 
 const USE_IT_CACHE_KEY = 'keepvocab_use_it_eval_cache_v1';
 const WORD_CHECK_FEEDBACK = /(?:include|insert|use|write|contain).{0,35}(?:target|headword|word|\b[a-z][a-z'-]*\b).{0,25}(?:sentence|exact|form)|(?:missing|does not contain).{0,25}(?:target|headword|word)/i;

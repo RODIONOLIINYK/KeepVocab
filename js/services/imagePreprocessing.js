@@ -5,6 +5,12 @@ export function fullFrameGeometry(width, height, size = 256) {
   const scaledWidth = Math.max(1, Math.round(width * scale)), scaledHeight = Math.max(1, Math.round(height * scale));
   return { width: scaledWidth, height: scaledHeight, left: Math.floor((size - scaledWidth) / 2), top: Math.floor((size - scaledHeight) / 2), size };
 }
+export function centerCropGeometry(width, height, cropFraction = 0.68) {
+  if (![width, height, cropFraction].every(n => Number.isFinite(n) && n > 0) || cropFraction > 1) throw new Error('Invalid crop dimensions.');
+  const cropWidth = Math.max(1, Math.round(width * cropFraction));
+  const cropHeight = Math.max(1, Math.round(height * cropFraction));
+  return { width: cropWidth, height: cropHeight, left: Math.floor((width - cropWidth) / 2), top: Math.floor((height - cropHeight) / 2) };
+}
 export async function fullFrameImage(image, RawImage, size = 256) {
   const geometry = fullFrameGeometry(image.width, image.height, size);
   const resized = await image.resize(geometry.width, geometry.height);
@@ -18,4 +24,16 @@ export async function fullFrameImage(image, RawImage, size = 256) {
     }
   }
   return new RawImage(data, size, size, 3);
+}
+export async function centerCropImage(image, RawImage, size = 256, cropFraction = 0.68) {
+  const crop = centerCropGeometry(image.width, image.height, cropFraction);
+  const channels = image.channels || 3;
+  const cropData = new Uint8Array(crop.width * crop.height * channels);
+  for (let y = 0; y < crop.height; y++) {
+    const srcStart = ((crop.top + y) * image.width + crop.left) * channels;
+    const dstStart = y * crop.width * channels;
+    cropData.set(image.data.subarray(srcStart, srcStart + crop.width * channels), dstStart);
+  }
+  const cropped = new RawImage(cropData, crop.width, crop.height, channels);
+  return fullFrameImage(cropped, RawImage, size);
 }

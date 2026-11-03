@@ -1,0 +1,317 @@
+{
+  "entry": {
+    "word": "training",
+    "phonetic": "/\u02c8t\u0279e\u026an\u026a\u014b/",
+    "audioUrl": "",
+    "senses": [
+      {
+        "partOfSpeech": "verb",
+        "definition": "present participle and gerund of train",
+        "example": "",
+        "tags": [
+          "form of",
+          "gerund",
+          "participle",
+          "present"
+        ],
+        "labels": [
+          "form of",
+          "gerund",
+          "participle",
+          "present"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-0",
+        "sourceDefinition": "present participle and gerund of train"
+      },
+      {
+        "partOfSpeech": "noun",
+        "definition": "Action of the verb to train.",
+        "example": "",
+        "tags": [
+          "uncountable",
+          "usually"
+        ],
+        "labels": [
+          "uncountable",
+          "usually"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-1",
+        "sourceDefinition": "Action of the verb to train."
+      },
+      {
+        "partOfSpeech": "noun",
+        "definition": "The activity of imparting and acquiring skills.",
+        "example": "",
+        "tags": [
+          "uncountable",
+          "usually"
+        ],
+        "labels": [
+          "uncountable",
+          "usually"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-2",
+        "sourceDefinition": "The activity of imparting and acquiring skills."
+      },
+      {
+        "partOfSpeech": "noun",
+        "definition": "The result of good social upbringing.",
+        "example": "",
+        "tags": [
+          "uncountable",
+          "usually"
+        ],
+        "labels": [
+          "uncountable",
+          "usually"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-3",
+        "sourceDefinition": "The result of good social upbringing."
+      },
+      {
+        "partOfSpeech": "noun",
+        "definition": "(computing) The process by which two modems determine which protocol and speed to use; handshaking.",
+        "example": "",
+        "tags": [
+          "uncountable",
+          "usually"
+        ],
+        "labels": [
+          "uncountable",
+          "usually"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-4",
+        "sourceDefinition": "(computing) The process by which two modems determine which protocol and speed to use; handshaking."
+      },
+      {
+        "partOfSpeech": "noun",
+        "definition": "(voice recognition) The recording of multiple samples of a user's voice to aid pattern recognition.",
+        "example": "",
+        "tags": [
+          "uncountable",
+          "usually"
+        ],
+        "labels": [
+          "uncountable",
+          "usually"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-5",
+        "sourceDefinition": "(voice recognition) The recording of multiple samples of a user's voice to aid pattern recognition."
+      }
+    ],
+    "rawDictionarySenses": [
+      {
+        "partOfSpeech": "verb",
+        "definition": "present participle and gerund of train",
+        "example": "",
+        "tags": [
+          "form of",
+          "gerund",
+          "participle",
+          "present"
+        ],
+        "labels": [
+          "form of",
+          "gerund",
+          "participle",
+          "present"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-0",
+        "sourceDefinition": "present participle and gerund of train"
+      },
+      {
+        "partOfSpeech": "noun",
+        "definition": "Action of the verb to train.",
+        "example": "",
+        "tags": [
+          "uncountable",
+          "usually"
+        ],
+        "labels": [
+          "uncountable",
+          "usually"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-1",
+        "sourceDefinition": "Action of the verb to train."
+      },
+      {
+        "partOfSpeech": "noun",
+        "definition": "The activity of imparting and acquiring skills.",
+        "example": "",
+        "tags": [
+          "uncountable",
+          "usually"
+        ],
+        "labels": [
+          "uncountable",
+          "usually"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-2",
+        "sourceDefinition": "The activity of imparting and acquiring skills."
+      },
+      {
+        "partOfSpeech": "noun",
+        "definition": "The result of good social upbringing.",
+        "example": "",
+        "tags": [
+          "uncountable",
+          "usually"
+        ],
+        "labels": [
+          "uncountable",
+          "usually"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-3",
+        "sourceDefinition": "The result of good social upbringing."
+      },
+      {
+        "partOfSpeech": "noun",
+        "definition": "(computing) The process by which two modems determine which protocol and speed to use; handshaking.",
+        "example": "",
+        "tags": [
+          "uncountable",
+          "usually"
+        ],
+        "labels": [
+          "uncountable",
+          "usually"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-4",
+        "sourceDefinition": "(computing) The process by which two modems determine which protocol and speed to use; handshaking."
+      },
+      {
+        "partOfSpeech": "noun",
+        "definition": "(voice recognition) The recording of multiple samples of a user's voice to aid pattern recognition.",
+        "example": "",
+        "tags": [
+          "uncountable",
+          "usually"
+        ],
+        "labels": [
+          "uncountable",
+          "usually"
+        ],
+        "categories": [],
+        "sourceUrl": "https://en.wiktionary.org/wiki/training",
+        "attribution": "CC BY-SA 4.0",
+        "synonyms": [],
+        "antonyms": [],
+        "id": "dictionary-raw-5",
+        "sourceDefinition": "(voice recognition) The recording of multiple samples of a user's voice to aid pattern recognition."
+      }
+    ],
+    "id": "sense-0",
+    "partOfSpeech": "verb",
+    "definition": "present participle and gerund of train",
+    "sourceDefinition": "present participle and gerund of train",
+    "labels": [
+      "form of",
+      "gerund",
+      "participle",
+      "present"
+    ],
+    "usageNote": "",
+    "sourceUrl": "https://en.wiktionary.org/wiki/training",
+    "attribution": "CC BY-SA 4.0",
+    "example": "",
+    "synonyms": [],
+    "antonyms": [],
+    "needsExample": true,
+    "imageUrl": "",
+    "source": "freedictionaryapi.com"
+  },
+  "model": "gemini-3.5-flash-lite",
+  "groups": [
+    {
+      "members": [
+        "0"
+      ],
+      "definition": "Present participle and gerund of train.",
+      "usageNote": ""
+    },
+    {
+      "members": [
+        "1",
+        "2"
+      ],
+      "definition": "The action or activity of imparting and acquiring skills, knowledge, or fitness.",
+      "usageNote": "Covers general instructional processes and skill development."
+    },
+    {
+      "members": [
+        "3"
+      ],
+      "definition": "The result of good social upbringing.",
+      "usageNote": ""
+    },
+    {
+      "members": [
+        "4"
+      ],
+      "definition": "The process by which two modems determine which protocol and speed to use.",
+      "usageNote": "Also known as handshaking in computing."
+    },
+    {
+      "members": [
+        "5"
+      ],
+      "definition": "The recording of multiple samples of a user's voice to aid pattern recognition.",
+      "usageNote": "Used specifically in voice recognition contexts."
+    }
+  ]
+}

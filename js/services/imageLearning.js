@@ -1,12 +1,12 @@
-import { driveSync } from './driveSync.js?v=18904';
-import { prepareImageThumbnails } from './imageThumbnails.js?v=18904';
+import { driveSync } from './driveSync.js?v=18908';
+import { prepareImageThumbnails } from './imageThumbnails.js?v=18908';
 import { base64ToBytes } from '../utils/base64.js';
 import { CLIP_TAG, CLIP_CACHE, CLIP_DOWNLOAD_URLS, VECTOR_DB, MODEL_DOWNLOAD_MB } from '../ml/clipConfig.js';
 import { cosine, preferenceFeatures, encodeFullFeatures, decodeFeatures, mergeImageLearning, preferenceProbability } from './imagePreferences.js';
 
 const CONFIG_KEY = 'keepvocab_image_learning_device_v1';
 const MODEL_KEY = 'keepvocab_image_preference_model_v1';
-import { IMAGE_PREPROCESSING, encodeMeaning, personalizerScore, isCurrentPersonalizer } from './imagePersonalizer.js';
+import { IMAGE_PREPROCESSING, encodeMeaning, personalizerScore, isCurrentPersonalizer, vocabInvariantScore } from './imagePersonalizer.js';
 import { ImagePersonalizerTraining } from './imagePersonalizerTraining.js';
 import { scheduleImageModelWarmup } from './imageModelStartup.js';
 import { IMAGE_SEMANTIC_FILTER, passesImageSemanticGate } from './imageSemanticGate.js';
@@ -242,37 +242,65 @@ function sharesVisualDefinitionTokens(candidate, target) {
   const overlap = [...a].filter(token => b.has(token)).length;
   return overlap / Math.min(a.size, b.size) >= 0.5;
 }
+export function stripNegatedClauses(text) {
+  const raw = String(text || '').trim();
+  const stripped = raw
+    .replace(/(?:,|;|\s+—|\s+-)\s*(?:not|never|rather than|instead of|without)\s+[^,;.]+/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return stripped.length >= 4 ? stripped : raw;
+}
 export function imageClipPrompts(word, options = {}) {
-  const targetDefinition = word.definition || word.sourceDefinition;
+  const rawDefinition = word.definition || word.sourceDefinition;
+  const targetDefinition = stripNegatedClauses(rawDefinition);
   const selected = `A photo illustrating ${word.word} (${word.partOfSpeech || 'word'}): ${targetDefinition}`;
   const rawScenes = [...new Set([...(options.extraQueries || []), ...(options.scenes || []), ...(word.imageScenes?.scenes || [])].map(s => String(s).trim()).filter(Boolean))].slice(0, 3);
   const scenes = rawScenes.map(scene => `A photo of ${scene}`);
   const contrasts = [...new Set([...(options.contrasts || []), ...(word.imageScenes?.contrasts || [])].map(s => String(s).trim()).filter(Boolean))].slice(0, 3).map(scene => `A photo of ${scene}`);
-  const alternatives = contrasts.length ? [] : [...new Set([...(options.otherDefinitions || []), ...(word.otherDefinitions || [])])].filter(value => value && value !== word.definition && value !== word.sourceDefinition && !sharesVisualDefinitionTokens(value, targetDefinition)).slice(0, 8).map(value => `A photo illustrating ${word.word}: ${value}`);
+  const alternatives = contrasts.length ? [] : [...new Set([...(options.otherDefinitions || []), ...(word.otherDefinitions || [])])].filter(value => value && value !== word.definition && value !== word.sourceDefinition && !sharesVisualDefinitionTokens(value, rawDefinition)).slice(0, 8).map(value => `A photo illustrating ${word.word}: ${value}`);
   return { scenes: rawScenes, texts: [selected, ...scenes, ...alternatives, ...contrasts, 'Text, a logo, a diagram, a screenshot or a document.'].map(text => text.slice(0, 2000)), sceneCount: scenes.length, alternativeCount: alternatives.length + contrasts.length };
 }
-export function semanticScores(image, texts, sceneCount, alternativeCount) {
-  const direct = cosine(image, texts[0]);
-  const scene = sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => cosine(image, text))) : direct;
-  const selected = 0.7 * direct + 0.3 * scene;
-  const contrast = alternativeCount ? Math.max(...texts.slice(1 + sceneCount, 1 + sceneCount + alternativeCount).map(text => cosine(image, text))) : null;
+export function semanticScores(image, texts, sceneCount, alternativeCount, wInv = null) {
+  const vBlend = Array.isArray(image) ? image : image.vector;
+  const vFull = Array.isArray(image?.fullVector) ? image.fullVector : vBlend;
+  const vCrop = Array.isArray(image?.cropVector) ? image.cropVector : vBlend;
+  const hasMultiView = vFull !== vCrop;
+  const direct = cosine(vBlend, texts[0]);
+  const scene = sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => cosine(vBlend, text))) : direct;
+  const sceneFull = hasMultiView ? (sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => cosine(vFull, text))) : cosine(vFull, texts[0])) : scene;
+  const sceneCrop = hasMultiView ? (sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => cosine(vCrop, text))) : cosine(vCrop, texts[0])) : scene;
+  const cropProminence = hasMultiView ? sceneCrop - sceneFull : 0;
+  const selected = 0.7 * direct + 0.3 * scene + (hasMultiView ? 0.15 * Math.max(-0.08, Math.min(0.12, cropProminence)) : 0);
+  const contrast = alternativeCount ? Math.max(...texts.slice(1 + sceneCount, 1 + sceneCount + alternativeCount).map(text => cosine(vBlend, text))) : null;
   const margin = contrast === null ? 0 : selected - contrast;
-  const unwanted = cosine(image, texts.at(-1));
-  return { selected, contrast, margin, unwanted, score: selected + (contrast === null ? 0 : 0.6 * margin) - 0.25 * Math.max(0, unwanted) };
+  const unwanted = cosine(vBlend, texts.at(-1));
+  const bgClutter = hasMultiView && Array.isArray(wInv?.uBg) && wInv.uBg.length === vFull.length
+    ? vFull.reduce((sum, val, i) => sum + (val - vCrop[i]) * wInv.uBg[i], 0) : 0;
+  return { selected, contrast, margin, unwanted, cropProminence, bgClutter, cosine: scene,
+    score: selected + (contrast === null ? 0 : 0.6 * margin) - 0.25 * Math.max(0, unwanted) - (hasMultiView ? 0.15 * Math.max(0, bgClutter) : 0) };
 }
-export function rankEmbeddedImages(items, model = null, { semanticFilter = false } = {}) {
+export function rankEmbeddedImages(items, model = null, { semanticFilter = false, fallbackLimit = 0 } = {}) {
   // Preference can reorder eligible photos, but cannot rescue a failed match.
   const eligible = semanticFilter ? items.filter(item => passesImageSemanticGate(item.semantic)) : items;
+  if (semanticFilter && !eligible.length && fallbackLimit > 0) {
+    return items.map((item, index) => ({ ...item, index, features: preferenceFeatures(item.vector, item.semantic),
+      probability: .5, uncertain: true, belowThreshold: true, score: item.semantic.cosine ?? item.semantic.selected }))
+      .filter(item => Number.isFinite(item.score))
+      .sort((a, b) => b.score - a.score || a.index - b.index).slice(0, Math.min(9, fallbackLimit));
+  }
   const scored = eligible.map((item, index) => {
     const features = preferenceFeatures(item.vector, item.semantic);
+    const encoded = encodeFullFeatures(features);
     const neural = isCurrentPersonalizer(model) && model.role !== 'semantic' && item.meaningFeatures;
-    const adjustment = neural ? personalizerScore(model, encodeFullFeatures(features), item.meaningFeatures) - personalizerScore(null, encodeFullFeatures(features), item.meaningFeatures) : 0;
+    const wInvDelta = model?.wInv && item.meaningFeatures ? Math.max(-0.03, Math.min(0.03, vocabInvariantScore(model.wInv, encoded, item.meaningFeatures))) : 0;
+    const adjustment = neural ? personalizerScore(model, encoded, item.meaningFeatures) - personalizerScore(null, encoded, item.meaningFeatures) + 0.25 * wInvDelta : 0;
     const probability = neural ? 1 / (1 + Math.exp(-8 * adjustment)) : preferenceProbability(model, features);
     // Early feedback should have little influence. A visual preference must not
     // positively reward an image that matches another supplied sense better.
     const strength = 0.12 * Math.min(1, (model?.trainedLabels || 0) / 64);
     const preference = item.semantic.margin < 0 ? Math.min(0, probability - 0.5) : probability - 0.5;
-    return { ...item, index, features, probability, score: neural ? personalizerScore(model, encodeFullFeatures(features), item.meaningFeatures) : item.semantic.score + strength * preference };
+    const uncertain = Math.abs(probability - 0.5) < 0.18 || (item.semantic.contrast !== null && item.semantic.margin < 0.09);
+    return { ...item, index, features, probability, uncertain, score: neural ? personalizerScore(model, encoded, item.meaningFeatures) + 0.25 * wInvDelta : item.semantic.score + strength * preference };
   });
   const selected = [];
   while (scored.length) {
@@ -335,19 +363,20 @@ export async function rankImagesLocally(word, candidates, options = {}) {
       if (!current()) return [];
       for (const thumbnail of thumbnails) {
         if (!current()) return [];
-        const vector = await rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }) }, inference);
+        const embedded = await rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }), multiView: true }, inference);
         if (!current() || !workerReady) return [];
-        items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, semantic: semanticScores(vector, texts, prompt.sceneCount, prompt.alternativeCount) });
+        const vector = Array.isArray(embedded) ? embedded : embedded.vector;
+        items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, semantic: semanticScores(embedded, texts, prompt.sceneCount, prompt.alternativeCount, cachedModel?.wInv) });
       }
       phase = 'scoring';message = `Scored ${items.length} of ${candidates.length} image suggestions locally.`;emit();
     }
     const model = await training().current();
     if (!current() || !workerReady) return [];
     cachedModel = model;
-    const scored = rankEmbeddedImages(items, model, { semanticFilter: true });
+    const scored = rankEmbeddedImages(items, model, { semanticFilter: true, fallbackLimit: 9 });
     phase = 'ready';message = `${items.length} image suggestions scored locally.`;emit();
     return [...scored.map(item => ({ ...item.candidate, ml: { model: CLIP_TAG, sense: fingerprint(word), features: encodeFullFeatures(item.features), meaningFeatures, preprocessing: IMAGE_PREPROCESSING, scenes: prompt.scenes,
-      selected: item.semantic.selected, contrast: item.semantic.contrast, margin: item.semantic.margin, unwanted: item.semantic.unwanted, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
+      belowThreshold: Boolean(item.belowThreshold), uncertain: Boolean(item.uncertain), cosine: item.semantic.cosine, selected: item.semantic.selected, contrast: item.semantic.contrast, margin: item.semantic.margin, unwanted: item.semantic.unwanted, cropProminence: item.semantic.cropProminence ?? 0, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
       trainedComparisons: model?.trainedComparisons || 0, trainedPositiveLabels: model?.trainedPositiveLabels || 0, trainedNegativeLabels: model?.trainedNegativeLabels || 0, score: item.score } }))];
   } catch (error) { if (current()) { phase = 'error';message = `${error.message} Image screening could not finish.`;emit(); } return []; }
 }

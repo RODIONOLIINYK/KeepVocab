@@ -59,7 +59,7 @@ test('worker and evaluator use explicit fp16 text and fp32 vision', async () => 
 });
 
 test('feedback cannot relabel an old vector as a new encoder when pixels cannot be embedded', async () => {
-  const { driveSync } = await import('../js/services/driveSync.js?v=18900');
+  const { driveSync } = await import('../js/services/driveSync.js?v=18908');
   const { recordImagePreference } = await import('../js/services/imageLearning.js');
   const previousStorage = globalThis.localStorage;
   const saved = { archive: driveSync.archiveLegacyImageLearning, latest: driveSync.imageHistory.latest, append: driveSync.appendImageEvent };

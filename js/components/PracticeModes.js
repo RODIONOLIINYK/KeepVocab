@@ -1,15 +1,15 @@
-import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18904';
-import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18904';
-import { driveSync } from '../services/driveSync.js?v=18904';
-import { speakWord } from '../services/speechService.js?v=18904';
-import { recordExerciseResult } from '../services/exerciseResult.js?v=18904';
-import { playInteractionSound } from '../services/interactionSound.js?v=18904';
-import { selectPracticeWords } from '../services/dailySession.js?v=18904';
+import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18908';
+import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
+import { driveSync } from '../services/driveSync.js?v=18908';
+import { speakWord } from '../services/speechService.js?v=18908';
+import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
+import { playInteractionSound } from '../services/interactionSound.js?v=18908';
+import { selectPracticeWords } from '../services/dailySession.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
-import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18904';
-import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections } from '../services/wordSelection.js?v=18904';
-import { stableWordChoices } from '../services/wordChoices.js?v=18904';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput } from './PracticeElements.js?v=18904';
+import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18908';
+import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections } from '../services/wordSelection.js?v=18908';
+import { stableWordChoices } from '../services/wordChoices.js?v=18908';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput } from './PracticeElements.js?v=18908';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function emptyMode(container, icon, title, detail, onNavigate) {

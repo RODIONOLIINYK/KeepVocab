@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MemoryStorage } from '../js/services/driveSync.js?v=18900';
+import { MemoryStorage } from '../js/services/driveSync.js?v=18908';
 import { initializeImageLearning, enableImageLearning, disableImageLearning, getImageLearningStatus,
-  rankImagesLocally, subscribeImageLearning } from '../js/services/imageLearning.js?v=18900';
+  rankImagesLocally, subscribeImageLearning } from '../js/services/imageLearning.js?v=18908';
 import { mountImageReview } from '../js/components/ImageReview.js';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
 
@@ -137,4 +137,42 @@ test('CLIP scores all forty-five scene candidates and rejects failures before di
   assert.equal(imageCalls, 45);
   assert.equal(results.length, 44);
   assert.ok(!results.some(image => image.url === candidates[44].url));
+});
+
+test('production local scoring returns nine closest failed matches as manual-only review candidates', async context => {
+  const cleanup = await setup(context);
+  let imageCalls = 0;
+  const vector = axis => Array.from({ length: 512 }, (_, i) => Number(i === axis));
+  globalThis.Worker = class {
+    postMessage(data) {
+      let result;
+      if (data.type === 'texts') result = data.payload.texts.map((_, i) => vector(i ? 1 : 0));
+      else {
+        const index = imageCalls++, similarity = .1 + index * .005;
+        result = Array(512).fill(0); result[0] = similarity; result[1] = .2;
+        result[index + 2] = Math.sqrt(1 - similarity ** 2 - .2 ** 2);
+      }
+      queueMicrotask(() => {
+        if (data.type === 'texts') this.onmessage({ data: { type: 'status', phase: 'ready', backend: 'wasm' } });
+        this.onmessage({ data: { id: data.id, result } });
+      });
+    }
+    terminate() {}
+  };
+  const candidates = Array.from({ length: 12 }, (_, i) => ({ url: `https://fallback-review.test/${i}.jpg` }));
+  const images = await rankImagesLocally(meaning, candidates, {
+    fetchImpl: async () => new Response('fixture pixels', { headers: { 'content-type': 'image/jpeg' } }),
+    decode: async () => ({ width: 64, height: 64 }), resize: () => assert.fail('No resize needed')
+  });
+  assert.equal(imageCalls, 12); assert.equal(images.length, 9);
+  assert.deepEqual(images.map(image => image.url), candidates.slice(3).reverse().map(image => image.url));
+  assert.ok(images.every(image => image.ml.belowThreshold && image.ml.selected < .19));
+  assert.ok(images.every((image, i) => !i || image.ml.cosine <= images[i - 1].ml.cosine));
+  const container = new ReviewContainer();
+  const review = mountImageReview(container, [{ ...meaning, imageCandidates: images }]);
+  cleanup.push(() => review.destroy());
+  assert.match(container.innerHTML, /No images passed the match threshold/);
+  assert.doesNotMatch(container.innerHTML, /aria-checked="true"/);
+  await container.click('choose');
+  assert.match(container.innerHTML, /aria-checked="true"/);
 });
