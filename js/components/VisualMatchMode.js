@@ -1,3 +1,4 @@
+import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { definitionForLearning } from '../services/learningDefinitions.js?v=18908';
 import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
@@ -169,6 +170,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
     function render() {
       if (index >= queue.length) {
         container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images"></i><h2>Visual session complete</h2><p>You matched ${score} of ${originalCount} image–word pairs. Missed meanings will be prioritized next time.</p><div class="inline-actions"><button class="btn-green-solid" id="visual-again">Practice again</button><button class="status-pill offline" id="visual-done">Dashboard</button></div></div></section>`;
+        mountPracticeCompletion(container, { completedCount: originalCount, settings: driveSync.getSettings() });
         container.querySelector('#visual-again').addEventListener('click', () => renderVisualMatchMode(container, onNavigate));
         container.querySelector('#visual-done').addEventListener('click', () => go('dashboard', onNavigate));
         return;

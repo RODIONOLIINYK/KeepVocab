@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { evaluateImagePipeline } from '../js/services/imageEvaluation.js';
 import { imageClipPrompts } from '../js/services/imageLearning.js?v=18908';
+import { CLIP_DIMENSION } from '../js/ml/clipConfig.js';
 import { getPretrainedImageModel,getImagePersonalizerInitialization,PRETRAINED_IMAGE_REPORT } from '../js/ml/pretrainedImagePersonalizer.js';
 import { splitImageDecisions,personalizerScore } from '../js/services/imagePersonalizer.js';
-const vector=axis=>Array.from({length:512},(_,i)=>Number(i===axis));
+const vector=axis=>Array.from({length:CLIP_DIMENSION},(_,i)=>Number(i===axis));
 test('the evaluation path calls image/text encoders and ignores metadata promises about what pixels depict',async()=>{
   const seen=[];const fixtures={kind:'synthetic-regression',cases:[{id:'fox',word:{word:'run',definition:'Move quickly on foot.',imageScenes:{scenes:['a fox running across a meadow']}},candidates:[{id:'standing',url:'https://test/standing',title:'running fox'},{id:'running',url:'https://test/running',title:'standing fox'}],feedback:{selected:['running'],wrong:['standing']}}]};
   const report=await evaluateImagePipeline(fixtures,{evidence:'injected-vectors',embedTexts:async texts=>texts.map((_,i)=>vector(i<2?0:2)),embedImage:async image=>{seen.push(image.id);return vector(image.id==='running'?0:1);}});

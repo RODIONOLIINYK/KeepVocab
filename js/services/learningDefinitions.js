@@ -23,18 +23,48 @@ function sourceOf(sense) { return String(sense?.sourceDefinition ?? sense?.defin
 export function qualifierSignature(sense) {
   const source = sourceOf(sense).toLowerCase();
   const labelValues = Array.isArray(sense?.labels) ? sense.labels : Array.isArray(sense?.tags) ? sense.tags : [];
-  const labels = labelValues.map(value => text(typeof value === 'object' ? value?.text || value?.name : value).toLowerCase());
-  const usageLabels = text(sense?.usageNote).toLowerCase().match(/\b(?:archaic|obsolete|historical|dated|formal|informal|slang|figurative|technical|botany|chemistry|physics|mathematics|medicine|anatomy|linguistics)\b/g) || [];
+  const labels = labelValues.map(value => text(typeof value === 'object' ? value?.text || value?.name : value).toLowerCase())
+    .filter(value => !/^(?:countable|uncountable|transitive|intransitive|broadly|formal|informal|colloquial|slang)$/.test(value));
+  const usageLabels = text(sense?.usageNote).toLowerCase().match(/\b(?:archaic|obsolete|historical|dated|figurative|technical|botany|chemistry|physics|mathematics|medicine|anatomy|linguistics)\b/g) || [];
   const domains = [/\b(?:river|shore|stream|lake|embankment)\b/, /\b(?:financial|money|deposit|loan|lender|savings)\b/, /\b(?:law|legal|court|statute)\b/, /\b(?:botany|plant|flower|stem|leaf)\b/];
-  return JSON.stringify([[...new Set([...labels, ...usageLabels])].sort(), /\b(?:not|never|without|cannot|unable|lacking|no longer|can[’']t|isn[’']t|aren[’']t|doesn[’']t|don[’']t)\b/.test(source),
+  return JSON.stringify([[...new Set([...labels, ...usageLabels])].sort(), /\b(?:not|no|never|non(?=[-\s])|without|cannot|unable|lacking|can[’']t|isn[’']t|aren[’']t|doesn[’']t|don[’']t)\b/.test(source),
+    /\b(?:(?:appearing|seeming)(?: to be)?|having the appearance of)|\b[\p{L}]+-looking\b/u.test(source),
     /\b(?:only|solely|exclusively)\b/.test(source), /\bunless\b/.test(source), /\bexcept\b/.test(source),
     [...new Set(source.match(/\b(?:before|after|during|until|since|above|below|more than|less than|at least|at most|internal|external|intentional|unintentional|voluntary|involuntary|temporary|permanent|formal|informal)\b/g) || [])].sort(),
     source.match(/\b\d+(?:\.\d+)?\b/g) || [], domains.map(pattern => pattern.test(source))]);
 }
 
+// Small, explicit dictionary paraphrases. They change wording, not referents,
+// polarity, participants, domain restrictions or process/result distinctions.
+export function canonicalMeaningWording(value) {
+  return String(value || '').toLowerCase()
+    .replace(/^\((?:countable|uncountable|transitive|intransitive|formal|informal|colloquial|slang|broadly)(?:,\s*(?:countable|uncountable|transitive|intransitive|formal|informal|colloquial|slang|broadly))*\)\s*/g, '')
+    .replace(/\b(?:having the ability to|able to|capable of)\b/g, 'can')
+    .replace(/\bcan (bending|carrying|running|adapting|holding|changing|making|learning|moving|forming|flowing|thinking|taking|seeing|feeling|hearing|speaking|understanding)\b/g,
+      (_, verb) => `can ${{bending:'bend',carrying:'carry',running:'run',adapting:'adapt',holding:'hold',changing:'change',making:'make',learning:'learn',moving:'move',forming:'form',flowing:'flow',thinking:'think',taking:'take',seeing:'see',feeling:'feel',hearing:'hear',speaking:'speak',understanding:'understand'}[verb]}`)
+    .replace(/\b(?:characterized by|characterised by|possessing)\b/g, 'having')
+    .replace(/\b(?:of or pertaining to|pertaining to|of or relating to)\b/g, 'relating to')
+    .replace(/\b(?:a person who|someone who|one who)\b/g, 'person who')
+    .replace(/\b(?:appearing to be|seeming to be|having the appearance of being)\b/g, 'seeming')
+    .replace(/\blikely to be\b/g, 'probably')
+    .replace(/\bout of the ordinary\b/g, 'unusual')
+    .replace(/\b(mould|moulded|moulding|colour|coloured|colouring|centre|centres|labour|odour)\b/g,
+      word => ({mould:'mold',moulded:'molded',moulding:'molding',colour:'color',coloured:'colored',colouring:'coloring',centre:'center',centres:'centers',labour:'labor',odour:'odor'})[word])
+    .replace(/[’']/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\b(?:a|an|the)\b/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function synonymGloss(sense) {
+  const source = sourceOf(sense).replace(/^\((?:formal|informal|colloquial|slang|broadly)\)\s*/i, '');
+  // An enumeration of short glosses may change order; a clause with actors or
+  // relations is never treated as an unordered bag of synonyms.
+  if (!/[;,]|\bor\b/.test(source) || /\b(?:who|which|that|from|into|between|above|below|before|after|not|no|without|only|person|people)\b/i.test(source)) return null;
+  const pieces = source.replace(/[.!]+$/, '').split(/[,;]|\bor\b/i).map(canonicalMeaningWording).filter(Boolean);
+  return pieces.length >= 2 && pieces.every(p => p.split(' ').length <= 2) ? new Set(pieces) : null;
+}
+
 function meaningTokens(sense) {
   const ignored = new Set('a an the of or and to be is that which who for with by in at as one someone something very appearing seeming looking'.split(' '));
-  return new Set(sourceOf(sense).toLowerCase().replace(/\b(?:appearing to be|seeming to be|having the appearance of)\b/g, ' ')
+  return new Set(canonicalMeaningWording(sourceOf(sense)).replace(/\b(?:having the appearance of)\b/g, ' ')
     .replace(/[^\p{L}\p{N}]+/gu, ' ').split(/\s+/).filter(value => value && !ignored.has(value))
     .map(value => value.length > 5 ? value.replace(/(?:ing|ed|s)$/, '') : value));
 }
@@ -58,16 +88,20 @@ export function senseGroupingEvidence(left, right) {
   if ((left.antonyms || []).some(value => rawB.has(text(value).toLowerCase()))
     || (right.antonyms || []).some(value => rawA.has(text(value).toLowerCase()))) return null;
   const shared = [...a].filter(value => b.has(value));
+  const glossA = synonymGloss(left), glossB = synonymGloss(right);
+  const sharedGloss = glossA && glossB ? [...glossA].filter(value => glossB.has(value)).length : 0;
+  const sameGloss = sharedGloss >= 2 && sharedGloss / Math.max(glossA.size, glossB.size) >= .6;
   // Swapping participants/direction must not become a match through a bag of words.
   const orderA = [...a].filter(value => b.has(value)).join('|');
   const orderB = [...b].filter(value => a.has(value)).join('|');
-  if (orderA !== orderB) return null;
-  return { coverage: shared.length / Math.max(a.size, b.size), jaccard: shared.length / new Set([...a, ...b]).size };
+  if (!sameGloss && orderA !== orderB) return null;
+  return { coverage: shared.length / Math.max(a.size, b.size), jaccard: shared.length / new Set([...a, ...b]).size,
+    ...(sameGloss ? { reason: 'shared-gloss-core' } : {}) };
 }
 
 export function areSensesNearDuplicate(left, right) {
   const evidence = senseGroupingEvidence(left, right);
-  return Boolean(evidence && evidence.coverage >= 0.88 && evidence.jaccard >= 0.78);
+  return Boolean(evidence && (evidence.reason === 'shared-gloss-core' || evidence.coverage >= 0.88 && evidence.jaccard >= 0.78));
 }
 
 export function originalSenses(sense) {

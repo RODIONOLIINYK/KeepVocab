@@ -1,7 +1,7 @@
-import { CLIP_TAG } from '../../js/ml/clipConfig.js';
+import { CLIP_TAG, CLIP_DIMENSION } from '../../js/ml/clipConfig.js';
 import { encodeFeatures, preferenceFeatures } from '../../js/services/imagePreferences.js';
 import { IMAGE_PREPROCESSING, encodeMeaning } from '../../js/services/imagePersonalizer.js';
-const vector = axis => Array.from({ length: 512 }, (_, i) => Number(i === axis));
+const vector = axis => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === axis));
 const features = axis => encodeFeatures(preferenceFeatures(vector(axis), { selected: .4, margin: .1, unwanted: .05 }));
 export function imageChoiceHistory(count = 60) {
   return Array.from({ length: count }, (_, i) => {

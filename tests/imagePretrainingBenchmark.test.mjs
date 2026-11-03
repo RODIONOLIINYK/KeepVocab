@@ -6,10 +6,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { validatePretrainingBenchmark, comparePretrainingModels, pairedMeaningBootstrap, validateSemanticSupervision } from '../scripts/lib/image-pretraining-benchmark.mjs';
-import { createPersonalizer, IMAGE_PREPROCESSING, encodeMeaning } from '../js/services/imagePersonalizer.js';
+import { createPersonalizer, IMAGE_PREPROCESSING, PERSONALIZER_PARAMETERS, encodeMeaning } from '../js/services/imagePersonalizer.js';
 import { encodeFullFeatures, preferenceFeatures } from '../js/services/imagePreferences.js';
-import { CLIP_TAG } from '../js/ml/clipConfig.js';
-const vector = axis => Array.from({length:512}, (_, index) => Number(index === axis));
+import { CLIP_TAG, CLIP_DIMENSION } from '../js/ml/clipConfig.js';
+const vector = axis => Array.from({length:CLIP_DIMENSION}, (_, index) => Number(index === axis));
 const features = axis => encodeFullFeatures(preferenceFeatures(vector(axis), {selected:.4, margin:.1, unwanted:.05}));
 const hash = value => createHash('sha256').update(value).digest('hex');
 function fixture(count = 20) {
@@ -144,7 +144,7 @@ test('the fixed offline CLI writes a separate semantic candidate and complete sp
     '--manifest='+cases,'--output='+output,'--candidate-output='+candidateOutput],{timeout:60000,maxBuffer:2_000_000,stdio:'pipe'});
   const report=JSON.parse(await readFile(output,'utf8')),saved=JSON.parse(await readFile(candidateOutput,'utf8'));
   assert.equal(report.targetTask,'semantic');assert.equal(report.recipe.epochs,30);assert.equal(report.recipe.maxMilliseconds,120000);
-  assert.equal(report.recipe.task,'semantic');assert.equal(saved.model.role,'semantic');assert.equal(saved.model.weights.length,33441);
+  assert.equal(report.recipe.task,'semantic');assert.equal(saved.model.role,'semantic');assert.equal(saved.model.weights.length,PERSONALIZER_PARAMETERS);
   assert.equal(report.splits.train.baseline.choices,36);assert.equal(report.splits.validation.baseline.choices,12);assert.equal(report.splits.test.baseline.choices,12);
   assert.equal(report.recipe.datasetPartitions.test.length,12);assert.equal(report.splits.test.pairedMeaningBootstrap.unit,'meaning-family');
 });

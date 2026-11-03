@@ -1,10 +1,12 @@
 // Offline-only benchmark utilities. None of these functions activate an app model.
 import { cosine, decodeFeatures, normalizedVector, sigmoid } from '../../js/services/imagePreferences.js';
-import { CLIP_TAG } from '../../js/ml/clipConfig.js';
+import { CLIP_TAG, ARCHIVED_FP16_CLIP_TAG } from '../../js/ml/clipConfig.js';
 import { IMAGE_PREPROCESSING, activeImageExamples, splitImageDecisions, semanticDatasetPartitions, evaluatePersonalizer,
   personalizerScore, validPersonalizer } from '../../js/services/imagePersonalizer.js';
 import { PERSONALIZER_VERSION as V2_PERSONALIZER_VERSION, LEGACY_PERSONALIZER_VERSION as V2_LEGACY_VERSION, validPersonalizer as validV2Personalizer,
-  personalizerScore as v2PersonalizerScore, evaluatePersonalizer as evaluateV2Personalizer } from './image-personalizer-v2.mjs';
+  personalizerScore as v2PersonalizerScore, evaluatePersonalizer as evaluateV2Personalizer,
+  activeImageExamples as activeV2ImageExamples, splitImageDecisions as splitV2ImageDecisions,
+  semanticDatasetPartitions as v2SemanticDatasetPartitions } from './image-personalizer-v2.mjs';
 
 const partitions = ['train', 'validation', 'test'];
 const normalized = value => String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
@@ -13,7 +15,7 @@ function modelValid(model) {
   return [V2_PERSONALIZER_VERSION, V2_LEGACY_VERSION].includes(model?.version) ? validV2Personalizer(model) : validPersonalizer(model);
 }
 function modelScore(model, features, meaningFeatures) {
-  return [V2_PERSONALIZER_VERSION, V2_LEGACY_VERSION].includes(model?.version)
+  return [V2_PERSONALIZER_VERSION, V2_LEGACY_VERSION].includes(model?.version) || !model && decodeFeatures(features).length === 515
     ? v2PersonalizerScore(model, features, meaningFeatures)
     : personalizerScore(model, features, meaningFeatures);
 }
@@ -43,7 +45,8 @@ export function validateSemanticSupervision(encoded, manifest) {
 export function validatePretrainingBenchmark(encoded, manifest) {
   requireCondition(Array.isArray(manifest?.cases) && manifest.cases.length, 'Manifest cases are required.');
   requireCondition(Array.isArray(encoded?.events) && encoded.events.length, 'Encoded training events are required.');
-  requireCondition(encoded.encoder === CLIP_TAG && encoded.preprocessing === IMAGE_PREPROCESSING,
+  const isArchivedV2 = encoded.encoder === ARCHIVED_FP16_CLIP_TAG;
+  requireCondition((encoded.encoder === CLIP_TAG || isArchivedV2) && encoded.preprocessing === IMAGE_PREPROCESSING,
     'Encoded dataset uses an unsupported encoder or preprocessing version.');
   const cases = new Map(), meaningOwners = new Map(), familyOwners = new Map(), targetOwners = new Map(), photoOwners = new Map();
   const bySplit = Object.fromEntries(partitions.map(split => [split, []]));
@@ -102,12 +105,15 @@ export function validatePretrainingBenchmark(encoded, manifest) {
     item.features.set(reference.id, event.preferredFeatures); item.features.set(alternative.id, event.features);
     item.meaningFeatures = event.meaningFeatures; item.records.push(event);
   }
-  requireCondition(activeImageExamples(encoded.events).length === encoded.events.length,
+  const activeExamples = isArchivedV2 ? activeV2ImageExamples : activeImageExamples;
+  const semanticPartitions = isArchivedV2 ? v2SemanticDatasetPartitions : semanticDatasetPartitions;
+  const splitDecisions = isArchivedV2 ? splitV2ImageDecisions : splitImageDecisions;
+  requireCondition(activeExamples(encoded.events).length === encoded.events.length,
     'Some encoded events are malformed, unsupported, or superseded; benchmark records must all be active.');
   for (const item of cases.values()) requireCondition(item.features.size === item.photos.size,
     `Case ${item.id} is missing encoded source photos or comparisons.`);
   const datasetPartitions = manifest.targetTask === 'semantic' ? bySplit : null;
-  const actual = datasetPartitions ? semanticDatasetPartitions(encoded.events, datasetPartitions) : splitImageDecisions(encoded.events);
+  const actual = datasetPartitions ? semanticPartitions(encoded.events, datasetPartitions) : splitDecisions(encoded.events);
   for (const name of partitions) {
     const expected = [...bySplit[name]].sort(), seen = actual[name].map(decision => decision.id).sort();
     requireCondition(JSON.stringify(expected) === JSON.stringify(seen),
@@ -124,7 +130,8 @@ export function validatePretrainingBenchmark(encoded, manifest) {
 }
 
 function rawClipScore(features, meaningFeatures) {
-  return cosine(normalizedVector(decodeFeatures(features).slice(0,512)), normalizedVector(decodeFeatures(meaningFeatures).slice(0,512)));
+  const f = decodeFeatures(features), m = decodeFeatures(meaningFeatures), dim = f.length - 3;
+  return cosine(normalizedVector(f.slice(0, dim), dim), normalizedVector(m.slice(0, dim), dim));
 }
 function evaluateRawClip(decisions) {
   const rows=decisions.map(decision=>{
@@ -149,7 +156,8 @@ function choiceResults(model, decisions, cases, rawClip = false) {
   });
 }
 function summarize(model, decisions, cases, rawClip = false) {
-  const legacy = [V2_PERSONALIZER_VERSION, V2_LEGACY_VERSION].includes(model?.version);
+  const legacy = [V2_PERSONALIZER_VERSION, V2_LEGACY_VERSION].includes(model?.version)
+    || !model && decisions[0]?.records[0]?.encoder === ARCHIVED_FP16_CLIP_TAG;
   const metric = rawClip ? evaluateRawClip(decisions) : legacy ? evaluateV2Personalizer(model, decisions) : evaluatePersonalizer(model, decisions), choiceRows = choiceResults(model, decisions, cases, rawClip);
   return { choices: choiceRows.length, meanPairwiseLoss: metric.loss, pairwiseAgreement: metric.accuracy,
     chosenAt1: choiceRows.reduce((n, row) => n + row.chosenAt1, 0), chosenAt1Rate: choiceRows.length ? choiceRows.reduce((n, row) => n + row.chosenAt1, 0) / choiceRows.length : null,

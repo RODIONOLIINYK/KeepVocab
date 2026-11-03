@@ -1,3 +1,4 @@
+import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
@@ -33,6 +34,7 @@ export function renderSpellingMode(container, onNavigate) {
   function render(focusInput = false) {
     if (index >= queue.length) {
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Spelling session complete</h2><p>You recalled ${score} of ${originalCount} words. Missed words will be prioritized in your next session.</p><div class="inline-actions"><button class="btn-green-solid" id="spell-again">Practice again</button><button class="status-pill offline" id="spell-dashboard">Dashboard</button></div></div></section>`;
+      mountPracticeCompletion(container, { completedCount: originalCount, settings: driveSync.getSettings() });
       container.querySelector('#spell-again').addEventListener('click', () => renderSpellingMode(container, onNavigate));
       container.querySelector('#spell-dashboard').addEventListener('click', () => go('dashboard', onNavigate));
       return;
@@ -99,6 +101,7 @@ export function renderChooseWordMode(container, onNavigate) {
   function render() {
     if (index >= queue.length) {
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Choose Word complete</h2><p>You mastered ${score} of ${originalCount} definitions. Missed meanings will come first next time.</p><div class="inline-actions"><button class="btn-green-solid" id="choose-again">Try again</button><button class="status-pill offline" id="choose-dashboard">Dashboard</button></div></div></section>`;
+      mountPracticeCompletion(container, { completedCount: originalCount, settings: driveSync.getSettings() });
       container.querySelector('#choose-again').addEventListener('click', () => renderChooseWordMode(container, onNavigate));
       container.querySelector('#choose-dashboard').addEventListener('click', () => go('dashboard', onNavigate));
       return;

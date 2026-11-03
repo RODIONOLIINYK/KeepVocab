@@ -1,3 +1,4 @@
+import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
@@ -22,6 +23,7 @@ export function renderFlashcardsMode(container, onNavigate) {
   let currentIndex = 0;
   let revealed = false;
   let completed = false;
+  const ratedIds = new Set();
   let questionStartedAt = performance.now();
   let recallTimeMs = null;
 
@@ -34,7 +36,8 @@ export function renderFlashcardsMode(container, onNavigate) {
 
   function render() {
     if (completed) {
-      container.innerHTML = `<section class="mode-completion-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Flashcards complete</span><h1>${words.length} card${words.length === 1 ? '' : 's'} reviewed</h1><p>Your ratings were saved after every card, and difficult meanings will appear earlier next time.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="flashcards-again">Review another set</button><button class="status-pill offline" id="flashcards-home">Today</button></div></section>`;
+      container.innerHTML = `<section class="mode-completion-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Flashcards complete</span><h1>${ratedIds.size} card${ratedIds.size === 1 ? '' : 's'} reviewed</h1><p>You made time for your words. Difficult meanings will return sooner, so each review keeps working for you.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="flashcards-again">Review another set</button><button class="status-pill offline" id="flashcards-home">Today</button></div></section>`;
+      mountPracticeCompletion(container, { completedCount: ratedIds.size, settings: driveSync.getSettings() });
       container.querySelector('#flashcards-again').addEventListener('click', () => renderFlashcardsMode(container, onNavigate));
       container.querySelector('#flashcards-home').addEventListener('click', () => go('dashboard', onNavigate));
       return;
@@ -60,6 +63,7 @@ export function renderFlashcardsMode(container, onNavigate) {
     container.querySelectorAll('[data-flashcard-rating]').forEach(button => button.addEventListener('click', () => {
       const rating = button.dataset.flashcardRating;
       recordExerciseResult({ wordId: word.id, exerciseType: 'flashcards', correct: rating !== 'again', ...reviewResult, responseTimeMs: recallTimeMs, learnerRating: rating });
+      ratedIds.add(word.id);
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       if (currentIndex < words.length - 1) move(1); else { completed = true; render(); }
     }));

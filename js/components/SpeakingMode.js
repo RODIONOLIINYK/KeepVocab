@@ -1,3 +1,4 @@
+import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { definitionForLearning } from '../services/learningDefinitions.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
 import {
@@ -403,6 +404,7 @@ function completeSpeakingLesson(container, lesson, vocabularyTargets, phraseTarg
     <div class="summary-actions"><button class="btn-green-solid" id="summary-again">Practice again</button><button class="status-pill offline" id="summary-lessons">All lessons</button></div></div>
     <div class="summary-transcript spec-card"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-align-left"></i> Session transcript</div><span>${transcript.length} turns</span></div>${transcript.length ? transcript.map(entry => `<div class="transcript-turn ${entry.role}"><span>${entry.role === 'coach' ? coachName : 'You'}</span><p>${escapeHtml(entry.text)}</p></div>`).join('') : '<p class="summary-empty">No transcript was received. You still completed the practice session.</p>'}</div></section>`;
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  mountPracticeCompletion(container, { completedCount: learnerTurns, settings: driveSync.getSettings() });
   container.querySelector('#summary-again').addEventListener('click', () => {
     renderLessonPreview(container, lesson.id, onNavigate);
   });

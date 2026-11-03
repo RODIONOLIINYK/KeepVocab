@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CLIP_TAG } from '../js/ml/clipConfig.js';
-import { normalizedVector, preferenceFeatures, encodeFeatures, decodeFeatures, fitPreferences, updatePreferenceModel, preferenceProbability, mergeImageLearning, MAX_LABELS, COMPARISON_RECORD_MODEL } from '../js/services/imagePreferences.js';
+import { CLIP_TAG, CLIP_DIMENSION } from '../js/ml/clipConfig.js';
+import { PREFERENCE_DIMENSION, normalizedVector, preferenceFeatures, encodeFeatures, decodeFeatures, fitPreferences, updatePreferenceModel, preferenceProbability, mergeImageLearning, MAX_LABELS, COMPARISON_RECORD_MODEL } from '../js/services/imagePreferences.js';
 import { rankEmbeddedImages, semanticScores } from '../js/services/imageLearning.js?v=18908';
 import { mergeDriveSettings } from '../js/services/driveSync.js';
 import { canAutoSelectImage } from '../js/services/imageChoicePolicy.js';
-const vector = index => Array.from({ length: 512 }, (_, i) => i === index ? 1 : 0);
+const vector = index => Array.from({ length: CLIP_DIMENSION }, (_, i) => i === index ? 1 : 0);
 const features = index => preferenceFeatures(vector(index), { selected: 0.4, margin: 0.15, unwanted: 0.1 });
 const record = (id, label, index = label ? 0 : 1, date = '2026-10-22T10:00:00.000Z') => ({ id, label, model: CLIP_TAG, features: encodeFeatures(features(index)), updatedAt: date });
 const initial = Array.from({ length: 8 }, (_, i) => record(String(i), i % 2));
@@ -137,7 +137,7 @@ test('malformed records are rejected while complete histories survive a bounded 
   assert.equal(capped.records.length, 400);
   assert.equal(fitPreferences(capped.records).trainedLabels, MAX_LABELS);
   assert.throws(() => normalizedVector([NaN]), /Invalid/);
-  assert.throws(() => normalizedVector(Array(512).fill(0)), /Empty/);
+  assert.throws(() => normalizedVector(Array(CLIP_DIMENSION).fill(0)), /Empty/);
 });
 
 test('sense contrast rejects a wrong meaning despite generic word overlap; preference contribution is bounded', () => {
@@ -145,7 +145,7 @@ test('sense contrast rejects a wrong meaning despite generic word overlap; prefe
   const correct = semanticScores(cat, [cat, ship, document], 0, 1);
   const wrong = semanticScores(ship, [cat, ship, document], 0, 1);
   assert.ok(correct.margin > 0 && wrong.margin < 0);
-  const model = { model: CLIP_TAG, trainedLabels: 64, weights: Array(516).fill(0) };model.weights[1] = 100;
+  const model = { model: CLIP_TAG, trainedLabels: 64, weights: Array(PREFERENCE_DIMENSION + 1).fill(0) };model.weights[1] = 100;
   const ranked = rankEmbeddedImages([{ candidate: { id: 'wrong' }, vector: ship, semantic: wrong }, { candidate: { id: 'correct' }, vector: cat, semantic: correct }], model);
   assert.equal(ranked[0].candidate.id, 'correct');
   assert.ok(ranked.every(item => Math.abs(item.score - item.semantic.score) <= 0.060001));

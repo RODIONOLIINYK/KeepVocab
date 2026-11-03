@@ -7,7 +7,7 @@ export const PERSONALIZER_VERSION = 'meaning-preference-32-16-v3';
 export const IMAGE_PREPROCESSING = 'full-frame-letterbox-256-v1';
 export const PERSONALIZER_INPUTS = CLIP_DIMENSION * 2 + 3;
 export const PERSONALIZER_LAYERS = [PERSONALIZER_INPUTS, 32, 16, 1];
-export const PERSONALIZER_PARAMETERS = 33441;
+export const PERSONALIZER_PARAMETERS = PERSONALIZER_INPUTS * 32 + 32 + 32 * 16 + 16 + 16 * 1 + 1;
 export const PERSONALIZER_LIMIT = .08;
 export const PERSONAL_PREFERENCE_LIMIT = .04;
 // CLIP screens eligibility before this separate personal ranking head is used.
@@ -25,6 +25,7 @@ export function encodeMeaning(vector) {
 }
 export function personalizerInput(features, meaningFeatures) {
   const image = decodeFeatures(features), meaning = decodeFeatures(meaningFeatures);
+  if (image.length !== CLIP_DIMENSION + 3 || meaning.length !== CLIP_DIMENSION + 3) throw new Error('Preference vectors belong to a different encoder.');
   const result = new Float32Array(PERSONALIZER_INPUTS);
   for (let i = 0; i < CLIP_DIMENSION; i++) {
     result[i] = image[i]; result[CLIP_DIMENSION + i] = meaning[i];
@@ -99,7 +100,7 @@ function forward(weights, input) {
 }
 function baseScore(features) {
   const x = decodeFeatures(features);
-  return x[512] + .6 * x[513] - .25 * Math.max(0, x[514]);
+  return x[CLIP_DIMENSION] + .6 * x[CLIP_DIMENSION + 1] - .25 * Math.max(0, x[CLIP_DIMENSION + 2]);
 }
 const residualLimit = model => model?.role === 'preference' ? PERSONAL_PREFERENCE_LIMIT : PERSONALIZER_LIMIT;
 function frozenBaseScore(model, features, meaningFeatures) {
@@ -119,76 +120,15 @@ export function createPersonalizerScorer(model) {
   return (features, meaningFeatures) => valid && meaningFeatures
     ? scoreValidPersonalizer(model, features, meaningFeatures) : baseScore(features);
 }
-export function fitVocabInvariantW(records = [], dimension = CLIP_DIMENSION) {
-  const active = activeImageExamples(records);
-  const posHadamard = new Float64Array(dimension), negHadamard = new Float64Array(dimension);
-  const posSq = new Float64Array(dimension), negSq = new Float64Array(dimension);
-  const posImg = new Float64Array(dimension), negImg = new Float64Array(dimension);
-  let posCount = 0, negCount = 0;
-  for (const record of active) {
-    const meaning = decodeFeatures(record.meaningFeatures);
-    if (record.kind === 'comparison') {
-      const winner = decodeFeatures(record.preferredFeatures), loser = decodeFeatures(record.features);
-      for (let i = 0; i < dimension; i++) {
-        const hw = winner[i] * meaning[i], hl = loser[i] * meaning[i];
-        posHadamard[i] += hw; posSq[i] += hw * hw; posImg[i] += winner[i];
-        negHadamard[i] += hl; negSq[i] += hl * hl; negImg[i] += loser[i];
-      }
-      posCount++; negCount++;
-    } else if (record.label === 1) {
-      const img = decodeFeatures(record.features);
-      for (let i = 0; i < dimension; i++) {
-        const h = img[i] * meaning[i];
-        posHadamard[i] += h; posSq[i] += h * h; posImg[i] += img[i];
-      }
-      posCount++;
-    } else if (record.label === 0) {
-      const img = decodeFeatures(record.features);
-      for (let i = 0; i < dimension; i++) {
-        const h = img[i] * meaning[i];
-        negHadamard[i] += h; negSq[i] += h * h; negImg[i] += img[i];
-      }
-      negCount++;
-    }
-  }
-  const total = posCount + negCount;
-  if (posCount < 2 || negCount < 2) return null;
-  const shrinkage = total / (total + 80);
-  const fisherDiag = new Array(dimension);
-  const rawUbg = new Array(dimension);
-  let uNormSq = 0;
-  for (let i = 0; i < dimension; i++) {
-    const muPos = posHadamard[i] / posCount, muNeg = negHadamard[i] / negCount;
-    const varPos = Math.max(0, posSq[i] / posCount - muPos * muPos);
-    const varNeg = Math.max(0, negSq[i] / negCount - muNeg * muNeg);
-    const fisher = (muPos - muNeg) / Math.sqrt(varPos + varNeg + 1e-3);
-    fisherDiag[i] = Math.max(0.75, Math.min(1.35, 1 + shrinkage * 0.18 * fisher));
-    const bg = (negImg[i] / negCount) - 0.5 * (posImg[i] / posCount);
-    rawUbg[i] = bg; uNormSq += bg * bg;
-  }
-  const uNorm = Math.sqrt(uNormSq) || 1;
-  const uBg = rawUbg.map(v => v / uNorm);
-  return { fisherDiag, uBg, sampleCount: total, posCount, negCount };
-}
-export function vocabInvariantScore(wInv, features, meaningFeatures) {
-  if (!wInv?.fisherDiag || !wInv?.uBg || !features || !meaningFeatures) return 0;
-  const image = decodeFeatures(features), meaning = decodeFeatures(meaningFeatures);
-  const dim = Math.min(CLIP_DIMENSION, wInv.fisherDiag.length, wInv.uBg.length);
-  let rawCos = 0, fisherCos = 0, bgDot = 0;
-  for (let i = 0; i < dim; i++) {
-    const prod = image[i] * meaning[i];
-    rawCos += prod;
-    fisherCos += prod * wInv.fisherDiag[i];
-    bgDot += image[i] * wInv.uBg[i];
-  }
-  return (fisherCos - rawCos) - 0.08 * Math.max(0, bgDot);
-}
+export { fitInvariantHead as fitVocabInvariantW, invariantRankingScore as vocabInvariantScore } from './vocabInvariantHead.js';
 export function activeImageExamples(records = [], resetAt = '') {
   const latest = new Map();
   for (const record of records) {
     if (!record?.meaningFeatures || record.preprocessing !== IMAGE_PREPROCESSING || record.encoder !== CLIP_TAG
       || Date.parse(record.updatedAt) <= (Date.parse(resetAt) || 0)) continue;
-    try { decodeFeatures(record.features); decodeFeatures(record.meaningFeatures); if (record.kind === 'comparison') decodeFeatures(record.preferredFeatures); }
+    try {
+      if ([record.features, record.meaningFeatures, ...(record.kind === 'comparison' ? [record.preferredFeatures] : [])].some(value => decodeFeatures(value).length !== CLIP_DIMENSION + 3)) continue;
+    }
     catch { continue; }
     const previous = latest.get(record.key || record.id);
     if (!previous || record.updatedAt > previous.updatedAt || record.updatedAt === previous.updatedAt && record.id > previous.id) latest.set(record.key || record.id, record);
@@ -441,8 +381,7 @@ export function trainImagePersonalizer(records, incumbent = null, {
     checkpointSelection: 'validation-ranking-then-loss', maximumObservedGradientNorm: fitted.maximumObservedGradientNorm, clippedSteps: fitted.clippedSteps });
   const result = imageModelAcceptance(model, incumbent, split.test);
   if (!result.accepted) return { ...report, ...result, ...(returnCandidate ? { candidate: { ...model, trainingDecisionIds: split.train.map(d => d.id) }, lastCandidate: fitted.model } : {}) };
-  const wInv = fitVocabInvariantW(split.train.flatMap(d => d.records));
   Object.assign(model, { revision: (incumbent?.revision || 0) + 1, trainedAt: new Date().toISOString(), trainingDecisionIds: split.train.map(d => d.id),
-    validationDecisionIds: split.validation.map(d => d.id), testDecisionIds: split.test.map(d => d.id), personalizationMode: trainOutputOnly ? 'output-only' : 'full-head', ...(wInv ? { wInv } : {}), validation: { ...result, before: { ...result.before, rows: undefined }, after: { ...result.after, rows: undefined }, baseline: { ...result.baseline, rows: undefined }, semanticBaseline: { ...result.semanticBaseline, rows: undefined } } });
+    validationDecisionIds: split.validation.map(d => d.id), testDecisionIds: split.test.map(d => d.id), personalizationMode: trainOutputOnly ? 'output-only' : 'full-head', validation: { ...result, before: { ...result.before, rows: undefined }, after: { ...result.after, rows: undefined }, baseline: { ...result.baseline, rows: undefined }, semanticBaseline: { ...result.semanticBaseline, rows: undefined } } });
   return { ...report, ...result, model, ...(returnCandidate ? { lastCandidate: fitted.model } : {}) };
 }

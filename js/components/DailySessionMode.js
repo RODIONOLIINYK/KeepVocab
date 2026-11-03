@@ -1,3 +1,4 @@
+import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { ensureDailyStudyPlan, getActivePracticeWords, getScheduledPracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18908';
@@ -106,10 +107,12 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     recordSessionCompletion(session, { kind: options.kind || 'daily', exercises: queue.length, correct: score, minutes: Math.max(1, Math.round((performance.now() - startedAt) / 60_000)), weakWordsImproved: improved });
     if (options.kind !== 'weak') {
       renderScheduledRestState(container, onNavigate, practiceNotebookLabel, { correct: score, total: queue.length });
+      mountPracticeCompletion(container, { completedCount: queue.length, settings: driveSync.getSettings() });
       return;
     } else {
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-complete-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Practice complete</span><h1>${options.kind === 'weak' ? 'Your weak words are getting stronger' : 'You moved your vocabulary forward'}</h1><p>${score} of ${queue.length} exercises were correct. ${improved ? `${improved} weak word${improved === 1 ? '' : 's'} improved.` : 'Mistakes are already shaping your next workout.'}</p><div class="daily-complete-metrics"><div><strong>${score}</strong><span>correct</span></div><div><strong>${queue.length}</strong><span>exercises</span></div><div><strong>${improved}</strong><span>recovered</span></div></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></section>`;
     }
+    mountPracticeCompletion(container, { completedCount: queue.length, settings: driveSync.getSettings() });
     container.querySelector('#daily-finish').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelector('#daily-stats').addEventListener('click', () => go('stats', onNavigate));
   }

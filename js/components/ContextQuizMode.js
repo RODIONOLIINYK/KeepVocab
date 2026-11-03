@@ -1,3 +1,4 @@
+import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
 import { getGeminiSettings } from '../services/geminiSettings.js?v=18908';
@@ -30,6 +31,7 @@ export function renderContextQuizMode(container, onNavigate) {
 
   function notice(title, detail, actions, options = {}) {
     container.innerHTML = renderPracticeNotice({ title, detail, actions, ...options });
+    if (options.complete) mountPracticeCompletion(container, { completedCount: quizWords.length, settings: driveSync.getSettings() });
     actions.forEach(action => container.querySelector(`#${action.id}`).addEventListener('click', action.run));
   }
 

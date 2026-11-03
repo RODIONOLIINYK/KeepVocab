@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { dashboardWorkoutState, renderDashboardView } from '../js/components/DashboardView.js';
+import { dashboardWorkoutState, renderDashboardView, dailyGoalEncouragement, updateDashboardGoalNudge } from '../js/components/DashboardView.js';
 import { renderStreakCelebration, streakMessage, streakWeek } from '../js/components/StreakCelebration.js';
 import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js';
 import { localDateKey } from '../js/utils/dates.js';
@@ -134,7 +134,7 @@ test('Today practice launchpad excludes the AI Speaking button while keeping voc
   assert.match(container.innerHTML, /data-practice-view="weak"/);
 });
 
-test('first exercise of the day emits streak-extended once and renders Duolingo-style streak celebration', () => {
+test('first exercise updates the streak once and provides contained completion markup', () => {
   const storage = new MemoryStorage();
   const service = new DriveSyncService(storage);
   const events = [];
@@ -162,9 +162,9 @@ test('first exercise of the day emits streak-extended once and renders Duolingo-
       activity: service.getSettings().reviewActivity,
       now: today
     });
-    assert.match(markup, /streak-flame-svg/);
-    assert.match(markup, /streak-digit is-rolling/);
-    assert.match(markup, /day streak!/);
+    assert.match(markup, /completion-streak/);
+    assert.match(markup, /2 day streak/);
+    assert.doesNotMatch(markup, /dialog|streak-celebration|Continue/);
     assert.equal(streakWeek(service.getSettings().reviewActivity, today).filter(day => day.done).length >= 1, true);
     assert.match(streakMessage(1), /started a new streak/i);
     assert.match(streakMessage(7), /1 week/i);
@@ -172,4 +172,21 @@ test('first exercise of the day emits streak-extended once and renders Duolingo-
     if (originalDispatch === undefined) delete globalThis.dispatchEvent;
     else globalThis.dispatchEvent = originalDispatch;
   }
+});
+
+
+test('daily goal encouragement follows real progress and updates in place', () => {
+  assert.match(dailyGoalEncouragement(0, 5, 0), /one exercise/i);
+  assert.match(dailyGoalEncouragement(0, 5, 3), /streak/i);
+  assert.match(dailyGoalEncouragement(2, 5, 3), /3 exercises/);
+  assert.match(dailyGoalEncouragement(4, 5, 3), /1 exercise/);
+  const classes = new Set();
+  const nudge = { textContent: '', classList: { toggle: (name, enabled) => enabled ? classes.add(name) : classes.delete(name) } };
+  const root = { querySelector: selector => selector === '#today-goal-nudge' ? nudge : null };
+  updateDashboardGoalNudge(root, 5, 5, 3);
+  assert.match(nudge.textContent, /goal reached/i);
+  assert.ok(classes.has('is-complete'));
+  updateDashboardGoalNudge(root, 2, 5, 3);
+  assert.match(nudge.textContent, /3 exercises/);
+  assert.equal(classes.has('is-complete'), false);
 });

@@ -1,5 +1,6 @@
-import { AutoTokenizer, AutoProcessor, CLIPTextModelWithProjection, CLIPVisionModelWithProjection, RawImage, env } from '@huggingface/transformers';
-import { CLIP_MODEL, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE } from '../js/ml/clipConfig.js';
+import { AutoTokenizer, AutoProcessor, SiglipTextModel, SiglipVisionModel, RawImage, env } from '@huggingface/transformers';
+import { CLIP_MODEL, CLIP_MODEL_BASE, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE } from '../js/ml/clipConfig.js';
+import { fetchCompactModelFile } from '../js/services/compactModelDownload.js';
 import { normalizedVector } from '../js/services/imagePreferences.js';
 import { fullFrameImage, centerCropImage } from '../js/services/imagePreprocessing.js';
 import { IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
@@ -7,7 +8,10 @@ import { IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
 env.allowLocalModels = false;
 // Some optional tokenizer/config lookups omit revision. Pin their URLs and cache
 // keys too, so a cold worker can load the same files without a network connection.
-env.remotePathTemplate = `{model}/resolve/${CLIP_REVISION}/`;
+const modelSource = CLIP_MODEL_BASE.replace(/\/$/, '');
+const sourceSplit = modelSource.lastIndexOf('/');
+env.remoteHost = modelSource.slice(0, sourceSplit);
+env.remotePathTemplate = modelSource.slice(sourceSplit + 1);
 env.useBrowserCache = true;
 env.useFSCache = false;
 env.cacheKey = CLIP_CACHE;
@@ -18,7 +22,7 @@ let allowDownloads = false;
 const originalFetch = env.fetch;
 env.fetch = (input, options) => {
   if (!allowDownloads) throw new Error('Model files are missing. Download the local image model in Settings to continue.');
-  return originalFetch(input, options);
+  return fetchCompactModelFile(input, options, originalFetch);
 };
 let backend = 'wasm';
 let runtimeReady;
@@ -29,7 +33,7 @@ async function prepareRuntime() {
       let response = await cache?.match(url);
       if (!response) {
         if (!allowDownloads) throw new Error('The local runtime is missing. Download the image model in Settings.');
-        response = await originalFetch(url);
+        response = await fetchCompactModelFile(url, undefined, originalFetch);
         if (!response.ok) throw new Error('The local image runtime could not be downloaded.');
         await cache?.put(url, response.clone());
       }
@@ -101,8 +105,7 @@ async function initialize(devicePreference = 'auto') {
     // runtime, even with a complete browser cache. Cache misses are protected
     // by the explicit consent-enforcing env.fetch wrapper above instead.
     const config = { revision: CLIP_REVISION, progress_callback, local_files_only: false };
-    // FP16 text and FP32 vision passed the fixed CPU/WASM/WebGPU benchmark.
-    // WebGPU is attempted only on a supported adapter.
+    // Both towers use q4f16; the full multilingual token table uses INT4.
     const [tokenizer, processor, gpu] = await Promise.all([
       AutoTokenizer.from_pretrained(CLIP_MODEL, config),
       AutoProcessor.from_pretrained(CLIP_MODEL, config),
@@ -115,8 +118,8 @@ async function initialize(devicePreference = 'auto') {
       try {
         backend = device;
         const towers = await Promise.allSettled([
-          CLIPTextModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_TEXT_DTYPE }),
-          CLIPVisionModelWithProjection.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_VISION_DTYPE })
+          SiglipTextModel.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_TEXT_DTYPE }),
+          SiglipVisionModel.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_VISION_DTYPE })
         ]);
         // A rejected Promise.all loses both assignments, including a tower
         // that finishes later. Keep ownership until both settle so failures
@@ -145,9 +148,10 @@ async function run({ type, payload, device }) {
     if (!Array.isArray(texts) || texts.length > 20 || texts.some(text => typeof text !== 'string' || text.length > 2000)) throw new Error('Invalid text embedding request.');
     const result = [];
     for (const text of texts) result.push(await cached(`${CLIP_TAG}:text:${text}`, async () => {
-      const inputs = model.tokenizer([text], { padding: 'max_length', truncation: true });
-      const output = await model.textModel(inputs);
-      const vector = Array.from(output.text_embeds.data);
+      const inputs = model.tokenizer([text.toLowerCase()], { padding: 'max_length', max_length: 64, truncation: true });
+      const output = await model.textModel({ input_ids: inputs.input_ids });
+      const tensor = output.text_embeds || output.pooler_output;
+      const vector = Array.from(tensor.data);
       for (const tensor of [...Object.values(inputs), ...Object.values(output)]) tensor?.dispose?.();
       return vector;
     }));
@@ -167,8 +171,9 @@ async function run({ type, payload, device }) {
     };
     const embedFrame = async frame => {
       const inputs = await model.processor(frame);
-      const output = await model.visionModel(inputs);
-      const vector = Array.from(output.image_embeds.data);
+      const output = await model.visionModel({ pixel_values: inputs.pixel_values });
+      const tensor = output.image_embeds || output.pooler_output;
+      const vector = Array.from(tensor.data);
       for (const tensor of [...Object.values(inputs), ...Object.values(output)]) tensor?.dispose?.();
       return vector;
     };

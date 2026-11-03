@@ -21,6 +21,23 @@ let refreshTimer;
 const plural = (count, noun = 'word') => `${count} ${noun}${count === 1 ? '' : 's'}`;
 const timeLabel = value => new Date(value).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
+export function dailyGoalEncouragement(completed, goal, streak) {
+  const remaining = Math.max(0, goal - completed);
+  if (!remaining) return 'Daily goal reached — lovely work!';
+  if (!completed) return streak > 0
+    ? 'A little practice today keeps your streak growing.'
+    : 'One exercise is a great place to start.';
+  if (remaining === 1) return 'Just 1 exercise to your daily goal — you’ve got this!';
+  return `${remaining} exercises to your daily goal. Every one counts.`;
+}
+
+export function updateDashboardGoalNudge(root, completed, goal, streak) {
+  const nudge = root.querySelector('#today-goal-nudge');
+  if (!nudge) return;
+  nudge.textContent = dailyGoalEncouragement(completed, goal, streak);
+  nudge.classList.toggle('is-complete', completed >= goal);
+}
+
 export function dashboardWorkoutState(session, plan, hasWords) {
   if (session.exercises.length) return {
     heading: plan.practicedTodayCount > 0 ? 'Keep your words growing.' : 'A little practice. Lasting words.',
@@ -94,7 +111,7 @@ export function renderDashboardView(container, onNavigate) {
 
       </div>
     </article>
-    <div class="spec-card today-progress-card"><div class="today-progress-copy"><span>Your daily goal</span><strong id="today-progress-count">${completedToday} of ${dailyGoal} exercises</strong></div><div class="today-progress-track" id="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div><span class="today-streak"><i class="fa-solid fa-fire" aria-hidden="true"></i> <span id="today-streak-label">${Number(settings.dailyStreak || 0)} day streak</span></span></div>
+    <div class="spec-card today-progress-card"><div class="today-progress-copy"><span>Your daily goal</span><strong id="today-progress-count">${completedToday} of ${dailyGoal} exercises</strong><small id="today-goal-nudge" class="${completedToday >= dailyGoal ? 'is-complete' : ''}">${escapeHtml(dailyGoalEncouragement(completedToday, dailyGoal, Number(settings.dailyStreak || 0)))}</small></div><div class="today-progress-track" id="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div><span class="today-streak"><i class="fa-solid fa-fire" aria-hidden="true"></i> <span id="today-streak-label">${Number(settings.dailyStreak || 0)} day streak</span></span></div>
     <div class="today-grid">
       <section class="spec-card practice-launchpad" aria-labelledby="practice-heading"><div class="card-header-bar"><div><h2 id="practice-heading">Practice your way</h2><p>A little variety keeps it interesting.</p></div><i class="fa-solid fa-dumbbell" aria-hidden="true"></i></div><div class="practice-quick-grid">${MODES.map(([view, icon, title, copy], index) => `<button class="practice-quick-card" style="--i:${index}" data-practice-view="${view}"><i class="fa-solid ${icon}" aria-hidden="true"></i><span><strong>${title}</strong><small>${copy}</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>`).join('')}</div></section>
       <aside class="today-insights"><section class="spec-card today-insight-card"><div class="card-header-bar"><h2>Your vocabulary</h2><i class="fa-solid fa-book-open" aria-hidden="true"></i></div><div class="today-section-heading"><div><h3>${activeWordCount} saved ${activeWordCount === 1 ? 'word' : 'words'}</h3><small>${activeWords.length} tracked meaning${activeWords.length === 1 ? '' : 's'} in ${notebookLabel}</small></div></div><div class="mastery-mini-list"><div><span>Recognized</span><strong>${stages.recognized + stages.recalled + stages.context + stages.productive}</strong></div><div><span>Reliably recalled</span><strong>${stages.recalled + stages.context + stages.productive}</strong></div><div><span>Used in context</span><strong>${stages.context + stages.productive}</strong></div><div><span>Used productively</span><strong>${stages.productive}</strong></div></div><button class="text-action" data-practice-view="stats">See your progress <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></section>

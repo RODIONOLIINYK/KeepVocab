@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readJsonFile } from '../scripts/lib/json-files.mjs';
 import { validatePretrainingBenchmark, validateSemanticSupervision, comparePretrainingModels } from '../scripts/lib/image-pretraining-benchmark.mjs';
-import { CLIP_TAG } from '../js/ml/clipConfig.js';
+import { ARCHIVED_FP16_CLIP_TAG } from '../js/ml/clipConfig.js';
 import { validPersonalizer } from '../scripts/lib/image-personalizer-v2.mjs';
 import { fixedLabelBiasVariance } from '../scripts/lib/image-training-diagnostics.mjs';
 
@@ -13,7 +13,7 @@ test('fresh FP16 features, saved candidate and all split metrics share one verif
   const saved = await readJsonFile(new URL('candidate.json.gz', root));
   const manifest = await readJsonFile(new URL('./fixtures/image-pretraining-v2/cases.json', import.meta.url));
   const report = await readJsonFile(new URL('../docs/image-mlp-fp16/training-report.json', import.meta.url));
-  assert.equal(encoded.encoder, CLIP_TAG); assert.equal(encoded.evidence, 'pixels');
+  assert.equal(encoded.encoder, ARCHIVED_FP16_CLIP_TAG); assert.equal(encoded.evidence, 'pixels');
   assert.equal(encoded.events.length, 2390); assert.equal(validPersonalizer(saved.model), true);
   validateSemanticSupervision(encoded, manifest);
   const validated = validatePretrainingBenchmark(encoded, manifest);

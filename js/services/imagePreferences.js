@@ -34,19 +34,21 @@ export function encodeFullFeatures(features) {
   features.forEach((value, index) => view.setFloat32(index * 4, Math.max(-1, Math.min(1, value)), true));
   return `f32:${bytesToBase64(bytes)}`;
 }
+const VALID_PREFERENCE_DIMENSIONS = new Set([PREFERENCE_DIMENSION, 515]);
 export function decodeFeatures(encoded) {
   if (typeof encoded === 'string' && encoded.startsWith('f32:')) {
     const body = encoded.slice(4);
-    if (body.length !== 2748 || !/^[A-Za-z0-9+/]+={0,2}$/.test(body)) throw new Error('Invalid preference record.');
+    if (![2748, 4112].includes(body.length) || !/^[A-Za-z0-9+/]+={0,2}$/.test(body)) throw new Error('Invalid preference record.');
     const bytes = base64ToBytes(body);
-    if (bytes.length !== PREFERENCE_DIMENSION * 4) throw new Error('Invalid preference record.');
-    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), result = Array.from({ length: PREFERENCE_DIMENSION }, (_, index) => view.getFloat32(index * 4, true));
+    if (bytes.length % 4 !== 0 || !VALID_PREFERENCE_DIMENSIONS.has(bytes.length / 4)) throw new Error('Invalid preference record.');
+    const count = bytes.length / 4;
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), result = Array.from({ length: count }, (_, index) => view.getFloat32(index * 4, true));
     if (!result.every(value => Number.isFinite(value) && Math.abs(value) <= 1)) throw new Error('Invalid preference record.');
     return result;
   }
-  if (typeof encoded !== 'string' || encoded.length !== 688 || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)) throw new Error('Invalid preference record.');
+  if (typeof encoded !== 'string' || ![688, 1028].includes(encoded.length) || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)) throw new Error('Invalid preference record.');
   const bytes = base64ToBytes(encoded);
-  if (bytes.length !== PREFERENCE_DIMENSION) throw new Error('Invalid preference record.');
+  if (!VALID_PREFERENCE_DIMENSIONS.has(bytes.length)) throw new Error('Invalid preference record.');
   return Array.from(bytes, value => (value > 127 ? value - 256 : value) / 127);
 }
 export function parameterFingerprint(weights) {

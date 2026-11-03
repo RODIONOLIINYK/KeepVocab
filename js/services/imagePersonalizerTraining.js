@@ -1,4 +1,6 @@
-import { isCurrentPersonalizer, activeImageExamples, isValidatedSemanticModel, createPreferencePersonalizer } from './imagePersonalizer.js';
+import { isCurrentPersonalizer, activeImageExamples, isValidatedSemanticModel, createPreferencePersonalizer, createPersonalizer } from './imagePersonalizer.js';
+import { validInvariantHead } from './vocabInvariantHead.js';
+import { getPretrainedInvariantHead } from '../ml/pretrainedSemanticHeads.js';
 import { IMAGE_TRAINING_RECIPE, MOBILE_IMAGE_TRAINING_BUDGET_MS } from '../ml/imageTrainingRecipe.js';
 import { imageRankingAcceptance } from './imageChoicePolicy.js';
 
@@ -14,7 +16,12 @@ export class ImagePersonalizerTraining {
     const generic = await this.pretrained(), model = generic?.getPretrainedImageModel?.();
     return isValidatedSemanticModel(model) ? model : null;
   }
-  async current() { return await this.personal() || await this.semantic(); }
+  async current() {
+    const model = await this.personal() || await this.semantic();
+    const personalHead = await this.persistence.imageHistory.readState?.('invariantHead');
+    const head = validInvariantHead(personalHead) ? personalHead : getPretrainedInvariantHead();
+    return validInvariantHead(head) ? { ...(model || createPersonalizer()), invariantOnly: !model, wInv: head } : model;
+  }
   request() {
     clearTimeout(this.timer);
     this.timer = setTimeout(() => { this.timer = null; void this.train().catch(() => {}); }, 30000);
@@ -35,6 +42,7 @@ export class ImagePersonalizerTraining {
       const initialization = model ? null : createPreferencePersonalizer(await this.semantic());
       if (requestedGeneration !== this.generation) return { accepted: false, reason: 'Training cancelled.' };
       const generation = this.generation, resetAt = this.persistence.imageHistory.resetAt;
+      const invariantIncumbent = await this.persistence.imageHistory.readState?.('invariantHead');
       const result = await new Promise((resolve, reject) => {
         const worker = new Worker(new URL('../ml/imageTrainer.worker.js', import.meta.url), { type: 'module' }); this.worker = worker;
         const finish = () => { clearTimeout(timeout); worker.terminate(); if (this.worker === worker) this.worker = null; this.cancel = null; };
@@ -42,10 +50,14 @@ export class ImagePersonalizerTraining {
         this.cancel = () => { finish(); resolve({ accepted: false, reason: 'Training cancelled.' }); };
         worker.onmessage = ({ data }) => { if (data.progress) return; finish(); if (data.error) reject(new Error(data.error)); else resolve(data.result); };
         worker.onerror = () => { finish(); reject(new Error('Photo preferences could not be updated.')); };
-        worker.postMessage({ records, model, options: { ...IMAGE_TRAINING_RECIPE, ...options,
+        worker.postMessage({ records, model, invariantIncumbent, options: { ...IMAGE_TRAINING_RECIPE, ...options,
           maxMilliseconds: Math.min(Number(options.maxMilliseconds) || MOBILE_IMAGE_TRAINING_BUDGET_MS, MOBILE_IMAGE_TRAINING_BUDGET_MS), task: 'preference' }, initialization });
       });
       this.report = result;
+      if (result.invariant?.accepted && validInvariantHead(result.invariant.head) && generation === this.generation
+        && resetAt === this.persistence.imageHistory.resetAt && before === signature(await this.persistence.getImageEvents())) {
+        await this.persistence.imageHistory.writeState?.('invariantHead', result.invariant.head);
+      }
       if (result.accepted && (!isCurrentPersonalizer(result.model) || result.model.role !== 'preference')) {
         return { accepted: false, reason: 'Only a separately validated personal preference model can replace personal weights.' };
       }

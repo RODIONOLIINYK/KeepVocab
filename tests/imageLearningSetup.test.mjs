@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 import { MemoryStorage } from '../js/services/driveSync.js?v=18908';
 import { initializeImageLearning, hasDownloadedImageModel, imageLearningEnabled, enableImageLearning, disableImageLearning } from '../js/services/imageLearning.js?v=18908';
-import { CLIP_CACHE, CLIP_DOWNLOAD_URLS, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE } from '../js/ml/clipConfig.js';
+import { CLIP_MODEL_BASE, CLIP_CACHE, CLIP_REVISION, CLIP_DOWNLOAD_URLS, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE } from '../js/ml/clipConfig.js';
 
 const CONFIG_KEY = 'keepvocab_image_learning_device_v1';
 function cacheStorage(urls = []) {
@@ -50,7 +50,7 @@ test('a complete pinned installation enables by default without asking or downlo
 
 test('partial downloads, missing runtime, empty responses and old revisions are not a complete installation', async () => {
   assert.equal(await hasDownloadedImageModel(cacheStorage(CLIP_DOWNLOAD_URLS.slice(0, -1))), false);
-  assert.equal(await hasDownloadedImageModel(cacheStorage(CLIP_DOWNLOAD_URLS.map(url => url.replace(/757d59c9c6870a76a4b0306f05f5061bca15c39f/g, 'old')))), false);
+  assert.equal(await hasDownloadedImageModel(cacheStorage(CLIP_DOWNLOAD_URLS.map(url => url.replaceAll(CLIP_MODEL_BASE, 'https://example.test/retired/')))), false);
   const empty = cacheStorage(CLIP_DOWNLOAD_URLS);
   await (await empty.open(CLIP_CACHE)).put(CLIP_DOWNLOAD_URLS[0], new Response('', { headers: { 'content-length': '0' } }));
   assert.equal(await hasDownloadedImageModel(empty), false);
@@ -104,7 +104,7 @@ test('the worker loads a cached runtime offline and rejects missing files withou
     const factory = { from_pretrained: async (_, options) => { assert.equal(options.local_files_only, false); return {}; } };
     const tower = expected => ({ from_pretrained: async (_, options) => { assert.equal(options.dtype, expected); assert.equal(options.local_files_only, false); return {}; } });
     const self = { caches: cacheStorage(urls), postMessage: message => messages.push(message), navigator: {} };
-    const context = vm.createContext({ env, self, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, CLIPTextModelWithProjection: tower('fp16'), CLIPVisionModelWithProjection: tower('fp32'), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise });
+    const context = vm.createContext({ env, self, CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, SiglipTextModel: tower(CLIP_TEXT_DTYPE), SiglipVisionModel: tower(CLIP_VISION_DTYPE), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise });
     vm.runInContext(source, context);
     return { context, self, env };
   };
@@ -135,9 +135,9 @@ test('parallel tower failure releases a late successful tower before reporting f
     const self = { caches: cacheStorage(CLIP_RUNTIME_URLS), postMessage: message => messages.push(message), navigator: {} };
     const context = vm.createContext({
       env: { fetch: async () => { throw Error('Unexpected download'); }, backends: { onnx: { wasm: {} } } },
-      self, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS,
+      self, CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS,
       AutoTokenizer: factory, AutoProcessor: factory,
-      CLIPTextModelWithProjection: tower('text'), CLIPVisionModelWithProjection: tower('vision'),
+      SiglipTextModel: tower('text'), SiglipVisionModel: tower('vision'),
       CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise
     });
     vm.runInContext(source, context);

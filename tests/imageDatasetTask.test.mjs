@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {evaluateImagePipeline} from '../js/services/imageEvaluation.js';
 import {normalizeImageEvent} from '../js/services/imageLearningHistory.js';
-const vector=axis=>Array.from({length:512},(_,i)=>Number(i===axis));
+import {CLIP_DIMENSION} from '../js/ml/clipConfig.js';
+const vector=axis=>Array.from({length:CLIP_DIMENSION},(_,i)=>Number(i===axis));
 test('public meaning-correctness examples and ordinary personal choices keep different learning tasks through encoding and archive normalization',async()=>{
  const item={id:'case',meaningId:'run',word:{word:'run',definition:'Move quickly on foot.'},candidates:[{id:'a',url:'https://images.test/a'},{id:'b',url:'https://images.test/b'}],feedback:{selected:['a'],wrong:['b']}};
  for(const targetTask of ['semantic','preference']){

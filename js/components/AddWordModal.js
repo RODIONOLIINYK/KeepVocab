@@ -6,6 +6,7 @@ import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../servic
 import { definitionForLearning, exampleForLearning, entrySensesForMode } from '../services/learningDefinitions.js?v=18908';
 import { canAutoSelectImage } from '../services/imageChoicePolicy.js';
 import { recordImagePreference, warmImageLearning } from '../services/imageLearning.js?v=18908';
+import { mountMeaningPairReview } from './MeaningPairReview.js';
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
   <div class="modal-backdrop" id="add-word-modal">
@@ -41,6 +42,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
           </div>
           <p class="sense-helper">Select every meaning you want. KeepVocab groups them under one word card and tracks each meaning separately.</p>
           <div id="add-word-sense-list" class="sense-option-list" role="group" aria-label="Dictionary meanings"></div>
+          <div id="add-word-meaning-review"></div>
           <button type="button" id="add-word-toggle-senses" class="text-action" aria-expanded="false" aria-controls="add-word-sense-list" hidden>Show all meanings</button>
         </div>
 
@@ -86,6 +88,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
 export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, showToast } = {}) {
   document.body.insertAdjacentHTML('beforeend', ADD_WORD_MARKUP);
   let currentFetchedData = null;
+  let meaningPairReview = null;
   let activeCourseId = driveSync.getActiveCourseId();
   let activeTranslationLanguage = getTranslationLanguage();
   let generation = 0;
@@ -97,7 +100,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     const feedback = pendingImageFeedback;
     pendingImageFeedback = [];
     for (const label of feedback) {
-      void Promise.resolve().then(() => recordImagePreference(label.word, label.action, label.image, { preferredImage: label.preferredImage, decisionId: label.decisionId })).catch(() => {});
+      void Promise.resolve().then(() => recordImagePreference(label.word, label.action, label.image, { preferredImage: label.preferredImage, decisionId: label.decisionId, feedbackReason: label.feedbackReason })).catch(() => {});
     }
   };
   const beginOperation = () => {
@@ -378,6 +381,8 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   };
 
   const clearSenseState = () => {
+    meaningPairReview?.destroy(); meaningPairReview = null;
+    document.getElementById('add-word-meaning-review')?.replaceChildren();
     meaningMode = 'grouped';
     modeStates = new Map();
     senseDrafts = new Map();
@@ -579,6 +584,10 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   };
 
   const renderSenses = data => {
+    meaningPairReview?.destroy();
+    meaningPairReview = mountMeaningPairReview(document.getElementById('add-word-meaning-review'), data, {
+      onChange: () => { modeStates.clear(); formStatus.textContent = 'Meaning judgment saved. It will be used the next time these meanings are grouped.'; }
+    });
     showAllSenses = false;
     meaningMode = 'grouped';
     modeStates = new Map();

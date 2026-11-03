@@ -707,7 +707,7 @@ export function renderLibraryView(container) {
         for (const label of labels) if (label.action === 'good' || label.action === 'wrong') feedbackWord.imageFeedback = updateImageFeedback(feedbackWord, label.action, label.image);
         if (labels.length) data.imageFeedback = feedbackWord.imageFeedback;
         driveSync.updateWord(editId, data);
-        for (const label of labels) void recordImagePreference(label.word, label.action, label.image, { preferredImage: label.preferredImage, decisionId: label.decisionId }).catch(() => {});
+        for (const label of labels) void recordImagePreference(label.word, label.action, label.image, { preferredImage: label.preferredImage, decisionId: label.decisionId, feedbackReason: label.feedbackReason }).catch(() => {});
         editId = null; selectedImage = null; removeImage = false; render();
       }
       catch (error) { container.querySelector('#library-edit-message').textContent = error.message; }

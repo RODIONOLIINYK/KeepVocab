@@ -4,7 +4,7 @@ import { MemoryStorage } from '../js/services/driveSync.js?v=18908';
 import { initializeImageLearning, enableImageLearning, disableImageLearning, getImageLearningStatus,
   rankImagesLocally, subscribeImageLearning } from '../js/services/imageLearning.js?v=18908';
 import { mountImageReview } from '../js/components/ImageReview.js';
-import { CLIP_TAG } from '../js/ml/clipConfig.js';
+import { CLIP_TAG, CLIP_DIMENSION } from '../js/ml/clipConfig.js';
 
 class ReviewContainer {
   innerHTML = '';
@@ -85,7 +85,7 @@ test('lazy local scoring marks the model installed when its worker becomes ready
   const cleanup = await setup(context);
   const messages = [];
   const states = [];
-  const vector = axis => Array.from({ length: 512 }, (_, index) => Number(index === axis));
+  const vector = axis => Array.from({ length: CLIP_DIMENSION }, (_, index) => Number(index === axis));
   cleanup.push(subscribeImageLearning(state => states.push(state)));
   globalThis.Worker = class {
     postMessage(data) {
@@ -113,7 +113,7 @@ test('lazy local scoring marks the model installed when its worker becomes ready
 
 test('CLIP scores all forty-five scene candidates and rejects failures before display', async context => {
   await setup(context); let imageCalls = 0;
-  const vector = axis => Array.from({ length: 512 }, (_, i) => Number(i === axis));
+  const vector = axis => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === axis));
   globalThis.Worker = class {
     postMessage(data) {
       let result;
@@ -142,14 +142,14 @@ test('CLIP scores all forty-five scene candidates and rejects failures before di
 test('production local scoring returns nine closest failed matches as manual-only review candidates', async context => {
   const cleanup = await setup(context);
   let imageCalls = 0;
-  const vector = axis => Array.from({ length: 512 }, (_, i) => Number(i === axis));
+  const vector = axis => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === axis));
   globalThis.Worker = class {
     postMessage(data) {
       let result;
       if (data.type === 'texts') result = data.payload.texts.map((_, i) => vector(i ? 1 : 0));
       else {
         const index = imageCalls++, similarity = .1 + index * .005;
-        result = Array(512).fill(0); result[0] = similarity; result[1] = .2;
+        result = Array(CLIP_DIMENSION).fill(0); result[0] = similarity; result[1] = .2;
         result[index + 2] = Math.sqrt(1 - similarity ** 2 - .2 ** 2);
       }
       queueMicrotask(() => {

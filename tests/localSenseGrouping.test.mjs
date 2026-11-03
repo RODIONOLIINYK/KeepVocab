@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { groupEntrySensesLocally } from '../js/services/localSenseGrouping.js';
+import { groupEntrySensesLocally, hasExplicitMeaningConflict } from '../js/services/localSenseGrouping.js';
 import { groupSimilarSenses, areSensesNearDuplicate } from '../js/services/learningDefinitions.js';
 import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js';
+import { CLIP_DIMENSION } from '../js/ml/clipConfig.js';
 
-const vector = (cos = 1) => [cos, Math.sqrt(1 - cos * cos), ...Array(510).fill(0)];
+const vector = (cos = 1) => [cos, Math.sqrt(1 - cos * cos), ...Array(CLIP_DIMENSION - 2).fill(0)];
 const sense = (id, definition, fields = {}) => ({ id, word: 'plausible', partOfSpeech: 'adjective', definition, ...fields });
 
 test('local similarity groups conservative paraphrases, selects the matching example and preserves its attribution', async () => {
@@ -16,8 +17,8 @@ test('local similarity groups conservative paraphrases, selects the matching exa
   const result = await groupEntrySensesLocally(original, { storage, encodeDefinitionTexts: async () => { calls++; return [vector(), vector(.96)]; } });
   assert.equal(result.senses.length, 1);
   assert.ok(result.senses[0].definition.includes('correct'));
-  assert.ok(result.senses[0].definition.includes('likely'));
-  assert.ok(result.senses[0].definition.includes('probably'));
+  assert.ok(/likely|probably/.test(result.senses[0].definition));
+  assert.deepEqual(result.senses[0].sourceDefinitions, [a.definition, b.definition]);
   assert.equal(result.senses[0].exampleAttribution, 'Example author');
   assert.equal(result.senses[0].exampleSourceUrl, b.exampleSourceUrl);
   assert.deepEqual(result.senses[0].groupedSenses, [a, b]);
@@ -37,6 +38,7 @@ test('high cosine cannot merge negation, antonyms, domain, restrictions, POS or 
     ['A person who can act.', "A person who can't act."],
     ['A person giving money to a child.', 'A child giving money to a person.'],
     ['Only used for people.', 'Used for people.'], ['Land beside a river.', 'A place that lends money.'],
+    ['Seeming to be correct, true and reasonable.', 'Correct, true and reasonable.'],
     ['A hot object on a table.', 'A cold object on a table.'],
     ['Lasting until the end of a day.', 'Lasting after the end of a day.']
   ]) {
@@ -47,13 +49,24 @@ test('high cosine cannot merge negation, antonyms, domain, restrictions, POS or 
   assert.equal(areSensesNearDuplicate(sense('a', 'Likely to be true.'), sense('b', 'Likely to be true.', { partOfSpeech: 'noun' })), false);
 });
 
-test('low cosine, unavailable encoder and encoder failure keep separate meanings', async () => {
-  const entry = { word: 'plausible', senses: [sense('a', 'Seeming to be correct or likely to be true and reasonable.'),
-    sense('b', 'Seeming to be correct or probably true and reasonable.')] };
-  // Use a wording difference beyond the lexical-only fallback.
-  entry.senses[1].definition = 'Seeming to be correct or probably true and reasonable.';
+test('weak lexical evidence, unavailable encoder and encoder failure keep separate meanings', async () => {
+  const entry = { word: 'plausible', senses: [sense('a', 'An explanation supported by facts and likely to be true.'),
+    sense('b', 'A reasonable account that could be believed.')] };
   for (const encodeDefinitionTexts of [async () => [vector(), vector(.7)], async () => null, async () => { throw new Error('offline'); }]) {
     assert.equal((await groupEntrySensesLocally(entry, { storage: new MemoryStorage(), encodeDefinitionTexts })).senses.length, 2);
+  }
+});
+test('explicit paraphrase rules merge without a downloaded model or helpful embedding', async () => {
+  for (const [a, b] of [
+    ['Able to bend repeatedly.', 'Capable of bending repeatedly.'],
+    ['Characterized by a vivid colour.', 'Having a vivid color.'],
+    ['Strange; odd; unusual.', 'Unusual; odd.'],
+    ['Seeming to be correct or likely to be true and reasonable.', 'Seeming to be correct or probably true and reasonable.']
+  ]) {
+    const entry = { word: 'probe', senses: [sense('a', a), sense('b', b)] };
+    const result = await groupEntrySensesLocally(entry, { storage: new MemoryStorage(), encodeDefinitionTexts: async () => null });
+    assert.equal(result.senses.length, 1, `${a} / ${b}`);
+    assert.equal(result.senses[0].groupedSenses.length, 2);
   }
 });
 
@@ -61,4 +74,21 @@ test('complete linkage prevents transitive merging and a valid example selects t
   const senses = ['a', 'b', 'c'].map((id, i) => sense(id, `A plausible explanation ${i}.`));
   const grouped = groupSimilarSenses(senses, { matches: (a, b) => Math.abs(Number(a.definition.at(-2)) - Number(b.definition.at(-2))) < 2 });
   assert.equal(grouped.length, 2);
+});
+test('offline lexical fallback preserves no and non- qualifications in otherwise matching definitions', async () => {
+  for (const [a, b] of [
+    ['A domesticated carnivorous mammal with soft fur and whiskers.', 'A non-domesticated carnivorous mammal with soft fur and whiskers.'],
+    ['A small animal that has a tail and fur.', 'A small animal that has no tail and fur.']
+  ]) {
+    const entry = { word: 'probe', senses: [sense('a', a), sense('b', b)] };
+    const result = await groupEntrySensesLocally(entry, { storage: new MemoryStorage(), encodeDefinitionTexts: async () => null });
+    assert.equal(result.senses.length, 2, `${a} / ${b}`);
+  }
+});
+test('Gemini grouping cannot bypass explicit polarity, numeric or restriction conflicts', () => {
+  for (const [a, b] of [['Allowed to enter.', 'Not allowed to enter.'], ['An open doorway.', 'A closed doorway.'],
+    ['A group of 3 people.', 'A group of 4 people.'], ['Only used for people.', 'Used for people.']]) {
+    assert.equal(hasExplicitMeaningConflict({ definition: a }, { definition: b }), true);
+  }
+  assert.equal(hasExplicitMeaningConflict({ definition: 'Seeming reasonable.' }, { definition: 'Appearing to be reasonable.' }), false);
 });

@@ -1,7 +1,8 @@
 // Offline historical v2 numerical implementation, frozen for archived experiment replay.
 // Never imported by the application. Current production model is separate.
-import { CLIP_TAG, CLIP_DIMENSION } from '../../js/ml/clipConfig.js';
+import { ARCHIVED_FP16_CLIP_TAG as CLIP_TAG } from '../../js/ml/clipConfig.js';
 import { decodeFeatures, encodeFullFeatures, normalizedVector, sigmoid } from '../../js/services/imagePreferences.js';
+const CLIP_DIMENSION = 512;
 const IMAGE_TRAINING_RECIPE = Object.freeze({epochs:600,maxMilliseconds:1800000,regularization:0,maximumGradientNorm:1,patience:20,minimumImprovement:.00001,outputOnly:false,checkpoint:'last',learningRate:.0002,batchSize:8});
 
 export const LEGACY_PERSONALIZER_VERSION = 'meaning-mlp-32-16-v1';

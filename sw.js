@@ -1,12 +1,13 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112028-target-gate-fallback9';
+const CACHE_NAME = 'keepvocab-v112029-pretrained-rules-completion';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './quick-add.html',
   './css/styles.css',
   './css/polish.css',
+  './css/completion.css',
   './css/mobile.css',
   './css/motion.css',
   './css/icons.css',
@@ -36,10 +37,17 @@ const ASSETS_TO_CACHE = [
   './js/services/imagePreprocessing.js',
   './js/ml/imageTrainer.worker.js',
   './js/ml/pretrainedImagePersonalizer.js',
+  './js/ml/pretrainedSemanticHeads.js',
   './js/services/imageChoicePolicy.js',
   './js/ml/clipConfig.js',
-  './js/ml/MOBILECLIP-LICENSE.txt',
-  './js/ml/MOBILECLIP-MODEL-LICENSE.txt',
+  './js/ml/SIGLIP2-LICENSE.txt',
+  './js/services/compactModelDownload.js',
+  './js/services/learnedScorer.js',
+  './js/services/vocabInvariantHead.js',
+  './js/services/meaningEquivalenceHead.js',
+  './js/services/meaningEquivalenceLearning.js',
+  './js/services/learnedHeadValidation.js',
+  './js/components/MeaningPairReview.js',
   './js/ml/TRANSFORMERS-LICENSE.txt',
   './js/ml/ONNX-RUNTIME-LICENSE.txt',
   './js/ml/clipWorker.bundle.js',

@@ -8,3 +8,4 @@ html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
 #add-word-modal .sense-editor-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
 #add-word-modal .sense-editor-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 #add-word-modal .sense-editor-grid label.wide { grid-column: 1 / -1; }
+#add-word-modal .sense-modal-actions { width: 100%; overflow: hidden; bottom: 0; }

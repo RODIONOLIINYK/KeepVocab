@@ -6,9 +6,9 @@ import { imageChoiceLabels, imageReplacementLabels } from '../js/services/imageC
 import { imageSenseFingerprint } from '../js/services/imageSearch.js?v=18908';
 import { encodeFeatures, preferenceFeatures } from '../js/services/imagePreferences.js';
 import { IMAGE_PREPROCESSING, encodeMeaning } from '../js/services/imagePersonalizer.js';
-import { CLIP_TAG } from '../js/ml/clipConfig.js';
+import { CLIP_TAG, CLIP_DIMENSION } from '../js/ml/clipConfig.js';
 const word = { word: 'bank', partOfSpeech: 'noun', definition: 'Land beside a river.' };
-const vector = axis => Array.from({ length: 512 }, (_, i) => Number(i === axis));
+const vector = axis => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === axis));
 const candidate = (id, axis) => ({ url: `https://example.test/${id}.jpg`, ml: { model: CLIP_TAG, sense: imageSenseFingerprint(word), preprocessing: IMAGE_PREPROCESSING,
   meaningFeatures: encodeMeaning(vector(0)), features: encodeFeatures(preferenceFeatures(vector(axis), { selected: .4, margin: .2, unwanted: .1 })) } });
 async function isolated(t) {

@@ -1,3 +1,4 @@
+import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
@@ -30,6 +31,7 @@ export function renderUseItMode(container, onNavigate) {
   recordModeWordSelections(driveSync, words, { mode: 'use-it' });
 
   let index = 0;
+  let correctCount = 0;
   let startedAt = performance.now();
   let exerciseController = null;
 
@@ -48,6 +50,7 @@ export function renderUseItMode(container, onNavigate) {
       speechSession,
       nextLabel: index + 1 >= words.length ? 'Finish' : 'Next word',
       onEvaluated(result, sentence) {
+        if (result.correct) correctCount += 1;
         recordExerciseResult({ wordId: word.id, exerciseType: 'use-it', correct: result.correct, responseTimeMs: performance.now() - startedAt, hintsUsed: 0, recallType: 'productive', producedUnaided: true, learnerResponse: sentence });
         window.dispatchEvent(new CustomEvent('keepvocab:progress'));
         playInteractionSound(result.correct ? 'correct' : 'wrong');
@@ -56,7 +59,10 @@ export function renderUseItMode(container, onNavigate) {
         if (index + 1 >= words.length) {
           exerciseController?.destroy();
           teardownUseItMode();
-          go('dashboard', onNavigate);
+          container.innerHTML = `<section class="mode-completion-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Use It complete</span><h1>You put your words to work</h1><p>${correctCount} of ${words.length} meanings used correctly. Every sentence helps you make these words your own.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="useit-again">Practice again</button><button class="status-pill offline" id="useit-home">Back to Today</button></div></section>`;
+          mountPracticeCompletion(container, { completedCount: words.length, settings: driveSync.getSettings() });
+          container.querySelector('#useit-again').addEventListener('click', () => renderUseItMode(container, onNavigate));
+          container.querySelector('#useit-home').addEventListener('click', () => go('dashboard', onNavigate));
           return;
         }
         index += 1;

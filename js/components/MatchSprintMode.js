@@ -1,3 +1,4 @@
+import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { definitionForLearning } from '../services/learningDefinitions.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
@@ -68,6 +69,7 @@ export function renderMatchSprintMode(container, onNavigate) {
     elapsedSeconds = Math.max(1, Math.floor((performance.now() - startedAt) / 1000));
     const confetti = Array.from({ length: 12 }, (_, index) => `<i style="--confetti-index:${index}" aria-hidden="true"></i>`).join('');
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state match-result"><div class="match-confetti" aria-hidden="true">${confetti}</div><i class="fa-solid fa-flag-checkered match-result-icon"></i><h2>Sprint complete</h2><p>You matched ${round.length} exact meanings in <strong>${elapsedSeconds} seconds</strong> with <strong>${mistakes} mistake${mistakes === 1 ? '' : 's'}</strong>.</p><div class="match-result-metrics"><div><strong>${elapsedSeconds}s</strong><span>Time</span></div><div><strong>${mistakes}</strong><span>Mistakes</span></div><div><strong>${round.length}</strong><span>Pairs</span></div></div><div class="inline-actions"><button class="btn-green-solid" id="match-again">New sprint</button><button class="status-pill offline" id="match-done">Dashboard</button></div></div></section>`;
+    mountPracticeCompletion(container, { completedCount: matched.size, settings: driveSync.getSettings() });
     container.querySelector('#match-again').addEventListener('click', () => renderMatchSprintMode(container, onNavigate));
     container.querySelector('#match-done').addEventListener('click', () => go('dashboard', onNavigate));
   }

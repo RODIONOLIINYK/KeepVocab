@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { MemoryStorage, driveSync } from '../js/services/driveSync.js?v=18908';
 import { initializeImageLearning, warmImageLearning, enableImageLearning, disableImageLearning,
   getImageLearningStatus, rankImagesLocally } from '../js/services/imageLearning.js?v=18908';
-import { CLIP_CACHE, CLIP_DOWNLOAD_URLS, CLIP_TAG } from '../js/ml/clipConfig.js';
+import { CLIP_CACHE, CLIP_DOWNLOAD_URLS, CLIP_TAG, CLIP_DIMENSION } from '../js/ml/clipConfig.js';
 
 const CONFIG_KEY = 'keepvocab_image_learning_device_v1';
-const vector = axis => Array.from({ length: 512 }, (_, index) => Number(index === axis));
+const vector = axis => Array.from({ length: CLIP_DIMENSION }, (_, index) => Number(index === axis));
 const meaning = { id: 'run', word: 'run', definition: 'Move quickly on foot.', partOfSpeech: 'verb' };
 const photo = { url: 'https://images.example/running-fox.jpg', title: 'A fox running' };
 
@@ -364,7 +364,7 @@ test('a picker overlapping GPU warmup waits through CPU fallback and uses the re
 
 test('an enabled approved upgrade prepares a missing tower only after scheduled idle and reuses its worker', async context => {
   const env = setup(context, { config: { enabled: true, downloadConsent: 'accepted' } });
-  const result = await env.initialize({ cacheStorage: cachedFiles(CLIP_DOWNLOAD_URLS.filter(url => !url.endsWith('/text_model_fp16.onnx'))) });
+  const result = await env.initialize({ cacheStorage: cachedFiles(CLIP_DOWNLOAD_URLS.filter(url => !url.endsWith('/text_model_q4f16.onnx'))) });
   assert.equal(result.installed, false);
   assert.equal(result.prompted, false);
   assert.equal(env.workers.length, 0, 'opening the app does not wait for a worker');

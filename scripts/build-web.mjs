@@ -27,6 +27,12 @@ for (const directory of directories) {
   });
 }
 
+if (process.env.KEEPVOCAB_MODEL_BASE) {
+  const configPath = path.join(outputDir, 'js/ml/clipConfig.js');
+  const source = await readFile(configPath, 'utf8');
+  await writeFile(configPath, source.replace(/https:\/\/raw\.githubusercontent\.com\/RODIONOLIINYK\/KeepVocab\/v[\d.]+\/models\/siglip2-compact-v1\//g, process.env.KEEPVOCAB_MODEL_BASE));
+}
+
 await import('./build-image-ml.mjs');
 
 console.log(`KeepVocab web assets copied to ${outputDir}`);

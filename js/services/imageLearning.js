@@ -2,14 +2,15 @@ import { driveSync } from './driveSync.js?v=18908';
 import { prepareImageThumbnails } from './imageThumbnails.js?v=18908';
 import { base64ToBytes } from '../utils/base64.js';
 import { CLIP_TAG, CLIP_CACHE, CLIP_DOWNLOAD_URLS, VECTOR_DB, MODEL_DOWNLOAD_MB } from '../ml/clipConfig.js';
-import { cosine, preferenceFeatures, encodeFullFeatures, decodeFeatures, mergeImageLearning, preferenceProbability } from './imagePreferences.js';
+import { cosine, normalizedVector, preferenceFeatures, encodeFullFeatures, decodeFeatures, mergeImageLearning, preferenceProbability } from './imagePreferences.js';
 
 const CONFIG_KEY = 'keepvocab_image_learning_device_v1';
 const MODEL_KEY = 'keepvocab_image_preference_model_v1';
-import { IMAGE_PREPROCESSING, encodeMeaning, personalizerScore, isCurrentPersonalizer, vocabInvariantScore } from './imagePersonalizer.js';
+import { IMAGE_PREPROCESSING, encodeMeaning, personalizerScore, isCurrentPersonalizer } from './imagePersonalizer.js';
 import { ImagePersonalizerTraining } from './imagePersonalizerTraining.js';
 import { scheduleImageModelWarmup } from './imageModelStartup.js';
 import { IMAGE_SEMANTIC_FILTER, passesImageSemanticGate } from './imageSemanticGate.js';
+import { invariantRankingScore } from './vocabInvariantHead.js';
 let trainingInstance;
 function training() { return trainingInstance ||= new ImagePersonalizerTraining(driveSync); }
 let cachedModel = null;
@@ -46,7 +47,10 @@ function startupDownloadAllowed(storage) {
 }
 export async function hasDownloadedImageModel(cacheStorage = globalThis.caches) {
   try {
-    if (!cacheStorage || !(await cacheStorage.keys()).includes(CLIP_CACHE)) return false;
+    if (!cacheStorage) return false;
+    const names = await cacheStorage.keys();
+    await Promise.all(names.filter(name => /^keepvocab-clip-model-v[12]$/.test(name)).map(name => cacheStorage.delete?.(name)));
+    if (!names.includes(CLIP_CACHE)) return false;
     const cache = await cacheStorage.open(CLIP_CACHE);
     const activeUrls = new Set(CLIP_DOWNLOAD_URLS);
     void Promise.resolve(cache.keys?.()).then(keys => keys?.forEach(req => {
@@ -232,6 +236,7 @@ export async function resetImagePreferences() {
   const resetAt = new Date(records.reduce((latest, record) => Math.max(latest, Date.parse(record.updatedAt) || 0), Date.now()) + 1).toISOString();
   driveSync.updateSettings({ imageLearning: { version: 1, resetAt, records: [] } });
   await driveSync.imageHistory.merge([], resetAt); await driveSync.imageHistory.saveModel(null);
+  await driveSync.imageHistory.writeState?.('invariantHead', null);
   globalThis.localStorage?.removeItem(MODEL_KEY); emit();
 }
 const fingerprint = word => JSON.stringify([String(word.word || '').trim().toLowerCase(), String(word.partOfSpeech || '').trim().toLowerCase(), String(word.sourceDefinition || word.definition || '').replace(/\s+/g, ' ').trim()]);
@@ -288,26 +293,25 @@ export function targetGatedCosine(imageVector, targetVector) {
   for (let i = 0; i < dim; i++) {
     const v = imageVector[i], t = targetVector[i];
     const w = 0.5 + 0.5 * scale * Math.abs(t);
-    const vGated = w * v;
-    gatedDot += vGated * t;
-    gatedImgNormSq += vGated * vGated;
-    gatedTargetNormSq += t * t;
+    gatedDot += w * v * t;
+    gatedImgNormSq += w * v * v;
+    gatedTargetNormSq += w * t * t;
   }
-  const denom = Math.sqrt(Math.max(1e-12, 0.35 + 0.65 * gatedImgNormSq) * Math.max(1e-12, gatedTargetNormSq));
+  const denom = Math.sqrt(Math.max(1e-12, gatedImgNormSq) * Math.max(1e-12, gatedTargetNormSq));
   return 0.65 * rawCos + 0.35 * (gatedDot / denom);
 }
-export function semanticScores(image, texts, sceneCount, alternativeCount, wInv = null) {
+export function semanticScores(image, texts, sceneCount, alternativeCount, wInv = null, similarity = cosine) {
   const vBlend = Array.isArray(image) ? image : image.vector;
   const vFull = Array.isArray(image?.fullVector) ? image.fullVector : vBlend;
   const vCrop = Array.isArray(image?.cropVector) ? image.cropVector : vBlend;
   const hasMultiView = vFull !== vCrop;
-  const direct = targetGatedCosine(vBlend, texts[0]);
-  const scene = sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => targetGatedCosine(vBlend, text))) : direct;
-  const sceneFull = hasMultiView ? (sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => targetGatedCosine(vFull, text))) : targetGatedCosine(vFull, texts[0])) : scene;
-  const sceneCrop = hasMultiView ? (sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => targetGatedCosine(vCrop, text))) : targetGatedCosine(vCrop, texts[0])) : scene;
+  const direct = similarity(vBlend, texts[0]);
+  const scene = sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => similarity(vBlend, text))) : direct;
+  const sceneFull = hasMultiView ? (sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => similarity(vFull, text))) : similarity(vFull, texts[0])) : scene;
+  const sceneCrop = hasMultiView ? (sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => similarity(vCrop, text))) : similarity(vCrop, texts[0])) : scene;
   const cropProminence = hasMultiView ? sceneCrop - sceneFull : 0;
   const selected = 0.7 * direct + 0.3 * scene + (hasMultiView ? 0.15 * Math.max(-0.08, Math.min(0.12, cropProminence)) : 0);
-  const contrast = alternativeCount ? Math.max(...texts.slice(1 + sceneCount, 1 + sceneCount + alternativeCount).map(text => cosine(vBlend, text))) : null;
+  const contrast = alternativeCount ? Math.max(...texts.slice(1 + sceneCount, 1 + sceneCount + alternativeCount).map(text => similarity(vBlend, text))) : null;
   const margin = contrast === null ? 0 : selected - contrast;
   const unwanted = cosine(vBlend, texts.at(-1));
   const bgClutter = hasMultiView && Array.isArray(wInv?.uBg) && wInv.uBg.length === vFull.length
@@ -320,7 +324,7 @@ export function rankEmbeddedImages(items, model = null, { semanticFilter = false
   const eligible = semanticFilter ? items.filter(item => passesImageSemanticGate(item.semantic)) : items;
   if (semanticFilter && !eligible.length && fallbackLimit > 0) {
     return items.map((item, index) => ({ ...item, index, features: preferenceFeatures(item.vector, item.semantic),
-      probability: .5, uncertain: true, belowThreshold: true, score: item.semantic.cosine ?? item.semantic.selected }))
+      probability: .5, uncertain: true, belowThreshold: true, score: invariantRankingScore(model?.wInv, item.rankingEvidence) ?? item.semantic.score ?? item.semantic.cosine ?? item.semantic.selected }))
       .filter(item => Number.isFinite(item.score))
       .sort((a, b) => b.score - a.score || a.index - b.index).slice(0, Math.min(9, fallbackLimit));
   }
@@ -328,22 +332,21 @@ export function rankEmbeddedImages(items, model = null, { semanticFilter = false
     const features = preferenceFeatures(item.vector, item.semantic);
     const encoded = encodeFullFeatures(features);
     const neural = isCurrentPersonalizer(model) && model.role !== 'semantic' && item.meaningFeatures;
-    const wInvDelta = model?.wInv && item.meaningFeatures ? Math.max(-0.03, Math.min(0.03, vocabInvariantScore(model.wInv, encoded, item.meaningFeatures))) : 0;
-    const adjustment = neural ? personalizerScore(model, encoded, item.meaningFeatures) - personalizerScore(null, encoded, item.meaningFeatures) + 0.25 * wInvDelta : 0;
-    const probability = neural ? 1 / (1 + Math.exp(-8 * adjustment)) : preferenceProbability(model, features);
+    const invariantScore = invariantRankingScore(model?.wInv, item.rankingEvidence);
+    const adjustment = neural ? personalizerScore(model, encoded, item.meaningFeatures) - personalizerScore(null, encoded, item.meaningFeatures) : 0;
+    const probability = invariantScore ?? (neural ? 1 / (1 + Math.exp(-8 * adjustment)) : preferenceProbability(model, features));
     // Early feedback should have little influence. A visual preference must not
     // positively reward an image that matches another supplied sense better.
     const strength = 0.12 * Math.min(1, (model?.trainedLabels || 0) / 64);
     const preference = item.semantic.margin < 0 ? Math.min(0, probability - 0.5) : probability - 0.5;
     const uncertain = Math.abs(probability - 0.5) < 0.18 || (item.semantic.contrast !== null && item.semantic.margin < 0.09);
-    return { ...item, index, features, probability, uncertain, score: neural ? personalizerScore(model, encoded, item.meaningFeatures) + 0.25 * wInvDelta : item.semantic.score + strength * preference };
+    return { ...item, index, features, probability, uncertain, score: invariantScore ?? (neural && !model.invariantOnly ? personalizerScore(model, encoded, item.meaningFeatures) : item.semantic.score + strength * preference) };
   });
+  // Scores are shown in descending order; diversity penalties must not silently
+  // reorder the list after a learned model has scored it.
+  scored.sort((a, b) => b.score - a.score || a.index - b.index);
   const selected = [];
   while (scored.length) {
-    scored.sort((a, b) => {
-      const score = item => item.score - (selected.length ? 0.10 * Math.max(...selected.map(chosen => Math.max(0, cosine(chosen.vector, item.vector)))) : 0);
-      return score(b) - score(a) || a.index - b.index;
-    });
     const candidate = scored.shift();
     if (!selected.some(item => cosine(item.vector, candidate.vector) > 0.97)) selected.push(candidate);
   }
@@ -383,6 +386,9 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     const texts = await rpc('texts', { texts: prompt.texts }, inference);
     if (!current() || !workerReady) return [];
     const meaningFeatures = encodeMeaning(texts[0]);
+    const meanVector = vectors => vectors.length ? normalizedVector(vectors.reduce((a, v) => a.map((x, i) => x + v[i]), Array(texts[0].length).fill(0))) : null;
+    const sceneVector = meanVector(texts.slice(1, 1 + prompt.sceneCount)) || texts[0];
+    const contrastVector = meanVector(texts.slice(1 + prompt.sceneCount, 1 + prompt.sceneCount + prompt.alternativeCount));
     const items = [];
     // Oversample in bounded worker batches; only screened photos reach the UI.
     const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(45,
@@ -403,7 +409,11 @@ export async function rankImagesLocally(word, candidates, options = {}) {
           const embedded = await rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }), multiView: true }, inference);
           if (!current() || !workerReady) return [];
           const vector = Array.isArray(embedded) ? embedded : embedded.vector;
-          items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, semantic: semanticScores(embedded, texts, prompt.sceneCount, prompt.alternativeCount, cachedModel?.wInv) });
+          const semantic = semanticScores(embedded, texts, prompt.sceneCount, prompt.alternativeCount);
+          const rankingEvidence = { encoder: CLIP_TAG, full: embedded.fullVector || vector, crop: embedded.cropVector || vector,
+            baselineScore: semantic.score,
+            meaning: texts[0], scene: sceneVector, contrast: contrastVector, unwanted: texts.at(-1) };
+          items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, rankingEvidence, semantic });
         } catch (err) {
           if (err?.backendFailure || !current()) throw err;
         }
@@ -416,7 +426,7 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     const scored = rankEmbeddedImages(items, model, { semanticFilter: true, fallbackLimit: 9 });
     phase = 'ready';message = `${items.length} image suggestions scored locally.`;emit();
     return [...scored.map(item => ({ ...item.candidate, ml: { model: CLIP_TAG, sense: fingerprint(word), features: encodeFullFeatures(item.features), meaningFeatures, preprocessing: IMAGE_PREPROCESSING, scenes: prompt.scenes,
-      belowThreshold: Boolean(item.belowThreshold), uncertain: Boolean(item.uncertain), cosine: item.semantic.cosine, selected: item.semantic.selected, contrast: item.semantic.contrast, margin: item.semantic.margin, unwanted: item.semantic.unwanted, cropProminence: item.semantic.cropProminence ?? 0, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
+      rankingEvidence: item.rankingEvidence, belowThreshold: Boolean(item.belowThreshold), uncertain: Boolean(item.uncertain), cosine: item.semantic.cosine, selected: item.semantic.selected, contrast: item.semantic.contrast, margin: item.semantic.margin, unwanted: item.semantic.unwanted, cropProminence: item.semantic.cropProminence ?? 0, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
       trainedComparisons: model?.trainedComparisons || 0, trainedPositiveLabels: model?.trainedPositiveLabels || 0, trainedNegativeLabels: model?.trainedNegativeLabels || 0, score: item.score } }))];
   } catch (error) { if (current()) { phase = 'error';message = `${error.message} Image screening could not finish.`;emit(); } return []; }
 }
@@ -429,7 +439,7 @@ async function imageRecordIds(word, image) {
     return Array.from(new Uint8Array(idBytes), value => value.toString(16).padStart(2, '0')).join('');
   }));
 }
-export function recordImagePreference(word, action, image, { preferredImage, decisionId } = {}) {
+export function recordImagePreference(word, action, image, { preferredImage, decisionId, feedbackReason } = {}) {
   if (!['good', 'wrong', 'less-preferred'].includes(action) || !image || !imageLearningEnabled()
     || action === 'less-preferred' && !preferredImage?.url) return Promise.resolve({ recorded: false, reason: 'No training choice.' });
   const operation = async () => {
@@ -464,6 +474,7 @@ export function recordImagePreference(word, action, image, { preferredImage, dec
     const record = { task: 'preference', id: crypto.randomUUID(), key, decisionId: decisionId || crypto.randomUUID(), meaningId, updatedAt, label,
       features: ml.features, ...(preferred ? { kind: 'comparison', preferredFeatures: preferred.features } : {}),
       encoder: CLIP_TAG, preprocessing: ml.preprocessing || 'legacy-center-crop', ...(ml.meaningFeatures ? { meaningFeatures: ml.meaningFeatures } : {}),
+      ...(ml.rankingEvidence ? { rankingEvidence: ml.rankingEvidence } : {}), ...(feedbackReason === 'background' && action === 'wrong' ? { feedbackReason } : {}),
       context: { word: word.word, definition: word.sourceDefinition || word.definition, scenes: ml.scenes || word.imageScenes?.scenes || [],
         imageUrl: image.url, sourceUrl: image.sourceUrl, preferredUrl: preferredImage?.url },
       predictions: preferred && ml.meaningFeatures ? [null, model].filter((m, i) => i === 0 || m).map(m => ({ revision: m?.revision || 0,

@@ -1,0 +1,47 @@
+{
+  "source": "onnx-community/siglip2-base-patch16-256-ONNX",
+  "revision": "d1114256522a37ffa257a0a58017348ab0058db2",
+  "format": "full-vocab-packed4-block64-standard-ops-q4f16-v1",
+  "vocabularySize": 256000,
+  "dimension": 768,
+  "downloadBytes": 207527021,
+  "files": {
+    "config.json": {
+      "bytes": 458,
+      "sha256": "795a8e216ebb51ad5043e128e557c45279b686bd672221fbe01279a7b8cb79c9"
+    },
+    "onnx/text_model_q4f16.onnx": {
+      "bytes": 163230015,
+      "sha256": "3ddb5667293d12d3b84af944acbd8c91e49155b617ee8e71322040eaa2788e84"
+    },
+    "onnx/vision_model_q4f16.onnx": {
+      "bytes": 54723009,
+      "sha256": "e077a0e33fcc362a6e741a0c7571ba3044a4f8093bb0eaa9f93f54919191848a"
+    },
+    "preprocessor_config.json": {
+      "bytes": 394,
+      "sha256": "d14ba2ee3fd816f3de8abaddc31953565128eaf37c73ad4bed32101a98465aff"
+    },
+    "text-model.onnx.gz": {
+      "bytes": 147422591,
+      "sha256": "4ab8dc9e24ba8fb7b521fb5d1f35224c5a9dbdac0284406620a0346add36212e"
+    },
+    "tokenizer.json.gz": {
+      "bytes": 5333329,
+      "sha256": "6c0628612cff8227b7a697d38928e5c50a950105b61cb7ce3ed0139587514f40"
+    },
+    "tokenizer_config.json": {
+      "bytes": 47240,
+      "sha256": "7c3a247599e741bceba1a3fe0285aea88d1044dc1fad2caa1e48cdd9fd25f630"
+    }
+  },
+  "runtime": {
+    "source": "onnxruntime-web@1.31.0-dev.20260914-8d85527a0",
+    "wasmBytes": 26861777,
+    "wasmSha256": "49871f5a4409519797e127440868a6d1923339d9185907f301a5b2a1d90af082",
+    "compressedWasmBytes": 6596786,
+    "compressedWasmSha256": "352fabc39cfe7f7e028007d32f93287766f2846a708439c70ddc76370d4dc272",
+    "moduleBytes": 53057
+  },
+  "totalDownloadBytes": 214176864
+}

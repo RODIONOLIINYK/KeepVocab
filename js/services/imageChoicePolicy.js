@@ -19,7 +19,7 @@ export function imageRankingAcceptance(result) {
 export function canAutoSelectImage(candidates) {
   const [first, ...others] = candidates || [];
   const ml = first?.ml;
-  return Boolean(first?.url && !ml?.belowThreshold && ml?.model === CLIP_TAG && typeof ml.sense === 'string' && ml.sense && others.length
+  return Boolean(first?.url && !ml?.belowThreshold && !ml?.uncertain && ml?.model === CLIP_TAG && typeof ml.sense === 'string' && ml.sense && others.length
     && others.every(item => item?.url && item.ml?.model === CLIP_TAG && ml.sense === item.ml.sense
       && [item.ml.selected, item.ml.margin, item.ml.unwanted, item.ml.score].every(Number.isFinite))
     && [ml.selected, ml.margin, ml.unwanted, ml.score].every(Number.isFinite)

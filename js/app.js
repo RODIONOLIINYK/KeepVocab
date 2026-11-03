@@ -20,13 +20,12 @@ import { renderSpellingMode, renderChooseWordMode } from './components/PracticeM
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18908';
 import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18908';
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18908';
-import { renderDashboardView } from './components/DashboardView.js?v=18908';
+import { renderDashboardView, updateDashboardGoalNudge } from './components/DashboardView.js?v=18908';
 import { renderDailySessionMode } from './components/DailySessionMode.js?v=18908';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18908';
 import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18908';
 import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18908';
 import { renderSettingsView } from './components/SettingsView.js?v=18908';
-import { setupStreakCelebration } from './components/StreakCelebration.js?v=18908';
 
 function repairContradictoryExamples() {
   for (const word of driveSync.getWords()) {
@@ -75,10 +74,6 @@ function initApp() {
     queueSmartReminderRefresh({ requestPermission: true });
   } });
   setupEngagementSystem();
-  setupStreakCelebration({
-    getSettings: () => driveSync.getSettings(),
-    isPracticeView: () => !['dashboard', 'library', 'stats', 'settings'].includes(currentView)
-  });
   window.addEventListener('keepvocab:streak-extended', () => updateDashboardDerivedState());
   setupReminderNavigation().catch(error => console.warn('Reminder navigation setup failed.', error));
   setupMonthDropdown();
@@ -92,6 +87,7 @@ function initApp() {
     const settings = driveSync.getSettings();
     goalCount = settings.reviewsDate === localDateKey() ? Number(settings.reviewsToday || 0) : 0;
     updateGoalDisplay();
+    updateVisibleDailyProgress(settings);
     queueSmartReminderRefresh({ requestPermission: true });
   });
 
@@ -172,6 +168,7 @@ function updateDashboardDerivedState() {
 function updateVisibleDailyProgress(settings = driveSync.getSettings()) {
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
   const completed = settings.reviewsDate === localDateKey() ? Math.max(0, Number(settings.reviewsToday || 0)) : 0;
+  updateDashboardGoalNudge(document, completed, dailyGoal, Number(settings.dailyStreak || 0));
   const dashboardCount = document.getElementById('today-progress-count');
   if (dashboardCount) dashboardCount.textContent = `${completed} of ${dailyGoal} exercises`;
   const track = document.getElementById('today-progress-track');

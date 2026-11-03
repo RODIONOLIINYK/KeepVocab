@@ -1,0 +1,16 @@
+SigLIP 2 Base Patch16 256
+Original checkpoint: https://huggingface.co/google/siglip2-base-patch16-256
+ONNX source: onnx-community/siglip2-base-patch16-256-ONNX
+Pinned ONNX revision: d1114256522a37ffa257a0a58017348ab0058db2
+License: Apache License 2.0 (see LICENSE).
+
+KeepVocab modifications: affine 4-bit token-embedding quantization in blocks of
+64, stored as packed byte pairs and unpacked for requested tokens with standard
+ONNX operators for WASM compatibility. The full 256,000-token vocabulary is
+retained. Remaining text and vision weights use upstream q4f16 conversion.
+The tokenizer is losslessly compressed for transport. Text transport shards
+reconstruct one gzip stream; they are not separate encoders.
+
+Reproduce with scripts/export-siglip2-compact.py. Exact lengths, provenance and
+SHA-256 values are recorded in manifest.json. This is a modified, lossy-quantized
+checkpoint, not a claim of identical outputs to the original model.

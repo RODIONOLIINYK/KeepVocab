@@ -7,6 +7,7 @@ import { fetchWordEntry, prepareBulkLearnerExplanations, wordEntryToWord } from 
 import { bulkResultToWord } from '../js/services/bulkWords.js';
 import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js';
 import { saveGeminiSettings } from '../js/services/geminiSettings.js';
+import { CLIP_DIMENSION } from '../js/ml/clipConfig.js';
 const plastic=JSON.parse(await readFile(new URL('./fixtures/learner-meaning-consolidation/plastic.json',import.meta.url)));
 const reference=s=>/\bsynonym of\b/i.test(s.sourceDefinition||s.definition);
 function setup(fixture=plastic, transform=x=>x){
@@ -81,10 +82,10 @@ test('unconfigured or disabled consolidation uses local dictionary fallback with
  }
 });
 
-const basis=(index)=>Array.from({length:512},(_,i)=>Number(i===index));
+const basis=(index)=>Array.from({length:CLIP_DIMENSION},(_,i)=>Number(i===index));
 const probe={word:'grouping-probe',senses:[
  {id:'a',partOfSpeech:'adjective',definition:'Paying careful attention to details.'},
- {id:'b',partOfSpeech:'adjective',definition:'Taking care with fine details.'},
+ {id:'b',partOfSpeech:'adjective',definition:'Paying close careful attention to details.'},
  {id:'c',partOfSpeech:'adjective',definition:'Able to bend repeatedly.'},
  {id:'d',partOfSpeech:'adjective',definition:'Flexible and easy to bend.'}
 ]};

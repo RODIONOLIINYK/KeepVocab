@@ -4,9 +4,9 @@ import { IDBFactory } from 'fake-indexeddb';
 import { ImageLearningHistoryStore } from '../js/services/imageLearningHistory.js';
 import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js';
 import { encodeFeatures } from '../js/services/imagePreferences.js';
-import { CLIP_TAG } from '../js/ml/clipConfig.js';
+import { CLIP_TAG, CLIP_DIMENSION } from '../js/ml/clipConfig.js';
 import { createPersonalizer, validPersonalizer } from '../js/services/imagePersonalizer.js';
-const features = encodeFeatures([1,...Array(514).fill(0)]);
+const features = encodeFeatures([1,...Array(CLIP_DIMENSION + 2).fill(0)]);
 const event = i => ({ id: `event-${i}`, key: `photo-${i}`, decisionId: `choice-${i}`, meaningId: `meaning-${i}`, encoder: CLIP_TAG,
   label: i % 2, features, updatedAt: new Date(Date.UTC(2025,0,1,0,0,i)).toISOString(), context: { word: 'run', definition: 'Move quickly on foot.' } });
 

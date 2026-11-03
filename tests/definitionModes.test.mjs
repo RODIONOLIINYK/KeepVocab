@@ -5,7 +5,8 @@ import {consolidateEntrySenses} from '../js/services/localSenseGrouping.js';
 import {entrySensesForMode} from '../js/services/learningDefinitions.js';
 import {bulkResultToWord} from '../js/services/bulkWords.js';
 import {MemoryStorage} from '../js/services/driveSync.js';
-const basis = i => Array.from({length:512},(_,j)=>Number(i===j));
+import {CLIP_DIMENSION} from '../js/ml/clipConfig.js';
+const basis = i => Array.from({length:CLIP_DIMENSION},(_,j)=>Number(i===j));
 
 test('Raw preserves dictionary order, exact text, duplicate senses and POS, including filtered historical entries',async()=>{
  const definitions=['The activity of imparting and acquiring skills.','The result of good social upbringing.','  An old sense, exactly as supplied.  ','The activity of imparting and acquiring skills.'];
@@ -26,17 +27,15 @@ test('Raw preserves dictionary order, exact text, duplicate senses and POS, incl
  assert.equal(original.definition,definitions[2]);
 });
 
-test('a grouped definition retains every distinct source clause and never absorbs another POS',async()=>{
+test('high caption similarity keeps distinct skills and upbringing senses separate across POS',async()=>{
  const result=await consolidateEntrySenses({word:'training',senses:[
  {partOfSpeech:'noun',definition:'The activity of imparting and acquiring skills.'},
  {partOfSpeech:'noun',definition:'The result of good social upbringing.'},
  {partOfSpeech:'verb',definition:'present participle and gerund of train'}
  ]},{storage:new MemoryStorage(),encodeDefinitionTexts:async texts=>texts.map(()=>basis(0))});
- assert.equal(result.senses.length,2);
- const nouns=result.senses.find(s=>s.partOfSpeech==='noun');
- assert.ok(nouns.definition.includes('imparting and acquiring skills'));
- assert.ok(nouns.definition.includes('good social upbringing'));
- assert.equal(nouns.groupedSenses.length,2);
+ assert.equal(result.senses.length,3);
+ assert.ok(result.senses.some(s=>s.definition==='The activity of imparting and acquiring skills.'));
+ assert.ok(result.senses.some(s=>s.definition==='The result of good social upbringing.'));
  assert.equal(result.senses.find(s=>s.partOfSpeech==='verb').groupedSenses.length,1);
 });
 

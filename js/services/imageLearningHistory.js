@@ -1,5 +1,6 @@
 import { CLIP_TAG, LEGACY_CLIP_TAG, ARCHIVED_CLIP_TAGS } from '../ml/clipConfig.js';
 import { decodeFeatures } from './imagePreferences.js';
+import { validRankingEvidence } from './vocabInvariantHead.js';
 
 export const IMAGE_HISTORY_DB = 'keepvocab-image-history-v2';
 export const IMAGE_HISTORY_CHUNK = 100;
@@ -18,6 +19,10 @@ export function normalizeImageEvent(input) {
     decisionId: String(input.decisionId || input.id).slice(0, 3000), meaningId: String(input.meaningId || '').slice(0, 1000), updatedAt: iso(input.updatedAt),
     label: input.label, features: input.features, ...(input.kind === 'comparison' ? { kind: 'comparison', preferredFeatures: input.preferredFeatures } : {}),
     ...(input.meaningFeatures ? { meaningFeatures: input.meaningFeatures } : {}), encoder,
+    ...(encoder === CLIP_TAG && validRankingEvidence(input.rankingEvidence) ? { rankingEvidence: {
+      ...Object.fromEntries(['encoder', 'full', 'crop', 'meaning', 'scene', 'contrast', 'unwanted'].map(k => [k, input.rankingEvidence[k]])),
+      ...(Number.isFinite(input.rankingEvidence.baselineScore) ? { baselineScore: input.rankingEvidence.baselineScore } : {}) } } : {}),
+    ...(input.feedbackReason === 'background' && input.kind !== 'comparison' && input.label === 0 ? { feedbackReason: 'background' } : {}),
     preprocessing: String(input.preprocessing || 'legacy-center-crop').slice(0, 100),
     context: { word: String(input.context?.word || '').slice(0, 160), definition: String(input.context?.definition || '').slice(0, 2000),
       scenes: (Array.isArray(input.context?.scenes) ? input.context.scenes : []).slice(0, 8).map(s => String(s).slice(0, 500)),
