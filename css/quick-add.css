@@ -3,7 +3,7 @@ html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
 #add-word-modal { background: transparent; backdrop-filter: none; }
 #add-word-modal .modal-box {
   width: 100%; max-width: none; height: 100dvh; max-height: 100dvh;
-  padding: 18px; box-shadow: none; animation: none;
+  padding: 18px 18px 0; box-shadow: none; animation: none;
 }
 #add-word-modal .sense-editor-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
 #add-word-modal .sense-editor-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

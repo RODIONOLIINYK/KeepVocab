@@ -14,7 +14,7 @@ export function centerCropGeometry(width, height, cropFraction = 0.68) {
 export async function fullFrameImage(image, RawImage, size = 256) {
   const geometry = fullFrameGeometry(image.width, image.height, size);
   const resized = await image.resize(geometry.width, geometry.height);
-  const data = new Uint8Array(size * size * 3); data.fill(128);
+  const data = new Uint8ClampedArray(size * size * 3); data.fill(128);
   for (let y = 0; y < resized.height; y++) for (let x = 0; x < resized.width; x++) {
     const src = (y * resized.width + x) * resized.channels, dst = ((y + geometry.top) * size + x + geometry.left) * 3;
     for (let c = 0; c < 3; c++) {
@@ -28,7 +28,7 @@ export async function fullFrameImage(image, RawImage, size = 256) {
 export async function centerCropImage(image, RawImage, size = 256, cropFraction = 0.68) {
   const crop = centerCropGeometry(image.width, image.height, cropFraction);
   const channels = image.channels || 3;
-  const cropData = new Uint8Array(crop.width * crop.height * channels);
+  const cropData = new Uint8ClampedArray(crop.width * crop.height * channels);
   for (let y = 0; y < crop.height; y++) {
     const srcStart = ((crop.top + y) * image.width + crop.left) * channels;
     const dstStart = y * crop.width * channels;

@@ -576,9 +576,9 @@ body {
   position: relative;
   z-index: 101;
 }
-.sense-modal-box { max-width: 720px; }
+.sense-modal-box { max-width: 720px; padding-bottom: 0; }
 .sense-modal-header { position: sticky; top: -1px; z-index: 4; padding: 6px 0 12px; background: #fff; border-bottom: 1px solid var(--border-card); }
-.sense-modal-actions { position: sticky; bottom: -1px; z-index: 4; padding: 12px 0 4px; background: #fff; border-top: 1px solid var(--border-card); }
+.sense-modal-actions { position: sticky; bottom: 0; z-index: 10; padding: 14px 0 22px; margin-bottom: 0; background: #fff; border-top: 1px solid var(--border-card); }
 .sense-picker-preview { padding: 14px; background: #f6f8fb; border-radius: 14px; border: 2px solid var(--border-card); }
 .sense-picker-heading, .sense-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .sense-picker-heading > div { display: flex; flex-direction: column; gap: 2px; }

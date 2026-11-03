@@ -963,7 +963,10 @@ export async function findRelevantImages(word, options = {}) {
   if (options.signal?.aborted) return [];
   const pool = rankImageCandidates(collected, word, { concepts, limit: poolLimit, excludeUrls: options.excludeUrls, semanticPool: imageLearningEnabled(options.storage) });
   const rankingWord = aiScenes.length ? word : { ...word, imageScenes: undefined };
-  const ranked = await rankImagesLocally(rankingWord, pool, { ...options, extraQueries: fallbackPlan.length ? [] : options.extraQueries, scenes: explicitConcept ? concepts : aiScenes, contrasts: aiScenes.length ? sceneRecord?.contrasts || [] : [] });
+  const localRanked = await rankImagesLocally(rankingWord, pool, { ...options, extraQueries: fallbackPlan.length ? [] : options.extraQueries, scenes: explicitConcept ? concepts : aiScenes, contrasts: aiScenes.length ? sceneRecord?.contrasts || [] : [] });
+  const ranked = localRanked.length || !pool.length ? localRanked : pool.slice(0, 9).map(image => ({
+    ...image, ml: { ...image.ml, belowThreshold: true, uncertain: true, score: Number(image.score) || 0 }
+  }));
   const cosineFallback = ranked.some(image => image.ml?.belowThreshold);
   const reviewed = options.semanticRerank && !cosineFallback ? await rerankImagesWithGemini(word, ranked, options) : ranked;
   const validateImages = options.validateImages !== false && (options.loadImage || typeof globalThis.document?.createElement === 'function');

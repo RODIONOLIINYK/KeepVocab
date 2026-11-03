@@ -136,21 +136,36 @@ function sourceLabels(value) {
   return (Array.isArray(value) ? value : value ? [value] : []).map(item => String(typeof item === 'object' ? item?.text || item?.name || '' : item).trim()).filter(Boolean);
 }
 
+function isWiktionaryGroupingHeader(definition) {
+  return /^(?:\([^)]*\)\s*)*(?:terms|senses|meanings|uses) relating to\b/i.test(String(definition || '').trim());
+}
+
+function stripLeadingGrammarTag(definition) {
+  const cleaned = String(definition || '').trim()
+    .replace(/^(?:\((?:countable|uncountable| countable or uncountable|uncountable or countable|transitive|intransitive|ambitransitive|ditransitive|reflexive|ergative|plural only|singular only|chiefly [a-z ]+|usually [a-z ]+)\)\s*)+/i, '')
+    .trim();
+  return cleaned || String(definition || '').trim();
+}
+
 function sensePenalty(sense) {
   const labels = (sense.labels || []).join(' ').toLowerCase();
+  const def = String(sense.definition || '');
   return (/\b(?:obsolete|archaic|dated|historical)\b/.test(labels) ? 100 : 0)
     + (/\b(?:form-of|alt-of|inflection-of)\b/.test(labels)
-      || /^(?:(?:alternative|obsolete|archaic|nonstandard) (?:form|spelling) of|(?:simple past|past participle|present participle|plural|comparative(?: form)?|superlative(?: form)?|inflection) of)\b/i.test(sense.definition) ? 80 : 0)
+      || /^(?:(?:alternative|obsolete|archaic|nonstandard) (?:form|spelling) of|(?:simple past|past participle|present participle|plural|comparative(?: form)?|superlative(?: form)?|inflection) of)\b/i.test(def) ? 80 : 0)
     + (/\b(?:rare|uncommon)\b/.test(labels) ? 30 : 0)
-    + (/\b(?:technical|botany|zoology|chemistry|physics|mathematics|linguistics|medicine|anatomy)\b/.test(labels) ? 10 : 0);
+    + (/\b(?:technical|botany|zoology|chemistry|physics|mathematics|linguistics|medicine|anatomy)\b/.test(labels) ? 10 : 0)
+    + (/\b(?:family|genus|order|suborder|phylum|class)\s+[A-Z][a-z]+(?:dae|nae|ales|formes|oidea)\b/.test(def)
+      && !/\b(?:domesticated|house pet|commonly kept|everyday)\b/i.test(def) ? 12 : 0);
 }
 
 function distinctSenses(senses, word) {
   const seen = new Map();
   const cleaned = [];
   for (const sense of senses) {
-    const definition = String(sense?.definition || '').trim();
-    if (!definition) continue;
+    const rawDef = String(sense?.definition || '').trim();
+    if (!rawDef || isWiktionaryGroupingHeader(rawDef)) continue;
+    const definition = stripLeadingGrammarTag(rawDef);
     const partOfSpeech = String(sense.partOfSpeech || 'word').trim().toLowerCase();
     const key = `${partOfSpeech}|${normalizeDefinition(definition)}`;
     const labels = [...new Set([...sourceLabels(sense.tags), ...sourceLabels(sense.labels), ...sourceLabels(sense.categories)])];
@@ -185,7 +200,7 @@ function distinctSenses(senses, word) {
 }
 
 function rawDictionarySenses(senses) {
-  return senses.filter(s => typeof s.definition === 'string' && s.definition.trim()).map((s, index) => ({
+  return senses.filter(s => typeof s.definition === 'string' && s.definition.trim() && !isWiktionaryGroupingHeader(s.definition)).map((s, index) => ({
     ...s, id: `dictionary-raw-${index}`, sourceDefinition: s.definition,
     labels: [...new Set([...sourceLabels(s.tags), ...sourceLabels(s.labels), ...sourceLabels(s.categories)])]
   }));

@@ -427,7 +427,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
 
   const reviewPreparedImages = words => {
     pendingImageFeedback = [];
-    if (words.every(word => !word.imageUrl || canAutoSelectImage(word.imageCandidates))) {
+    if (words.every(word => (!word.imageUrl && !word.imageCandidates?.length) || canAutoSelectImage(word.imageCandidates))) {
       return Promise.resolve(words.map(({ imageCandidates, ...word }) => word));
     }
     return new Promise(resolve => {

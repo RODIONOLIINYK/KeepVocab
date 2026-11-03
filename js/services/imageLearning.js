@@ -235,12 +235,25 @@ export async function resetImagePreferences() {
   globalThis.localStorage?.removeItem(MODEL_KEY); emit();
 }
 const fingerprint = word => JSON.stringify([String(word.word || '').trim().toLowerCase(), String(word.partOfSpeech || '').trim().toLowerCase(), String(word.sourceDefinition || word.definition || '').replace(/\s+/g, ' ').trim()]);
-const contentTokens = text => new Set(String(text || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').split(/\s+/).filter(token => token.length > 3 && !/^(?:that|this|with|from|into|have|having|make|made|used|very|more|most|some|such|when|where|which|while|person|something|someone)$/.test(token)));
+const VISUAL_FAMILIES = [
+  ['animal', 'mammal', 'creature', 'species', 'feline', 'felidae', 'canine', 'canidae', 'bird', 'fish', 'insect', 'reptile', 'pet', 'predator', 'carnivore', 'carnivorous', 'herbivore', 'wildlife', 'fauna', 'beast', 'domestic', 'domesticate', 'domesticated', 'kitten', 'puppy'],
+  ['plant', 'tree', 'flower', 'shrub', 'bush', 'herb', 'flora', 'leaf', 'blossom', 'botanical']
+];
+const normalizeVisualToken = token => {
+  const stemmed = token.replace(/(?:ing|ed|es|s)$/, '');
+  for (let i = 0; i < VISUAL_FAMILIES.length; i++) {
+    if (VISUAL_FAMILIES[i].includes(token) || VISUAL_FAMILIES[i].includes(stemmed)) return `@family_${i}`;
+  }
+  return stemmed.length >= 3 ? stemmed : token;
+};
+const contentTokens = text => new Set(String(text || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').split(/\s+/).filter(token => token.length > 3 && !/^(?:that|this|with|from|into|have|having|make|made|used|very|more|most|some|such|when|where|which|while|person|something|someone|term|terms|relating)$/.test(token)).map(normalizeVisualToken));
 function sharesVisualDefinitionTokens(candidate, target) {
+  if (/^(?:\([^)]*\)\s*)*(?:terms|senses|meanings|uses) relating to\b/i.test(String(candidate || '').trim())) return true;
   const a = contentTokens(candidate), b = contentTokens(target);
   if (!a.size || !b.size) return false;
+  if ([...a].some(t => t.startsWith('@family_') && b.has(t))) return true;
   const overlap = [...a].filter(token => b.has(token)).length;
-  return overlap / Math.min(a.size, b.size) >= 0.5;
+  return overlap / Math.min(a.size, b.size) >= 0.4;
 }
 export function stripNegatedClauses(text) {
   const raw = String(text || '').trim();
@@ -260,15 +273,38 @@ export function imageClipPrompts(word, options = {}) {
   const alternatives = contrasts.length ? [] : [...new Set([...(options.otherDefinitions || []), ...(word.otherDefinitions || [])])].filter(value => value && value !== word.definition && value !== word.sourceDefinition && !sharesVisualDefinitionTokens(value, rawDefinition)).slice(0, 8).map(value => `A photo illustrating ${word.word}: ${value}`);
   return { scenes: rawScenes, texts: [selected, ...scenes, ...alternatives, ...contrasts, 'Text, a logo, a diagram, a screenshot or a document.'].map(text => text.slice(0, 2000)), sceneCount: scenes.length, alternativeCount: alternatives.length + contrasts.length };
 }
+export function targetGatedCosine(imageVector, targetVector) {
+  const rawCos = cosine(imageVector, targetVector);
+  if (!Array.isArray(imageVector) || !Array.isArray(targetVector) || imageVector.length !== targetVector.length || !imageVector.length) return rawCos;
+  const dim = targetVector.length;
+  let maxAbsT = 0;
+  for (let i = 0; i < dim; i++) {
+    const absT = Math.abs(targetVector[i]);
+    if (absT > maxAbsT) maxAbsT = absT;
+  }
+  if (maxAbsT > 0.5) return rawCos;
+  const scale = Math.sqrt(dim);
+  let gatedDot = 0, gatedImgNormSq = 0, gatedTargetNormSq = 0;
+  for (let i = 0; i < dim; i++) {
+    const v = imageVector[i], t = targetVector[i];
+    const w = 0.5 + 0.5 * scale * Math.abs(t);
+    const vGated = w * v;
+    gatedDot += vGated * t;
+    gatedImgNormSq += vGated * vGated;
+    gatedTargetNormSq += t * t;
+  }
+  const denom = Math.sqrt(Math.max(1e-12, 0.35 + 0.65 * gatedImgNormSq) * Math.max(1e-12, gatedTargetNormSq));
+  return 0.65 * rawCos + 0.35 * (gatedDot / denom);
+}
 export function semanticScores(image, texts, sceneCount, alternativeCount, wInv = null) {
   const vBlend = Array.isArray(image) ? image : image.vector;
   const vFull = Array.isArray(image?.fullVector) ? image.fullVector : vBlend;
   const vCrop = Array.isArray(image?.cropVector) ? image.cropVector : vBlend;
   const hasMultiView = vFull !== vCrop;
-  const direct = cosine(vBlend, texts[0]);
-  const scene = sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => cosine(vBlend, text))) : direct;
-  const sceneFull = hasMultiView ? (sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => cosine(vFull, text))) : cosine(vFull, texts[0])) : scene;
-  const sceneCrop = hasMultiView ? (sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => cosine(vCrop, text))) : cosine(vCrop, texts[0])) : scene;
+  const direct = targetGatedCosine(vBlend, texts[0]);
+  const scene = sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => targetGatedCosine(vBlend, text))) : direct;
+  const sceneFull = hasMultiView ? (sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => targetGatedCosine(vFull, text))) : targetGatedCosine(vFull, texts[0])) : scene;
+  const sceneCrop = hasMultiView ? (sceneCount ? Math.max(...texts.slice(1, 1 + sceneCount).map(text => targetGatedCosine(vCrop, text))) : targetGatedCosine(vCrop, texts[0])) : scene;
   const cropProminence = hasMultiView ? sceneCrop - sceneFull : 0;
   const selected = 0.7 * direct + 0.3 * scene + (hasMultiView ? 0.15 * Math.max(-0.08, Math.min(0.12, cropProminence)) : 0);
   const contrast = alternativeCount ? Math.max(...texts.slice(1 + sceneCount, 1 + sceneCount + alternativeCount).map(text => cosine(vBlend, text))) : null;
@@ -363,10 +399,14 @@ export async function rankImagesLocally(word, candidates, options = {}) {
       if (!current()) return [];
       for (const thumbnail of thumbnails) {
         if (!current()) return [];
-        const embedded = await rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }), multiView: true }, inference);
-        if (!current() || !workerReady) return [];
-        const vector = Array.isArray(embedded) ? embedded : embedded.vector;
-        items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, semantic: semanticScores(embedded, texts, prompt.sceneCount, prompt.alternativeCount, cachedModel?.wInv) });
+        try {
+          const embedded = await rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }), multiView: true }, inference);
+          if (!current() || !workerReady) return [];
+          const vector = Array.isArray(embedded) ? embedded : embedded.vector;
+          items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, semantic: semanticScores(embedded, texts, prompt.sceneCount, prompt.alternativeCount, cachedModel?.wInv) });
+        } catch (err) {
+          if (err?.backendFailure || !current()) throw err;
+        }
       }
       phase = 'scoring';message = `Scored ${items.length} of ${candidates.length} image suggestions locally.`;emit();
     }

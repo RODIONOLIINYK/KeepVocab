@@ -7,7 +7,7 @@ import { isModernUsageExample, hasExampleSenseConflict } from './exampleSearch.j
 import { sourceDefinitionFingerprint } from './learningDefinitions.js?v=18908';
 
 const CACHE_KEY = 'keepvocab_sense_groups_v1';
-const VERSION = 6;
+const VERSION = 7;
 const LOCAL_SIMILARITY = 0.86;
 const CONSOLIDATION_CACHE = 'keepvocab_learner_meaning_groups_v1';
 const isUnresolvedReference = sense => /\b(?:synonym of|alternative (?:form|spelling) of|action of the verb|present participle and gerund of)\b/i.test(sense.sourceDefinition || sense.definition);
@@ -131,7 +131,7 @@ function packagedLocal(entry, groups) {
     senseConsolidation: { version: 1, source: 'local', originalCount: built.reduce((n, g) => n + g.groupedSenses.length, 0), coreCount: built.length } };
 }
 const normalized = value => String(value || '').toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
-const negative = /\b(?:not|never|without|cannot|unable|lacking|cant|isnt|arent|doesnt|dont)\b/g;
+const negative = /\b(?:not|never|non|without|cannot|unable|lacking|cant|isnt|arent|doesnt|dont)\b/g;
 function content(sense) {
   return normalized(sense.sourceDefinition || sense.definition).split(' ').filter(t => !/^(?:a|an|the|to|be|is|of|or|and|that|which|who|one|someone|something)$/.test(t));
 }
@@ -141,10 +141,14 @@ function compatible(left, right) {
   const a = normalized(left.sourceDefinition || left.definition), b = normalized(right.sourceDefinition || right.definition);
   if (/\b(?:any of the above|the preceding|as above)\b/.test(a + ' ' + b)) return areSensesNearDuplicate(left, right);
   const rawA = content(left), rawB = content(right), tokensA = new Set(rawA), tokensB = new Set(rawB);
-  const overlap = [...tokensA].filter(t => tokensB.has(t)).length / Math.max(tokensA.size, tokensB.size, 1);
+  const shared = [...tokensA].filter(t => tokensB.has(t)).length;
+  const maxTokens = Math.max(tokensA.size, tokensB.size, 1), minTokens = Math.min(tokensA.size, tokensB.size);
+  const overlap = shared / maxTokens;
+  if (!areSensesNearDuplicate(left, right) && maxTokens >= 8 && minTokens / maxTokens < 0.45) return false;
   const stripNeg = value => value.replace(negative, '').replace(/\s+/g, ' ').trim();
-  const hasNeg = value => /\b(?:not|never|without|cannot|unable|lacking|cant|isnt|arent|doesnt|dont)\b/.test(value);
-  if (hasNeg(a) !== hasNeg(b) && (stripNeg(a) === stripNeg(b) || overlap >= 0.6)) return false;
+  const hasNeg = value => /\b(?:not|never|non|without|cannot|unable|lacking|cant|isnt|arent|doesnt|dont)\b/.test(value);
+  if (hasNeg(a) !== hasNeg(b) && (stripNeg(a) === stripNeg(b) || overlap >= 0.4 || (minTokens > 0 && shared / minTokens >= 0.6))) return false;
+  if (['chiefly', 'especially', 'specifically', 'includes', 'including', 'other'].some(t => tokensA.has(t) !== tokensB.has(t)) && overlap < 0.6) return false;
   if (JSON.stringify(a.match(/\b\d+(?:\.\d+)?\b/g) || []) !== JSON.stringify(b.match(/\b\d+(?:\.\d+)?\b/g) || [])) return false;
   const finance = /\b(?:financial|money|credit|debit|cash|deposit|loan|lender|savings)\b/;
   const geography = /\b(?:river|shore|stream|lake|embankment)\b/;
