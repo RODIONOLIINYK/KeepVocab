@@ -285,6 +285,22 @@ export function rankEmbeddedImages(items, model = null, { semanticFilter = false
   }
   return selected;
 }
+// Reuses the installed encoder and its IndexedDB text-vector cache. Grouping
+// must never trigger a model download or change the user's device setting.
+export async function encodeDefinitionTexts(texts, options = {}) {
+  if (!imageLearningEnabled(options.storage) || typeof Worker === 'undefined') return null;
+  if (warmupPromise) { try { await warmupPromise; } catch { return null; } }
+  const generation = featureGeneration;
+  const vectors = [];
+  for (let start = 0; start < texts.length; start += 20) {
+    options.signal?.throwIfAborted();
+    const batch = await rpc('texts', { texts: texts.slice(start, start + 20) }, { ...options, cachedOnly: true });
+    if (generation !== featureGeneration || !imageLearningEnabled(options.storage)) return null;
+    vectors.push(...batch);
+  }
+  return vectors;
+}
+
 export async function rankImagesLocally(word, candidates, options = {}) {
   if (!imageLearningEnabled(options.storage) || !candidates.length) return candidates;
   const generation = featureGeneration;

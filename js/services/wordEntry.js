@@ -4,9 +4,10 @@ import { bulkResultToWord, attachImagesSequentially, withSkippableImages } from 
 import { sanitizeExistingExamples } from './exampleSearch.js?v=18900';
 import { findRelevantImages, imageUrlsForWords, prepareImageScenes } from './imageSearch.js?v=18900';
 import { withLearnerExplanations } from './learningDefinitions.js?v=18900';
+import { groupEntrySensesLocally } from './localSenseGrouping.js?v=18900';
 
 export async function fetchWordEntry(word, _courseId = 'english', options = {}) {
-  const entry = await fetchEnglishEntry(word, options);
+  const entry = await groupEntrySensesLocally(await fetchEnglishEntry(word, options), options);
   return withLearnerExplanations(entry, entry.aiGenerated ? { ...options, learnerExplanations: false } : options);
 }
 
@@ -14,7 +15,7 @@ export async function fetchWordEntry(word, _courseId = 'english', options = {}) 
 export async function fetchAiWordEntry(word, _courseId = 'english', options = {}) {
   // This request already asks for learner wording and an example. A second AI
   // pass would charge again for the same suggestion before it is even shown.
-  return withLearnerExplanations(await enrichEnglishEntry(word, { ...options, force: true }), { ...options, learnerExplanations: false });
+  return withLearnerExplanations(await groupEntrySensesLocally(await enrichEnglishEntry(word, { ...options, force: true }), options), { ...options, learnerExplanations: false });
 }
 
 // Bulk lookup defers clarity rewrites until all dictionary entries are ready,

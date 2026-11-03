@@ -7,7 +7,7 @@ import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18900';
 import { imageChoiceLabels } from '../services/imageChoicePolicy.js';
 import { getPracticeReadiness } from '../services/reminderService.js?v=18900';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
-import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, meaningSupportFor, groupSimilarSenses } from '../services/learningDefinitions.js?v=18900';
+import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, meaningSupportFor, groupSimilarSenses, originalSenses } from '../services/learningDefinitions.js?v=18900';
 import { renderMeaningExplanation, renderExplanationReview, renderInlineExplanation, applyReviewedExplanations } from './MeaningExplanation.js?v=18900';
 import { mountImageReview } from './ImageReview.js?v=18900';
 import { attachImagesSequentially } from '../services/bulkWords.js?v=18900';
@@ -274,6 +274,7 @@ export function renderLibraryView(container) {
         ${meaning.imageUrl && !hasDuplicateImage ? `<img class="library-word-image" src="${escapeHtml(meaning.imageUrl)}" alt="Visual cue for ${escapeHtml(meaning.word)} meaning ${meaningIndex + 1}">` : hasDuplicateImage ? `<div class="duplicate-image-warning"><i class="fa-solid fa-images"></i><span><strong>Reused visual cue</strong>Choose a distinct image for this meaning.</span></div>` : ''}
         ${renderMeaningExplanation(meaning)}${isUkrainianTranslationEnabled() && meaning.translationLanguage === 'uk' && meaning.translation ? `<p class="word-translation" lang="uk">${escapeHtml(meaning.translation)}</p>` : ''}
         ${exampleForLearning(meaning) ? `<blockquote>“${escapeHtml(exampleForLearning(meaning))}”</blockquote>` : ''}
+        ${meaning.groupedSenses?.length > 1 ? `<details class="grouped-originals"><summary>${meaning.groupedSenses.length} grouped originals</summary>${originalSenses(meaning).map((original, index) => `<p>${escapeHtml(original.definition)}${original.example ? ` — ${escapeHtml(original.example)}` : ''}${original.attribution ? ` · ${escapeHtml(original.attribution)}` : ''}</p><button class="text-action" data-restore-original="${escapeHtml(meaning.id)}" data-original-index="${index}">Save as a separate meaning</button>`).join('')}</details>` : ''}
         <div class="library-card-footer"><span>${meaning.mastered ? 'Mastered' : (readiness.readyNowCount ? 'Due now' : 'Learning')}</span></div>
         ${deleteId === meaning.id ? `<div class="delete-confirm"><span>Delete this meaning of “${escapeHtml(meaning.word)}”?</span><button data-cancel-delete>Cancel</button><button data-confirm-delete="${escapeHtml(meaning.id)}">Delete</button></div>` : `<div class="library-card-actions"><button data-edit-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-pen"></i> Edit</button><button class="library-delete-action" data-delete-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-trash"></i> Delete</button><details class="library-card-menu" data-motion><summary>More <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary><div class="disclosure-body"><button data-explain-meaning="${escapeHtml(meaning.id)}" ${explaining ? 'disabled' : ''}><i class="fa-solid fa-lightbulb"></i> Understand meaning</button></div></details></div>`}
         ${explaining && explanationWordIds.has(meaning.id) ? '<p class="meaning-help-status" role="status">Building a concrete explanation and example…</p>' : ''}
@@ -390,6 +391,16 @@ export function renderLibraryView(container) {
       if (!question) { explanationErrors.set(word?.id, 'Describe the part that is confusing, then ask your question.'); render(); return; }
       const previous = explanationReview.find(item => item.original.id === word?.id)?.candidate;
       if (word) requestExplanations([word], false, question, previous ? { definition: previous.definition, example: previous.example, why: meaningSupportFor(previous)?.exampleExplanation || '' } : null);
+    }));
+    container.querySelectorAll('[data-restore-original]').forEach(button => button.addEventListener('click', () => {
+      try {
+        const word = driveSync.getWords().find(item => item.id === button.dataset.restoreOriginal);
+        const original = originalSenses(word)[Number(button.dataset.originalIndex)];
+        if (!word || !original) return;
+        const { id, ...fields } = original;
+        driveSync.addWord({ ...fields, word: word.word, courseId: word.courseId, groupedSenses: [] }, word.notebook);
+        explanationStatus = 'Original saved as a separate meaning.'; render();
+      } catch (error) { explanationStatus = error.message; render(); }
     }));
     container.querySelectorAll('[data-merge-meanings]').forEach(button => button.addEventListener('click', () => {
       try {

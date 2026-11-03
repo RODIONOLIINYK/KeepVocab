@@ -160,6 +160,7 @@ function distinctSenses(senses, word) {
       definition,
       sourceDefinition: definition,
       ...(Array.isArray(sense.sourceDefinitions) ? { sourceDefinitions: sense.sourceDefinitions } : {}),
+      ...(Array.isArray(sense.groupedSenses) ? { groupedSenses: sense.groupedSenses } : {}),
       labels,
       usageNote: String(sense.usageNote || '').trim(),
       sourceUrl: sense.sourceUrl || '',

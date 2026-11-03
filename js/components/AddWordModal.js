@@ -3,7 +3,7 @@ import { fetchWordEntry, fetchAiWordEntry, wordEntryToWord, prepareWordsForLibra
 import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18900';
 import { mountImageReview } from './ImageReview.js?v=18900';
 import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18900';
-import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18900';
+import { definitionForLearning, exampleForLearning, originalSenses } from '../services/learningDefinitions.js?v=18900';
 import { canAutoSelectImage } from '../services/imageChoicePolicy.js';
 import { recordImagePreference, warmImageLearning } from '../services/imageLearning.js?v=18900';
 
@@ -304,6 +304,28 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         });
         translationLabel.appendChild(translation);
         row.append(label, translationLabel);
+        const selected = senses[Number(select.value) || 0];
+        if (selected?.groupedSenses?.length > 1) {
+          const details = document.createElement('details');
+          const summary = document.createElement('summary');
+          summary.textContent = `${selected.groupedSenses.length} grouped originals`;
+          details.appendChild(summary);
+          for (const original of originalSenses(selected)) {
+            const p = document.createElement('p');
+            p.textContent = `${original.definition}${original.attribution ? ` · ${original.attribution}` : ''}`;
+            details.appendChild(p);
+          }
+          const separate = document.createElement('button');
+          separate.type = 'button'; separate.className = 'text-action';
+          separate.textContent = 'Choose originals separately';
+          separate.addEventListener('click', () => {
+            const index = Number(select.value) || 0;
+            result.data.senses = senses.flatMap((item, i) => i === index ? originalSenses(item) : [item]);
+            result.selectedSenseIndex = index;
+            renderBulkResults();
+          });
+          details.appendChild(separate); row.appendChild(details);
+        }
       } else {
         const note = document.createElement('p');
         note.textContent = result.error || 'No dictionary meaning was found.';
@@ -541,6 +563,29 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         formStatus.textContent = `${selectedSenseIds.size} meaning${selectedSenseIds.size === 1 ? '' : 's'} selected. Each keeps its own definition, example, and review progress.`;
       });
       senseList.appendChild(button);
+      if (sense.groupedSenses?.length > 1) {
+        const details = document.createElement('details');
+        const summary = document.createElement('summary');
+        summary.textContent = `${sense.groupedSenses.length} grouped originals`;
+        details.appendChild(summary);
+        for (const original of originalSenses(sense)) {
+          const p = document.createElement('p');
+          p.textContent = `${original.definition}${original.example ? ` — ${original.example}` : ''}${original.attribution ? ` · ${original.attribution}` : ''}`;
+          details.appendChild(p);
+        }
+        const separate = document.createElement('button');
+        separate.type = 'button'; separate.className = 'text-action';
+        separate.textContent = 'Choose originals separately';
+        separate.addEventListener('click', () => {
+          persistFocusedDraft();
+          const originals = originalSenses(sense).map((item, i) => ({ ...item, id: `${sense.id}-original-${i}` }));
+          senseDrafts = new Map([...senseDrafts.values()].flatMap(item => item.id === sense.id ? originals : [item]).map(item => [item.id, item]));
+          selectedSenseIds.delete(sense.id); selectedSenseIds.add(originals[0].id);
+          focusedSenseId = originals[0].id; showAllSenses = true;
+          renderSenseOptions(); loadFocusedDraft();
+        });
+        details.appendChild(separate); senseList.appendChild(details);
+      }
     });
   };
 

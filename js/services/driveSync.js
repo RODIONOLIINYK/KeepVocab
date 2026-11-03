@@ -1,3 +1,4 @@
+import { normalizeVisualFocus } from './visualFocus.js';
 import { replayWordFsrsHistory } from './srsEngine.js?v=18900';
 import { ReviewHistoryStore, mergeReviewEvents } from './reviewHistory.js';
 import { ImageLearningHistoryStore, mergeImageEvents, IMAGE_HISTORY_CHUNK } from './imageLearningHistory.js';
@@ -13,7 +14,7 @@ import { localDateKey } from '../utils/dates.js';
 import { getCourseDefinition, isCourseId } from '../data/courses.js';
 import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles, stampPracticePreferences } from './courseProfiles.js';
 import { normalizeWordPracticeStats } from './wordSelection.js?v=18900';
-import { areSensesNearDuplicate, normalizeMeaningSupport, sourceDefinitionFingerprint } from './learningDefinitions.js?v=18900';
+import { areSensesNearDuplicate, normalizeMeaningSupport, normalizeGroupedSenses, originalSenses, sourceDefinitionFingerprint } from './learningDefinitions.js?v=18900';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
@@ -90,8 +91,10 @@ function normalizeImageScenes(value) {
   if (!value || typeof value !== 'object' || Number(value.version) !== 1 || !value.fingerprint || !value.generatorVersion || !Array.isArray(value.scenes)) return undefined;
   const scenes = [...new Set(value.scenes.filter(scene => typeof scene === 'string').map(scene => scene.trim()).filter(scene => scene && scene.length <= 180))].slice(0, 3);
   if (!scenes.length || !['object', 'curated', 'gemini'].includes(value.source)) return undefined;
+  const focus = normalizeVisualFocus(value.focus);
+  const contrasts = [...new Set((Array.isArray(value.contrasts) ? value.contrasts : []).filter(s => typeof s === 'string' && s.trim() && s.length <= 180))].slice(0, 3);
   return { version: 1, generatorVersion: String(value.generatorVersion || ''), fingerprint: String(value.fingerprint),
-    source: value.source, scenes, generatedAt: validIso(value.generatedAt) };
+    source: value.source, scenes, ...(focus ? { focus } : {}), ...(contrasts.length ? { contrasts } : {}), generatedAt: validIso(value.generatedAt) };
 }
 
 function makeSenseId(word, partOfSpeech, definition) {
@@ -204,6 +207,7 @@ function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource
     definition: definition || 'Definition not provided.',
     sourceDefinition: String(candidate.sourceDefinition || definition).trim(),
     sourceDefinitions: [...new Set((Array.isArray(candidate.sourceDefinitions) ? candidate.sourceDefinitions : []).map(String).map(value => value.trim()).filter(Boolean))].slice(0, 12),
+    groupedSenses: normalizeGroupedSenses(candidate.groupedSenses),
     sourceFingerprint: String(candidate.sourceFingerprint || ''),
     explanationSource: String(candidate.explanationSource || ''),
     explanationModel: String(candidate.explanationModel || ''),
@@ -749,6 +753,7 @@ export class DriveSyncService {
     if (Object.prototype.hasOwnProperty.call(patch, 'meaningSupport')) cleanPatch.meaningSupport = normalizeMeaningSupport(patch.meaningSupport);
     if (Object.prototype.hasOwnProperty.call(patch, 'explanationVersion')) cleanPatch.explanationVersion = Number(patch.explanationVersion) || 0;
     if (Object.prototype.hasOwnProperty.call(patch, 'imageScenes')) cleanPatch.imageScenes = normalizeImageScenes(patch.imageScenes);
+    if (Array.isArray(patch.groupedSenses)) cleanPatch.groupedSenses = normalizeGroupedSenses(patch.groupedSenses);
     if (Array.isArray(patch.sourceDefinitions)) cleanPatch.sourceDefinitions = [...new Set(patch.sourceDefinitions.map(String).map(value => value.trim()).filter(Boolean))].slice(0, 12);
     if (Array.isArray(patch.labels)) cleanPatch.labels = [...new Set(patch.labels.map(String).map(value => value.trim()).filter(Boolean))].slice(0, 20);
     if (patch.imageFeedback && typeof patch.imageFeedback === 'object') cleanPatch.imageFeedback = {
@@ -846,6 +851,7 @@ export class DriveSyncService {
     const reviewDates = records.map(word => Date.parse(word.nextReviewDate || word.createdAt)).filter(Number.isFinite);
     merged.nextReviewDate = new Date(reviewDates.length ? Math.min(...reviewDates) : Date.now()).toISOString();
     merged.sourceDefinitions = [...new Set(records.flatMap(word => [word.sourceDefinition || word.definition, ...(word.sourceDefinitions || [])]))].slice(0, 12);
+    merged.groupedSenses = normalizeGroupedSenses(records.flatMap(originalSenses));
     merged.updatedAt = new Date().toISOString();
     const removed = records.filter(word => word.id !== merged.id);
     const tombstones = this.getTombstones().filter(item => !removed.some(word => word.id === item.id));

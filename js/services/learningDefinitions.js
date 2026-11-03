@@ -20,13 +20,13 @@ export function exampleForLearning(word) { return isModernUsageExample(word, wor
 
 function sourceOf(sense) { return String(sense?.sourceDefinition ?? sense?.definition ?? ''); }
 
-function qualifierSignature(sense) {
+export function qualifierSignature(sense) {
   const source = sourceOf(sense).toLowerCase();
   const labelValues = Array.isArray(sense?.labels) ? sense.labels : Array.isArray(sense?.tags) ? sense.tags : [];
   const labels = labelValues.map(value => text(typeof value === 'object' ? value?.text || value?.name : value).toLowerCase());
   const usageLabels = text(sense?.usageNote).toLowerCase().match(/\b(?:archaic|obsolete|historical|dated|formal|informal|slang|figurative|technical|botany|chemistry|physics|mathematics|medicine|anatomy|linguistics)\b/g) || [];
   const domains = [/\b(?:river|shore|stream|lake|embankment)\b/, /\b(?:financial|money|deposit|loan|lender|savings)\b/, /\b(?:law|legal|court|statute)\b/, /\b(?:botany|plant|flower|stem|leaf)\b/];
-  return JSON.stringify([[...new Set([...labels, ...usageLabels])].sort(), /\b(?:not|never|without|cannot|unable|lacking)\b/.test(source),
+  return JSON.stringify([[...new Set([...labels, ...usageLabels])].sort(), /\b(?:not|never|without|cannot|unable|lacking|no longer|can[’']t|isn[’']t|aren[’']t|doesn[’']t|don[’']t)\b/.test(source),
     /\b(?:only|solely|exclusively)\b/.test(source), /\bunless\b/.test(source), /\bexcept\b/.test(source),
     [...new Set(source.match(/\b(?:before|after|during|until|since|above|below|more than|less than|at least|at most|internal|external|intentional|unintentional|voluntary|involuntary|temporary|permanent|formal|informal)\b/g) || [])].sort(),
     source.match(/\b\d+(?:\.\d+)?\b/g) || [], domains.map(pattern => pattern.test(source))]);
@@ -39,34 +39,69 @@ function meaningTokens(sense) {
     .map(value => value.length > 5 ? value.replace(/(?:ing|ed|s)$/, '') : value));
 }
 
-export function areSensesNearDuplicate(left, right) {
+// Similarity proposes candidates; it cannot override contradictory evidence.
+const OPPOSITES = [['happy', 'unhappy'], ['possible', 'impossible'], ['able', 'unable'], ['legal', 'illegal'],
+  ['allowed', 'forbidden'], ['permit', 'prohibit'], ['increase', 'decrease'], ['give', 'receive'],
+  ['buy', 'sell'], ['open', 'closed'], ['include', 'exclude'], ['present', 'absent'], ['wet', 'dry'],
+  ['alive', 'dead'], ['hot', 'cold'], ['full', 'empty'], ['with', 'without']];
+
+export function senseGroupingEvidence(left, right) {
   if ((left?.word && right?.word && text(left.word).toLowerCase() !== text(right.word).toLowerCase())
     || text(left?.partOfSpeech).toLowerCase() !== text(right?.partOfSpeech).toLowerCase()
-    || qualifierSignature(left) !== qualifierSignature(right)) return false;
-  const leftTokens = meaningTokens(left);
-  const rightTokens = meaningTokens(right);
-  if (!leftTokens.size || !rightTokens.size) return false;
-  const shared = [...leftTokens].filter(value => rightTokens.has(value)).length;
-  return shared / Math.max(leftTokens.size, rightTokens.size) >= 0.88
-    && shared / new Set([...leftTokens, ...rightTokens]).size >= 0.78;
+    || qualifierSignature(left) !== qualifierSignature(right)) return null;
+  const a = meaningTokens(left), b = meaningTokens(right);
+  if (!a.size || !b.size) return null;
+  const raw = sense => new Set(sourceOf(sense).toLowerCase().match(/[a-z]+/g) || []);
+  const rawA = raw(left), rawB = raw(right);
+  if (OPPOSITES.some(([x, y]) => rawA.has(x) && rawB.has(y) && !(rawA.has(y) && rawB.has(x))
+    || rawA.has(y) && rawB.has(x) && !(rawA.has(x) && rawB.has(y)))) return null;
+  if ((left.antonyms || []).some(value => rawB.has(text(value).toLowerCase()))
+    || (right.antonyms || []).some(value => rawA.has(text(value).toLowerCase()))) return null;
+  const shared = [...a].filter(value => b.has(value));
+  // Swapping participants/direction must not become a match through a bag of words.
+  const orderA = [...a].filter(value => b.has(value)).join('|');
+  const orderB = [...b].filter(value => a.has(value)).join('|');
+  if (orderA !== orderB) return null;
+  return { coverage: shared.length / Math.max(a.size, b.size), jaccard: shared.length / new Set([...a, ...b]).size };
+}
+
+export function areSensesNearDuplicate(left, right) {
+  const evidence = senseGroupingEvidence(left, right);
+  return Boolean(evidence && evidence.coverage >= 0.88 && evidence.jaccard >= 0.78);
+}
+
+export function originalSenses(sense) {
+  return (Array.isArray(sense?.groupedSenses) && sense.groupedSenses.length ? sense.groupedSenses : [sense])
+    .filter(Boolean).map(({ groupedSenses, mergedSenseIds, ...original }) => ({ ...original }));
+}
+
+export function normalizeGroupedSenses(value) {
+  const fields = ['id', 'word', 'partOfSpeech', 'definition', 'sourceDefinition', 'sourceUrl', 'attribution',
+    'example', 'exampleSourceUrl', 'exampleAttribution', 'exampleLicense', 'usageNote', 'translation', 'translationLanguage'];
+  return (Array.isArray(value) ? value : []).filter(item => item && typeof item.definition === 'string' && item.definition.trim())
+    .slice(0, 60).map(item => ({ ...Object.fromEntries(fields.filter(key => typeof item[key] === 'string').map(key => [key, item[key].slice(0, 2000)])),
+      labels: (Array.isArray(item.labels) ? item.labels : []).filter(s => typeof s === 'string').slice(0, 20),
+      antonyms: (Array.isArray(item.antonyms) ? item.antonyms : []).filter(s => typeof s === 'string').slice(0, 20) }));
 }
 
 export function groupSimilarSenses(senses, options = {}) {
   const groups = [];
-  const buckets = new Map();
+  const matches = options.matches || areSensesNearDuplicate;
   for (const original of Array.isArray(senses) ? senses : []) {
     const sense = { ...original };
-    const key = `${text(sense.word || options.word).toLowerCase()}|${text(sense.partOfSpeech).toLowerCase()}`;
-    const bucket = buckets.get(key) || [];
-    const existing = bucket.find(item => areSensesNearDuplicate(item, sense));
-    if (!existing) { groups.push(sense); bucket.push(sense); buckets.set(key, bucket); continue; }
-    existing.sourceDefinitions = [...new Set([...(existing.sourceDefinitions || [sourceOf(existing)]), ...(sense.sourceDefinitions || [sourceOf(sense)])])];
-    existing.mergedSenseIds = [...new Set([...(existing.mergedSenseIds || [existing.id]), ...(sense.mergedSenseIds || [sense.id])].filter(Boolean))];
-    if (!isModernUsageExample({ ...existing, word: existing.word || options.word }, existing.example)
-      && isModernUsageExample({ ...sense, word: sense.word || options.word }, sense.example)) {
-      existing.example = sense.example;
-      existing.needsExample = false;
-    }
+    const originals = originalSenses(sense);
+    // Complete linkage prevents a chain of loose paraphrases swallowing a distinct sense.
+    const index = groups.findIndex(item => originalSenses(item).every(left => originals.every(right =>
+      matches({ ...left, word: left.word || options.word }, { ...right, word: right.word || options.word }))));
+    if (index < 0) { groups.push(sense); continue; }
+    const existing = groups[index];
+    const all = [...originalSenses(existing), ...originals];
+    const validExample = item => isModernUsageExample({ ...item, word: item.word || options.word }, item.example)
+      && !hasExampleSenseConflict(item.word || options.word, item, item.example);
+    const representative = !validExample(existing) && validExample(sense) ? sense : existing;
+    groups[index] = { ...representative,
+      sourceDefinitions: [...new Set(all.flatMap(item => [sourceOf(item), ...(item.sourceDefinitions || [])]).filter(Boolean))],
+      mergedSenseIds: [...new Set(all.map(item => item.id).filter(Boolean))], groupedSenses: all };
   }
   return groups;
 }
