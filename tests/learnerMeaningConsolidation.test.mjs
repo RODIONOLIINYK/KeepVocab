@@ -93,17 +93,51 @@ const probeFixture={entry:probe,model:plastic.model,groups:[
  {members:['0','1'],priority:'core',definition:'Careful about details.',usageNote:''},
  {members:['2','3'],priority:'core',definition:'Able to bend easily.',usageNote:''}
 ]};
-test('Gemini grouping runs only for at least four inputs and zero local merges',async()=>{
+test('semantic grouping resolves two or three remaining meanings rather than requiring four',async()=>{
  const stalled=setup(probeFixture);
  const grouped=await consolidateEntrySenses(probe,{...stalled,encodeDefinitionTexts:async()=>probe.senses.map((_,i)=>basis(i))});
  assert.equal(stalled.calls.length,1);assert.equal(grouped.senses.length,2);
  assert.doesNotMatch(stalled.calls[0].contents[0].parts[0].text,/hydrocarbon|payment cards|malleable|Plastic Paddy/i);
- const short=setup(probeFixture);
- await consolidateEntrySenses({...probe,senses:probe.senses.slice(0,3)},{...short,encodeDefinitionTexts:async()=>[basis(0),basis(1),basis(2)]});
- assert.equal(short.calls.length,0);
- const merged=setup(probeFixture);
- const local=await consolidateEntrySenses(probe,{...merged,encodeDefinitionTexts:async()=>[basis(0),basis(0),basis(1),basis(2)]});
- assert.equal(merged.calls.length,0);assert.equal(allEntrySenses(local).length,3);
+ for(const size of [2,3]){
+  const fixture={...probeFixture,entry:{...probe,senses:probe.senses.slice(0,size)},groups:[probeFixture.groups[0],...(size===3?[{members:['2'],definition:probe.senses[2].definition,usageNote:''}]:[])]};
+  const options=setup(fixture);
+  const result=await consolidateEntrySenses(fixture.entry,{...options,encodeDefinitionTexts:async()=>null});
+  assert.equal(options.calls.length,1);assert.equal(result.senses.length,size-1);
+ }
+});
+test('partial rule grouping remains atomic while semantic resolution merges other paraphrases',async()=>{
+ const entry={word:'charge',senses:[
+  {id:'a',partOfSpeech:'noun',definition:'An accusation.'},
+  {id:'b',partOfSpeech:'noun',definition:'Accusation.'},
+  {id:'c',partOfSpeech:'noun',definition:'The amount of money levied for a service.'},
+  {id:'d',partOfSpeech:'noun',definition:'A fee paid for a service.'}
+ ]};
+ const options=setup();let calls=0;
+ const result=await consolidateEntrySenses(entry,{...options,encodeDefinitionTexts:async()=>null,fetchImpl:async(_url,request)=>{
+  calls++;const prompt=JSON.parse(request.body).contents[0].parts[0].text;const parts=JSON.parse(prompt.split('Parts: ')[1]);
+  assert.equal(parts[0].senses.length,3,'Duplicate rule group is one semantic input');
+  assert.equal(parts[0].senses[0].sourceDefinitions.length,2);
+  return {ok:true,json:async()=>({candidates:[{content:{parts:[{text:JSON.stringify({parts:{p0:[
+   {members:['0'],definition:'An accusation.',usageNote:''},
+   {members:['1','2'],definition:'An amount of money paid for a service.',usageNote:''}
+  ]}})}]}}]})};
+ }});
+ assert.equal(calls,1);assert.equal(result.senses.length,2);
+ assert.deepEqual(result.senses.map(s=>s.groupedSenses.length),[2,2]);
+ assert.deepEqual(new Set(result.senses.flatMap(s=>s.groupedSenses.map(o=>o.id))),new Set(['a','b','c','d']));
+});
+test('a contradictory model group is split without discarding a separate valid merge',async()=>{
+ const fixture={entry:{word:'probe',senses:[
+  {id:'a',partOfSpeech:'adjective',definition:'A hot object on a table.'},
+  {id:'b',partOfSpeech:'adjective',definition:'A cold object on a table.'},
+  {id:'c',partOfSpeech:'adjective',definition:'Able to bend repeatedly.'},
+  {id:'d',partOfSpeech:'adjective',definition:'Flexible and easy to bend.'}
+ ]},model:plastic.model,groups:[{members:['0','1'],definition:'A hot or cold object.',usageNote:''},{members:['2','3'],definition:'Able to bend easily.',usageNote:''}]};
+ const options=setup(fixture);const result=await consolidateEntrySenses(fixture.entry,{...options,encodeDefinitionTexts:async()=>null});
+ assert.equal(result.senses.length,3);
+ assert.equal(result.senses[0].definition,fixture.entry.senses[0].definition);
+ assert.equal(result.senses[1].definition,fixture.entry.senses[1].definition);
+ assert.deepEqual(result.senses[2].groupedSenses.map(s=>s.id),['c','d']);
 });
 test('ordinary bulk dictionary preparation makes no automatic Gemini wording request',async()=>{
  const rows=[{status:'ready',data:{word:'careful',senses:[{definition:'Characterized by close attention to details.'}]}}];

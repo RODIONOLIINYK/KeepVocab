@@ -9,10 +9,31 @@ export function focusPracticeInput(input, { allowTouch = false } = {}) {
   input.focus({ preventScroll: !touch });
 }
 
-// Shared markup deliberately uses the existing practice styles and animations.
-export function renderPracticeHeader({ exitId, label, current, total, score }) {
-  return `<div class="practice-topline"><button class="status-pill offline" id="${escapeHtml(exitId)}"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${escapeHtml(label ? `${label} · ` : '')}${current + 1} of ${total}</span><strong>Score ${score}</strong></div>
-    <div class="review-progress" role="progressbar" aria-label="Exercise progress" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${current}"><span style="width:${Math.round(current / total * 100)}%"></span></div>`;
+// The existing status and progress reflect submitted exercises, including a
+// missed answer. Milestones replace status text only; no extra UI or waiting.
+export function practiceProgress({ current = 0, total = 0, answered = false, score = 0 } = {}) {
+  const count = Math.max(0, Math.floor(Number(total) || 0));
+  const completed = Math.min(count, Math.max(0, Math.floor(Number(current) || 0) + (answered ? 1 : 0)));
+  const status = answered && count >= 4 && completed === Math.ceil(count / 2) ? 'Halfway through'
+    : answered && count >= 4 && completed === count - 1 ? 'One exercise left'
+      : `${Math.max(0, Number(score) || 0)} correct`;
+  return { completed, percent: count ? Math.round(completed / count * 100) : 0, status };
+}
+
+export function answerEncouragement({ correct, recallType = 'recognition', hintsUsed = 0 } = {}) {
+  if (!correct) return 'Not quite';
+  if (hintsUsed > 0) return 'Correct — with a hint';
+  if (recallType === 'free-recall') return 'Recalled without a hint';
+  if (recallType === 'listening-recall') return 'You heard it correctly';
+  if (recallType === 'productive') return 'You used the meaning';
+  if (recallType === 'context') return 'You found the right fit';
+  return 'You matched the meaning';
+}
+
+export function renderPracticeHeader({ exitId, label, current, total, score, answered = false }) {
+  const progress = practiceProgress({ current, total, score, answered });
+  return `<div class="practice-topline"><button class="status-pill offline" id="${escapeHtml(exitId)}"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${escapeHtml(label ? `${label} · ` : '')}${current + 1} of ${total}</span><strong>${escapeHtml(progress.status)}</strong></div>
+    <div class="review-progress" role="progressbar" aria-label="Exercise progress" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${progress.completed}"><span style="width:${progress.percent}%"></span></div>`;
 }
 
 export function renderChoiceGrid({ options, targetId, selectedId = null, attribute = 'data-choice' }) {
@@ -24,9 +45,9 @@ export function renderChoiceGrid({ options, targetId, selectedId = null, attribu
   }).join('')}</div>`;
 }
 
-export function renderAnswerFeedback({ answered, correct, answer, detail = '', nextId, nextLabel }) {
+export function renderAnswerFeedback({ answered, correct, answer, detail = '', nextId, nextLabel, recallType = 'recognition', hintsUsed = 0 }) {
   const message = correct ? escapeHtml(detail) : `The correct answer is <b>${escapeHtml(answer)}</b>. ${escapeHtml(detail)}`;
-  return `<div class="answer-feedback-slot" aria-live="polite">${answered ? `${correct ? '<span class="success-burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' : ''}<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}"><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${correct ? 'Excellent!' : 'Not quite'}</strong><span>${message}</span></div></div>` : ''}</div>
+  return `<div class="answer-feedback-slot" aria-live="polite">${answered ? `<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}"><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${escapeHtml(answerEncouragement({ correct, recallType, hintsUsed }))}</strong><span>${message}</span></div></div>` : ''}</div>
     <div class="answer-action-slot">${answered ? `<button class="btn-green-solid" id="${escapeHtml(nextId)}">${escapeHtml(nextLabel)}</button>` : ''}</div>`;
 }
 

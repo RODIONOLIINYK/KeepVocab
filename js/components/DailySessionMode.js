@@ -1,4 +1,3 @@
-import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { ensureDailyStudyPlan, getActivePracticeWords, getScheduledPracticeWords, recordModeWordSelections } from '../services/wordSelection.js?v=18908';
@@ -14,7 +13,7 @@ import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForm
 import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18908';
 import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18908';
 import { mountUseItExercise } from './UseItExercise.js?v=18908';
-import { renderPracticeHeader, focusPracticeInput } from './PracticeElements.js?v=18908';
+import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement } from './PracticeElements.js?v=18908';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {
@@ -107,12 +106,10 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     recordSessionCompletion(session, { kind: options.kind || 'daily', exercises: queue.length, correct: score, minutes: Math.max(1, Math.round((performance.now() - startedAt) / 60_000)), weakWordsImproved: improved });
     if (options.kind !== 'weak') {
       renderScheduledRestState(container, onNavigate, practiceNotebookLabel, { correct: score, total: queue.length });
-      mountPracticeCompletion(container, { completedCount: queue.length, settings: driveSync.getSettings() });
       return;
     } else {
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-complete-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Practice complete</span><h1>${options.kind === 'weak' ? 'Your weak words are getting stronger' : 'You moved your vocabulary forward'}</h1><p>${score} of ${queue.length} exercises were correct. ${improved ? `${improved} weak word${improved === 1 ? '' : 's'} improved.` : 'Mistakes are already shaping your next workout.'}</p><div class="daily-complete-metrics"><div><strong>${score}</strong><span>correct</span></div><div><strong>${queue.length}</strong><span>exercises</span></div><div><strong>${improved}</strong><span>recovered</span></div></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></section>`;
     }
-    mountPracticeCompletion(container, { completedCount: queue.length, settings: driveSync.getSettings() });
     container.querySelector('#daily-finish').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelector('#daily-stats').addEventListener('click', () => go('stats', onNavigate));
   }
@@ -166,9 +163,10 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     const meaningLabels = exercise.exerciseType === 'meaning-recognition' ? new Map(optionsList.map(option => [option.id, option.definition])) : null;
     const inputLabel = exercise.exerciseType === 'use-it' ? 'Your sentence' : 'Your answer';
     const sessionLabel = options.kind === 'weak' ? 'Weak Words' : 'Practice';
+    const progress = practiceProgress({ current: index, total: queue.length, score, answered });
     const mascot = answered ? (correct ? 'assets/keepvocab-sprig-celebrate.webp' : 'assets/keepvocab-sprout-mascot.webp') : 'assets/keepvocab-sprig-thinking.webp';
     if (options.kind === 'weak' && exercise.exerciseType === 'use-it') {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell weak-use-it-shell"><div class="practice-topline"><button class="status-pill offline" id="daily-exit"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Today</button><span>Weak Words · ${index + 1} of ${queue.length}</span><strong>${score} correct</strong></div><div class="review-progress" role="progressbar" aria-label="Weak Words progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${index}"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div><div id="weak-useit-exercise-root"></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell weak-use-it-shell"><div class="practice-topline"><button class="status-pill offline" id="daily-exit"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Today</button><span>Weak Words · ${index + 1} of ${queue.length}</span><strong>${escapeHtml(progress.status)}</strong></div><div class="review-progress" role="progressbar" aria-label="Weak Words progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${progress.completed}"><span style="width:${progress.percent}%"></span></div><div id="weak-useit-exercise-root"></div></div></section>`;
       container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
       useItController = mountUseItExercise(container.querySelector('#weak-useit-exercise-root'), {
         word,
@@ -211,24 +209,24 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       const visual = exercise.exerciseType === 'image-recognition';
       container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-heading"><div class="spec-card practice-shell review-recall-shell">
         <div class="card-header-bar"><div class="card-tag" id="practice-heading"><i class="fa-solid fa-${visual ? 'images' : 'keyboard'}"></i> ${visual ? 'Visual Match' : 'Practice'}</div><span class="muted-label">${escapeHtml(practiceNotebookLabel)}</span></div>
-        ${renderPracticeHeader({ exitId: 'daily-exit', current: index, total: queue.length, score })}
+        ${renderPracticeHeader({ exitId: 'daily-exit', current: index, total: queue.length, score, answered })}
         <div class="${visual ? 'visual-prompt' : 'practice-prompt typed-review-prompt'}">
           <div class="practice-icon"><i class="fa-solid fa-${visual ? 'images' : 'keyboard'}" aria-hidden="true"></i></div>
           <p>${visual ? 'Choose the word that matches this image.' : 'Type the word that matches this definition.'}</p>
           ${visual ? `<figure class="practice-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>` : `<blockquote>${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}<span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>`}
-          ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><strong><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'}" aria-hidden="true"></i> ${correct ? 'Correct' : 'Answer'}: ${escapeHtml(word.word)}</strong><span>${escapeHtml(exampleForLearning(word) || definitionForLearning(word))}</span></div><div class="inline-actions"><button class="status-pill offline" id="practice-hear-answer"><i class="fa-solid fa-volume-high"></i> Hear answer</button><button class="btn-green-solid" id="daily-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button></div>`
+          ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><strong><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'}" aria-hidden="true"></i> ${correct ? escapeHtml(answerEncouragement({ correct, recallType: visual ? 'recognition' : 'free-recall', hintsUsed })) : 'Answer'}: ${escapeHtml(word.word)}</strong><span>${escapeHtml(exampleForLearning(word) || definitionForLearning(word))}</span></div><div class="inline-actions"><button class="status-pill offline" id="practice-hear-answer"><i class="fa-solid fa-volume-high"></i> Hear answer</button><button class="btn-green-solid" id="daily-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button></div>`
             : visual ? `<div class="choice-grid">${optionsList.map(option => `<button class="choice-button" data-daily-choice="${escapeHtml(option.id)}"><span>${escapeHtml(option.word)}</span></button>`).join('')}</div>`
             : `<form class="practice-answer-form" id="daily-form"><input id="daily-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type the word" aria-label="Your answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
         </div>
       </div></section>`;
     } else {
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-session-shell ${options.kind === 'weak' ? 'is-weak-session' : ''}">
-      <div class="daily-session-top"><button class="daily-exit-button" id="daily-exit" aria-label="Exit ${sessionLabel}"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="daily-exit-label">Exit</span></button><div><span>${sessionLabel}</span><strong>${index + 1} of ${queue.length}</strong></div><span class="daily-score">${score} correct</span></div>
-      <div class="review-progress" role="progressbar" aria-label="Practice progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${index}"><span style="width:${Math.round(index / queue.length * 100)}%"></span></div>
+      <div class="daily-session-top"><button class="daily-exit-button" id="daily-exit" aria-label="Exit ${sessionLabel}"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="daily-exit-label">Exit</span></button><div><span>${sessionLabel}</span><strong>${index + 1} of ${queue.length}</strong></div><span class="daily-score">${escapeHtml(progress.status)}</span></div>
+      <div class="review-progress" role="progressbar" aria-label="Practice progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${progress.completed}"><span style="width:${progress.percent}%"></span></div>
       <div class="daily-exercise-stage ${answered ? (correct ? 'is-correct' : 'is-incorrect') : ''}"><img class="daily-sprig" src="${mascot}" alt="" aria-hidden="true"><span class="eyebrow">${escapeHtml(copy.title)}</span><h1>${escapeHtml(copy.prompt)}</h1>
         ${exercise.exerciseType === 'image-recognition' && word.imageUrl ? `<figure class="daily-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>` : ''}
         ${exercise.exerciseType === 'listening-recall' ? `<button class="audio-btn-circle large" id="daily-listen" aria-label="Play the word"><i class="fa-solid fa-volume-high"></i></button>` : ''}
-        ${answered ? `<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><i class="fa-solid ${correct ? 'fa-check' : 'fa-arrow-rotate-left'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${correct ? 'Strong answer' : 'Let’s strengthen this one'}</strong><span>${exercise.exerciseType === 'use-it' ? escapeHtml(useItResult?.feedback || '') : (correct ? escapeHtml(exampleForLearning(word) || definitionForLearning(word)) : `Answer: <b>${escapeHtml(word.word)}</b> — ${escapeHtml(definitionForLearning(word))}. It will be prioritized next time.`)}</span></div></div><button class="btn-green-solid" id="daily-next">Continue</button>`
+        ${answered ? `<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><i class="fa-solid ${correct ? 'fa-check' : 'fa-arrow-rotate-left'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${escapeHtml(answerEncouragement({ correct, recallType: exercise.exerciseType === 'use-it' ? 'productive' : choiceMode ? 'recognition' : exercise.exerciseType === 'listening-recall' ? 'listening-recall' : 'free-recall', hintsUsed }))}</strong><span>${exercise.exerciseType === 'use-it' ? escapeHtml(useItResult?.feedback || '') : (correct ? escapeHtml(exampleForLearning(word) || definitionForLearning(word)) : `Answer: <b>${escapeHtml(word.word)}</b> — ${escapeHtml(definitionForLearning(word))}. It will be prioritized next time.`)}</span></div></div><button class="btn-green-solid" id="daily-next">Continue</button>`
           : choiceMode ? `<div class="choice-grid">${optionsList.map(option => `<button class="choice-button" data-daily-choice="${escapeHtml(option.id)}"><span>${escapeHtml(meaningLabels ? meaningLabels.get(option.id) : option.word)}</span></button>`).join('')}</div>`
             : `<form class="practice-answer-form daily-answer-form ${exercise.exerciseType === 'use-it' ? 'is-sentence' : 'is-recall'}" id="daily-form">${exercise.exerciseType === 'use-it' ? `<input id="daily-answer" type="text" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Write a natural sentence" aria-label="${inputLabel}">` : `<input id="daily-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type your answer" aria-label="${inputLabel}">`}<button class="btn-green-solid" data-sound="none">Check</button></form><button class="daily-hint-button" id="daily-hint">Need a hint?</button><p class="daily-hint" id="daily-hint-copy" role="status" aria-live="polite"></p>`}
       </div></div></section>`;

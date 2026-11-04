@@ -47,3 +47,31 @@ body :is(button, summary, .nav-link-item) {
   body :is(button, summary, .nav-link-item):not(:disabled):active { transform: none !important; opacity: .82; }
   #view-container.view-enter > *, .header-nav .nav-link-item.active > i { animation: none !important; }
 }
+
+/* Answer encouragement stays inside existing controls and never holds Next. */
+@media (prefers-reduced-motion: no-preference) {
+  .answer-feedback-card, .practice-feedback.correct, .practice-feedback.incorrect {
+    animation: feedback-soft-in 140ms ease-out;
+  }
+  .answer-feedback-card.correct .answer-feedback-icon,
+  .practice-feedback.correct > strong > .fa-check {
+    animation: answer-check-confirm 180ms ease-out;
+  }
+  .choice-button.correct { animation: answer-check-confirm 180ms ease-out; }
+  .daily-exercise-stage.is-correct, .daily-exercise-stage.is-incorrect { animation: none; }
+  .review-progress > span { transition: width 180ms ease-out; }
+}
+@keyframes answer-check-confirm {
+  0% { transform: scale(.94); }
+  60% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .answer-feedback-card, .answer-feedback-icon, .practice-feedback,
+  .practice-feedback > strong > i, .choice-button.correct,
+  .daily-exercise-stage.is-correct, .daily-exercise-stage.is-incorrect {
+    animation: none !important;
+    transition: none !important;
+  }
+  .review-progress > span { transition: none !important; }
+}

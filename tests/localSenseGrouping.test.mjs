@@ -26,7 +26,7 @@ test('local similarity groups conservative paraphrases, selects the matching exa
   const restarted = await groupEntrySensesLocally({ ...original, senses: [a, { ...b, exampleAttribution: 'Updated author' }] },
     { storage, encodeDefinitionTexts: () => assert.fail('Reuse grouping cache') });
   assert.equal(restarted.senses[0].exampleAttribution, 'Updated author');
-  assert.equal(calls, 1);
+  assert.equal(calls, 0, 'Rule-resolved paraphrases do not wait for model inference');
   const service = new DriveSyncService(new MemoryStorage());
   const saved = service.addWord(result.senses[0]);
   assert.equal(service.getWords().find(w => w.id === saved.id).groupedSenses.length, 2);

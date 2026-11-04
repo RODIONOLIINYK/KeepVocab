@@ -1,0 +1,276 @@
+{
+  "word": "yield",
+  "source": "https://en.wiktionary.org/wiki/yield",
+  "attribution": "Wiktionary contributors, CC BY-SA 4.0",
+  "captured": "2026-11-04",
+  "senses": [
+    {
+      "id": "dictionary-raw-0",
+      "partOfSpeech": "verb",
+      "definition": "To give as a result or outcome; to produce or render.",
+      "sourceDefinition": "To give as a result or outcome; to produce or render.",
+      "labels": [],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-1",
+      "partOfSpeech": "verb",
+      "definition": "To produce as return from an investment.",
+      "sourceDefinition": "To produce as return from an investment.",
+      "labels": [],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-2",
+      "partOfSpeech": "verb",
+      "definition": "(mathematics) To produce as a result.",
+      "sourceDefinition": "(mathematics) To produce as a result.",
+      "labels": [],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-3",
+      "partOfSpeech": "verb",
+      "definition": "(linguistics) To produce a particular sound as the result of a sound law.",
+      "sourceDefinition": "(linguistics) To produce a particular sound as the result of a sound law.",
+      "labels": [],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-4",
+      "partOfSpeech": "verb",
+      "definition": "(obsolete) To give in payment; repay, recompense; reward; requite.",
+      "sourceDefinition": "(obsolete) To give in payment; repay, recompense; reward; requite.",
+      "labels": [
+        "obsolete"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-5",
+      "partOfSpeech": "verb",
+      "definition": "To give up; to surrender or capitulate.",
+      "sourceDefinition": "To give up; to surrender or capitulate.",
+      "labels": [],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-6",
+      "partOfSpeech": "verb",
+      "definition": "(transitive or intransitive) To give as demanded; to relinquish.",
+      "sourceDefinition": "(transitive or intransitive) To give as demanded; to relinquish.",
+      "labels": [
+        "intransitive",
+        "transitive"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-7",
+      "partOfSpeech": "verb",
+      "definition": "(transitive or intransitive, especially US) To give way so as to allow another to pass first.",
+      "sourceDefinition": "(transitive or intransitive, especially US) To give way so as to allow another to pass first.",
+      "labels": [
+        "US",
+        "especially",
+        "intransitive",
+        "transitive"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-8",
+      "partOfSpeech": "verb",
+      "definition": "(intransitive) To give way under force; to succumb to a force.",
+      "sourceDefinition": "(intransitive) To give way under force; to succumb to a force.",
+      "labels": [
+        "intransitive"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-9",
+      "partOfSpeech": "verb",
+      "definition": "(computing, intransitive) Of a running thread or process: to give control back to the parent program or operating system so that other threads or processes can be allowed to run.",
+      "sourceDefinition": "(computing, intransitive) Of a running thread or process: to give control back to the parent program or operating system so that other threads or processes can be allowed to run.",
+      "labels": [
+        "intransitive"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-10",
+      "partOfSpeech": "verb",
+      "definition": "(engineering, materials science, of a material specimen) To pass the material's yield point and undergo plastic deformation.",
+      "sourceDefinition": "(engineering, materials science, of a material specimen) To pass the material's yield point and undergo plastic deformation.",
+      "labels": [],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-11",
+      "partOfSpeech": "verb",
+      "definition": "(rare) To admit to be true; to concede; to allow.",
+      "sourceDefinition": "(rare) To admit to be true; to concede; to allow.",
+      "labels": [
+        "rare"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-12",
+      "partOfSpeech": "noun",
+      "definition": "A product.",
+      "sourceDefinition": "A product.",
+      "labels": [
+        "countable",
+        "uncountable"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-13",
+      "partOfSpeech": "noun",
+      "definition": "The quantity of something produced.",
+      "sourceDefinition": "The quantity of something produced.",
+      "labels": [],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-14",
+      "partOfSpeech": "noun",
+      "definition": "(agriculture) Measurement of the amount of a crop harvested, or animal products such as wool, meat or milk produced, per unit area of land.",
+      "sourceDefinition": "(agriculture) Measurement of the amount of a crop harvested, or animal products such as wool, meat or milk produced, per unit area of land.",
+      "labels": [
+        "countable",
+        "uncountable"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-15",
+      "partOfSpeech": "noun",
+      "definition": "(forestry, fishery) The harvestable population growth of an ecosystem.",
+      "sourceDefinition": "(forestry, fishery) The harvestable population growth of an ecosystem.",
+      "labels": [
+        "countable",
+        "uncountable"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-16",
+      "partOfSpeech": "noun",
+      "definition": "(chemistry) The amount of product obtained in a chemical reaction.",
+      "sourceDefinition": "(chemistry) The amount of product obtained in a chemical reaction.",
+      "labels": [
+        "countable",
+        "uncountable"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-17",
+      "partOfSpeech": "noun",
+      "definition": "(hydrology) The volume of water escaping from a spring.",
+      "sourceDefinition": "(hydrology) The volume of water escaping from a spring.",
+      "labels": [
+        "countable",
+        "uncountable"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-18",
+      "partOfSpeech": "noun",
+      "definition": "The explosive energy value of a bomb, especially a nuclear weapon, usually expressed in tons of TNT equivalent.",
+      "sourceDefinition": "The explosive energy value of a bomb, especially a nuclear weapon, usually expressed in tons of TNT equivalent.",
+      "labels": [
+        "countable",
+        "uncountable"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-19",
+      "partOfSpeech": "noun",
+      "definition": "(finance) Profit earned from an investment; return on investment.",
+      "sourceDefinition": "(finance) Profit earned from an investment; return on investment.",
+      "labels": [
+        "countable",
+        "uncountable"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-20",
+      "partOfSpeech": "noun",
+      "definition": "(law) The current return as a percentage of the price of a stock or bond.",
+      "sourceDefinition": "(law) The current return as a percentage of the price of a stock or bond.",
+      "labels": [
+        "countable",
+        "uncountable"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-21",
+      "partOfSpeech": "noun",
+      "definition": "(engineering, material science) yield strength of a material.",
+      "sourceDefinition": "(engineering, material science) yield strength of a material.",
+      "labels": [
+        "countable",
+        "material",
+        "uncountable"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-22",
+      "partOfSpeech": "noun",
+      "definition": "(programming) The situation where a thread relinquishes the processor to allow other threads to execute.",
+      "sourceDefinition": "(programming) The situation where a thread relinquishes the processor to allow other threads to execute.",
+      "labels": [
+        "countable",
+        "uncountable"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    },
+    {
+      "id": "dictionary-raw-23",
+      "partOfSpeech": "noun",
+      "definition": "(obsolete or dialectal) Payment; money; tribute.",
+      "sourceDefinition": "(obsolete or dialectal) Payment; money; tribute.",
+      "labels": [
+        "countable",
+        "dialectal",
+        "obsolete",
+        "uncountable"
+      ],
+      "sourceUrl": "https://en.wiktionary.org/wiki/yield",
+      "attribution": "CC BY-SA 4.0"
+    }
+  ]
+}

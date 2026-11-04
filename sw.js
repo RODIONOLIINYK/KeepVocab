@@ -1,13 +1,12 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112029-pretrained-rules-completion';
+const CACHE_NAME = 'keepvocab-v112030-meaning-recall';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './quick-add.html',
   './css/styles.css',
   './css/polish.css',
-  './css/completion.css',
   './css/mobile.css',
   './css/motion.css',
   './css/icons.css',
@@ -22,6 +21,7 @@ const ASSETS_TO_CACHE = [
   './js/services/wordEntry.js',
   './js/services/learningDefinitions.js',
   './js/services/localSenseGrouping.js',
+  './js/services/learnerMeaningRules.js',
   './js/services/imageSearchPlan.js',
   './js/services/dictionaryApi.js',
   './js/services/englishEnrichment.js',
@@ -88,7 +88,6 @@ const ASSETS_TO_CACHE = [
   './js/components/MeaningExplanation.js',
   './js/components/ImageReview.js',
   './js/ml/imageTrainingRecipe.js',
-  './js/components/StreakCelebration.js',
   './js/components/VisualMatchMode.js',
   './js/components/MatchSprintMode.js',
   './js/components/SpeakingMode.js',

@@ -184,7 +184,10 @@ function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = fa
   return new Promise((resolve, reject) => {
     const id = ++nextId;
     const abort = () => { worker?.postMessage({ type: 'cancel', id }); const item = pending.get(id);if (!item) return; pending.delete(id);clearTimeout(item.timer);item.cleanup();reject(new Error('Image scoring was cancelled.')); };
-    const timer = setTimeout(() => { phase = 'error';message = 'The local model timed out. Try again on a reliable connection.';stopWorker(message);emit(); }, 180_000);
+    // A first installation transfers ~214 MB. Do not apply the inference timeout
+    // to a valid download on a slower connection; cancellation stays available.
+    const timeoutMs = type === 'initialize' && !cachedOnly ? 15 * 60_000 : 180_000;
+    const timer = setTimeout(() => { phase = 'error';message = 'The local model timed out. Try again on a reliable connection.';stopWorker(message);emit(); }, timeoutMs);
     const connection = globalThis.navigator?.connection;
     pending.set(id, { resolve, reject, timer, cleanup: () => signal?.removeEventListener('abort', abort) });
     signal?.addEventListener('abort', abort, { once: true });

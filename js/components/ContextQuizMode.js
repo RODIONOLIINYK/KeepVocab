@@ -1,4 +1,3 @@
-import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
 import { getGeminiSettings } from '../services/geminiSettings.js?v=18908';
@@ -31,7 +30,6 @@ export function renderContextQuizMode(container, onNavigate) {
 
   function notice(title, detail, actions, options = {}) {
     container.innerHTML = renderPracticeNotice({ title, detail, actions, ...options });
-    if (options.complete) mountPracticeCompletion(container, { completedCount: quizWords.length, settings: driveSync.getSettings() });
     actions.forEach(action => container.querySelector(`#${action.id}`).addEventListener('click', action.run));
   }
 
@@ -104,14 +102,14 @@ export function renderContextQuizMode(container, onNavigate) {
     const cloze = clozeContextSentence(generatedItem.sentence, target.word);
     const sourceLabel = generatedItem.source === 'saved-example' ? 'Saved example' : 'AI-generated sentence';
     container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell">
-      ${renderPracticeHeader({ exitId: 'context-exit', label: 'Context', current, total: quizWords.length, score })}
+      ${renderPracticeHeader({ exitId: 'context-exit', label: 'Context', current, total: quizWords.length, score, answered })}
       <div class="practice-prompt choose-prompt">
         <img class="practice-mascot" src="assets/keepvocab-sprig-thinking.webp" alt="" aria-hidden="true">
         <p>${'Choose the word that fits this sentence.'}</p>
         <blockquote lang="${'en'}">${escapeHtml(cloze)}</blockquote>
         <span class="muted-label">${sourceLabel}</span>
         ${renderChoiceGrid({ options, targetId: target.id, selectedId, attribute: 'data-context-word' })}
-        ${renderAnswerFeedback({ answered, correct, answer: target.word, detail: generatedItem.sentence, nextId: 'context-next', nextLabel: current + 1 === quizWords.length ? 'See results' : 'Next sentence' })}
+        ${renderAnswerFeedback({ recallType: 'context', answered, correct, answer: target.word, detail: generatedItem.sentence, nextId: 'context-next', nextLabel: current + 1 === quizWords.length ? 'See results' : 'Next sentence' })}
       </div>
     </div></section>`;
     container.querySelector('#context-exit').addEventListener('click', dashboard);

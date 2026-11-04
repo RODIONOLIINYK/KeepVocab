@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { dashboardWorkoutState, renderDashboardView, dailyGoalEncouragement, updateDashboardGoalNudge } from '../js/components/DashboardView.js';
-import { renderStreakCelebration, streakMessage, streakWeek } from '../js/components/StreakCelebration.js';
 import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js';
 import { localDateKey } from '../js/utils/dates.js';
 import { buildScheduledPracticeSession } from '../js/services/dailySession.js';
@@ -134,7 +133,7 @@ test('Today practice launchpad excludes the AI Speaking button while keeping voc
   assert.match(container.innerHTML, /data-practice-view="weak"/);
 });
 
-test('first exercise updates the streak once and provides contained completion markup', () => {
+test('first exercise updates the streak once without adding a UI step', () => {
   const storage = new MemoryStorage();
   const service = new DriveSyncService(storage);
   const events = [];
@@ -156,18 +155,6 @@ test('first exercise updates the streak once and provides contained completion m
     service.recordReview(today);
     assert.equal(events.length, 1, 'second exercise on the same day does not re-trigger streak celebration');
 
-    const markup = renderStreakCelebration({
-      streak: events[0].streak,
-      previousStreak: events[0].previousStreak,
-      activity: service.getSettings().reviewActivity,
-      now: today
-    });
-    assert.match(markup, /completion-streak/);
-    assert.match(markup, /2 day streak/);
-    assert.doesNotMatch(markup, /dialog|streak-celebration|Continue/);
-    assert.equal(streakWeek(service.getSettings().reviewActivity, today).filter(day => day.done).length >= 1, true);
-    assert.match(streakMessage(1), /started a new streak/i);
-    assert.match(streakMessage(7), /1 week/i);
   } finally {
     if (originalDispatch === undefined) delete globalThis.dispatchEvent;
     else globalThis.dispatchEvent = originalDispatch;

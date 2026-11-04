@@ -1,4 +1,3 @@
-import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { definitionForLearning } from '../services/learningDefinitions.js?v=18908';
 import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
@@ -170,7 +169,6 @@ export async function renderVisualMatchMode(container, onNavigate) {
     function render() {
       if (index >= queue.length) {
         container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images"></i><h2>Visual session complete</h2><p>You matched ${score} of ${originalCount} image–word pairs. Missed meanings will be prioritized next time.</p><div class="inline-actions"><button class="btn-green-solid" id="visual-again">Practice again</button><button class="status-pill offline" id="visual-done">Dashboard</button></div></div></section>`;
-        mountPracticeCompletion(container, { completedCount: originalCount, settings: driveSync.getSettings() });
         container.querySelector('#visual-again').addEventListener('click', () => renderVisualMatchMode(container, onNavigate));
         container.querySelector('#visual-done').addEventListener('click', () => go('dashboard', onNavigate));
         return;
@@ -180,7 +178,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
       const answered = selectedId !== null;
       const correct = evaluateChoiceAnswer(target.word.id, selectedId);
       container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell visual-shell">
-        ${renderPracticeHeader({ exitId: 'visual-exit', current: index, total: queue.length, score })}
+        ${renderPracticeHeader({ exitId: 'visual-exit', current: index, total: queue.length, score, answered })}
         <div class="visual-prompt"><p>Which word best matches this image?</p><figure><img src="${escapeHtml(target.image.url)}" alt="Visual clue"><figcaption><a href="${escapeHtml(target.image.sourceUrl)}" target="_blank" rel="noopener noreferrer">Image source</a>${target.image.attribution ? ` · ${escapeHtml(target.image.attribution)}` : ''}${target.image.license ? ` · ${escapeHtml(target.image.license)}` : ''}</figcaption></figure><button class="status-pill offline" id="visual-change-cue"><i class="fa-solid fa-rotate"></i> Change automatic suggestion</button>
           ${renderChoiceGrid({ options, targetId: target.word.id, selectedId, attribute: 'data-visual-choice' })}
           ${renderAnswerFeedback({ answered, correct, answer: target.word.word, detail: definitionForLearning(target.word), nextId: 'visual-next', nextLabel: index + 1 === queue.length ? 'See result' : 'Next image' })}

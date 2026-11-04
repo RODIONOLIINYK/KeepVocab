@@ -1,4 +1,3 @@
-import { mountPracticeCompletion } from './StreakCelebration.js?v=18908';
 import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
@@ -37,7 +36,6 @@ export function renderFlashcardsMode(container, onNavigate) {
   function render() {
     if (completed) {
       container.innerHTML = `<section class="mode-completion-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Flashcards complete</span><h1>${ratedIds.size} card${ratedIds.size === 1 ? '' : 's'} reviewed</h1><p>You made time for your words. Difficult meanings will return sooner, so each review keeps working for you.</p><div class="mode-completion-actions"><button class="btn-green-solid" id="flashcards-again">Review another set</button><button class="status-pill offline" id="flashcards-home">Today</button></div></section>`;
-      mountPracticeCompletion(container, { completedCount: ratedIds.size, settings: driveSync.getSettings() });
       container.querySelector('#flashcards-again').addEventListener('click', () => renderFlashcardsMode(container, onNavigate));
       container.querySelector('#flashcards-home').addEventListener('click', () => go('dashboard', onNavigate));
       return;
