@@ -4,7 +4,7 @@ import { IMAGE_TRAINING_RECIPE } from '../ml/imageTrainingRecipe.js';
 
 export const LEGACY_PERSONALIZER_VERSION = 'meaning-mlp-32-16-v1';
 export const PERSONALIZER_VERSION = 'meaning-preference-32-16-v3';
-export const IMAGE_PREPROCESSING = 'full-frame-letterbox-256-v1';
+export const IMAGE_PREPROCESSING = 'full-frame-letterbox-256-validated-cpu-v2';
 export const PERSONALIZER_INPUTS = CLIP_DIMENSION * 2 + 3;
 export const PERSONALIZER_LAYERS = [PERSONALIZER_INPUTS, 32, 16, 1];
 export const PERSONALIZER_PARAMETERS = PERSONALIZER_INPUTS * 32 + 32 + 32 * 16 + 16 + 16 * 1 + 1;

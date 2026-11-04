@@ -47,6 +47,9 @@ async function prepareRuntime() {
 }
 let database;
 let vectorWrites = 0;
+// Older WebGPU q4f16 vision outputs disagreed materially with native/WASM.
+// Retire those cached vectors while retaining the downloaded model files.
+const VECTOR_TAG = `${CLIP_TAG}:validated-wasm-v1`;
 const memory = new Map();
 const cancelled = new Set();
 const status = detail => self.postMessage({ type: 'status', ...detail });
@@ -61,7 +64,7 @@ async function db() {
         const store = conn.transaction('vectors', 'readwrite').objectStore('vectors');
         const all = store.getAll();
         all.onsuccess = () => all.result.forEach(item => {
-          if (typeof item?.key === 'string' && !item.key.startsWith(`${CLIP_TAG}:`)) store.delete(item.key);
+          if (typeof item?.key === 'string' && !item.key.startsWith(`${VECTOR_TAG}:`)) store.delete(item.key);
         });
       } catch { /* Pruning retired encoder vectors is best-effort. */ }
       resolve(conn);
@@ -106,14 +109,14 @@ async function initialize(devicePreference = 'auto') {
     // by the explicit consent-enforcing env.fetch wrapper above instead.
     const config = { revision: CLIP_REVISION, progress_callback, local_files_only: false };
     // Both towers use q4f16; the full multilingual token table uses INT4.
-    const [tokenizer, processor, gpu] = await Promise.all([
+    const [tokenizer, processor] = await Promise.all([
       AutoTokenizer.from_pretrained(CLIP_MODEL, config),
-      AutoProcessor.from_pretrained(CLIP_MODEL, config),
-      self.navigator?.gpu ? navigator.gpu.requestAdapter().catch(() => null) : Promise.resolve(null)
+      AutoProcessor.from_pretrained(CLIP_MODEL, config)
     ]);
     let textModel, visionModel;
-    const devices = devicePreference === 'wasm' || !gpu ? ['wasm'] : ['webgpu'];
-    gpu?.destroy?.();
+    // CPU agrees with the evaluation encoder. Successful GPU execution alone
+    // is insufficient: this graph produced silently incorrect vision vectors.
+    const devices = ['wasm'];
     for (const device of devices) {
       try {
         backend = device;
@@ -147,7 +150,7 @@ async function run({ type, payload, device }) {
     const texts = payload.texts;
     if (!Array.isArray(texts) || texts.length > 20 || texts.some(text => typeof text !== 'string' || text.length > 2000)) throw new Error('Invalid text embedding request.');
     const result = [];
-    for (const text of texts) result.push(await cached(`${CLIP_TAG}:text:${text}`, async () => {
+    for (const text of texts) result.push(await cached(`${VECTOR_TAG}:text:${text}`, async () => {
       const inputs = model.tokenizer([text.toLowerCase()], { padding: 'max_length', max_length: 64, truncation: true });
       const output = await model.textModel({ input_ids: inputs.input_ids });
       const tensor = output.text_embeds || output.pooler_output;
@@ -177,12 +180,12 @@ async function run({ type, payload, device }) {
       for (const tensor of [...Object.values(inputs), ...Object.values(output)]) tensor?.dispose?.();
       return vector;
     };
-    const fullVector = await cached(`${CLIP_TAG}:${IMAGE_PREPROCESSING}:image:${digest}`, async () => {
+    const fullVector = await cached(`${VECTOR_TAG}:${IMAGE_PREPROCESSING}:image:${digest}`, async () => {
       const image = await decodeOnce();
       return embedFrame(await fullFrameImage(image, RawImage));
     });
     if (!payload.multiView) return fullVector;
-    const cropVector = await cached(`${CLIP_TAG}:${IMAGE_PREPROCESSING}:crop68:${digest}`, async () => {
+    const cropVector = await cached(`${VECTOR_TAG}:${IMAGE_PREPROCESSING}:crop68:${digest}`, async () => {
       const image = await decodeOnce();
       return embedFrame(await centerCropImage(image, RawImage, 256, 0.68));
     });

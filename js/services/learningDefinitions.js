@@ -1,6 +1,7 @@
 import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18908';
 import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18908';
 import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18908';
+import { meaningGlossText } from './meaningComparison.js';
 import { hasExampleSenseConflict, isModernUsageExample } from './exampleSearch.js?v=18908';
 export { isModernUsageExample } from './exampleSearch.js?v=18908';
 
@@ -21,15 +22,19 @@ export function exampleForLearning(word) { return isModernUsageExample(word, wor
 function sourceOf(sense) { return String(sense?.sourceDefinition ?? sense?.definition ?? ''); }
 
 export function qualifierSignature(sense) {
-  const source = sourceOf(sense).toLowerCase().replace(/\(sense\s+\d+\)/g, '');
+  const original = sourceOf(sense).toLowerCase();
+  const source = meaningGlossText(original);
   const labelValues = Array.isArray(sense?.labels) ? sense.labels : Array.isArray(sense?.tags) ? sense.tags : [];
-  const labels = labelValues.map(value => text(typeof value === 'object' ? value?.text || value?.name : value).toLowerCase())
-    .filter(value => !/^(?:countable|uncountable|transitive|intransitive|broadly|formal|informal|colloquial|slang)$/.test(value));
-  const usageLabels = text(sense?.usageNote).toLowerCase().match(/\b(?:archaic|obsolete|historical|dated|figurative|technical|botany|chemistry|physics|mathematics|medicine|anatomy|linguistics)\b/g) || [];
+  // Grammar, register, region and source subject tags describe usage. They
+  // cannot veto an otherwise matching gloss merely because one source has
+  // more annotations. Retain historical/figurative distinctions separately.
+  const distinctions = /\b(?:archaic|obsolete|historical|dated|figurativ(?:e|ely))\b/g;
+  const labels = labelValues.flatMap(value => text(typeof value === 'object' ? value?.text || value?.name : value).toLowerCase().match(distinctions) || []);
+  const usageLabels = [original, text(sense?.usageNote).toLowerCase()].flatMap(value => value.match(distinctions) || []);
   const domains = [/\b(?:river|shore|stream|lake|embankment)\b/, /\b(?:financial|money|deposit|loan|lender|savings)\b/, /\b(?:law|legal|court|statute)\b/, /\b(?:botany|plant|flower|stem|leaf)\b/];
-  return JSON.stringify([[...new Set([...labels, ...usageLabels])].sort(), /\b(?:not|no|never|non(?=[-\s])|without|cannot|unable|lacking|can[’']t|isn[’']t|aren[’']t|doesn[’']t|don[’']t)\b/.test(source),
+  return JSON.stringify([[...new Set([...labels, ...usageLabels].map(label => label.startsWith('figurativ') ? 'figurative' : 'historical'))].sort(), /\b(?:not|no|never|non(?=[-\s])|without|cannot|unable|lacking|can[’']t|isn[’']t|aren[’']t|doesn[’']t|don[’']t)\b/.test(original),
     /\b(?:(?:appearing|seeming)(?: to be)?|having the appearance of)|\b[\p{L}]+-looking\b/u.test(source),
-    /\b(?:only|solely|exclusively)\b/.test(source), /\bunless\b/.test(source), /\bexcept\b/.test(source),
+    /\b(?:only|solely|exclusively)\b/.test(original), /\bunless\b/.test(original), /\bexcept\b/.test(original),
     [...new Set(source.match(/\b(?:before|after|during|until|since|above|below|more than|less than|at least|at most|internal|external|intentional|unintentional|voluntary|involuntary|temporary|permanent|formal|informal)\b/g) || [])].sort(),
     source.match(/\b\d+(?:\.\d+)?\b/g) || [], domains.map(pattern => pattern.test(source))]);
 }
@@ -37,10 +42,9 @@ export function qualifierSignature(sense) {
 // Small, explicit dictionary paraphrases. They change wording, not referents,
 // polarity, participants, domain restrictions or process/result distinctions.
 export function canonicalMeaningWording(value) {
-  return String(value || '').toLowerCase()
+  return meaningGlossText(value).toLowerCase()
     .replace(/\b(?:swiftly|rapidly)\b/g, 'quickly')
     .replace(/\bgo at a fast pace\b/g, 'move quickly')
-    .replace(/^\((?:countable|uncountable|transitive|intransitive|formal|informal|colloquial|slang|broadly)(?:,\s*(?:countable|uncountable|transitive|intransitive|formal|informal|colloquial|slang|broadly))*\)\s*/g, '')
     .replace(/\b(?:having the ability to|able to|capable of)\b/g, 'can')
     .replace(/\bcan (bending|carrying|running|adapting|holding|changing|making|learning|moving|forming|flowing|thinking|taking|seeing|feeling|hearing|speaking|understanding)\b/g,
       (_, verb) => `can ${{bending:'bend',carrying:'carry',running:'run',adapting:'adapt',holding:'hold',changing:'change',making:'make',learning:'learn',moving:'move',forming:'form',flowing:'flow',thinking:'think',taking:'take',seeing:'see',feeling:'feel',hearing:'hear',speaking:'speak',understanding:'understand'}[verb]}`)
@@ -50,6 +54,7 @@ export function canonicalMeaningWording(value) {
     .replace(/\b(?:appearing to be|seeming to be|having the appearance of being)\b/g, 'seeming')
     .replace(/\blikely to be\b/g, 'probably')
     .replace(/\bout of the ordinary\b/g, 'unusual')
+    .replace(/\bby (?:a person or (?:an? )?organi[sz]ation|someone|somebody)(?=[.!?;]*\s*$)/g, '')
     .replace(/\b(mould|moulded|moulding|colour|coloured|colouring|centre|centres|labour|odour)\b/g,
       word => ({mould:'mold',moulded:'molded',moulding:'molding',colour:'color',coloured:'colored',colouring:'coloring',centre:'center',centres:'centers',labour:'labor',odour:'odor'})[word])
     .replace(/\betc\.?\s*$/g, '')
@@ -59,7 +64,7 @@ export function canonicalMeaningWording(value) {
 // Dictionary templates with the same referent despite different amounts of
 // descriptive detail. Match complete constructions, not arbitrary word bags.
 function dictionaryReferentKey(sense) {
-  const source = sourceOf(sense).toLowerCase().replace(/\(sense \d+\)/g, '').trim();
+  const source = meaningGlossText(sourceOf(sense)).toLowerCase();
   const wood = source.match(/^(?:(?:the|a|an)\s+)?(?:(?:light|soft|hard|tough|moderately strong)\s+)*wood\s+(?:of|from)\s+(?:(?:the|a|an|any of various)\s+)?([\p{L}-]+)(?:\s+trees?)?\s*[.;]?(?:\s*used\b.*)?[.!?]?$/u);
   if (wood) return `wood:${wood[1]}`;
   const amount = source.match(/^as much as (?:fills (.+?)|(.+?) will hold)(?:;\s*a [\p{L}-]+ful)?[.!?]?$/u);
@@ -69,7 +74,7 @@ function dictionaryReferentKey(sense) {
 }
 
 function synonymGloss(sense) {
-  const source = sourceOf(sense).replace(/^\((?:formal|informal|colloquial|slang|broadly)\)\s*/i, '');
+  const source = meaningGlossText(sourceOf(sense));
   // An enumeration of short glosses may change order; a clause with actors or
   // relations is never treated as an unordered bag of synonyms.
   if (!/[;,]|\bor\b/.test(source) || /\b(?:who|which|that|from|into|between|above|below|before|after|not|no|without|only|person|people)\b/i.test(source)) return null;
@@ -104,6 +109,13 @@ export function senseGroupingEvidence(left, right) {
     || (right.antonyms || []).some(value => rawA.has(text(value).toLowerCase()))) return null;
   const referentA = dictionaryReferentKey(left), referentB = dictionaryReferentKey(right);
   if (referentA && referentA === referentB) return { coverage: 1, jaccard: 1, reason: 'same-dictionary-referent' };
+  const clauses = sense => meaningGlossText(sourceOf(sense)).split(';').map(canonicalMeaningWording).filter(Boolean);
+  const clausesA = clauses(left), clausesB = clauses(right);
+  // A complete gloss repeated as a semicolon-delimited dictionary explanation
+  // is a duplicate, unlike a shared topic or a few overlapping words.
+  if (clausesA.length === 1 && clausesB.length > 1 && clausesB.includes(clausesA[0]) && a.size >= 3
+    || clausesB.length === 1 && clausesA.length > 1 && clausesA.includes(clausesB[0]) && b.size >= 3)
+    return { coverage: 1, jaccard: 1, reason: 'contained-complete-gloss' };
   const shared = [...a].filter(value => b.has(value));
   const glossA = synonymGloss(left), glossB = synonymGloss(right);
   const sharedGloss = glossA && glossB ? [...glossA].filter(value => glossB.has(value)).length : 0;

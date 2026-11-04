@@ -102,8 +102,8 @@ test('the worker loads a cached runtime offline and rejects missing files withou
   const makeContext = urls => {
     const env = { fetch: async url => { calls.push(url); return new Response('runtime'); }, backends: { onnx: { wasm: {} } } };
     const factory = { from_pretrained: async (_, options) => { assert.equal(options.local_files_only, false); return {}; } };
-    const tower = expected => ({ from_pretrained: async (_, options) => { assert.equal(options.dtype, expected); assert.equal(options.local_files_only, false); return {}; } });
-    const self = { caches: cacheStorage(urls), postMessage: message => messages.push(message), navigator: {} };
+    const tower = expected => ({ from_pretrained: async (_, options) => { assert.equal(options.device, 'wasm'); assert.equal(options.dtype, expected); assert.equal(options.local_files_only, false); return {}; } });
+    const self = { caches: cacheStorage(urls), postMessage: message => messages.push(message), navigator: { gpu: { requestAdapter: () => { throw Error('Unvalidated GPU must not be requested'); } } } };
     const context = vm.createContext({ env, self, CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, SiglipTextModel: tower(CLIP_TEXT_DTYPE), SiglipVisionModel: tower(CLIP_VISION_DTYPE), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise });
     vm.runInContext(source, context);
     return { context, self, env };
@@ -112,6 +112,7 @@ test('the worker loads a cached runtime offline and rejects missing files withou
   cached.self.onmessage({ data: { id: 1, type: 'initialize', payload: {}, allowDownloads: false } });
   await vm.runInContext('queue', cached.context);
   assert.equal(messages.at(-1).result.backend, 'wasm');
+  assert.equal(vm.runInContext('VECTOR_TAG', cached.context), 'tag:validated-wasm-v1');
   assert.equal(cached.env.backends.onnx.wasm.wasmPaths.wasm, 'blob:cached');
   assert.equal(calls.length, 0);
   assert.throws(() => cached.env.fetch('https://example.test/missing-model.onnx'), /missing|Download/);

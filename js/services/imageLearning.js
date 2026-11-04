@@ -279,7 +279,8 @@ export function imageClipPrompts(word, options = {}) {
   const scenes = rawScenes.map(scene => `A photo of ${scene}`);
   const contrasts = [...new Set([...(options.contrasts || []), ...(word.imageScenes?.contrasts || [])].map(s => String(s).trim()).filter(Boolean))].slice(0, 3).map(scene => `A photo of ${scene}`);
   const alternatives = contrasts.length ? [] : [...new Set([...(options.otherDefinitions || []), ...(word.otherDefinitions || [])])].filter(value => value && value !== word.definition && value !== word.sourceDefinition && !sharesVisualDefinitionTokens(value, rawDefinition)).slice(0, 8).map(value => `A photo illustrating ${word.word}: ${value}`);
-  return { scenes: rawScenes, texts: [selected, ...scenes, ...alternatives, ...contrasts, 'Text, a logo, a diagram, a screenshot or a document.'].map(text => text.slice(0, 2000)), sceneCount: scenes.length, alternativeCount: alternatives.length + contrasts.length };
+  return { scenes: rawScenes, texts: [selected, ...scenes, ...alternatives, ...contrasts, 'Text, a logo, a diagram, a screenshot or a document.'].map(text => text.slice(0, 2000)), sceneCount: scenes.length, alternativeCount: alternatives.length + contrasts.length,
+    contrastSource: contrasts.length ? 'explicit' : alternatives.length ? 'dictionary' : null };
 }
 export function targetGatedCosine(imageVector, targetVector) {
   const rawCos = cosine(imageVector, targetVector);
@@ -342,7 +343,11 @@ export function rankEmbeddedImages(items, model = null, { semanticFilter = false
     // positively reward an image that matches another supplied sense better.
     const strength = 0.12 * Math.min(1, (model?.trainedLabels || 0) / 64);
     const preference = item.semantic.margin < 0 ? Math.min(0, probability - 0.5) : probability - 0.5;
-    const uncertain = Math.abs(probability - 0.5) < 0.18 || (item.semantic.contrast !== null && item.semantic.margin < 0.09);
+    // Taste preferences are not match confidence. A new user's neutral .5
+    // preference must not flag every otherwise clear semantic match.
+    const uncertain = !passesImageSemanticGate(item.semantic)
+      || (invariantScore !== null && Math.abs(invariantScore - 0.5) < 0.18)
+      || (item.semantic.contrastSource !== 'dictionary' && item.semantic.contrast !== null && item.semantic.margin < IMAGE_SEMANTIC_FILTER.closeContrastMargin);
     return { ...item, index, features, probability, uncertain, score: invariantScore ?? (neural && !model.invariantOnly ? personalizerScore(model, encoded, item.meaningFeatures) : item.semantic.score + strength * preference) };
   });
   // Scores are shown in descending order; diversity penalties must not silently
@@ -413,6 +418,10 @@ export async function rankImagesLocally(word, candidates, options = {}) {
           if (!current() || !workerReady) return [];
           const vector = Array.isArray(embedded) ? embedded : embedded.vector;
           const semantic = semanticScores(embedded, texts, prompt.sceneCount, prompt.alternativeCount);
+          // Dictionary senses are not mutually exclusive visual contrasts:
+          // e.g. "something resembling an apple" also embeds the actual fruit.
+          // Retain their ranking penalty without treating it as calibrated doubt.
+          semantic.contrastSource = prompt.contrastSource;
           const rankingEvidence = { encoder: CLIP_TAG, full: embedded.fullVector || vector, crop: embedded.cropVector || vector,
             baselineScore: semantic.score,
             meaning: texts[0], scene: sceneVector, contrast: contrastVector, unwanted: texts.at(-1) };
@@ -427,9 +436,9 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     if (!current() || !workerReady) return [];
     cachedModel = model;
     const scored = rankEmbeddedImages(items, model, { semanticFilter: true, fallbackLimit: 9 });
-    phase = 'ready';message = `${items.length} image suggestions scored locally.`;emit();
+    phase = 'ready';message = items.length ? `${items.length} image suggestions scored locally.` : 'These images could not be checked. You can choose a photo manually.';emit();
     return [...scored.map(item => ({ ...item.candidate, ml: { model: CLIP_TAG, sense: fingerprint(word), features: encodeFullFeatures(item.features), meaningFeatures, preprocessing: IMAGE_PREPROCESSING, scenes: prompt.scenes,
-      rankingEvidence: item.rankingEvidence, belowThreshold: Boolean(item.belowThreshold), uncertain: Boolean(item.uncertain), cosine: item.semantic.cosine, selected: item.semantic.selected, contrast: item.semantic.contrast, margin: item.semantic.margin, unwanted: item.semantic.unwanted, cropProminence: item.semantic.cropProminence ?? 0, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
+      screening: 'scored', rankingEvidence: item.rankingEvidence, belowThreshold: Boolean(item.belowThreshold), uncertain: Boolean(item.uncertain), cosine: item.semantic.cosine, selected: item.semantic.selected, contrast: item.semantic.contrast, contrastSource: item.semantic.contrastSource, margin: item.semantic.margin, unwanted: item.semantic.unwanted, cropProminence: item.semantic.cropProminence ?? 0, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
       trainedComparisons: model?.trainedComparisons || 0, trainedPositiveLabels: model?.trainedPositiveLabels || 0, trainedNegativeLabels: model?.trainedNegativeLabels || 0, score: item.score } }))];
   } catch (error) { if (current()) { phase = 'error';message = `${error.message} Image screening could not finish.`;emit(); } return []; }
 }

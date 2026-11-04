@@ -267,6 +267,14 @@
 .image-review button:focus-visible { outline:3px solid var(--primary-green); outline-offset:3px; }
 .image-review button:disabled { opacity:.5; cursor:default; }
 .image-review .image-review__choice { position:relative; padding:5px; border:2px solid var(--border-card); border-bottom-width:4px; background:var(--bg-card); color:var(--text-muted); overflow:hidden; min-width:0; }
+/* Uncertainty uses the same small icon treatment as other image captions. */
+.image-review__choice-label > .image-match-warning,
+.image-candidate-grid .image-match-warning {
+  display:inline-flex; align-items:center; vertical-align:baseline;
+  width:auto; height:auto; padding:0; margin:0 5px 0 0;
+  border:0; background:none; color:var(--rate-good-text);
+  font-size:.65rem; line-height:1; box-shadow:none;
+}
 .image-review__choice img { display:block; width:100%; aspect-ratio:16/10; max-height:130px; object-fit:cover; border-radius:7px; background:var(--bg-subtle); }
 .image-review__choice-label { display:block; padding:7px 4px 3px; font-size:.7rem; }
 .image-review__choice-check { display:grid; place-items:center; position:absolute; right:11px; top:11px; height:26px; width:26px; background:var(--primary-green); color:white; border:2px solid white; border-radius:50%; transform:scale(0); opacity:0; transition:transform 230ms cubic-bezier(.18,1.7,.5,1),opacity 120ms ease; }

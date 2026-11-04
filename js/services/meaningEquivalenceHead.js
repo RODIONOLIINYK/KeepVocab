@@ -1,6 +1,7 @@
 import { CLIP_TAG, CLIP_DIMENSION } from '../ml/clipConfig.js';
 import { cosine } from './imagePreferences.js';
 import { fitLogisticHead, validLogisticHead, logisticScore, logisticPrior } from './learnedScorer.js';
+import { meaningComparisonText } from './meaningComparison.js';
 
 export const EQUIVALENCE_HEAD_VERSION = 'meaning-equivalence-11-v1';
 export const EQUIVALENCE_FEATURES = ['rawCosine', 'cleanCosine', 'contextCosine', 'contextCleanEnsemble', 'agreement', 'difference',
@@ -10,7 +11,7 @@ export function validEquivalenceEvidence(e) {
   return Boolean(e?.encoder === CLIP_TAG && ['rawA', 'rawB', 'cleanA', 'cleanB', 'contextA', 'contextB'].every(k => vector(e[k]))
     && typeof e.definitionA === 'string' && typeof e.definitionB === 'string');
 }
-const tokens = s => String(s || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').split(/\s+/).filter(t => t && !/^(a|an|the|to|of|and|or|be|is|that|which|with|for)$/.test(t));
+const tokens = s => meaningComparisonText(s).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').split(/\s+/).filter(t => t && !/^(a|an|the|to|of|and|or|be|is|that|which|with|for)$/.test(t));
 export function equivalenceFeatures(e, head = null) {
   const raw = cosine(e.rawA, e.rawB), clean = cosine(e.cleanA, e.cleanB), context = cosine(e.contextA, e.contextB);
   let agreement = 0, difference = 0, l1 = 0;

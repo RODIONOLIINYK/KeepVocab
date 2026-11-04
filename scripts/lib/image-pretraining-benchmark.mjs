@@ -3,7 +3,7 @@ import { cosine, decodeFeatures, normalizedVector, sigmoid } from '../../js/serv
 import { CLIP_TAG, ARCHIVED_FP16_CLIP_TAG } from '../../js/ml/clipConfig.js';
 import { IMAGE_PREPROCESSING, activeImageExamples, splitImageDecisions, semanticDatasetPartitions, evaluatePersonalizer,
   personalizerScore, validPersonalizer } from '../../js/services/imagePersonalizer.js';
-import { PERSONALIZER_VERSION as V2_PERSONALIZER_VERSION, LEGACY_PERSONALIZER_VERSION as V2_LEGACY_VERSION, validPersonalizer as validV2Personalizer,
+import { IMAGE_PREPROCESSING as V2_IMAGE_PREPROCESSING, PERSONALIZER_VERSION as V2_PERSONALIZER_VERSION, LEGACY_PERSONALIZER_VERSION as V2_LEGACY_VERSION, validPersonalizer as validV2Personalizer,
   personalizerScore as v2PersonalizerScore, evaluatePersonalizer as evaluateV2Personalizer,
   activeImageExamples as activeV2ImageExamples, splitImageDecisions as splitV2ImageDecisions,
   semanticDatasetPartitions as v2SemanticDatasetPartitions } from './image-personalizer-v2.mjs';
@@ -46,7 +46,7 @@ export function validatePretrainingBenchmark(encoded, manifest) {
   requireCondition(Array.isArray(manifest?.cases) && manifest.cases.length, 'Manifest cases are required.');
   requireCondition(Array.isArray(encoded?.events) && encoded.events.length, 'Encoded training events are required.');
   const isArchivedV2 = encoded.encoder === ARCHIVED_FP16_CLIP_TAG;
-  requireCondition((encoded.encoder === CLIP_TAG || isArchivedV2) && encoded.preprocessing === IMAGE_PREPROCESSING,
+  requireCondition((encoded.encoder === CLIP_TAG || isArchivedV2) && encoded.preprocessing === (isArchivedV2 ? V2_IMAGE_PREPROCESSING : IMAGE_PREPROCESSING),
     'Encoded dataset uses an unsupported encoder or preprocessing version.');
   const cases = new Map(), meaningOwners = new Map(), familyOwners = new Map(), targetOwners = new Map(), photoOwners = new Map();
   const bySplit = Object.fromEntries(partitions.map(split => [split, []]));

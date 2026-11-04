@@ -8,9 +8,10 @@ import { sourceDefinitionFingerprint, senseGroupingEvidence } from './learningDe
 import { equivalenceProbability, validEquivalenceHead } from './meaningEquivalenceHead.js';
 import { meaningLearningState, meaningPairKey, embedMeaningAnchors, pairEvidence } from './meaningEquivalenceLearning.js';
 import { learnerCoreMatch, learnerCorePresentation } from './learnerMeaningRules.js';
+import { meaningComparisonText, meaningGlossText } from './meaningComparison.js';
 
 const CACHE_KEY = 'keepvocab_sense_groups_v1';
-const VERSION = 13;
+const VERSION = 14;
 const LOCAL_SIMILARITY = 0.80;
 const CONSOLIDATION_CACHE = 'keepvocab_learner_meaning_groups_v1';
 const isUnresolvedReference = sense => /\b(?:synonym of|alternative (?:form|spelling) of|action of the verb|present participle and gerund of)\b/i.test(sense.sourceDefinition || sense.definition);
@@ -60,7 +61,7 @@ export function hasExplicitMeaningConflict(left, right) {
     ['temporary', 'permanent'], ['voluntary', 'involuntary']];
   if (opposites.some(([x, y]) => tokensA.has(x) && tokensB.has(y) && !tokensA.has(y) && !tokensB.has(x)
     || tokensA.has(y) && tokensB.has(x) && !tokensA.has(x) && !tokensB.has(y))) return true;
-  if (JSON.stringify(a.match(/\b\d+(?:\.\d+)?\b/g) || []) !== JSON.stringify(b.match(/\b\d+(?:\.\d+)?\b/g) || [])) return true;
+  if (JSON.stringify(meaningComparisonText(a).match(/\b\d+(?:\.\d+)?\b/g) || []) !== JSON.stringify(meaningComparisonText(b).match(/\b\d+(?:\.\d+)?\b/g) || [])) return true;
   const bounds = text => [...new Set(text.match(/\b(?:at least|at most|more than|less than|only|solely|exclusively|unless|except)\b/g) || [])].sort();
   return JSON.stringify(bounds(a)) !== JSON.stringify(bounds(b));
 }
@@ -93,7 +94,7 @@ export async function consolidateEntrySenses(entry, options = {}) {
   if (new Set(senses.map(s => String(s.partOfSpeech || 'word').trim().toLowerCase())).size === senses.length) return local;
   const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
   const model = options.model || settings.textModel;
-  const key = JSON.stringify([15, model, entry.word, senses.map(s => [s.partOfSpeech, s.sourceDefinition || s.definition, s.sourceDefinitions, s.labels, s.usageNote])]);
+  const key = JSON.stringify([16, model, entry.word, senses.map(s => [s.partOfSpeech, s.sourceDefinition || s.definition, s.sourceDefinitions, s.labels, s.usageNote])]);
   const cache = readObjectCache(storage, CONSOLIDATION_CACHE);
   let groups = cache[key]?.data;
   try {
@@ -101,7 +102,7 @@ export async function consolidateEntrySenses(entry, options = {}) {
       if (Date.now() < retryAfter) throw new Error('Meaning grouping is temporarily unavailable.');
       const parts = [...new Set(senses.map(s => String(s.partOfSpeech || 'word').trim().toLowerCase()))].map((partOfSpeech, index) => ({
         id: `p${index}`, partOfSpeech, senses: senses.flatMap((s, i) => String(s.partOfSpeech || 'word').trim().toLowerCase() === partOfSpeech
-          ? [{ id: String(i), definition: s.sourceDefinition || s.definition, sourceDefinitions: s.sourceDefinitions || [s.sourceDefinition || s.definition], labels: s.labels || [], usageNote: s.usageNote || '' }] : []) }));
+          ? [{ id: String(i), definition: meaningComparisonText(s.sourceDefinition || s.definition), sourceDefinitions: s.sourceDefinitions || [s.sourceDefinition || s.definition], labels: s.labels || [], usageNote: s.usageNote || '' }] : []) }));
       const groupSchema = ids => ({ type: 'ARRAY', items: { type: 'OBJECT', properties: {
         members: { type: 'ARRAY', items: { type: 'STRING', enum: ids } },
         definition: { type: 'STRING' }, usageNote: { type: 'STRING' } }, required: ['members', 'definition', 'usageNote'] } });
@@ -158,6 +159,12 @@ Parts: ${JSON.stringify(parts)}`,
 // A selected representative is not an adequate definition of a broader group.
 // Retain every non-equivalent source clause in its visible combined definition.
 function coveredDefinition(originals, representative) {
+  // A contained gloss may be shorter than the source that explains it. Keep
+  // that longer explanation visible rather than dropping its extra clauses.
+  const containing = originals.find(a => originals.some(b => a !== b
+    && senseGroupingEvidence(a, b)?.reason === 'contained-complete-gloss'
+    && meaningGlossText(a.sourceDefinition || a.definition).split(';').length > 1));
+  if (containing) return containing.definition;
   if (originals.every(s => areSensesNearDuplicate({ ...s, word: representative.word }, representative))) return representative.definition;
   const clauses = [...new Set(originals.map(s => String(s.sourceDefinition || s.definition || '').trim().replace(/[.;]+$/, '')).filter(Boolean))];
   return clauses.join('; ') + (clauses.length ? '.' : '');
@@ -176,7 +183,7 @@ function packagedLocal(entry, groups) {
   return { ...entry, senses: built, ...built[0], additionalSenses: [],
     senseConsolidation: { version: 1, source: 'local', originalCount: built.reduce((n, g) => n + g.groupedSenses.length, 0), coreCount: built.length } };
 }
-const normalized = value => String(value || '').toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+const normalized = value => meaningGlossText(value).toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
 const negative = /\b(?:not|no|never|non|without|cannot|unable|lacking|cant|isnt|arent|doesnt|dont)\b/g;
 function content(sense) {
   return normalized(sense.sourceDefinition || sense.definition).split(' ').filter(t => !/^(?:a|an|the|to|be|is|of|or|and|that|which|who|one|someone|something)$/.test(t));
@@ -264,7 +271,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
   try {
     if (!pairs) {
       const encode = options.encodeDefinitionTexts || (await import('./imageLearning.js?v=18908')).encodeDefinitionTexts;
-      const vectors = await encode(senses.map(s => String(s.sourceDefinition || s.definition)), options);
+      const vectors = await encode(senses.map(s => meaningComparisonText(s.sourceDefinition || s.definition)), options);
       const needsSupportingHead = equivalenceHead && senses.some((a, i) => senses.slice(i + 1)
         .some(b => !areSensesNearDuplicate(a, b) && !learnerCoreMatch(a, b) && compatible(a, b)));
       const anchors = needsSupportingHead ? await embedMeaningAnchors(entry.word, senses, { ...options, encodeDefinitionTexts: encode }) : null;

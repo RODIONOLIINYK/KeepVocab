@@ -1,8 +1,9 @@
 // Learner grouping is distinct from exact definition equivalence. A technical
 // application of the same core action/quantity can share a learner card while
 // retaining its exact scope in the original definitions and usage notes.
+import { meaningGlossText } from './meaningComparison.js';
 const source = sense => String(sense.sourceDefinition || sense.definition || '').toLowerCase();
-const gloss = sense => source(sense).replace(/^(?:\([^)]*\)\s*)+/, '').replace(/\s+/g, ' ').trim();
+const gloss = sense => meaningGlossText(source(sense));
 const historical = sense => /\b(?:obsolete|archaic|historical)\b/.test(source(sense) + ' ' + (sense.labels || []).join(' '));
 
 function core(sense) {

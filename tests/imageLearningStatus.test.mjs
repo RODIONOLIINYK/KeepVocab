@@ -148,7 +148,7 @@ test('production local scoring returns nine closest failed matches as manual-onl
       let result;
       if (data.type === 'texts') result = data.payload.texts.map((_, i) => vector(i ? 1 : 0));
       else {
-        const index = imageCalls++, similarity = .1 + index * .005;
+        const index = imageCalls++, similarity = .05 + index * .005;
         result = Array(CLIP_DIMENSION).fill(0); result[0] = similarity; result[1] = .2;
         result[index + 2] = Math.sqrt(1 - similarity ** 2 - .2 ** 2);
       }
@@ -166,7 +166,7 @@ test('production local scoring returns nine closest failed matches as manual-onl
   });
   assert.equal(imageCalls, 12); assert.equal(images.length, 9);
   assert.deepEqual(images.map(image => image.url), candidates.slice(3).reverse().map(image => image.url));
-  assert.ok(images.every(image => image.ml.belowThreshold && image.ml.selected < .19));
+  assert.ok(images.every(image => image.ml.belowThreshold && image.ml.selected < .13));
   assert.ok(images.every((image, i) => !i || image.ml.cosine <= images[i - 1].ml.cosine));
   const container = new ReviewContainer();
   const review = mountImageReview(container, [{ ...meaning, imageCandidates: images }]);
@@ -175,4 +175,23 @@ test('production local scoring returns nine closest failed matches as manual-onl
   assert.doesNotMatch(container.innerHTML, /aria-checked="true"/);
   await container.click('choose');
   assert.match(container.innerHTML, /aria-checked="true"/);
+});
+
+test('provider suggestions remain manually available when inference fails, without falsely claiming a failed threshold',async context=>{
+ const cleanup=await setup(context);
+ globalThis.Worker=class{
+  postMessage(data){queueMicrotask(()=>this.onmessage({data:{id:data.id,error:'Synthetic inference failure'}}));}
+  terminate(){}
+ };
+ const {findRelevantImages}=await import('../js/services/imageSearch.js');
+ const images=await findRelevantImages(meaning,{
+  provider:'pexels',pexelsApiKey:'synthetic-test-key',aiScenes:false,validateImages:false,limit:9,
+  onlyExtraQueries:true,extraQueries:['river bank'],
+  fetchImpl:async()=>({ok:true,json:async()=>({photos:Array.from({length:20},(_,i)=>({id:9000+i,url:`https://www.pexels.com/photo/${9000+i}/`,alt:`River scene ${i}`,src:{medium:`https://images.pexels.com/photos/${9000+i}/image.jpeg`}}))})})
+ });
+ assert.equal(images.length,9);
+ assert.ok(images.every(image=>image.ml.screening==='not-scored'&&image.ml.uncertain&&!image.ml.belowThreshold));
+ const container=new ReviewContainer();const controller=mountImageReview(container,[{...meaning,imageCandidates:images}]);cleanup.push(()=>controller.destroy());
+ assert.match(container.innerHTML,/have not been checked/);
+ assert.doesNotMatch(container.innerHTML,/No images passed the match threshold/);
 });

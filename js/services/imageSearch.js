@@ -964,10 +964,11 @@ export async function findRelevantImages(word, options = {}) {
   const pool = rankImageCandidates(collected, word, { concepts, limit: poolLimit, excludeUrls: options.excludeUrls, semanticPool: imageLearningEnabled(options.storage) });
   const rankingWord = aiScenes.length ? word : { ...word, imageScenes: undefined };
   const localRanked = await rankImagesLocally(rankingWord, pool, { ...options, extraQueries: fallbackPlan.length ? [] : options.extraQueries, scenes: explicitConcept ? concepts : aiScenes, contrasts: aiScenes.length ? sceneRecord?.contrasts || [] : [] });
+  if (options.signal?.aborted) return [];
   const ranked = localRanked.length || !pool.length ? localRanked : pool.slice(0, 9).map(image => ({
-    ...image, ml: { ...image.ml, belowThreshold: true, uncertain: true, score: Number(image.score) || 0 }
+    ...image, ml: { ...image.ml, screening: 'not-scored', belowThreshold: false, uncertain: true, score: Number(image.score) || 0 }
   }));
-  const cosineFallback = ranked.some(image => image.ml?.belowThreshold);
+  const cosineFallback = ranked.some(image => image.ml?.belowThreshold || image.ml?.screening === 'not-scored');
   const reviewed = options.semanticRerank && !cosineFallback ? await rerankImagesWithGemini(word, ranked, options) : ranked;
   const validateImages = options.validateImages !== false && (options.loadImage || typeof globalThis.document?.createElement === 'function');
   if (!validateImages) return reviewed.slice(0, limit);

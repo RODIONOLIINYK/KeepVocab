@@ -400,3 +400,30 @@ test('review displays all screened survivors and appends the next complete page'
   assert.ok(requests[0].excludeUrls.includes(image('first-29').url));
   assert.match(container.innerHTML,/page-1-29-thumb/);
 });
+
+test('uncertain and below-threshold photos have accessible warning marks while confident and unscored photos do not', () => {
+ const container = new Container();
+ const candidates = [
+  {...image('uncertain'),ml:{uncertain:true}},
+  {...image('below'),ml:{belowThreshold:true}},
+  {...image('confident'),ml:{uncertain:false,belowThreshold:false}},
+  image('unscored')
+ ];
+ mountImageReview(container,[{...word('warning',false),imageCandidates:candidates}]);
+ assert.equal((container.innerHTML.match(/class="image-match-warning"/g)||[]).length,2);
+ assert.match(container.innerHTML,/Choose image 1 for word warning — uncertain match/);
+ assert.match(container.innerHTML,/Choose image 2 for word warning — uncertain match/);
+ assert.match(container.innerHTML,/Choose image 3 for word warning"/);
+ assert.match(container.innerHTML,/role="img" aria-label="Uncertain match — check that this image fits the meaning\."/);
+ assert.match(container.innerHTML,/image-review__choice-label"><span class="image-match-warning"/);
+ assert.match(container.innerHTML,/fa-triangle-exclamation/);
+});
+
+test('a failed scoring run is described as not checked rather than as a model rejection',()=>{
+ const container=new Container();
+ mountImageReview(container,[{...word('not-checked',false),imageCandidates:[{...image('not-checked'),ml:{screening:'not-scored',uncertain:true,belowThreshold:false}}]}]);
+ assert.match(container.innerHTML,/Image matching could not finish\. These suggestions have not been checked\./);
+ assert.match(container.innerHTML,/Choose image 1 for word not-checked — not checked/);
+ assert.match(container.innerHTML,/Not checked — image matching could not finish/);
+ assert.doesNotMatch(container.innerHTML,/No images passed the match threshold/);
+});

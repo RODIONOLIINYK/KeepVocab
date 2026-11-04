@@ -327,6 +327,8 @@ test('every cache-busted entrypoint and module import is included in the offline
   const precachedUrls = new Set([...serviceWorker.matchAll(/'\.\/([^']+)'/g)].map(match => match[1]));
   const html = readFileSync(resolve(projectRoot, 'index.html'), 'utf8');
   assert.match(serviceWorker, /caches\.match\(event\.request, \{ ignoreSearch: true \}\)/);
+  assert.match(serviceWorker, /new Request\(url, \{ cache: 'reload' \}\)/);
+  assert.match(serviceWorker, /fetch\(event\.request, \{ cache: 'no-store' \}\)/);
   assert.equal([...precachedUrls].some(url => /\?v=\d+/.test(url)), false, 'Offline cache should not download duplicate version aliases.');
   // Includes the multi-view and equivalence heads, validation and explicit review.
   assert.ok(precachedUrls.size < 120, `Offline install should stay compact; found ${precachedUrls.size} requests.`);

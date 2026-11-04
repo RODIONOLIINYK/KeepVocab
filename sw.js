@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112030-meaning-recall';
+const CACHE_NAME = 'keepvocab-v112031-clean-meaning-comparison-image-warnings';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -22,6 +22,7 @@ const ASSETS_TO_CACHE = [
   './js/services/learningDefinitions.js',
   './js/services/localSenseGrouping.js',
   './js/services/learnerMeaningRules.js',
+  './js/services/meaningComparison.js',
   './js/services/imageSearchPlan.js',
   './js/services/dictionaryApi.js',
   './js/services/englishEnrichment.js',
@@ -126,7 +127,9 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      // A new offline cache must contain the new code, even if the browser's
+      // HTTP cache still considers an earlier module or stylesheet fresh.
+      return cache.addAll(ASSETS_TO_CACHE.map(url => new Request(url, { cache: 'reload' })));
     })
   );
 
@@ -149,7 +152,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-store' })
       .then((response) => {
         if (response.ok) {
           const copy = response.clone();
