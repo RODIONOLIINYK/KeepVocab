@@ -13,17 +13,22 @@ const pairs = [
  ['jug', 'To stew in an earthenware jug etc.', 'stew in an earthenware jug'],
  ['spruce', 'The wood of a spruce.', 'light soft moderately strong wood of spruce trees; used especially for timbers and millwork']
 ];
-test('dictionary referent and wording rules recover six missed source-backed paraphrases offline', async () => {
+test('source-backed paraphrases with different wording reach the encoder after removing special-case templates', async () => {
  for (const [word, left, right] of pairs) {
   const senses = [left, right].map((definition, i) => ({ id: String(i), word, definition, partOfSpeech: word === 'jug' ? 'verb' : 'noun' }));
-  const result = await groupEntrySensesLocally({ word, senses }, { storage: null, encodeDefinitionTexts: async () => null });
-  assert.equal(result.senses.length, 1, word);
-  assert.deepEqual(result.senses[0].groupedSenses, senses);
+  let compared = [];
+  const result = await groupEntrySensesLocally({ word, senses }, {
+   storage: null,
+   encodeDefinitionTexts: async texts => { compared = texts; return null; }
+  });
+  // “To” and “etc.” are covered by the ordinary wording rule for “jug”.
+  assert.equal(compared.length, word === 'jug' ? 0 : 2, word);
+  assert.equal(result.senses.length, word === 'jug' ? 1 : 2, word);
+  assert.deepEqual(result.senses.flatMap(sense => sense.groupedSenses), senses);
  }
 });
-test('referent rules generalize while preserving different materials, restrictions and numerical quantities', () => {
+test('wording rules preserve different materials, restrictions and numerical quantities', () => {
  const sense = definition => ({ word: 'probe', partOfSpeech: 'noun', definition });
- assert.equal(areSensesNearDuplicate(sense('The wood of a maple tree.'), sense('Wood from a maple.')), true);
  for (const [a,b] of [
   ['The wood of an elm tree.', 'The wood of a beech tree.'],
   ['The wood of a spruce.', 'Only the wood of a spruce used for furniture.'],

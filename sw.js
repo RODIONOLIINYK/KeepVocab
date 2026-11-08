@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112032-parallel-scoring-centered-meanings';
+const CACHE_NAME = 'keepvocab-v112033-general-meaning-comparison';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

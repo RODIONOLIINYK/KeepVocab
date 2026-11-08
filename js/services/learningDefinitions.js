@@ -63,18 +63,6 @@ export function canonicalMeaningWording(value) {
     .replace(/[’']/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\b(?:a|an|the)\b/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-// Dictionary templates with the same referent despite different amounts of
-// descriptive detail. Match complete constructions, not arbitrary word bags.
-function dictionaryReferentKey(sense) {
-  const source = meaningGlossText(sourceOf(sense)).toLowerCase();
-  const wood = source.match(/^(?:(?:the|a|an)\s+)?(?:(?:light|soft|hard|tough|moderately strong)\s+)*wood\s+(?:of|from)\s+(?:(?:the|a|an|any of various)\s+)?([\p{L}-]+)(?:\s+trees?)?\s*[.;]?(?:\s*used\b.*)?[.!?]?$/u);
-  if (wood) return `wood:${wood[1]}`;
-  const amount = source.match(/^as much as (?:fills (.+?)|(.+?) will hold)(?:;\s*a [\p{L}-]+ful)?[.!?]?$/u);
-  if (amount) return `capacity:${canonicalMeaningWording(amount[1] || amount[2])}`;
-  const stemmed = source.match(/^(?:a )?drinking (?:vessel|glass) with (?:a )?(?:foot|base) and (?:a )?stem[.!?]?$/);
-  return stemmed ? 'drinking-vessel:stem-and-base' : null;
-}
-
 function synonymGloss(sense) {
   const source = meaningGlossText(sourceOf(sense));
   // An enumeration of short glosses may change order; a clause with actors or
@@ -109,8 +97,6 @@ export function senseGroupingEvidence(left, right) {
     || rawA.has(y) && rawB.has(x) && !(rawA.has(x) && rawB.has(y)))) return null;
   if ((left.antonyms || []).some(value => rawB.has(text(value).toLowerCase()))
     || (right.antonyms || []).some(value => rawA.has(text(value).toLowerCase()))) return null;
-  const referentA = dictionaryReferentKey(left), referentB = dictionaryReferentKey(right);
-  if (referentA && referentA === referentB) return { coverage: 1, jaccard: 1, reason: 'same-dictionary-referent' };
   const clauses = sense => meaningGlossText(sourceOf(sense)).split(';').map(canonicalMeaningWording).filter(Boolean);
   const clausesA = clauses(left), clausesB = clauses(right);
   // A complete gloss repeated as a semicolon-delimited dictionary explanation

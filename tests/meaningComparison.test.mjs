@@ -17,7 +17,7 @@ test('annotations and extracted metadata cannot block otherwise identical glosse
  for(const [word,plain,annotated,labels] of [
   ['carry','To transport from one place to another.','(transitive or intransitive, especially US) To transport from one place to another.',['US','especially','transitive','intransitive']],
   ['bright','Having a vivid colour.','[UK, informal] Having (especially of a surface) a vivid colour.',['UK','informal']],
-  ['goblet','A drinking vessel with a foot and stem.','(countable, especially US) A drinking glass with a base and stem.',['countable','US']],
+  ['goblet','A drinking vessel with a foot and stem.','(countable, especially US) A drinking vessel with a foot and stem.',['countable','US']],
   ['flow','To move continuously in a stream.','To move (intransitive, of liquids) continuously in a stream.',['intransitive']]
  ]){
   const partOfSpeech=word==='bright'?'adjective':word==='goblet'?'noun':'verb';
