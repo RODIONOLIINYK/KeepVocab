@@ -13,8 +13,7 @@ import { localDateKey } from '../utils/dates.js';
 import { getCourseDefinition, isCourseId } from '../data/courses.js';
 import { migrateCourseSettings, updateActiveCourseSettings, switchActiveCourse, mergeCourseProfiles, stampPracticePreferences } from './courseProfiles.js';
 import { normalizeWordPracticeStats } from './wordSelection.js?v=18908';
-import { areSensesNearDuplicate, areLearnerMeaningsMergeable, normalizeMeaningSupport, normalizeGroupedSenses, originalSenses, sourceDefinitionFingerprint } from './learningDefinitions.js?v=18908';
-import { learnerCorePresentation } from './learnerMeaningRules.js';
+import { areSensesNearDuplicate, normalizeMeaningSupport, normalizeGroupedSenses, originalSenses, sourceDefinitionFingerprint } from './learningDefinitions.js?v=18908';
 
 const STORAGE_KEY_WORDS = 'keepvocab_words_db';
 const STORAGE_KEY_NOTEBOOKS = 'keepvocab_notebooks_db';
@@ -803,7 +802,7 @@ export class DriveSyncService {
     if (ids.size < 2 || records.length !== ids.size) throw new Error('The duplicate meanings changed. Review them again before merging.');
     const first = records[0];
     const sameContext = records.every(word => ['word', 'partOfSpeech', 'monthYear', 'courseId'].every(key => (word[key] || '') === (first[key] || '')));
-    const sameMeaning = records.every((left, index) => records.slice(index + 1).every(right => areLearnerMeaningsMergeable(left, right)));
+    const sameMeaning = records.every((left, index) => records.slice(index + 1).every(right => areSensesNearDuplicate(left, right)));
     if (!sameContext || !sameMeaning) throw new Error('Only near-identical meanings of the same word in this month can be merged.');
     const stats = records.map(normalizeWordPracticeStats);
     const latest = [...records].sort((a, b) => learningTimestamp(b) - learningTimestamp(a))[0];
@@ -852,11 +851,6 @@ export class DriveSyncService {
     merged.nextReviewDate = new Date(reviewDates.length ? Math.min(...reviewDates) : Date.now()).toISOString();
     merged.sourceDefinitions = [...new Set(records.flatMap(word => [word.sourceDefinition || word.definition, ...(word.sourceDefinitions || [])]))].slice(0, 12);
     merged.groupedSenses = normalizeGroupedSenses(records.flatMap(originalSenses));
-    const core = learnerCorePresentation(records);
-    if (core) {
-      merged.definition = core.definition; merged.sourceDefinition = core.definition;
-      merged.usageNote = core.usageNote; merged.sourceFingerprint = sourceDefinitionFingerprint(merged);
-    }
     merged.updatedAt = new Date().toISOString();
     const removed = records.filter(word => word.id !== merged.id);
     const tombstones = this.getTombstones().filter(item => !removed.some(word => word.id === item.id));

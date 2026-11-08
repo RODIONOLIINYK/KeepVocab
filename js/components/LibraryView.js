@@ -8,7 +8,7 @@ import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18908';
 import { imageChoiceLabels } from '../services/imageChoicePolicy.js';
 import { getPracticeReadiness } from '../services/reminderService.js?v=18908';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
-import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, meaningSupportFor, groupSimilarSenses, areLearnerMeaningsMergeable } from '../services/learningDefinitions.js?v=18908';
+import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, meaningSupportFor, groupSimilarSenses } from '../services/learningDefinitions.js?v=18908';
 import { renderMeaningExplanation, renderExplanationReview, renderInlineExplanation, applyReviewedExplanations } from './MeaningExplanation.js?v=18908';
 import { mountImageReview, renderImageUncertaintyBadge } from './ImageReview.js?v=18908';
 import { attachImagesSequentially } from '../services/bulkWords.js?v=18908';
@@ -18,7 +18,7 @@ export function duplicateMeaningGroups(meanings) {
   // Cluster saved records, not their nested dictionary-source IDs. The merge
   // operation and review history are keyed by the saved record IDs.
   const records = meanings.map(({ groupedSenses, mergedSenseIds, ...record }) => record);
-  return groupSimilarSenses(records, { matches: areLearnerMeaningsMergeable })
+  return groupSimilarSenses(records)
     .filter(group => group.mergedSenseIds?.length > 1);
 }
 

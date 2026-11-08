@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { meaningComparisonText, meaningEmbeddingText } from '../js/services/meaningComparison.js';
+import { meaningComparisonText, meaningEmbeddingText, meaningWords, countMatchingMeaningWords } from '../js/services/meaningComparison.js';
 import { areSensesNearDuplicate } from '../js/services/learningDefinitions.js';
-import { groupEntrySensesLocally, hasExplicitMeaningConflict } from '../js/services/localSenseGrouping.js';
+import { groupEntrySensesLocally } from '../js/services/localSenseGrouping.js';
 import { embedMeaningAnchors, pairEvidence } from '../js/services/meaningEquivalenceLearning.js';
 import { CLIP_DIMENSION } from '../js/ml/clipConfig.js';
 
@@ -27,39 +27,19 @@ test('annotations and extracted metadata cannot block otherwise identical glosse
   assert.equal(result.senses.length,1,word);assert.deepEqual(result.senses[0].groupedSenses,before);assert.deepEqual(senses,before);
  }
 });
-test('other captured dictionary paraphrases merge while complete source clauses remain available',async()=>{
- for(const [word,a,b] of [
-  ['charge','An accusation.','An accusation by a person or organization.'],
-  ['run','To flow.','(intransitive) Of a liquid or electric current, to flow.'],
-  ['faucet','a regulator for controlling the flow of a liquid from a reservoir','An exposed plumbing fitting; a tap or spigot; a regulator for controlling the flow of a liquid from a reservoir.']
- ]){
-  const partOfSpeech=word==='run'?'verb':'noun';
-  const senses=[sense(word,a,{id:'a',partOfSpeech}),sense(word,b,{id:'b',partOfSpeech})];
-  const result=await groupEntrySensesLocally({word,senses},{storage:null,encodeDefinitionTexts:async()=>null});
-  assert.equal(result.senses.length,1,word);assert.deepEqual(result.senses[0].groupedSenses,senses);
-  if(word==='faucet')assert.equal(result.senses[0].definition,b,'The shorter contained gloss must not discard the longer source explanation');
- }
-});
-test('comparison cleanup preserves contradictions, historical distinctions, quantities, role order and POS separation',()=>{
- for(const [a,b] of [
-  ['(US) Allowed to enter.','(UK) Not allowed to enter.'],
-  ['Allowed to enter.','Allowed to enter (not permitted).'],
-  ['(US) A group of 3 people.','(UK) A group of 4 people.'],
-  ['To give money to a child.','To give a child to money.'],
-  ['To produce a result.','(obsolete) To produce a result.'],
-  ['To act.','To act (only for adults).']
- ])assert.equal(areSensesNearDuplicate(sense('probe',a),sense('probe',b)),false,`${a} / ${b}`);
- assert.equal(hasExplicitMeaningConflict(sense('probe','To act (sense 1).'),sense('probe','To act.')),false);
- assert.equal(areSensesNearDuplicate(sense('probe','To act.'),sense('probe','(US) To act.',{partOfSpeech:'noun'})),false);
+test('word matching preserves order, repetition, negation and quantities', () => {
+ const words = meaningWords('A child gives a coin to a parent.');
+ assert.equal(countMatchingMeaningWords(words, meaningWords('A parent gives a coin to a child.')), 6);
+ assert.equal(countMatchingMeaningWords(meaningWords('had had'), meaningWords('had')), 1);
+ assert.deepEqual(meaningWords('Amounts of 1.5 and 15.'), ['amounts', 'of', '1.5', 'and', '15']);
+ assert.equal(meaningEmbeddingText('(adjective) Not real.'), 'not real.');
+ for (const [a,b] of [
+  ['Allowed to enter.', 'Not allowed to enter.'],
+  ['A group of 3 people.', 'A group of 4 people.'],
+  ['To give money to a child.', 'To give a child to money.']
+ ]) assert.equal(areSensesNearDuplicate(sense('probe',a),sense('probe',b)), false);
 });
 
-test('negation is normalized in text while explicit opposites still veto a merge', () => {
-  assert.equal(meaningEmbeddingText('(adjective) Not real.'), 'fake.');
-  assert.equal(meaningEmbeddingText('Not hot.'), 'not hot.');
-  assert.equal(hasExplicitMeaningConflict(sense('probe', 'Not allowed to enter.'), sense('probe', 'Forbidden to enter.')), false);
-  assert.equal(hasExplicitMeaningConflict(sense('probe', 'Not allowed to enter.'), sense('probe', 'Allowed to enter.')), true);
-  assert.equal(hasExplicitMeaningConflict(sense('probe', 'Large in size.'), sense('probe', 'Of size large.')), false);
-});
 test('all definition embedding anchors exclude annotations while pair provenance retains exact sources',async()=>{
  const senses=[sense('probe','(transitive or intransitive, especially US) To produce a result.'),sense('probe','To produce [UK] a result.')];
  let texts;const vector=Array.from({length:CLIP_DIMENSION},(_,i)=>Number(i===0));

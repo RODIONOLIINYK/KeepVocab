@@ -1,6 +1,6 @@
 import { allEntrySenses, originalSenses } from '../services/learningDefinitions.js?v=18908';
 import { recordMeaningJudgment, meaningLearningState, meaningPairKey } from '../services/meaningEquivalenceLearning.js';
-import { meaningComparisonText } from '../services/meaningComparison.js';
+import { meaningWords, countMatchingMeaningWords } from '../services/meaningComparison.js';
 
 export function mountMeaningPairReview(container, entry, { onChange = () => {} } = {}) {
   container.replaceChildren();
@@ -46,18 +46,16 @@ export function mountMeaningPairReview(container, entry, { onChange = () => {} }
       // Offer close source wording immediately. This is a review queue, not an
       // automatic equivalence decision, and must not encode every dictionary
       // definition before allowing a human to compare two of them.
-      const tokens = senses.map(sense => new Set((meaningComparisonText(sense.sourceDefinition || sense.definition)
-        .toLowerCase().match(/[\p{L}]+/gu) || []).filter(word => word.length > 2 && !/^(?:the|and|for|with|from|that|which|this|one|someone|something)$/.test(word))));
+      const tokens = senses.map(sense => meaningWords(sense.sourceDefinition || sense.definition));
       const candidates = [];
       for (let a = 0; a < senses.length; a++) for (let b = a + 1; b < senses.length; b++) {
         const left = senses[a], right = senses[b];
         const key = meaningPairKey(entry.word, left.partOfSpeech, left.sourceDefinition || left.definition, right.sourceDefinition || right.definition);
         if (left.partOfSpeech !== right.partOfSpeech || seen.has(key)) continue;
-        const shared = [...tokens[a]].filter(word => tokens[b].has(word)).length;
-        const priority = similarities.has(key) ? 1 + similarities.get(key) : shared / Math.max(1, new Set([...tokens[a], ...tokens[b]]).size);
-        candidates.push({ pair: [left, right], priority });
+        const matches = countMatchingMeaningWords(tokens[a], tokens[b]);
+        candidates.push({ pair: [left, right], similarity: similarities.get(key) ?? -1, matches });
       }
-      pairs = candidates.sort((a, b) => b.priority - a.priority).slice(0, 12).map(p => p.pair); render();
+      pairs = candidates.sort((a, b) => b.similarity - a.similarity || b.matches - a.matches).slice(0, 12).map(p => p.pair); render();
     } catch { if (active) message('Meaning review is unavailable. You can still choose and save dictionary definitions.'); }
   });
   return { destroy() { active = false; } };

@@ -1,11 +1,9 @@
 import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18908';
 import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18908';
 import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18908';
-import { meaningGlossText, hasExplicitMeaningConflict } from './meaningComparison.js';
+import { meaningGlossText, meaningWords } from './meaningComparison.js';
 import { hasExampleSenseConflict, isModernUsageExample } from './exampleSearch.js?v=18908';
 export { isModernUsageExample } from './exampleSearch.js?v=18908';
-
-import { learnerCoreMatch } from './learnerMeaningRules.js';
 
 const CACHE_KEY = 'keepvocab_learner_explanations_v2';
 const text = value => String(value || '').replace(/\s+/g, ' ').trim();
@@ -41,88 +39,13 @@ export function qualifierSignature(sense) {
     source.match(/\b\d+(?:\.\d+)?\b/g) || [], domains.map(pattern => pattern.test(source))]);
 }
 
-// Small, explicit dictionary paraphrases. They change wording, not referents,
-// polarity, participants, domain restrictions or process/result distinctions.
-export function canonicalMeaningWording(value) {
-  return meaningGlossText(value).toLowerCase()
-    .replace(/\b(?:swiftly|rapidly)\b/g, 'quickly')
-    .replace(/\bgo at a fast pace\b/g, 'move quickly')
-    .replace(/\b(?:having the ability to|able to|capable of)\b/g, 'can')
-    .replace(/\bcan (bending|carrying|running|adapting|holding|changing|making|learning|moving|forming|flowing|thinking|taking|seeing|feeling|hearing|speaking|understanding)\b/g,
-      (_, verb) => `can ${{bending:'bend',carrying:'carry',running:'run',adapting:'adapt',holding:'hold',changing:'change',making:'make',learning:'learn',moving:'move',forming:'form',flowing:'flow',thinking:'think',taking:'take',seeing:'see',feeling:'feel',hearing:'hear',speaking:'speak',understanding:'understand'}[verb]}`)
-    .replace(/\b(?:characterized by|characterised by|possessing)\b/g, 'having')
-    .replace(/\b(?:of or pertaining to|pertaining to|of or relating to)\b/g, 'relating to')
-    .replace(/\b(?:a person who|someone who|one who)\b/g, 'person who')
-    .replace(/\b(?:appearing to be|seeming to be|having the appearance of being)\b/g, 'seeming')
-    .replace(/\blikely to be\b/g, 'probably')
-    .replace(/\bout of the ordinary\b/g, 'unusual')
-    .replace(/\bby (?:a person or (?:an? )?organi[sz]ation|someone|somebody)(?=[.!?;]*\s*$)/g, '')
-    .replace(/\b(mould|moulded|moulding|colour|coloured|colouring|centre|centres|labour|odour)\b/g,
-      word => ({mould:'mold',moulded:'molded',moulding:'molding',colour:'color',coloured:'colored',colouring:'coloring',centre:'center',centres:'centers',labour:'labor',odour:'odor'})[word])
-    .replace(/\betc\.?\s*$/g, '')
-    .replace(/[’']/g, '').replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\b(?:a|an|the)\b/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-function synonymGloss(sense) {
-  const source = meaningGlossText(sourceOf(sense));
-  // An enumeration of short glosses may change order; a clause with actors or
-  // relations is never treated as an unordered bag of synonyms.
-  if (!/[;,]|\bor\b/.test(source) || /\b(?:who|which|that|from|into|between|above|below|before|after|not|no|without|only|person|people)\b/i.test(source)) return null;
-  const pieces = source.replace(/[.!]+$/, '').split(/[,;]|\bor\b/i).map(canonicalMeaningWording).filter(Boolean);
-  return pieces.length >= 2 && pieces.every(p => p.split(' ').length <= 2) ? new Set(pieces) : null;
-}
-
-function meaningTokens(sense) {
-  const ignored = new Set('a an the of or and to be is that which who for with by in at as one someone something very appearing seeming looking'.split(' '));
-  return new Set(canonicalMeaningWording(sourceOf(sense)).replace(/\b(?:having the appearance of)\b/g, ' ')
-    .replace(/[^\p{L}\p{N}]+/gu, ' ').split(/\s+/).filter(value => value && !ignored.has(value))
-    .map(value => value.length > 5 ? value.replace(/(?:ing|ed|s)$/, '') : value));
-}
-
-// Similarity proposes candidates; it cannot override contradictory evidence.
-const OPPOSITES = [['happy', 'unhappy'], ['possible', 'impossible'], ['able', 'unable'], ['legal', 'illegal'],
-  ['allowed', 'forbidden'], ['permit', 'prohibit'], ['increase', 'decrease'], ['give', 'receive'],
-  ['buy', 'sell'], ['open', 'closed'], ['include', 'exclude'], ['present', 'absent'], ['wet', 'dry'],
-  ['alive', 'dead'], ['hot', 'cold'], ['full', 'empty'], ['with', 'without']];
-
-export function senseGroupingEvidence(left, right) {
-  if ((left?.word && right?.word && text(left.word).toLowerCase() !== text(right.word).toLowerCase())
-    || text(left?.partOfSpeech).toLowerCase() !== text(right?.partOfSpeech).toLowerCase()
-    || qualifierSignature(left) !== qualifierSignature(right)) return null;
-  const a = meaningTokens(left), b = meaningTokens(right);
-  if (!a.size || !b.size) return null;
-  const raw = sense => new Set(sourceOf(sense).toLowerCase().match(/[a-z]+/g) || []);
-  const rawA = raw(left), rawB = raw(right);
-  if (OPPOSITES.some(([x, y]) => rawA.has(x) && rawB.has(y) && !(rawA.has(y) && rawB.has(x))
-    || rawA.has(y) && rawB.has(x) && !(rawA.has(x) && rawB.has(y)))) return null;
-  if ((left.antonyms || []).some(value => rawB.has(text(value).toLowerCase()))
-    || (right.antonyms || []).some(value => rawA.has(text(value).toLowerCase()))) return null;
-  const clauses = sense => meaningGlossText(sourceOf(sense)).split(';').map(canonicalMeaningWording).filter(Boolean);
-  const clausesA = clauses(left), clausesB = clauses(right);
-  // A complete gloss repeated as a semicolon-delimited dictionary explanation
-  // is a duplicate, unlike a shared topic or a few overlapping words.
-  if (clausesA.length === 1 && clausesB.length > 1 && clausesB.includes(clausesA[0]) && a.size >= 3
-    || clausesB.length === 1 && clausesA.length > 1 && clausesA.includes(clausesB[0]) && b.size >= 3)
-    return { coverage: 1, jaccard: 1, reason: 'contained-complete-gloss' };
-  const shared = [...a].filter(value => b.has(value));
-  const glossA = synonymGloss(left), glossB = synonymGloss(right);
-  const sharedGloss = glossA && glossB ? [...glossA].filter(value => glossB.has(value)).length : 0;
-  const sameGloss = sharedGloss >= 2 && sharedGloss / Math.max(glossA.size, glossB.size) >= .6;
-  // Swapping participants/direction must not become a match through a bag of words.
-  const orderA = [...a].filter(value => b.has(value)).join('|');
-  const orderB = [...b].filter(value => a.has(value)).join('|');
-  if (!sameGloss && orderA !== orderB) return null;
-  return { coverage: shared.length / Math.max(a.size, b.size), jaccard: shared.length / new Set([...a, ...b]).size,
-    ...(sameGloss ? { reason: 'shared-gloss-core' } : {}) };
-}
-
+// Use only matching words for the text fast path. A full ordered match
+// lets the app group repeated glosses without loading the local encoder.
 export function areSensesNearDuplicate(left, right) {
-  const evidence = senseGroupingEvidence(left, right);
-  return Boolean(evidence && (evidence.reason === 'shared-gloss-core' || evidence.coverage >= 0.88 && evidence.jaccard >= 0.78));
-}
-
-export function areLearnerMeaningsMergeable(left, right) {
-  return Boolean((areSensesNearDuplicate(left, right) || learnerCoreMatch(left, right)) && !hasExplicitMeaningConflict(left, right));
+  if ((left?.word && right?.word && text(left.word).toLowerCase() !== text(right.word).toLowerCase())
+    || text(left?.partOfSpeech).toLowerCase() !== text(right?.partOfSpeech).toLowerCase()) return false;
+  const a = meaningWords(sourceOf(left)), b = meaningWords(sourceOf(right));
+  return a.length > 0 && a.length === b.length && a.every((word, index) => word === b[index]);
 }
 
 export function originalSenses(sense) {

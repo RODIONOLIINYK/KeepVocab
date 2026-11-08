@@ -21,9 +21,8 @@ test('source-backed paraphrases with different wording reach the encoder after r
    storage: null,
    encodeDefinitionTexts: async texts => { compared = texts; return null; }
   });
-  // “To” and “etc.” are covered by the ordinary wording rule for “jug”.
-  assert.equal(compared.length, word === 'jug' ? 0 : 2, word);
-  assert.equal(result.senses.length, word === 'jug' ? 1 : 2, word);
+  assert.equal(compared.length, 2, word);
+  assert.equal(result.senses.length, 2, word);
   assert.deepEqual(result.senses.flatMap(sense => sense.groupedSenses), senses);
  }
 });
@@ -38,32 +37,11 @@ test('wording rules preserve different materials, restrictions and numerical qua
  ]) assert.equal(areSensesNearDuplicate(sense(a),sense(b)),false,`${a} / ${b}`);
 });
 
-test('yield folds domain applications into core learner meanings without a model, and preserves all 24 sources', async () => {
+test('offline regrouping retains all of the original yield definitions', async () => {
  const { readFile } = await import('node:fs/promises');
  const { consolidateEntrySenses } = await import('../js/services/localSenseGrouping.js');
  const entry = JSON.parse(await readFile(new URL('./fixtures/learner-meaning-consolidation/yield.json', import.meta.url)));
- const result = await consolidateEntrySenses(entry, { storage: null, encodeDefinitionTexts: async () => assert.fail('These core groups require no model') });
- assert.equal(result.senses.length, 15);
+ const result = await consolidateEntrySenses(entry, { storage: null, encodeDefinitionTexts: async () => null });
  assert.equal(result.senseConsolidation.originalCount, 24);
- const grouped = new Map(result.senses.filter(s => s.meaningGroup.rule).map(s => [s.meaningGroup.rule, s]));
- for (const [key, size] of [['produce-result',4],['give-up-possession',2],['quantity-output',5],['investment-return',2]]) {
-  assert.equal(grouped.get(key).groupedSenses.length,size,key);
-  assert.ok(grouped.get(key).usageNote.length > 0);
-  assert.ok(grouped.get(key).usageNote.length < 220, 'Domain details should not repeat every source definition');
- }
  assert.deepEqual(new Set(result.senses.flatMap(s=>s.groupedSenses.map(s=>s.id))),new Set(entry.senses.map(s=>s.id)));
- for (const id of [7,8,9,10,18,21,22]) assert.ok(result.senses.some(s=>s.groupedSenses.length===1&&s.groupedSenses[0].id===`dictionary-raw-${id}`));
-});
-test('core application rules retain polarity, restrictions, historical use and distinct parts of speech', async () => {
- const entry={word:'probe',senses:[
-  {id:'a',partOfSpeech:'verb',definition:'To generate an output as a result.'},
-  {id:'b',partOfSpeech:'verb',definition:'To produce as a result.'},
-  {id:'c',partOfSpeech:'verb',definition:'To produce no output as a result.'},
-  {id:'d',partOfSpeech:'verb',definition:'To produce only one result.'},
-  {id:'e',partOfSpeech:'verb',definition:'(obsolete) To produce as a result.'},
-  {id:'f',partOfSpeech:'noun',definition:'A result produced.'}
- ]};
- const result=await groupEntrySensesLocally(entry,{storage:null,encodeDefinitionTexts:async()=>null});
- assert.equal(result.senses.length,5);
- assert.deepEqual(result.senses.find(s=>s.groupedSenses.length===2).groupedSenses.map(s=>s.id),['a','b']);
 });

@@ -1,23 +1,20 @@
-import { groupSimilarSenses, originalSenses, areSensesNearDuplicate, allEntrySenses, areLearnerMeaningsMergeable } from './learningDefinitions.js?v=18908';
+import { groupSimilarSenses, originalSenses, areSensesNearDuplicate, allEntrySenses, sourceDefinitionFingerprint } from './learningDefinitions.js?v=18908';
 import { cosine, normalizedVector } from './imagePreferences.js';
 import { CLIP_TAG } from '../ml/clipConfig.js';
 import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18908';
 import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18908';
 import { isModernUsageExample, hasExampleSenseConflict } from './exampleSearch.js?v=18908';
-import { sourceDefinitionFingerprint, senseGroupingEvidence } from './learningDefinitions.js?v=18908';
 import { meaningLearningState, meaningPairKey } from './meaningEquivalenceLearning.js';
-import { learnerCorePresentation } from './learnerMeaningRules.js';
-import { meaningComparisonText, meaningEmbeddingText, meaningGlossText, hasExplicitMeaningConflict } from './meaningComparison.js';
+import { meaningComparisonText, meaningEmbeddingText } from './meaningComparison.js';
 
 import { MEANING_EMBEDDING_CENTER } from '../ml/pretrainedSemanticHeads.js';
 
 const CACHE_KEY = 'keepvocab_centered_sense_scores_v1';
-const VERSION = 2;
-const LOCAL_SIMILARITY = 0.80;
+const VERSION = 3;
+const LOCAL_SIMILARITY = 0.45;
 const REVIEW_SIMILARITY = 0.40;
 const MAX_EMBEDDED_SENSES = 24;
 const CONSOLIDATION_CACHE = 'keepvocab_learner_meaning_groups_v1';
-const isUnresolvedReference = sense => /\b(?:synonym of|alternative (?:form|spelling) of|action of the verb|present participle and gerund of)\b/i.test(sense.sourceDefinition || sense.definition);
 let retryAfter = 0;
 
 function validMeaningGroups(groups, senses) {
@@ -31,19 +28,6 @@ function validMeaningGroups(groups, senses) {
       && typeof g.definition === 'string' && g.definition.trim().length >= 5 && g.definition.length <= 1000
       && typeof g.usageNote === 'string' && g.usageNote.length <= 1500);
 }
-
-function enforceMeaningConflicts(groups, senses) {
-  return groups.flatMap(group => {
-    const clusters = [];
-    for (const id of group.members) {
-      const compatible = clusters.find(ids => ids.every(other => !hasExplicitMeaningConflict(senses[Number(id)], senses[Number(other)])));
-      if (compatible) compatible.push(id); else clusters.push([id]);
-    }
-    return clusters.map(members => members.length === group.members.length ? group : { ...group, members, splitByRules: true });
-  });
-}
-
-export { hasExplicitMeaningConflict } from './meaningComparison.js';
 
 export async function consolidateEntrySenses(entry, options = {}) {
   if (entry.rawDictionarySenses?.length) {
@@ -75,14 +59,14 @@ export async function consolidateEntrySenses(entry, options = {}) {
   if (options.groupSenses === false || options.consolidateSenses === false || entry.aiGenerated
     || localCount < 2 || local.senseConsolidation?.userReviewed || !settings.apiKey || settings.enabled === false) return local;
   const allSenses = allEntrySenses(entry).flatMap(originalSenses);
-  // Rule-resolved groups are atomic inputs. Semantic resolution can merge them
+  // Local groups are atomic inputs. Gemini can merge them
   // with another group but cannot undo an already-established equivalence.
   const senses = allEntrySenses(local);
   if (!senses.length) return local;
   if (new Set(senses.map(s => String(s.partOfSpeech || 'word').trim().toLowerCase())).size === senses.length) return local;
   const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
   const model = options.model || settings.textModel;
-  const key = JSON.stringify([18, model, entry.word, senses.map(s => [s.partOfSpeech, s.sourceDefinition || s.definition, s.sourceDefinitions, s.labels, s.usageNote])]);
+  const key = JSON.stringify([19, model, entry.word, senses.map(s => [s.partOfSpeech, s.sourceDefinition || s.definition, s.sourceDefinitions, s.labels, s.usageNote])]);
   const cache = readObjectCache(storage, CONSOLIDATION_CACHE);
   let groups = cache[key]?.data;
   try {
@@ -114,21 +98,21 @@ Parts: ${JSON.stringify(parts)}`,
       cache[key] = { cachedAt: Date.now(), data: groups };
       writeRecentObjectCache(storage, CONSOLIDATION_CACHE, cache, 150);
     }
-    const built = enforceMeaningConflicts(groups, senses).map((group, index) => {
+    const built = groups.map((group, index) => {
       const originals = group.members.flatMap(id => originalSenses(senses[Number(id)]));
       const exampleSources = originals.filter(s => isModernUsageExample({ ...s, word: entry.word }, s.example)
         && !hasExampleSenseConflict(entry.word, s, s.example)).sort((a, b) => a.example.length - b.example.length);
       const representative = exampleSources[0] || originals[0];
       const partOfSpeech = [...new Set(originals.map(s => s.partOfSpeech || 'word'))].join(' / ');
       const unresolved = originals.length === 1 && /\b(?:synonym of|alternative (?:form|spelling) of)\b/i.test(representative.sourceDefinition || representative.definition);
-      const definition = group.splitByRules ? coveredDefinition(originals, representative) : group.definition.trim();
+      const definition = group.definition.trim();
       const sourceDefinition = originals.length > 1 ? definition : representative.sourceDefinition || representative.definition;
       const sense = { ...representative, id: `learner-group-${index}`, word: entry.word, partOfSpeech,
         definition, sourceDefinition,
         sourceDefinitions: [...new Set(originals.map(s => s.sourceDefinition || s.definition))],
         groupedSenses: originals, mergedSenseIds: originals.map(s => s.id).filter(Boolean),
         labels: originals.length === 1 ? originals[0].labels || [] : [],
-        usageNote: unresolved || group.splitByRules ? representative.usageNote || '' : group.usageNote.trim(), example: exampleSources[0]?.example || '', needsExample: !exampleSources.length,
+        usageNote: unresolved ? representative.usageNote || '' : group.usageNote.trim(), example: exampleSources[0]?.example || '', needsExample: !exampleSources.length,
         translation: '', translationLanguage: 'en', explanationSource: 'Gemini suggestion — confirm before saving',
         explanationModel: model, explanationVersion: 2, source: 'Grouped dictionary meanings',
         meaningGroup: { version: 1, source: 'gemini-fallback', model, memberCount: originals.length } };
@@ -147,12 +131,6 @@ Parts: ${JSON.stringify(parts)}`,
 // A selected representative is not an adequate definition of a broader group.
 // Retain every non-equivalent source clause in its visible combined definition.
 function coveredDefinition(originals, representative) {
-  // A contained gloss may be shorter than the source that explains it. Keep
-  // that longer explanation visible rather than dropping its extra clauses.
-  const containing = originals.find(a => originals.some(b => a !== b
-    && senseGroupingEvidence(a, b)?.reason === 'contained-complete-gloss'
-    && meaningGlossText(a.sourceDefinition || a.definition).split(';').length > 1));
-  if (containing) return containing.definition;
   if (originals.every(s => areSensesNearDuplicate({ ...s, word: representative.word }, representative))) return representative.definition;
   const clauses = [...new Set(originals.map(s => String(s.sourceDefinition || s.definition || '').trim().replace(/[.;]+$/, '')).filter(Boolean))];
   return clauses.join('; ') + (clauses.length ? '.' : '');
@@ -160,37 +138,17 @@ function coveredDefinition(originals, representative) {
 function packagedLocal(entry, groups) {
   const built = groups.map((group, index) => {
     const originals = originalSenses(group);
-    const core = learnerCorePresentation(originals);
-    const definition = core?.definition || coveredDefinition(originals, group);
+    const definition = coveredDefinition(originals, group);
     return { ...group, id: group.id || 'local-group-' + index, definition, sourceDefinition: definition,
-      ...(core ? { usageNote: core.usageNote } : {}),
       groupedSenses: originals, sourceDefinitions: [...new Set(originals.map(s => s.sourceDefinition || s.definition))],
       mergedSenseIds: originals.map(s => s.id).filter(Boolean),
-      meaningGroup: { version: 1, source: 'local', memberCount: originals.length, ...(core ? { rule: core.key, grouping: 'core-with-usage' } : {}) } };
+      meaningGroup: { version: 1, source: 'local', memberCount: originals.length } };
   });
   return { ...entry, senses: built, ...built[0], additionalSenses: [],
     senseConsolidation: { version: 1, source: 'local', originalCount: built.reduce((n, g) => n + g.groupedSenses.length, 0), coreCount: built.length } };
 }
 const identity = value => String(value || '').trim().toLowerCase();
 const source = sense => sense.sourceDefinition || sense.definition || '';
-const unresolvedReference = /\b(?:any of the above|the preceding|as above|ellipsis of)\b/i;
-const historical = /\b(?:archaic|obsolete|historical|dated)\b/i;
-const figurative = /\bfigurativ(?:e|ely)\b/i;
-const appearance = /\b(?:seeming to be|appearing to be|having the appearance of)\b/i;
-
-function contextDiffers(left, right, pattern) {
-  const context = sense => [source(sense), ...(sense.labels || []), sense.usageNote].join(' ');
-  return pattern.test(context(left)) !== pattern.test(context(right));
-}
-
-function compatible(left, right) {
-  return identity(left.word) === identity(right.word) && identity(left.partOfSpeech) === identity(right.partOfSpeech)
-    && !isUnresolvedReference(left) && !isUnresolvedReference(right)
-    && !unresolvedReference.test(source(left)) && !unresolvedReference.test(source(right))
-    && !contextDiffers(left, right, historical) && !contextDiffers(left, right, figurative)
-    && !contextDiffers(left, right, appearance) && !hasExplicitMeaningConflict(left, right);
-}
-
 export { fitEquivalenceHead as fitMeaningEquivalenceW } from './meaningEquivalenceHead.js';
 
 function centeredVector(vector) {
@@ -235,9 +193,9 @@ export async function groupEntrySensesLocally(entry, options = {}) {
     if (judgment !== undefined) {
       userReviewed = true;
       if (judgment === 1) scores.set(pair, 2);
-    } else if (areLearnerMeaningsMergeable(left, right)) {
+    } else if (areSensesNearDuplicate(left, right)) {
       scores.set(pair, 1);
-    } else if (compatible(left, right)) {
+    } else {
       candidates.set(pair, key);
     }
   }
@@ -246,7 +204,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
   if (candidates.size) {
     const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
     const key = JSON.stringify([VERSION, CLIP_TAG, entry.word,
-      senses.map(s => [s.partOfSpeech, source(s), s.labels, s.usageNote, s.antonyms])]);
+      senses.map(s => [s.word, s.partOfSpeech, source(s)])]);
     const cache = readObjectCache(storage, CACHE_KEY);
     let pairs = cache[key]?.data;
     if (!Array.isArray(pairs) || pairs.some(pair => !Array.isArray(pair) || pair.length !== 2

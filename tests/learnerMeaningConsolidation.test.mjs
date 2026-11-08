@@ -108,7 +108,7 @@ test('semantic grouping resolves two or three remaining meanings rather than req
 test('partial rule grouping remains atomic while semantic resolution merges other paraphrases',async()=>{
  const entry={word:'charge',senses:[
   {id:'a',partOfSpeech:'noun',definition:'An accusation.'},
-  {id:'b',partOfSpeech:'noun',definition:'Accusation.'},
+  {id:'b',partOfSpeech:'noun',definition:'(countable) An accusation.'},
   {id:'c',partOfSpeech:'noun',definition:'The amount of money levied for a service.'},
   {id:'d',partOfSpeech:'noun',definition:'A fee paid for a service.'}
  ]};
@@ -125,19 +125,6 @@ test('partial rule grouping remains atomic while semantic resolution merges othe
  assert.equal(calls,1);assert.equal(result.senses.length,2);
  assert.deepEqual(result.senses.map(s=>s.groupedSenses.length),[2,2]);
  assert.deepEqual(new Set(result.senses.flatMap(s=>s.groupedSenses.map(o=>o.id))),new Set(['a','b','c','d']));
-});
-test('a contradictory model group is split without discarding a separate valid merge',async()=>{
- const fixture={entry:{word:'probe',senses:[
-  {id:'a',partOfSpeech:'adjective',definition:'A hot object on a table.'},
-  {id:'b',partOfSpeech:'adjective',definition:'A cold object on a table.'},
-  {id:'c',partOfSpeech:'adjective',definition:'Able to bend repeatedly.'},
-  {id:'d',partOfSpeech:'adjective',definition:'Flexible and easy to bend.'}
- ]},model:plastic.model,groups:[{members:['0','1'],definition:'A hot or cold object.',usageNote:''},{members:['2','3'],definition:'Able to bend easily.',usageNote:''}]};
- const options=setup(fixture);const result=await consolidateEntrySenses(fixture.entry,{...options,encodeDefinitionTexts:async()=>null});
- assert.equal(result.senses.length,3);
- assert.equal(result.senses[0].definition,fixture.entry.senses[0].definition);
- assert.equal(result.senses[1].definition,fixture.entry.senses[1].definition);
- assert.deepEqual(result.senses[2].groupedSenses.map(s=>s.id),['c','d']);
 });
 test('ordinary bulk dictionary preparation makes no automatic Gemini wording request',async()=>{
  const rows=[{status:'ready',data:{word:'careful',senses:[{definition:'Characterized by close attention to details.'}]}}];

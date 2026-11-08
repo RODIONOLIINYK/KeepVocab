@@ -27,12 +27,12 @@ test('Raw preserves dictionary order, exact text, duplicate senses and POS, incl
  assert.equal(original.definition,definitions[2]);
 });
 
-test('high caption similarity keeps distinct skills and upbringing senses separate across POS',async()=>{
+test('offline grouping keeps different skills and upbringing glosses and parts of speech separate',async()=>{
  const result=await consolidateEntrySenses({word:'training',senses:[
  {partOfSpeech:'noun',definition:'The activity of imparting and acquiring skills.'},
  {partOfSpeech:'noun',definition:'The result of good social upbringing.'},
  {partOfSpeech:'verb',definition:'present participle and gerund of train'}
- ]},{storage:new MemoryStorage(),encodeDefinitionTexts:async texts=>texts.map(()=>basis(0))});
+ ]},{storage:new MemoryStorage(),encodeDefinitionTexts:async()=>null});
  assert.equal(result.senses.length,3);
  assert.ok(result.senses.some(s=>s.definition==='The activity of imparting and acquiring skills.'));
  assert.ok(result.senses.some(s=>s.definition==='The result of good social upbringing.'));

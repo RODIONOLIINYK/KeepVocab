@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112033-general-meaning-comparison';
+const CACHE_NAME = 'keepvocab-v112034-word-match-similarity-045';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -21,7 +21,6 @@ const ASSETS_TO_CACHE = [
   './js/services/wordEntry.js',
   './js/services/learningDefinitions.js',
   './js/services/localSenseGrouping.js',
-  './js/services/learnerMeaningRules.js',
   './js/services/meaningComparison.js',
   './js/services/imageSearchPlan.js',
   './js/services/dictionaryApi.js',

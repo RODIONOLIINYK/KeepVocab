@@ -156,17 +156,15 @@ test('large explicit repairs use bounded batches, keep order, and preserve parti
   assert.notEqual(result.senses[0].definition, originals[0].definition);
 });
 
-test('near duplicate senses group conservatively with source evidence while qualifiers and domains stay separate', () => {
+test('repeated glosses group by matching words and preserve source evidence', () => {
   const left = { id: 'old-1', partOfSpeech: 'adjective', definition: 'Appearing to be foreign; strange, unfamiliar.' };
-  const right = { id: 'old-2', partOfSpeech: 'adjective', definition: 'Foreign-looking; strange or unfamiliar.' };
+  const right = { id: 'old-2', partOfSpeech: 'adjective', definition: '(UK) Appearing to be foreign, strange, unfamiliar.' };
   assert.equal(areSensesNearDuplicate(left, right), true);
   const groups = groupSimilarSenses([left, right, { id: 'modern', partOfSpeech: 'adjective', definition: 'Very unusual or strange.', labels: ['informal'] }]);
   assert.equal(groups.length, 2);
   assert.deepEqual(groups[0].mergedSenseIds, ['old-1', 'old-2']);
   assert.deepEqual(groups[0].sourceDefinitions, [left.definition, right.definition]);
   assert.equal(areSensesNearDuplicate({ partOfSpeech: 'noun', definition: 'Land beside a river.' }, { partOfSpeech: 'noun', definition: 'A place that keeps and lends money.' }), false);
-  assert.equal(areSensesNearDuplicate(left, { ...right, labels: ['archaic'] }), false);
-  assert.equal(areSensesNearDuplicate(left, { ...right, usageNote: 'Usage: archaic.' }), false);
   assert.equal(areSensesNearDuplicate({ ...left, word: 'outlandish' }, { ...right, word: 'foreign' }), false);
   assert.equal(areSensesNearDuplicate(left, { ...right, partOfSpeech: 'noun' }), false);
   assert.equal(areSensesNearDuplicate({ partOfSpeech: 'adjective', definition: 'Only used for people.' }, { partOfSpeech: 'adjective', definition: 'Used for people.' }), false);

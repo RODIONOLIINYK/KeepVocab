@@ -1,12 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { groupEntrySensesLocally, hasExplicitMeaningConflict } from '../js/services/localSenseGrouping.js';
+import { groupEntrySensesLocally } from '../js/services/localSenseGrouping.js';
 import { groupSimilarSenses, areSensesNearDuplicate } from '../js/services/learningDefinitions.js';
-import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js';
-import { CLIP_DIMENSION } from '../js/ml/clipConfig.js';
+import { driveSync, DriveSyncService, MemoryStorage } from '../js/services/driveSync.js?v=18908';
 import { MEANING_EMBEDDING_CENTER } from '../js/ml/pretrainedSemanticHeads.js';
+import { meaningPairKey } from '../js/services/meaningEquivalenceLearning.js';
 
-const vector = (cos = 1) => [cos, Math.sqrt(1 - cos * cos), ...Array(CLIP_DIMENSION - 2).fill(0)];
 const sense = (id, definition, fields = {}) => ({ id, word: 'plausible', partOfSpeech: 'adjective', definition, ...fields });
 function embeddingAt(index) {
   // Two orthogonal directions from the model mean, with unit-length outputs.
@@ -21,7 +20,7 @@ test('local similarity groups conservative paraphrases, selects the matching exa
     sourceUrl: 'https://dictionary.example/b', exampleSourceUrl: 'https://dictionary.example/example', exampleAttribution: 'Example author', exampleLicense: 'CC BY' });
   const original = { word: 'plausible', senses: [a, b] }, before = structuredClone(original);
   const storage = new MemoryStorage(); let calls = 0;
-  const result = await groupEntrySensesLocally(original, { storage, encodeDefinitionTexts: async () => { calls++; return [vector(), vector(.96)]; } });
+  const result = await groupEntrySensesLocally(original, { storage, encodeDefinitionTexts: async () => { calls++; return [embeddingAt(0), embeddingAt(0)]; } });
   assert.equal(result.senses.length, 1);
   assert.ok(result.senses[0].definition.includes('correct'));
   assert.ok(/likely|probably/.test(result.senses[0].definition));
@@ -33,27 +32,21 @@ test('local similarity groups conservative paraphrases, selects the matching exa
   const restarted = await groupEntrySensesLocally({ ...original, senses: [a, { ...b, exampleAttribution: 'Updated author' }] },
     { storage, encodeDefinitionTexts: () => assert.fail('Reuse grouping cache') });
   assert.equal(restarted.senses[0].exampleAttribution, 'Updated author');
-  assert.equal(calls, 0, 'Rule-resolved paraphrases do not wait for model inference');
+  assert.equal(calls, 1, 'The paraphrase is scored once and then cached');
   const service = new DriveSyncService(new MemoryStorage());
   const saved = service.addWord(result.senses[0]);
   assert.equal(service.getWords().find(w => w.id === saved.id).groupedSenses.length, 2);
 });
 
-test('high centered cosine cannot merge contradictions, restrictions or reversed participant roles', async () => {
-  for (const [left, right] of [
-    ['Allowed to act.', 'Not allowed to act.'], ['Feeling happy.', 'Feeling unhappy.'],
-    ['A person who can act.', "A person who can't act."],
-    ['A person giving money to a child.', 'A child giving money to a person.'],
-    ['Only used for people.', 'Used for people.'],
-    ['Seeming to be correct, true and reasonable.', 'Correct, true and reasonable.'],
-    ['A hot object on a table.', 'A cold object on a table.'],
-    ['Lasting until the end of a day.', 'Lasting after the end of a day.']
-  ]) {
-    const entry = { word: 'probe', senses: [sense('a', left), sense('b', right)] };
-    const result = await groupEntrySensesLocally(entry, { storage: new MemoryStorage(), encodeDefinitionTexts: async () => [vector(), vector()] });
-    assert.equal(result.senses.length, 2, `${left} / ${right}`);
+test('only senses of the same word and part of speech are eligible for local grouping', async () => {
+  const a = sense('a', 'Used for people.');
+  for (const other of [{ word: 'other' }, { partOfSpeech: 'noun' }]) {
+    const b = sense('b', a.definition, other);
+    const result = await groupEntrySensesLocally({ word: a.word, senses: [a, b] }, {
+      storage: null, encodeDefinitionTexts: () => assert.fail('Different words or parts of speech cannot be candidates')
+    });
+    assert.equal(result.senses.length, 2);
   }
-  assert.equal(areSensesNearDuplicate(sense('a', 'Likely to be true.'), sense('b', 'Likely to be true.', { partOfSpeech: 'noun' })), false);
 });
 
 test('distant centered vectors, unavailable encoder and encoder failure keep separate meanings', async () => {
@@ -81,18 +74,32 @@ test('centered similarity can merge low-overlap wording and reuse scores during 
   const regrouped = await groupEntrySensesLocally(grouped, { storage: null, reuseSemanticScoresOnly: true });
   assert.equal(regrouped.senses.length, 1);
 });
-test('explicit paraphrase rules merge without a downloaded model or helpful embedding', async () => {
-  for (const [a, b] of [
-    ['Able to bend repeatedly.', 'Capable of bending repeatedly.'],
-    ['Characterized by a vivid colour.', 'Having a vivid color.'],
-    ['Strange; odd; unusual.', 'Unusual; odd.'],
-    ['Seeming to be correct or likely to be true and reasonable.', 'Seeming to be correct or probably true and reasonable.']
-  ]) {
-    const entry = { word: 'probe', senses: [sense('a', a), sense('b', b)] };
-    const result = await groupEntrySensesLocally(entry, { storage: new MemoryStorage(), encodeDefinitionTexts: async () => null });
-    assert.equal(result.senses.length, 1, `${a} / ${b}`);
-    assert.equal(result.senses[0].groupedSenses.length, 2);
+test('centered similarity qualifies pairs at 0.45 without a lexical overlap gate', async () => {
+  const senses = [sense('a', 'Permitted to enter.'), sense('b', 'Not allowed to enter.')];
+  const center = MEANING_EMBEDDING_CENTER, first = embeddingAt(0), second = embeddingAt(2);
+  for (const similarity of [0.449, 0.451]) {
+    const vector = center.map((value, index) => value + similarity * (first[index] - value)
+      + Math.sqrt(1 - similarity ** 2) * (second[index] - value));
+    const result = await groupEntrySensesLocally({ word: senses[0].word, senses }, {
+      storage: null, encodeDefinitionTexts: async () => [first, vector]
+    });
+    assert.equal(result.senses.length, similarity >= 0.45 ? 1 : 2);
   }
+});
+
+test('an explicit Different meanings judgment splits a model merge without rerunning inference', async context => {
+  const a = sense('a', 'Permitted to enter.'), b = sense('b', 'Forbidden to enter.');
+  const entry = { word: a.word, senses: [a, b] };
+  const grouped = await groupEntrySensesLocally(entry, {
+    storage: null, encodeDefinitionTexts: async () => [embeddingAt(0), embeddingAt(0)]
+  });
+  assert.equal(grouped.senses.length, 1);
+  context.mock.method(driveSync.imageHistory, 'readState', async () => ({
+    records: [{ source: 'user', label: 0, key: meaningPairKey(a.word, a.partOfSpeech, a.definition, b.definition) }]
+  }));
+  const regrouped = await groupEntrySensesLocally(grouped, { storage: null, reuseSemanticScoresOnly: true });
+  assert.equal(regrouped.senses.length, 2);
+  assert.equal(regrouped.senseConsolidation.userReviewed, true);
 });
 
 test('complete linkage prevents transitive merging and a valid example selects the whole source record', () => {
@@ -109,11 +116,4 @@ test('offline lexical fallback preserves no and non- qualifications in otherwise
     const result = await groupEntrySensesLocally(entry, { storage: new MemoryStorage(), encodeDefinitionTexts: async () => null });
     assert.equal(result.senses.length, 2, `${a} / ${b}`);
   }
-});
-test('Gemini grouping cannot bypass explicit polarity, numeric or restriction conflicts', () => {
-  for (const [a, b] of [['Allowed to enter.', 'Not allowed to enter.'], ['An open doorway.', 'A closed doorway.'],
-    ['A group of 3 people.', 'A group of 4 people.'], ['Only used for people.', 'Used for people.']]) {
-    assert.equal(hasExplicitMeaningConflict({ definition: a }, { definition: b }), true);
-  }
-  assert.equal(hasExplicitMeaningConflict({ definition: 'Seeming reasonable.' }, { definition: 'Appearing to be reasonable.' }), false);
 });

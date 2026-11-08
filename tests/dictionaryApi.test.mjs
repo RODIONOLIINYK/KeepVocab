@@ -264,14 +264,14 @@ test('current common senses precede technical senses and suppress obsolete or fo
   assert.deepEqual(archaicOnly.senses[0].labels, ['archaic']);
 });
 
-test('near-identical dictionary senses merge their evidence while current and historical scopes remain distinct', async () => {
+test('dictionary senses with matching words merge source evidence and keep different definitions', async () => {
   const result = await fetchWordDetails('outlandish', { storage: null, fetchImpl: async () => ({ ok: true, json: async () => ({ word: 'outlandish', entries: [{ partOfSpeech: 'adjective', senses: [
     { definition: 'Appearing to be foreign; strange, unfamiliar.' },
-    { definition: 'Foreign-looking; strange or unfamiliar.', examples: ['Their unfamiliar dress looked outlandish to the villagers.'] },
+    { definition: 'Appearing to be foreign, strange, unfamiliar.', examples: ['Their unfamiliar dress looked outlandish to the villagers.'] },
     { definition: 'Very unusual or strange.', examples: ['She proposed an outlandish plan.' ] }
   ] }] }) }) });
   assert.equal(result.senses.length, 2);
-  assert.deepEqual(result.senses[0].sourceDefinitions, ['Appearing to be foreign; strange, unfamiliar.', 'Foreign-looking; strange or unfamiliar.']);
+  assert.deepEqual(result.senses[0].sourceDefinitions, ['Appearing to be foreign; strange, unfamiliar.', 'Appearing to be foreign, strange, unfamiliar.']);
   assert.equal(result.senses[0].example, 'Their unfamiliar dress looked outlandish to the villagers.');
   assert.equal(result.senses[1].definition, 'Very unusual or strange.');
 });

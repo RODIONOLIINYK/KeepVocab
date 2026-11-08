@@ -113,7 +113,7 @@ function learningWord(overrides = {}) {
 
 function duplicatePair(service) {
   const first = learningWord();
-  const second = learningWord({ id: 'meaning-two', definition: 'Appearing to be correct or likely to be true.', sourceDefinition: 'Appearing to be correct or likely to be true.',
+  const second = learningWord({ id: 'meaning-two', definition: '(formal) '+sourceDefinition, sourceDefinition: '(formal) '+sourceDefinition,
     box: 4, lastReviewedAt: '2026-05-12T09:00:00.000Z', nextReviewDate: '2026-05-16T09:00:00.000Z',
     srs: { version: 3, repetitions: 3, lapses: 1, scheduledDays: 4, stabilityDays: 4, lastRating: 'good' },
     mastery: { recall: 0.7, recognition: 0.8, lastPracticedAt: '2026-05-12T09:00:00.000Z' },
