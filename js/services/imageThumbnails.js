@@ -1,6 +1,7 @@
 import { bytesToBase64 } from '../utils/base64.js?v=18908';
 
 const MAX_DIMENSION = 384;
+export const IMAGE_THUMBNAIL_BATCH_LIMIT = 4;
 const MAX_SOURCE_BYTES = 2_000_000;
 const MAX_THUMBNAIL_BYTES = 128_000;
 const MAX_SOURCE_PIXELS = 24_000_000;
@@ -222,7 +223,7 @@ async function sharedThumbnail(url, config, signal) {
  * Failures return fewer cues so callers can retain their lexical ranking.
  */
 export async function prepareImageThumbnails(images, options = {}) {
-  const limit = bounded(options.limit, 4, 4);
+  const limit = bounded(options.limit, IMAGE_THUMBNAIL_BATCH_LIMIT, IMAGE_THUMBNAIL_BATCH_LIMIT);
   const config = {
     fetchImpl: options.fetchImpl || globalThis.fetch,
     decode: options.decode || decodeInBrowser,

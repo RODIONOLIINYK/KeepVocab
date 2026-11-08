@@ -33,10 +33,12 @@ export function recordMeaningJudgment(word, a, b, equivalent, options = {}) {
   const operation = async () => {
     if (!word || a.partOfSpeech !== b.partOfSpeech || !definition(a) || !definition(b)) throw new Error('Choose two meanings of the same word and part of speech.');
     const state = await meaningLearningState(), key = meaningPairKey(word, a.partOfSpeech, definition(a), definition(b));
+    const prior = state.records.find(record => record.key === key);
     const vectors = await embedMeaningAnchors(word, [a, b], options);
     const record = { key, word: String(word).toLowerCase(), partOfSpeech: a.partOfSpeech, definitionA: definition(a), definitionB: definition(b),
       label: equivalent ? 1 : 0, source: 'user', encoder: CLIP_TAG, updatedAt: new Date().toISOString(),
-      ...(vectors ? { evidence: pairEvidence(a, b, vectors[0], vectors[1]) } : {}) };
+      ...(vectors ? { evidence: pairEvidence(a, b, vectors[0], vectors[1]) }
+        : prior?.evidence?.encoder === CLIP_TAG && prior.evidence.comparisonVersion === MEANING_COMPARISON_VERSION ? { evidence: prior.evidence } : {}) };
     const records = [...state.records.filter(r => r.key !== key), record];
     const eligible = records.filter(r => r.evidence?.encoder === CLIP_TAG && r.evidence.comparisonVersion === MEANING_COMPARISON_VERSION);
     const frozenSeed = getPretrainedEquivalenceHead();

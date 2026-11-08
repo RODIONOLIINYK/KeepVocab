@@ -21,6 +21,7 @@ function cachedFiles(urls = CLIP_DOWNLOAD_URLS) {
 
 // No real model, image download, clock delay, or startup idle callback is needed.
 function setup(context, { config = {}, autoInitialize = true } = {}) {
+  context.mock.getter(globalThis, 'navigator', () => ({ hardwareConcurrency: 2 }));
   const originals = Object.fromEntries(['localStorage', 'Worker', 'setTimeout', 'clearTimeout']
     .map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
   const storage = new MemoryStorage();

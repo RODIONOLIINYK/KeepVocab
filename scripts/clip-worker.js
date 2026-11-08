@@ -1,5 +1,5 @@
 import { AutoTokenizer, AutoProcessor, SiglipTextModel, SiglipVisionModel, RawImage, env } from '@huggingface/transformers';
-import { CLIP_MODEL, CLIP_MODEL_BASE, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE } from '../js/ml/clipConfig.js';
+import { CLIP_MODEL, CLIP_MODEL_BASE, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, CLIP_DIMENSION } from '../js/ml/clipConfig.js';
 import { fetchCompactModelFile } from '../js/services/compactModelDownload.js';
 import { normalizedVector } from '../js/services/imagePreferences.js';
 import { fullFrameImage, centerCropImage } from '../js/services/imagePreprocessing.js';
@@ -15,9 +15,19 @@ env.remotePathTemplate = modelSource.slice(sourceSplit + 1);
 env.useBrowserCache = true;
 env.useFSCache = false;
 env.cacheKey = CLIP_CACHE;
+// The page chooses the thread count (see inferencePlan in imageLearning.js).
+// Shared-memory threads need cross-origin isolation; otherwise stay at one
+// thread and the page parallelises across a pool of workers instead.
 env.backends.onnx.wasm.numThreads = 1;
 env.backends.onnx.wasm.proxy = false;
 let models = null;
+// A 'vision' helper only scores images; it never loads the large text tower.
+let role = 'full';
+function configureThreads(threads) {
+  if (models) return;
+  const allowed = self.crossOriginIsolated ? Math.max(1, Math.min(8, Math.floor(Number(threads) || 1))) : 1;
+  env.backends.onnx.wasm.numThreads = allowed;
+}
 let allowDownloads = false;
 const originalFetch = env.fetch;
 env.fetch = (input, options) => {
@@ -73,7 +83,7 @@ async function db() {
   });
   return database;
 }
-async function cached(key, compute) {
+async function readVector(key) {
   if (memory.has(key)) return memory.get(key);
   const database = await db();
   let record;
@@ -83,7 +93,11 @@ async function cached(key, compute) {
   });
   let vector;
   try { vector = record ? normalizedVector(Array.from(record.vector)) : null; } catch { vector = null; }
-  if (!vector) vector = normalizedVector(await compute());
+  if (vector) memory.set(key, vector);
+  return vector;
+}
+async function storeVector(key, vector) {
+  const database = await db();
   memory.set(key, vector);
   while (memory.size > 80) memory.delete(memory.keys().next().value);
   if (database) {
@@ -98,6 +112,32 @@ async function cached(key, compute) {
   }
   return vector;
 }
+// Batch only cache misses, preserving input order and all previous vectors.
+async function cachedMany(keys, compute) {
+  const vectors = await Promise.all(keys.map(readVector));
+  const misses = new Map();
+  vectors.forEach((vector, index) => { if (!vector && !misses.has(keys[index])) misses.set(keys[index], index); });
+  const missing = [...misses.values()];
+  if (missing.length) {
+    const computed = await compute(missing);
+    if (computed.length !== missing.length) throw new Error('Invalid embedding batch.');
+    for (let row = 0; row < missing.length; row++) {
+      const index = missing[row];
+      vectors[index] = normalizedVector(computed[row]);
+      await storeVector(keys[index], vectors[index]);
+    }
+    vectors.forEach((vector, index) => { if (!vector) vectors[index] = vectors[misses.get(keys[index])]; });
+  }
+  return vectors;
+}
+async function cached(key, compute) {
+  return (await cachedMany([key], async () => [await compute()]))[0];
+}
+function outputRows(tensor, count) {
+  const values = tensor.type === 'float16' ? tensor.to('float32').data : tensor.data;
+  if (values.length !== count * CLIP_DIMENSION) throw new Error('Invalid embedding dimensions.');
+  return Array.from({ length: count }, (_, row) => Array.from(values.slice(row * CLIP_DIMENSION, (row + 1) * CLIP_DIMENSION)));
+}
 async function initialize(devicePreference = 'auto') {
   if (models) return models;
   models = (async () => {
@@ -109,8 +149,9 @@ async function initialize(devicePreference = 'auto') {
     // by the explicit consent-enforcing env.fetch wrapper above instead.
     const config = { revision: CLIP_REVISION, progress_callback, local_files_only: false };
     // Both towers use q4f16; the full multilingual token table uses INT4.
+    const visionOnly = role === 'vision';
     const [tokenizer, processor] = await Promise.all([
-      AutoTokenizer.from_pretrained(CLIP_MODEL, config),
+      visionOnly ? null : AutoTokenizer.from_pretrained(CLIP_MODEL, config),
       AutoProcessor.from_pretrained(CLIP_MODEL, config)
     ]);
     let textModel, visionModel;
@@ -121,7 +162,7 @@ async function initialize(devicePreference = 'auto') {
       try {
         backend = device;
         const towers = await Promise.allSettled([
-          SiglipTextModel.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_TEXT_DTYPE }),
+          visionOnly ? null : SiglipTextModel.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_TEXT_DTYPE }),
           SiglipVisionModel.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_VISION_DTYPE })
         ]);
         // A rejected Promise.all loses both assignments, including a tower
@@ -147,17 +188,23 @@ async function run({ type, payload, device }) {
   const model = await initialize(device);
   if (type === 'initialize') return { backend, model: CLIP_TAG };
   if (type === 'texts') {
+    if (!model.textModel) throw new Error('This worker only scores images.');
     const texts = payload.texts;
     if (!Array.isArray(texts) || texts.length > 20 || texts.some(text => typeof text !== 'string' || text.length > 2000)) throw new Error('Invalid text embedding request.');
     const result = [];
-    for (const text of texts) result.push(await cached(`${VECTOR_TAG}:text:${text}`, async () => {
-      const inputs = model.tokenizer([text.toLowerCase()], { padding: 'max_length', max_length: 64, truncation: true });
-      const output = await model.textModel({ input_ids: inputs.input_ids });
-      const tensor = output.text_embeds || output.pooler_output;
-      const vector = Array.from(tensor.data);
-      for (const tensor of [...Object.values(inputs), ...Object.values(output)]) tensor?.dispose?.();
-      return vector;
-    }));
+    for (let start = 0; start < texts.length; start += 8) {
+      const batch = texts.slice(start, start + 8);
+      result.push(...await cachedMany(batch.map(text => `${VECTOR_TAG}:text:${text}`), async missing => {
+        const inputs = model.tokenizer(missing.map(index => batch[index].toLowerCase()), { padding: 'max_length', max_length: 64, truncation: true });
+        let output;
+        try {
+          output = await model.textModel({ input_ids: inputs.input_ids });
+          return outputRows(output.text_embeds || output.pooler_output, missing.length);
+        } finally {
+          for (const tensor of [...Object.values(inputs), ...Object.values(output || {})]) tensor?.dispose?.();
+        }
+      }));
+    }
     return result;
   }
   if (type === 'image') {
@@ -172,23 +219,22 @@ async function run({ type, payload, device }) {
       }
       return decodedImage;
     };
-    const embedFrame = async frame => {
-      const inputs = await model.processor(frame);
-      const output = await model.visionModel({ pixel_values: inputs.pixel_values });
-      const tensor = output.image_embeds || output.pooler_output;
-      const vector = Array.from(tensor.data);
-      for (const tensor of [...Object.values(inputs), ...Object.values(output)]) tensor?.dispose?.();
-      return vector;
-    };
-    const fullVector = await cached(`${VECTOR_TAG}:${IMAGE_PREPROCESSING}:image:${digest}`, async () => {
+    const keys = [`${VECTOR_TAG}:${IMAGE_PREPROCESSING}:image:${digest}`];
+    if (payload.multiView) keys.push(`${VECTOR_TAG}:${IMAGE_PREPROCESSING}:crop68:${digest}`);
+    const [fullVector, cropVector] = await cachedMany(keys, async missing => {
       const image = await decodeOnce();
-      return embedFrame(await fullFrameImage(image, RawImage));
+      const frames = await Promise.all(missing.map(index => index === 0
+        ? fullFrameImage(image, RawImage) : centerCropImage(image, RawImage, 256, 0.68)));
+      const inputs = await model.processor(frames);
+      let output;
+      try {
+        output = await model.visionModel({ pixel_values: inputs.pixel_values });
+        return outputRows(output.image_embeds || output.pooler_output, frames.length);
+      } finally {
+        for (const tensor of [...Object.values(inputs), ...Object.values(output || {})]) tensor?.dispose?.();
+      }
     });
     if (!payload.multiView) return fullVector;
-    const cropVector = await cached(`${VECTOR_TAG}:${IMAGE_PREPROCESSING}:crop68:${digest}`, async () => {
-      const image = await decodeOnce();
-      return embedFrame(await centerCropImage(image, RawImage, 256, 0.68));
-    });
     const blendVector = normalizedVector(fullVector.map((v, i) => 0.55 * v + 0.45 * cropVector[i]));
     return { vector: blendVector, fullVector, cropVector };
   }
@@ -199,7 +245,11 @@ self.onmessage = ({ data }) => {
   if (data.type === 'cancel') { cancelled.add(data.id); return; }
   queue = queue.then(async () => {
     if (cancelled.delete(data.id)) return;
-    try { allowDownloads = data.allowDownloads === true; const result = await run(data); if (!cancelled.delete(data.id)) self.postMessage({ id: data.id, result }); }
+    try {
+      allowDownloads = data.allowDownloads === true;
+      if (!models && data.role === 'vision') role = 'vision';
+      configureThreads(data.threads);
+      const result = await run(data); if (!cancelled.delete(data.id)) self.postMessage({ id: data.id, result }); }
     catch (error) { if (!cancelled.delete(data.id)) self.postMessage({ id: data.id, error: error.message || 'Local image inference failed.', backendFailure: backend === 'webgpu' }); }
   }).catch(() => {});
 };

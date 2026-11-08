@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { meaningComparisonText } from '../js/services/meaningComparison.js';
+import { meaningComparisonText, meaningEmbeddingText } from '../js/services/meaningComparison.js';
 import { areSensesNearDuplicate } from '../js/services/learningDefinitions.js';
 import { groupEntrySensesLocally, hasExplicitMeaningConflict } from '../js/services/localSenseGrouping.js';
 import { embedMeaningAnchors, pairEvidence } from '../js/services/meaningEquivalenceLearning.js';
@@ -51,6 +51,14 @@ test('comparison cleanup preserves contradictions, historical distinctions, quan
  ])assert.equal(areSensesNearDuplicate(sense('probe',a),sense('probe',b)),false,`${a} / ${b}`);
  assert.equal(hasExplicitMeaningConflict(sense('probe','To act (sense 1).'),sense('probe','To act.')),false);
  assert.equal(areSensesNearDuplicate(sense('probe','To act.'),sense('probe','(US) To act.',{partOfSpeech:'noun'})),false);
+});
+
+test('negation is normalized in text while explicit opposites still veto a merge', () => {
+  assert.equal(meaningEmbeddingText('(adjective) Not real.'), 'fake.');
+  assert.equal(meaningEmbeddingText('Not hot.'), 'not hot.');
+  assert.equal(hasExplicitMeaningConflict(sense('probe', 'Not allowed to enter.'), sense('probe', 'Forbidden to enter.')), false);
+  assert.equal(hasExplicitMeaningConflict(sense('probe', 'Not allowed to enter.'), sense('probe', 'Allowed to enter.')), true);
+  assert.equal(hasExplicitMeaningConflict(sense('probe', 'Large in size.'), sense('probe', 'Of size large.')), false);
 });
 test('all definition embedding anchors exclude annotations while pair provenance retains exact sources',async()=>{
  const senses=[sense('probe','(transitive or intransitive, especially US) To produce a result.'),sense('probe','To produce [UK] a result.')];

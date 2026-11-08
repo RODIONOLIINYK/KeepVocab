@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MemoryStorage } from '../js/services/driveSync.js?v=18908';
 import { initializeImageLearning, enableImageLearning, disableImageLearning, getImageLearningStatus,
-  rankImagesLocally, subscribeImageLearning } from '../js/services/imageLearning.js?v=18908';
+  inferencePlan, rankImagesLocally, subscribeImageLearning } from '../js/services/imageLearning.js?v=18908';
 import { mountImageReview } from '../js/components/ImageReview.js';
 import { CLIP_TAG, CLIP_DIMENSION } from '../js/ml/clipConfig.js';
 
@@ -21,8 +21,9 @@ class ReviewContainer {
 const meaning = { id: 'river', word: 'bank', definition: 'Land beside a river.', partOfSpeech: 'noun' };
 const photo = { url: 'https://images.example/river.jpg', title: 'A river bank' };
 
-async function setup(context) {
+async function setup(context, navigator = { hardwareConcurrency: 2 }) {
   const original = { storage: globalThis.localStorage, Worker: globalThis.Worker };
+  context.mock.getter(globalThis, 'navigator', () => navigator);
   const cleanup = [];
   globalThis.localStorage = new MemoryStorage();
   localStorage.setItem('keepvocab_image_learning_device_v1', JSON.stringify({ enabled: true, downloadConsent: 'accepted' }));
@@ -131,12 +132,63 @@ test('CLIP scores all forty-five scene candidates and rejects failures before di
   };
   const candidates = Array.from({ length: 45 }, (_, i) => ({ url: `https://clip45.test/${i}.jpg`, title: `River scene ${i}`, visualScene: `scene ${i % 3}` }));
   const results = await rankImagesLocally(meaning, candidates, {
+    exhaustiveScoring: true,
     fetchImpl: async () => new Response('pixels', { headers: { 'content-type': 'image/jpeg' } }),
     decode: async () => ({ width: 64, height: 64 }), resize: () => assert.fail('Small images need no resize')
   });
   assert.equal(imageCalls, 45);
   assert.equal(results.length, 44);
   assert.ok(!results.some(image => image.url === candidates[44].url));
+});
+
+test('three and four scoring workers receive every prepared candidate in larger and partial batches', async context => {
+  const navigator = { hardwareConcurrency: 4, deviceMemory: 8 };
+  await setup(context, navigator);
+  const workers = [];
+  const scored = [];
+  const axis = index => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === index));
+  globalThis.Worker = class {
+    constructor() { workers.push(this); }
+    postMessage(data) {
+      queueMicrotask(async () => {
+        let result;
+        if (data.type === 'initialize') {
+          if (data.role === 'vision') assert.equal(data.allowDownloads, false);
+          result = { backend: 'wasm' };
+        } else if (data.type === 'texts') {
+          result = data.payload.texts.map((_, i) => axis(i ? 1 : 0));
+        } else {
+          const index = Number(await data.payload.blob.text());
+          scored.push(index);
+          result = axis(index + 2).map((value, i) => i === 0 ? .6 : value * .8);
+        }
+        this.onmessage({ data: { id: data.id, result } });
+      });
+    }
+    terminate() {}
+  };
+
+  for (const size of [3, 4]) {
+    navigator.hardwareConcurrency = size + 1;
+    assert.equal(inferencePlan().workers, size);
+    workers.length = 0;
+    scored.length = 0;
+    await enableImageLearning();
+    const candidates = Array.from({ length: 45 }, (_, index) => ({ url: `https://pool-${size}.test/${index}.jpg` }));
+    const results = await rankImagesLocally(meaning, candidates, {
+      exhaustiveScoring: true,
+      fetchImpl: async url => {
+        const index = Number(new URL(url).pathname.slice(1, -4));
+        return new Response(String(index), { status: index === 5 ? 404 : 200, headers: { 'content-type': 'image/jpeg' } });
+      },
+      decode: async () => ({ width: 64, height: 64 })
+    });
+    const expected = candidates.map((_, index) => index).filter(index => index !== 5);
+    assert.equal(workers.length, size);
+    assert.deepEqual(scored.sort((a, b) => a - b), expected);
+    assert.deepEqual(results.map(image => image.url), expected.map(index => candidates[index].url));
+    disableImageLearning();
+  }
 });
 
 test('production local scoring returns nine closest failed matches as manual-only review candidates', async context => {
@@ -194,4 +246,60 @@ test('provider suggestions remain manually available when inference fails, witho
  const container=new ReviewContainer();const controller=mountImageReview(container,[{...meaning,imageCandidates:images}]);cleanup.push(()=>controller.destroy());
  assert.match(container.innerHTML,/have not been checked/);
  assert.doesNotMatch(container.innerHTML,/No images passed the match threshold/);
+});
+
+test('first gallery stops after twelve good diverse images, but scarce matches and duplicate photos search deeper',async context=>{
+ await setup(context);const vector=axis=>Array.from({length:CLIP_DIMENSION},(_,i)=>Number(i===axis));
+ for(const mode of ['good','scarce','duplicates','late-scene']){
+  disableImageLearning();localStorage.setItem('keepvocab_image_learning_device_v1',JSON.stringify({enabled:true,downloadConsent:'accepted'}));let calls=0;
+  globalThis.Worker=class{postMessage(data){let result;if(data.type==='texts')result=data.payload.texts.map((_,i)=>vector(i?1:0));else{const index=calls++;result=mode==='scarce'&&index<44?vector(1):vector(mode==='duplicates'?2:index+2).map((v,i)=>i===0?.6:v*.8);}queueMicrotask(()=>{if(data.type==='texts')this.onmessage({data:{type:'status',phase:'ready',backend:'wasm'}});this.onmessage({data:{id:data.id,result}});});}terminate(){}};
+  const candidates=Array.from({length:45},(_,i)=>({url:`https://adaptive-${mode}.test/${i}.jpg`,visualScene:mode==='late-scene'&&i===44?'last':`scene${mode==='late-scene'?0:i%3}`}));
+  const result=await rankImagesLocally(meaning,candidates,{fetchImpl:async()=>new Response('pixels',{headers:{'content-type':'image/jpeg'}}),decode:async()=>({width:64,height:64})});
+  assert.equal(calls,mode==='good'?12:45,mode);assert.ok(result.length>=1);
+  assert.ok(result.every(image=>image.ml.screening==='scored'&&!image.ml.belowThreshold));
+ }
+});
+
+test('a failed vision helper retries its image on the primary worker', async context => {
+  await setup(context, { hardwareConcurrency: 4, deviceMemory: 4 });
+  const successful = [];
+  const terminated = [];
+  let constructed = 0;
+  let helperFailures = 0;
+  const axis = index => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === index));
+  globalThis.Worker = class {
+    constructor() { this.index = constructed++; }
+    postMessage(data) {
+      queueMicrotask(async () => {
+        if (data.type === 'initialize') {
+          this.onmessage({ data: { id: data.id, result: { backend: 'wasm' } } });
+        } else if (data.type === 'texts') {
+          this.onmessage({ data: { id: data.id, result: data.payload.texts.map((_, i) => axis(i ? 1 : 0)) } });
+        } else if (data.type === 'image') {
+          const index = Number(await data.payload.blob.text());
+          if (this.index > 0) {
+            assert.equal(data.allowDownloads, false);
+            helperFailures++;
+            this.onmessage({ data: { id: data.id, error: 'Vision helper failed' } });
+            return;
+          }
+          successful.push(index);
+          const result = axis(index + 2).map((value, i) => i === 0 ? .6 : value * .8);
+          this.onmessage({ data: { id: data.id, result } });
+        }
+      });
+    }
+    terminate() { terminated.push(this.index); }
+  };
+
+  const candidates = Array.from({ length: 8 }, (_, index) => ({ url: 'https://retry-helper.test/' + index + '.jpg' }));
+  const results = await rankImagesLocally(meaning, candidates, {
+    exhaustiveScoring: true,
+    fetchImpl: async url => new Response(new URL(url).pathname.slice(1, -4), { headers: { 'content-type': 'image/jpeg' } }),
+    decode: async () => ({ width: 64, height: 64 })
+  });
+  assert.ok(helperFailures > 0);
+  assert.deepEqual(terminated, [1]);
+  assert.deepEqual(successful.sort((a, b) => a - b), candidates.map((_, index) => index));
+  assert.deepEqual(results.map(item => item.url), candidates.map(item => item.url));
 });

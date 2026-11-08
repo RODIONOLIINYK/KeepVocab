@@ -9,7 +9,6 @@ import { normalizeImageEvent } from '../js/services/imageLearningHistory.js';
 import { encodeMeaning, IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
 import { validateLearnedHead } from '../js/services/learnedHeadValidation.js';
 import { getPretrainedInvariantHead, getPretrainedEquivalenceHead } from '../js/ml/pretrainedSemanticHeads.js';
-import { wEqSimilarity } from '../js/services/localSenseGrouping.js';
 
 const basis = i => Array.from({ length: CLIP_DIMENSION }, (_, j) => Number(j === i));
 const evidence = { encoder: CLIP_TAG, full: basis(0), crop: basis(1), meaning: basis(1), scene: basis(1), contrast: basis(0), unwanted: basis(2) };
@@ -22,11 +21,6 @@ test('frozen generic paraphrase pretraining is encoder-specific, immutable and c
   head.wProd[0] = 123;
   assert.notEqual(getPretrainedEquivalenceHead().wProd[0], 123);
   assert.equal(getPretrainedInvariantHead(), null, 'Regressing image candidate must stay inactive');
-  const a = { word: 'probe', partOfSpeech: 'noun', definition: 'A small animal that lives in a tree.' };
-  const b = { ...a, definition: 'A small creature that lives in a tree.' };
-  const low = wEqSimilarity(a, b, basis(0), basis(0), 0);
-  const high = wEqSimilarity(a, b, basis(0), basis(0), 1);
-  assert.ok(high - low <= .050000001, 'Learned evidence contributes at most ±0.025');
 });
 test('all twelve ranking features use the matching full/crop/scene/contrast views', () => {
   const features = invariantFeatures(evidence), blend = normalizedVector(basis(0).map((v, i) => .55 * v + .45 * basis(1)[i]));

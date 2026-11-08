@@ -1,5 +1,5 @@
 import { driveSync } from './driveSync.js?v=18908';
-import { prepareImageThumbnails } from './imageThumbnails.js?v=18908';
+import { IMAGE_THUMBNAIL_BATCH_LIMIT, prepareImageThumbnails } from './imageThumbnails.js?v=18908';
 import { base64ToBytes } from '../utils/base64.js';
 import { CLIP_TAG, CLIP_CACHE, CLIP_DOWNLOAD_URLS, VECTOR_DB, MODEL_DOWNLOAD_MB } from '../ml/clipConfig.js';
 import { cosine, normalizedVector, preferenceFeatures, encodeFullFeatures, decodeFeatures, mergeImageLearning, preferenceProbability } from './imagePreferences.js';
@@ -16,6 +16,8 @@ function training() { return trainingInstance ||= new ImagePersonalizerTraining(
 let cachedModel = null;
 const recentRecords = new Map();
 let worker;
+let helpers = [];
+let helpersDisabled = false;
 let preferCPU = false;
 let nextId = 0;
 let cancelStartupWarmup = null;
@@ -151,8 +153,75 @@ export function warmImageLearning(options = {}) {
 function stopWorker(reason = 'The local image model was stopped.') {
   cancelScheduledWarmup(); workerGeneration++; workerReady = false; warmupPromise = null;
   worker?.terminate(); worker = null;
+  for (const helper of helpers) helper.terminate();
+  helpers = [];
   for (const item of pending.values()) { clearTimeout(item.timer); item.cleanup(); item.reject(new Error(reason)); }
   pending.clear();
+}
+// Adaptive parallelism. One core stays free for the UI and downloads.
+// Shared-memory WASM threads need cross-origin isolation; without it (the
+// Electron app keeps Google sign-in popups working, Android WebView), images are
+// scored concurrently by single-threaded vision-only workers. Each extra worker
+// holds its own vision graph, so low-memory devices get fewer of them. Devices
+// with one or two cores keep today's single worker.
+export function inferencePlan(env = globalThis) {
+  const cores = Math.max(1, Math.floor(Number(env.navigator?.hardwareConcurrency) || 1));
+  const budget = Math.max(1, Math.min(4, cores - 1));
+  if (env.crossOriginIsolated === true) return { workers: 1, threads: budget };
+  const memory = Number(env.navigator?.deviceMemory);
+  const memoryCap = Number.isFinite(memory) && memory > 0 ? Math.max(1, Math.floor(memory / 2)) : 2;
+  return { workers: Math.min(budget, memoryCap), threads: 1 };
+}
+const outstanding = target => { let count = 0; for (const item of pending.values()) if (item.target === target) count++; return count; };
+const leastBusy = () => [worker, ...helpers].reduce((best, target) => outstanding(target) < outstanding(best) ? target : best);
+// A failed helper must not lose an image: its requests move to the primary
+// worker, and helpers stay off for the rest of the session.
+function retireHelpers() {
+  helpersDisabled = true;
+  const retired = helpers; helpers = [];
+  for (const helper of retired) helper.terminate();
+  for (const [id, item] of pending) {
+    if (!retired.includes(item.target)) continue;
+    if (!worker) { pending.delete(id); clearTimeout(item.timer); item.cleanup(); item.reject(new Error('Local image inference failed.')); continue; }
+    item.target = worker;
+    clearTimeout(item.timer);
+    item.timer = setTimeout(item.onTimeout, item.timeoutMs);
+    try {
+      worker.postMessage({ ...item.message, role: undefined });
+    } catch (error) {
+      settle({ id, error: error.message }, worker);
+    }
+  }
+}
+function settle(data, source) {
+  const item = pending.get(data.id); if (!item || item.target !== source) return;
+  if (data.error && source !== worker && worker) { retireHelpers(); return; }
+  pending.delete(data.id); clearTimeout(item.timer); item.cleanup();
+  if (data.error) item.reject(Object.assign(new Error(data.error), { backendFailure: data.backendFailure }));
+  else { workerReady = true; item.resolve(data.result); }
+}
+function ensureVisionHelpers() {
+  const plan = inferencePlan();
+  if (helpersDisabled || !worker || !workerReady || helpers.length || plan.workers <= 1 || typeof Worker === 'undefined') return;
+  for (let i = 1; i < plan.workers; i++) {
+    try {
+      const helper = new Worker(new URL('../ml/clipWorker.bundle.js', import.meta.url), { type: 'module' });
+      const initializeId = -(++nextId);
+      // The primary worker owns the visible status; helpers only return vectors.
+      helper.onmessage = ({ data }) => {
+        if (!helpers.includes(helper) || data.type === 'status') return;
+        if (data.id === initializeId && data.error) retireHelpers();
+        else settle(data, helper);
+      };
+      helper.onerror = () => { if (helpers.includes(helper)) retireHelpers(); };
+      helpers.push(helper);
+      // Compile from the installed cache while the primary embeds text.
+      helper.postMessage({ id: initializeId, type: 'initialize', role: 'vision', threads: 1, device: 'wasm', allowDownloads: false });
+    } catch {
+      retireHelpers();
+      return;
+    }
+  }
 }
 function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = false, storage, lifecycle } = {}) {
   if (typeof Worker === 'undefined') return Promise.reject(new Error('This browser cannot run the local image model.'));
@@ -170,10 +239,7 @@ function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = fa
         if (data.phase === 'ready') { installed = true; workerReady = true; }
         emit(data);return;
       }
-      const item = pending.get(data.id);if (!item) return;
-      pending.delete(data.id);clearTimeout(item.timer);item.cleanup();
-      if (data.error) item.reject(Object.assign(new Error(data.error), { backendFailure: data.backendFailure }));
-      else { workerReady = true; item.resolve(data.result); }
+      settle(data, activeWorker);
       // Retain the worker and loaded graphs for this app session. Idle is not teardown.
     };
     activeWorker.onerror = () => { if (worker !== activeWorker) return; phase = 'error';message = 'Local image inference failed. Metadata search is still available.';stopWorker(message);emit(); };
@@ -183,15 +249,29 @@ function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = fa
   if (lifecycle) lifecycle.workerGeneration = workerGeneration;
   return new Promise((resolve, reject) => {
     const id = ++nextId;
-    const abort = () => { worker?.postMessage({ type: 'cancel', id }); const item = pending.get(id);if (!item) return; pending.delete(id);clearTimeout(item.timer);item.cleanup();reject(new Error('Image scoring was cancelled.')); };
+    const abort = () => { const item = pending.get(id); (item?.target || worker)?.postMessage({ type: 'cancel', id }); if (!item) return; pending.delete(id);clearTimeout(item.timer);item.cleanup();reject(new Error('Image scoring was cancelled.')); };
     // A first installation transfers ~214 MB. Do not apply the inference timeout
     // to a valid download on a slower connection; cancellation stays available.
     const timeoutMs = type === 'initialize' && !cachedOnly ? 15 * 60_000 : 180_000;
-    const timer = setTimeout(() => { phase = 'error';message = 'The local model timed out. Try again on a reliable connection.';stopWorker(message);emit(); }, timeoutMs);
+    const onTimeout = () => {
+      const item = pending.get(id);
+      if (!item) return;
+      if (item.target !== worker) { retireHelpers(); return; }
+      phase = 'error'; message = 'The local model timed out. Try again on a reliable connection.';
+      stopWorker(message); emit();
+    };
     const connection = globalThis.navigator?.connection;
-    pending.set(id, { resolve, reject, timer, cleanup: () => signal?.removeEventListener('abort', abort) });
+    // Images go to the least busy worker; text and setup stay on the primary.
+    const target = type === 'image' && helpers.length ? leastBusy() : worker;
+    const helper = target !== worker;
+    const message = { id, type, payload, device: preferCPU || helper ? 'wasm' : 'auto', threads: inferencePlan().threads,
+      allowDownloads: !helper && !cachedOnly && downloadConsent(storage) && (allowMetered || !(connection?.saveData || connection?.type === 'cellular')),
+      ...(helper ? { role: 'vision' } : {}) };
+    const timer = setTimeout(onTimeout, helper ? 30_000 : timeoutMs);
+    pending.set(id, { resolve, reject, timer, timeoutMs, onTimeout, target, message, cleanup: () => signal?.removeEventListener('abort', abort) });
     signal?.addEventListener('abort', abort, { once: true });
-    worker.postMessage({ id, type, payload, device: preferCPU ? 'wasm' : 'auto', allowDownloads: !cachedOnly && downloadConsent(storage) && (allowMetered || !(connection?.saveData || connection?.type === 'cellular')) });
+    try { target.postMessage(message); }
+    catch (error) { settle({ id, error: error.message }, target); }
   }).catch(error => {
     if (generation === featureGeneration && error.backendFailure && !preferCPU) { preferCPU = true; stopWorker('Switching to CPU inference.'); return rpc(type, payload, { signal, allowMetered, cachedOnly, storage, lifecycle }); }
     throw error;
@@ -364,6 +444,7 @@ export function rankEmbeddedImages(items, model = null, { semanticFilter = false
 // must never trigger a model download or change the user's device setting.
 export async function encodeDefinitionTexts(texts, options = {}) {
   if (!imageLearningEnabled(options.storage) || typeof Worker === 'undefined') return null;
+  if (options.skipDownloadingModel && !installed && !workerReady) return null;
   if (warmupPromise) { try { await warmupPromise; } catch { return null; } }
   const generation = featureGeneration;
   const vectors = [];
@@ -391,8 +472,12 @@ export async function rankImagesLocally(word, candidates, options = {}) {
       if (!current() || !workerReady) return [];
     }
     const prompt = imageClipPrompts(word, options);
+    // Start vision helpers now so they compile while the prompts are embedded.
+    ensureVisionHelpers();
     const texts = await rpc('texts', { texts: prompt.texts }, inference);
     if (!current() || !workerReady) return [];
+    // A picker opened before startup warmup creates the primary worker above.
+    ensureVisionHelpers();
     const meaningFeatures = encodeMeaning(texts[0]);
     const meanVector = vectors => vectors.length ? normalizedVector(vectors.reduce((a, v) => a.map((x, i) => x + v[i]), Array(texts[0].length).fill(0))) : null;
     const sceneVector = meanVector(texts.slice(1, 1 + prompt.sceneCount)) || texts[0];
@@ -401,36 +486,56 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     // Oversample in bounded worker batches; only screened photos reach the UI.
     const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(45,
       Number(options.localCandidateLimit) || IMAGE_SEMANTIC_FILTER.candidatePoolSize)));
-    const prepareBatch = start => start < scoringLimit
-      ? prepareImageThumbnails(candidates.slice(start, Math.min(start + 4, scoringLimit)), { ...options, preferOriginal: true, timeoutMs: options.timeoutMs || 2800 })
-      : null;
+    const requiredScenes = new Set(candidates.slice(0, scoringLimit).map(image => image.visualScene).filter(Boolean));
+    const checkedScenes = new Set();
+    // Each batch keeps every worker busy (two images per worker) while the
+    // next batch of thumbnails downloads. A single-worker device keeps 4.
+    const step = Math.max(IMAGE_THUMBNAIL_BATCH_LIMIT, 2 * (1 + helpers.length));
+    const prepareBatch = start => {
+      if (start >= scoringLimit) return null;
+      const end = Math.min(start + step, scoringLimit);
+      const groups = [];
+      for (let offset = start; offset < end; offset += IMAGE_THUMBNAIL_BATCH_LIMIT) {
+        groups.push(prepareImageThumbnails(candidates.slice(offset, Math.min(offset + IMAGE_THUMBNAIL_BATCH_LIMIT, end)), {
+          ...options, limit: IMAGE_THUMBNAIL_BATCH_LIMIT, preferOriginal: true, timeoutMs: options.timeoutMs || 2800
+        }));
+      }
+      return Promise.all(groups).then(results => results.flat());
+    };
     let nextBatch = prepareBatch(0);
-    for (let offset = 0; offset < scoringLimit; offset += 4) {
+    for (let offset = 0; offset < scoringLimit; offset += step) {
       if (!current()) return [];
       const currentBatch = nextBatch;
-      nextBatch = prepareBatch(offset + 4);
+      nextBatch = prepareBatch(offset + step);
       const thumbnails = await currentBatch;
+      candidates.slice(offset, Math.min(offset + step, scoringLimit)).forEach(image => checkedScenes.add(image.visualScene));
       if (!current()) return [];
-      for (const thumbnail of thumbnails) {
-        if (!current()) return [];
-        try {
-          const embedded = await rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }), multiView: true }, inference);
-          if (!current() || !workerReady) return [];
-          const vector = Array.isArray(embedded) ? embedded : embedded.vector;
-          const semantic = semanticScores(embedded, texts, prompt.sceneCount, prompt.alternativeCount);
-          // Dictionary senses are not mutually exclusive visual contrasts:
-          // e.g. "something resembling an apple" also embeds the actual fruit.
-          // Retain their ranking penalty without treating it as calibrated doubt.
-          semantic.contrastSource = prompt.contrastSource;
-          const rankingEvidence = { encoder: CLIP_TAG, full: embedded.fullVector || vector, crop: embedded.cropVector || vector,
-            baselineScore: semantic.score,
-            meaning: texts[0], scene: sceneVector, contrast: contrastVector, unwanted: texts.at(-1) };
-          items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, rankingEvidence, semantic });
-        } catch (err) {
-          if (err?.backendFailure || !current()) throw err;
-        }
-      }
+      // Dispatch the whole batch at once; results keep candidate order.
+      const embeddedBatch = await Promise.all(thumbnails.map(thumbnail =>
+        rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }), multiView: true }, inference)
+          .catch(err => { if (err?.backendFailure || !current()) throw err; return null; })));
+      if (!current() || !workerReady) return [];
+      thumbnails.forEach((thumbnail, index) => {
+        const embedded = embeddedBatch[index];
+        if (!embedded) return;
+        const vector = Array.isArray(embedded) ? embedded : embedded.vector;
+        const semantic = semanticScores(embedded, texts, prompt.sceneCount, prompt.alternativeCount);
+        // Dictionary senses are not mutually exclusive visual contrasts:
+        // e.g. "something resembling an apple" also embeds the actual fruit.
+        // Retain their ranking penalty without treating it as calibrated doubt.
+        semantic.contrastSource = prompt.contrastSource;
+        const rankingEvidence = { encoder: CLIP_TAG, full: embedded.fullVector || vector, crop: embedded.cropVector || vector,
+          baselineScore: semantic.score,
+          meaning: texts[0], scene: sceneVector, contrast: contrastVector, unwanted: texts.at(-1) };
+        items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, rankingEvidence, semantic });
+      });
       phase = 'scoring';message = `Scored ${items.length} of ${candidates.length} image suggestions locally.`;emit();
+      // Fill a useful first gallery instead of always exhausting 45 candidates.
+      // Search deeper when matches are scarce, duplicated, or a retrieval scene
+      // has not been checked. Research can explicitly request the complete pool.
+      if (!options.exhaustiveScoring && offset + step >= 12
+        && [...requiredScenes].every(scene => checkedScenes.has(scene))
+        && rankEmbeddedImages(items, null, { semanticFilter: true }).length >= 9) break;
     }
     const model = await training().current();
     if (!current() || !workerReady) return [];

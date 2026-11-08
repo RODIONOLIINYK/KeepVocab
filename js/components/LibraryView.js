@@ -8,11 +8,19 @@ import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18908';
 import { imageChoiceLabels } from '../services/imageChoicePolicy.js';
 import { getPracticeReadiness } from '../services/reminderService.js?v=18908';
 import { escapeHtml, safeDownloadName } from '../utils/html.js';
-import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, meaningSupportFor, groupSimilarSenses } from '../services/learningDefinitions.js?v=18908';
+import { definitionForLearning, exampleForLearning, needsLearnerExplanation, withLearnerExplanations, meaningSupportFor, groupSimilarSenses, areLearnerMeaningsMergeable } from '../services/learningDefinitions.js?v=18908';
 import { renderMeaningExplanation, renderExplanationReview, renderInlineExplanation, applyReviewedExplanations } from './MeaningExplanation.js?v=18908';
 import { mountImageReview, renderImageUncertaintyBadge } from './ImageReview.js?v=18908';
 import { attachImagesSequentially } from '../services/bulkWords.js?v=18908';
 import { animateDisclosures } from '../utils/disclosureMotion.js';
+
+export function duplicateMeaningGroups(meanings) {
+  // Cluster saved records, not their nested dictionary-source IDs. The merge
+  // operation and review history are keyed by the saved record IDs.
+  const records = meanings.map(({ groupedSenses, mergedSenseIds, ...record }) => record);
+  return groupSimilarSenses(records, { matches: areLearnerMeaningsMergeable })
+    .filter(group => group.mergedSenseIds?.length > 1);
+}
 
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -265,7 +273,7 @@ export function renderLibraryView(container) {
 
   function wordCard(group) {
     const word = group.meanings[0];
-    const duplicates = groupSimilarSenses(group.meanings, { word: word.word }).filter(item => item.mergedSenseIds?.length > 1);
+    const duplicates = duplicateMeaningGroups(group.meanings);
     const meaningCard = (meaning, meaningIndex) => {
       const hasDuplicateImage = duplicateImages.has(meaning.imageUrl);
       const readiness = getPracticeReadiness([meaning]);
@@ -288,7 +296,7 @@ export function renderLibraryView(container) {
           <button class="audio-btn-circle" data-speak="${escapeHtml(word.word)}" data-audio-url="${escapeHtml(word.audioUrl || '')}" aria-label="Hear ${escapeHtml(word.word)}"><i class="fa-solid fa-volume-high"></i></button>
         </div>
 
-        <div class="library-meaning-list">${group.meanings.map(meaningCard).join('')}</div>${duplicates.map(item => `<div class="duplicate-meaning-review"><p>These ${item.mergedSenseIds.length} meanings have nearly identical wording: ${escapeHtml(item.definition)}</p><button class="status-pill offline" data-merge-meanings="${escapeHtml(item.mergedSenseIds.join('|'))}">Merge duplicate meanings and keep review history</button></div>`).join('')}
+        <div class="library-meaning-list">${group.meanings.map(meaningCard).join('')}</div>${duplicates.map(item => `<div class="duplicate-meaning-review"><p>These ${item.mergedSenseIds.length} meanings can share one learner card: ${escapeHtml(item.definition)}</p><button class="status-pill offline" data-merge-meanings="${escapeHtml(item.mergedSenseIds.join('|'))}">Merge meanings and keep review history</button></div>`).join('')}
       </article>`;
   }
 

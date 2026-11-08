@@ -3,10 +3,34 @@ import { fetchWordEntry, wordEntryToWord, prepareWordsForLibrary, prepareBulkLea
 import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18908';
 import { mountImageReview } from './ImageReview.js?v=18908';
 import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
-import { definitionForLearning, exampleForLearning, entrySensesForMode } from '../services/learningDefinitions.js?v=18908';
+import { definitionForLearning, exampleForLearning, entrySensesForMode, originalSenses } from '../services/learningDefinitions.js?v=18908';
+import { groupEntrySensesLocally } from '../services/localSenseGrouping.js?v=18908';
 import { canAutoSelectImage } from '../services/imageChoicePolicy.js';
 import { recordImagePreference, warmImageLearning } from '../services/imageLearning.js?v=18908';
 import { mountMeaningPairReview } from './MeaningPairReview.js';
+
+// Regrouping changes card IDs. Keep selections and edits attached to the
+// original dictionary senses, including when a reviewed group is split again.
+export function remapMeaningDrafts(previous, senses) {
+  const members = sense => new Set(originalSenses(sense).map(s => s.id || `${s.partOfSpeech}:${s.sourceDefinition || s.definition}`));
+  const old = previous.drafts.map(draft => ({ draft, members: members(draft) }));
+  const selectedMembers = new Set(old.filter(item => previous.selected.has(item.draft.id)).flatMap(item => [...item.members]));
+  const focused = old.find(item => item.draft.id === previous.focused)?.members || new Set();
+  const selected = new Set(); let focusedId = null;
+  const drafts = senses.map(sense => {
+    const ids = members(sense);
+    const matches = old.filter(item => [...item.members].every(id => ids.has(id)));
+    const source = matches.find(item => item.draft.id === previous.focused)
+      || matches.find(item => previous.selected.has(item.draft.id)) || matches[0];
+    const edits = source ? Object.fromEntries(['definition', 'partOfSpeech', 'usageNote', 'translation', 'translationLanguage',
+      'example', 'phonetic', 'explanationSource', 'sourceFingerprint'].filter(key => source.draft[key] !== undefined).map(key => [key, source.draft[key]])) : {};
+    if ([...ids].some(id => selectedMembers.has(id))) selected.add(sense.id);
+    if (!focusedId && [...ids].some(id => focused.has(id))) focusedId = sense.id;
+    return { ...sense, ...edits };
+  });
+  if (!selected.size && drafts.length) selected.add(drafts[0].id);
+  return { drafts: new Map(drafts.map(s => [s.id, s])), selected, focused: selected.has(focusedId) ? focusedId : [...selected][0] || null };
+}
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
   <div class="modal-backdrop" id="add-word-modal">
@@ -583,10 +607,23 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     });
   };
 
-  const renderSenses = data => {
+  const renderSenses = (data, previous = null) => {
     meaningPairReview?.destroy();
     meaningPairReview = mountMeaningPairReview(document.getElementById('add-word-meaning-review'), data, {
-      onChange: () => { modeStates.clear(); formStatus.textContent = 'Meaning judgment saved. It will be used the next time these meanings are grouped.'; }
+      onChange: async () => {
+        persistFocusedDraft();
+        const entry = currentFetchedData;
+        const state = { drafts: [...senseDrafts.values()], selected: new Set(selectedSenseIds), focused: focusedSenseId };
+        try {
+          const regrouped = await groupEntrySensesLocally(entry, { reuseSemanticScoresOnly: true });
+          if (currentFetchedData !== entry) return;
+          currentFetchedData = regrouped;
+          renderSenses(regrouped, state);
+          formStatus.textContent = 'Meaning judgment saved. The grouped meanings have been updated.';
+        } catch {
+          formStatus.textContent = 'Judgment saved. Look up the word again to refresh the grouped meanings.';
+        }
+      }
     });
     showAllSenses = false;
     meaningMode = 'grouped';
@@ -598,6 +635,10 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     }));
     focusedSenseId = senseDrafts.keys().next().value || null;
     selectedSenseIds = new Set(focusedSenseId ? [focusedSenseId] : []);
+    if (previous) {
+      const restored = remapMeaningDrafts(previous, [...senseDrafts.values()]);
+      senseDrafts = restored.drafts; selectedSenseIds = restored.selected; focusedSenseId = restored.focused;
+    }
     renderSenseOptions();
     loadFocusedDraft();
     formStatus.textContent = data.senseConsolidation

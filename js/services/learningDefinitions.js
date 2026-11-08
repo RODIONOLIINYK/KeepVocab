@@ -1,9 +1,11 @@
 import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18908';
 import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18908';
 import { sentenceUsesTargetForm } from '../utils/wordForms.js?v=18908';
-import { meaningGlossText } from './meaningComparison.js';
+import { meaningGlossText, hasExplicitMeaningConflict } from './meaningComparison.js';
 import { hasExampleSenseConflict, isModernUsageExample } from './exampleSearch.js?v=18908';
 export { isModernUsageExample } from './exampleSearch.js?v=18908';
+
+import { learnerCoreMatch } from './learnerMeaningRules.js';
 
 const CACHE_KEY = 'keepvocab_learner_explanations_v2';
 const text = value => String(value || '').replace(/\s+/g, ' ').trim();
@@ -131,6 +133,10 @@ export function senseGroupingEvidence(left, right) {
 export function areSensesNearDuplicate(left, right) {
   const evidence = senseGroupingEvidence(left, right);
   return Boolean(evidence && (evidence.reason === 'shared-gloss-core' || evidence.coverage >= 0.88 && evidence.jaccard >= 0.78));
+}
+
+export function areLearnerMeaningsMergeable(left, right) {
+  return Boolean((areSensesNearDuplicate(left, right) || learnerCoreMatch(left, right)) && !hasExplicitMeaningConflict(left, right));
 }
 
 export function originalSenses(sense) {

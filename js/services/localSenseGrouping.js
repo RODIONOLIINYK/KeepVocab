@@ -1,18 +1,21 @@
-import { groupSimilarSenses, originalSenses, areSensesNearDuplicate, allEntrySenses } from './learningDefinitions.js?v=18908';
-import { cosine, parameterFingerprint } from './imagePreferences.js';
-import { CLIP_TAG, CLIP_DIMENSION } from '../ml/clipConfig.js';
+import { groupSimilarSenses, originalSenses, areSensesNearDuplicate, allEntrySenses, areLearnerMeaningsMergeable } from './learningDefinitions.js?v=18908';
+import { cosine, normalizedVector } from './imagePreferences.js';
+import { CLIP_TAG } from '../ml/clipConfig.js';
 import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18908';
 import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18908';
 import { isModernUsageExample, hasExampleSenseConflict } from './exampleSearch.js?v=18908';
 import { sourceDefinitionFingerprint, senseGroupingEvidence } from './learningDefinitions.js?v=18908';
-import { equivalenceProbability, validEquivalenceHead } from './meaningEquivalenceHead.js';
-import { meaningLearningState, meaningPairKey, embedMeaningAnchors, pairEvidence } from './meaningEquivalenceLearning.js';
-import { learnerCoreMatch, learnerCorePresentation } from './learnerMeaningRules.js';
-import { meaningComparisonText, meaningGlossText } from './meaningComparison.js';
+import { meaningLearningState, meaningPairKey } from './meaningEquivalenceLearning.js';
+import { learnerCorePresentation } from './learnerMeaningRules.js';
+import { meaningComparisonText, meaningEmbeddingText, meaningGlossText, hasExplicitMeaningConflict } from './meaningComparison.js';
 
-const CACHE_KEY = 'keepvocab_sense_groups_v1';
-const VERSION = 14;
+import { MEANING_EMBEDDING_CENTER } from '../ml/pretrainedSemanticHeads.js';
+
+const CACHE_KEY = 'keepvocab_centered_sense_scores_v1';
+const VERSION = 1;
 const LOCAL_SIMILARITY = 0.80;
+const REVIEW_SIMILARITY = 0.40;
+const MAX_EMBEDDED_SENSES = 24;
 const CONSOLIDATION_CACHE = 'keepvocab_learner_meaning_groups_v1';
 const isUnresolvedReference = sense => /\b(?:synonym of|alternative (?:form|spelling) of|action of the verb|present participle and gerund of)\b/i.test(sense.sourceDefinition || sense.definition);
 let retryAfter = 0;
@@ -40,40 +43,25 @@ function enforceMeaningConflicts(groups, senses) {
   });
 }
 
-export function hasExplicitMeaningConflict(left, right) {
-  const a = String(left.sourceDefinition || left.definition || '').toLowerCase();
-  const b = String(right.sourceDefinition || right.definition || '').toLowerCase();
-  const negation = /\b(?:no|not|never|non(?=[-\s])|without|cannot|unable|lacking|can't|isn't|aren't|doesn't|don't)\b/;
-  const tokensA = new Set(a.match(/[a-z]+/g)), tokensB = new Set(b.match(/[a-z]+/g));
-  if (negation.test(a) !== negation.test(b)) {
-    const meaningful = set => [...set].filter(t => t.length > 2 && !/^(?:the|and|that|which|who|with|for|from|having|being|capable|thing|person)$/.test(t));
-    const ma = meaningful(tokensA), mb = meaningful(tokensB), shared = ma.filter(t => mb.includes(t)).length;
-    const strip = text => text.replace(new RegExp(negation.source, 'g'), '').replace(/[^a-z0-9]+/g, ' ').trim();
-    // "Not real" may paraphrase "fake". Only assert a polarity conflict when
-    // both definitions reuse the same content or differ solely in negation.
-    if (strip(a) === strip(b) || shared / Math.max(1, ma.length, mb.length) >= .4
-      || shared / Math.max(1, Math.min(ma.length, mb.length)) >= .6) return true;
-  }
-  const opposites = [['happy', 'unhappy'], ['possible', 'impossible'], ['able', 'unable'], ['legal', 'illegal'],
-    ['allowed', 'forbidden'], ['permit', 'prohibit'], ['increase', 'decrease'], ['give', 'receive'], ['buy', 'sell'],
-    ['open', 'closed'], ['include', 'exclude'], ['present', 'absent'], ['wet', 'dry'], ['alive', 'dead'],
-    ['hot', 'cold'], ['full', 'empty'], ['before', 'after'], ['above', 'below'], ['internal', 'external'],
-    ['temporary', 'permanent'], ['voluntary', 'involuntary']];
-  if (opposites.some(([x, y]) => tokensA.has(x) && tokensB.has(y) && !tokensA.has(y) && !tokensB.has(x)
-    || tokensA.has(y) && tokensB.has(x) && !tokensA.has(x) && !tokensB.has(y))) return true;
-  if (JSON.stringify(meaningComparisonText(a).match(/\b\d+(?:\.\d+)?\b/g) || []) !== JSON.stringify(meaningComparisonText(b).match(/\b\d+(?:\.\d+)?\b/g) || [])) return true;
-  const bounds = text => [...new Set(text.match(/\b(?:at least|at most|more than|less than|only|solely|exclusively|unless|except)\b/g) || [])].sort();
-  return JSON.stringify(bounds(a)) !== JSON.stringify(bounds(b));
-}
+export { hasExplicitMeaningConflict } from './meaningComparison.js';
 
 export async function consolidateEntrySenses(entry, options = {}) {
   if (entry.rawDictionarySenses?.length) {
-    const enriched = allEntrySenses(entry);
+    // Match individual originals. Copying a grouped representative onto a raw
+    // sense would carry its whole group into that one source, duplicating the
+    // other members the next time grouping runs.
+    const enriched = allEntrySenses(entry).flatMap(originalSenses);
     const senses = entry.rawDictionarySenses.map(raw => {
       const matching = enriched.find(s => s.partOfSpeech === raw.partOfSpeech && (s.sourceDefinition || s.definition) === raw.definition);
       return matching ? { ...matching, ...raw, translation: matching.translation, translationLanguage: matching.translationLanguage } : raw;
     });
-    const order = enriched.flatMap(originalSenses);
+    const sourceKey = sense => JSON.stringify([sense.partOfSpeech, (sense.sourceDefinition || sense.definition || '').trim(), sense.sourceUrl || '']);
+    const included = new Set(senses.map(sourceKey));
+    for (const original of enriched) {
+      const key = sourceKey(original);
+      if (!included.has(key)) { senses.push(original); included.add(key); }
+    }
+    const order = enriched;
     const rank = sense => { const index = order.findIndex(s => s.partOfSpeech === sense.partOfSpeech && (s.sourceDefinition || s.definition) === sense.definition); return index < 0 ? order.length : index; };
     senses.sort((a, b) => rank(a) - rank(b));
     entry = { ...entry, senses, additionalSenses: [] };
@@ -94,7 +82,7 @@ export async function consolidateEntrySenses(entry, options = {}) {
   if (new Set(senses.map(s => String(s.partOfSpeech || 'word').trim().toLowerCase())).size === senses.length) return local;
   const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
   const model = options.model || settings.textModel;
-  const key = JSON.stringify([16, model, entry.word, senses.map(s => [s.partOfSpeech, s.sourceDefinition || s.definition, s.sourceDefinitions, s.labels, s.usageNote])]);
+  const key = JSON.stringify([17, model, entry.word, senses.map(s => [s.partOfSpeech, s.sourceDefinition || s.definition, s.sourceDefinitions, s.labels, s.usageNote])]);
   const cache = readObjectCache(storage, CONSOLIDATION_CACHE);
   let groups = cache[key]?.data;
   try {
@@ -183,132 +171,132 @@ function packagedLocal(entry, groups) {
   return { ...entry, senses: built, ...built[0], additionalSenses: [],
     senseConsolidation: { version: 1, source: 'local', originalCount: built.reduce((n, g) => n + g.groupedSenses.length, 0), coreCount: built.length } };
 }
-const normalized = value => meaningGlossText(value).toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
-const negative = /\b(?:not|no|never|non|without|cannot|unable|lacking|cant|isnt|arent|doesnt|dont)\b/g;
-function content(sense) {
-  return normalized(sense.sourceDefinition || sense.definition).split(' ').filter(t => !/^(?:a|an|the|to|be|is|of|or|and|that|which|who|one|someone|something)$/.test(t));
+const identity = value => String(value || '').trim().toLowerCase();
+const source = sense => sense.sourceDefinition || sense.definition || '';
+const unresolvedReference = /\b(?:any of the above|the preceding|as above|ellipsis of)\b/i;
+const historical = /\b(?:archaic|obsolete|historical|dated)\b/i;
+const figurative = /\bfigurativ(?:e|ely)\b/i;
+const appearance = /\b(?:seeming to be|appearing to be|having the appearance of)\b/i;
+
+function contextDiffers(left, right, pattern) {
+  const context = sense => [source(sense), ...(sense.labels || []), sense.usageNote].join(' ');
+  return pattern.test(context(left)) !== pattern.test(context(right));
 }
+
 function compatible(left, right) {
-  if (normalized(left.word) !== normalized(right.word) || normalized(left.partOfSpeech) !== normalized(right.partOfSpeech)) return false;
-  if (isUnresolvedReference(left) || isUnresolvedReference(right)) return false;
-  // Caption embedding similarity also groups related but distinct senses. Until
-  // an equivalence head is calibrated, automatic merges need lexical evidence.
-  const evidence = senseGroupingEvidence(left, right);
-  if (!evidence || evidence.coverage < 0.6 || evidence.jaccard < 0.4) return false;
-  const a = normalized(left.sourceDefinition || left.definition), b = normalized(right.sourceDefinition || right.definition);
-  if (/\b(?:any of the above|the preceding|as above)\b/.test(a + ' ' + b)) return areSensesNearDuplicate(left, right);
-  const rawA = content(left), rawB = content(right), tokensA = new Set(rawA), tokensB = new Set(rawB);
-  const shared = [...tokensA].filter(t => tokensB.has(t)).length;
-  const maxTokens = Math.max(tokensA.size, tokensB.size, 1), minTokens = Math.min(tokensA.size, tokensB.size);
-  const overlap = shared / maxTokens;
-  if (!areSensesNearDuplicate(left, right) && maxTokens >= 8 && minTokens / maxTokens < 0.45) return false;
-  const stripNeg = value => value.replace(negative, '').replace(/\s+/g, ' ').trim();
-  const hasNeg = value => /\b(?:not|no|never|non|without|cannot|unable|lacking|cant|isnt|arent|doesnt|dont)\b/.test(value);
-  if (hasNeg(a) !== hasNeg(b) && (stripNeg(a) === stripNeg(b) || overlap >= 0.4 || (minTokens > 0 && shared / minTokens >= 0.6))) return false;
-  if (['chiefly', 'especially', 'specifically', 'includes', 'including', 'other'].some(t => tokensA.has(t) !== tokensB.has(t)) && overlap < 0.6) return false;
-  if (JSON.stringify(a.match(/\b\d+(?:\.\d+)?\b/g) || []) !== JSON.stringify(b.match(/\b\d+(?:\.\d+)?\b/g) || [])) return false;
-  const finance = /\b(?:financial|money|credit|debit|cash|deposit|loan|lender|savings)\b/;
-  const geography = /\b(?:river|shore|stream|lake|embankment)\b/;
-  if (finance.test(a) && geography.test(b) || geography.test(a) && finance.test(b)) return false;
-  const permission = /\b(?:approval|permission|authorization|authorisation|authorize|authorise|ratify|valid)\b/;
-  const punishment = /\b(?:penalty|penalties|penalize|penalise|punishment|punish|coercive)\b/;
-  if (permission.test(a) && punishment.test(b) || punishment.test(a) && permission.test(b)) return false;
-  const opposites = [['happy','unhappy'],['possible','impossible'],['able','unable'],['legal','illegal'],['allowed','forbidden'],
-    ['permit','prohibit'],['increase','decrease'],['give','receive'],['buy','sell'],['open','closed'],['include','exclude'],
-    ['present','absent'],['wet','dry'],['alive','dead'],['hot','cold'],['full','empty'],['before','after'],['above','below'],
-    ['internal','external'],['temporary','permanent'],['voluntary','involuntary']];
-  if (opposites.some(([x,y]) => tokensA.has(x) && tokensB.has(y) && !tokensA.has(y) && !tokensB.has(x)
-    || tokensA.has(y) && tokensB.has(x) && !tokensA.has(x) && !tokensB.has(y))) return false;
-  if (overlap >= 0.6 && ['only','solely','exclusively','unless','except','before','after','during','until','since'].some(t => tokensA.has(t) !== tokensB.has(t))) return false;
-  // Preserve relative participant order when the same main content is reused.
-  if (overlap >= 0.6 && rawA.filter(t => tokensB.has(t)).join('|') !== rawB.filter(t => tokensA.has(t)).join('|')) return false;
-  // Circular glosses cannot disambiguate one another from a shared headword.
-  const target = normalized(left.word);
-  if (target && a.split(' ').includes(target) && b.split(' ').includes(target) && !areSensesNearDuplicate(left, right)) return false;
-  return true;
+  return identity(left.word) === identity(right.word) && identity(left.partOfSpeech) === identity(right.partOfSpeech)
+    && !isUnresolvedReference(left) && !isUnresolvedReference(right)
+    && !unresolvedReference.test(source(left)) && !unresolvedReference.test(source(right))
+    && !contextDiffers(left, right, historical) && !contextDiffers(left, right, figurative)
+    && !contextDiffers(left, right, appearance) && !hasExplicitMeaningConflict(left, right);
 }
 
 export { fitEquivalenceHead as fitMeaningEquivalenceW } from './meaningEquivalenceHead.js';
 
-export function wEqSimilarity(left, right, vecA, vecB, learnedProbability = null) {
-  if (areSensesNearDuplicate(left, right)) return 1;
-  const evidence = senseGroupingEvidence(left, right);
-  if (!evidence) return -1;
-  const rules = .6 * evidence.coverage + .4 * evidence.jaccard;
-  // W supports a rule-led borderline decision; it cannot replace missing
-  // lexical evidence, overcome a contradiction, or dominate the merge score.
-  const correction = Number.isFinite(learnedProbability) ? (learnedProbability - .5) * .05 : (cosine(vecA, vecB) - .85) * .1;
-  return Math.max(0, Math.min(1, rules + Math.max(-.025, Math.min(.025, correction))));
+function centeredVector(vector) {
+  const normalized = normalizedVector(vector);
+  return normalizedVector(normalized.map((value, index) => value - MEANING_EMBEDDING_CENTER[index]));
+}
+
+function clusterSenses(senses, scores, word) {
+  const clusters = senses.map((_, index) => [index]);
+  const pairScore = (a, b) => scores.get(Math.min(a, b) + ':' + Math.max(a, b)) ?? -1;
+  while (true) {
+    let chosen = null, best = LOCAL_SIMILARITY - 1e-9;
+    for (let a = 0; a < clusters.length; a++) for (let b = a + 1; b < clusters.length; b++) {
+      const score = Math.min(...clusters[a].flatMap(i => clusters[b].map(j => pairScore(i, j))));
+      if (score > best) { best = score; chosen = [a, b]; }
+    }
+    if (!chosen) break;
+    const [a, b] = chosen;
+    clusters[a].push(...clusters[b]);
+    clusters.splice(b, 1);
+  }
+  return clusters.map(indices => groupSimilarSenses(indices.sort((a, b) => a - b).map(i => senses[i]), {
+    word, matches: () => true
+  })[0]);
 }
 
 export async function groupEntrySensesLocally(entry, options = {}) {
   if (options.groupSenses === false || !Array.isArray(entry?.senses)) return entry;
-  const senses = allEntrySenses(entry).flatMap(originalSenses).map(s => ({ ...s, word: s.word || entry.word }));
-  let judgments = new Map();
-  const judgment = (a, b) => judgments.get(meaningPairKey(entry.word, a.partOfSpeech, a.sourceDefinition || a.definition, b.sourceDefinition || b.definition));
-  const packaged = groups => {
-    const result = packagedLocal(entry, groups);
-    if (senses.some((a, i) => senses.slice(i + 1).some(b => judgment(a, b) !== undefined))) result.senseConsolidation.userReviewed = true;
-    return result;
-  };
-  const fallback = () => packaged(groupSimilarSenses(senses, { word: entry.word,
-    matches: (a, b) => a.partOfSpeech === b.partOfSpeech && (judgment(a, b) === 1 || judgment(a, b) !== 0
-      && (areSensesNearDuplicate(a, b) || learnerCoreMatch(a, b) && !hasExplicitMeaningConflict(a, b))) }));
-  if (senses.length < 2) return fallback();
-  const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
+  const senses = allEntrySenses(entry).flatMap(originalSenses).map(sense => ({ ...sense, word: sense.word || entry.word }));
+  if (senses.length < 2) return packagedLocal(entry, senses);
+
   const learning = await meaningLearningState();
-  const equivalenceHead = validEquivalenceHead(options.wEq) ? options.wEq : learning.head;
-  judgments = new Map(learning.records.filter(row => row.source === 'user').map(row => [row.key, row.label]));
-  const needsEmbeddings = senses.some((a, i) => senses.slice(i + 1).some(b => judgment(a, b) === undefined
-    && !areSensesNearDuplicate(a, b) && !learnerCoreMatch(a, b) && compatible(a, b)));
-  if (!needsEmbeddings) return fallback();
-  const headFingerprint = equivalenceHead ? parameterFingerprint([...equivalenceHead.wProd, ...equivalenceHead.wDiff, ...equivalenceHead.scorer.weights, equivalenceHead.scorer.bias]) : '';
-  const key = JSON.stringify([VERSION, CLIP_TAG, learning.revision, headFingerprint, equivalenceHead?.threshold, entry.word, senses.map(s => [s.partOfSpeech, s.sourceDefinition || s.definition, s.labels, s.usageNote, s.antonyms])]);
-  const cache = readObjectCache(storage, CACHE_KEY);
-  let pairs = cache[key]?.data;
-  if (!Array.isArray(pairs) || pairs.some(p => !Array.isArray(p) || p.length !== 3 || !Number.isInteger(p[0]) || !Number.isInteger(p[1])
-    || p[0] < 0 || p[1] >= senses.length || p[0] >= p[1] || !Number.isFinite(p[2]) || p[2] < LOCAL_SIMILARITY || p[2] > 1)) pairs = null;
-  try {
-    if (!pairs) {
-      const encode = options.encodeDefinitionTexts || (await import('./imageLearning.js?v=18908')).encodeDefinitionTexts;
-      const vectors = await encode(senses.map(s => meaningComparisonText(s.sourceDefinition || s.definition)), options);
-      const needsSupportingHead = equivalenceHead && senses.some((a, i) => senses.slice(i + 1)
-        .some(b => !areSensesNearDuplicate(a, b) && !learnerCoreMatch(a, b) && compatible(a, b)));
-      const anchors = needsSupportingHead ? await embedMeaningAnchors(entry.word, senses, { ...options, encodeDefinitionTexts: encode }) : null;
-      options.signal?.throwIfAborted();
-      if (!vectors || vectors.length !== senses.length || vectors.some(v => !Array.isArray(v) || v.length !== CLIP_DIMENSION || v.some(n => !Number.isFinite(n)))) return fallback();
-      pairs = [];
-      for (let a = 0; a < senses.length; a++) for (let b = a + 1; b < senses.length; b++) {
-        const judgment = judgments.get(meaningPairKey(entry.word, senses[a].partOfSpeech, senses[a].sourceDefinition || senses[a].definition, senses[b].sourceDefinition || senses[b].definition));
-        if (judgment === 0) continue;
-        if (judgment === 1 && senses[a].partOfSpeech === senses[b].partOfSpeech) { pairs.push([a, b, 1]); continue; }
-        if ((areSensesNearDuplicate(senses[a], senses[b]) || learnerCoreMatch(senses[a], senses[b])) && !hasExplicitMeaningConflict(senses[a], senses[b])) {
-          pairs.push([a, b, 1]); continue;
-        }
-        if (!compatible(senses[a], senses[b])) continue;
-        const probability = anchors ? equivalenceProbability(equivalenceHead, pairEvidence(senses[a], senses[b], anchors[a], anchors[b])) : null;
-        const score = wEqSimilarity(senses[a], senses[b], vectors[a], vectors[b], probability);
-        if (score >= LOCAL_SIMILARITY) pairs.push([a,b,Math.min(1,score)]);
-      }
-      cache[key] = { cachedAt: Date.now(), data: pairs };
-      writeRecentObjectCache(storage, CACHE_KEY, cache, 150);
+  const judgments = new Map(learning.records.filter(row => row.source === 'user').map(row => [row.key, row.label]));
+  const scores = new Map(), candidates = new Map();
+  let userReviewed = false;
+  for (let a = 0; a < senses.length; a++) for (let b = a + 1; b < senses.length; b++) {
+    const left = senses[a], right = senses[b];
+    if (identity(left.word) !== identity(right.word) || identity(left.partOfSpeech) !== identity(right.partOfSpeech)) continue;
+    const key = meaningPairKey(entry.word, left.partOfSpeech, source(left), source(right));
+    const judgment = judgments.get(key);
+    const pair = a + ':' + b;
+    if (judgment !== undefined) {
+      userReviewed = true;
+      if (judgment === 1) scores.set(pair, 2);
+    } else if (areLearnerMeaningsMergeable(left, right)) {
+      scores.set(pair, 1);
+    } else if (compatible(left, right)) {
+      candidates.set(pair, key);
     }
-    const scores = new Map(pairs.map(([a,b,score]) => [a+':'+b,score]));
-    const clusters = senses.map((_, i) => [i]);
-    while (true) {
-      let chosen = null, best = LOCAL_SIMILARITY - 1e-9;
-      for (let a = 0; a < clusters.length; a++) for (let b = a+1; b < clusters.length; b++) {
-        const score = Math.min(...clusters[a].flatMap(i => clusters[b].map(j =>
-          scores.get(Math.min(i,j)+':'+Math.max(i,j)) ?? -1)));
-        if (score > best) { best = score; chosen = [a,b]; }
-      }
-      if (!chosen) break;
-      const [a,b] = chosen; clusters[a].push(...clusters[b]); clusters.splice(b,1);
-    }
-    const groups = clusters.map(ids => groupSimilarSenses(ids.sort((a,b)=>a-b).map(i => senses[i]), { word: entry.word, matches: () => true })[0]);
-    return packaged(groups);
-  } catch (error) {
-    options.signal?.throwIfAborted();
-    return fallback();
   }
+
+  const reviews = [], automatic = [];
+  if (candidates.size) {
+    const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
+    const key = JSON.stringify([VERSION, CLIP_TAG, entry.word,
+      senses.map(s => [s.partOfSpeech, source(s), s.labels, s.usageNote, s.antonyms])]);
+    const cache = readObjectCache(storage, CACHE_KEY);
+    let pairs = cache[key]?.data;
+    if (!Array.isArray(pairs) || pairs.some(pair => !Array.isArray(pair) || pair.length !== 2
+      || !/^\d+:\d+$/.test(pair[0]) || !Number.isFinite(pair[1]) || pair[1] < REVIEW_SIMILARITY || pair[1] > 1)) pairs = null;
+    if (options.reuseSemanticScoresOnly) {
+      const previous = new Map(entry.meaningReviewScores || []);
+      pairs = [...candidates].flatMap(([pair, pairKey]) => previous.has(pairKey) ? [[pair, previous.get(pairKey)]] : []);
+    } else if (!pairs) {
+      try {
+        // Only unresolved senses from the same part of speech need the encoder.
+        // Bound first-lookup work for unusually large entries such as “run”.
+        const indices = [...new Set([...candidates.keys()].flatMap(pair => pair.split(':').map(Number)))]
+          .sort((a, b) => a - b).slice(0, MAX_EMBEDDED_SENSES);
+        const texts = indices.map(index => meaningEmbeddingText(source(senses[index])));
+        const unique = [...new Set(texts.filter(Boolean))];
+        const encode = options.encodeDefinitionTexts || (await import('./imageLearning.js?v=18908')).encodeDefinitionTexts;
+        const budget = AbortSignal.timeout(8000);
+        const signal = options.signal ? AbortSignal.any([options.signal, budget]) : budget;
+        const encoded = await encode(unique, { ...options, signal, skipDownloadingModel: true });
+        options.signal?.throwIfAborted();
+        if (encoded?.length === unique.length) {
+          const byText = new Map(unique.map((text, index) => [text, centeredVector(encoded[index])]));
+          const vectors = new Map(indices.map((index, row) => [index, byText.get(texts[row])]));
+          pairs = [];
+          for (const pair of candidates.keys()) {
+            const [a, b] = pair.split(':').map(Number);
+            if (!vectors.get(a) || !vectors.get(b)) continue;
+            const similarity = cosine(vectors.get(a), vectors.get(b));
+            if (similarity >= REVIEW_SIMILARITY) pairs.push([pair, similarity]);
+          }
+          cache[key] = { cachedAt: Date.now(), data: pairs };
+          writeRecentObjectCache(storage, CACHE_KEY, cache, 150);
+        }
+      } catch {
+        options.signal?.throwIfAborted();
+        // The rule and user decisions still apply when optional inference fails.
+      }
+    }
+    for (const [pair, similarity] of pairs || []) {
+      const pairKey = candidates.get(pair);
+      if (!pairKey) continue;
+      if (similarity >= LOCAL_SIMILARITY) {
+        scores.set(pair, similarity);
+        automatic.push([pairKey, similarity]);
+      } else reviews.push([pairKey, similarity]);
+    }
+  }
+
+  const result = packagedLocal(entry, clusterSenses(senses, scores, entry.word));
+  if (userReviewed) result.senseConsolidation.userReviewed = true;
+  result.meaningReviewScores = [...automatic, ...reviews.sort((a, b) => b[1] - a[1]).slice(0, 24)];
+  return result;
 }
