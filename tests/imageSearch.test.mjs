@@ -444,7 +444,7 @@ test('result-page changes are forwarded to every image provider', async () => {
   assert.equal(requested.get('images-api.nasa.gov').searchParams.get('page'), '2');
 });
 
-test('image provider preference and key can be backed up and restored', () => {
+test('image provider preferences sync while the API key stays device-local', () => {
   const values = new Map();
   const storage = {
     getItem: key => values.get(key) || null,
@@ -453,13 +453,14 @@ test('image provider preference and key can be backed up and restored', () => {
   saveImageProviderSettings({ provider: 'pexels', pexelsApiKey: ' local-key ', updatedAt: '2026-08-21T10:00:00.000Z' }, storage);
   assert.deepEqual(getImageProviderSettings(storage), { provider: 'pexels', pexelsApiKey: 'local-key', updatedAt: '2026-08-21T10:00:00.000Z' });
   const backup = getImageProviderBackupRecord(storage);
+  assert.equal(backup.pexelsApiKey, undefined);
   const restoredValues = new Map();
   const restoredStorage = {
     getItem: key => restoredValues.get(key) || null,
     setItem: (key, value) => restoredValues.set(key, value)
   };
   restoreImageProviderBackupRecord(backup, restoredStorage);
-  assert.deepEqual(getImageProviderSettings(restoredStorage), backup);
+  assert.deepEqual(getImageProviderSettings(restoredStorage), { ...backup, pexelsApiKey: '' });
 });
 
 test('saved Pexels settings are read automatically while exact-scene relevance can outrank provider order', async () => {

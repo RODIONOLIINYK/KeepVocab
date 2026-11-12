@@ -13,6 +13,7 @@ import { renderMeaningExplanation, renderExplanationReview, renderInlineExplanat
 import { mountImageReview, renderImageUncertaintyBadge } from './ImageReview.js?v=18908';
 import { attachImagesSequentially } from '../services/bulkWords.js?v=18908';
 import { animateDisclosures } from '../utils/disclosureMotion.js';
+import { safeImageUrl, safeImageSourceUrl, savedWordImage } from '../utils/imageUrls.js';
 
 export function duplicateMeaningGroups(meanings) {
   // Cluster saved records, not their nested dictionary-source IDs. The merge
@@ -210,9 +211,9 @@ export function renderLibraryView(container) {
     });
     if (container.libraryViewOwner !== viewOwner || !container.querySelector('#library-edit-form') || editId !== wordId || requestId !== imageRequestId) return;
     if (!meaningStillCurrent()) return;
-    const currentImage = !removeImage && word.imageUrl ? {
-      url: word.imageUrl,
-      sourceUrl: word.imageSourceUrl || '',
+    const savedImage = savedWordImage(word);
+    const currentImage = !removeImage && savedImage ? {
+      ...savedImage,
       title: word.imageAttribution || `Current image for ${word.word}`,
       attribution: word.imageAttribution || 'Current image',
       license: word.imageLicense || '',
@@ -220,7 +221,7 @@ export function renderLibraryView(container) {
       searchQuery: word.imageSearchQuery || activeImageConcept,
       imageKind: word.imageKind || 'external'
     } : null;
-    const fresh = activeImageResultCandidates(currentImage, results, 45)
+    const fresh = activeImageResultCandidates(currentImage, results.filter(image => safeImageUrl(image?.url)), 45)
       .filter(image => !imageIdentityKeys(image).some(key => imageSeen.has(key)));
     for (const image of fresh) for (const key of imageIdentityKeys(image)) imageSeen.add(key);
     imageCandidatePool = refresh ? [...imageCandidatePool, ...fresh] : fresh;
@@ -275,11 +276,12 @@ export function renderLibraryView(container) {
     const word = group.meanings[0];
     const duplicates = duplicateMeaningGroups(group.meanings);
     const meaningCard = (meaning, meaningIndex) => {
+      const imageUrl = safeImageUrl(meaning.imageUrl);
       const hasDuplicateImage = duplicateImages.has(meaning.imageUrl);
       const readiness = getPracticeReadiness([meaning]);
       return `<section class="library-meaning" data-meaning-id="${escapeHtml(meaning.id)}">
         <div class="library-meaning-heading"><span>Meaning ${meaningIndex + 1}</span><strong>${escapeHtml(meaning.partOfSpeech || 'word')}</strong></div>
-        ${meaning.imageUrl && !hasDuplicateImage ? `<img class="library-word-image" src="${escapeHtml(meaning.imageUrl)}" alt="Visual cue for ${escapeHtml(meaning.word)} meaning ${meaningIndex + 1}">` : hasDuplicateImage ? `<div class="duplicate-image-warning"><i class="fa-solid fa-images"></i><span><strong>Reused visual cue</strong>Choose a distinct image for this meaning.</span></div>` : ''}
+        ${imageUrl && !hasDuplicateImage ? `<img class="library-word-image" src="${escapeHtml(imageUrl)}" alt="Visual cue for ${escapeHtml(meaning.word)} meaning ${meaningIndex + 1}">` : hasDuplicateImage ? `<div class="duplicate-image-warning"><i class="fa-solid fa-images"></i><span><strong>Reused visual cue</strong>Choose a distinct image for this meaning.</span></div>` : ''}
         ${renderMeaningExplanation(meaning)}${isUkrainianTranslationEnabled() && meaning.translationLanguage === 'uk' && meaning.translation ? `<p class="word-translation" lang="uk">${escapeHtml(meaning.translation)}</p>` : ''}
         ${exampleForLearning(meaning) ? `<blockquote>“${escapeHtml(exampleForLearning(meaning))}”</blockquote>` : ''}
         <div class="library-card-footer"><span>${meaning.mastered ? 'Mastered' : (readiness.readyNowCount ? 'Due now' : 'Learning')}</span></div>
@@ -434,7 +436,7 @@ export function renderLibraryView(container) {
     const savedEditing = editId ? driveSync.getWords().find(word => word.id === editId) : null;
     const editing = savedEditing ? { ...savedEditing, ...editDraft } : null;
     const imageConcepts = [...new Set([customImageConcept, ...suggestedImageScenes].filter(Boolean))];
-    const currentImageUrl = removeImage ? '' : (selectedImage?.url || editing?.imageUrl || '');
+    const currentImageUrl = removeImage ? '' : safeImageUrl(selectedImage?.url || editing?.imageUrl);
     imageReviewController?.destroy();
     imageReviewController = null;
     container.innerHTML = `
@@ -488,7 +490,7 @@ export function renderLibraryView(container) {
             </div>
             </div></details>
             ${currentImageUrl ? `<div class="selected-image-preview"><img src="${escapeHtml(currentImageUrl)}" alt="Selected visual cue for ${escapeHtml(editing.word)}"><div><strong>${selectedImage ? 'New image selected' : 'Current saved image'}</strong><span>${escapeHtml(selectedImage?.title || editing.imageAttribution || 'Saved visual cue')}</span><button type="button" class="image-text-action" id="image-wrong"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i>Hide this photo</button></div></div>` : ''}
-            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching ${activeImageConcept ? `for “${escapeHtml(activeImageConcept)}”` : 'all search prompts'} · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-results-heading"><strong>${activeImageConcept ? `Results for “${escapeHtml(activeImageConcept)}”` : 'Results from all search prompts'}</strong><span>${imageCandidates.length} images · page ${imageResultPage}</span></div><div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(image.thumbnailUrl || image.url)}" alt="${escapeHtml(image.title)}" loading="lazy" decoding="async"><span>${renderImageUncertaintyBadge(image)}${escapeHtml(image.title)}</span><small>${escapeHtml(image.source || 'Public image')}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
+            ${imageLoading ? `<div class="image-suggestion-loading"><i class="fa-solid fa-images"></i><span>Searching ${activeImageConcept ? `for “${escapeHtml(activeImageConcept)}”` : 'all search prompts'} · page ${imageResultPage}…</span></div>` : imageCandidates.length ? `<div class="image-results-heading"><strong>${activeImageConcept ? `Results for “${escapeHtml(activeImageConcept)}”` : 'Results from all search prompts'}</strong><span>${imageCandidates.length} images · page ${imageResultPage}</span></div><div class="image-candidate-grid library-image-grid">${imageCandidates.map((image, index) => `<button type="button" class="${selectedImage?.url === image.url ? 'selected' : ''}" data-library-image="${index}" aria-pressed="${selectedImage?.url === image.url}"><img src="${escapeHtml(safeImageUrl(image.thumbnailUrl) || safeImageUrl(image.url))}" alt="${escapeHtml(image.title)}" loading="lazy" decoding="async"><span>${renderImageUncertaintyBadge(image)}${escapeHtml(image.title)}</span><small>${escapeHtml(image.source || 'Public image')}</small></button>`).join('')}</div>` : `<p class="image-picker-message">${escapeHtml(imageError || 'Suggestions will appear here.')}</p>`}
             <p class="image-license-note">${imageCandidates.some(image => image.source === 'Pexels') ? '<a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Photos provided by Pexels</a>. ' : ''}</p>
           </section>
           <div class="inline-actions"><button class="btn-green-solid" type="submit">Save changes</button></div>
@@ -568,9 +570,9 @@ export function renderLibraryView(container) {
     container.querySelector('#use-custom-image-url')?.addEventListener('click', () => {
       const value = String(container.querySelector('#custom-image-url')?.value || '').trim();
       try {
-        const url = new URL(value);
-        if (url.protocol !== 'https:') throw new Error('Image links must start with https://.');
-        selectedImage = { url: url.toString(), sourceUrl: url.toString(), title: 'Custom image link', attribution: 'Custom image link', license: '', imageKind: 'external' };
+        const url = safeImageSourceUrl(value);
+        if (!url) throw new Error('Enter a valid https:// image link without a username or password.');
+        selectedImage = { url, sourceUrl: url, title: 'Custom image link', attribution: 'Custom image link', license: '', imageKind: 'external' };
         imageQuery = 'custom image link';
         removeImage = false;
         render();

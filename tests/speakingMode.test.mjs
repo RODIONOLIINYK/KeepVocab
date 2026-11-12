@@ -169,7 +169,7 @@ test('the speaking route is visible in navigation, offline packaged, and explici
   assert.match(html, /data-view="speaking"/);
   assert.match(app, /renderSpeakingMode/);
   assert.match(component, /Gemini connects only after you press Start/);
-  assert.match(component, /key stays in KeepVocab storage and joins your private Drive backup/);
+  assert.match(component, /key stays on this device; model preferences join your Drive backup/);
   assert.match(component, /COACH_SILENCE_MS = 9000/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'start', phraseTargets\)/);
   assert.match(component, /buildCoachInitiativeCue\(lesson, 'silence', phraseTargets\)/);

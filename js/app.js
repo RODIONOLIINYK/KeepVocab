@@ -632,17 +632,25 @@ function hasPendingDriveChanges() {
   return driveChangeRevision > syncedDriveRevision;
 }
 
+function canRunAutomaticDriveSync() {
+  const auth = driveSync.getDriveStatus();
+  return Boolean(auth.isConnected || auth.remembered) && globalThis.navigator?.onLine !== false;
+}
+
 function scheduleAutomaticDriveSync() {
-  if (!driveSync.getDriveStatus().isConnected || !hasPendingDriveChanges() || automaticSyncTimer || automaticSyncRunning) return;
+  if (!canRunAutomaticDriveSync() || !hasPendingDriveChanges() || automaticSyncTimer || automaticSyncRunning || driveResumeRunning) return;
   const delay = backgroundSyncDelay(lastAutomaticDriveSyncAt);
   automaticSyncTimer = window.setTimeout(flushAutomaticDriveSync, delay);
 }
 
 async function flushAutomaticDriveSync({ pullRemote = false } = {}) {
   automaticSyncTimer = null;
-  if (!driveSync.getDriveStatus().isConnected || automaticSyncRunning || (!pullRemote && !hasPendingDriveChanges())) return;
+  if (!canRunAutomaticDriveSync() || automaticSyncRunning || driveResumeRunning || (!pullRemote && !hasPendingDriveChanges())) return;
   const revisionAtStart = driveChangeRevision;
   automaticSyncRunning = true;
+  // Failed renewals also count as attempts, avoiding a tight retry loop while
+  // the remembered account needs confirmation or the network is unavailable.
+  lastAutomaticDriveSyncAt = Date.now();
   try {
     await runDriveSync();
     syncedDriveRevision = Math.max(syncedDriveRevision, revisionAtStart);
@@ -672,7 +680,7 @@ function setupAutomaticDriveBackup() {
 // Download progress and goals saved on other devices when the app returns to
 // the foreground or stays open, even if this device has nothing new to upload.
 function pullRemoteProgress({ resumed = false } = {}) {
-  if (!driveSync.getDriveStatus().isConnected || automaticSyncRunning || driveResumeRunning) return;
+  if (!canRunAutomaticDriveSync() || automaticSyncRunning || driveResumeRunning) return;
   if (!shouldPullFromDrive(lastAutomaticDriveSyncAt, Date.now(), { resumed })) return;
   if (automaticSyncTimer) {
     window.clearTimeout(automaticSyncTimer);

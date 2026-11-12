@@ -609,7 +609,7 @@ test('legacy review activity migrates into the mergeable Drive activity format',
   assert.equal(merged.dailyStreak, 0);
 });
 
-test('Google Drive backs up and restores the centralized Google AI Studio key', async () => {
+test('Google Drive backs up Google AI Studio model preferences without the device key', async () => {
   const drive = new MockDrive();
   const originalStorage = new MemoryStorage();
   saveGeminiSettings({ apiKey: 'AIza-drive-backed-key-123456789', textModel: 'gemini-3.1-flash-lite' }, originalStorage, { silent: true });
@@ -620,17 +620,18 @@ test('Google Drive backs up and restores the centralized Google AI Studio key', 
   await original.syncGoogleDrive();
 
   const payload = drive.payloadByName('KeepVocab Settings.json');
-  assert.equal(payload.googleAiStudio.apiKey, 'AIza-drive-backed-key-123456789');
+  assert.equal(payload.googleAiStudio.apiKey, undefined);
   assert.equal(payload.googleAiStudio.textModel, 'gemini-3.1-flash-lite');
 
   const reinstalledStorage = new MemoryStorage();
   const reinstalled = new DriveSyncService(reinstalledStorage, drive.fetch);
   authorize(reinstalled);
   await reinstalled.syncGoogleDrive();
-  assert.equal(getGeminiSettings(reinstalledStorage).apiKey, 'AIza-drive-backed-key-123456789');
+  assert.equal(getGeminiSettings(reinstalledStorage).apiKey, '');
+  assert.equal(getGeminiSettings(originalStorage).apiKey, 'AIza-drive-backed-key-123456789');
 });
 
-test('Google Drive backs up and restores the Pexels provider and API key', async () => {
+test('Google Drive backs up and restores the Pexels preference without its device key', async () => {
   const drive = new MockDrive();
   const originalStorage = new MemoryStorage();
   saveImageProviderSettings({
@@ -646,14 +647,15 @@ test('Google Drive backs up and restores the Pexels provider and API key', async
 
   const payload = drive.payloadByName('KeepVocab Settings.json');
   assert.equal(payload.imageSearchProvider.provider, 'pexels');
-  assert.equal(payload.imageSearchProvider.pexelsApiKey, 'pexels-drive-backed-key-123456789');
+  assert.equal(payload.imageSearchProvider.pexelsApiKey, undefined);
 
   const reinstalledStorage = new MemoryStorage();
   const reinstalled = new DriveSyncService(reinstalledStorage, drive.fetch);
   authorize(reinstalled);
   await reinstalled.syncGoogleDrive();
   assert.equal(getImageProviderSettings(reinstalledStorage).provider, 'pexels');
-  assert.equal(getImageProviderSettings(reinstalledStorage).pexelsApiKey, 'pexels-drive-backed-key-123456789');
+  assert.equal(getImageProviderSettings(reinstalledStorage).pexelsApiKey, '');
+  assert.equal(getImageProviderSettings(originalStorage).pexelsApiKey, 'pexels-drive-backed-key-123456789');
 });
 
 test('an older Drive backup without AI settings does not erase a local key', async () => {
@@ -671,7 +673,7 @@ test('an older Drive backup without AI settings does not erase a local key', asy
   authorize(current);
   await current.syncGoogleDrive();
   assert.equal(getGeminiSettings(currentStorage).apiKey, 'AIza-local-key-survives-123456789');
-  assert.equal(drive.payloadByName('KeepVocab Settings.json').googleAiStudio.apiKey, 'AIza-local-key-survives-123456789');
+  assert.equal(drive.payloadByName('KeepVocab Settings.json').googleAiStudio.apiKey, undefined);
 });
 
 test('deletion tombstones prevent a removed word from returning after reinstall', async () => {
@@ -744,7 +746,7 @@ test('a remembered Drive connection silently renews on a later app launch', asyn
 
   try {
     const result = await service.resumeGoogleDrive();
-    assert.equal(requestedPrompt, '');
+    assert.equal(requestedPrompt, 'none');
     assert.equal(requestedClientId, GOOGLE_WEB_CLIENT_ID);
     assert.match(requestedScope, /auth\/drive\.file/);
     assert.equal(result.folderName, 'KeepVocab Dictionary Backup');

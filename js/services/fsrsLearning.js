@@ -3,6 +3,7 @@ import { readFsrsConfig, normalizeFsrsConfig } from './fsrsConfig.js';
 import { optimizeFsrsChannel, reviewDatasetFingerprint, MIN_TRAINING_REVIEWS, MIN_TRAINING_WORDS } from './fsrsOptimizer.js';
 import { replayWordFsrsHistory } from './srsEngine.js?v=18908';
 import { sourceDefinitionFingerprint } from './learningDefinitions.js?v=18908';
+import { indexReviewEvents, reviewEventsForWord } from './reviewHistorySources.js';
 const ATTEMPT_KEY = 'keepvocab_fsrs_training_attempt_v1';
 const listeners = new Set();
 const scheduled = new WeakMap();
@@ -57,9 +58,8 @@ export async function trainPersonalScheduler(persistence = driveSync, { force = 
       if (accepted) {
         persistence.updateSettings({ fsrs: latest });
         const history = await persistence.getReviewEvents();
-        const grouped = new Map();
-        for (const event of history) { if (!grouped.has(event.wordId)) grouped.set(event.wordId, []); grouped.get(event.wordId).push(event); }
-        const words = persistence.getWords().map(word => replayWordFsrsHistory(word, grouped.get(word.id), latest,
+        const grouped = indexReviewEvents(history);
+        const words = persistence.getWords().map(word => replayWordFsrsHistory(word, reviewEventsForWord(word, grouped), latest,
           { preserveDue: true, sourceFingerprint: sourceDefinitionFingerprint(word) }));
         persistence.saveWords(words);
       }

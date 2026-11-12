@@ -180,16 +180,21 @@ export function saveImageProviderSettings(settings, storage = globalThis.localSt
 
 export function getImageProviderBackupRecord(storage = globalThis.localStorage) {
   if (!storage?.getItem(IMAGE_PROVIDER_SETTINGS_KEY)) return null;
-  return getImageProviderSettings(storage);
+  return sanitizeImageProviderBackupRecord(getImageProviderSettings(storage));
+}
+
+export function sanitizeImageProviderBackupRecord(record) {
+  if (!record || typeof record !== 'object') return null;
+  return {
+    provider: record.provider === 'pexels' || (!record.provider && record.pexelsApiKey) ? 'pexels' : 'openverse',
+    updatedAt: record.updatedAt || new Date(0).toISOString()
+  };
 }
 
 export function restoreImageProviderBackupRecord(record, storage = globalThis.localStorage) {
   if (!record || typeof record !== 'object') return getImageProviderSettings(storage);
-  return saveImageProviderSettings({
-    provider: record.provider,
-    pexelsApiKey: String(record.pexelsApiKey || ''),
-    updatedAt: record.updatedAt || new Date(0).toISOString()
-  }, storage, { silent: true });
+  // Provider preferences sync; credentials remain on the device that saved them.
+  return saveImageProviderSettings(sanitizeImageProviderBackupRecord(record), storage, { silent: true });
 }
 
 export function canonicalVisualTerm(value) {

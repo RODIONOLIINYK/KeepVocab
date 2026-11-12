@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112034-word-match-similarity-045';
+const CACHE_NAME = 'keepvocab-v112035-sync-history-safety';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -57,6 +57,7 @@ const ASSETS_TO_CACHE = [
   './js/services/srsEngine.js',
   './js/services/fsrsConfig.js',
   './js/services/reviewHistory.js',
+  './js/services/reviewHistorySources.js',
   './js/services/memoryFeatures.js',
   './js/services/fsrsOptimizer.js',
   './js/services/fsrsLearning.js',
@@ -102,6 +103,7 @@ const ASSETS_TO_CACHE = [
   './js/data/speakingLessons.js',
   './js/data/courses.js',
   './js/utils/html.js',
+  './js/utils/imageUrls.js',
   './js/utils/disclosureMotion.js',
   './js/utils/collections.js',
   './js/utils/dates.js',
@@ -161,7 +163,15 @@ self.addEventListener('fetch', (event) => {
       })
       // Version query strings are cache-busters, not distinct files. Matching
       // by path keeps one offline copy instead of downloading every old alias.
-      .catch(() => caches.match(event.request, { ignoreSearch: true }).then((cached) => cached || caches.match('./index.html')))
+      .catch(async () => {
+        const cached = await caches.match(event.request, { ignoreSearch: true });
+        if (cached) return cached;
+        if (event.request.mode === 'navigate') {
+          const shell = await caches.match('./index.html');
+          if (shell) return shell;
+        }
+        return Response.error();
+      })
   );
 });
 

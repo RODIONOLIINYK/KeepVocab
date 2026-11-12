@@ -78,27 +78,25 @@ export function clearGeminiSettings(storage = globalThis.localStorage, options =
   if (!options.silent) emitChange();
 }
 
-export function getGeminiBackupRecord(storage = globalThis.localStorage) {
-  if (!storage?.getItem(GEMINI_SETTINGS_STORAGE) && !storage?.getItem(GEMINI_KEY_STORAGE)) return null;
-  const settings = getGeminiSettings(storage);
+export function sanitizeGeminiBackupRecord(settings) {
+  if (!settings || typeof settings !== 'object') return null;
   return {
-    apiKey: settings.apiKey,
-    textModel: settings.textModel,
-    liveModel: settings.liveModel,
-    imageModel: settings.imageModel,
+    textModel: String(settings.textModel || DEFAULT_GEMINI_TEXT_MODEL),
+    liveModel: String(settings.liveModel || DEFAULT_GEMINI_LIVE_MODEL),
+    imageModel: String(settings.imageModel || DEFAULT_GEMINI_IMAGE_MODEL),
     updatedAt: settings.updatedAt || new Date(0).toISOString()
   };
 }
 
+export function getGeminiBackupRecord(storage = globalThis.localStorage) {
+  if (!storage?.getItem(GEMINI_SETTINGS_STORAGE) && !storage?.getItem(GEMINI_KEY_STORAGE)) return null;
+  return sanitizeGeminiBackupRecord(getGeminiSettings(storage));
+}
+
 export function restoreGeminiBackupRecord(record, storage = globalThis.localStorage) {
   if (!record || typeof record !== 'object') return getGeminiSettings(storage);
-  return saveGeminiSettings({
-    apiKey: String(record.apiKey || ''),
-    textModel: record.textModel,
-    liveModel: record.liveModel,
-    imageModel: record.imageModel,
-    updatedAt: record.updatedAt || new Date(0).toISOString()
-  }, storage, { silent: true });
+  // Legacy backups may contain a key. Never import it or replace this device's key.
+  return saveGeminiSettings(sanitizeGeminiBackupRecord(record), storage, { silent: true });
 }
 
 export function defaultGeminiThinkingConfig(model, isAudioRequest = false) {

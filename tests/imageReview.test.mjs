@@ -185,6 +185,19 @@ test('word text is escaped, unsafe credit links are omitted, and previews load p
   assert.match(container.innerHTML, /loading="eager"/);
 });
 
+test('review preserves a saved inline raster image and omits inline source links', async () => {
+  const container = new Container();
+  const url = 'data:image/webp;base64,AAAA';
+  let saved;
+  mountImageReview(container, [{ ...word('upload'), imageUrl: url, imageSourceUrl: url }], { onApply: rows => { saved = rows; } });
+  assert.match(container.innerHTML, /src="data:image\/webp;base64,AAAA"/);
+  assert.doesNotMatch(container.innerHTML, /href="data:/);
+  await container.click('keep');
+  await container.click('apply');
+  assert.equal(saved[0].imageUrl, url);
+  assert.equal(saved[0].imageSourceUrl, '');
+});
+
 test('learning receives only confirmed Keep choices after Apply succeeds, never Cancel, Next or Skip', async () => {
   const feedback = [];
   const container = new Container();

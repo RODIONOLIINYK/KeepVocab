@@ -1,5 +1,7 @@
 // FSRS-6 memory states, with separate recall, recognition and assisted streams.
 import { normalizeWordPracticeStats } from './wordSelection.js?v=18908';
+import { reviewHistorySources } from './reviewHistorySources.js';
+import { sourceDefinitionFingerprint } from './learningDefinitions.js?v=18908';
 import { FSRS_MODEL, readFsrsConfig, createEmptyCard, State, deserializeFsrsCard, serializeFsrsCard,
   fsrsScheduler, reviewChannel } from './fsrsConfig.js';
 
@@ -112,8 +114,15 @@ export function getRatingPreviews(word, now = new Date(), options = {}) {
 // Rebuild only memory fields from real, chronological events after sync or a
 // parameter update. Vocabulary metadata and learner statistics stay untouched.
 export function replayWordFsrsHistory(word, events, settings, { preserveDue = false, sourceFingerprint = '' } = {}) {
-  const history = (events || []).filter(event => event.wordId === word.id && event.memory?.scheduled
-    && (!sourceFingerprint || event.senseId === sourceFingerprint))
+  const sources = reviewHistorySources(word);
+  const ownFingerprint = sourceDefinitionFingerprint(word);
+  const sourceKeys = new Set(sources.map(source => JSON.stringify([source.wordId, source.senseId])));
+  const eligible = event => (event.wordId === word.id && (!sourceFingerprint || event.senseId === sourceFingerprint))
+    || ((!sourceFingerprint || sourceFingerprint === ownFingerprint)
+      && (!event.monthYear || event.monthYear === word.monthYear)
+      && sourceKeys.has(JSON.stringify([event.wordId, event.senseId])));
+  const history = [...new Map((events || []).filter(event => event.memory?.scheduled && eligible(event))
+    .map(event => [event.id, event])).values()]
     .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt) || a.id.localeCompare(b.id));
   if (!history.length) return word;
   const config = readFsrsConfig(settings);

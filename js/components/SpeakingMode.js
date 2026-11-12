@@ -123,7 +123,7 @@ function renderCatalog(container, onNavigate) {
     <div class="speaking-curriculum-heading"><div><h2>Choose a ${escapeHtml(learnerLevel)} lesson</h2><p>Practise longer answers, precise vocabulary, negotiation, discussion, and natural self-correction.</p></div><span id="speaking-result-count"></span></div>
     <div class="speaking-lesson-grid" id="speaking-lesson-grid"></div>
     <section class="free-conversation-card"><div class="free-chat-icon"><i class="fa-solid fa-comment-dots"></i><i class="fa-solid fa-comment"></i></div><div><span>${escapeHtml(learnerLevel)} open practice</span><h2>Free conversation</h2><p>Choose any topic; Mira will expect detailed answers, follow-up reasoning, and natural paraphrasing.</p><div class="free-topic-pills"><span>Current events</span><span>Work and study</span><span>Culture</span><span>Surprise me</span></div></div><button id="start-free-conversation">Start free chat <i class="fa-solid fa-wave-square"></i></button></section>
-    <aside class="speaking-privacy-note"><i class="fa-solid fa-shield-halved"></i><div><strong>Your privacy matters</strong><p>Gemini connects only after you press Start. Your key stays in KeepVocab storage and joins your private Drive backup when sync is enabled.</p></div></aside>
+    <aside class="speaking-privacy-note"><i class="fa-solid fa-shield-halved"></i><div><strong>Your privacy matters</strong><p>Gemini connects only after you press Start. Your key stays on this device; model preferences join your Drive backup when sync is enabled.</p></div></aside>
   </section>`;
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 

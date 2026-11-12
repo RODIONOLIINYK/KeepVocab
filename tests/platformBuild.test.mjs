@@ -331,7 +331,7 @@ test('every cache-busted entrypoint and module import is included in the offline
   assert.match(serviceWorker, /fetch\(event\.request, \{ cache: 'no-store' \}\)/);
   assert.equal([...precachedUrls].some(url => /\?v=\d+/.test(url)), false, 'Offline cache should not download duplicate version aliases.');
   // Includes the multi-view and equivalence heads, validation and explicit review.
-  assert.ok(precachedUrls.size < 120, `Offline install should stay compact; found ${precachedUrls.size} requests.`);
+  assert.ok(precachedUrls.size <= 120, `Offline install should stay compact; found ${precachedUrls.size} requests.`);
 
   for (const match of html.matchAll(/(?:src|href)=["']([^"']+\?v=\d+)["']/g)) {
     const canonicalPath = match[1].split(/[?#]/)[0];

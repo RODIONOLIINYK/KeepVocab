@@ -2,6 +2,7 @@ import { canAutoSelectImage, imageChoiceLabels } from '../services/imageChoicePo
 import { recordImagePreference } from '../services/imageLearning.js?v=18908';
 import { escapeHtml } from '../utils/html.js?v=18908';
 import { findRelevantImages, imageSelectionPatch, imageIdentityKeys } from '../services/imageSearch.js?v=18908';
+import { safeImageUrl as safeImage, safeImageSourceUrl as safeLink, savedWordImage as currentImage } from '../utils/imageUrls.js';
 
 let reviewId = 0;
 const clone = value => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
@@ -13,29 +14,8 @@ export function renderImageUncertaintyBadge(image) {
   return `<span class="image-match-warning" role="img" aria-label="${message}" title="${message}"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>`;
 }
 
-function safeLink(value) {
-  try {
-    const url = new URL(String(value || ''));
-    return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password ? url.href : '';
-  } catch { return ''; }
-}
-
-function safeImage(value) {
-  const text = String(value || '').trim();
-  return safeLink(text) || (/^data:image\/(?:jpeg|png|webp|gif);base64,[a-z0-9+/=\s]+$/i.test(text) ? text : '');
-}
-
 function identities(image) {
   return imageIdentityKeys({ url: safeImage(image?.url), sourceUrl: safeLink(image?.sourceUrl) });
-}
-
-function currentImage(word) {
-  if (!safeImage(word.imageUrl)) return null;
-  return {
-    url: word.imageUrl, thumbnailUrl: word.imageUrl,
-    sourceUrl: word.imageSourceUrl || '', attribution: word.imageAttribution || '',
-    license: word.imageLicense || '', title: word.word || '', searchQuery: word.imageSearchQuery || ''
-  };
 }
 
 /** A temporary review surface: only onApply receives image changes; inputs and progress are never mutated. */
