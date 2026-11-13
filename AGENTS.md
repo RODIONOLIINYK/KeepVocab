@@ -1,3 +1,11 @@
+# Subagent model preference
+
+Use Gemini 4 Hydrogen (`gemini-4-hydrogen`, Antigravity provider) for all
+subagents unless the user explicitly requests another model. If that model or
+provider is unavailable, report it rather than silently substituting another
+model. This preference applies to delegated review, research, implementation,
+and test tasks.
+
 # macOS builds
 
 The user's standing preference is Apple Silicon only. Build and validate macOS
