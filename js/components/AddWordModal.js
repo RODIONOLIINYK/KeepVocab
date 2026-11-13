@@ -4,7 +4,7 @@ import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWord
 import { mountImageReview } from './ImageReview.js?v=18908';
 import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { definitionForLearning, exampleForLearning, entrySensesForMode, originalSenses } from '../services/learningDefinitions.js?v=18908';
-import { groupEntrySensesLocally } from '../services/localSenseGrouping.js?v=18908';
+import { consolidateEntrySenses } from '../services/localSenseGrouping.js?v=18908';
 import { canAutoSelectImage } from '../services/imageChoicePolicy.js';
 import { recordImagePreference, warmImageLearning } from '../services/imageLearning.js?v=18908';
 import { mountMeaningPairReview } from './MeaningPairReview.js';
@@ -30,6 +30,86 @@ export function remapMeaningDrafts(previous, senses) {
   });
   if (!selected.size && drafts.length) selected.add(drafts[0].id);
   return { drafts: new Map(drafts.map(s => [s.id, s])), selected, focused: selected.has(focusedId) ? focusedId : [...selected][0] || null };
+}
+
+function formatInferenceDiagnostics(rawDiag, warning = '') {
+  if (!rawDiag) return '';
+  if (typeof rawDiag === 'string') {
+    const trimmed = rawDiag.trim();
+    return trimmed && trimmed !== warning ? trimmed : '';
+  }
+  if (typeof rawDiag !== 'object') return '';
+  const parts = [];
+  const primaryText = [rawDiag.message, rawDiag.reason, rawDiag.warning, rawDiag.summary]
+    .find(value => typeof value === 'string' && value.trim());
+  if (primaryText && !rawDiag.local) {
+    const trimmed = primaryText.trim();
+    if (trimmed !== warning) parts.push(trimmed);
+  } else if (typeof rawDiag.local === 'string' && rawDiag.local.trim()) {
+    const local = rawDiag.local.trim();
+    if (local === 'unavailable') parts.push('Local semantic comparison unavailable; exact and user rules applied.');
+    else if (local === 'failed') parts.push('Local semantic comparison failed; exact and user rules applied.');
+    else if (local === 'partial') parts.push('Local semantic comparison covered top candidate senses.');
+    else if (local === 'cached') parts.push('Local semantic comparison reused cached scores.');
+    else if (local === 'ready') parts.push('Local semantic comparison ran.');
+    else if (local !== 'not-needed') parts.push(`Local semantic comparison: ${local}.`);
+  } else if (typeof rawDiag.status === 'string' && rawDiag.status.trim()) {
+    const status = rawDiag.status.trim();
+    if (status === 'not-installed') parts.push('Local semantic inference unavailable (text model not installed).');
+    else if (status === 'unsupported') parts.push('Local semantic inference unavailable (Web Workers unsupported).');
+    else if (status === 'cancelled' || status === 'timeout') parts.push('Local semantic inference timed out or was cancelled; rule-based grouping applied.');
+    else if (status === 'error') parts.push(rawDiag.error ? `Local semantic inference failed: ${rawDiag.error}` : 'Local semantic inference failed; rule-based grouping applied.');
+    else if (status === 'ready' || status === 'used' || status === 'cached') parts.push('Local semantic inference active.');
+    else parts.push(`Local inference status: ${status}.`);
+  }
+  if (primaryText && rawDiag.local && primaryText.trim() !== warning) {
+    parts.push(primaryText.trim());
+  }
+  if (rawDiag.scorer === 'review-only-cosine' && ['ready', 'cached', 'partial'].includes(rawDiag.local)) {
+    parts.push('Similarities are review suggestions; automatic merging needs a calibrated equivalence scorer.');
+  }
+  if (rawDiag.scorer === 'calibrated-equivalence') {
+    parts.push('Calibrated equivalence scorer active.');
+  }
+  if (rawDiag.gemini === 'failed' && !warning) {
+    parts.push('Gemini meaning grouping failed; local grouping shown.');
+  }
+  const counts = [];
+  if (Number.isFinite(rawDiag.candidatePairs)) counts.push(`${rawDiag.candidatePairs} candidate pair${rawDiag.candidatePairs === 1 ? '' : 's'}`);
+  if (Number.isFinite(rawDiag.comparedPairs) && rawDiag.comparedPairs > 0) counts.push(`${rawDiag.comparedPairs} pair${rawDiag.comparedPairs === 1 ? '' : 's'} compared`);
+  if (Number.isFinite(rawDiag.scoredPairs)) counts.push(`${rawDiag.scoredPairs} scored`);
+  if (Number.isFinite(rawDiag.mergedPairs)) counts.push(`${rawDiag.mergedPairs} merged`);
+  if (Number.isFinite(rawDiag.reviewPairs)) counts.push(`${rawDiag.reviewPairs} for review`);
+  if (counts.length) parts.push(parts.length ? `(${counts.join(', ')})` : `Local inference: ${counts.join(', ')}.`);
+  return parts.join(' ').trim();
+}
+
+export function consolidationStatusMessages(data, { single = false } = {}) {
+  const rawWarning = data?.consolidationWarning == null ? '' : String(data.consolidationWarning).trim();
+  const warning = rawWarning
+    ? (/meaning grouping|unavailable/i.test(rawWarning) ? rawWarning : `Automatic meaning grouping warning: ${rawWarning}`)
+    : '';
+  const rawDiag = data?.inferenceDiagnostics
+    ?? data?.groupingDiagnostics
+    ?? data?.meaningGroupingDiagnostics
+    ?? data?.meaningInference
+    ?? data?.localGroupingStatus
+    ?? data?.senseConsolidation?.diagnostics
+    ?? data?.senseConsolidation?.inference
+    ?? data?.senseConsolidation?.encoderStatus;
+  const diagnostics = formatInferenceDiagnostics(rawDiag, warning);
+  const summary = data?.senseConsolidation
+    ? (() => {
+        const count = single
+          ? (data.senseConsolidation.coreCount ?? data.senses?.length ?? 0)
+          : (data.senses?.length ?? data.senseConsolidation.coreCount ?? 0);
+        const originalCount = data.senseConsolidation.originalCount;
+        return single
+          ? `${count} grouped meanings cover ${originalCount} dictionary definitions. Switch to Raw to inspect the dictionary definitions.`
+          : `${count} grouped meanings cover ${originalCount} dictionary definitions`;
+      })()
+    : '';
+  return { warning, diagnostics, summary, lines: [warning, diagnostics, summary].filter(Boolean) };
 }
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
@@ -65,6 +145,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
             </div>
           </div>
           <p class="sense-helper">Select every meaning you want. KeepVocab groups them under one word card and tracks each meaning separately.</p>
+          <div id="add-word-consolidation-notes" class="consolidation-notes" hidden></div>
           <div id="add-word-sense-list" class="sense-option-list" role="group" aria-label="Dictionary meanings"></div>
           <div id="add-word-meaning-review"></div>
           <button type="button" id="add-word-toggle-senses" class="text-action" aria-expanded="false" aria-controls="add-word-sense-list" hidden>Show all meanings</button>
@@ -149,6 +230,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   const btnSave = document.getElementById('btn-save-new-word');
   const input = document.getElementById('add-word-input');
   const preview = document.getElementById('add-word-preview');
+  const consolidationNotes = document.getElementById('add-word-consolidation-notes');
   const senseList = document.getElementById('add-word-sense-list');
   const toggleSenses = document.getElementById('add-word-toggle-senses');
   const posInput = document.getElementById('add-word-pos');
@@ -302,16 +384,25 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       }
       heading.append(titleGroup, remove);
       row.appendChild(heading);
-      if (result.data?.senseConsolidation) {
-        const summary = document.createElement('p');
-        summary.className = 'sense-helper';
-        summary.textContent = `${result.data.senses.length} grouped meanings cover ${result.data.senseConsolidation.originalCount} dictionary definitions`;
-        row.appendChild(summary);
-      } else if (result.data?.consolidationWarning) {
+      const consolidation = consolidationStatusMessages(result.data, { single: false });
+      if (consolidation.warning) {
         const warning = document.createElement('p');
-        warning.className = 'sense-helper';
-        warning.textContent = 'Automatic grouping is unavailable. Original dictionary meanings are shown.';
+        warning.className = 'sense-helper consolidation-warning';
+        warning.setAttribute('role', 'alert');
+        warning.textContent = consolidation.warning;
         row.appendChild(warning);
+      }
+      if (consolidation.diagnostics) {
+        const diagnostics = document.createElement('p');
+        diagnostics.className = 'sense-helper consolidation-diagnostics';
+        diagnostics.textContent = consolidation.diagnostics;
+        row.appendChild(diagnostics);
+      }
+      if (consolidation.summary) {
+        const summary = document.createElement('p');
+        summary.className = 'sense-helper consolidation-summary';
+        summary.textContent = consolidation.summary;
+        row.appendChild(summary);
       }
 
       if (result.status === 'ready') {
@@ -407,6 +498,8 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   const clearSenseState = () => {
     meaningPairReview?.destroy(); meaningPairReview = null;
     document.getElementById('add-word-meaning-review')?.replaceChildren();
+    consolidationNotes?.replaceChildren();
+    if (consolidationNotes) consolidationNotes.hidden = true;
     meaningMode = 'grouped';
     modeStates = new Map();
     senseDrafts = new Map();
@@ -615,7 +708,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         const entry = currentFetchedData;
         const state = { drafts: [...senseDrafts.values()], selected: new Set(selectedSenseIds), focused: focusedSenseId };
         try {
-          const regrouped = await groupEntrySensesLocally(entry, { reuseSemanticScoresOnly: true });
+          const regrouped = await consolidateEntrySenses(entry, { reuseSemanticScoresOnly: true });
           if (currentFetchedData !== entry) return;
           currentFetchedData = regrouped;
           renderSenses(regrouped, state);
@@ -641,10 +734,33 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     }
     renderSenseOptions();
     loadFocusedDraft();
-    formStatus.textContent = data.senseConsolidation
-      ? `${data.senseConsolidation.coreCount} grouped meanings cover ${data.senseConsolidation.originalCount} dictionary definitions. Switch to Raw to inspect the dictionary definitions.`
-      : data.consolidationWarning ? 'Automatic meaning grouping is unavailable. Dictionary meanings are shown so you can still choose and save.'
-        : 'Choose the meanings you use. Dictionary examples are included when available; you can save without an example.';
+    const consolidation = consolidationStatusMessages(data, { single: true });
+    if (consolidationNotes) {
+      consolidationNotes.replaceChildren();
+      if (consolidation.warning) {
+        const warningEl = document.createElement('p');
+        warningEl.className = 'sense-helper consolidation-warning';
+        warningEl.setAttribute('role', 'alert');
+        warningEl.textContent = consolidation.warning;
+        consolidationNotes.appendChild(warningEl);
+      }
+      if (consolidation.diagnostics) {
+        const diagEl = document.createElement('p');
+        diagEl.className = 'sense-helper consolidation-diagnostics';
+        diagEl.textContent = consolidation.diagnostics;
+        consolidationNotes.appendChild(diagEl);
+      }
+      if (consolidation.summary) {
+        const summaryEl = document.createElement('p');
+        summaryEl.className = 'sense-helper consolidation-summary';
+        summaryEl.textContent = consolidation.summary;
+        consolidationNotes.appendChild(summaryEl);
+      }
+      consolidationNotes.hidden = !consolidation.lines.length;
+    }
+    formStatus.textContent = consolidation.lines.length
+      ? consolidation.lines.join(' ')
+      : 'Choose the meanings you use. Dictionary examples are included when available; you can save without an example.';
   };
 
   document.querySelectorAll('[data-meaning-mode]').forEach(button => button.addEventListener('click', () => {

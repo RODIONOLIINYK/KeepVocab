@@ -4,16 +4,20 @@ import { CLIP_TAG } from '../ml/clipConfig.js';
 import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18908';
 import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18908';
 import { isModernUsageExample, hasExampleSenseConflict } from './exampleSearch.js?v=18908';
-import { meaningLearningState, meaningPairKey } from './meaningEquivalenceLearning.js';
-import { meaningComparisonText, meaningEmbeddingText } from './meaningComparison.js';
+import { meaningLearningState, meaningPairKey, embedMeaningAnchors, pairEvidence } from './meaningEquivalenceLearning.js';
+import { equivalenceProbability, validEquivalenceHead } from './meaningEquivalenceHead.js';
+import { meaningComparisonText, meaningEmbeddingText, MEANING_COMPARISON_VERSION } from './meaningComparison.js';
 
 import { MEANING_EMBEDDING_CENTER } from '../ml/pretrainedSemanticHeads.js';
 
 const CACHE_KEY = 'keepvocab_centered_sense_scores_v1';
-const VERSION = 3;
-const LOCAL_SIMILARITY = 0.45;
-const REVIEW_SIMILARITY = 0.40;
-const MAX_EMBEDDED_SENSES = 24;
+const VERSION = 5;
+export const MEANING_GROUPING_POLICY = Object.freeze({
+  localSimilarity: 0.45, reviewSimilarity: 0.40, maxEmbeddedSenses: 24, automaticCosineMerging: false
+});
+const LOCAL_SIMILARITY = MEANING_GROUPING_POLICY.localSimilarity;
+const REVIEW_SIMILARITY = MEANING_GROUPING_POLICY.reviewSimilarity;
+const MAX_EMBEDDED_SENSES = MEANING_GROUPING_POLICY.maxEmbeddedSenses;
 const CONSOLIDATION_CACHE = 'keepvocab_learner_meaning_groups_v1';
 let retryAfter = 0;
 
@@ -50,27 +54,35 @@ export async function consolidateEntrySenses(entry, options = {}) {
     senses.sort((a, b) => rank(a) - rank(b));
     entry = { ...entry, senses, additionalSenses: [] };
   }
-  const local = await groupEntrySensesLocally(entry, options);
-  const originalCount = allEntrySenses(entry).flatMap(originalSenses).length;
-  const localCount = allEntrySenses(local).length;
+  const learning = options.meaningLearningState || await meaningLearningState();
+  const local = await groupEntrySensesLocally(entry, { ...options, meaningLearningState: learning });
   const settings = { ...getGeminiSettings(options.storage), ...options.settings };
   // Local duplicate rules run first. A partial merge or a two-sense entry must
   // not disable semantic resolution of the remaining dictionary paraphrases.
   if (options.groupSenses === false || options.consolidateSenses === false || entry.aiGenerated
-    || localCount < 2 || local.senseConsolidation?.userReviewed || !settings.apiKey || settings.enabled === false) return local;
+    || !settings.apiKey || settings.enabled === false) return local;
   const allSenses = allEntrySenses(entry).flatMap(originalSenses);
-  // Local groups are atomic inputs. Gemini can merge them
-  // with another group but cannot undo an already-established equivalence.
-  const senses = allEntrySenses(local);
+  // Only exact duplicates and explicit user equivalences are atomic. A local
+  // similarity prediction must not prevent Gemini from correcting that merge.
+  const certain = await groupEntrySensesLocally(entry, { ...options, meaningLearningState: learning, semanticGrouping: false });
+  const senses = allEntrySenses(certain);
   if (!senses.length) return local;
+  if (senses.length < 2) return local;
   if (new Set(senses.map(s => String(s.partOfSpeech || 'word').trim().toLowerCase())).size === senses.length) return local;
   const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
   const model = options.model || settings.textModel;
-  const key = JSON.stringify([19, model, entry.word, senses.map(s => [s.partOfSpeech, s.sourceDefinition || s.definition, s.sourceDefinitions, s.labels, s.usageNote])]);
+  const judgments = new Map(learning.records.filter(row => row.source === 'user').map(row => [row.key, row.label]));
+  const constraints = [];
+  for (let a = 0; a < senses.length; a++) for (let b = a + 1; b < senses.length; b++) {
+    if (originalSenses(senses[a]).some(left => originalSenses(senses[b]).some(right =>
+      judgments.get(meaningPairKey(entry.word, left.partOfSpeech, source(left), source(right))) === 0))) constraints.push([String(a), String(b)]);
+  }
+  const honorsJudgments = groups => constraints.every(([a, b]) => !groups.some(group => group.members.includes(a) && group.members.includes(b)));
+  const key = JSON.stringify([20, MEANING_COMPARISON_VERSION, model, entry.word, constraints, senses.map(s => [s.partOfSpeech, s.sourceDefinition || s.definition, s.sourceDefinitions, s.labels, s.usageNote])]);
   const cache = readObjectCache(storage, CONSOLIDATION_CACHE);
   let groups = cache[key]?.data;
   try {
-    if (!validMeaningGroups(groups, senses)) {
+    if (!validMeaningGroups(groups, senses) || !honorsJudgments(groups)) {
       if (Date.now() < retryAfter) throw new Error('Meaning grouping is temporarily unavailable.');
       const parts = [...new Set(senses.map(s => String(s.partOfSpeech || 'word').trim().toLowerCase()))].map((partOfSpeech, index) => ({
         id: `p${index}`, partOfSpeech, senses: senses.flatMap((s, i) => String(s.partOfSpeech || 'word').trim().toLowerCase() === partOfSpeech
@@ -87,6 +99,7 @@ A grouped definition must express one coherent sense, not hide distinct senses i
 Never group unrelated concepts merely because they share vocabulary or concern the same object. Keep opposites, negation, incompatible restrictions, reversed participant roles and incompatible numerical bounds distinct. If a sense cannot be safely grouped, leave it alone. Do not force a target count or invent any meaning.
 Every supplied ID must occur exactly once. Every grouped definition must cover all its member meanings, including their defining qualifications and result-versus-process distinctions. Leave a definition separate when a merged definition cannot cover it faithfully. No meaning may be omitted or relegated to a hidden category.
 Resolve circular dictionary glosses such as an action-of-verb reference using the other supplied definitions and the word, merging them with an equivalent concrete meaning when justified. Preserve result-versus-process distinctions. Write self-contained familiar English definitions and concise usage notes. Do not add properties absent from the sources, manufacture examples, repeat the target word unnecessarily, or mention IDs or grouping steps in learner-facing text. Return core groups first.
+User-confirmed distinct ID pairs (must never share a group): ${JSON.stringify(constraints)}
 Word: ${JSON.stringify(entry.word)}
 Parts: ${JSON.stringify(parts)}`,
       { ...options, settings, json: true, maxOutputTokens: Math.min(6000, Math.max(1400, senses.length * 160)), timeoutMs: options.timeoutMs || 20000,
@@ -95,6 +108,7 @@ Parts: ${JSON.stringify(parts)}`,
         }, required: ['parts'] } } });
       groups = parts.flatMap(p => Array.isArray(result?.parts?.[p.id]) ? result.parts[p.id] : []);
       if (!validMeaningGroups(groups, senses)) throw new Error('Meaning groups did not account for every dictionary definition.');
+      if (!honorsJudgments(groups)) throw new Error('Meaning groups contradicted a saved Different meanings judgment.');
       cache[key] = { cachedAt: Date.now(), data: groups };
       writeRecentObjectCache(storage, CONSOLIDATION_CACHE, cache, 150);
     }
@@ -119,12 +133,14 @@ Parts: ${JSON.stringify(parts)}`,
       sense.sourceFingerprint = sourceDefinitionFingerprint(sense);
       return sense;
     });
-    return { ...entry, senses: built, ...built[0], additionalSenses: [],
-      senseConsolidation: { version: 1, model, originalCount: allSenses.length, coreCount: built.length } };
+    return { ...local, senses: built, ...built[0], additionalSenses: [],
+      senseConsolidation: { version: 1, model, originalCount: allSenses.length, coreCount: built.length },
+      meaningInference: { ...local.meaningInference, gemini: 'ready', model } };
   } catch (error) {
     options.signal?.throwIfAborted();
     if ([400, 401, 403, 429].includes(Number(error.status))) retryAfter = Date.now() + 60_000;
-    return { ...local, consolidationWarning: error.message || 'Meaning grouping is unavailable.' };
+    return { ...local, consolidationWarning: error.message || 'Meaning grouping is unavailable.',
+      meaningInference: { ...local.meaningInference, gemini: 'failed', model } };
   }
 }
 
@@ -150,6 +166,13 @@ function packagedLocal(entry, groups) {
 const identity = value => String(value || '').trim().toLowerCase();
 const source = sense => sense.sourceDefinition || sense.definition || '';
 export { fitEquivalenceHead as fitMeaningEquivalenceW } from './meaningEquivalenceHead.js';
+
+async function modelIdentity(head) {
+  const serialized = JSON.stringify(head);
+  if (!globalThis.crypto?.subtle) return serialized;
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(serialized));
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+}
 
 function centeredVector(vector) {
   const normalized = normalizedVector(vector);
@@ -180,7 +203,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
   const senses = allEntrySenses(entry).flatMap(originalSenses).map(sense => ({ ...sense, word: sense.word || entry.word }));
   if (senses.length < 2) return packagedLocal(entry, senses);
 
-  const learning = await meaningLearningState();
+  const learning = options.meaningLearningState || await meaningLearningState();
   const judgments = new Map(learning.records.filter(row => row.source === 'user').map(row => [row.key, row.label]));
   const scores = new Map(), candidates = new Map();
   let userReviewed = false;
@@ -200,10 +223,16 @@ export async function groupEntrySensesLocally(entry, options = {}) {
     }
   }
 
-  const reviews = [], automatic = [];
-  if (candidates.size) {
+  const reviews = [];
+  const inference = { local: candidates.size ? 'unavailable' : 'not-needed', comparedPairs: 0 };
+  const activeHead = validEquivalenceHead(learning.head) && learning.head.comparisonVersion === MEANING_COMPARISON_VERSION
+    && Number.isFinite(learning.head.threshold) && learning.head.threshold > 0 && learning.head.threshold < 1 ? learning.head : null;
+  const equivalenceKey = activeHead ? await modelIdentity(activeHead) : null;
+  const equivalenceScores = [];
+  if (!activeHead) inference.scorer = 'review-only-cosine';
+  if (candidates.size && options.semanticGrouping !== false) {
     const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
-    const key = JSON.stringify([VERSION, CLIP_TAG, entry.word,
+    const key = JSON.stringify([VERSION, MEANING_COMPARISON_VERSION, CLIP_TAG, entry.word,
       senses.map(s => [s.word, s.partOfSpeech, source(s)])]);
     const cache = readObjectCache(storage, CACHE_KEY);
     let pairs = cache[key]?.data;
@@ -220,12 +249,19 @@ export async function groupEntrySensesLocally(entry, options = {}) {
           .sort((a, b) => a - b).slice(0, MAX_EMBEDDED_SENSES);
         const texts = indices.map(index => meaningEmbeddingText(source(senses[index])));
         const unique = [...new Set(texts.filter(Boolean))];
-        const encode = options.encodeDefinitionTexts || (await import('./imageLearning.js?v=18908')).encodeDefinitionTexts;
         const budget = AbortSignal.timeout(8000);
         const signal = options.signal ? AbortSignal.any([options.signal, budget]) : budget;
-        const encoded = await encode(unique, { ...options, signal, skipDownloadingModel: true });
+        let encoded;
+        if (options.encodeDefinitionTexts) encoded = await options.encodeDefinitionTexts(unique, { ...options, signal, skipDownloadingModel: true });
+        else {
+          const { encodeDefinitionTextsDetailed } = await import('./imageLearning.js?v=18908');
+          const detail = await encodeDefinitionTextsDetailed(unique, { ...options, signal, skipDownloadingModel: true });
+          encoded = detail.ok ? detail.vectors : null;
+          if (!detail.ok) inference.reason = detail.reason || detail.message;
+        }
         options.signal?.throwIfAborted();
         if (encoded?.length === unique.length) {
+          inference.local = indices.length < senses.length ? 'partial' : 'ready';
           const byText = new Map(unique.map((text, index) => [text, centeredVector(encoded[index])]));
           const vectors = new Map(indices.map((index, row) => [index, byText.get(texts[row])]));
           pairs = [];
@@ -238,23 +274,69 @@ export async function groupEntrySensesLocally(entry, options = {}) {
           cache[key] = { cachedAt: Date.now(), data: pairs };
           writeRecentObjectCache(storage, CACHE_KEY, cache, 150);
         }
-      } catch {
+      } catch (error) {
         options.signal?.throwIfAborted();
+        inference.local = 'failed';
+        inference.reason = error.message || 'Local meaning comparison failed.';
         // The rule and user decisions still apply when optional inference fails.
       }
     }
+    if (pairs && (!options.reuseSemanticScoresOnly || pairs.length > 0) && inference.local === 'unavailable') inference.local = 'cached';
     for (const [pair, similarity] of pairs || []) {
       const pairKey = candidates.get(pair);
       if (!pairKey) continue;
-      if (similarity >= LOCAL_SIMILARITY) {
-        scores.set(pair, similarity);
-        automatic.push([pairKey, similarity]);
-      } else reviews.push([pairKey, similarity]);
+      inference.comparedPairs++;
+      // A calibrated equivalence head replaces, rather than merely boosts,
+      // the generic cosine decision. Null thresholds deliberately abstain.
+      // Generic image/text similarity is not calibrated for mutual meaning
+      // coverage. Keep it as a review signal, never an automatic merge.
+      reviews.push([pairKey, similarity]);
+    }
+    if (activeHead && options.reuseSemanticScoresOnly && entry.meaningEquivalenceModel === equivalenceKey) {
+      const previous = new Map(entry.meaningEquivalenceScores || []);
+      for (const [pair, pairKey] of candidates) {
+        const probability = previous.get(pairKey);
+        if (!Number.isFinite(probability)) continue;
+        equivalenceScores.push([pairKey, probability]);
+        if (probability >= activeHead.threshold) scores.set(pair, 1);
+      }
+      if (equivalenceScores.length) { inference.scorer = 'calibrated-equivalence'; inference.local = 'cached'; }
+    } else if (activeHead && !options.reuseSemanticScoresOnly) {
+      try {
+        const indices = [...new Set([...candidates.keys()].flatMap(pair => pair.split(':').map(Number)))].slice(0, MAX_EMBEDDED_SENSES);
+        const vectors = await embedMeaningAnchors(entry.word, indices.map(index => senses[index]), {
+          ...options, signal: options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(8000)]) : AbortSignal.timeout(8000), skipDownloadingModel: true
+        });
+        if (vectors?.length === indices.length) {
+          const byIndex = new Map(indices.map((index, row) => [index, vectors[row]]));
+          for (const [pair, pairKey] of candidates) {
+            const [a, b] = pair.split(':').map(Number);
+            if (!byIndex.has(a) || !byIndex.has(b)) continue;
+            const probability = equivalenceProbability(activeHead, pairEvidence(senses[a], senses[b], byIndex.get(a), byIndex.get(b)));
+            if (probability !== null) equivalenceScores.push([pairKey, probability]);
+            if (probability !== null && probability >= activeHead.threshold) scores.set(pair, 1);
+          }
+          if (equivalenceScores.length) inference.scorer = 'calibrated-equivalence';
+        } else {
+          inference.local = 'unavailable';
+          inference.reason = 'Calibrated equivalence comparison unavailable; no automatic statistical merges applied.';
+        }
+      } catch (error) {
+        options.signal?.throwIfAborted();
+        inference.local = 'failed'; inference.reason = error.message;
+      }
     }
   }
 
   const result = packagedLocal(entry, clusterSenses(senses, scores, entry.word));
   if (userReviewed) result.senseConsolidation.userReviewed = true;
-  result.meaningReviewScores = [...automatic, ...reviews.sort((a, b) => b[1] - a[1]).slice(0, 24)];
+  result.meaningReviewScores = reviews.sort((a, b) => b[1] - a[1]).slice(0, 24);
+  result.meaningInference = inference;
+  delete result.meaningEquivalenceModel;
+  delete result.meaningEquivalenceScores;
+  if (equivalenceKey && equivalenceScores.length) {
+    result.meaningEquivalenceModel = equivalenceKey;
+    result.meaningEquivalenceScores = equivalenceScores;
+  }
   return result;
 }

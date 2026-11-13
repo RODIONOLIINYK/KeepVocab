@@ -1,5 +1,5 @@
 import { AutoTokenizer, AutoProcessor, SiglipTextModel, SiglipVisionModel, RawImage, env } from '@huggingface/transformers';
-import { CLIP_MODEL, CLIP_MODEL_BASE, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, CLIP_DIMENSION } from '../js/ml/clipConfig.js';
+import { CLIP_MODEL, CLIP_MODEL_BASE, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, CLIP_DIMENSION, CLIP_TEXT_MAX_LENGTH } from '../js/ml/clipConfig.js';
 import { fetchCompactModelFile } from '../js/services/compactModelDownload.js';
 import { normalizedVector } from '../js/services/imagePreferences.js';
 import { fullFrameImage, centerCropImage } from '../js/services/imagePreprocessing.js';
@@ -195,7 +195,7 @@ async function run({ type, payload, device }) {
     for (let start = 0; start < texts.length; start += 8) {
       const batch = texts.slice(start, start + 8);
       result.push(...await cachedMany(batch.map(text => `${VECTOR_TAG}:text:${text}`), async missing => {
-        const inputs = model.tokenizer(missing.map(index => batch[index].toLowerCase()), { padding: 'max_length', max_length: 64, truncation: true });
+        const inputs = model.tokenizer(missing.map(index => batch[index].toLowerCase()), { padding: 'max_length', max_length: CLIP_TEXT_MAX_LENGTH, truncation: true });
         let output;
         try {
           output = await model.textModel({ input_ids: inputs.input_ids });

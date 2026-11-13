@@ -29,6 +29,11 @@ let phase = 'off';
 let message = '';
 let backend = '';
 let installed = false;
+let workerStorage;
+let cacheEpoch = 0;
+let installCheckPromise = null;
+let activeInitializePromise = null;
+let textEncodingDetail = null;
 const pending = new Map();
 const listeners = new Set();
 function emit(detail = {}) { for (const listener of listeners) listener({ ...getImageLearningStatus(), ...detail }); }
@@ -62,6 +67,65 @@ export async function hasDownloadedImageModel(cacheStorage = globalThis.caches) 
     const files = await Promise.all(CLIP_DOWNLOAD_URLS.map(url => cache.match(url)));
     return files.every(response => response?.ok && response.headers?.get('content-length') !== '0');
   } catch { return false; }
+}
+function textEncodingStatusMessage(status, reason = '') {
+  if (status === 'ready') return 'Local text encoder is ready.';
+  if (status === 'installed') return 'Installed local text model is available for meaning grouping.';
+  if (status === 'not-installed') return 'Local text model is not installed; no implicit download will run.';
+  if (status === 'unsupported') return 'Web Workers are unavailable in this environment.';
+  if (status === 'cancelled') return reason || 'Meaning text encoding was cancelled.';
+  return reason || 'Local meaning text encoding failed.';
+}
+export function getMeaningTextEncodingStatus(options = {}) {
+  const supported = typeof Worker !== 'undefined';
+  const ready = supported && Boolean(worker && workerReady);
+  const isInstalled = Boolean(installed || ready);
+  const lastError = textEncodingDetail?.status === 'error' ? textEncodingDetail.reason || '' : '';
+  const lastCancelled = textEncodingDetail?.status === 'cancelled' ? textEncodingDetail.reason || '' : '';
+  const status = !supported
+    ? 'unsupported'
+    : ready
+      ? 'ready'
+      : isInstalled
+        ? (lastError ? 'error' : 'installed')
+        : 'not-installed';
+  const reason = ['ready', 'installed'].includes(status) ? '' : lastError || lastCancelled;
+  return {
+    available: supported && isInstalled,
+    status,
+    installed: isInstalled,
+    ready,
+    imageLearningEnabled: imageLearningEnabled(options.storage),
+    model: CLIP_TAG,
+    backend: backend || '',
+    reason,
+    message: textEncodingStatusMessage(status, reason)
+  };
+}
+async function resolveInstalledTextModel(options = {}) {
+  if (typeof Worker === 'undefined') return false;
+  if (worker && workerReady) return true;
+  if (options.cacheStorage) {
+    const epoch = cacheEpoch;
+    const present = await hasDownloadedImageModel(options.cacheStorage);
+    if (present && epoch === cacheEpoch) installed = true;
+    return present;
+  }
+  if (installed) return true;
+  if (!globalThis.caches) return false;
+  if (!installCheckPromise) {
+    const epoch = cacheEpoch;
+    installCheckPromise = hasDownloadedImageModel(globalThis.caches).then(present => {
+      if (epoch === cacheEpoch) installed = present;
+      return present;
+    }).finally(() => { installCheckPromise = null; });
+  }
+  return installCheckPromise;
+}
+export async function checkMeaningTextEncodingStatus(options = {}) {
+  const present = await resolveInstalledTextModel(options);
+  if (present && textEncodingDetail?.status === 'not-installed') textEncodingDetail = null;
+  return getMeaningTextEncodingStatus(options);
 }
 // Check cached files first; defer optional model initialization until after paint/idle.
 export async function initializeImageLearning({ requestDownload, storage = globalThis.localStorage, cacheStorage = globalThis.caches, enable = enableImageLearning, scheduleWarmup = scheduleImageModelWarmup } = {}) {
@@ -99,6 +163,7 @@ export function getImageLearningStatus() {
   const history = driveSync.imageHistory;
   const data = [...recentRecords.values()];
   return { enabled: imageLearningEnabled(), installed, phase, message, backend, downloadMB: MODEL_DOWNLOAD_MB,
+    meaningTextEncoding: getMeaningTextEncodingStatus(),
     labels: Math.max(history.count, dataset().records.length), revision: cachedModel?.revision || 0,
     trainedLabels: cachedModel?.trainingDecisionIds?.length || 0, queued: 0,
     positiveLabels: history.summary?.positive || data.filter(r => r.label === 1).length,
@@ -151,7 +216,7 @@ export function warmImageLearning(options = {}) {
   warmupPromise = operation; return operation;
 }
 function stopWorker(reason = 'The local image model was stopped.') {
-  cancelScheduledWarmup(); workerGeneration++; workerReady = false; warmupPromise = null;
+  cancelScheduledWarmup(); workerGeneration++; workerReady = false; warmupPromise = null; activeInitializePromise = null; workerStorage = undefined;
   worker?.terminate(); worker = null;
   for (const helper of helpers) helper.terminate();
   helpers = [];
@@ -227,22 +292,35 @@ function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = fa
   if (typeof Worker === 'undefined') return Promise.reject(new Error('This browser cannot run the local image model.'));
   if (signal?.aborted) return Promise.reject(new Error('Image scoring was cancelled.'));
   const generation = featureGeneration;
-  cancelScheduledWarmup();
+  if (storage !== undefined) workerStorage = storage;
+  const activeStorage = () => workerStorage === undefined ? globalThis.localStorage : workerStorage;
+  if (type !== 'texts') cancelScheduledWarmup();
   if (!worker) {
     const activeWorker = worker = new Worker(new URL('../ml/clipWorker.bundle.js', import.meta.url), { type: 'module' });
     activeWorker.onmessage = ({ data }) => {
       if (worker !== activeWorker) return;
       if (data.type === 'status') {
-        phase = data.phase || phase;message = data.message || message;backend = data.backend || backend;
+        backend = data.backend || backend;
         // Searches can initialize the model lazily, without the Settings enable
         // action. A ready worker is stronger evidence than an earlier cache check.
         if (data.phase === 'ready') { installed = true; workerReady = true; }
-        emit(data);return;
+        if (imageLearningEnabled(activeStorage())) {
+          phase = data.phase || phase; message = data.message || message;
+          emit(data);
+        }
+        return;
       }
       settle(data, activeWorker);
       // Retain the worker and loaded graphs for this app session. Idle is not teardown.
     };
-    activeWorker.onerror = () => { if (worker !== activeWorker) return; phase = 'error';message = 'Local image inference failed. Metadata search is still available.';stopWorker(message);emit(); };
+    activeWorker.onerror = () => {
+      if (worker !== activeWorker) return;
+      const errorMessage = 'Local image inference failed. Metadata search is still available.';
+      const imageEnabled = imageLearningEnabled(activeStorage());
+      if (imageEnabled) { phase = 'error'; message = errorMessage; }
+      stopWorker(errorMessage);
+      if (imageEnabled) emit();
+    };
   }
   // The same request may move to a CPU worker. Its caller must follow that
   // replacement, while ignoring unrelated workers created after it was stopped.
@@ -257,8 +335,11 @@ function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = fa
       const item = pending.get(id);
       if (!item) return;
       if (item.target !== worker) { retireHelpers(); return; }
-      phase = 'error'; message = 'The local model timed out. Try again on a reliable connection.';
-      stopWorker(message); emit();
+      const timeoutMessage = 'The local model timed out. Try again on a reliable connection.';
+      const imageEnabled = imageLearningEnabled(activeStorage());
+      if (imageEnabled) { phase = 'error'; message = timeoutMessage; }
+      stopWorker(timeoutMessage);
+      if (imageEnabled) emit();
     };
     const connection = globalThis.navigator?.connection;
     // Images go to the least busy worker; text and setup stay on the primary.
@@ -273,7 +354,7 @@ function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = fa
     try { target.postMessage(message); }
     catch (error) { settle({ id, error: error.message }, target); }
   }).catch(error => {
-    if (generation === featureGeneration && error.backendFailure && !preferCPU) { preferCPU = true; stopWorker('Switching to CPU inference.'); return rpc(type, payload, { signal, allowMetered, cachedOnly, storage, lifecycle }); }
+    if (generation === featureGeneration && !signal?.aborted && error.backendFailure && !preferCPU) { preferCPU = true; stopWorker('Switching to CPU inference.'); return rpc(type, payload, { signal, allowMetered, cachedOnly, storage, lifecycle }); }
     throw error;
   });
 }
@@ -287,25 +368,31 @@ export async function enableImageLearning(options = {}) {
   const generation = featureGeneration;
   const lifecycle = {};
   const current = () => generation === featureGeneration && (lifecycle.workerGeneration === undefined || lifecycle.workerGeneration === workerGeneration) && imageLearningEnabled(options.storage);
+  const initOp = rpc('initialize', {}, { ...options, lifecycle });
+  activeInitializePromise = initOp;
   try {
-    const result = await rpc('initialize', {}, { ...options, lifecycle });
+    const result = await initOp;
     if (!current() || !workerReady) return getImageLearningStatus();
     const model = await training().current();
     if (!current() || !workerReady) return getImageLearningStatus();
     installed = true; workerReady = true; cachedModel = model;
+    if (textEncodingDetail?.status === 'not-installed' || textEncodingDetail?.status === 'error') textEncodingDetail = null;
     phase = 'ready'; message = 'Local image scoring is ready.'; backend = result.backend; emit(); return getImageLearningStatus();
   } catch (error) {
     if (current()) { phase = 'error'; message = error.message; emit(); }
     throw error;
+  } finally {
+    if (activeInitializePromise === initOp) activeInitializePromise = null;
   }
 }
 export function disableImageLearning() {
-  featureGeneration++; training().stop(); saveDeviceConfig({ enabled: false, prompted: true });stopWorker();phase = 'off';message = 'Local image scoring is off. You can enable it again in Settings.';emit();
+  featureGeneration++; training().stop(); saveDeviceConfig({ enabled: false, prompted: true });stopWorker();textEncodingDetail = null;phase = 'off';message = 'Local image scoring is off. You can enable it again in Settings.';emit();
 }
 export async function clearImageModelDownloads() {
+  cacheEpoch++;
   disableImageLearning();
   await globalThis.caches?.delete(CLIP_CACHE);
-  installed = false; saveDeviceConfig({ downloadConsent: 'declined' });emit();
+  installed = false; textEncodingDetail = null; saveDeviceConfig({ downloadConsent: 'declined' });emit();
   if (globalThis.indexedDB) await new Promise((resolve, reject) => {
     const request = indexedDB.deleteDatabase(VECTOR_DB);
     request.onsuccess = resolve;request.onerror = () => reject(new Error('Could not clear image vectors.'));
@@ -440,21 +527,111 @@ export function rankEmbeddedImages(items, model = null, { semanticFilter = false
   }
   return selected;
 }
-// Reuses the installed encoder and its IndexedDB text-vector cache. Grouping
-// must never trigger a model download or change the user's device setting.
-export async function encodeDefinitionTexts(texts, options = {}) {
-  if (!imageLearningEnabled(options.storage) || typeof Worker === 'undefined') return null;
-  if (options.skipDownloadingModel && !installed && !workerReady) return null;
-  if (warmupPromise) { try { await warmupPromise; } catch { return null; } }
-  const generation = featureGeneration;
-  const vectors = [];
-  for (let start = 0; start < texts.length; start += 20) {
-    options.signal?.throwIfAborted();
-    const batch = await rpc('texts', { texts: texts.slice(start, start + 20) }, { ...options, cachedOnly: true });
-    if (generation !== featureGeneration || !imageLearningEnabled(options.storage)) return null;
-    vectors.push(...batch);
+async function awaitWarmupForTextEncoding(signal) {
+  while (warmupPromise || activeInitializePromise) {
+    signal?.throwIfAborted();
+    const pendingInit = warmupPromise || activeInitializePromise;
+    await new Promise((resolve, reject) => {
+      const onAbort = () => reject(signal?.reason || new Error('Meaning text encoding was cancelled.'));
+      signal?.addEventListener('abort', onAbort, { once: true });
+      pendingInit.then(
+        value => { signal?.removeEventListener('abort', onAbort); resolve(value); },
+        error => { signal?.removeEventListener('abort', onAbort); reject(error); }
+      );
+    });
   }
-  return vectors;
+}
+
+// Reuses the installed text encoder and its IndexedDB vector cache independently
+// of whether image suggestions are enabled. Never triggers a model download or
+// mutates the user's device setting.
+export async function encodeDefinitionTextsDetailed(texts, options = {}) {
+  const record = detail => {
+    textEncodingDetail = detail;
+    options.onStatus?.(detail);
+    return detail;
+  };
+  if (typeof Worker === 'undefined') {
+    return record({ ...getMeaningTextEncodingStatus(options), ok: false, vectors: null });
+  }
+  if (options.signal?.aborted) {
+    const reason = options.signal.reason?.message || 'Meaning text encoding was cancelled.';
+    return record({ ...getMeaningTextEncodingStatus(options), ok: false, status: 'cancelled', reason, message: reason, vectors: null });
+  }
+  const inputTexts = Array.isArray(texts) ? texts : [];
+  const generation = featureGeneration;
+  try {
+    await awaitWarmupForTextEncoding(options.signal);
+  } catch (error) {
+    if (options.signal?.aborted) {
+      const reason = error?.message || 'Meaning text encoding was cancelled.';
+      return record({ ...getMeaningTextEncodingStatus(options), ok: false, status: 'cancelled', reason, message: reason, vectors: null });
+    }
+    const status = generation !== featureGeneration ? 'cancelled' : 'error';
+    const reason = error?.message || 'Local model initialization failed.';
+    return record({ ...getMeaningTextEncodingStatus(options), ok: false, status, reason, message: reason, vectors: null });
+  }
+  if (options.signal?.aborted) {
+    const reason = options.signal.reason?.message || 'Meaning text encoding was cancelled.';
+    return record({ ...getMeaningTextEncodingStatus(options), ok: false, status: 'cancelled', reason, message: reason, vectors: null });
+  }
+  const modelInstalled = await resolveInstalledTextModel(options);
+  if (options.signal?.aborted) {
+    const reason = options.signal.reason?.message || 'Meaning text encoding was cancelled.';
+    return record({ ...getMeaningTextEncodingStatus(options), ok: false, status: 'cancelled', reason, message: reason, vectors: null });
+  }
+  if (!modelInstalled) {
+    if (!options.cacheStorage) installed = false;
+    const base = getMeaningTextEncodingStatus(options);
+    return record({ ...base, ok: false, available: false, status: 'not-installed', installed: false, ready: false, reason: base.message, vectors: null });
+  }
+  if (!inputTexts.length) {
+    return record({ ...getMeaningTextEncodingStatus(options), ok: true, status: workerReady ? 'ready' : 'installed', reason: '', vectors: [] });
+  }
+  const vectors = [];
+  try {
+    for (let start = 0; start < inputTexts.length; start += 20) {
+      options.signal?.throwIfAborted();
+      if (generation !== featureGeneration) {
+        const reason = 'The local image model was stopped.';
+        return record({ ...getMeaningTextEncodingStatus(options), ok: false, status: 'cancelled', reason, message: reason, vectors: null });
+      }
+      const batch = await rpc('texts', { texts: inputTexts.slice(start, start + 20) }, { ...options, allowMetered: false, cachedOnly: true });
+      options.signal?.throwIfAborted();
+      vectors.push(...batch);
+    }
+  } catch (error) {
+    if (options.signal?.aborted) {
+      const reason = error?.message || 'Meaning text encoding was cancelled.';
+      return record({ ...getMeaningTextEncodingStatus(options), ok: false, status: 'cancelled', reason, message: reason, vectors: null });
+    }
+    if (generation !== featureGeneration && /stopped/i.test(error?.message || '')) {
+      const reason = error.message;
+      return record({ ...getMeaningTextEncodingStatus(options), ok: false, status: 'cancelled', reason, message: reason, vectors: null });
+    }
+    const missing = /missing|not installed/i.test(error?.message || '');
+    if (missing && !options.cacheStorage) installed = false;
+    const reason = error?.message || 'Local meaning text encoding failed.';
+    return record({
+      ...getMeaningTextEncodingStatus(options),
+      ok: false,
+      available: !missing,
+      status: missing ? 'not-installed' : 'error',
+      installed: missing ? false : installed,
+      ready: Boolean(worker && workerReady),
+      reason,
+      message: reason,
+      vectors: null
+    });
+  }
+  return record({ ...getMeaningTextEncodingStatus(options), ok: true, available: true, status: 'ready', installed: true, ready: true, reason: '', vectors });
+}
+
+export async function encodeDefinitionTexts(texts, options = {}) {
+  options.signal?.throwIfAborted();
+  const result = await encodeDefinitionTextsDetailed(texts, options);
+  options.signal?.throwIfAborted();
+  return result.ok ? result.vectors : null;
 }
 
 export async function rankImagesLocally(word, candidates, options = {}) {

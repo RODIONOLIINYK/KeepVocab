@@ -14,9 +14,9 @@ function embeddingAt(index) {
   return center.map((value, axis) => value + (axis === index ? scale * center[index + 1] : axis === index + 1 ? -scale * center[index] : 0));
 }
 
-test('local similarity groups conservative paraphrases, selects the matching example and preserves its attribution', async () => {
+test('exact grammar variants group without inference and preserve the matching example attribution', async () => {
   const a = sense('a', 'Seeming to be correct or likely to be true and reasonable.');
-  const b = sense('b', 'Seeming to be correct or probably true and reasonable.', { example: 'That explanation sounds plausible.',
+  const b = sense('b', '(UK) Seeming to be correct or likely to be true and reasonable.', { example: 'That explanation sounds plausible.',
     sourceUrl: 'https://dictionary.example/b', exampleSourceUrl: 'https://dictionary.example/example', exampleAttribution: 'Example author', exampleLicense: 'CC BY' });
   const original = { word: 'plausible', senses: [a, b] }, before = structuredClone(original);
   const storage = new MemoryStorage(); let calls = 0;
@@ -32,7 +32,7 @@ test('local similarity groups conservative paraphrases, selects the matching exa
   const restarted = await groupEntrySensesLocally({ ...original, senses: [a, { ...b, exampleAttribution: 'Updated author' }] },
     { storage, encodeDefinitionTexts: () => assert.fail('Reuse grouping cache') });
   assert.equal(restarted.senses[0].exampleAttribution, 'Updated author');
-  assert.equal(calls, 1, 'The paraphrase is scored once and then cached');
+  assert.equal(calls, 0, 'Exact grammar variants do not require statistical inference');
   const service = new DriveSyncService(new MemoryStorage());
   const saved = service.addWord(result.senses[0]);
   assert.equal(service.getWords().find(w => w.id === saved.id).groupedSenses.length, 2);
@@ -57,7 +57,7 @@ test('distant centered vectors, unavailable encoder and encoder failure keep sep
   }
 });
 
-test('centered similarity can merge low-overlap wording and reuse scores during manual regrouping', async () => {
+test('uncalibrated centered similarity offers low-overlap wording for review and reuses scores', async () => {
   const a = sense('a', 'To commence.', { word: 'begin', partOfSpeech: 'verb' });
   const b = sense('b', '(UK) To start doing something.', { word: 'begin', partOfSpeech: 'verb' });
   assert.equal(areSensesNearDuplicate(a, b), false);
@@ -69,12 +69,12 @@ test('centered similarity can merge low-overlap wording and reuse scores during 
       return [embeddingAt(0), embeddingAt(0)];
     }
   });
-  assert.equal(grouped.senses.length, 1);
-  assert.deepEqual(grouped.senses[0].groupedSenses, [a, b]);
+  assert.equal(grouped.senses.length, 2);
+  assert.equal(grouped.meaningReviewScores.length, 1);
   const regrouped = await groupEntrySensesLocally(grouped, { storage: null, reuseSemanticScoresOnly: true });
-  assert.equal(regrouped.senses.length, 1);
+  assert.equal(regrouped.senses.length, 2);
 });
-test('centered similarity qualifies pairs at 0.45 without a lexical overlap gate', async () => {
+test('uncalibrated centered similarity cannot automatically merge opposite meanings', async () => {
   const senses = [sense('a', 'Permitted to enter.'), sense('b', 'Not allowed to enter.')];
   const center = MEANING_EMBEDDING_CENTER, first = embeddingAt(0), second = embeddingAt(2);
   for (const similarity of [0.449, 0.451]) {
@@ -83,16 +83,14 @@ test('centered similarity qualifies pairs at 0.45 without a lexical overlap gate
     const result = await groupEntrySensesLocally({ word: senses[0].word, senses }, {
       storage: null, encodeDefinitionTexts: async () => [first, vector]
     });
-    assert.equal(result.senses.length, similarity >= 0.45 ? 1 : 2);
+    assert.equal(result.senses.length, 2);
   }
 });
 
 test('an explicit Different meanings judgment splits a model merge without rerunning inference', async context => {
   const a = sense('a', 'Permitted to enter.'), b = sense('b', 'Forbidden to enter.');
   const entry = { word: a.word, senses: [a, b] };
-  const grouped = await groupEntrySensesLocally(entry, {
-    storage: null, encodeDefinitionTexts: async () => [embeddingAt(0), embeddingAt(0)]
-  });
+  const grouped = { ...entry, senses: groupSimilarSenses(entry.senses, { matches: () => true }) };
   assert.equal(grouped.senses.length, 1);
   context.mock.method(driveSync.imageHistory, 'readState', async () => ({
     records: [{ source: 'user', label: 0, key: meaningPairKey(a.word, a.partOfSpeech, a.definition, b.definition) }]

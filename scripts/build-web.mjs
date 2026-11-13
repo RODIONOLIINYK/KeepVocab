@@ -34,5 +34,8 @@ if (process.env.KEEPVOCAB_MODEL_BASE) {
 }
 
 await import('./build-image-ml.mjs');
+const { auditMlAssetBudget } = await import('./check-ml-budget.mjs');
+const mlBudget = await auditMlAssetBudget(outputDir);
+console.log(`Installed ML assets plus all app JS: ${mlBudget.installedBytes} / ${mlBudget.limitBytes} bytes`);
 
 console.log(`KeepVocab web assets copied to ${outputDir}`);

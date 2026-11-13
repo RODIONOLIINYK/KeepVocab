@@ -12,6 +12,10 @@ export const CLIP_TEXT_DTYPE = 'q4f16';
 export const CLIP_VISION_DTYPE = 'q4f16';
 export const CLIP_TAG = `${CLIP_MODEL}@${CLIP_REVISION}:full-vocab-packed4-block64-standard-ops-v1:text-${CLIP_TEXT_DTYPE}-vision-${CLIP_VISION_DTYPE}`;
 export const CLIP_DIMENSION = 768;
+export const CLIP_TEXT_MAX_LENGTH = 64;
+export const ML_ASSET_BYTE_LIMIT = 300_000_000;
+// Uncompressed glue for the exact pinned ORT runtime above/below.
+export const ORT_MJS_BYTES = 53_057;
 export const CLIP_CACHE = 'keepvocab-clip-model-v3';
 export const VECTOR_DB = 'keepvocab-clip-vectors-v2';
 export const ORT_VERSION = '1.31.0-dev.20260914-8d85527a0';
