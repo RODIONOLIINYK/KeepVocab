@@ -9,10 +9,10 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import org.json.JSONObject;
 
 @CapacitorPlugin(name = "ModelStorage")
@@ -47,7 +47,7 @@ public class ModelStoragePlugin extends Plugin {
             JSArray urls = new JSArray();
             File[] files = directory.listFiles();
             if (files != null) for (File file : files) if (file.getName().matches("[a-f0-9]{64}\\.json")) {
-                JSONObject metadata = new JSONObject(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
+                JSONObject metadata = new JSONObject(readMetadata(file));
                 urls.put(metadata.getString("url"));
             }
             result.put("urls", urls); return result;
@@ -57,12 +57,11 @@ public class ModelStoragePlugin extends Plugin {
         File file = new File(directory, key), metadata = new File(directory, key + ".json");
         if (action.equals("stat")) {
             if (!file.isFile() || !metadata.isFile()) return result;
-            JSObject info = new JSObject(new String(Files.readAllBytes(metadata.toPath()), StandardCharsets.UTF_8));
+            JSObject info = new JSObject(readMetadata(metadata));
             return file.length() == info.getLong("size") ? info : result;
         }
         if (action.equals("read")) {
-            long offset = call.getLong("offset", -1L);
-            if (offset < 0) throw new Exception("Invalid model offset");
+            long offset = modelNumber(call, "offset");
             try (RandomAccessFile input = new RandomAccessFile(file, "r")) {
                 input.seek(offset);
                 byte[] bytes = new byte[CHUNK]; int count = input.read(bytes);
@@ -71,28 +70,27 @@ public class ModelStoragePlugin extends Plugin {
             return result;
         }
         if (action.equals("delete")) {
-            Files.deleteIfExists(metadata.toPath()); Files.deleteIfExists(file.toPath()); return result;
+            deleteIfExists(metadata); deleteIfExists(file); return result;
         }
         String token = call.getString("token", "");
         if (!token.matches("[a-f0-9]{16,64}")) throw new Exception("Invalid download token");
         File temporary = new File(directory, key + "." + token + ".part");
-        if (action.equals("abort")) { Files.deleteIfExists(temporary.toPath()); return result; }
+        if (action.equals("abort")) { deleteIfExists(temporary); return result; }
         if (!directory.isDirectory() && !directory.mkdirs()) throw new Exception("Cannot create model folder");
         if (action.equals("write")) {
             byte[] bytes = Base64.decode(call.getString("data", ""), Base64.DEFAULT);
-            long offset = call.getLong("offset", -1L);
-            if (offset < 0 || bytes.length > CHUNK || (offset > 0 && temporary.length() != offset)) throw new Exception("Invalid model chunk");
+            long offset = modelNumber(call, "offset");
+            if (bytes.length > CHUNK || (offset > 0 && temporary.length() != offset)) throw new Exception("Invalid model chunk");
             try (FileOutputStream output = new FileOutputStream(temporary, offset != 0)) { output.write(bytes); }
             return result;
         }
         if (action.equals("commit")) {
-            long size = call.getLong("size", -1L);
+            long size = modelNumber(call, "size");
             if (!temporary.isFile() || temporary.length() != size) throw new Exception("Incomplete model download");
             JSObject info = new JSObject(); info.put("size", size); info.put("headers", call.getArray("headers")); info.put("url", call.getString("url"));
             File infoTemporary = new File(directory, key + "." + token + ".json.part");
-            Files.write(infoTemporary.toPath(), info.toString().getBytes(StandardCharsets.UTF_8));
-            Files.move(temporary.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            Files.move(infoTemporary.toPath(), metadata.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            try (FileOutputStream output = new FileOutputStream(infoTemporary)) { output.write(info.toString().getBytes(StandardCharsets.UTF_8)); }
+            if (!temporary.renameTo(file) || !infoTemporary.renameTo(metadata)) throw new Exception("Cannot commit model file");
             return result;
         }
         throw new Exception("Unknown model operation");
@@ -101,6 +99,29 @@ public class ModelStoragePlugin extends Plugin {
     private void removeTree(File file) throws Exception {
         File[] children = file.listFiles();
         if (children != null) for (File child : children) removeTree(child);
-        Files.deleteIfExists(file.toPath());
+        deleteIfExists(file);
+    }
+
+    // java.nio.file requires API 26; the app supports API 24 and 25 too.
+    private String readMetadata(File file) throws Exception {
+        try (FileInputStream input = new FileInputStream(file); ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[4096]; int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            return new String(output.toByteArray(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private void deleteIfExists(File file) throws Exception {
+        if (file.exists() && !file.delete()) throw new Exception("Cannot remove model file");
+    }
+
+    private long modelNumber(PluginCall call, String name) throws Exception {
+        // JSON uses Integer for these small values. Capacitor getLong accepts
+        // only Long and would silently return its fallback for normal chunks.
+        Object raw = call.getData().opt(name);
+        if (!(raw instanceof Number)) throw new Exception("Invalid model " + name);
+        double value = ((Number) raw).doubleValue();
+        if (Double.isNaN(value) || value < 0 || value > 350_000_000 || value != Math.floor(value)) throw new Exception("Invalid model " + name);
+        return (long) value;
     }
 }

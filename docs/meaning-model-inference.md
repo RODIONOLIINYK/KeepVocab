@@ -13,13 +13,13 @@ https://huggingface.co/Rodion228huyfogdrun/KeepVocab-meaning-merge-minilm-l6-v7/
 
 Source and releases: https://github.com/RODIONOLIINYK/KeepVocab/releases
 
-App release: https://github.com/RODIONOLIINYK/KeepVocab/releases/tag/v1.12.38
+App release: https://github.com/RODIONOLIINYK/KeepVocab/releases/tag/v1.12.39
 
 Apple Silicon installer:
-https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.38/KeepVocab-1.12.38-macOS-arm64.dmg
+https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.39/KeepVocab-1.12.39-macOS-arm64.dmg
 
 Android installer:
-https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.38/KeepVocab-1.12.38-Android-debug.apk
+https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.39/KeepVocab-1.12.39-Android-debug.apk
 
 SigLIP upstream model: https://huggingface.co/onnx-community/siglip2-base-patch16-256-ONNX
 
@@ -92,3 +92,9 @@ Verification runners: `scripts/verify-meaning-reference.mjs` and
 validation export and saved predictions, kept outside the app. Export runner:
 `scripts/export-meaning-reference.py`. The installed-model budget is 350 MB,
 including both model downloads, one runtime, and all bundled JavaScript.
+
+Android's native storage plugin also passes `:app:lintDebug` for minSdk 24.
+`scripts/verify-android-model-storage.py` exercises the actual plugin with real
+JSONObject parsing, normal JSON integer offsets/sizes, chunked file round trips,
+atomic commit, incomplete-download rejection, traversal rejection, and removal.
+Only the Android/Capacitor bridge is replaced by test doubles for that JVM check.
