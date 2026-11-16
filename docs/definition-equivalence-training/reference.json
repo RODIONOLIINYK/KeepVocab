@@ -1,0 +1,313 @@
+{
+  "schemaVersion": 1,
+  "referenceId": "minilm-l6-v7-prefix-idf-bs16",
+  "selectedOn": "2026-11-16",
+  "selectedBy": "explicit-user-instruction",
+  "status": "current-research-reference",
+  "savedResultKey": "E2_v7_bs16_prefix_idf_optionB",
+  "selectionBasis": "User-selected comparison reference; not a claim of winning every metric.",
+  "architecture": {
+    "encoder": "MiniLM-L6 shared bi-encoder",
+    "scorer": "five-feature logistic scorer",
+    "features": [
+      "pooled_sentence_cosine",
+      "symmetric_idf_weighted_mean_token_best_match",
+      "symmetric_minimum_token_best_match",
+      "symmetric_25th_percentile_token_best_match",
+      "token_count_ratio"
+    ],
+    "prefixMask": "Exclude tokens through first colon from token matching; retain full encoder context.",
+    "idf": "1 + log((N + 1) / (df + 0.5)); unique training texts only; unseen token df = 0; affects mean feature only."
+  },
+  "encoderTraining": {
+    "seed": 42,
+    "batchSize": 16,
+    "learningRate": 2e-05,
+    "maxEpochs": 5,
+    "selectedEpoch": 4,
+    "maxInputTokens": 96,
+    "optimizer": "AdamW",
+    "weightDecay": 0.01,
+    "loss": "Class-balanced BCEWithLogits(15 * (cosine - 0.70), label)",
+    "labelSmoothing": 0.0,
+    "checkpointSelection": "Best pooled-cosine validation PR-AUC, evaluated every epoch.",
+    "patienceBasedTermination": false,
+    "bestEncoderValidationPrAuc": 0.7278488514604595
+  },
+  "scorerTraining": {
+    "seed": 42,
+    "optimizer": "AdamW",
+    "learningRate": 0.05,
+    "weightDecay": 0.01,
+    "steps": 300,
+    "positiveWeight": "train_negative_count / train_positive_count",
+    "initialWeights": [
+      6.0,
+      3.0,
+      2.0,
+      2.0,
+      0.5
+    ],
+    "initialBias": -9.0,
+    "labelSmoothing": 0.0
+  },
+  "dataset": {
+    "exportDirectory": "work/meaning-equivalence-domain/dictionary-only-2026-11-15/v7",
+    "policy": "dictionary-tool-only-v1",
+    "counts": {
+      "train": {
+        "pairs": 2722,
+        "equivalent": 674,
+        "distinct": 2048,
+        "headwords": 656
+      },
+      "val": {
+        "pairs": 390,
+        "equivalent": 122,
+        "distinct": 268,
+        "headwords": 60
+      },
+      "test": {
+        "pairs": 384,
+        "equivalent": 121,
+        "distinct": 263,
+        "headwords": 60
+      }
+    },
+    "humanVerified": false,
+    "requiredPreFitCheck": "node scripts/meaning-equivalence-domain/dictionary_only.mjs --validate work/meaning-equivalence-domain/dictionary-only-2026-11-15/v7 --for-training",
+    "validationAtReferenceSelection": {
+      "ok": true,
+      "sourceReextractionVerified": true,
+      "crossSplitOverlaps": 0,
+      "trainingAllowed": true,
+      "humanVerified": false
+    }
+  },
+  "savedEvaluation": {
+    "bestEpoch": 4,
+    "bestValPrAuc": 0.7278488514604595,
+    "val": {
+      "rocAuc": 0.8310496696843651,
+      "prAuc": 0.7196988886992448,
+      "recallAtZeroFp": 0.14754098360655737,
+      "recallAt1PctFpr": 0.19672131147540983,
+      "maxNegScore": 0.9873741269111633,
+      "bestF1FromVal": {
+        "pairs": 390,
+        "positive": 122,
+        "negative": 268,
+        "threshold": 0.6957939863204956,
+        "rocAuc": 0.8310496696843651,
+        "prAuc": 0.7196988886992448,
+        "logLoss": 0.5683372378223601,
+        "brier": 0.1806406087718997,
+        "tp": 79,
+        "fp": 39,
+        "fn": 43,
+        "tn": 229,
+        "accepted": 118,
+        "precision": 0.6694915254237288,
+        "recall": 0.6475409836065574,
+        "f1": 0.6583333333333334,
+        "falseMergeCount": 39,
+        "falseMergeRate": 0.1455223880597015
+      },
+      "zeroFpFromVal": {
+        "pairs": 390,
+        "positive": 122,
+        "negative": 268,
+        "threshold": 0.9874299168586731,
+        "rocAuc": 0.8310496696843651,
+        "prAuc": 0.7196988886992448,
+        "logLoss": 0.5683372378223601,
+        "brier": 0.1806406087718997,
+        "tp": 18,
+        "fp": 0,
+        "fn": 104,
+        "tn": 268,
+        "accepted": 18,
+        "precision": 1,
+        "recall": 0.14754098360655737,
+        "f1": 0.2571428571428572,
+        "falseMergeCount": 0,
+        "falseMergeRate": 0
+      }
+    },
+    "test": {
+      "rocAuc": 0.8470603022970807,
+      "prAuc": 0.7192278914346777,
+      "recallAtZeroFp": 0.08264462809917356,
+      "recallAt1PctFpr": 0.1487603305785124,
+      "maxNegScore": 0.9967483282089233,
+      "bestF1FromVal": {
+        "pairs": 384,
+        "positive": 121,
+        "negative": 263,
+        "threshold": 0.6957939863204956,
+        "rocAuc": 0.8470603022970807,
+        "prAuc": 0.7192278914346777,
+        "logLoss": 0.5321978975490668,
+        "brier": 0.1678602213079646,
+        "tp": 68,
+        "fp": 30,
+        "fn": 53,
+        "tn": 233,
+        "accepted": 98,
+        "precision": 0.6938775510204082,
+        "recall": 0.5619834710743802,
+        "f1": 0.6210045662100456,
+        "falseMergeCount": 30,
+        "falseMergeRate": 0.11406844106463879
+      },
+      "zeroFpFromVal": {
+        "pairs": 384,
+        "positive": 121,
+        "negative": 263,
+        "threshold": 0.9874299168586731,
+        "rocAuc": 0.8470603022970807,
+        "prAuc": 0.7192278914346777,
+        "logLoss": 0.5321978975490668,
+        "brier": 0.1678602213079646,
+        "tp": 21,
+        "fp": 4,
+        "fn": 100,
+        "tn": 259,
+        "accepted": 25,
+        "precision": 0.84,
+        "recall": 0.17355371900826447,
+        "f1": 0.28767123287671237,
+        "falseMergeCount": 4,
+        "falseMergeRate": 0.015209125475285171
+      },
+      "fpr1PctFromVal": null
+    }
+  },
+  "report": {
+    "path": "docs/definition-equivalence-training/reports/ablation-regularization-v6-v7-2026-11-16.json",
+    "sourceUpdatedAt": "2026-11-16T20:06:56Z"
+  },
+  "artifacts": [
+    {
+      "path": "work/meaning-equivalence-domain/dictionary-curation-2026-11-15/ablation-regularization-report-v6-v7.json",
+      "sha256": "806dcb23ff9f0f36915c2c7fa6ba2f6e4ee4e444cb0e530ec207b48671242209",
+      "bytes": 91604,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "docs/definition-equivalence-training/reports/ablation-regularization-v6-v7-2026-11-16.json",
+      "sha256": "806dcb23ff9f0f36915c2c7fa6ba2f6e4ee4e444cb0e530ec207b48671242209",
+      "bytes": 91604,
+      "includedInReferenceCommit": true
+    },
+    {
+      "path": "work/meaning-equivalence-domain/dictionary-only-2026-11-15/v7/dataset.json",
+      "sha256": "6c1e4b3293ad3bde9314c0b3301dd1089cfbe014ab0e39ebb90b8bbf9128a100",
+      "bytes": 12576557,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/dictionary-only-2026-11-15/v7/manifest.json",
+      "sha256": "f062018ab268263b92cd5f6fa3bc8498d96199a43222c1b5dd01cc54ffa2231a",
+      "bytes": 604,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/dictionary-only-2026-11-15/v7/audit.json",
+      "sha256": "20c8e75009284f0d3a1f5c6c3640a3c25c7e591cae22ec3b2c8f69ceb8b746fe",
+      "bytes": 4450,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/dictionary-only-2026-11-15/v7/extraction-ledger.json",
+      "sha256": "ee85c20ac67fe23087d867763559e2a9f1500fe24d2db36f86d595e1b34f7b64",
+      "bytes": 31213309,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/dictionary-only-2026-11-15/v7/quarantine.json",
+      "sha256": "80004b0576bb7c8103b560b0db0240ad1a8a68b7c9a3e90c11b0e62531abc975",
+      "bytes": 58,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/dictionary-only-2026-11-15/v7/deterministic-controls.json",
+      "sha256": "f884833b81f78269919aa95ef000f185f5e40df6f046a20adcc18256153f60ac",
+      "bytes": 110,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/dictionary-curation-2026-11-15/run_architecture_benchmark.py",
+      "sha256": "52659d915a979b8b88399854884911454dff3741b2ffb7569f008796d206ee05",
+      "bytes": 31344,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/dictionary-curation-2026-11-15/run_ablation_regularization.py",
+      "sha256": "09e3574b7f013ca603232748dc2eb217c0bebf89ac14c68716d9fddea83cbcf7",
+      "bytes": 41766,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "scripts/meaning-equivalence-domain/dictionary_only.mjs",
+      "sha256": "c82120b706f18c40bf1182bf1002022bf86b75698134d8b30aa2c0e1078be3b8",
+      "bytes": 21036,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "scripts/meaning-equivalence-domain/train_text_lora.py",
+      "sha256": "97035b335f7edc87b52f580d9673a94b1effd0b251c58f95f36865a1c920a3a2",
+      "bytes": 50961,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "scripts/meaning-equivalence-domain/train_experiment.mjs",
+      "sha256": "b955bbc9968c073394678e93ca6ca7a853ba915a64f999cb88969e9b476438eb",
+      "bytes": 55258,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/minilm-finetune-2026-11-15/source-model/config.json",
+      "sha256": "aed58fca2ba858ac31c042053f99deff1717ca0e7430335d316d58b2d13a046b",
+      "bytes": 629,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/minilm-finetune-2026-11-15/source-model/model.safetensors",
+      "sha256": "2ce4480dc3b2f8edeee50c43765c72768e79fc0113d3f73773dded4887cca298",
+      "bytes": 90868373,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/minilm-finetune-2026-11-15/source-model/special_tokens_map.json",
+      "sha256": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3",
+      "bytes": 112,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/minilm-finetune-2026-11-15/source-model/tokenizer.json",
+      "sha256": "5fd1c882abbd30517dced455a2c9768945ec726b96727927e4959348d9de550b",
+      "bytes": 466081,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/minilm-finetune-2026-11-15/source-model/tokenizer_config.json",
+      "sha256": "65f933db3e0493bcde9a4e1b8fd5ee13f18d2f8ac62db911a1be51b7fd64ffb0",
+      "bytes": 314,
+      "includedInReferenceCommit": false
+    },
+    {
+      "path": "work/meaning-equivalence-domain/minilm-finetune-2026-11-15/source-model/vocab.txt",
+      "sha256": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3",
+      "bytes": 231508,
+      "includedInReferenceCommit": false
+    }
+  ],
+  "limits": [
+    "Exploratory results; test set repeatedly inspected; small differences not replicated across seeds.",
+    "Validation-selected zero-false-merge threshold produces four false merges on test.",
+    "This commit records configuration, results, and artifact hashes; datasets, extraction receipts, source models, and trained weights are not bundled. Local artifact paths are required to inspect the original evidence.",
+    "Future experiments compare against this exact variant and retain the original validation/test split; test labels must not select new thresholds."
+  ],
+  "applicationPromotion": false
+}
