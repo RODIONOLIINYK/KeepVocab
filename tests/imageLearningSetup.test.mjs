@@ -48,13 +48,21 @@ test('a complete pinned installation enables by default without asking or downlo
   assert.equal(JSON.parse(storage.getItem(CONFIG_KEY)).downloadConsent, 'not-requested');
 });
 
-test('partial downloads, missing runtime, empty responses and old revisions are not a complete installation', async () => {
-  assert.equal(await hasDownloadedImageModel(cacheStorage(CLIP_DOWNLOAD_URLS.slice(0, -1))), false);
+test('partial models, empty responses and old revisions are not a complete installation; runtime is bundled', async () => {
+  assert.equal(await hasDownloadedImageModel(cacheStorage(CLIP_DOWNLOAD_URLS.slice(1))), false);
+  assert.equal(await hasDownloadedImageModel(cacheStorage(CLIP_DOWNLOAD_URLS.filter(url => !url.includes('/ort-wasm-')))), true);
   assert.equal(await hasDownloadedImageModel(cacheStorage(CLIP_DOWNLOAD_URLS.map(url => url.replaceAll(CLIP_MODEL_BASE, 'https://example.test/retired/')))), false);
   const empty = cacheStorage(CLIP_DOWNLOAD_URLS);
   await (await empty.open(CLIP_CACHE)).put(CLIP_DOWNLOAD_URLS[0], new Response('', { headers: { 'content-length': '0' } }));
   assert.equal(await hasDownloadedImageModel(empty), false);
   assert.equal(await hasDownloadedImageModel(cacheStorage(CLIP_DOWNLOAD_URLS)), true);
+});
+
+test('partial native installations inspect every file so later profile downloads still migrate', async () => {
+  const inspected = [], urls = CLIP_DOWNLOAD_URLS.filter(url => !url.includes('/ort-wasm-'));
+  const native = { keys: async () => [CLIP_CACHE], open: async () => ({ has: async url => { inspected.push(url); return url !== urls[0]; } }) };
+  assert.equal(await hasDownloadedImageModel(native), false);
+  assert.deepEqual(inspected, urls);
 });
 
 test('an explicit off preference survives a cached installation and an existing opt-in keeps permission', async () => {
@@ -96,15 +104,15 @@ test('turning on an installed model without download consent keeps network acces
   assert.equal(sent[0].allowDownloads, false);
 });
 
-test('the worker loads a cached runtime offline and rejects missing files without consent', async () => {
+test('the worker shares the bundled runtime offline and rejects model fetches without consent', async () => {
   const source = readFileSync(new URL('../scripts/clip-worker.js', import.meta.url), 'utf8').replace(/^import .*;\n/gm, '');
   const calls = [], messages = [];
   const makeContext = urls => {
     const env = { fetch: async url => { calls.push(url); return new Response('runtime'); }, backends: { onnx: { wasm: {} } } };
     const factory = { from_pretrained: async (_, options) => { assert.equal(options.local_files_only, false); return {}; } };
     const tower = expected => ({ from_pretrained: async (_, options) => { assert.equal(options.device, 'wasm'); assert.equal(options.dtype, expected); assert.equal(options.local_files_only, false); return {}; } });
-    const self = { caches: cacheStorage(urls), postMessage: message => messages.push(message), navigator: { gpu: { requestAdapter: () => { throw Error('Unvalidated GPU must not be requested'); } } } };
-    const context = vm.createContext({ env, self, CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, SiglipTextModel: tower(CLIP_TEXT_DTYPE), SiglipVisionModel: tower(CLIP_VISION_DTYPE), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise });
+    const self = { location: { href: 'https://keepvocab.test/js/ml/clipWorker.bundle.js' }, caches: cacheStorage(urls), postMessage: message => messages.push(message), navigator: { gpu: { requestAdapter: () => { throw Error('Unvalidated GPU must not be requested'); } } } };
+    const context = vm.createContext({ env, self, workerModelCache: () => ({}), CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, SiglipTextModel: tower(CLIP_TEXT_DTYPE), SiglipVisionModel: tower(CLIP_VISION_DTYPE), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL, Blob, Map, Set, Promise });
     vm.runInContext(source, context);
     return { context, self, env };
   };
@@ -113,13 +121,13 @@ test('the worker loads a cached runtime offline and rejects missing files withou
   await vm.runInContext('queue', cached.context);
   assert.equal(messages.at(-1).result.backend, 'wasm');
   assert.equal(vm.runInContext('VECTOR_TAG', cached.context), 'tag:validated-wasm-v1');
-  assert.equal(cached.env.backends.onnx.wasm.wasmPaths.wasm, 'blob:cached');
+  assert.equal(cached.env.backends.onnx.wasm.wasmPaths.wasm, 'https://keepvocab.test/js/ml/runtime/ort-wasm-simd-threaded.asyncify.wasm');
   assert.equal(calls.length, 0);
   assert.throws(() => cached.env.fetch('https://example.test/missing-model.onnx'), /missing|Download/);
   const missing = makeContext([]);
   missing.self.onmessage({ data: { id: 2, type: 'initialize', payload: {}, allowDownloads: false } });
   await vm.runInContext('queue', missing.context);
-  assert.match(messages.at(-1).error, /runtime is missing/);
+  assert.equal(messages.at(-1).result.backend, 'wasm', 'runtime no longer depends on downloaded cache files');
   assert.equal(calls.length, 0);
 });
 
@@ -133,13 +141,13 @@ test('parallel tower failure releases a late successful tower before reporting f
       if (calls[name] > 1) return { dispose: async () => disposed.push(`retry-${name}`) };
       return new Promise((resolve, reject) => { gates[name] = { resolve, reject }; });
     } });
-    const self = { caches: cacheStorage(CLIP_RUNTIME_URLS), postMessage: message => messages.push(message), navigator: {} };
+    const self = { location: { href: 'https://keepvocab.test/js/ml/clipWorker.bundle.js' }, caches: cacheStorage(CLIP_RUNTIME_URLS), postMessage: message => messages.push(message), navigator: {} };
     const context = vm.createContext({
       env: { fetch: async () => { throw Error('Unexpected download'); }, backends: { onnx: { wasm: {} } } },
-      self, CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS,
+      self, workerModelCache: () => ({}), CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS,
       AutoTokenizer: factory, AutoProcessor: factory,
       SiglipTextModel: tower('text'), SiglipVisionModel: tower('vision'),
-      CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL: { createObjectURL: () => 'blob:cached' }, Blob, Map, Set, Promise
+      CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL, Blob, Map, Set, Promise
     });
     vm.runInContext(source, context);
     self.onmessage({ data: { id: 1, type: 'initialize', payload: {}, allowDownloads: false } });

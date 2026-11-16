@@ -119,7 +119,7 @@ test('an obsolete text cache is not a valid SigLIP 2 installation and unchanged 
   };
   assert.equal(await hasDownloadedImageModel(cacheStorage), false);
   await new Promise(resolve => setTimeout(resolve, 0));
-  assert.deepEqual(deleted, [textModel.replace('text_model_q4f16.onnx', 'text_model_fp16.onnx')]);
+  assert.deepEqual(deleted, [...CLIP_DOWNLOAD_URLS.filter(url => url.includes('/ort-wasm-')), textModel.replace('text_model_q4f16.onnx', 'text_model_fp16.onnx')]);
   files.add(textModel);
   assert.equal(await hasDownloadedImageModel(cacheStorage), true);
 });

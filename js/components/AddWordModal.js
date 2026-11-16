@@ -71,6 +71,7 @@ function formatInferenceDiagnostics(rawDiag, warning = '') {
   if (rawDiag.scorer === 'calibrated-equivalence') {
     parts.push('Calibrated equivalence scorer active.');
   }
+  if (rawDiag.scorer === 'reference-minilm') parts.push('Local meaning merge model active.');
   if (rawDiag.gemini === 'failed' && !warning) {
     parts.push('Gemini meaning grouping failed; local grouping shown.');
   }

@@ -7,6 +7,8 @@ import { isModernUsageExample, hasExampleSenseConflict } from './exampleSearch.j
 import { meaningLearningState, meaningPairKey, embedMeaningAnchors, pairEvidence } from './meaningEquivalenceLearning.js';
 import { equivalenceProbability, validEquivalenceHead } from './meaningEquivalenceHead.js';
 import { meaningComparisonText, meaningEmbeddingText, MEANING_COMPARISON_VERSION } from './meaningComparison.js';
+import { scoreReferenceMeaningPairs } from './meaningReference.js';
+import { MEANING_MODEL_TAG, MEANING_MERGE_THRESHOLD, MEANING_REVIEW_THRESHOLD } from '../ml/meaningConfig.js';
 
 import { MEANING_EMBEDDING_CENTER } from '../ml/pretrainedSemanticHeads.js';
 
@@ -225,6 +227,62 @@ export async function groupEntrySensesLocally(entry, options = {}) {
 
   const reviews = [];
   const inference = { local: candidates.size ? 'unavailable' : 'not-needed', comparedPairs: 0 };
+  // The separately installed MiniLM reference owns production comparisons. Legacy injected
+  // SigLIP encoders remain available to historical tests and research callers.
+  if (!options.encodeDefinitionTexts || options.scoreMeaningPairs) {
+    const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
+    const cache = readObjectCache(storage, 'keepvocab_reference_meaning_scores_v1');
+    const key = JSON.stringify([MEANING_MODEL_TAG, MEANING_COMPARISON_VERSION,
+      senses.map(s => [s.word, s.partOfSpeech, source(s)])]);
+    const probabilities = new Map();
+    if (candidates.size && options.semanticGrouping !== false) {
+      try {
+        let cached = options.reuseSemanticScoresOnly
+          ? entry.meaningEquivalenceModel === MEANING_MODEL_TAG ? entry.meaningEquivalenceScores : null
+          : cache[key]?.data;
+        if (Array.isArray(cached) && cached.every(row => Array.isArray(row) && row.length === 2 && typeof row[0] === 'string'
+          && Number.isFinite(row[1]) && row[1] >= 0 && row[1] <= 1)) {
+          for (const [pairKey, value] of cached) probabilities.set(pairKey, value);
+          inference.local = 'cached';
+        } else if (!options.reuseSemanticScoresOnly) {
+          const indices = [...new Set([...candidates.keys()].flatMap(pair => pair.split(':').map(Number)))].slice(0, MAX_EMBEDDED_SENSES);
+          const byIndex = new Map(indices.map((index, row) => [index, row]));
+          const eligible = [...candidates].filter(([pair]) => pair.split(':').every(index => byIndex.has(Number(index))));
+          const values = await (options.scoreMeaningPairs || scoreReferenceMeaningPairs)(indices.map(index => senses[index]),
+            eligible.map(([pair]) => pair.split(':').map(index => byIndex.get(Number(index)))), options);
+          options.signal?.throwIfAborted();
+          if (!Array.isArray(values) || values.length !== eligible.length || values.some(value => !Number.isFinite(value) || value < 0 || value > 1)) throw new Error('Invalid meaning model scores.');
+          eligible.forEach(([, pairKey], i) => probabilities.set(pairKey, values[i]));
+          cache[key] = { cachedAt: Date.now(), data: [...probabilities] };
+          writeRecentObjectCache(storage, 'keepvocab_reference_meaning_scores_v1', cache, 150);
+          inference.local = eligible.length < candidates.size ? 'partial' : 'ready';
+        }
+        for (const [pair, pairKey] of candidates) {
+          const probability = probabilities.get(pairKey);
+          if (probability === undefined) continue;
+          inference.comparedPairs++;
+          if (probability >= MEANING_MERGE_THRESHOLD) scores.set(pair, 1);
+          if (probability >= MEANING_REVIEW_THRESHOLD) reviews.push([pairKey, probability]);
+        }
+        if (inference.comparedPairs) { inference.scorer = 'reference-minilm'; inference.model = MEANING_MODEL_TAG; }
+      } catch (error) {
+        options.signal?.throwIfAborted();
+        inference.local = typeof Worker === 'undefined' && !options.scoreMeaningPairs ? 'unavailable' : 'failed';
+        inference.reason = error.message || 'The meaning merge model is unavailable.';
+      }
+    }
+    const result = packagedLocal(entry, clusterSenses(senses, scores, entry.word));
+    if (userReviewed) result.senseConsolidation.userReviewed = true;
+    result.meaningReviewScores = reviews.sort((a, b) => b[1] - a[1]).slice(0, 24);
+    result.meaningInference = inference;
+    delete result.meaningEquivalenceModel;
+    delete result.meaningEquivalenceScores;
+    if (inference.comparedPairs) {
+      result.meaningEquivalenceModel = MEANING_MODEL_TAG;
+      result.meaningEquivalenceScores = [...candidates.values()].filter(pairKey => probabilities.has(pairKey)).map(pairKey => [pairKey, probabilities.get(pairKey)]);
+    }
+    return result;
+  }
   const activeHead = validEquivalenceHead(learning.head) && learning.head.comparisonVersion === MEANING_COMPARISON_VERSION
     && Number.isFinite(learning.head.threshold) && learning.head.threshold > 0 && learning.head.threshold < 1 ? learning.head : null;
   const equivalenceKey = activeHead ? await modelIdentity(activeHead) : null;

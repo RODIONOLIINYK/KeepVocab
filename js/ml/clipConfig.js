@@ -13,14 +13,14 @@ export const CLIP_VISION_DTYPE = 'q4f16';
 export const CLIP_TAG = `${CLIP_MODEL}@${CLIP_REVISION}:full-vocab-packed4-block64-standard-ops-v1:text-${CLIP_TEXT_DTYPE}-vision-${CLIP_VISION_DTYPE}`;
 export const CLIP_DIMENSION = 768;
 export const CLIP_TEXT_MAX_LENGTH = 64;
-export const ML_ASSET_BYTE_LIMIT = 300_000_000;
+export const ML_ASSET_BYTE_LIMIT = 350_000_000;
 // Uncompressed glue for the exact pinned ORT runtime above/below.
 export const ORT_MJS_BYTES = 53_057;
 export const CLIP_CACHE = 'keepvocab-clip-model-v3';
 export const VECTOR_DB = 'keepvocab-clip-vectors-v2';
 export const ORT_VERSION = '1.31.0-dev.20260914-8d85527a0';
 // Include the WASM runtime in the consent estimate and installed-file check.
-export const MODEL_DOWNLOAD_MB = 215;
+export const MODEL_DOWNLOAD_MB = 208;
 export const MODEL_PAYLOAD_MB = 207.53;
 export const CLIP_MODEL_BASE = 'https://raw.githubusercontent.com/RODIONOLIINYK/KeepVocab/v1.12.29/models/siglip2-compact-v1/';
 export const CLIP_MODEL_FILES = ['config.json', 'tokenizer.json', 'tokenizer_config.json', 'preprocessor_config.json', 'onnx/text_model_q4f16.onnx', 'onnx/vision_model_q4f16.onnx'];

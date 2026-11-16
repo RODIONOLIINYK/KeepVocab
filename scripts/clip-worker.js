@@ -4,6 +4,7 @@ import { fetchCompactModelFile } from '../js/services/compactModelDownload.js';
 import { normalizedVector } from '../js/services/imagePreferences.js';
 import { fullFrameImage, centerCropImage } from '../js/services/imagePreprocessing.js';
 import { IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
+import { workerModelCache } from '../js/services/modelCache.js';
 
 env.allowLocalModels = false;
 // Some optional tokenizer/config lookups omit revision. Pin their URLs and cache
@@ -12,7 +13,9 @@ const modelSource = CLIP_MODEL_BASE.replace(/\/$/, '');
 const sourceSplit = modelSource.lastIndexOf('/');
 env.remoteHost = modelSource.slice(0, sourceSplit);
 env.remotePathTemplate = modelSource.slice(sourceSplit + 1);
-env.useBrowserCache = true;
+env.useBrowserCache = false;
+env.useCustomCache = true;
+env.customCache = workerModelCache(CLIP_CACHE);
 env.useFSCache = false;
 env.cacheKey = CLIP_CACHE;
 // The page chooses the thread count (see inferencePlan in imageLearning.js).
@@ -38,20 +41,12 @@ let backend = 'wasm';
 let runtimeReady;
 async function prepareRuntime() {
   if (!runtimeReady) runtimeReady = (async () => {
-    const cache = await self.caches?.open(CLIP_CACHE);
-    const blobs = await Promise.all(CLIP_RUNTIME_URLS.map(async url => {
-      let response = await cache?.match(url);
-      if (!response) {
-        if (!allowDownloads) throw new Error('The local runtime is missing. Download the image model in Settings.');
-        response = await fetchCompactModelFile(url, undefined, originalFetch);
-        if (!response.ok) throw new Error('The local image runtime could not be downloaded.');
-        await cache?.put(url, response.clone());
-      }
-      return URL.createObjectURL(await response.blob());
-    }));
-    // Both files are cached under the same consent as the model. Object URLs
-    // prevent ONNX Runtime from silently fetching its runtime from a CDN.
-    env.backends.onnx.wasm.wasmPaths = { mjs: blobs[0], wasm: blobs[1] };
+    // Both models share one app-owned runtime; never keep a second downloaded
+    // runtime in the browser profile or let ORT silently fetch a CDN copy.
+    env.backends.onnx.wasm.wasmPaths = {
+      mjs: new URL('./runtime/ort-wasm-simd-threaded.asyncify.mjs', self.location.href).href,
+      wasm: new URL('./runtime/ort-wasm-simd-threaded.asyncify.wasm', self.location.href).href
+    };
   })().catch(error => { runtimeReady = null; throw error; });
   return runtimeReady;
 }
@@ -242,6 +237,7 @@ async function run({ type, payload, device }) {
 }
 let queue = Promise.resolve();
 self.onmessage = ({ data }) => {
+  if (data.type === 'model-cache-result') return;
   if (data.type === 'cancel') { cancelled.add(data.id); return; }
   queue = queue.then(async () => {
     if (cancelled.delete(data.id)) return;

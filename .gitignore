@@ -13,3 +13,4 @@ work/
 
 __pycache__/
 *.pyc
+models/meaning-minilm-reference/onnx/

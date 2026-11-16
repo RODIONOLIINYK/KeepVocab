@@ -10,6 +10,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(DriveAuthPlugin.class);
         registerPlugin(NativeSpeechPlugin.class);
         registerPlugin(ReminderSettingsPlugin.class);
+        registerPlugin(ModelStoragePlugin.class);
         super.onCreate(savedInstanceState);
         KeepVocabReminderReceiver.ensureReminderChannel(this);
     }

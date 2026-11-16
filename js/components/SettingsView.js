@@ -1,5 +1,6 @@
 import { getFsrsLearningStatus, subscribeFsrsLearning, saveFsrsPreferences } from '../services/fsrsLearning.js';
 import { getImageLearningStatus, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18908';
+import { getMeaningModelStatus, checkMeaningModelInstalled, subscribeMeaningModel, downloadMeaningModel, removeMeaningModel } from '../services/meaningReference.js';
 import { APP_VERSION, checkAppUpdate, installAppUpdate } from '../services/appUpdates.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiSettings } from '../services/geminiSettings.js?v=18908';
@@ -25,6 +26,7 @@ function modelOptions(current) {
 
 export function renderSettingsView(container, onNavigate) {
   container.releaseImageLearning?.();
+  container.releaseMeaningModel?.();
   container.releaseFsrsLearning?.();
   const memory = getFsrsLearningStatus();
   const gemini = getGeminiSettings();
@@ -61,7 +63,8 @@ export function renderSettingsView(container, onNavigate) {
       <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-images', 'Vocabulary images', 'Choose where Library photos come from.', pexelsReady ? 'Pexels' : imageProvider.provider === 'openverse' ? 'No key needed' : 'Set up', pexelsReady, true, 'settings-images-state')}</summary>
         <form id="image-provider-settings-form" class="settings-form"><label class="settings-full-width">Photo source<select id="settings-image-provider"><option value="pexels" ${imageProvider.provider === 'pexels' ? 'selected' : ''}>Pexels</option><option value="openverse" ${imageProvider.provider === 'openverse' ? 'selected' : ''}>Public catalogs · no key</option></select></label><label class="settings-full-width" id="settings-pexels-field" ${imageProvider.provider === 'openverse' ? 'hidden' : ''}>Pexels API key<div class="key-input-row"><input type="password" id="settings-pexels-key" value="${escapeHtml(imageProvider.pexelsApiKey)}" placeholder="Personal Pexels API key" autocomplete="off" spellcheck="false"><button type="button" id="settings-toggle-pexels-key" aria-label="Show Pexels API key" aria-pressed="false"><i class="fa-solid fa-eye" aria-hidden="true"></i></button></div><span class="settings-privacy"><a href="https://www.pexels.com/api/new/" target="_blank" rel="noopener noreferrer">Get a free Pexels key</a></span></label><p class="settings-privacy">Your photo source preference is included in your Drive backup. Your Pexels key stays on this device.</p><p id="image-provider-settings-status" class="settings-service-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid">Save photo source</button><button type="button" class="status-pill offline" id="remove-pexels-settings" ${imageProvider.pexelsApiKey ? '' : 'hidden'}>Remove Pexels key</button></div></form>
       </details>
-      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-images', 'Image suggestions', 'Better photos for your meanings.', '', false, true)}</summary><div class="settings-disclosure-body"><p>Suggestions adapt to the photos you choose.</p><p class="settings-privacy">Requires a one-time download of about ${getImageLearningStatus().downloadMB} MB. Photo preferences stay on this device and sync with your private Drive backup when connected. Downloaded files stay on this device. <a href="https://huggingface.co/google/siglip2-base-patch16-256" target="_blank" rel="noopener noreferrer">License</a></p><p id="image-learning-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid" id="enable-image-learning">Download and turn on</button><button class="status-pill offline" id="disable-image-learning">Turn off</button><button class="status-pill offline" id="clear-image-model">Remove downloaded files</button><button class="status-pill offline" id="reset-image-preferences">Reset photo preferences</button></div></div></details>
+      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-clone', 'Meaning merging', 'Combine equivalent dictionary meanings on this device.', '', false, true)}</summary><div class="settings-disclosure-body"><p>Download the merge model separately from image suggestions. Once installed, it stays ready for lookups and works offline.</p><p class="settings-privacy">One-time download: about ${getMeaningModelStatus().downloadMB} MB. Model files belong to the app and are removed when you delete the app. <a href="https://huggingface.co/Rodion228huyfogdrun/KeepVocab-meaning-merge-minilm-l6-v7" target="_blank" rel="noopener noreferrer">Public model and license</a></p><p id="meaning-model-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid" id="download-meaning-model">Download merge model</button><button class="status-pill offline" id="remove-meaning-model">Remove merge model files</button></div></div></details>
+      <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-images', 'Image suggestions · SigLIP', 'Better photos for your meanings.', '', false, true)}</summary><div class="settings-disclosure-body"><p>Suggestions adapt to the photos you choose.</p><p class="settings-privacy">Requires a separate one-time download of about ${getImageLearningStatus().downloadMB} MB. Photo preferences stay on this device and sync with your private Drive backup when connected. Model files belong to the app and are removed when you delete the app. <a href="https://huggingface.co/google/siglip2-base-patch16-256" target="_blank" rel="noopener noreferrer">License</a></p><p id="image-learning-status" role="status" aria-live="polite"></p><div class="settings-actions"><button class="btn-green-solid" id="enable-image-learning">Download and turn on</button><button class="status-pill offline" id="disable-image-learning">Turn off</button><button class="status-pill offline" id="clear-image-model">Remove downloaded files</button><button class="status-pill offline" id="reset-image-preferences">Reset photo preferences</button></div></div></details>
       <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-download', 'App updates', `KeepVocab ${APP_VERSION}`, '', false, true)}</summary><div class="settings-disclosure-body"><p data-update-status class="settings-service-status" role="status" aria-live="polite">The app checks automatically. Updates keep your Library and progress.</p><div class="settings-actions"><button class="status-pill offline" data-check-update>Check for updates</button><button class="btn-green-solid" data-install-update hidden>Update app</button><a class="status-pill offline" data-update-downloads href="https://github.com/RODIONOLIINYK/KeepVocab/releases/latest" target="_blank" rel="noopener noreferrer" hidden>Open downloads</a></div></div></details>
     </div>
   </section>`;
@@ -82,6 +85,28 @@ export function renderSettingsView(container, onNavigate) {
     query('#clear-image-model').hidden = !state.installed;
   };
   paintLearning(getImageLearningStatus());
+  const paintMeaning = state => {
+    const output = query('#meaning-model-status');
+    if (!output) { container.releaseMeaningModel?.(); return; }
+    output.textContent = state.message;
+    const busy = ['downloading', 'loading'].includes(state.phase);
+    query('#download-meaning-model').disabled = busy;
+    query('#download-meaning-model').hidden = state.installed && state.phase === 'ready';
+    query('#download-meaning-model').textContent = state.installed ? 'Load merge model' : state.phase === 'error' ? 'Retry merge model download' : 'Download merge model';
+    query('#remove-meaning-model').disabled = busy;
+    query('#remove-meaning-model').hidden = !state.installed && state.phase !== 'error';
+  };
+  paintMeaning(getMeaningModelStatus());
+  container.releaseMeaningModel = subscribeMeaningModel(paintMeaning);
+  void checkMeaningModelInstalled().catch(() => { query('#meaning-model-status').textContent = 'Could not check merge model storage.'; });
+  query('#download-meaning-model').addEventListener('click', async () => {
+    try { await downloadMeaningModel(); }
+    catch (error) { query('#meaning-model-status').textContent = error.message; }
+  });
+  query('#remove-meaning-model').addEventListener('click', async () => {
+    try { await removeMeaningModel(); }
+    catch (error) { query('#meaning-model-status').textContent = error.message; }
+  });
   container.releaseImageLearning = subscribeImageLearning(paintLearning);
   const learningAction = (selector, action, failureMessage, successMessage = '') => query(selector).addEventListener('click', async () => {
     const button = query(selector); button.disabled = true;

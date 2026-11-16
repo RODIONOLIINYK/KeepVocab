@@ -102,6 +102,9 @@ for (const success of [true, false]) {
     const staged = path.join(dir, 'next.app'); const backup = path.join(dir, 'previous.app');
     await mkdir(target); await mkdir(staged);
     await writeFile(path.join(target, 'version'), 'old'); await writeFile(path.join(staged, 'version'), 'new');
+    await mkdir(path.join(target, 'Contents/Resources/model-cache'), { recursive: true });
+    await mkdir(path.join(staged, 'Contents/Resources'), { recursive: true });
+    await writeFile(path.join(target, 'Contents/Resources/model-cache/weights'), 'downloaded model');
     await writeFile(path.join(dir, 'learning-data'), 'saved progress');
     const pid = spawnSync('/usr/bin/true').pid;
     const run = () => exec('/bin/sh', [helper, String(pid), target, staged, backup, success ? '/usr/bin/true' : '/usr/bin/false']);
@@ -109,6 +112,8 @@ for (const success of [true, false]) {
     assert.equal(await readFile(path.join(target, 'version'), 'utf8'), success ? 'new' : 'old');
     if (success) assert.equal(await readFile(path.join(backup, 'version'), 'utf8'), 'old');
     assert.equal(await readFile(path.join(dir, 'learning-data'), 'utf8'), 'saved progress');
+    assert.equal(await readFile(path.join(target, 'Contents/Resources/model-cache/weights'), 'utf8'), 'downloaded model');
+    if (success) await assert.rejects(access(path.join(backup, 'Contents/Resources/model-cache')));
   });
 }
 

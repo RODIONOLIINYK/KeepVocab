@@ -11,6 +11,7 @@ import { ImagePersonalizerTraining } from './imagePersonalizerTraining.js';
 import { scheduleImageModelWarmup } from './imageModelStartup.js';
 import { IMAGE_SEMANTIC_FILTER, passesImageSemanticGate } from './imageSemanticGate.js';
 import { invariantRankingScore } from './vocabInvariantHead.js';
+import { modelCacheStorage, handleModelCacheRequest } from './modelCache.js';
 let trainingInstance;
 function training() { return trainingInstance ||= new ImagePersonalizerTraining(driveSync); }
 let cachedModel = null;
@@ -52,20 +53,26 @@ function startupDownloadAllowed(storage) {
   const connection = globalThis.navigator?.connection;
   return downloadConsent(storage) && globalThis.navigator?.onLine !== false && !connection?.saveData && connection?.type !== 'cellular';
 }
-export async function hasDownloadedImageModel(cacheStorage = globalThis.caches) {
+export async function hasDownloadedImageModel(cacheStorage = modelCacheStorage()) {
   try {
     if (!cacheStorage) return false;
     const names = await cacheStorage.keys();
     await Promise.all(names.filter(name => /^keepvocab-clip-model-v[12]$/.test(name)).map(name => cacheStorage.delete?.(name)));
     if (!names.includes(CLIP_CACHE)) return false;
     const cache = await cacheStorage.open(CLIP_CACHE);
-    const activeUrls = new Set(CLIP_DOWNLOAD_URLS);
+    const activeUrls = new Set(CLIP_DOWNLOAD_URLS.filter(url => !url.includes('/ort-wasm-')));
     void Promise.resolve(cache.keys?.()).then(keys => keys?.forEach(req => {
       const url = typeof req === 'string' ? req : req?.url;
       if (url && !activeUrls.has(url)) void cache.delete?.(req);
     })).catch(() => {});
-    const files = await Promise.all(CLIP_DOWNLOAD_URLS.map(url => cache.match(url)));
-    return files.every(response => response?.ok && response.headers?.get('content-length') !== '0');
+    let complete = true;
+    // Inspect every file even in a partial install, so all existing profile
+    // downloads migrate into app-owned storage before the app can be removed.
+    for (const url of activeUrls) {
+      if (cache.has) { if (!await cache.has(url)) complete = false; }
+      else { const response = await cache.match(url); if (!response?.ok || response.headers?.get('content-length') === '0') complete = false; }
+    }
+    return complete;
   } catch { return false; }
 }
 function textEncodingStatusMessage(status, reason = '') {
@@ -112,10 +119,10 @@ async function resolveInstalledTextModel(options = {}) {
     return present;
   }
   if (installed) return true;
-  if (!globalThis.caches) return false;
+  if (!modelCacheStorage()) return false;
   if (!installCheckPromise) {
     const epoch = cacheEpoch;
-    installCheckPromise = hasDownloadedImageModel(globalThis.caches).then(present => {
+    installCheckPromise = hasDownloadedImageModel().then(present => {
       if (epoch === cacheEpoch) installed = present;
       return present;
     }).finally(() => { installCheckPromise = null; });
@@ -128,7 +135,7 @@ export async function checkMeaningTextEncodingStatus(options = {}) {
   return getMeaningTextEncodingStatus(options);
 }
 // Check cached files first; defer optional model initialization until after paint/idle.
-export async function initializeImageLearning({ requestDownload, storage = globalThis.localStorage, cacheStorage = globalThis.caches, enable = enableImageLearning, scheduleWarmup = scheduleImageModelWarmup } = {}) {
+export async function initializeImageLearning({ requestDownload, storage = globalThis.localStorage, cacheStorage = modelCacheStorage(), enable = enableImageLearning, scheduleWarmup = scheduleImageModelWarmup } = {}) {
   installed = await hasDownloadedImageModel(cacheStorage);
   const config = deviceConfig(storage);
   if (installed) {
@@ -274,6 +281,7 @@ function ensureVisionHelpers() {
       const initializeId = -(++nextId);
       // The primary worker owns the visible status; helpers only return vectors.
       helper.onmessage = ({ data }) => {
+        if (data.type === 'model-cache') { void handleModelCacheRequest(helper, data); return; }
         if (!helpers.includes(helper) || data.type === 'status') return;
         if (data.id === initializeId && data.error) retireHelpers();
         else settle(data, helper);
@@ -299,6 +307,7 @@ function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = fa
     const activeWorker = worker = new Worker(new URL('../ml/clipWorker.bundle.js', import.meta.url), { type: 'module' });
     activeWorker.onmessage = ({ data }) => {
       if (worker !== activeWorker) return;
+      if (data.type === 'model-cache') { void handleModelCacheRequest(activeWorker, data); return; }
       if (data.type === 'status') {
         backend = data.backend || backend;
         // Searches can initialize the model lazily, without the Settings enable
@@ -391,7 +400,7 @@ export function disableImageLearning() {
 export async function clearImageModelDownloads() {
   cacheEpoch++;
   disableImageLearning();
-  await globalThis.caches?.delete(CLIP_CACHE);
+  await modelCacheStorage()?.delete(CLIP_CACHE);
   installed = false; textEncodingDetail = null; saveDeviceConfig({ downloadConsent: 'declined' });emit();
   if (globalThis.indexedDB) await new Promise((resolve, reject) => {
     const request = indexedDB.deleteDatabase(VECTOR_DB);

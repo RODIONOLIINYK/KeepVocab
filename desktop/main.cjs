@@ -1,6 +1,7 @@
 const { app, BrowserWindow, dialog, ipcMain, nativeImage, net, protocol, screen, session, shell, systemPreferences, Tray } = require('electron');
 const { access, readFile, stat } = require('node:fs/promises');
 const path = require('node:path');
+const { modelStorageRoot, modelStorageOperation } = require('./modelStorage.cjs');
 
 const APP_HOST = '127.0.0.1';
 const APP_PORT = 8085;
@@ -16,6 +17,7 @@ const MIME_TYPES = new Map([
   ['.js', 'text/javascript; charset=utf-8'],
   ['.json', 'application/json; charset=utf-8'],
   ['.mjs', 'text/javascript; charset=utf-8'],
+  ['.wasm', 'application/wasm'],
   ['.png', 'image/png'],
   ['.svg', 'image/svg+xml'],
   ['.webp', 'image/webp'],
@@ -149,6 +151,10 @@ function requestMicrophoneAccess() {
 
 function configureDesktopBridge() {
   ipcMain.handle('keepvocab:request-microphone-access', () => requestMicrophoneAccess());
+  ipcMain.handle('keepvocab:model-storage', (event, args) => {
+    if (!isAppUrl(event.senderFrame?.url || '')) throw new Error('Model storage is only available inside KeepVocab.');
+    return modelStorageOperation(modelStorageRoot(app), args);
+  });
 }
 
 function configureNavigation(window) {

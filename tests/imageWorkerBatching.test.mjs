@@ -5,7 +5,7 @@ function fixture(){
  const source=readFileSync(new URL('../scripts/clip-worker.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'');const calls={texts:[],images:[]};
  const tensor=axes=>({data:Float32Array.from(axes.flatMap(axis=>Array.from({length:768},(_,i)=>Number(i===axis)))),type:'float32',dispose(){}});
  const model={tokenizer:(texts)=>{calls.texts.push(texts);return{input_ids:{texts,dispose(){}}};},textModel:async({input_ids})=>({pooler_output:tensor(input_ids.texts.map(s=>s.length%20))}),processor:async frames=>({pixel_values:{frames,dispose(){}}}),visionModel:async({pixel_values})=>{calls.images.push(pixel_values.frames);return{pooler_output:tensor(pixel_values.frames.map(f=>f.axis))};}};
- const context=vm.createContext({...config,IMAGE_PREPROCESSING,normalizedVector,env:{fetch:()=>{},backends:{onnx:{wasm:{}}}},self:{postMessage(){}},Blob,crypto,URL,Map,Set,Promise,Float32Array,RawImage:{fromBlob:async()=>({width:64,height:64})},fullFrameImage:async()=>({axis:1}),centerCropImage:async()=>({axis:2})});
+ const context=vm.createContext({...config,workerModelCache:()=>({}),IMAGE_PREPROCESSING,normalizedVector,env:{fetch:()=>{},backends:{onnx:{wasm:{}}}},self:{postMessage(){}},Blob,crypto,URL,Map,Set,Promise,Float32Array,RawImage:{fromBlob:async()=>({width:64,height:64})},fullFrameImage:async()=>({axis:1}),centerCropImage:async()=>({axis:2})});
  vm.runInContext(source,context);context.fixtureModel=model;vm.runInContext('models=Promise.resolve(fixtureModel)',context);return{context,calls};
 }
 test('text inference batches only cache misses and preserves row order',async()=>{

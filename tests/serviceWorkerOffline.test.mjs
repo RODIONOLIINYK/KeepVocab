@@ -9,7 +9,7 @@ function offlineWorker(entries = new Map()) {
   const listeners = new Map();
   const lookups = [];
   vm.runInNewContext(source, {
-    self: { location: { origin: 'https://keepvocab.test' }, addEventListener: (type, callback) => listeners.set(type, callback) },
+    self: { location: { href: 'https://keepvocab.test/sw.js', origin: 'https://keepvocab.test' }, addEventListener: (type, callback) => listeners.set(type, callback) },
     URL, Response,
     fetch: async () => { throw new Error('offline'); },
     caches: { match: async (request, options) => {

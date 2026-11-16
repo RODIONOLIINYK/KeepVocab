@@ -10,7 +10,8 @@ test('app upgrades keep separately downloaded model files and other origin cache
   const source = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
   const current = source.match(/const CACHE_NAME = '([^']+)'/)[1];
   vm.runInNewContext(source, {
-    self: { addEventListener: (type, callback) => { handlers[type] = callback; }, clients: { claim() {} } },
+    self: { location: { href: 'https://keepvocab.test/sw.js' }, addEventListener: (type, callback) => { handlers[type] = callback; }, clients: { claim() {} } },
+    URL,
     caches: { keys: async () => ['keepvocab-v1', current, 'keepvocab-clip-model-v1', 'another-app'], delete: async key => deleted.push(key) }
   });
   handlers.activate({ waitUntil: promise => { activated = promise; } });

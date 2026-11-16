@@ -1,6 +1,7 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112037-meaning-inference';
+const CACHE_NAME = 'keepvocab-v112038-reference-merge';
+const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -22,6 +23,14 @@ const ASSETS_TO_CACHE = [
   './js/services/learningDefinitions.js',
   './js/services/localSenseGrouping.js',
   './js/services/meaningComparison.js',
+  './js/services/meaningReference.js',
+  './js/services/meaningReferenceFeatures.js',
+  './js/services/modelCache.js',
+  './js/ml/meaningConfig.js',
+  './js/ml/meaningAssets.js',
+  './js/ml/meaningWorker.bundle.js',
+  './js/ml/runtime/ort-wasm-simd-threaded.asyncify.mjs',
+  './js/ml/runtime/ort-wasm-simd-threaded.asyncify.wasm',
   './js/services/imageSearchPlan.js',
   './js/services/dictionaryApi.js',
   './js/services/englishEnrichment.js',
@@ -130,7 +139,7 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       // A new offline cache must contain the new code, even if the browser's
       // HTTP cache still considers an earlier module or stylesheet fresh.
-      return cache.addAll(ASSETS_TO_CACHE.map(url => new Request(url, { cache: 'reload' })));
+      return cache.addAll(ASSETS_TO_CACHE.filter(url => !NATIVE_APP || !url.includes('/ml/runtime/')).map(url => new Request(url, { cache: 'reload' })));
     })
   );
 
@@ -151,6 +160,9 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
+  // Native runtime files already belong to the installed application. Keeping
+  // another copy in Chromium's profile would survive deletion of the macOS app.
+  if (NATIVE_APP && new URL(event.request.url).pathname.includes('/ml/runtime/')) return;
 
   event.respondWith(
     fetch(event.request, { cache: 'no-store' })

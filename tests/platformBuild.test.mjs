@@ -30,8 +30,8 @@ test('the installable PWA manifest and every offline build asset resolve on all 
     .filter(Boolean);
 
   for (const assetPath of assetPaths) {
-    if (assetPath === 'js/ml/clipWorker.bundle.js') {
-      assert.ok(existsSync(resolve(projectRoot, 'scripts/clip-worker.js')));
+    if (/^js\/ml\/(?:clipWorker|meaningWorker)\.bundle\.js$/.test(assetPath) || assetPath.startsWith('js/ml/runtime/')) {
+      assert.ok(existsSync(resolve(projectRoot, 'scripts/build-image-ml.mjs')));
       assert.match(readFileSync(resolve(projectRoot, 'scripts/build-web.mjs'), 'utf8'), /build-image-ml/);
       continue;
     }
@@ -41,10 +41,11 @@ test('the installable PWA manifest and every offline build asset resolve on all 
 
 test('the local launch contract keeps the installed app on the API-authorized port', () => {
   const packageJson = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf8'));
-  const handoff = readFileSync(resolve(projectRoot, 'HANDOFF.md'), 'utf8');
+  const desktop = readFileSync(resolve(projectRoot, 'desktop/main.cjs'), 'utf8');
   assert.match(packageJson.scripts.start, /http\.server 8085/);
   assert.match(packageJson.scripts.start, /--bind 127\.0\.0\.1/);
-  assert.match(handoff, /http:\/\/127\.0\.0\.1:8085/);
+  assert.match(desktop, /const APP_HOST = '127\.0\.0\.1'/);
+  assert.match(desktop, /const APP_PORT = 8085/);
 });
 
 test('the macOS package supports Apple Silicon only, stays sandboxed, and keeps the authorized local origin', () => {
@@ -330,8 +331,8 @@ test('every cache-busted entrypoint and module import is included in the offline
   assert.match(serviceWorker, /new Request\(url, \{ cache: 'reload' \}\)/);
   assert.match(serviceWorker, /fetch\(event\.request, \{ cache: 'no-store' \}\)/);
   assert.equal([...precachedUrls].some(url => /\?v=\d+/.test(url)), false, 'Offline cache should not download duplicate version aliases.');
-  // Includes the multi-view and equivalence heads, validation and explicit review.
-  assert.ok(precachedUrls.size <= 120, `Offline install should stay compact; found ${precachedUrls.size} requests.`);
+  // Includes both model workers and their one shared runtime.
+  assert.ok(precachedUrls.size <= 130, `Offline install should stay compact; found ${precachedUrls.size} requests.`);
 
   for (const match of html.matchAll(/(?:src|href)=["']([^"']+\?v=\d+)["']/g)) {
     const canonicalPath = match[1].split(/[?#]/)[0];
@@ -343,7 +344,7 @@ test('every cache-busted entrypoint and module import is included in the offline
     .filter(path => path.endsWith('.js'));
 
   for (const relativePath of new Set(sourceFiles)) {
-    if (relativePath === 'js/ml/clipWorker.bundle.js') continue; // generated and independently checked by the ML build test
+    if (/^js\/ml\/(?:clipWorker|meaningWorker)\.bundle\.js$/.test(relativePath)) continue; // generated
     const source = readFileSync(resolve(projectRoot, relativePath), 'utf8');
     for (const match of source.matchAll(/from\s+['"](\.{1,2}\/[^'"]+\?v=\d+)['"]/g)) {
       const importedUrl = new URL(match[1], `https://keepvocab.local/${relativePath}`).pathname.slice(1);

@@ -2,6 +2,7 @@ import { getActivePracticeWords, getScheduledPracticeWords } from './services/wo
 import { setupAddWordModal } from './components/AddWordModal.js?v=18908';
 import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18908';
 import { initializeImageLearning } from './services/imageLearning.js?v=18908';
+import { preloadMeaningModel } from './services/meaningReference.js';
 // Native application controller with monthly Google Drive backup.
 
 import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18908';
@@ -92,7 +93,8 @@ function initApp() {
   });
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    navigator.serviceWorker.register('./sw.js').catch(error => console.warn('Offline support registration failed.', error));
+    const native = Boolean(globalThis.keepVocabDesktop || globalThis.Capacitor?.isNativePlatform?.());
+    navigator.serviceWorker.register(native ? './sw.js?native=1' : './sw.js').catch(error => console.warn('Offline support registration failed.', error));
   }
 
   window.addEventListener('hashchange', () => {
@@ -104,6 +106,9 @@ function initApp() {
   navigateTo(hash);
   renderConnectionState();
   updateDashboardDerivedState();
+  const warmMeanings = () => { void preloadMeaningModel().catch(error => console.warn('Meaning model preload failed.', error)); };
+  if (globalThis.requestIdleCallback) requestIdleCallback(warmMeanings, { timeout: 2000 });
+  else setTimeout(warmMeanings, 0);
   void initializeImageLearning({ requestDownload: requestImageModelDownload }).catch(() => showToast('Image suggestions could not start. You can still choose photos.', 'error'));
 }
 

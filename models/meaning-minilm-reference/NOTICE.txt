@@ -1,0 +1,4 @@
+Fine-tuned sentence-transformers/paraphrase-MiniLM-L6-v2 (Apache-2.0).
+Reference: minilm-l6-v7-prefix-idf-bs16; seed 42; restored epoch 4.
+Export only, no new training or calibration. FP16 weights with FP32 inputs/outputs.
+Dictionary-only v7 data; agent-reviewed labels, not human-verified.

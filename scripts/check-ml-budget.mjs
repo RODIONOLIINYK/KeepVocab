@@ -1,7 +1,8 @@
 import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CLIP_MODEL_FILES, COMPACT_MODEL_ASSETS, COMPACT_RUNTIME_ASSET, ORT_MJS_BYTES, ML_ASSET_BYTE_LIMIT } from '../js/ml/clipConfig.js';
+import { CLIP_MODEL_FILES, COMPACT_MODEL_ASSETS, ML_ASSET_BYTE_LIMIT } from '../js/ml/clipConfig.js';
+import { MEANING_MODEL_ASSETS } from '../js/ml/meaningAssets.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -16,7 +17,8 @@ async function directoryBytes(directory) {
 }
 
 export async function auditMlAssetBudget(outputDir = path.join(root, 'www'), { limitBytes = ML_ASSET_BYTE_LIMIT } = {}) {
-  let modelCacheBytes = COMPACT_RUNTIME_ASSET.bytes + ORT_MJS_BYTES;
+  // One bundled runtime is shared by both workers (counted in bundledJsBytes).
+  let modelCacheBytes = Object.values(MEANING_MODEL_ASSETS).reduce((sum, asset) => sum + asset.bytes, 0);
   for (const file of CLIP_MODEL_FILES) {
     const pinned = COMPACT_MODEL_ASSETS[file];
     modelCacheBytes += pinned ? pinned.bytes : (await stat(path.join(root, 'models/siglip2-compact-v1', file))).size;

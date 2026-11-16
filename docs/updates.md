@@ -1,5 +1,9 @@
 # App updates
 
+Local merge/SigLIP model downloads, public model hosting, installer links, and
+the app-owned model lifecycle are documented in
+[Local meaning merge inference](meaning-model-inference.md).
+
 Version 1.6.0 introduces automatic update checks on startup, periodically while open,
 and when returning to the app. Settings also offers a manual check. Checks run silently, with update status and installation controls only in Settings.
 The user chooses when to install or reload. No update overlay is displayed.

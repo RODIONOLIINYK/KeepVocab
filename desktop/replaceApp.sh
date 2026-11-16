@@ -28,7 +28,19 @@ if ! /bin/mv "$staged" "$target"; then
   "$opener" -n "$target"
   exit 1
 fi
+# Downloads move with the app, rather than being copied into a retained backup.
+# A failed launch restores them with the previous bundle.
+models='Contents/Resources/model-cache'
+if [ -d "$backup/$models" ]; then
+  if ! /bin/mv "$backup/$models" "$target/$models"; then
+    /bin/mv "$target" "$staged"
+    /bin/mv "$backup" "$target"
+    "$opener" -n "$target" || true
+    exit 1
+  fi
+fi
 if ! "$opener" -n "$target"; then
+  if [ -d "$target/$models" ]; then /bin/mv "$target/$models" "$backup/$models"; fi
   /bin/mv "$target" "$staged"
   /bin/mv "$backup" "$target"
   "$opener" -n "$target" || true
