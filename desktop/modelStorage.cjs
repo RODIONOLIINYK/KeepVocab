@@ -1,5 +1,7 @@
 const { mkdir, readFile, writeFile, appendFile, rename, stat, rm, readdir } = require('node:fs/promises');
 const path = require('node:path');
+const { createReadStream } = require('node:fs');
+const { Readable } = require('node:stream');
 
 // A packed macOS app owns its downloads. Removing the .app removes this folder.
 function modelStorageRoot(app) {
@@ -24,16 +26,8 @@ async function modelStorageOperation(root, args) {
   if (!/^[a-f0-9]{64}$/.test(key || '')) throw new Error('Invalid model file key.');
   const file = path.join(directory, key), metadata = file + '.json';
   if (action === 'stat') {
-    try { const info = JSON.parse(await readFile(metadata, 'utf8')); return (await stat(file)).size === info.size ? info : {}; }
+    try { const info = JSON.parse(await readFile(metadata, 'utf8')); return (await stat(file)).size === info.size ? { ...info, readUrl: `/_keepvocab_models/${cache}/${key}` } : {}; }
     catch (error) { if (error.code === 'ENOENT') return {}; throw error; }
-  }
-  if (action === 'read') {
-    const offset = args.offset;
-    if (!Number.isSafeInteger(offset) || offset < 0) throw new Error('Invalid model offset.');
-    const { open } = require('node:fs/promises');
-    const handle = await open(file, 'r');
-    try { const buffer = Buffer.alloc(1024 * 1024); const { bytesRead } = await handle.read(buffer, 0, buffer.length, offset); return { data: buffer.subarray(0, bytesRead).toString('base64') }; }
-    finally { await handle.close(); }
   }
   if (action === 'delete') { await rm(metadata, { force: true }); await rm(file, { force: true }); return {}; }
   if (!/^[a-f0-9]{16,64}$/.test(token)) throw new Error('Invalid download token.');
@@ -56,4 +50,19 @@ async function modelStorageOperation(root, args) {
   if (action === 'abort') { await rm(temporary, { force: true }); return {}; }
   throw new Error('Unsupported model operation.');
 }
-module.exports = { modelStorageRoot, modelStorageOperation };
+// This route serves committed, size-checked model files only. No filesystem
+// paths or partial downloads are accepted from a renderer URL.
+async function handleModelStorageRequest(root, request) {
+  const match = /^\/_keepvocab_models\/(keepvocab-[a-z0-9-]{1,70})\/([a-f0-9]{64})$/.exec(new URL(request.url).pathname);
+  if (!match) return new Response(null, { status: 404 });
+  if (!['GET', 'HEAD'].includes(request.method)) return new Response(null, { status: 405 });
+  const [, cache, key] = match;
+  const info = await modelStorageOperation(root, { action: 'stat', cache, key });
+  if (!(info.size > 0)) return new Response(null, { status: 404 });
+  const body = request.method === 'HEAD' ? null : Readable.toWeb(createReadStream(path.join(root, cache, key)));
+  return new Response(body, { headers: {
+    'Content-Type': 'application/octet-stream', 'Content-Length': String(info.size),
+    'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'
+  } });
+}
+module.exports = { modelStorageRoot, modelStorageOperation, handleModelStorageRequest };

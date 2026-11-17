@@ -1,9 +1,11 @@
+import { createInferenceTimings } from '../js/services/inferenceTimings.js';
 import { AutoModel, AutoTokenizer, env } from '@huggingface/transformers';
 import { MEANING_MAX_TOKENS, MEANING_MODEL_TAG, MEANING_MODEL_BASE, MEANING_MODEL_REPO, MEANING_MODEL_REVISION, MEANING_CACHE } from '../js/ml/meaningConfig.js';
 import { referenceEmbedding, referenceFeatures, referenceProbability } from '../js/services/meaningReferenceFeatures.js';
 import { workerModelCache } from '../js/services/modelCache.js';
 import { sharedInferenceScope } from '../js/services/sharedInferenceScope.js';
 
+const timings = createInferenceTimings('meaning');
 const channel = typeof self.postMessage === 'function' ? self : sharedInferenceScope(self, 'meaning');
 
 const base = new URL(MEANING_MODEL_BASE);
@@ -15,7 +17,7 @@ env.remotePathTemplate = base.pathname.replace(/^\/+|\/+$/g, '');
 // and never fetches a substitute encoder or creates another profile cache.
 env.useBrowserCache = false;
 env.useCustomCache = true;
-env.customCache = workerModelCache(MEANING_CACHE);
+env.customCache = workerModelCache(MEANING_CACHE, timings);
 const originalFetch = env.fetch;
 const runtimeUrls = new Set([
   new URL('./runtime/ort-wasm-simd-threaded.asyncify.mjs', self.location.href).href,
@@ -35,7 +37,7 @@ env.backends.onnx.wasm.wasmPaths = {
 };
 let loading;
 async function initialize() {
-  if (!loading) loading = (async () => {
+  if (!loading) loading = timings.measure('initialize', async () => {
     const options = { revision: MEANING_MODEL_REVISION };
     const tokenizer = await AutoTokenizer.from_pretrained(MEANING_MODEL_REPO, options);
     const response = await env.customCache.match(new URL('scorer.json', base).href);
@@ -43,7 +45,7 @@ async function initialize() {
     const scorer = await response.json();
     const model = await AutoModel.from_pretrained(MEANING_MODEL_REPO, { ...options, dtype: 'fp16', device: 'wasm' });
     return { tokenizer, model, scorer };
-  })().catch(error => { loading = null; throw error; });
+  }).catch(error => { loading = null; throw error; });
   return loading;
 }
 const memory = new Map();
@@ -61,7 +63,7 @@ async function run({ type, texts, pairs }) {
     const inputs = tokenizer(batch, { padding: 'max_length', max_length: MEANING_MAX_TOKENS, truncation: true });
     let output;
     try {
-      output = await model(inputs);
+      output = await timings.measure('meaning-forward', () => model(inputs), { batch: batch.length });
       const hidden = output.last_hidden_state.tolist();
       const ids = inputs.input_ids.tolist().map(row => row.map(Number));
       const masks = inputs.attention_mask.tolist().map(row => row.map(Number));
@@ -82,7 +84,7 @@ channel.onmessage = ({ data }) => {
   if (data.type === 'cancel') { cancelled.add(data.id); return; }
   queue = queue.then(async () => {
     if (cancelled.delete(data.id)) return;
-    try { const result = await run(data); if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, result }); }
-    catch (error) { if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, error: error.message || 'Meaning comparison failed.' }); }
+    try { const result = await run(data); if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, result, timings: timings.drain() }); }
+    catch (error) { if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, error: error.message || 'Meaning comparison failed.', timings: timings.drain() }); }
   });
 };

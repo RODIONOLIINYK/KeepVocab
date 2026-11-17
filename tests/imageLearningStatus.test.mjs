@@ -351,3 +351,43 @@ test('a failed vision helper retries its image on the primary worker', async con
   assert.deepEqual(successful.sort((a, b) => a - b), candidates.map((_, index) => index));
   assert.deepEqual(results.map(item => item.url), candidates.map(item => item.url));
 });
+
+test('a loading helper cannot delay images and becomes eligible only after its initialize reply', async context => {
+  await setup(context, { hardwareConcurrency: 4, deviceMemory: 4 });
+  const { rankImagesLocally: rankFresh, disableImageLearning: disableFresh } = await import(`../js/services/imageLearning.js?coldHelper=${Date.now()}`);
+  context.after(() => disableFresh());
+  const workers = [], scored = [], waiting = [];
+  const axis = index => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === index));
+  globalThis.Worker = class {
+    constructor() { this.index = workers.length; workers.push(this); }
+    postMessage(data) {
+      if (this.index && data.type === 'initialize') {
+        waiting.push(() => this.onmessage({ data: { id: data.id, result: { backend: 'wasm' } } }));
+        return; // Deliberately keep the helper cold until the first batch finishes.
+      }
+      queueMicrotask(() => {
+        if (data.type === 'cancel') return;
+        if (data.type === 'image') scored.push(this.index);
+        const result = data.type === 'initialize' ? { backend: 'wasm' }
+          : data.type === 'texts' ? data.payload.texts.map(() => axis(0)) : axis(0);
+        this.onmessage({ data: { id: data.id, result } });
+      });
+    }
+    terminate() {}
+  };
+  const candidates = Array.from({ length: 8 }, (_, i) => ({ url: `https://cold-helper.test/${i}.jpg` }));
+  const rank = () => rankFresh(meaning, candidates, {
+    exhaustiveScoring: true,
+    fetchImpl: async () => new Response('pixels', { headers: { 'content-type': 'image/jpeg' } }),
+    decode: async () => ({ width: 64, height: 64 })
+  });
+  const timeout = setTimeout(() => assert.fail('A cold helper blocked the primary batch'), 1000);
+  context.after(() => clearTimeout(timeout));
+  await rank(); clearTimeout(timeout);
+  assert.equal(workers.length, 2); assert.equal(waiting.length, 1);
+  assert.deepEqual(scored, Array(8).fill(0));
+  waiting[0](); scored.length = 0;
+  await rank();
+  assert.ok(scored.includes(1), 'the initialized helper can score later images');
+  assert.equal(workers.length, 2, 'initialization does not create duplicate helpers');
+});

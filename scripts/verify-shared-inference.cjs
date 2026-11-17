@@ -4,6 +4,7 @@ const { app, BrowserWindow, protocol } = require('electron');
 const { readFile, mkdtemp, rm } = require('node:fs/promises');
 const { tmpdir } = require('node:os');
 const path = require('node:path');
+const { modelStorageOperation, handleModelStorageRequest } = require('../desktop/modelStorage.cjs');
 const root = path.resolve(__dirname, '..'), origin = 'http://127.0.0.1:8085';
 if (process.platform === 'darwin' && process.arch !== 'arm64') throw new Error('Apple Silicon verification only.');
 app.disableHardwareAcceleration();
@@ -11,20 +12,34 @@ let temporary;
 const timeout = setTimeout(() => { console.error('Shared inference verification timed out.'); app.exit(1); }, 30_000);
 app.whenReady().then(async () => {
   temporary = await mkdtemp(path.join(tmpdir(), 'keepvocab-shared-inference-'));
+  const cache = 'keepvocab-clip-model-v3', key = 'a'.repeat(64), token = 'b'.repeat(24);
+  const weights = Buffer.alloc(2 * 1024 * 1024 + 17, 42);
+  for (let offset = 0; offset < weights.length; offset += 1024 * 1024) {
+    await modelStorageOperation(temporary, { action: 'write', cache, key, token, offset, data: weights.subarray(offset, offset + 1024 * 1024).toString('base64') });
+  }
+  await modelStorageOperation(temporary, { action: 'commit', cache, key, token, size: weights.length, url: 'https://models.test/weights', headers: [] });
+  const descriptor = await modelStorageOperation(temporary, { action: 'stat', cache, key });
   const partition = `shared-inference-${Date.now()}`;
   const { session } = require('electron');
   session.fromPartition(partition).protocol.handle('http', async request => {
     const url = new URL(request.url);
     if (url.origin !== origin) return new Response(null, { status: 403 });
+    if (url.pathname.startsWith('/_keepvocab_models/')) return handleModelStorageRequest(temporary, request);
     if (url.pathname === '/') return new Response('<!doctype html><title>Shared inference verification</title>', { headers: { 'content-type': 'text/html' } });
     if (['/js/ml/clipWorker.bundle.js', '/js/ml/meaningWorker.bundle.js'].includes(url.pathname)) {
       const kind = url.pathname.includes('meaning') ? 'meaning' : 'clip';
       return new Response(`
+        import { workerModelCache } from '../services/modelCache.js';
         import { sharedInferenceScope } from '../services/sharedInferenceScope.js';
         const channel = sharedInferenceScope(self, '${kind}');
+        const cache = workerModelCache('keepvocab-clip-model-v3');
         const instance = crypto.randomUUID(); let counter = 0;
         channel.onmessage = async ({data}) => {
-          if (data.type === 'cancel') return;
+          if (data.type === 'cancel' || data.type === 'model-cache-result') return;
+          if (data.type === 'read-model') {
+            const bytes = new Uint8Array(await (await cache.match('https://models.test/weights')).arrayBuffer());
+            channel.postMessage({id:data.id,result:{size:bytes.length,valid:bytes.every(value=>value===42)}});return;
+          }
           const text = data.payload?.blob ? await data.payload.blob.text() : data.text;
           channel.postMessage({id:data.id,result:{instance,counter:++counter,text,kind:'${kind}'}});
         };
@@ -63,6 +78,22 @@ app.whenReady().then(async () => {
       return request('clip','after reset',3);
     })()`);
     if (afterReset.instance === afterClose[0].instance || afterReset.text !== 'after reset') throw new Error('Immediate re-enable reused a retiring model.');
+    const binary = await windows[1].webContents.executeJavaScript(`(async()=>{
+      const {handleModelCacheRequest}=await import('/js/services/modelCache.js');
+      window.keepVocabDesktop={modelStorage:async args=>{
+        if(args.action!=='stat')throw Error('Unexpected native operation');
+        return ${JSON.stringify(descriptor)};
+      }};
+      return new Promise((resolve,reject)=>{
+        const worker=connections.clip;
+        worker.onmessage=({data})=>{
+          if(data.type==='model-cache'){void handleModelCacheRequest(worker,data);return;}
+          data.error?reject(Error(data.error)):resolve(data.result);
+        };
+        worker.postMessage({id:4,type:'read-model'});
+      });
+    })()`);
+    if (binary.size !== weights.length || !binary.valid) throw new Error('Native binary model read failed in the shared worker.');
     const prompt = await windows[1].webContents.executeJavaScript(`(async()=>{
       const {requestImageModelDownload}=await import('/js/components/SettingsView.js');
       const result=requestImageModelDownload({downloadMB:208,capability:{warning:'This phone reports limited memory. Adding a word can take longer.'}});
@@ -73,7 +104,7 @@ app.whenReady().then(async () => {
     })()`);
     if (!prompt.visible || prompt.button !== 'Download anyway' || prompt.accepted || prompt.remaining) throw new Error('The phone performance warning did not allow a clean decline.');
     console.log(JSON.stringify({ runtime: process.versions.electron, arch: process.arch,
-      sharedModels: 2, sourceModulesOnly: true, binaryBlobPreserved: true, survivedMainClose: true,
+      sharedModels: 2, sourceModulesOnly: true, binaryBlobPreserved: true, nativeBinaryModelRead: binary.size, survivedMainClose: true,
       immediateReenable: true, downloadWarning: true, compiledApp: false }));
   } finally {
     for (const window of windows) if (!window.isDestroyed()) window.destroy();

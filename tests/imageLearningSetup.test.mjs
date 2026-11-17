@@ -1,3 +1,4 @@
+import { createInferenceTimings } from '../js/services/inferenceTimings.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -112,7 +113,7 @@ test('the worker shares the bundled runtime offline and rejects model fetches wi
     const factory = { from_pretrained: async (_, options) => { assert.equal(options.local_files_only, false); return {}; } };
     const tower = expected => ({ from_pretrained: async (_, options) => { assert.equal(options.device, 'wasm'); assert.equal(options.dtype, expected); assert.equal(options.local_files_only, false); return {}; } });
     const self = { location: { href: 'https://keepvocab.test/js/ml/clipWorker.bundle.js' }, caches: cacheStorage(urls), postMessage: message => messages.push(message), navigator: { gpu: { requestAdapter: () => { throw Error('Unvalidated GPU must not be requested'); } } } };
-    const context = vm.createContext({ env, self, workerModelCache: () => ({}), CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, SiglipTextModel: tower(CLIP_TEXT_DTYPE), SiglipVisionModel: tower(CLIP_VISION_DTYPE), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL, Blob, Map, Set, Promise });
+    const context = vm.createContext({ createInferenceTimings, env, self, workerModelCache: () => ({}), CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, SiglipTextModel: tower(CLIP_TEXT_DTYPE), SiglipVisionModel: tower(CLIP_VISION_DTYPE), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL, Blob, Map, Set, Promise });
     vm.runInContext(source, context);
     return { context, self, env };
   };
@@ -142,7 +143,7 @@ test('parallel tower failure releases a late successful tower before reporting f
       return new Promise((resolve, reject) => { gates[name] = { resolve, reject }; });
     } });
     const self = { location: { href: 'https://keepvocab.test/js/ml/clipWorker.bundle.js' }, caches: cacheStorage(CLIP_RUNTIME_URLS), postMessage: message => messages.push(message), navigator: {} };
-    const context = vm.createContext({
+    const context = vm.createContext({ createInferenceTimings,
       env: { fetch: async () => { throw Error('Unexpected download'); }, backends: { onnx: { wasm: {} } } },
       self, workerModelCache: () => ({}), CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS,
       AutoTokenizer: factory, AutoProcessor: factory,

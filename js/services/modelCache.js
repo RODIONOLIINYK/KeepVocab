@@ -1,4 +1,4 @@
-import { bytesToBase64, base64ToBytes } from '../utils/base64.js';
+import { bytesToBase64 } from '../utils/base64.js';
 import { sharedInferenceScope } from './sharedInferenceScope.js';
 
 function nativeStorage() {
@@ -25,6 +25,12 @@ export function modelCacheStorage() {
     open: async cache => {
       const legacy = await browser?.open(cache);
       const native = {
+        readLocation: async request => {
+          const url = urlOf(request);
+          if (!/^https?:\/\//.test(url || '')) return undefined;
+          const info = await invoke({ action: 'stat', cache, key: await digest(url) });
+          return info.size > 0 ? info : undefined;
+        },
         has: async request => {
           const info = await invoke({ action: 'stat', cache, key: await digest(urlOf(request)) });
           return info.size > 0 || Boolean((await native.match(request))?.ok);
@@ -32,16 +38,8 @@ export function modelCacheStorage() {
         match: async request => {
           const url = urlOf(request);
           if (!/^https?:\/\//.test(url || '')) return undefined;
-          const key = await digest(url), info = await invoke({ action: 'stat', cache, key });
-          if (info.size > 0) {
-            const chunks = [];
-            for (let offset = 0; offset < info.size;) {
-              const chunk = base64ToBytes((await invoke({ action: 'read', cache, key, offset })).data);
-              if (!chunk.length || offset + chunk.length > info.size) throw new Error('Incomplete stored model.');
-              chunks.push(chunk); offset += chunk.length;
-            }
-            return new Response(new Blob(chunks), { headers: info.headers });
-          }
+          const info = await native.readLocation(request);
+          if (info) return readModelResponse(info);
           // Move existing profile downloads into the app-owned folder once.
           const old = await legacy?.match(request);
           if (old) { await native.put(request, old.clone()); await legacy.delete(request); }
@@ -65,7 +63,7 @@ export function modelCacheStorage() {
 }
 
 // Workers use this proxy instead of writing browser profile model caches.
-export function workerModelCache(cache) {
+export function workerModelCache(cache, { measure = (_stage, operation) => operation() } = {}) {
   const channel = typeof self.postMessage === 'function' ? self : sharedInferenceScope(self, cache === 'keepvocab-meaning-model-v1' ? 'meaning' : 'clip');
   let next = 0;
   const pending = new Map();
@@ -84,7 +82,8 @@ export function workerModelCache(cache) {
   return {
     match: async request => {
       const data = await call('match', { url: urlOf(request) });
-      return data ? new Response(data.bytes, { headers: data.headers }) : undefined;
+      if (!data) return undefined;
+      return data.readUrl ? readModelResponse(data, measure) : new Response(data.bytes, { headers: data.headers });
     },
     put: async (request, response) => { await call('put', { url: urlOf(request), bytes: await response.arrayBuffer(), headers: [...response.headers] }); }
   };
@@ -99,11 +98,38 @@ export async function handleModelCacheRequest(worker, data) {
     if (!cache) throw new Error('Model storage is unavailable.');
     let result;
     if (data.operation === 'match') {
-      const response = await cache.match(data.url);
-      if (response) result = { bytes: await response.arrayBuffer(), headers: [...response.headers] };
+      // Send the tiny local descriptor to the worker. The worker consumes the
+      // binary stream itself, without a model-sized renderer/worker copy.
+      result = await cache.readLocation?.(data.url);
+      if (!result) {
+        const response = await cache.match(data.url);
+        if (response) result = { bytes: await response.arrayBuffer(), headers: [...response.headers] };
+      }
     } else if (data.operation === 'put') await cache.put(data.url, new Response(data.bytes, { headers: data.headers }));
     else throw new Error('Unknown model cache operation.');
-    worker.postMessage({ ...reply, result });
+    worker.postMessage({ ...reply, result }, result?.bytes ? [result.bytes] : []);
   } catch (error) { worker.postMessage({ ...reply, error: error.message }); }
   return true;
+}
+
+// Preserve stored headers while checking actual streamed bytes, including files
+// deleted/truncated between stat and fetch. Never return an app-shell fallback
+// as model weights. No browser HTTP cache or service-worker copy is retained.
+export async function readModelResponse(info, measure = (_stage, operation) => operation()) {
+  if (typeof info.readUrl !== 'string' || !Number.isSafeInteger(info.size) || info.size <= 0) throw new Error('Invalid stored model location.');
+  const finish = measure.start?.('cache-read', { bytes: info.size });
+  const response = await fetch(info.readUrl, { cache: 'no-store' });
+  if (!response.ok || !response.body) throw new Error('Stored model could not be read.');
+  let count = 0;
+  const stream = response.body.pipeThrough(new TransformStream({
+    transform(chunk, controller) {
+      count += chunk.byteLength;
+      if (count > info.size) { finish?.(); throw new Error('Invalid stored model size.'); }
+      controller.enqueue(chunk);
+    },
+    flush() { finish?.(); if (count !== info.size) throw new Error('Incomplete stored model.'); }
+  }));
+  const headers = new Headers(info.headers);
+  headers.set('content-length', String(info.size));
+  return new Response(stream, { headers });
 }

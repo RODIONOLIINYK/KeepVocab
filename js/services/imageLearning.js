@@ -1,3 +1,4 @@
+import { recordInferenceTimings } from './inferenceTimings.js';
 import { driveSync } from './driveSync.js?v=18908';
 import { IMAGE_THUMBNAIL_BATCH_LIMIT, prepareImageThumbnails } from './imageThumbnails.js?v=18908';
 import { CLIP_TAG, CLIP_CACHE, CLIP_DOWNLOAD_URLS, VECTOR_DB, MODEL_DOWNLOAD_MB } from '../ml/clipConfig.js';
@@ -19,6 +20,7 @@ let cachedModel = null;
 const recentRecords = new Map();
 let worker;
 let helpers = [];
+const readyHelpers = new Set();
 let helpersDisabled = false;
 let preferCPU = false;
 let nextId = 0;
@@ -228,7 +230,7 @@ function stopWorker(reason = 'The local image model was stopped.') {
   cancelScheduledWarmup(); workerGeneration++; workerReady = false; warmupPromise = null; activeInitializePromise = null; workerStorage = undefined;
   worker?.terminate(); worker = null;
   for (const helper of helpers) helper.terminate();
-  helpers = [];
+  helpers = []; readyHelpers.clear();
   for (const item of pending.values()) { clearTimeout(item.timer); item.cleanup(); item.reject(new Error(reason)); }
   pending.clear();
 }
@@ -276,12 +278,12 @@ export function inferencePlan(env = globalThis) {
   return { workers: Math.min(budget, memoryCap), threads: 1 };
 }
 const outstanding = target => { let count = 0; for (const item of pending.values()) if (item.target === target) count++; return count; };
-const leastBusy = () => [worker, ...helpers].reduce((best, target) => outstanding(target) < outstanding(best) ? target : best);
+const leastBusy = () => [worker, ...helpers.filter(helper => readyHelpers.has(helper))].reduce((best, target) => outstanding(target) < outstanding(best) ? target : best);
 // A failed helper must not lose an image: its requests move to the primary
 // worker, and helpers stay off for the rest of the session.
 function retireHelpers() {
   helpersDisabled = true;
-  const retired = helpers; helpers = [];
+  const retired = helpers; helpers = []; readyHelpers.clear();
   for (const helper of retired) helper.terminate();
   for (const [id, item] of pending) {
     if (!retired.includes(item.target)) continue;
@@ -314,10 +316,15 @@ function ensureVisionHelpers(candidateCount, exhaustive = false) {
       const initializeId = -(++nextId);
       // The primary worker owns the visible status; helpers only return vectors.
       helper.onmessage = ({ data }) => {
+        recordInferenceTimings(data.timings);
         if (data.type === 'model-cache') { void handleModelCacheRequest(helper, data); return; }
         if (!helpers.includes(helper) || data.type === 'status') return;
-        if (data.id === initializeId && data.error) retireHelpers();
-        else settle(data, helper);
+        if (data.id === initializeId) {
+          if (data.error) retireHelpers();
+          else readyHelpers.add(helper);
+          return;
+        }
+        settle(data, helper);
       };
       helper.onerror = () => { if (helpers.includes(helper)) retireHelpers(); };
       helpers.push(helper);
@@ -340,6 +347,7 @@ function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = fa
     const activeWorker = worker = createInferenceWorker('clip');
     activeWorker.onmessage = ({ data }) => {
       if (worker !== activeWorker) return;
+      recordInferenceTimings(data.timings);
       if (data.type === 'model-cache') { void handleModelCacheRequest(activeWorker, data); return; }
       if (data.type === 'status') {
         backend = data.backend || backend;

@@ -1,3 +1,4 @@
+import { createInferenceTimings } from '../js/services/inferenceTimings.js';
 import { AutoTokenizer, AutoProcessor, SiglipTextModel, SiglipVisionModel, RawImage, env } from '@huggingface/transformers';
 import { CLIP_MODEL, CLIP_MODEL_BASE, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, CLIP_DIMENSION, CLIP_TEXT_MAX_LENGTH, COMPACT_MODEL_ASSETS } from '../js/ml/clipConfig.js';
 import { fetchCompactModelFile } from '../js/services/compactModelDownload.js';
@@ -7,6 +8,7 @@ import { IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
 import { workerModelCache } from '../js/services/modelCache.js';
 import { sharedInferenceScope } from '../js/services/sharedInferenceScope.js';
 
+const timings = createInferenceTimings('clip');
 const channel = typeof self.postMessage === 'function' ? self : sharedInferenceScope(self, 'clip');
 
 env.allowLocalModels = false;
@@ -26,7 +28,7 @@ function reportModelDownload(detail) {
   const loaded = [...fileTransfers.values()].reduce((sum, bytes) => sum + bytes, 0);
   status({ phase: 'loading', downloadProgress: { loaded, total, stage: detail.stage } });
 }
-const modelFileCache = workerModelCache(CLIP_CACHE);
+const modelFileCache = workerModelCache(CLIP_CACHE, timings);
 env.customCache = { ...modelFileCache, match: async request => {
   const response = await modelFileCache.match(request);
   const url = typeof request === 'string' ? request : request?.url;
@@ -157,7 +159,7 @@ function outputRows(tensor, count) {
 }
 async function initialize(devicePreference = 'auto') {
   if (models) return models;
-  models = (async () => {
+  models = timings.measure('initialize', async () => {
     status({ phase: 'loading', message: 'Loading local image and text models…' });
     await prepareRuntime();
     const progress_callback = data => status({ phase: 'loading', file: data.file, progress: data.progress, loaded: data.loaded, total: data.total });
@@ -198,7 +200,7 @@ async function initialize(devicePreference = 'auto') {
     }
     status({ phase: 'ready', backend, message: 'Local image model is ready.' });
     return { tokenizer, processor, textModel, visionModel };
-  })().catch(error => { models = null; throw error; });
+  }).catch(error => { models = null; throw error; });
   return models;
 }
 async function run({ type, payload, device }) {
@@ -215,7 +217,7 @@ async function run({ type, payload, device }) {
         const inputs = model.tokenizer(missing.map(index => batch[index].toLowerCase()), { padding: 'max_length', max_length: CLIP_TEXT_MAX_LENGTH, truncation: true });
         let output;
         try {
-          output = await model.textModel({ input_ids: inputs.input_ids });
+          output = await timings.measure('text-forward', () => model.textModel({ input_ids: inputs.input_ids }), { batch: missing.length });
           return outputRows(output.text_embeds || output.pooler_output, missing.length);
         } finally {
           for (const tensor of [...Object.values(inputs), ...Object.values(output || {})]) tensor?.dispose?.();
@@ -245,7 +247,7 @@ async function run({ type, payload, device }) {
       const inputs = await model.processor(frames);
       let output;
       try {
-        output = await model.visionModel({ pixel_values: inputs.pixel_values });
+        output = await timings.measure('image-forward', () => model.visionModel({ pixel_values: inputs.pixel_values }), { batch: frames.length });
         return outputRows(output.image_embeds || output.pooler_output, frames.length);
       } finally {
         for (const tensor of [...Object.values(inputs), ...Object.values(output || {})]) tensor?.dispose?.();
@@ -267,7 +269,7 @@ channel.onmessage = ({ data }) => {
       allowDownloads = data.allowDownloads === true;
       if (!models && data.role === 'vision') role = 'vision';
       configureThreads(data.threads);
-      const result = await run(data); if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, result }); }
-    catch (error) { if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, error: error.message || 'Local image inference failed.', backendFailure: backend === 'webgpu' }); }
+      const result = await run(data); if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, result, timings: timings.drain() }); }
+    catch (error) { if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, error: error.message || 'Local image inference failed.', backendFailure: backend === 'webgpu', timings: timings.drain() }); }
   }).catch(() => {});
 };

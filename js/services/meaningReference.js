@@ -1,3 +1,4 @@
+import { recordInferenceTimings } from './inferenceTimings.js';
 import { MEANING_MODEL_TAG, MEANING_MODEL_BASE, MEANING_CACHE } from '../ml/meaningConfig.js';
 import { MEANING_MODEL_ASSETS } from '../ml/meaningAssets.js';
 import { meaningEmbeddingText } from './meaningComparison.js';
@@ -72,6 +73,7 @@ function rpc(payload, { signal } = {}) {
     const active = worker = createInferenceWorker('meaning');
     active.onmessage = ({ data }) => {
       if (worker !== active) return;
+      recordInferenceTimings(data.timings);
       if (data.type === 'model-cache') { void handleModelCacheRequest(active, data); return; }
       const item = pending.get(data.id);
       if (!item) return;

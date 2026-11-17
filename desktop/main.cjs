@@ -1,7 +1,7 @@
 const { app, BrowserWindow, dialog, ipcMain, nativeImage, net, protocol, screen, session, shell, systemPreferences, Tray } = require('electron');
 const { access, readFile, stat } = require('node:fs/promises');
 const path = require('node:path');
-const { modelStorageRoot, modelStorageOperation } = require('./modelStorage.cjs');
+const { modelStorageRoot, modelStorageOperation, handleModelStorageRequest } = require('./modelStorage.cjs');
 
 const APP_HOST = '127.0.0.1';
 const APP_PORT = 8085;
@@ -82,6 +82,7 @@ async function handleAssetRequest(webRoot, request) {
   }
 
   const requestUrl = new URL(request.url);
+  if (requestUrl.pathname.startsWith('/_keepvocab_models/')) return handleModelStorageRequest(modelStorageRoot(app), request);
   const assetPath = await resolveAsset(webRoot, requestUrl.pathname);
   if (!assetPath) {
     return new Response('Not found', {

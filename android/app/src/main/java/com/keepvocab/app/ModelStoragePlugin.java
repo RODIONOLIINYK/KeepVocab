@@ -11,7 +11,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.RandomAccessFile;
+import android.net.Uri;
+import com.getcapacitor.FileUtils;
 import java.nio.charset.StandardCharsets;
 import org.json.JSONObject;
 
@@ -58,16 +59,11 @@ public class ModelStoragePlugin extends Plugin {
         if (action.equals("stat")) {
             if (!file.isFile() || !metadata.isFile()) return result;
             JSObject info = new JSObject(readMetadata(metadata));
-            return file.length() == info.getLong("size") ? info : result;
-        }
-        if (action.equals("read")) {
-            long offset = modelNumber(call, "offset");
-            try (RandomAccessFile input = new RandomAccessFile(file, "r")) {
-                input.seek(offset);
-                byte[] bytes = new byte[CHUNK]; int count = input.read(bytes);
-                result.put("data", count < 0 ? "" : Base64.encodeToString(bytes, 0, count, Base64.NO_WRAP));
-            }
-            return result;
+            if (file.length() != info.getLong("size")) return result;
+            // Capacitor streams the private file through its existing WebView
+            // server. Only validated, committed cache files get a portable URL.
+            info.put("readUrl", FileUtils.getPortablePath(getContext(), getBridge().getLocalUrl(), Uri.fromFile(file)));
+            return info;
         }
         if (action.equals("delete")) {
             deleteIfExists(metadata); deleteIfExists(file); return result;

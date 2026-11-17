@@ -43,12 +43,12 @@ function fakeHost({ hidden = false, idle = true, scheduler = false, frames = tru
 }
 const nextMicrotask = () => new Promise(resolve => queueMicrotask(resolve));
 
-test('warmup waits for two animation frames then an idle opportunity without a forced timeout', () => {
+test('warmup waits for two animation frames then idle with a bounded deadline', () => {
   const h = fakeHost({ scheduler: true }); let runs = 0;
   scheduleImageModelWarmup(() => { runs++; }, { host: h.host });
   assert.equal(runs, 0); assert.deepEqual(h.calls, [['frame']]);
   h.frame(); assert.equal(runs, 0); assert.equal(h.idleCallbacks.size, 0);
-  h.frame(); assert.equal(runs, 0); assert.deepEqual(h.calls, [['frame'], ['frame'], ['idle', 1]]);
+  h.frame(); assert.equal(runs, 0); assert.deepEqual(h.calls, [['frame'], ['frame'], ['timer', 750], ['idle', 2]]);
   h.idle(); assert.equal(runs, 1); assert.equal(h.listeners.size, 0);
   h.visible(true); h.frame(); h.idle(); assert.equal(runs, 1);
 });
@@ -115,4 +115,16 @@ test('a rejected scheduler implementation falls back without running a duplicate
   scheduleImageModelWarmup(() => { runs++; }, { host: h.host });
   h.tasks.shift().reject(new Error('scheduler unavailable')); await nextMicrotask();
   assert.equal(h.timers.size, 1); h.tick(); assert.equal(runs, 1);
+});
+
+test('busy idle and background queues cannot starve model startup or run it twice', async () => {
+  for (const scheduler of [false, true]) {
+    const h = fakeHost({ idle: !scheduler, scheduler }); let runs = 0;
+    scheduleImageModelWarmup(() => { runs++; }, { host: h.host });
+    h.frame(); h.frame();
+    assert.equal(h.timers.size, 1);
+    h.tick(); h.idle(); h.task(); await nextMicrotask();
+    assert.equal(runs, 1); assert.equal(h.timers.size, 0);
+    assert.equal(h.idleCallbacks.size, 0); assert.equal(h.listeners.size, 0);
+  }
 });

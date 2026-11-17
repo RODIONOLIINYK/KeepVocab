@@ -27,7 +27,7 @@ export function createInferenceWorker(kind, { role = 'full', slot = 0 } = {}) {
       const port = shared.port;
       const connection = {
         onmessage: null, onerror: null,
-        postMessage(data) { if (!closed) port.postMessage(data); },
+        postMessage(data, transfer = []) { if (!closed) port.postMessage(data, transfer); },
         terminate() {
           if (closed) return;
           closed = true; connections.delete(connection);

@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112046-shared-inference';
+const CACHE_NAME = 'keepvocab-v112047-binary-model-startup';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -27,6 +27,7 @@ const ASSETS_TO_CACHE = [
   './js/services/meaningReferenceFeatures.js',
   './js/services/modelCache.js',
   './js/services/inferenceWorker.js',
+  './js/services/inferenceTimings.js',
   './js/services/sharedInferenceScope.js',
   './js/services/modelDownloadProgress.js',
   './js/ml/meaningConfig.js',
@@ -165,6 +166,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
+  const pathname = new URL(event.request.url).pathname;
+  if (pathname.startsWith('/_keepvocab_models/') || pathname.startsWith('/_capacitor_file_/')) return;
   // Native runtime files already belong to the installed application. Keeping
   // another copy in Chromium's profile would survive deletion of the macOS app.
   if (NATIVE_APP && new URL(event.request.url).pathname.includes('/ml/runtime/')) return;
