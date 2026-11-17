@@ -120,6 +120,8 @@ class MockElement {
     if (selector.startsWith('.')) return this.classList.contains(selector.slice(1));
     if (selector.startsWith('[') && selector.endsWith(']')) {
       const attr = selector.slice(1, -1);
+      const equality = attr.match(/^([^=]+)="([^"]*)"$/);
+      if (equality) return this.getAttribute(equality[1]) === equality[2];
       return this.attributes.has(attr) || (attr === 'data-meaning-mode' && Object.hasOwn(this.dataset, 'meaningMode'));
     }
     return this.tagName === selector.toUpperCase();
@@ -488,4 +490,48 @@ test('AddWordModal keeps Review similar meanings open and applies decisions only
   assert.equal(list.querySelectorAll('.sense-option').length, 3);
   assert.notEqual(container.children[1], panel);
   assert.equal(container.children[1].hidden, true);
+});
+
+test('jit shows every source in a three-member merge, including the displayed representative', async context => {
+  const { storage, document } = setupDom(context); driveSync.storage = storage;
+  const definitions = [
+    '(US, originally prison slang, derogatory) An inexperienced, foolhardy young man.',
+    '(African-American Vernacular, Florida, slang) A term of address for a young man.',
+    '(African-American Vernacular, slang) A child.'
+  ];
+  globalThis.fetch = async () => new Response(JSON.stringify([{
+    word: 'jit', meanings: [{ partOfSpeech: 'noun', definitions: definitions.map(definition => ({ definition })) }]
+  }]), { headers: { 'content-type': 'application/json' } });
+  setupAddWordModal();
+  document.getElementById('add-word-input').value = 'jit';
+  await document.getElementById('add-word-lookup-form').dispatchEvent({ type: 'submit' });
+  const review = document.getElementById('add-word-meaning-review');
+  for (let i = 0; i < 40 && !review.children.length; i++) await new Promise(resolve => setTimeout(resolve, 5));
+  await review.children[0].click();
+  for (let i = 0; i < 3; i++) await review.children[1].querySelectorAll('button').find(b => b.textContent === 'Same meaning').click();
+  const list = document.getElementById('add-word-sense-list');
+  assert.equal(list.querySelectorAll('.sense-option').length, 1);
+  const sources = list.querySelector('.merged-definition-list');
+  assert.ok(sources.textContent.includes('All 3 merged definitions'));
+  const items = sources.querySelectorAll('[role="listitem"]');
+  assert.equal(items.length, 3);
+  for (const definition of definitions) assert.ok(items.some(item => item.textContent.endsWith(definition)));
+});
+
+test('bulk import shows all merged definitions and uses a compact example disclosure', async context => {
+  const { storage, document } = setupDom(context); driveSync.storage = storage;
+  const definitions = ['To make or keep warm.', '(transitive) To make or keep warm.', '(intransitive) To make or keep warm.'];
+  globalThis.fetch = async () => new Response(JSON.stringify([{
+    word: 'warm', meanings: [{ partOfSpeech: 'verb', definitions: definitions.map(definition => ({ definition })) }]
+  }]), { headers: { 'content-type': 'application/json' } });
+  setupAddWordModal();
+  document.getElementById('bulk-word-input').value = 'warm';
+  await document.getElementById('prepare-bulk-words').click();
+  const row = document.getElementById('bulk-word-results').querySelector('.bulk-word-row');
+  const sources = row.querySelector('.merged-definition-list');
+  assert.ok(sources.textContent.includes('All 3 merged definitions'));
+  assert.equal(sources.querySelectorAll('[role="listitem"]').length, 3);
+  const disclosure = row.querySelector('.bulk-example-details');
+  assert.equal(disclosure.tagName, 'DETAILS');
+  assert.match(disclosure.querySelector('summary').textContent, /example \(optional\)/i);
 });

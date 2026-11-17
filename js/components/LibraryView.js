@@ -1,4 +1,3 @@
-import { showUnmergeReview } from './UnmergeReview.js';
 import { fallbackImageSearchPlan, hasGeminiSceneDescription } from '../services/imageSearchPlan.js';
 import { recordImagePreference } from '../services/imageLearning.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
@@ -287,7 +286,7 @@ export function renderLibraryView(container) {
         ${renderMeaningExplanation(meaning)}${isUkrainianTranslationEnabled() && meaning.translationLanguage === 'uk' && meaning.translation ? `<p class="word-translation" lang="uk">${escapeHtml(meaning.translation)}</p>` : ''}
         ${exampleForLearning(meaning) ? `<blockquote>“${escapeHtml(exampleForLearning(meaning))}”</blockquote>` : ''}
         <div class="library-card-footer"><span>${meaning.mastered ? 'Mastered' : (readiness.readyNowCount ? 'Due now' : 'Learning')}</span></div>
-        ${deleteId === meaning.id ? `<div class="delete-confirm"><span>Delete this meaning of “${escapeHtml(meaning.word)}”?</span><button data-cancel-delete>Cancel</button><button data-confirm-delete="${escapeHtml(meaning.id)}">Delete</button></div>` : `<div class="library-card-actions"><button data-edit-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-pen"></i> Edit</button>${Array.isArray(meaning.groupedSenses) && meaning.groupedSenses.length > 1 ? `<button class="library-unmerge-action" data-unmerge-meaning="${escapeHtml(meaning.id)}"><i class="fa-solid fa-list"></i> Unmerge (${meaning.groupedSenses.length})</button>` : ''}<button class="library-delete-action" data-delete-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-trash"></i> Delete</button><details class="library-card-menu" data-motion><summary>More <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary><div class="disclosure-body"><button data-explain-meaning="${escapeHtml(meaning.id)}" ${explaining ? 'disabled' : ''}><i class="fa-solid fa-lightbulb"></i> Understand meaning</button></div></details></div>`}
+        ${deleteId === meaning.id ? `<div class="delete-confirm"><span>Delete this meaning of “${escapeHtml(meaning.word)}”?</span><button data-cancel-delete>Cancel</button><button data-confirm-delete="${escapeHtml(meaning.id)}">Delete</button></div>` : `<div class="library-card-actions"><button data-edit-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-pen"></i> Edit</button><button class="library-delete-action" data-delete-word="${escapeHtml(meaning.id)}"><i class="fa-solid fa-trash"></i> Delete</button><details class="library-card-menu" data-motion><summary>More <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary><div class="disclosure-body"><button data-explain-meaning="${escapeHtml(meaning.id)}" ${explaining ? 'disabled' : ''}><i class="fa-solid fa-lightbulb"></i> Understand meaning</button></div></details></div>`}
         ${explaining && explanationWordIds.has(meaning.id) ? '<p class="meaning-help-status" role="status">Building a concrete explanation and example…</p>' : ''}
         ${explanationErrors.has(meaning.id) ? `<p class="meaning-help-error" role="status">${escapeHtml(explanationErrors.get(meaning.id))}</p>` : ''}
         ${explanationReview.length === 1 && explanationReview[0].original.id === meaning.id ? renderInlineExplanation(explanationReview[0], explanationQuestions.get(meaning.id)) : ''}
@@ -418,23 +417,6 @@ export function renderLibraryView(container) {
         explanationStatus = 'Duplicate meanings merged. Their review counts and recall history were kept.';
         render();
       } catch (error) { explanationStatus = error.message; render(); }
-    }));
-    container.querySelectorAll('[data-unmerge-meaning]').forEach(button => button.addEventListener('click', () => {
-      const target = driveSync.getWords().find(word => word.id === button.dataset.unmergeMeaning);
-      if (!target) return;
-      showUnmergeReview(button, originalSenses(target), { onConfirm: async () => {
-        const originals = originalSenses(target);
-        const split = driveSync.unmergeWordMeanings(button.dataset.unmergeMeaning);
-        for (let i = 0; i < originals.length; i += 1) {
-          for (let j = i + 1; j < originals.length; j += 1) {
-            if (originals[i].partOfSpeech === originals[j].partOfSpeech) {
-              await recordMeaningJudgment(target.word, originals[i], originals[j], false, { correctionAction: 'unmerge', surface: 'library' });
-            }
-          }
-        }
-        explanationStatus = `Unmerged into ${split.length} separate meanings.`;
-        render();
-      } });
     }));
     container.querySelector('[data-cancel-delete]')?.addEventListener('click', () => { deleteId = null; render(); });
     container.querySelector('[data-confirm-delete]')?.addEventListener('click', event => { driveSync.deleteWord(event.currentTarget.dataset.confirmDelete); deleteId = null; render(); });

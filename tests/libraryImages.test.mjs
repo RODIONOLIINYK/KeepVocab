@@ -293,3 +293,15 @@ test('the library initially combines all prepared scenes instead of silently sel
   assert.match(container.innerHTML, /Results from all search prompts/);
   assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 45);
 });
+
+test('Library keeps merged meanings editable without offering an Unmerge action', context => {
+  const { word, container } = installImageEditor(context, 'a runner');
+  word.groupedSenses = [
+    { id: 'a', partOfSpeech: 'verb', definition: 'Move quickly on foot.' },
+    { id: 'b', partOfSpeech: 'verb', definition: 'Move at a fast pace on foot.' }
+  ];
+  renderLibraryView(container);
+  assert.ok(container.innerHTML.includes('data-edit-word="running"'));
+  assert.equal(container.innerHTML.includes('data-unmerge-meaning'), false);
+  assert.equal(container.innerHTML.includes('Unmerge'), false);
+});

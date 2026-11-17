@@ -75,8 +75,10 @@ version, so legacy SigLIP scores cannot become reference-model merge scores.
 
 Entries larger than 24 definitions are scored in bounded batches. Merged cards
 display one member's definition and retain all originals. Unmerge is available
-in Add Word and the Library, with the exact member definitions shown before a
-confirmed split. Explicit merge/unmerge corrections persist only as an
+in Add Word, with the exact member definitions shown before a confirmed split.
+Library cards keep their saved merged meanings without an Unmerge control.
+Single-word and bulk import show a numbered list of every merged source,
+including the representative definition. Explicit merge/unmerge corrections persist only as an
 append-only training journal. Events retain the exact available
 definitions/provenance, action, timestamp, model identity/threshold, and score
 when available. Feedback generates no vectors and fits no local head. Existing

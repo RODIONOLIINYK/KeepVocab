@@ -677,8 +677,7 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
   .today-progress-copy small { font-size: .64rem; }
 }
 
-.sense-option-row:has(.unmerge-review:not([hidden])),
-.library-card-actions:has(.unmerge-review:not([hidden])) { flex-wrap: wrap; }
+.sense-option-row:has(.unmerge-review:not([hidden])) { flex-wrap: wrap; }
 .unmerge-review { flex: 1 0 100%; grid-column: 1 / -1; min-width: 0; padding: 12px; border: 1px solid var(--border-card); border-radius: 10px; background: var(--bg-card, #fff); font-size: .85rem; line-height: 1.5; }
 .unmerge-review[hidden] { display: none; }
 .unmerge-review ol { padding-left: 24px; margin: 8px 0 12px; }

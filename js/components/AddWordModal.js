@@ -117,6 +117,23 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
     </div>
   </div>`;
 
+// Keep the visible list and merged count aligned, including the representative.
+function mergedDefinitionList(sense) {
+  const members = originalSenses(sense);
+  if (members.length < 2) return null;
+  const root = document.createElement('span'); root.className = 'merged-definition-list';
+  const heading = document.createElement('span'); heading.className = 'merged-definition-heading';
+  heading.textContent = `All ${members.length} merged definitions`;
+  const list = document.createElement('span'); list.setAttribute('role', 'list');
+  members.forEach((member, index) => {
+    const item = document.createElement('span'); item.setAttribute('role', 'listitem');
+    item.textContent = `${index + 1}. ${member.sourceDefinition || member.definition}`;
+    list.appendChild(item);
+  });
+  root.append(heading, list);
+  return root;
+}
+
 export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, showToast } = {}) {
   document.body.insertAdjacentHTML('beforeend', ADD_WORD_MARKUP);
   let currentFetchedData = null;
@@ -376,6 +393,10 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         });
         translationLabel.appendChild(translation);
         row.append(label, translationLabel);
+        if (result.meaningMode !== 'raw') {
+          const merged = mergedDefinitionList(senses[Number(select.value) || 0]);
+          if (merged) row.appendChild(merged);
+        }
 
       } else {
         const note = document.createElement('p');
@@ -413,6 +434,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       });
       exampleLabel.appendChild(exampleInput);
       const exampleDetails = document.createElement('details');
+      exampleDetails.className = 'bulk-example-details';
       const exampleSummary = document.createElement('summary');
       exampleSummary.textContent = exampleInput.value ? 'Example (optional)' : 'Add an example (optional)';
       exampleDetails.append(exampleSummary, exampleLabel);
@@ -636,13 +658,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       definition.textContent = mainDef;
       body.append(meta, definition);
       if (isMerged) {
-        const otherDefs = [...new Set(merged.map(item => item.definition || item.sourceDefinition).filter(text => text && text !== mainDef))];
-        if (otherDefs.length) {
-          const mergedNote = document.createElement('small');
-          mergedNote.className = 'sense-merged-others';
-          mergedNote.textContent = `Includes: ${otherDefs.join(' · ')}`;
-          body.appendChild(mergedNote);
-        }
+        body.appendChild(mergedDefinitionList(sense));
       }
       if (sense.usageNote) { const usage = document.createElement('small'); usage.textContent = `When to use it: ${sense.usageNote}`; body.appendChild(usage); }
       if (isUkrainianTranslationEnabled() && sense.translationLanguage === 'uk' && sense.translation) {
