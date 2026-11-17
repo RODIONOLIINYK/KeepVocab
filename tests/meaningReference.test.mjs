@@ -61,6 +61,54 @@ test('reference unavailable, cancelled or invalid scores never produce statistic
   assert.equal(result.meaningReviewScores.length, 1);
 });
 
+test('a Different meanings judgment keeps near-duplicate twins cleanly separated across high model scores', async () => {
+  const calmSenses = [
+    { id: 'a', word: 'calm', partOfSpeech: 'verb', definition: 'To make calm.' },
+    { id: 'b', word: 'calm', partOfSpeech: 'verb', definition: 'To become calm.' },
+    { id: 'c', word: 'calm', partOfSpeech: 'verb', definition: '(transitive) To make calm.' },
+    { id: 'd', word: 'calm', partOfSpeech: 'verb', definition: '(intransitive) To become calm.' }
+  ];
+  const key = meaningPairKey('calm', 'verb', calmSenses[0].definition, calmSenses[1].definition);
+  const result = await groupEntrySensesLocally({ word: 'calm', senses: calmSenses }, {
+    storage: null,
+    meaningLearningState: {
+      records: [{
+        source: 'user',
+        label: 0,
+        key,
+        word: 'calm',
+        partOfSpeech: 'verb',
+        definitionA: calmSenses[0].definition,
+        definitionB: calmSenses[1].definition
+      }]
+    },
+    scoreMeaningPairs: async (_senses, pairs) => pairs.map(() => 0.999)
+  });
+  assert.equal(result.senses.length, 2);
+  assert.deepEqual(result.senses[0].groupedSenses.map(s => s.id), ['a', 'c']);
+  assert.deepEqual(result.senses[1].groupedSenses.map(s => s.id), ['b', 'd']);
+});
+
+test('an uninstalled merge model reports unavailable instead of failed even when Web Workers exist', async context => {
+  const originalWorker = Object.getOwnPropertyDescriptor(globalThis, 'Worker');
+  globalThis.Worker = class {};
+  context.after(() => {
+    if (originalWorker) Object.defineProperty(globalThis, 'Worker', originalWorker);
+    else delete globalThis.Worker;
+  });
+  const result = await groupEntrySensesLocally({ word: 'begin', senses: senses.slice(0, 2) }, {
+    storage: null,
+    meaningLearningState: { records: [] },
+    scoreMeaningPairs: async () => {
+      const error = new Error('Download the merge model in Settings to compare meanings locally.');
+      error.code = 'NOT_INSTALLED';
+      throw error;
+    }
+  });
+  assert.equal(result.senses.length, 2);
+  assert.equal(result.meaningInference.local, 'unavailable');
+});
+
 test('merge model download requires an explicit action, verifies bytes, reuses the install and clears it on removal', async context => {
   const descriptors = Object.fromEntries(['fetch', 'Worker', 'caches'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
   const assets = { ...MEANING_MODEL_ASSETS }, bytes = new TextEncoder().encode('download integrity fixture');
@@ -98,3 +146,31 @@ test('merge model download requires an explicit action, verifies bytes, reuses t
   assert.equal(await service.preloadMeaningModel(), null);
   assert.equal(fetches, 2); assert.equal(workers, 1);
 });
+
+test('reference grouping scores beyond 24 senses, propagates scores to near-duplicate twins, and avoids stripped raw duplicates', async () => {
+  const { consolidateEntrySenses } = await import('../js/services/localSenseGrouping.js');
+  const raw = [
+    { id: 'r0', word: 'make', partOfSpeech: 'verb', definition: '(transitive) To create.' },
+    { id: 'r1', word: 'make', partOfSpeech: 'verb', definition: 'To build, construct, produce, or originate.' },
+    ...Array.from({ length: 26 }, (_, i) => ({ id: `n${i}`, word: 'make', partOfSpeech: 'noun', definition: `Noun sense number ${i}.` })),
+    { id: 'r28', word: 'make', partOfSpeech: 'verb', definition: '(intransitive) To create.' },
+    { id: 'r29', word: 'make', partOfSpeech: 'verb', definition: 'To form or manufacture.' }
+  ];
+  const stripped = { id: 'sense-0', word: 'make', partOfSpeech: 'verb', definition: 'To create.', sourceDefinition: 'To create.' };
+  const result = await consolidateEntrySenses({ word: 'make', rawDictionarySenses: raw, senses: [stripped] }, {
+    storage: new MemoryStorage(),
+    meaningLearningState: { records: [] },
+    scoreMeaningPairs: async (batchSenses, pairs) => {
+      assert.ok(batchSenses.length <= 24 && pairs.length <= 276, 'each RPC batch stays within worker limits');
+      return pairs.map(([a, b]) => {
+        const isCreate = s => /To create\.|To build|To form/.test(s.definition);
+        return isCreate(batchSenses[a]) && isCreate(batchSenses[b]) ? 0.995 : 0.1;
+      });
+    }
+  });
+  assert.equal(result.senseConsolidation.originalCount, raw.length, 'stripped duplicate is not re-added');
+  assert.equal(result.meaningInference.local, 'ready');
+  const createCluster = result.senses.find(s => s.groupedSenses.some(g => g.id === 'r0'));
+  assert.deepEqual(createCluster.groupedSenses.map(g => g.id).sort(), ['r0', 'r1', 'r28', 'r29']);
+});
+

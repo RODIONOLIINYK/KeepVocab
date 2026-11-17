@@ -1,4 +1,4 @@
-import { allEntrySenses, originalSenses } from '../services/learningDefinitions.js?v=18908';
+import { allEntrySenses, originalSenses, areSensesNearDuplicate } from '../services/learningDefinitions.js?v=18908';
 import { recordMeaningJudgment, meaningLearningState, meaningPairKey, cleanEquivalenceText } from '../services/meaningEquivalenceLearning.js';
 import { meaningWords, countMatchingMeaningWords, meaningComparisonText, MEANING_COMPARISON_VERSION } from '../services/meaningComparison.js';
 import { CLIP_TAG, CLIP_DIMENSION } from '../ml/clipConfig.js';
@@ -199,6 +199,16 @@ export function mountMeaningPairReview(container, entry, {
     try {
       const state = await meaningLearningState(), seen = new Set(state.records.map(r => r.key));
       if (!active) return;
+      const judgedTwins = state.records.filter(row => row.word === String(entry.word || '').toLowerCase() && row.definitionA && row.definitionB)
+        .map(row => ({
+          partOfSpeech: row.partOfSpeech,
+          a: { word: entry.word, partOfSpeech: row.partOfSpeech, definition: row.definitionA },
+          b: { word: entry.word, partOfSpeech: row.partOfSpeech, definition: row.definitionB }
+        }))
+        .filter(row => !areSensesNearDuplicate(row.a, row.b));
+      const hasJudgedTwin = (left, right) => judgedTwins.some(row => row.partOfSpeech === left.partOfSpeech
+        && ((areSensesNearDuplicate(left, row.a) && areSensesNearDuplicate(right, row.b))
+          || (areSensesNearDuplicate(left, row.b) && areSensesNearDuplicate(right, row.a))));
       // Offer close source wording immediately. This is a review queue, not an
       // automatic equivalence decision, and must not encode every dictionary
       // definition before allowing a human to compare two of them.
@@ -208,6 +218,8 @@ export function mountMeaningPairReview(container, entry, {
         const left = senses[a], right = senses[b];
         const key = meaningPairKey(entry.word, left.partOfSpeech, left.sourceDefinition || left.definition, right.sourceDefinition || right.definition);
         if (left.partOfSpeech !== right.partOfSpeech || seen.has(key)) continue;
+        if (areSensesNearDuplicate({ ...left, word: entry.word }, { ...right, word: entry.word })) continue;
+        if (hasJudgedTwin({ ...left, word: entry.word }, { ...right, word: entry.word })) continue;
         const matches = countMatchingMeaningWords(tokens[a], tokens[b]);
         candidates.push({ pair: [left, right], similarity: similarities.get(key) ?? -1, matches });
       }

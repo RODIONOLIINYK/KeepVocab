@@ -75,6 +75,7 @@ test('the macOS package supports Apple Silicon only, stays sandboxed, and keeps 
   assert.match(desktopMain, /contextIsolation: true/);
   assert.match(desktopMain, /nodeIntegration: false/);
   assert.match(desktopMain, /preload: path\.join\(__dirname, 'preload\.cjs'\)/);
+  assert.equal((desktopMain.match(/preload:\s*path\.join\(__dirname,\s*'preload\.cjs'\)/g) || []).length, 2);
   assert.match(desktopMain, /sandbox: true/);
   assert.match(desktopMain, /systemPreferences\.askForMediaAccess\('microphone'\)/);
   assert.match(desktopMain, /keepvocab:request-microphone-access/);

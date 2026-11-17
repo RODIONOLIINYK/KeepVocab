@@ -42,17 +42,24 @@ export async function consolidateEntrySenses(entry, options = {}) {
     // other members the next time grouping runs.
     const enriched = allEntrySenses(entry).flatMap(originalSenses);
     const senses = entry.rawDictionarySenses.map(raw => {
-      const matching = enriched.find(s => s.partOfSpeech === raw.partOfSpeech && (s.sourceDefinition || s.definition) === raw.definition);
+      const matching = enriched.find(s => s.partOfSpeech === raw.partOfSpeech && (s.sourceDefinition || s.definition) === raw.definition)
+        || enriched.find(s => areSensesNearDuplicate({ ...s, word: entry.word }, { ...raw, word: entry.word }));
       return matching ? { ...matching, ...raw, translation: matching.translation, translationLanguage: matching.translationLanguage } : raw;
     });
     const sourceKey = sense => JSON.stringify([sense.partOfSpeech, (sense.sourceDefinition || sense.definition || '').trim(), sense.sourceUrl || '']);
     const included = new Set(senses.map(sourceKey));
     for (const original of enriched) {
       const key = sourceKey(original);
-      if (!included.has(key)) { senses.push(original); included.add(key); }
+      const nearDupInRaw = senses.some(s => areSensesNearDuplicate({ ...s, word: entry.word }, { ...original, word: entry.word }));
+      if (!included.has(key) && !nearDupInRaw) { senses.push(original); included.add(key); }
     }
     const order = enriched;
-    const rank = sense => { const index = order.findIndex(s => s.partOfSpeech === sense.partOfSpeech && (s.sourceDefinition || s.definition) === sense.definition); return index < 0 ? order.length : index; };
+    const rank = sense => {
+      const exact = order.findIndex(s => s.partOfSpeech === sense.partOfSpeech && (s.sourceDefinition || s.definition) === sense.definition);
+      if (exact >= 0) return exact;
+      const near = order.findIndex(s => areSensesNearDuplicate({ ...s, word: entry.word }, { ...sense, word: entry.word }));
+      return near < 0 ? order.length : near;
+    };
     senses.sort((a, b) => rank(a) - rank(b));
     entry = { ...entry, senses, additionalSenses: [] };
   }
@@ -206,7 +213,20 @@ export async function groupEntrySensesLocally(entry, options = {}) {
   if (senses.length < 2) return packagedLocal(entry, senses);
 
   const learning = options.meaningLearningState || await meaningLearningState();
-  const judgments = new Map(learning.records.filter(row => row.source === 'user').map(row => [row.key, row.label]));
+  const userRecords = learning.records.filter(row => row.source === 'user');
+  const judgments = new Map(userRecords.map(row => [row.key, row.label]));
+  const distinctTwins = userRecords.filter(row => row.label === 0 && row.definitionA && row.definitionB
+    && identity(row.word) === identity(entry.word))
+    .map(row => ({
+      partOfSpeech: identity(row.partOfSpeech),
+      a: { word: entry.word, partOfSpeech: row.partOfSpeech, definition: row.definitionA },
+      b: { word: entry.word, partOfSpeech: row.partOfSpeech, definition: row.definitionB }
+    }))
+    .filter(row => !areSensesNearDuplicate(row.a, row.b));
+  const hasDistinctTwin = (left, right) => distinctTwins.some(row =>
+    row.partOfSpeech === identity(left.partOfSpeech)
+    && ((areSensesNearDuplicate(left, row.a) && areSensesNearDuplicate(right, row.b))
+      || (areSensesNearDuplicate(left, row.b) && areSensesNearDuplicate(right, row.a))));
   const scores = new Map(), candidates = new Map();
   let userReviewed = false;
   for (let a = 0; a < senses.length; a++) for (let b = a + 1; b < senses.length; b++) {
@@ -217,22 +237,24 @@ export async function groupEntrySensesLocally(entry, options = {}) {
     const pair = a + ':' + b;
     if (judgment !== undefined) {
       userReviewed = true;
-      if (judgment === 1) scores.set(pair, 2);
+      if (judgment === 1) scores.set(pair, 3);
     } else if (areSensesNearDuplicate(left, right)) {
-      scores.set(pair, 1);
+      scores.set(pair, 2);
+    } else if (hasDistinctTwin(left, right)) {
+      userReviewed = true;
     } else {
       candidates.set(pair, key);
     }
   }
 
-  const reviews = [];
+  const reviewMap = new Map();
   const inference = { local: candidates.size ? 'unavailable' : 'not-needed', comparedPairs: 0 };
   // The separately installed MiniLM reference owns production comparisons. Legacy injected
   // SigLIP encoders remain available to historical tests and research callers.
   if (!options.encodeDefinitionTexts || options.scoreMeaningPairs) {
     const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
     const cache = readObjectCache(storage, 'keepvocab_reference_meaning_scores_v1');
-    const key = JSON.stringify([MEANING_MODEL_TAG, MEANING_COMPARISON_VERSION,
+    const key = JSON.stringify([2, MEANING_MODEL_TAG, MEANING_COMPARISON_VERSION,
       senses.map(s => [s.word, s.partOfSpeech, source(s)])]);
     const probabilities = new Map();
     if (candidates.size && options.semanticGrouping !== false) {
@@ -245,44 +267,141 @@ export async function groupEntrySensesLocally(entry, options = {}) {
           for (const [pairKey, value] of cached) probabilities.set(pairKey, value);
           inference.local = 'cached';
         } else if (!options.reuseSemanticScoresOnly) {
-          const indices = [...new Set([...candidates.keys()].flatMap(pair => pair.split(':').map(Number)))].slice(0, MAX_EMBEDDED_SENSES);
-          const byIndex = new Map(indices.map((index, row) => [index, row]));
-          const eligible = [...candidates].filter(([pair]) => pair.split(':').every(index => byIndex.has(Number(index))));
-          const values = await (options.scoreMeaningPairs || scoreReferenceMeaningPairs)(indices.map(index => senses[index]),
-            eligible.map(([pair]) => pair.split(':').map(index => byIndex.get(Number(index)))), options);
-          options.signal?.throwIfAborted();
-          if (!Array.isArray(values) || values.length !== eligible.length || values.some(value => !Number.isFinite(value) || value < 0 || value > 1)) throw new Error('Invalid meaning model scores.');
-          eligible.forEach(([, pairKey], i) => probabilities.set(pairKey, values[i]));
+          const scorer = options.scoreMeaningPairs || scoreReferenceMeaningPairs;
+          const texts = senses.map(sense => meaningEmbeddingText(source(sense)));
+          const posGroups = new Map();
+          const candidateTextKeys = new Map();
+          for (const [pair, pairKey] of candidates) {
+            const [a, b] = pair.split(':').map(Number);
+            const ta = texts[a], tb = texts[b];
+            if (!ta || !tb) continue;
+            const pos = identity(senses[a].partOfSpeech);
+            let group = posGroups.get(pos);
+            if (!group) posGroups.set(pos, group = { reps: [], repByText: new Map(), pairs: new Map() });
+            const repFor = (senseIdx, text) => {
+              let rep = group.repByText.get(text);
+              if (rep === undefined) { rep = group.reps.length; group.reps.push(senseIdx); group.repByText.set(text, rep); }
+              return rep;
+            };
+            const ra = repFor(a, ta), rb = repFor(b, tb);
+            const textKey = ta <= tb ? JSON.stringify([pos, ta, tb]) : JSON.stringify([pos, tb, ta]);
+            candidateTextKeys.set(pairKey, textKey);
+            if (!group.pairs.has(textKey)) group.pairs.set(textKey, ra <= rb ? [ra, rb] : [rb, ra]);
+          }
+          const runBatch = async (batchSenseIndices, batchPairs, batchKeys) => {
+            if (!batchPairs.length) return;
+            const values = await scorer(batchSenseIndices.map(index => senses[index]), batchPairs, options);
+            options.signal?.throwIfAborted();
+            if (!Array.isArray(values) || values.length !== batchPairs.length || values.some(value => !Number.isFinite(value) || value < 0 || value > 1)) {
+              throw new Error('Invalid meaning model scores.');
+            }
+            batchKeys.forEach((textKey, i) => textScores.set(textKey, values[i]));
+          };
+          const textScores = new Map();
+          const allGroups = [...posGroups.values()];
+          const totalReps = allGroups.reduce((sum, g) => sum + g.reps.length, 0);
+          const totalPairs = allGroups.reduce((sum, g) => sum + g.pairs.size, 0);
+          if (totalReps <= MAX_EMBEDDED_SENSES && totalPairs <= 276) {
+            const batchIndices = [], batchPairs = [], batchKeys = [];
+            for (const group of allGroups) {
+              const offset = batchIndices.length;
+              batchIndices.push(...group.reps);
+              for (const [textKey, [ra, rb]] of group.pairs) {
+                batchPairs.push([offset + ra, offset + rb]);
+                batchKeys.push(textKey);
+              }
+            }
+            await runBatch(batchIndices, batchPairs, batchKeys);
+          } else {
+            const smallGroups = [];
+            const chunkSize = Math.floor(MAX_EMBEDDED_SENSES / 2);
+            for (const group of allGroups) {
+              if (group.reps.length <= MAX_EMBEDDED_SENSES && group.pairs.size <= 276) {
+                smallGroups.push(group);
+                continue;
+              }
+              const chunks = [];
+              for (let start = 0; start < group.reps.length; start += chunkSize) {
+                chunks.push({ start, indices: group.reps.slice(start, start + chunkSize) });
+              }
+              const pairList = [...group.pairs.entries()];
+              for (let c1 = 0; c1 < chunks.length; c1++) {
+                const start1 = chunks[c1].start, end1 = start1 + chunks[c1].indices.length;
+                const intraPairs = [], intraKeys = [];
+                for (const [textKey, [ra, rb]] of pairList) {
+                  if (ra >= start1 && ra < end1 && rb >= start1 && rb < end1) {
+                    intraPairs.push([ra - start1, rb - start1]);
+                    intraKeys.push(textKey);
+                  }
+                }
+                await runBatch(chunks[c1].indices, intraPairs, intraKeys);
+                for (let c2 = c1 + 1; c2 < chunks.length; c2++) {
+                  const start2 = chunks[c2].start, end2 = start2 + chunks[c2].indices.length;
+                  const n1 = chunks[c1].indices.length;
+                  const crossPairs = [], crossKeys = [];
+                  for (const [textKey, [ra, rb]] of pairList) {
+                    if (ra >= start1 && ra < end1 && rb >= start2 && rb < end2) {
+                      crossPairs.push([ra - start1, n1 + rb - start2]);
+                      crossKeys.push(textKey);
+                    } else if (rb >= start1 && rb < end1 && ra >= start2 && ra < end2) {
+                      crossPairs.push([rb - start1, n1 + ra - start2]);
+                      crossKeys.push(textKey);
+                    }
+                  }
+                  await runBatch([...chunks[c1].indices, ...chunks[c2].indices], crossPairs, crossKeys);
+                }
+              }
+            }
+            let batchIndices = [], batchPairs = [], batchKeys = [];
+            for (const group of smallGroups) {
+              if (batchIndices.length && (batchIndices.length + group.reps.length > MAX_EMBEDDED_SENSES || batchPairs.length + group.pairs.size > 276)) {
+                await runBatch(batchIndices, batchPairs, batchKeys);
+                batchIndices = []; batchPairs = []; batchKeys = [];
+              }
+              const offset = batchIndices.length;
+              batchIndices.push(...group.reps);
+              for (const [textKey, [ra, rb]] of group.pairs) {
+                batchPairs.push([offset + ra, offset + rb]);
+                batchKeys.push(textKey);
+              }
+            }
+            await runBatch(batchIndices, batchPairs, batchKeys);
+          }
+          for (const [pairKey, textKey] of candidateTextKeys) {
+            if (textScores.has(textKey)) probabilities.set(pairKey, textScores.get(textKey));
+          }
           cache[key] = { cachedAt: Date.now(), data: [...probabilities] };
           writeRecentObjectCache(storage, 'keepvocab_reference_meaning_scores_v1', cache, 150);
-          inference.local = eligible.length < candidates.size ? 'partial' : 'ready';
+          inference.local = 'ready';
         }
         for (const [pair, pairKey] of candidates) {
           const probability = probabilities.get(pairKey);
           if (probability === undefined) continue;
           inference.comparedPairs++;
           if (probability >= MEANING_MERGE_THRESHOLD) scores.set(pair, 1);
-          if (probability >= MEANING_REVIEW_THRESHOLD) reviews.push([pairKey, probability]);
+          if (probability >= MEANING_REVIEW_THRESHOLD && !reviewMap.has(pairKey)) reviewMap.set(pairKey, probability);
         }
+        if (inference.local === 'ready' && inference.comparedPairs < candidates.size) inference.local = 'partial';
         if (inference.comparedPairs) { inference.scorer = 'reference-minilm'; inference.model = MEANING_MODEL_TAG; }
       } catch (error) {
         options.signal?.throwIfAborted();
-        inference.local = typeof Worker === 'undefined' && !options.scoreMeaningPairs ? 'unavailable' : 'failed';
+        inference.local = error?.code === 'NOT_INSTALLED' || (typeof Worker === 'undefined' && !options.scoreMeaningPairs) ? 'unavailable' : 'failed';
         inference.reason = error.message || 'The meaning merge model is unavailable.';
       }
     }
     const result = packagedLocal(entry, clusterSenses(senses, scores, entry.word));
     if (userReviewed) result.senseConsolidation.userReviewed = true;
-    result.meaningReviewScores = reviews.sort((a, b) => b[1] - a[1]).slice(0, 24);
+    result.meaningReviewScores = [...reviewMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 24);
     result.meaningInference = inference;
     delete result.meaningEquivalenceModel;
     delete result.meaningEquivalenceScores;
     if (inference.comparedPairs) {
       result.meaningEquivalenceModel = MEANING_MODEL_TAG;
-      result.meaningEquivalenceScores = [...candidates.values()].filter(pairKey => probabilities.has(pairKey)).map(pairKey => [pairKey, probabilities.get(pairKey)]);
+      result.meaningEquivalenceScores = [...new Set(candidates.values())].filter(pairKey => probabilities.has(pairKey)).map(pairKey => [pairKey, probabilities.get(pairKey)]);
     }
     return result;
   }
+  const reviews = [];
   const activeHead = validEquivalenceHead(learning.head) && learning.head.comparisonVersion === MEANING_COMPARISON_VERSION
     && Number.isFinite(learning.head.threshold) && learning.head.threshold > 0 && learning.head.threshold < 1 ? learning.head : null;
   const equivalenceKey = activeHead ? await modelIdentity(activeHead) : null;

@@ -469,3 +469,27 @@ test('MeaningPairReview background enrichment skips downloads when uninstalled a
   assert.equal(finalSeal.label, 0);
   assert.equal(finalSeal.evidence, undefined);
 });
+
+test('MeaningPairReview skips deterministic near-duplicates and already-judged near-duplicate twins', async context => {
+  const { storage, document } = setupDom(context);
+  driveSync.storage = storage;
+  await driveSync.imageHistory.ready;
+
+  const calmSenses = [
+    { id: 'a', word: 'calm', partOfSpeech: 'verb', definition: 'To make calm.' },
+    { id: 'b', word: 'calm', partOfSpeech: 'verb', definition: 'To become calm.' },
+    { id: 'c', word: 'calm', partOfSpeech: 'verb', definition: '(transitive) To make calm.' },
+    { id: 'd', word: 'calm', partOfSpeech: 'verb', definition: '(intransitive) To become calm.' },
+    { id: 'e', word: 'calm', partOfSpeech: 'verb', definition: 'To soothe or quiet down.' }
+  ];
+  await recordMeaningJudgment('calm', calmSenses[0], calmSenses[1], false, { encodeDefinitionTexts: async () => null });
+
+  const container = document.createElement('div');
+  mountMeaningPairReview(container, { word: 'calm', senses: calmSenses }, { storage });
+  await container.children[0].click();
+  const paragraphs = container.children[1].querySelectorAll('p').map(p => p.textContent);
+  assert.ok(paragraphs.some(text => text === 'To soothe or quiet down.'),
+    'review queue should skip all calm make/become near-duplicate twins and advance to unjudged pairs');
+  assert.ok(!paragraphs.some(text => text === '(intransitive) To become calm.')
+    || !paragraphs.some(text => text === '(transitive) To make calm.'));
+});

@@ -13,7 +13,16 @@ env.remotePathTemplate = base.pathname.replace(/^\/+|\/+$/g, '');
 env.useBrowserCache = false;
 env.useCustomCache = true;
 env.customCache = workerModelCache(MEANING_CACHE);
-env.fetch = () => { throw new Error('Download the merge model in Settings first.'); };
+const originalFetch = env.fetch;
+const runtimeUrls = new Set([
+  new URL('./runtime/ort-wasm-simd-threaded.asyncify.mjs', self.location.href).href,
+  new URL('./runtime/ort-wasm-simd-threaded.asyncify.wasm', self.location.href).href
+]);
+env.fetch = (input, options) => {
+  const url = typeof input === 'string' ? input : input?.url;
+  if (runtimeUrls.has(url)) return originalFetch(input, options);
+  throw new Error('Download the merge model in Settings first.');
+};
 env.useFSCache = false;
 env.backends.onnx.wasm.numThreads = 1;
 env.backends.onnx.wasm.proxy = false;

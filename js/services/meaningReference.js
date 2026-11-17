@@ -91,7 +91,11 @@ export async function preloadMeaningModel() {
   } catch (error) { phase = 'error'; message = error.message; emit(); throw error; }
 }
 export async function scoreReferenceMeaningPairs(senses, pairs, options = {}) {
-  if (!installed && !await checkMeaningModelInstalled()) throw new Error('Download the merge model in Settings to compare meanings locally.');
+  if (!installed && !await checkMeaningModelInstalled()) {
+    const error = new Error('Download the merge model in Settings to compare meanings locally.');
+    error.code = 'NOT_INSTALLED';
+    throw error;
+  }
   const texts = senses.map(sense => meaningEmbeddingText(sense.sourceDefinition || sense.definition));
   const result = await rpc({ type: 'compare', texts, pairs }, options);
   if (!Array.isArray(result.scores) || result.scores.length !== pairs.length || result.scores.some(score => !Number.isFinite(score) || score < 0 || score > 1)) throw new Error('Invalid meaning model scores.');
