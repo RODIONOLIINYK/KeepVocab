@@ -1,4 +1,5 @@
 import { canAutoSelectImage, imageChoiceLabels } from '../services/imageChoicePolicy.js';
+import { IMAGE_REVIEW_BATCH_SIZE } from '../services/imageSearchPlan.js';
 import { recordImagePreference } from '../services/imageLearning.js?v=18908';
 import { escapeHtml } from '../utils/html.js?v=18908';
 import { findRelevantImages, imageSelectionPatch, imageIdentityKeys } from '../services/imageSearch.js?v=18908';
@@ -33,7 +34,7 @@ export function mountImageReview(container, words, {
     // must restore its real saved image state, rather than accept that proposal.
     if (Array.isArray(originalWords)) Object.assign(original, imageSelectionPatch(currentImage(originalWords[index] || {})));
     const automatic = canAutoSelectImage(candidates);
-    return { original, proposal, candidates, visibleCount: 45, automatic, explicit: false, decision: automatic ? 'keep' : 'pending', viewed: new Set(), seen: new Set([...identities(proposal), ...candidates.flatMap(identities)]), page: Array.isArray(word.imageCandidates) && word.imageCandidates.length ? 1 : 0, revision: 0, controller: null, loading: false, error: '' };
+    return { original, proposal, candidates, visibleCount: IMAGE_REVIEW_BATCH_SIZE, automatic, explicit: false, decision: automatic ? 'keep' : 'pending', viewed: new Set(), seen: new Set([...identities(proposal), ...candidates.flatMap(identities)]), page: Array.isArray(word.imageCandidates) && word.imageCandidates.length ? 1 : 0, revision: 0, controller: null, loading: false, error: '' };
   });
   let active = true;
   let applying = false;
@@ -118,7 +119,7 @@ export function mountImageReview(container, words, {
   async function nextImage(index) {
     const row = rows[index];
     if (row.loading || applying) return;
-    if (row.visibleCount < row.candidates.length) { row.visibleCount += 9; render(); return; }
+    if (row.visibleCount < row.candidates.length) { row.visibleCount += IMAGE_REVIEW_BATCH_SIZE; render(); return; }
     row.controller?.abort();
     const controller = new AbortController();
     row.controller = controller;
@@ -130,7 +131,7 @@ export function mountImageReview(container, words, {
     const excluded = new Set([...reserved(index), ...row.seen]);
     render();
     try {
-      const candidates = await findImages(clone(row.original), { limit: 45, page: row.page, excludeUrls: [...excluded], signal: controller.signal });
+      const candidates = await findImages(clone(row.original), { limit: IMAGE_REVIEW_BATCH_SIZE, page: row.page, excludeUrls: [...excluded], signal: controller.signal });
       if (!active || revision !== row.revision || controller.signal.aborted) return;
       const candidate = (Array.isArray(candidates) ? candidates : []).find(image => safeImage(image?.url)
         && !identities(image).some(url => excluded.has(url)) && !conflict(index, image));
@@ -226,6 +227,8 @@ export function mountImageReview(container, words, {
     if (!candidate || conflict(index, candidate)) return;
     rememberVisible(index);
     row.proposal = clone(candidate); row.decision = 'keep'; row.explicit = true; row.error = '';
+    // Keyboard navigation can reach choices retained from an older, larger batch.
+    row.visibleCount = Math.max(row.visibleCount, Math.ceil((candidateIndex + 1) / IMAGE_REVIEW_BATCH_SIZE) * IMAGE_REVIEW_BATCH_SIZE);
   }
 
   function handleKeydown(event) {

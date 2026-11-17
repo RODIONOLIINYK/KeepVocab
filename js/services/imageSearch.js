@@ -1,4 +1,4 @@
-import { fallbackImageSearchPlan, hasGeminiSceneDescription } from './imageSearchPlan.js';
+import { fallbackImageSearchPlan, hasGeminiSceneDescription, IMAGE_CANDIDATES_PER_SCENE as CANDIDATES_PER_SCENE, MAX_IMAGE_CANDIDATES } from './imageSearchPlan.js';
 import { imageLearningEnabled, rankImagesLocally } from './imageLearning.js?v=18908';
 import { generateGeminiContent, generateGeminiParts, getGeminiSettings } from './geminiSettings.js?v=18908';
 import { prepareImageThumbnails } from './imageThumbnails.js?v=18908';
@@ -15,8 +15,6 @@ const MEMORY_CACHE_LIMIT = 240;
 const providerCooldownUntil = new Map();
 const SCENE_CACHE_KEY = 'keepvocab_image_scenes_v2';
 const SCENE_GENERATOR_VERSION = '5';
-const CANDIDATES_PER_SCENE = 15;
-const MAX_IMAGE_CANDIDATES = CANDIDATES_PER_SCENE * 3;
 const sceneRequests = new Map();
 const sceneBatchQueues = new Map();
 const sceneRetryAfter = new Map();
@@ -928,7 +926,7 @@ export async function findRelevantImages(word, options = {}) {
   })));
   const primary = providers.filter(source => source.id === 'pexels');
   const batches = primary.length ? await searchProviders(primary) : [];
-  // A configured stock source gets the first chance to fill the larger pool.
+  // A configured stock source gets the first chance to fill the bounded pool.
   // This avoids both slow catalog requests and unrelated fallback noise when
   // enough Pexels photos are already available. Public catalogs remain keyless.
   // Check each scene independently: abundant results for scene one must not

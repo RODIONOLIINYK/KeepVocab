@@ -387,7 +387,7 @@ test('NASA Images adds a fourth keyless catalog with its official source page', 
   assert.match(results[0].attribution, /JSC via NASA/);
 });
 
-test('all keyless catalogs run concurrently and ten results are mixed by source', { timeout: 2000 }, async () => {
+test('all keyless catalogs run concurrently and the small pool mixes sources', { timeout: 2000 }, async () => {
   const concept = 'soldier planting flag captured hilltop';
   let started = 0;
   let releaseSearches;
@@ -416,7 +416,7 @@ test('all keyless catalogs run concurrently and ten results are mixed by source'
   });
 
   assert.equal(started, 4);
-  assert.equal(results.length, 10);
+  assert.equal(results.length, 5);
   assert.deepEqual(new Set(results.slice(0, 4).map(result => result.source)), new Set(['Openverse', 'Wikimedia Commons', 'Library of Congress', 'NASA Images']));
 });
 

@@ -176,11 +176,11 @@ test('search keeps the exact prompt after rejecting one of its results', async (
 
 test('search ranks the whole bounded candidate pool before choosing a small result set and avoids needless pixel loads', async () => {
   let loads = 0;
-  const images = Array.from({ length: 40 }, (_, index) => ({ title: index === 14 ? 'Unique pool river bank scene' : `River bank ${index}`, thumbnail: `https://pool.test/${index}.jpg`, foreign_landing_url: `https://pool.test/source/${index}`, tags: ['river', 'bank'] }));
+  const images = Array.from({ length: 40 }, (_, index) => ({ title: index === 4 ? 'Unique pool river bank scene' : `River bank ${index}`, thumbnail: `https://pool.test/${index}.jpg`, foreign_landing_url: `https://pool.test/source/${index}`, tags: ['river', 'bank'] }));
   const found = await findRelevantImages(sense('widepool'), { aiScenes: false, extraQueries: ['unique pool river bank scene'], onlyExtraQueries: true, limit: 1,
     fetchImpl: async () => ({ ok: true, json: async () => ({ results: images }) }), loadImage: async () => { loads++; return true; }
   });
-  assert.equal(found[0].url, 'https://pool.test/14.jpg');
+  assert.equal(found[0].url, 'https://pool.test/4.jpg');
   assert.ok(loads <= 2);
 });
 
@@ -328,7 +328,7 @@ test('one-scene and duplicate-only generations are retried, never persisted as a
     fingerprint: imageSenseFingerprint(sense('invalid-single')), scenes: [scene] } }, { storage: saved }), null);
 });
 
-test('all prepared prompts contribute fifteen unique candidates before the result limit', async () => {
+test('all prepared prompts contribute five unique candidates within the reduced scoring pool', async () => {
   const saved = storage(); const scenes = [...pair, 'child arranging pebbles beside a garden pond'];
   const [word] = await prepareImageScenes([sense('fifteen-per-scene')], { storage: saved, fetchImpl: async () => response({ scenes }) });
   const requests = [];
@@ -336,7 +336,7 @@ test('all prepared prompts contribute fifteen unique candidates before the resul
     fetchImpl: async value => {
       const url = new URL(value); requests.push(url);
       assert.equal(url.hostname, 'api.pexels.com', 'full prompt pools need no fallback');
-      assert.equal(url.searchParams.get('per_page'), '15');
+      assert.equal(url.searchParams.get('per_page'), '5');
       const index = scenes.map(compactVisualSearchQuery).indexOf(url.searchParams.get('query'));
       assert.ok(index >= 0);
       return { ok: true, json: async () => ({ photos: Array.from({ length: 30 }, (_, i) => ({
@@ -346,8 +346,8 @@ test('all prepared prompts contribute fifteen unique candidates before the resul
     }
   });
   assert.equal(requests.length, 3);
-  assert.equal(found.length, 45);
-  assert.deepEqual(scenes.map(scene => found.filter(image => image.visualScene === scene).length), [15, 15, 15]);
+  assert.equal(found.length, 15);
+  assert.deepEqual(scenes.map(scene => found.filter(image => image.visualScene === scene).length), [5, 5, 5]);
 });
 
 test('a full first prompt does not suppress fallback searches for an empty second prompt', async () => {
@@ -365,7 +365,7 @@ test('a full first prompt does not suppress fallback searches for an empty secon
       })) } : {} };
     }
   });
-  assert.equal(results.length, 30);
+  assert.equal(results.length, 10);
   assert.ok(requested.some(r => r.host === 'api.openverse.org' && r.query === queries[1]));
   assert.ok(requested.filter(r => r.host !== 'api.pexels.com').every(r => r.query === queries[1]));
 });
@@ -381,7 +381,7 @@ test('different stock photos with identical alt captions remain eligible across 
       })) }) };
     }
   });
-  assert.equal(results.length, 15);
+  assert.equal(results.length, 5);
 });
 
 test('Gemini scene prompt enforces prominent foreground framing without 6-class taxonomy overhead', async () => {
@@ -433,16 +433,16 @@ test('cached Gemini scenes remain usable without a key, without generating new d
   assert.deepEqual([...new Set(queries)], prepared.imageScenes.scenes.map(compactVisualSearchQuery));
 });
 
-test('without Gemini scenes, word and exact meaning each receive fifteen candidate slots before ranking',async()=>{
+test('without Gemini scenes, word and exact meaning each receive five candidate slots before ranking',async()=>{
  const word={word:'balancedretrievalprobe',partOfSpeech:'noun',definition:'The activity of imparting and acquiring skills.'};
  for(const saved of [storage(),{getItem:()=>null,setItem:()=>{}}]){
   const requests=[];
   const results=await findRelevantImages(word,{storage:saved,aiScenes:false,provider:'pexels',pexelsApiKey:'synthetic-balance-key',limit:45,validateImages:false,refresh:true,
-   fetchImpl:async value=>{const url=new URL(value);assert.equal(url.hostname,'api.pexels.com');requests.push(url.searchParams.get('query'));assert.equal(url.searchParams.get('per_page'),'15');const branch=url.searchParams.get('query')===word.word?'word':'meaning';return{ok:true,json:async()=>({photos:Array.from({length:15},(_,i)=>({id:`${branch}-${i}`,url:`https://balance.test/${branch}/${i}`,alt:`${url.searchParams.get('query')} frame ${i}`,src:{medium:`https://balance.test/${branch}/${i}.jpg`}}))})};}
+   fetchImpl:async value=>{const url=new URL(value);assert.equal(url.hostname,'api.pexels.com');requests.push(url.searchParams.get('query'));assert.equal(url.searchParams.get('per_page'),'5');const branch=url.searchParams.get('query')===word.word?'word':'meaning';return{ok:true,json:async()=>({photos:Array.from({length:15},(_,i)=>({id:`${branch}-${i}`,url:`https://balance.test/${branch}/${i}`,alt:`${url.searchParams.get('query')} frame ${i}`,src:{medium:`https://balance.test/${branch}/${i}.jpg`}}))})};}
   });
   if(requests.length) assert.deepEqual([...new Set(requests)],['balancedretrievalprobe','the activity of imparting and acquiring skills']);
-  assert.equal(results.length,30);
-  assert.equal(results.filter(r=>r.retrievalQueryType==='word').length,15);
-  assert.equal(results.filter(r=>r.retrievalQueryType==='meaning').length,15);
+  assert.equal(results.length,10);
+  assert.equal(results.filter(r=>r.retrievalQueryType==='word').length,5);
+  assert.equal(results.filter(r=>r.retrievalQueryType==='meaning').length,5);
  }
 });

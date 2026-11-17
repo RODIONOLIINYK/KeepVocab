@@ -321,9 +321,13 @@ test('Save without image saves a new single word immediately, with no label or e
   assert.equal(saved[0].imageUrl, '');
 });
 
-test('the gallery initially shows every screened option', () => {
+test('the gallery reveals older larger batches locally, nine choices at a time', async () => {
   const container = new Container();
-  mountImageReview(container, [{ ...word('many', false), imageCandidates: Array.from({ length: 12 }, (_, i) => image('option-'+i)) }]);
+  mountImageReview(container, [{ ...word('many', false), imageCandidates: Array.from({ length: 12 }, (_, i) => image('option-'+i)) }], {
+    findImages: () => assert.fail('Already fetched choices need no network request')
+  });
+  assert.equal((container.innerHTML.match(/data-image-review-action="choose"/g) || []).length, 9);
+  await container.click('next');
   assert.equal((container.innerHTML.match(/data-image-review-action="choose"/g) || []).length, 12);
   assert.doesNotMatch(container.innerHTML, /image-review__preview|max-height:62vh/);
 });
@@ -359,6 +363,17 @@ test('gallery arrow keys choose one option at a time and wrap without a network 
   assert.equal((container.innerHTML.match(/aria-checked="true"/g)||[]).length,1);
   await container.click('apply');
   assert.equal(saved[0].imageUrl,image('b').url);
+});
+
+test('keyboard navigation reveals a selected choice beyond the first nine', () => {
+  const container = new Container();
+  mountImageReview(container, [{ ...word('keyboard-pages', false), imageCandidates: Array.from({ length: 12 }, (_, i) => image(`key-${i}`)) }], {
+    findImages: () => assert.fail('Keyboard selection should be local')
+  });
+  assert.doesNotMatch(container.innerHTML, /key-11-thumb/);
+  container.keyHandler({ key: 'End', preventDefault() {}, target: { closest: () => ({ dataset: { imageReviewIndex: '0', imageReviewCandidate: '0' } }) } });
+  assert.match(container.innerHTML, /aria-checked="true"[^>]*data-image-review-candidate="11"/);
+  assert.match(container.innerHTML, /key-11-thumb/);
 });
 
 function visiblePhotos(container, context, specs) {
@@ -401,17 +416,17 @@ test('the normal picker contains only image choices and useful save/search contr
 });
 
 
-test('review displays all screened survivors and appends the next complete page', async () => {
+test('review requests small pages and excludes previously shown images', async () => {
   const container = new Container(); let calls = 0; const requests = [];
-  mountImageReview(container, [{ ...word('pages', false), imageCandidates: Array.from({length:30},(_,i)=>image(`first-${i}`)) }], {
-    findImages: async (_word, options) => { requests.push(options); calls++; return Array.from({length:30},(_,i)=>image(`page-${calls}-${i}`)); }
+  mountImageReview(container, [{ ...word('pages', false), imageCandidates: Array.from({length:9},(_,i)=>image(`first-${i}`)) }], {
+    findImages: async (_word, options) => { requests.push(options); calls++; return Array.from({length:9},(_,i)=>image(`page-${calls}-${i}`)); }
   });
   const count = () => (container.innerHTML.match(/data-image-review-action="choose"/g)||[]).length;
-  assert.equal(count(),30); assert.equal(calls,0);
-  await container.click('next'); assert.equal(count(),60); assert.equal(calls,1);
-  assert.equal(requests[0].limit,45); assert.equal(requests[0].page,2);
-  assert.ok(requests[0].excludeUrls.includes(image('first-29').url));
-  assert.match(container.innerHTML,/page-1-29-thumb/);
+  assert.equal(count(),9); assert.equal(calls,0);
+  await container.click('next'); assert.equal(count(),18); assert.equal(calls,1);
+  assert.equal(requests[0].limit,9); assert.equal(requests[0].page,2);
+  assert.ok(requests[0].excludeUrls.includes(image('first-8').url));
+  assert.match(container.innerHTML,/page-1-8-thumb/);
 });
 
 test('uncertain and below-threshold photos have accessible warning marks while confident and unscored photos do not', () => {

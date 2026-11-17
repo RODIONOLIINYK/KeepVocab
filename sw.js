@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112044-image-best-f1';
+const CACHE_NAME = 'keepvocab-v112045-small-image-pool';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',

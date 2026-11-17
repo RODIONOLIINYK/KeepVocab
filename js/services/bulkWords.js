@@ -1,4 +1,5 @@
 import { imageSelectionPatch } from './imageSearch.js?v=18908';
+import { IMAGE_REVIEW_BATCH_SIZE } from './imageSearchPlan.js';
 import { hasUkrainianTranslation, TRANSLATION_LANGUAGE } from './dictionaryApi.js?v=18908';
 import { allEntrySenses, entrySensesForMode } from './learningDefinitions.js?v=18908';
 
@@ -120,7 +121,7 @@ export async function attachImagesSequentially(words, findImages, options = {}) 
       if (options.skipImagesSignal?.aborted) return withoutImageCandidates(words);
       const word = { ...words[index] };
       try {
-        const found = await findImages(word, { aiScenes: false, ...options, signal, excludeUrls: [...excluded], limit: 45 });
+        const found = await findImages(word, { aiScenes: false, ...options, signal, excludeUrls: [...excluded], limit: IMAGE_REVIEW_BATCH_SIZE });
         if (options.skipImagesSignal?.aborted) return withoutImageCandidates(words);
         const candidates = (Array.isArray(found) ? found : []).filter(image => image?.url && ![image.url, image.sourceUrl].some(url => url && excluded.has(url)));
         // Transient review data: the picker shows one fetched group immediately,

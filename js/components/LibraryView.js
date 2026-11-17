@@ -1,4 +1,4 @@
-import { fallbackImageSearchPlan, hasGeminiSceneDescription } from '../services/imageSearchPlan.js';
+import { fallbackImageSearchPlan, hasGeminiSceneDescription, MAX_IMAGE_CANDIDATES } from '../services/imageSearchPlan.js';
 import { recordImagePreference } from '../services/imageLearning.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18908';
@@ -208,7 +208,7 @@ export function renderLibraryView(container) {
       pexelsApiKey: imageProviderSettings.pexelsApiKey,
       otherDefinitions,
       page: imageResultPage,
-      limit: 45
+      limit: MAX_IMAGE_CANDIDATES
     });
     if (container.libraryViewOwner !== viewOwner || !container.querySelector('#library-edit-form') || editId !== wordId || requestId !== imageRequestId) return;
     if (!meaningStillCurrent()) return;

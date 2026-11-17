@@ -241,7 +241,7 @@ test('provider suggestions remain manually available when inference fails, witho
   onlyExtraQueries:true,extraQueries:['river bank'],
   fetchImpl:async()=>({ok:true,json:async()=>({photos:Array.from({length:20},(_,i)=>({id:9000+i,url:`https://www.pexels.com/photo/${9000+i}/`,alt:`River scene ${i}`,src:{medium:`https://images.pexels.com/photos/${9000+i}/image.jpeg`}}))})})
  });
- assert.equal(images.length,9);
+ assert.equal(images.length,5);
  assert.ok(images.every(image=>image.ml.screening==='not-scored'&&image.ml.uncertain&&!image.ml.belowThreshold));
  const container=new ReviewContainer();const controller=mountImageReview(container,[{...meaning,imageCandidates:images}]);cleanup.push(()=>controller.destroy());
  assert.match(container.innerHTML,/have not been checked/);

@@ -37,7 +37,7 @@ test('a full configured Pexels pool avoids unrelated catalog requests',async()=>
     onlyExtraQueries:true,extraQueries:['semantic gate pool fox running'],validateImages:false,limit:6,
     fetchImpl:async url=>{calls.push(new URL(url).hostname);return {ok:true,json:async()=>({photos:Array.from({length:40},(_,i)=>({id:99000+i,url:`https://www.pexels.com/photo/${99000+i}/`,alt:`Fox running semantic-gate-pool ${i}`,src:{medium:`https://images.pexels.com/photos/${99000+i}/image.jpeg`}}))})};}
   });
-  assert.equal(results.length,6);assert.deepEqual(calls,['api.pexels.com']);
+  assert.equal(results.length,5);assert.deepEqual(calls,['api.pexels.com']);
 });
 
 test('if every scored image fails, manual review contains the nine highest final scores without diversity reranking',()=>{
