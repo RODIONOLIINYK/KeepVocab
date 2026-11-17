@@ -28,6 +28,7 @@ let workerGeneration = 0;
 let featureGeneration = 0;
 let phase = 'off';
 let message = '';
+let downloadProgress = null;
 let backend = '';
 let installed = false;
 let workerStorage;
@@ -37,7 +38,7 @@ let activeInitializePromise = null;
 let textEncodingDetail = null;
 const pending = new Map();
 const listeners = new Set();
-function emit(detail = {}) { for (const listener of listeners) listener({ ...getImageLearningStatus(), ...detail }); }
+function emit(detail = {}) { if (detail.downloadProgress) downloadProgress = detail.downloadProgress; for (const listener of listeners) listener({ ...getImageLearningStatus(), ...detail }); }
 export function subscribeImageLearning(listener) { listeners.add(listener); return () => listeners.delete(listener); }
 function deviceConfig(storage = globalThis.localStorage) {
   try { return JSON.parse(storage?.getItem(CONFIG_KEY) || '{}') || {}; } catch { return {}; }
@@ -169,7 +170,7 @@ function dataset() { return mergeImageLearning(driveSync.getSettings().imageLear
 export function getImageLearningStatus() {
   const history = driveSync.imageHistory;
   const data = [...recentRecords.values()];
-  return { enabled: imageLearningEnabled(), installed, phase, message, backend, downloadMB: MODEL_DOWNLOAD_MB,
+  return { enabled: imageLearningEnabled(), installed, phase, message, backend, downloadProgress, downloadMB: MODEL_DOWNLOAD_MB,
     meaningTextEncoding: getMeaningTextEncodingStatus(),
     labels: Math.max(history.count, dataset().records.length), revision: cachedModel?.revision || 0,
     trainedLabels: cachedModel?.trainingDecisionIds?.length || 0, queued: 0,
@@ -368,6 +369,7 @@ function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = fa
   });
 }
 export async function enableImageLearning(options = {}) {
+  downloadProgress = null;
   if (options.device) {
     if (!['auto', 'wasm'].includes(options.device)) throw new Error('Unsupported inference backend.');
     featureGeneration++; stopWorker(); preferCPU = options.device === 'wasm';

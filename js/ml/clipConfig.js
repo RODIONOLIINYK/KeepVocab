@@ -28,9 +28,9 @@ export const CLIP_RUNTIME_URLS = ['ort-wasm-simd-threaded.asyncify.mjs', 'ort-wa
 export const COMPACT_RUNTIME_ASSET = { gzip: true, bytes: 26861777, sha256: '49871f5a4409519797e127440868a6d1923339d9185907f301a5b2a1d90af082', parts: ['runtime.wasm.gz'] };
 export const CLIP_DOWNLOAD_URLS = [...CLIP_MODEL_FILES.map(file => `${CLIP_MODEL_BASE}${file}`), ...CLIP_RUNTIME_URLS];
 export const COMPACT_MODEL_ASSETS = {
-  'onnx/text_model_q4f16.onnx': { gzip: true, bytes: 163230015, sha256: '3ddb5667293d12d3b84af944acbd8c91e49155b617ee8e71322040eaa2788e84',
+  'onnx/text_model_q4f16.onnx': { downloadBytes: 147422591, gzip: true, bytes: 163230015, sha256: '3ddb5667293d12d3b84af944acbd8c91e49155b617ee8e71322040eaa2788e84',
     parts: ['text-model-1.bin', 'text-model-2.bin'] },
-  'tokenizer.json': { gzip: true, bytes: 34363039, sha256: 'cb9140fae3ac5122c972d37adf83e1248471a38147ad76f8215c8872c6fd8322', parts: ['tokenizer.json.gz'] },
-  'onnx/vision_model_q4f16.onnx': { bytes: 54723009, sha256: 'e077a0e33fcc362a6e741a0c7571ba3044a4f8093bb0eaa9f93f54919191848a',
+  'tokenizer.json': { downloadBytes: 5333329, gzip: true, bytes: 34363039, sha256: 'cb9140fae3ac5122c972d37adf83e1248471a38147ad76f8215c8872c6fd8322', parts: ['tokenizer.json.gz'] },
+  'onnx/vision_model_q4f16.onnx': { downloadBytes: 54723009, bytes: 54723009, sha256: 'e077a0e33fcc362a6e741a0c7571ba3044a4f8093bb0eaa9f93f54919191848a',
     parts: [`https://huggingface.co/${CLIP_MODEL}/resolve/${CLIP_REVISION}/onnx/vision_model_q4f16.onnx`] }
 };

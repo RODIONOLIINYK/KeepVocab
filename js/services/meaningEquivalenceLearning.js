@@ -5,6 +5,7 @@ import { validateLearnedHead } from './learnedHeadValidation.js';
 import { logistic } from './learnedScorer.js';
 import { getPretrainedEquivalenceHead } from '../ml/pretrainedSemanticHeads.js';
 import { meaningComparisonText, MEANING_COMPARISON_VERSION } from './meaningComparison.js';
+import { MEANING_MODEL_TAG, MEANING_MERGE_THRESHOLD } from '../ml/meaningConfig.js';
 
 const KEY = 'meaningEquivalenceLearning-v1';
 const definition = s => String(s.sourceDefinition || s.definition || '').trim();
@@ -15,7 +16,14 @@ export const meaningPairKey = (word, pos, a, b) => JSON.stringify([String(word).
 export async function meaningLearningState() {
   await driveSync.imageHistory.ready;
   const saved = await driveSync.imageHistory.readState(KEY).catch(() => null);
-  return { records: Array.isArray(saved?.records) ? saved.records : [], head: validEquivalenceHead(saved?.head) && saved.head.comparisonVersion === MEANING_COMPARISON_VERSION ? saved.head : getPretrainedEquivalenceHead(), revision: saved?.revision || 0 };
+  return { records: Array.isArray(saved?.records) ? saved.records : [], corrections: Array.isArray(saved?.corrections) ? saved.corrections : [], head: validEquivalenceHead(saved?.head) && saved.head.comparisonVersion === MEANING_COMPARISON_VERSION ? saved.head : getPretrainedEquivalenceHead(), revision: saved?.revision || 0 };
+}
+const correctionSense = sense => Object.fromEntries(['id', 'word', 'partOfSpeech', 'definition', 'sourceDefinition', 'sourceDefinitions', 'rawDefinition', 'sourceUrl', 'sourceFingerprint', 'source', 'provider', 'attribution', 'license', 'dictionaryEvidence'].filter(key => sense[key] !== undefined).map(key => [key, structuredClone(sense[key])]));
+export async function getMeaningCorrectionsForTraining() {
+  const state = await meaningLearningState();
+  return { schemaVersion: 1, exportedAt: new Date().toISOString(), purpose: 'user-meaning-corrections',
+    trainingPolicy: 'Validate exact dictionary extraction receipts and disjoint splits before training; missing provenance is quarantined.',
+    records: state.records, corrections: state.corrections };
 }
 export async function embedMeaningAnchors(word, senses, options = {}) {
   const encode = options.encodeDefinitionTexts || (await import('./imageLearning.js?v=18908')).encodeDefinitionTexts;
@@ -40,6 +48,17 @@ export function recordMeaningJudgment(word, a, b, equivalent, options = {}) {
       ...(vectors ? { evidence: pairEvidence(a, b, vectors[0], vectors[1]) }
         : prior?.evidence?.encoder === CLIP_TAG && prior.evidence.comparisonVersion === MEANING_COMPARISON_VERSION ? { evidence: prior.evidence } : {}) };
     const records = [...state.records.filter(r => r.key !== key), record];
+    const corrections = [...state.corrections];
+    if (options.recordCorrection !== false) corrections.push({
+      schemaVersion: 1, id: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      pairKey: key, occurredAt: record.updatedAt, word: record.word, partOfSpeech: record.partOfSpeech,
+      action: options.correctionAction || (equivalent ? 'merge' : 'unmerge'), label: record.label, source: 'user',
+      previousLabel: prior?.label ?? null, surface: options.surface || 'meaning-pair-review',
+      senseA: correctionSense(a), senseB: correctionSense(b),
+      model: { tag: options.modelTag || MEANING_MODEL_TAG, threshold: MEANING_MERGE_THRESHOLD,
+        comparisonVersion: MEANING_COMPARISON_VERSION, score: Number.isFinite(options.modelScore) ? options.modelScore : null },
+      trainingEligibility: 'pending-dictionary-provenance-validation'
+    });
     const eligible = records.filter(r => r.evidence?.encoder === CLIP_TAG && r.evidence.comparisonVersion === MEANING_COMPARISON_VERSION);
     const frozenSeed = getPretrainedEquivalenceHead();
     const result = validateLearnedHead(eligible, { group: r => r.word, fit: rows => fitEquivalenceHead(rows, frozenSeed),
@@ -56,7 +75,7 @@ export function recordMeaningJudgment(word, a, b, equivalent, options = {}) {
         calibration: { heldOutPositive: positive.length, heldOutNegative: negative.length, automaticMerging: supported,
           policy: 'zero-observed-false-merges-with-minimum-support' } };
     }
-    await driveSync.imageHistory.writeState(KEY, { records, head: promoted, revision: state.revision + 1 });
+    await driveSync.imageHistory.writeState(KEY, { records, corrections, head: promoted, revision: state.revision + 1 });
     return { recorded: true, trained: result.accepted, reason: result.reason || 'Meaning judgment saved.' };
   };
   queue = queue.catch(() => {}).then(operation); return queue;

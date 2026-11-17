@@ -1,12 +1,12 @@
 {
   "name": "keepvocab",
-  "version": "1.12.40",
+  "version": "1.12.41",
   "private": true,
   "type": "module",
   "description": "A local-first vocabulary gym with Google Drive backup.",
   "main": "desktop/main.cjs",
   "scripts": {
-    "test": "node --test",
+    "test": "node --test tests/*.test.mjs",
     "start": "npm run build:web && python3 -m http.server 8085 --bind 127.0.0.1 --directory www",
     "build:web": "node scripts/build-web.mjs",
     "android:sync": "npm run build:web && cap sync android",

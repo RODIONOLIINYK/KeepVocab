@@ -1,7 +1,7 @@
 // Run after build:web using Electron (arm64 on macOS). This verifies the real
 // browser/WASM worker and native model cache, without any network access.
 const { app, BrowserWindow, ipcMain, protocol, session } = require('electron');
-const { mkdtemp, readFile, rm } = require('node:fs/promises');
+const { mkdtemp, readFile, writeFile, rm } = require('node:fs/promises');
 const { tmpdir } = require('node:os');
 const { createHash } = require('node:crypto');
 const path = require('node:path');
@@ -38,21 +38,28 @@ app.whenReady().then(async () => {
   await window.loadURL(origin + '/verification.html');
   const result = await window.webContents.executeJavaScript(`(async () => {
     const {preloadMeaningModel, scoreReferenceMeaningPairs, removeMeaningModel, checkMeaningModelInstalled} = await import('./js/services/meaningReference.js');
+    const {MEANING_MERGE_THRESHOLD} = await import('./js/ml/meaningConfig.js');
     const rows = await (await fetch('/validation.json')).json();
     await preloadMeaningModel();
     let maxScoreError = 0, changedMergeDecisions = 0;
+    const predictions = [];
     for (let start = 0; start < rows.length; start += 12) {
       const batch = rows.slice(start, start + 12);
       const senses = batch.flatMap(row => [{definition: row.textA}, {definition: row.textB}]);
       const scores = await scoreReferenceMeaningPairs(senses, batch.map((_, i) => [i * 2, i * 2 + 1]));
-      scores.forEach((score, i) => { maxScoreError = Math.max(maxScoreError, Math.abs(score - batch[i].score)); if ((score >= .9874299168586731) !== (batch[i].score >= .9874299168586731)) changedMergeDecisions++; });
+      scores.forEach((score, i) => {
+        maxScoreError = Math.max(maxScoreError, Math.abs(score - batch[i].score));
+        if ((score >= MEANING_MERGE_THRESHOLD) !== (batch[i].score >= MEANING_MERGE_THRESHOLD)) changedMergeDecisions++;
+        predictions.push({pairId: batch[i].pairId, label: batch[i].label, score: batch[i].score, actual: score});
+      });
     }
     await removeMeaningModel();
     const removed = !await checkMeaningModelInstalled();
     const preloadAfterRemoval = await preloadMeaningModel();
-    return {runtime: 'Electron browser worker / WASM FP16', pairs: rows.length, maxScoreError, changedMergeDecisions, removed, noImplicitDownloadAfterRemoval: preloadAfterRemoval === null};
+    return {runtime: 'Electron browser worker / WASM FP16', threshold: MEANING_MERGE_THRESHOLD, pairs: rows.length, maxScoreError, changedMergeDecisions, removed, noImplicitDownloadAfterRemoval: preloadAfterRemoval === null, predictions};
   })()`);
-  console.log(JSON.stringify(result));
+  if (process.argv[3]) await writeFile(process.argv[3], JSON.stringify(result, null, 2));
+  console.log(JSON.stringify({ ...result, predictions: undefined }));
   if (result.maxScoreError > .005 || result.changedMergeDecisions || !result.removed || !result.noImplicitDownloadAfterRemoval) throw new Error('WASM inference verification failed.');
   window.destroy(); await rm(temporary, { recursive: true, force: true }); temporary = null; app.exit(0);
 }).catch(error => { console.error(error); app.exit(1); });

@@ -5,6 +5,7 @@ import { mountImageReview } from './ImageReview.js?v=18908';
 import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { definitionForLearning, exampleForLearning, entrySensesForMode, originalSenses } from '../services/learningDefinitions.js?v=18908';
 import { consolidateEntrySenses } from '../services/localSenseGrouping.js?v=18908';
+import { recordMeaningJudgment } from '../services/meaningEquivalenceLearning.js';
 import { canAutoSelectImage } from '../services/imageChoicePolicy.js';
 import { recordImagePreference, warmImageLearning } from '../services/imageLearning.js?v=18908';
 import { mountMeaningPairReview } from './MeaningPairReview.js';
@@ -32,85 +33,10 @@ export function remapMeaningDrafts(previous, senses) {
   return { drafts: new Map(drafts.map(s => [s.id, s])), selected, focused: selected.has(focusedId) ? focusedId : [...selected][0] || null };
 }
 
-function formatInferenceDiagnostics(rawDiag, warning = '') {
-  if (!rawDiag) return '';
-  if (typeof rawDiag === 'string') {
-    const trimmed = rawDiag.trim();
-    return trimmed && trimmed !== warning ? trimmed : '';
-  }
-  if (typeof rawDiag !== 'object') return '';
-  const parts = [];
-  const primaryText = [rawDiag.message, rawDiag.reason, rawDiag.warning, rawDiag.summary]
-    .find(value => typeof value === 'string' && value.trim());
-  if (primaryText && !rawDiag.local) {
-    const trimmed = primaryText.trim();
-    if (trimmed !== warning) parts.push(trimmed);
-  } else if (typeof rawDiag.local === 'string' && rawDiag.local.trim()) {
-    const local = rawDiag.local.trim();
-    if (local === 'unavailable') parts.push('Local semantic comparison unavailable; exact and user rules applied.');
-    else if (local === 'failed') parts.push('Local semantic comparison failed; exact and user rules applied.');
-    else if (local === 'partial') parts.push('Local semantic comparison covered top candidate senses.');
-    else if (local === 'cached') parts.push('Local semantic comparison reused cached scores.');
-    else if (local === 'ready') parts.push('Local semantic comparison ran.');
-    else if (local !== 'not-needed') parts.push(`Local semantic comparison: ${local}.`);
-  } else if (typeof rawDiag.status === 'string' && rawDiag.status.trim()) {
-    const status = rawDiag.status.trim();
-    if (status === 'not-installed') parts.push('Local semantic inference unavailable (text model not installed).');
-    else if (status === 'unsupported') parts.push('Local semantic inference unavailable (Web Workers unsupported).');
-    else if (status === 'cancelled' || status === 'timeout') parts.push('Local semantic inference timed out or was cancelled; rule-based grouping applied.');
-    else if (status === 'error') parts.push(rawDiag.error ? `Local semantic inference failed: ${rawDiag.error}` : 'Local semantic inference failed; rule-based grouping applied.');
-    else if (status === 'ready' || status === 'used' || status === 'cached') parts.push('Local semantic inference active.');
-    else parts.push(`Local inference status: ${status}.`);
-  }
-  if (primaryText && rawDiag.local && primaryText.trim() !== warning) {
-    parts.push(primaryText.trim());
-  }
-  if (rawDiag.scorer === 'review-only-cosine' && ['ready', 'cached', 'partial'].includes(rawDiag.local)) {
-    parts.push('Similarities are review suggestions; automatic merging needs a calibrated equivalence scorer.');
-  }
-  if (rawDiag.scorer === 'calibrated-equivalence') {
-    parts.push('Calibrated equivalence scorer active.');
-  }
-  if (rawDiag.scorer === 'reference-minilm') parts.push('Local meaning merge model active.');
-  if (rawDiag.gemini === 'failed' && !warning) {
-    parts.push('Gemini meaning grouping failed; local grouping shown.');
-  }
-  const counts = [];
-  if (Number.isFinite(rawDiag.candidatePairs)) counts.push(`${rawDiag.candidatePairs} candidate pair${rawDiag.candidatePairs === 1 ? '' : 's'}`);
-  if (Number.isFinite(rawDiag.comparedPairs) && rawDiag.comparedPairs > 0) counts.push(`${rawDiag.comparedPairs} pair${rawDiag.comparedPairs === 1 ? '' : 's'} compared`);
-  if (Number.isFinite(rawDiag.scoredPairs)) counts.push(`${rawDiag.scoredPairs} scored`);
-  if (Number.isFinite(rawDiag.mergedPairs)) counts.push(`${rawDiag.mergedPairs} merged`);
-  if (Number.isFinite(rawDiag.reviewPairs)) counts.push(`${rawDiag.reviewPairs} for review`);
-  if (counts.length) parts.push(parts.length ? `(${counts.join(', ')})` : `Local inference: ${counts.join(', ')}.`);
-  return parts.join(' ').trim();
-}
-
-export function consolidationStatusMessages(data, { single = false } = {}) {
+export function consolidationStatusMessages(data) {
   const rawWarning = data?.consolidationWarning == null ? '' : String(data.consolidationWarning).trim();
-  const warning = rawWarning
-    ? (/meaning grouping|unavailable/i.test(rawWarning) ? rawWarning : `Automatic meaning grouping warning: ${rawWarning}`)
-    : '';
-  const rawDiag = data?.inferenceDiagnostics
-    ?? data?.groupingDiagnostics
-    ?? data?.meaningGroupingDiagnostics
-    ?? data?.meaningInference
-    ?? data?.localGroupingStatus
-    ?? data?.senseConsolidation?.diagnostics
-    ?? data?.senseConsolidation?.inference
-    ?? data?.senseConsolidation?.encoderStatus;
-  const diagnostics = formatInferenceDiagnostics(rawDiag, warning);
-  const summary = data?.senseConsolidation
-    ? (() => {
-        const count = single
-          ? (data.senseConsolidation.coreCount ?? data.senses?.length ?? 0)
-          : (data.senses?.length ?? data.senseConsolidation.coreCount ?? 0);
-        const originalCount = data.senseConsolidation.originalCount;
-        return single
-          ? `${count} grouped meanings cover ${originalCount} dictionary definitions. Switch to Raw to inspect the dictionary definitions.`
-          : `${count} grouped meanings cover ${originalCount} dictionary definitions`;
-      })()
-    : '';
-  return { warning, diagnostics, summary, lines: [warning, diagnostics, summary].filter(Boolean) };
+  const warning = rawWarning ? (/meaning grouping|unavailable/i.test(rawWarning) ? rawWarning : `Automatic meaning grouping warning: ${rawWarning}`) : '';
+  return { warning, diagnostics: '', summary: '', lines: warning ? [warning] : [] };
 }
 
 const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
@@ -145,7 +71,6 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
               </div>
             </div>
           </div>
-          <p class="sense-helper">Select every meaning you want. KeepVocab groups them under one word card and tracks each meaning separately.</p>
           <div id="add-word-consolidation-notes" class="consolidation-notes" hidden></div>
           <div id="add-word-sense-list" class="sense-option-list" role="group" aria-label="Dictionary meanings"></div>
           <div id="add-word-meaning-review"></div>
@@ -642,6 +567,32 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     editorSubtitle.textContent = selectedSenseIds.size > 1 ? `${selectedSenseIds.size} meanings will be grouped in one word card` : 'This meaning will be tracked inside the word card';
   };
 
+  const unmergeSenseGroup = async sense => {
+    persistFocusedDraft();
+    const entry = currentFetchedData;
+    const word = entry?.word || input.value.trim();
+    const originals = originalSenses(sense).map(item => ({ ...item, word: item.word || word }));
+    if (originals.length < 2) return;
+    const targets = originals;
+    for (let i = 0; i < targets.length; i += 1) {
+      for (let j = i + 1; j < targets.length; j += 1) {
+        if (String(targets[i].partOfSpeech || '').toLowerCase() !== String(targets[j].partOfSpeech || '').toLowerCase()) continue;
+        await recordMeaningJudgment(word, targets[i], targets[j], false, { encodeDefinitionTexts: async () => null,
+          correctionAction: 'unmerge', surface: 'add-word', modelTag: entry.meaningEquivalenceModel });
+      }
+    }
+    if (currentFetchedData !== entry) return;
+    const state = { drafts: [...senseDrafts.values()], selected: new Set(selectedSenseIds), focused: focusedSenseId };
+    const regrouped = await consolidateEntrySenses(entry, {
+      reuseSemanticScoresOnly: true,
+      ...(entry?.senseConsolidation?.source === 'local' ? { consolidateSenses: false } : {})
+    });
+    if (currentFetchedData !== entry) return;
+    currentFetchedData = regrouped;
+    renderSenses(regrouped, state);
+    formStatus.textContent = `Unmerged ${originals.length} meanings for “${word}”. They will stay separate.`;
+  };
+
   const renderSenseOptions = () => {
     senseList.innerHTML = '';
     const senses = [...senseDrafts.values()];
@@ -657,6 +608,10 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     senses.forEach((sense, index) => {
       const selected = selectedSenseIds.has(sense.id);
       if (!showAllSenses && index >= 5 && !selected) return;
+      const merged = meaningMode === 'grouped' ? originalSenses(sense) : [];
+      const isMerged = merged.length > 1;
+      const row = document.createElement('div');
+      row.className = 'sense-option-row';
       const button = document.createElement('button');
       button.type = 'button';
       button.className = `sense-option${selected ? ' selected' : ''}${focusedSenseId === sense.id ? ' focused' : ''}`;
@@ -669,10 +624,21 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       body.className = 'sense-option-body';
       const meta = document.createElement('span');
       meta.className = 'sense-option-meta';
-      meta.textContent = `${index + 1}. ${meaningMode === 'raw' ? sense.rawPartOfSpeech || sense.partOfSpeech || 'unknown' : sense.partOfSpeech || 'unknown'}`;
+      const posLabel = meaningMode === 'raw' ? sense.rawPartOfSpeech || sense.partOfSpeech || 'unknown' : sense.partOfSpeech || 'unknown';
+      meta.textContent = `${index + 1}. ${posLabel}${isMerged ? ` · ${merged.length} merged` : ''}`;
       const definition = document.createElement('strong');
-      definition.textContent = meaningMode === 'raw' ? sense.rawDefinition : definitionForLearning({ ...sense, word: currentFetchedData?.word || input.value.trim() });
+      const mainDef = meaningMode === 'raw' ? sense.rawDefinition : definitionForLearning({ ...sense, word: currentFetchedData?.word || input.value.trim() });
+      definition.textContent = mainDef;
       body.append(meta, definition);
+      if (isMerged) {
+        const otherDefs = [...new Set(merged.map(item => item.definition || item.sourceDefinition).filter(text => text && text !== mainDef))];
+        if (otherDefs.length) {
+          const mergedNote = document.createElement('small');
+          mergedNote.className = 'sense-merged-others';
+          mergedNote.textContent = `Includes: ${otherDefs.join(' · ')}`;
+          body.appendChild(mergedNote);
+        }
+      }
       if (sense.usageNote) { const usage = document.createElement('small'); usage.textContent = `When to use it: ${sense.usageNote}`; body.appendChild(usage); }
       if (isUkrainianTranslationEnabled() && sense.translationLanguage === 'uk' && sense.translation) {
         const translation = document.createElement('small');
@@ -696,8 +662,23 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         loadFocusedDraft();
         formStatus.textContent = `${selectedSenseIds.size} meaning${selectedSenseIds.size === 1 ? '' : 's'} selected. Each keeps its own definition, example, and review progress.`;
       });
-      senseList.appendChild(button);
-
+      row.appendChild(button);
+      if (isMerged) {
+        const unmergeBtn = document.createElement('button');
+        unmergeBtn.type = 'button';
+        unmergeBtn.className = 'sense-unmerge-btn';
+        unmergeBtn.textContent = 'Unmerge';
+        unmergeBtn.setAttribute('aria-label', `Unmerge ${merged.length} meanings for ${mainDef}`);
+        unmergeBtn.addEventListener('click', () => {
+          unmergeBtn.disabled = true;
+          unmergeSenseGroup(sense).catch(error => {
+            unmergeBtn.disabled = false;
+            formStatus.textContent = error?.message || 'Could not unmerge meanings.';
+          });
+        });
+        row.appendChild(unmergeBtn);
+      }
+      senseList.appendChild(row);
     });
   };
 

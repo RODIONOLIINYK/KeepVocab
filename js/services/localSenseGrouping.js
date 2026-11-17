@@ -44,7 +44,7 @@ export async function consolidateEntrySenses(entry, options = {}) {
     const senses = entry.rawDictionarySenses.map(raw => {
       const matching = enriched.find(s => s.partOfSpeech === raw.partOfSpeech && (s.sourceDefinition || s.definition) === raw.definition)
         || enriched.find(s => areSensesNearDuplicate({ ...s, word: entry.word }, { ...raw, word: entry.word }));
-      return matching ? { ...matching, ...raw, translation: matching.translation, translationLanguage: matching.translationLanguage } : raw;
+      return matching ? { ...matching, ...raw, sourceDefinition: raw.sourceDefinition || raw.definition, translation: matching.translation, translationLanguage: matching.translationLanguage } : raw;
     });
     const sourceKey = sense => JSON.stringify([sense.partOfSpeech, (sense.sourceDefinition || sense.definition || '').trim(), sense.sourceUrl || '']);
     const included = new Set(senses.map(sourceKey));
@@ -128,8 +128,10 @@ Parts: ${JSON.stringify(parts)}`,
       const representative = exampleSources[0] || originals[0];
       const partOfSpeech = [...new Set(originals.map(s => s.partOfSpeech || 'word'))].join(' / ');
       const unresolved = originals.length === 1 && /\b(?:synonym of|alternative (?:form|spelling) of)\b/i.test(representative.sourceDefinition || representative.definition);
-      const definition = group.definition.trim();
-      const sourceDefinition = originals.length > 1 ? definition : representative.sourceDefinition || representative.definition;
+      // Group membership may be suggested by Gemini; visible wording always
+      // comes from one of the actual members, as with local model merges.
+      const definition = representative.definition;
+      const sourceDefinition = representative.sourceDefinition || representative.definition;
       const sense = { ...representative, id: `learner-group-${index}`, word: entry.word, partOfSpeech,
         definition, sourceDefinition,
         sourceDefinitions: [...new Set(originals.map(s => s.sourceDefinition || s.definition))],
@@ -153,18 +155,20 @@ Parts: ${JSON.stringify(parts)}`,
   }
 }
 
-// A selected representative is not an adequate definition of a broader group.
-// Retain every non-equivalent source clause in its visible combined definition.
-function coveredDefinition(originals, representative) {
-  if (originals.every(s => areSensesNearDuplicate({ ...s, word: representative.word }, representative))) return representative.definition;
-  const clauses = [...new Set(originals.map(s => String(s.sourceDefinition || s.definition || '').trim().replace(/[.;]+$/, '')).filter(Boolean))];
-  return clauses.join('; ') + (clauses.length ? '.' : '');
+// Choose one concrete meaning from the merged originals as the card's primary
+// definition while retaining every merged source in groupedSenses/sourceDefinitions.
+function representativeDefinition(originals, representative) {
+  const chosen = representative?.definition ? representative : originals[0];
+  return {
+    definition: chosen?.definition || '',
+    sourceDefinition: chosen?.sourceDefinition || chosen?.definition || ''
+  };
 }
 function packagedLocal(entry, groups) {
   const built = groups.map((group, index) => {
     const originals = originalSenses(group);
-    const definition = coveredDefinition(originals, group);
-    return { ...group, id: group.id || 'local-group-' + index, definition, sourceDefinition: definition,
+    const chosen = representativeDefinition(originals, group);
+    return { ...group, id: group.id || 'local-group-' + index, definition: chosen.definition, sourceDefinition: chosen.sourceDefinition,
       groupedSenses: originals, sourceDefinitions: [...new Set(originals.map(s => s.sourceDefinition || s.definition))],
       mergedSenseIds: originals.map(s => s.id).filter(Boolean),
       meaningGroup: { version: 1, source: 'local', memberCount: originals.length } };

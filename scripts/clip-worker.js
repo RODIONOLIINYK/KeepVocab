@@ -1,5 +1,5 @@
 import { AutoTokenizer, AutoProcessor, SiglipTextModel, SiglipVisionModel, RawImage, env } from '@huggingface/transformers';
-import { CLIP_MODEL, CLIP_MODEL_BASE, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, CLIP_DIMENSION, CLIP_TEXT_MAX_LENGTH } from '../js/ml/clipConfig.js';
+import { CLIP_MODEL, CLIP_MODEL_BASE, CLIP_REVISION, CLIP_TAG, CLIP_CACHE, VECTOR_DB, CLIP_RUNTIME_URLS, CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, CLIP_DIMENSION, CLIP_TEXT_MAX_LENGTH, COMPACT_MODEL_ASSETS } from '../js/ml/clipConfig.js';
 import { fetchCompactModelFile } from '../js/services/compactModelDownload.js';
 import { normalizedVector } from '../js/services/imagePreferences.js';
 import { fullFrameImage, centerCropImage } from '../js/services/imagePreprocessing.js';
@@ -15,7 +15,22 @@ env.remoteHost = modelSource.slice(0, sourceSplit);
 env.remotePathTemplate = modelSource.slice(sourceSplit + 1);
 env.useBrowserCache = false;
 env.useCustomCache = true;
-env.customCache = workerModelCache(CLIP_CACHE);
+const fileTransfers = new Map();
+function reportModelDownload(detail) {
+  if (!COMPACT_MODEL_ASSETS[detail.file]?.downloadBytes) return;
+  fileTransfers.set(detail.file, detail.loaded);
+  const total = Object.values(COMPACT_MODEL_ASSETS).reduce((sum, asset) => sum + (asset.downloadBytes || 0), 0);
+  const loaded = [...fileTransfers.values()].reduce((sum, bytes) => sum + bytes, 0);
+  status({ phase: 'loading', downloadProgress: { loaded, total, stage: detail.stage } });
+}
+const modelFileCache = workerModelCache(CLIP_CACHE);
+env.customCache = { ...modelFileCache, match: async request => {
+  const response = await modelFileCache.match(request);
+  const url = typeof request === 'string' ? request : request?.url;
+  const file = url?.startsWith(CLIP_MODEL_BASE) ? url.slice(CLIP_MODEL_BASE.length) : '';
+  if (response && COMPACT_MODEL_ASSETS[file]?.downloadBytes) reportModelDownload({ file, loaded: COMPACT_MODEL_ASSETS[file].downloadBytes, stage: 'loading' });
+  return response;
+} };
 env.useFSCache = false;
 env.cacheKey = CLIP_CACHE;
 // The page chooses the thread count (see inferencePlan in imageLearning.js).
@@ -34,8 +49,11 @@ function configureThreads(threads) {
 let allowDownloads = false;
 const originalFetch = env.fetch;
 env.fetch = (input, options) => {
+  const url = typeof input === 'string' ? input : input?.url;
+  if (self.location?.href && ['ort-wasm-simd-threaded.asyncify.mjs', 'ort-wasm-simd-threaded.asyncify.wasm']
+    .some(file => url === new URL(`./runtime/${file}`, self.location.href).href)) return originalFetch(input, options);
   if (!allowDownloads) throw new Error('Model files are missing. Download the local image model in Settings to continue.');
-  return fetchCompactModelFile(input, options, originalFetch);
+  return fetchCompactModelFile(input, options, originalFetch, reportModelDownload);
 };
 let backend = 'wasm';
 let runtimeReady;

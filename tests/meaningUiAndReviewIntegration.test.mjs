@@ -218,7 +218,7 @@ function setupDom(context) {
   return { storage, document: doc, body };
 }
 
-test('consolidationStatusMessages surfaces consolidationWarning before local summary and includes meaningInference diagnostics', () => {
+test('consolidation status retains actionable warnings without technical diagnostics or counts', () => {
   const single = consolidationStatusMessages({
     senses: [{ id: 'g1' }, { id: 'g2' }],
     consolidationWarning: 'Meaning groups contradicted a saved Different meanings judgment.',
@@ -227,11 +227,12 @@ test('consolidationStatusMessages surfaces consolidationWarning before local sum
   }, { single: true });
 
   assert.equal(single.warning, 'Automatic meaning grouping warning: Meaning groups contradicted a saved Different meanings judgment.');
-  assert.match(single.diagnostics, /Local semantic comparison ran\./);
-  assert.match(single.diagnostics, /Calibrated equivalence scorer active\./);
-  assert.match(single.diagnostics, /2 pairs compared/);
-  assert.match(single.summary, /^2 grouped meanings cover 4 dictionary definitions\./);
-  assert.deepEqual(single.lines, [single.warning, single.diagnostics, single.summary]);
+
+
+
+
+  assert.deepEqual(single.lines, [single.warning]);
+  assert.equal(single.diagnostics, ''); assert.equal(single.summary, '');
 
   const unavailableBulk = consolidationStatusMessages({
     senses: [{ id: 'g1' }, { id: 'g2' }],
@@ -240,9 +241,9 @@ test('consolidationStatusMessages surfaces consolidationWarning before local sum
     senseConsolidation: { originalCount: 3, coreCount: 2 }
   }, { single: false });
   assert.equal(unavailableBulk.warning, 'Meaning grouping is temporarily unavailable.');
-  assert.match(unavailableBulk.diagnostics, /Local semantic comparison unavailable/);
-  assert.equal(unavailableBulk.summary, '2 grouped meanings cover 3 dictionary definitions');
-  assert.deepEqual(unavailableBulk.lines, [unavailableBulk.warning, unavailableBulk.diagnostics, unavailableBulk.summary]);
+
+
+  assert.deepEqual(unavailableBulk.lines, [unavailableBulk.warning]);
 
   // Simple entry with not-needed inference produces no noisy diagnostics
   const quiet = consolidationStatusMessages({
@@ -252,10 +253,10 @@ test('consolidationStatusMessages surfaces consolidationWarning before local sum
   }, { single: true });
   assert.equal(quiet.warning, '');
   assert.equal(quiet.diagnostics, '');
-  assert.match(quiet.summary, /^1 grouped meanings cover 1 dictionary definitions/);
+
 });
 
-test('AddWordModal renders consolidationWarning before inference diagnostics and local summary in both single and bulk flows', async context => {
+test('AddWordModal shows actionable warnings only in single and bulk flows', async context => {
   const { storage, document } = setupDom(context);
   driveSync.storage = storage;
   storage.setItem('keepvocab_gemini_live_key_v1', 'synthetic-gemini-test-key');
@@ -298,18 +299,11 @@ test('AddWordModal renders consolidationWarning before inference diagnostics and
   const notes = document.getElementById('add-word-consolidation-notes');
   assert.equal(notes.hidden, false);
   const children = notes.children;
-  assert.equal(children.length, 3);
+  assert.equal(children.length, 1);
   assert.ok(children[0].classList.contains('consolidation-warning'));
   assert.equal(children[0].getAttribute('role'), 'alert');
   assert.match(children[0].textContent, /Synthetic Gemini outage/);
-  assert.ok(children[1].classList.contains('consolidation-diagnostics'));
-  assert.match(children[1].textContent, /Local semantic comparison unavailable/);
-  assert.ok(children[2].classList.contains('consolidation-summary'));
-  assert.match(children[2].textContent, /2 grouped meanings cover 2 dictionary definitions/);
-
-  const statusText = document.getElementById('add-word-form-status').textContent;
-  assert.ok(statusText.indexOf(children[0].textContent) < statusText.indexOf(children[1].textContent));
-  assert.ok(statusText.indexOf(children[1].textContent) < statusText.indexOf(children[2].textContent));
+  assert.equal(children.some(child => child.classList.contains('consolidation-diagnostics') || child.classList.contains('consolidation-summary')), false);
 
   // Bulk lookup flow
   const bulkInput = document.getElementById('bulk-word-input');
@@ -320,10 +314,10 @@ test('AddWordModal renders consolidationWarning before inference diagnostics and
   const bulkRow = document.getElementById('bulk-word-results').querySelector('.bulk-word-row');
   assert.ok(bulkRow);
   const bulkNotes = bulkRow.children.filter(el => el.classList.contains('sense-helper'));
-  assert.equal(bulkNotes.length, 3);
+  assert.equal(bulkNotes.length, 1);
   assert.ok(bulkNotes[0].classList.contains('consolidation-warning'));
-  assert.ok(bulkNotes[1].classList.contains('consolidation-diagnostics'));
-  assert.ok(bulkNotes[2].classList.contains('consolidation-summary'));
+
+
 });
 
 test('MeaningPairReview persists manual judgments immediately without blocking and enriches exact unchanged records in the background', async context => {
@@ -492,4 +486,73 @@ test('MeaningPairReview skips deterministic near-duplicates and already-judged n
     'review queue should skip all calm make/become near-duplicate twins and advance to unjudged pairs');
   assert.ok(!paragraphs.some(text => text === '(intransitive) To become calm.')
     || !paragraphs.some(text => text === '(transitive) To make calm.'));
+});
+
+test('AddWordModal shows an Unmerge button on merged meanings and splits them cleanly when clicked', async context => {
+  const { storage, document } = setupDom(context);
+  driveSync.storage = storage;
+  await driveSync.imageHistory.ready;
+
+  globalThis.fetch = async url => {
+    const text = String(url);
+    if (text.includes('freedictionaryapi.com')) {
+      return new Response(JSON.stringify([{
+        word: 'warm',
+        phonetics: [{ text: '/wɔːm/' }],
+        meanings: [{
+          partOfSpeech: 'verb',
+          definitions: [
+            { definition: '(transitive) To make or keep warm.' },
+            { definition: '(intransitive) To make or keep warm.' },
+            { definition: 'To show affection toward.' }
+          ]
+        }]
+      }]), { status: 200, headers: { 'content-type': 'application/json' } });
+    }
+    throw new Error(`Unexpected fetch URL: ${text}`);
+  };
+
+  setupAddWordModal();
+  const wordInput = document.getElementById('add-word-input');
+  const lookupForm = document.getElementById('add-word-lookup-form');
+  const preview = document.getElementById('add-word-preview');
+  wordInput.value = 'warm';
+  await lookupForm.dispatchEvent({ type: 'submit' });
+  for (let i = 0; i < 40 && preview.style.display !== 'block'; i++) {
+    await new Promise(resolve => setTimeout(resolve, 5));
+  }
+
+  const senseList = document.getElementById('add-word-sense-list');
+  assert.equal(senseList.querySelectorAll('.sense-option').length, 2);
+  const unmergeBtn = senseList.querySelector('.sense-unmerge-btn');
+  assert.ok(unmergeBtn, 'merged sense row must render an Unmerge button');
+  assert.equal(unmergeBtn.textContent, 'Unmerge');
+
+  await unmergeBtn.click();
+  for (let i = 0; i < 40 && senseList.querySelectorAll('.sense-option').length < 3; i++) {
+    await new Promise(resolve => setTimeout(resolve, 5));
+  }
+
+  assert.equal(senseList.querySelectorAll('.sense-option').length, 3);
+  assert.equal(senseList.querySelector('.sense-unmerge-btn'), null);
+  const savedState = await meaningLearningState();
+  assert.ok(savedState.records.some(r => r.word === 'warm' && r.label === 0));
+  assert.ok(savedState.corrections.some(r => r.word === 'warm' && r.action === 'unmerge' && r.surface === 'add-word'));
+});
+
+test('user correction journal preserves merge/unmerge reversals and exact provenance without duplicating enrichment', async context => {
+  const { storage } = setupDom(context); driveSync.storage = storage;
+  const a = { word: 'correction-probe', partOfSpeech: 'noun', sourceDefinition: 'Original dictionary A.', sourceUrl: 'https://dictionary.test/a', license: 'CC BY-SA' };
+  const b = { ...a, sourceDefinition: 'Original dictionary B.', sourceUrl: 'https://dictionary.test/b' };
+  for (const label of [false, true, false]) await recordMeaningJudgment(a.word, a, b, label,
+    { encodeDefinitionTexts: async () => null, surface: 'library', modelScore: .72 });
+  await recordMeaningJudgment(a.word, a, b, false, { encodeDefinitionTexts: async () => null, recordCorrection: false });
+  const state = await meaningLearningState(), events = state.corrections.filter(row => row.word === a.word);
+  assert.deepEqual(events.map(row => row.label), [0, 1, 0]);
+  assert.equal(new Set(events.map(row => row.id)).size, 3);
+  assert.equal(events[0].senseA.sourceDefinition, a.sourceDefinition);
+  assert.equal(events[0].senseB.sourceUrl, b.sourceUrl);
+  assert.equal(events[0].model.score, .72);
+  assert.equal(events[0].trainingEligibility, 'pending-dictionary-provenance-validation');
+  assert.equal(state.records.find(row => row.word === a.word).label, 0);
 });

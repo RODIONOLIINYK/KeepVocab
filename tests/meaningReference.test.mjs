@@ -147,8 +147,9 @@ test('merge model download requires an explicit action, verifies bytes, reuses t
   assert.equal(fetches, 2); assert.equal(workers, 1);
 });
 
-test('reference grouping scores beyond 24 senses, propagates scores to near-duplicate twins, and avoids stripped raw duplicates', async () => {
+test('reference grouping scores beyond 24 senses, propagates scores to near-duplicate twins, picks one merged definition, and avoids stripped raw duplicates', async () => {
   const { consolidateEntrySenses } = await import('../js/services/localSenseGrouping.js');
+  assert.ok(MEANING_MERGE_THRESHOLD > .68 && MEANING_MERGE_THRESHOLD < .70);
   const raw = [
     { id: 'r0', word: 'make', partOfSpeech: 'verb', definition: '(transitive) To create.' },
     { id: 'r1', word: 'make', partOfSpeech: 'verb', definition: 'To build, construct, produce, or originate.' },
@@ -164,7 +165,7 @@ test('reference grouping scores beyond 24 senses, propagates scores to near-dupl
       assert.ok(batchSenses.length <= 24 && pairs.length <= 276, 'each RPC batch stays within worker limits');
       return pairs.map(([a, b]) => {
         const isCreate = s => /To create\.|To build|To form/.test(s.definition);
-        return isCreate(batchSenses[a]) && isCreate(batchSenses[b]) ? 0.995 : 0.1;
+        return isCreate(batchSenses[a]) && isCreate(batchSenses[b]) ? 0.905 : 0.1;
       });
     }
   });
@@ -172,5 +173,36 @@ test('reference grouping scores beyond 24 senses, propagates scores to near-dupl
   assert.equal(result.meaningInference.local, 'ready');
   const createCluster = result.senses.find(s => s.groupedSenses.some(g => g.id === 'r0'));
   assert.deepEqual(createCluster.groupedSenses.map(g => g.id).sort(), ['r0', 'r1', 'r28', 'r29']);
+  assert.ok(createCluster.groupedSenses.some(g => g.definition === createCluster.definition),
+    'merged group definition must be chosen from one of the merged meanings');
+  assert.equal(createCluster.sourceDefinitions.length, 4);
 });
 
+test('driveSync.unmergeWordMeanings splits a saved merged card into separate meanings while preserving primary stats', async () => {
+  const { DriveSyncService } = await import('../js/services/driveSync.js');
+  const service = new DriveSyncService(new MemoryStorage());
+  const saved = service.addWord({
+    word: 'work',
+    partOfSpeech: 'noun',
+    definition: 'Employment.',
+    sourceDefinition: 'Employment.',
+    box: 3,
+    groupedSenses: [
+      { id: 'w1', word: 'work', partOfSpeech: 'noun', definition: 'Employment.', sourceDefinition: 'Employment.' },
+      { id: 'w2', word: 'work', partOfSpeech: 'noun', definition: 'Labour, occupation, job.', sourceDefinition: 'Labour, occupation, job.', sourceUrl: 'https://dictionary.test/work', attribution: 'Dictionary source', example: 'Looking for work.' }
+    ]
+  }, 'November 2026 Vocabulary');
+  const split = service.unmergeWordMeanings(saved.id);
+  assert.equal(split.length, 2);
+  assert.equal(service.getAllWords().length, 2);
+  const primary = service.getAllWords().find(w => w.id === saved.id);
+  const secondary = service.getAllWords().find(w => w.id !== saved.id);
+  assert.equal(primary.definition, 'Employment.');
+  assert.equal(primary.box, 3);
+  assert.deepEqual(primary.groupedSenses, []);
+  assert.equal(secondary.definition, 'Labour, occupation, job.');
+  assert.equal(secondary.example, 'Looking for work.');
+  assert.equal(secondary.sourceUrl, 'https://dictionary.test/work');
+  assert.equal(secondary.attribution, 'Dictionary source');
+  assert.deepEqual(secondary.groupedSenses, []);
+});

@@ -1041,6 +1041,98 @@ export class DriveSyncService {
     return merged;
   }
 
+  unmergeWordMeanings(wordId) {
+    const words = this.getAllWords();
+    const index = words.findIndex(word => word.id === wordId);
+    if (index === -1) throw new Error('That vocabulary entry no longer exists.');
+    const target = words[index];
+    const grouped = Array.isArray(target.groupedSenses) ? target.groupedSenses : [];
+    const unique = [];
+    const seen = new Set();
+    for (const item of grouped) {
+      const pos = String(item?.partOfSpeech || target.partOfSpeech || 'unknown').trim().toLowerCase();
+      const def = String(item?.sourceDefinition || item?.definition || '').trim();
+      if (!def) continue;
+      const key = `${pos}|${normalizeSenseText(def)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(item);
+    }
+    if (unique.length < 2) throw new Error('Only merged meanings can be unmerged.');
+
+    const now = new Date().toISOString();
+    const targetKey = `${String(target.partOfSpeech || 'unknown').trim().toLowerCase()}|${normalizeSenseText(target.sourceDefinition || target.definition)}`;
+    let primaryIndex = unique.findIndex(item => `${String(item?.partOfSpeech || target.partOfSpeech || 'unknown').trim().toLowerCase()}|${normalizeSenseText(item?.sourceDefinition || item?.definition)}` === targetKey);
+    if (primaryIndex < 0) primaryIndex = 0;
+
+    const primarySense = unique[primaryIndex];
+    const primaryPos = String(primarySense.partOfSpeech || target.partOfSpeech || 'unknown').trim().toLowerCase();
+    const primaryDef = String(primarySense.definition || primarySense.sourceDefinition || target.definition).trim();
+    const primarySourceDef = String(primarySense.sourceDefinition || primaryDef).trim();
+    const primary = normalizeStoredWord({
+      ...target,
+      ...primarySense,
+      id: target.id,
+      partOfSpeech: primaryPos,
+      definition: primaryDef,
+      sourceDefinition: primarySourceDef,
+      sourceDefinitions: [primarySourceDef],
+      groupedSenses: [],
+      reviewHistorySources: [],
+      senseId: makeSenseId(target.word, primaryPos, primarySourceDef),
+      updatedAt: now
+    }, target.monthYear, target.source || 'manual');
+    primary.sourceFingerprint = sourceDefinitionFingerprint(primary);
+
+    const existingIdentities = new Set(words.filter(word => word.id !== target.id).map(senseIdentity));
+    existingIdentities.add(senseIdentity(primary));
+    const extras = [];
+    unique.forEach((item, idx) => {
+      if (idx === primaryIndex) return;
+      const pos = String(item.partOfSpeech || target.partOfSpeech || 'unknown').trim().toLowerCase();
+      const def = String(item.definition || item.sourceDefinition || '').trim();
+      const sourceDef = String(item.sourceDefinition || def).trim();
+      const candidate = normalizeStoredWord({
+        ...item,
+        id: undefined,
+        word: target.word,
+        lemma: target.lemma,
+        phonetic: target.phonetic,
+        audioUrl: target.audioUrl,
+        courseId: target.courseId || 'english',
+        languageCode: target.languageCode || 'en',
+        partOfSpeech: pos,
+        definition: def,
+        sourceDefinition: sourceDef,
+        sourceDefinitions: [sourceDef],
+        groupedSenses: [],
+        usageNote: item.usageNote || '',
+        example: item.example || '',
+        exampleSourceUrl: item.exampleSourceUrl || '',
+        exampleAttribution: item.exampleAttribution || '',
+        exampleLicense: item.exampleLicense || '',
+        translation: item.translation || '',
+        translationLanguage: item.translationLanguage || target.translationLanguage,
+        labels: Array.isArray(item.labels) ? item.labels : [],
+        antonyms: Array.isArray(item.antonyms) ? item.antonyms : [],
+        monthYear: target.monthYear,
+        notebook: target.notebook,
+        createdAt: now,
+        updatedAt: now
+      }, target.monthYear, target.source || 'manual');
+      if (!candidate || existingIdentities.has(senseIdentity(candidate))) return;
+      candidate.sourceFingerprint = sourceDefinitionFingerprint(candidate);
+      existingIdentities.add(senseIdentity(candidate));
+      extras.push(candidate);
+    });
+    if (!extras.length) throw new Error('Those unmerged meanings already exist in this notebook.');
+
+    const nextWords = [...words.slice(0, index), primary, ...extras, ...words.slice(index + 1)];
+    this.saveWords(nextWords);
+    this.refreshNotebooks();
+    return [primary, ...extras];
+  }
+
   deleteWord(wordId) {
     const words = this.getAllWords();
     const deleted = words.find(word => word.id === wordId);

@@ -76,6 +76,7 @@ async function runEnrichmentTask(task) {
   if (!isExactPendingRecord(preWriteState, snapshot, expectedEncoder, expectedVersion)) return;
 
   await recordMeaningJudgment(word, a, b, decision, {
+    recordCorrection: false,
     encodeDefinitionTexts: async requestedTexts => {
       if (CLIP_TAG !== expectedEncoder || MEANING_COMPARISON_VERSION !== expectedVersion) {
         throw new Error('Meaning encoder or comparison version changed before enrichment.');
@@ -153,7 +154,8 @@ export function mountMeaningPairReview(container, entry, {
         try {
           // A human decision is already authoritative. Saving it must not wait
           // behind the optional image/text encoder queue to collect features.
-          await recordMeaningJudgment(entry.word, a, b, decision, { encodeDefinitionTexts: async () => null });
+          await recordMeaningJudgment(entry.word, a, b, decision, { encodeDefinitionTexts: async () => null,
+            modelTag: entry.meaningEquivalenceModel, modelScore: new Map(entry.meaningEquivalenceScores || []).get(meaningPairKey(entry.word, a.partOfSpeech, definitionOf(a), definitionOf(b))) });
           const expectedKey = meaningPairKey(entry.word, a.partOfSpeech, definitionOf(a), definitionOf(b));
           const postSave = await meaningLearningState().catch(() => null);
           const savedRecord = postSave?.records?.find(row => row.key === expectedKey);

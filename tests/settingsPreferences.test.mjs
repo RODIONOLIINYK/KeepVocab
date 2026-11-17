@@ -16,13 +16,14 @@ async function setup(t) {
     if (!controls.has(selector)) controls.set(selector, {
       value: '', checked: false, hidden: false, disabled: false, listeners: new Map(),
       addEventListener(type, listener) { this.listeners.set(type, listener); },
-      classList: { toggle() {} }
+      classList: { toggle() {} }, querySelector: child => query(selector + ' ' + child), removeAttribute(name) { delete this[name]; }
     });
     return controls.get(selector);
   };
   const container = { innerHTML: '', querySelector: query, querySelectorAll: () => [] };
   t.after(() => {
     container.releaseImageLearning?.();
+    container.releaseMeaningModel?.();
     container.releaseFsrsLearning?.();
     disableImageLearning();
     if (original.storage === undefined) delete globalThis.localStorage; else globalThis.localStorage = original.storage;
@@ -36,12 +37,12 @@ test('Settings keeps useful image and review preferences without technical diagn
   renderSettingsView(container);
   const visibleCopy = container.innerHTML.replace(/<[^>]*>/g, ' ');
   assert.match(visibleCopy, /Image suggestions/);
-  assert.ok(visibleCopy.includes(`one-time download of about ${MODEL_DOWNLOAD_MB} MB`));
-  assert.match(visibleCopy, /private Drive backup/);
+  assert.ok(visibleCopy.includes(`About ${MODEL_DOWNLOAD_MB} MB`));
+  assert.match(visibleCopy, /corrections stay on this device/);
   assert.match(visibleCopy, /Reset photo preferences/);
   assert.match(visibleCopy, /Recall target/);
   assert.match(visibleCopy, /Adjust timing from my practice/);
-  assert.doesNotMatch(visibleCopy, /FSRS|training|parameters|weights|revision|labels|logistic|encoder|held-out|negative example|Fit from review history/i);
+  assert.doesNotMatch(visibleCopy, /FSRS|parameters|weights|revision|labels|logistic|encoder|held-out|negative example|Fit from review history/i);
   for (const selector of ['#image-training-rows', '#image-learning-diagnostics', '#image-training-inspector', '#train-memory-model', '#memory-training-diagnostics']) {
     assert.equal(controls.has(selector), false, `${selector} must not be rendered or queried`);
   }

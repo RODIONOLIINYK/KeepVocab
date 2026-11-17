@@ -13,13 +13,13 @@ https://huggingface.co/Rodion228huyfogdrun/KeepVocab-meaning-merge-minilm-l6-v7/
 
 Source and releases: https://github.com/RODIONOLIINYK/KeepVocab/releases
 
-App release: https://github.com/RODIONOLIINYK/KeepVocab/releases/tag/v1.12.39
+App release: https://github.com/RODIONOLIINYK/KeepVocab/releases/tag/v1.12.41
 
 Apple Silicon installer:
-https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.39/KeepVocab-1.12.39-macOS-arm64.dmg
+https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.41/KeepVocab-1.12.41-macOS-arm64.dmg
 
 Android installer:
-https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.39/KeepVocab-1.12.39-Android-debug.apk
+https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.41/KeepVocab-1.12.41-Android-debug.apk
 
 SigLIP upstream model: https://huggingface.co/onnx-community/siglip2-base-patch16-256-ONNX
 
@@ -28,11 +28,13 @@ https://github.com/RODIONOLIINYK/KeepVocab/tree/v1.12.29/models/siglip2-compact-
 
 ## Installation and lifecycle
 
-Settings has separate download/remove controls for the merge model (about
-47 MB) and SigLIP. The merge download requires an explicit Settings action;
+Settings → Local models contains both models with separate download/remove
+controls and the same streamed byte-progress display, followed by verification
+and preparation stages. The merge model is about 47 MB; SigLIP is about 208 MB.
+The merge download requires an explicit Settings action;
 startup and lookups never download it. SHA-256 and byte lengths are checked
 before downloaded files become usable. An installed merge model is preloaded
-after startup and its worker remains alive for the session. Both models share
+immediately after the initial app render and its worker remains alive for the session. Both models share
 one bundled ONNX runtime. No Hugging Face token is needed to download them.
 
 On packaged macOS installations, downloaded files live in
@@ -60,32 +62,60 @@ special tokens, then L2-normalize. Token matching excludes special tokens and
 the prefix through the first colon, with the reference's empty-mask fallback.
 The five features, scorer weights, and training-only IDF values are unchanged.
 
-Automatic merges use the original validation-selected conservative threshold
-`0.9874299168586731`. It had 0 validation and 4 test false merges; it is not a
-guarantee. Scores at or above the reference best-F1 threshold
-`0.6957939863204956` are eligible for review suggestions. User judgments override
+Automatic merges use `0.6916793788299911`, the user-selected best-F1 operating
+point with precision above 60% on the provenance-checked validation cohort.
+It is the midpoint of the optimal validation interval
+`(0.6875979386818168, 0.6957608189781654]`, chosen before test evaluation to avoid
+an FP16 score boundary. Review suggestions start at `0.5`. User judgments override
 the model; parts of speech remain separate; complete linkage prevents a chain
 of individually similar meanings from collapsing distinct meanings. Missing,
 failed, or removed models leave deterministic/user grouping and Gemini fallback
 available. Cache identities include the encoder checksum and preprocessing
 version, so legacy SigLIP scores cannot become reference-model merge scores.
 
+Entries larger than 24 definitions are scored in bounded batches. Merged cards
+display one member's definition and retain all originals. Unmerge is available
+in Add Word and the Library. Explicit merge/unmerge corrections persist as an
+append-only local journal alongside each pair's latest judgment. Events retain
+the exact available definitions/provenance, action, timestamp, previous label,
+model identity/threshold, and score when available. Settings → Local models →
+Export merge corrections exports both records and events. Missing dictionary
+extraction receipts must be quarantined before any future training; a user
+correction alone does not establish dictionary provenance.
+
 The exported checkpoint is the seed-42 zero-smoothing control that exactly
 reproduces the selected reference's epoch 4 and validation PR-AUC. No training
-or recalibration was performed for promotion. See
+was performed for this release; only the app operating threshold changed. See
 [reference.json](definition-equivalence-training/reference.json) for the full
 research record and limitations. The app export uses FP16 weights with FP32
 inputs/outputs; labels remain agent-reviewed, not human-verified.
 
 ## Promotion verification
 
-All 390 saved validation pairs were replayed without fitting or recalibration.
-Transformers.js native CPU FP16 changed no merge decisions; maximum absolute
-score error versus saved research scores was 0.001565. The actual Electron
-browser worker with WASM FP16, native model storage, and network access blocked
-also changed no merge decisions (maximum score error 0.000993). Removal cleared
-the installed model and subsequent preload did not fetch or initialize it.
-This checks deployment parity, not accuracy on a new independent dataset.
+Both original reported splits were replayed through the actual WASM worker with
+network access blocked. At the selected cutoff, all 390 validation and 384 test
+decisions matched saved research scores (maximum absolute score errors 0.000993
+and 0.001046). Native CPU FP16 also preserved decisions at this cutoff.
+
+| Original-cohort replay | Validation precision / recall | Test precision / recall |
+|---|---:|---:|
+| Original conservative `0.9874299168586731` | 100.0% / 14.8% | 84.0% / 17.4% |
+| Published best F1 `0.6957939863204956` | 66.9% / 64.8% | 69.4% / 56.2% |
+| Selected app `0.6916793788299911` | 66.9% / 64.8% | 68.7% / 56.2% |
+
+Re-extracting and verifying the original dictionary sources under the current
+provenance rules retains 376 validation and 372 test pairs. On those cohorts,
+the selected point yields **67.5% precision / 64.8% recall** in validation
+(79 TP / 38 FP), and **68.4% precision / 55.8% recall** in test (67 TP / 31 FP).
+No validation threshold achieves both 80% recall and precision above 60%.
+These previously inspected, agent-reviewed cohorts do not establish fresh
+generalization accuracy; pair metrics also differ from complete-linkage group
+metrics. The original research record is preserved unchanged.
+
+Browser verification without a Gemini key grouped 57 raw definitions for
+“work” into 39 groups, exercised Unmerge and review corrections across reloads,
+and verified both downloads' byte progress and installed-model startup preload.
+Removal clears the installed model; a later preload does not download it.
 
 Verification runners: `scripts/verify-meaning-reference.mjs` and
 `scripts/verify-meaning-worker.cjs`. Inputs come from the existing dictionary-only

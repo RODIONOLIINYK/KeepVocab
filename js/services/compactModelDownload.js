@@ -1,8 +1,9 @@
 import { CLIP_MODEL_BASE, COMPACT_MODEL_ASSETS, CLIP_RUNTIME_URLS, COMPACT_RUNTIME_ASSET } from '../ml/clipConfig.js';
+import { readModelDownload } from './modelDownloadProgress.js';
 
 // Canonical cache keys describe the actual reconstructed files. Network shards
 // are transport only, never a second model or an implicit upstream fallback.
-export async function fetchCompactModelFile(input, options, fetchImpl = globalThis.fetch) {
+export async function fetchCompactModelFile(input, options, fetchImpl = globalThis.fetch, onProgress = () => {}) {
   const url = typeof input === 'string' ? input : input.url;
   const runtime = url === CLIP_RUNTIME_URLS[1];
   const file = runtime ? 'runtime.wasm' : url?.startsWith(CLIP_MODEL_BASE) ? url.slice(CLIP_MODEL_BASE.length).replace(/^\/+/, '') : '';
@@ -15,12 +16,16 @@ export async function fetchCompactModelFile(input, options, fetchImpl = globalTh
   if (range === 'bytes=0-0' && asset.bytes) return new Response(new Uint8Array(1), { status: 206,
     headers: { 'Content-Length': '1', 'Content-Range': `bytes 0-0/${asset.bytes}`, 'Content-Type': 'application/octet-stream' } });
   const parts = [];
+  let completed = 0;
   for (const part of asset.parts) {
     const response = await fetchImpl(new URL(part, CLIP_MODEL_BASE).href, options);
     if (!response.ok) throw new Error(`Could not download ${file} (${response.status}).`);
-    parts.push(await response.arrayBuffer());
+    const bytes = await readModelDownload(response, { onProgress: detail => onProgress({ file, loaded: completed + detail.loaded,
+      total: asset.downloadBytes || (asset.parts.length === 1 ? detail.total : 0), stage: 'downloading' }) });
+    parts.push(bytes); completed += bytes.byteLength;
   }
   const blob = new Blob(parts);
+  onProgress({ file, loaded: completed, total: completed, stage: 'verifying' });
   const bytes = asset.gzip
     ? await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
     : await blob.arrayBuffer();
