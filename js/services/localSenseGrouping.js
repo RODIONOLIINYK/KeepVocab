@@ -4,7 +4,7 @@ import { CLIP_TAG } from '../ml/clipConfig.js';
 import { readObjectCache, writeRecentObjectCache } from '../utils/storageCache.js?v=18908';
 import { generateGeminiContent, getGeminiSettings } from './geminiSettings.js?v=18908';
 import { isModernUsageExample, hasExampleSenseConflict } from './exampleSearch.js?v=18908';
-import { meaningLearningState, meaningPairKey, embedMeaningAnchors, pairEvidence } from './meaningEquivalenceLearning.js';
+import { meaningPairKey, embedMeaningAnchors, pairEvidence } from './meaningEquivalenceLearning.js';
 import { equivalenceProbability, validEquivalenceHead } from './meaningEquivalenceHead.js';
 import { meaningComparisonText, meaningEmbeddingText, MEANING_COMPARISON_VERSION } from './meaningComparison.js';
 import { scoreReferenceMeaningPairs } from './meaningReference.js';
@@ -63,7 +63,7 @@ export async function consolidateEntrySenses(entry, options = {}) {
     senses.sort((a, b) => rank(a) - rank(b));
     entry = { ...entry, senses, additionalSenses: [] };
   }
-  const learning = options.meaningLearningState || await meaningLearningState();
+  const learning = options.meaningLearningState || { records: [], head: null };
   const local = await groupEntrySensesLocally(entry, { ...options, meaningLearningState: learning });
   const settings = { ...getGeminiSettings(options.storage), ...options.settings };
   // Local duplicate rules run first. A partial merge or a two-sense entry must
@@ -216,7 +216,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
   const senses = allEntrySenses(entry).flatMap(originalSenses).map(sense => ({ ...sense, word: sense.word || entry.word }));
   if (senses.length < 2) return packagedLocal(entry, senses);
 
-  const learning = options.meaningLearningState || await meaningLearningState();
+  const learning = options.meaningLearningState || { records: [], head: null };
   const userRecords = learning.records.filter(row => row.source === 'user');
   const judgments = new Map(userRecords.map(row => [row.key, row.label]));
   const distinctTwins = userRecords.filter(row => row.label === 0 && row.definitionA && row.definitionB

@@ -1,3 +1,4 @@
+import { showUnmergeReview } from './UnmergeReview.js';
 import { fallbackImageSearchPlan, hasGeminiSceneDescription } from '../services/imageSearchPlan.js';
 import { recordImagePreference } from '../services/imageLearning.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
@@ -411,30 +412,29 @@ export function renderLibraryView(container) {
         for (let i = 0; i < originals.length; i++) for (let j = i + 1; j < originals.length; j++) {
           for (const a of originalSenses(originals[i])) for (const b of originalSenses(originals[j])) {
             await recordMeaningJudgment(originals[i].word, a, b, true,
-              { encodeDefinitionTexts: async () => null, correctionAction: 'merge', surface: 'library' });
+              { correctionAction: 'merge', surface: 'library' });
           }
         }
         explanationStatus = 'Duplicate meanings merged. Their review counts and recall history were kept.';
         render();
       } catch (error) { explanationStatus = error.message; render(); }
     }));
-    container.querySelectorAll('[data-unmerge-meaning]').forEach(button => button.addEventListener('click', async () => {
-      try {
-        button.disabled = true;
-        const target = driveSync.getWords().find(word => word.id === button.dataset.unmergeMeaning);
+    container.querySelectorAll('[data-unmerge-meaning]').forEach(button => button.addEventListener('click', () => {
+      const target = driveSync.getWords().find(word => word.id === button.dataset.unmergeMeaning);
+      if (!target) return;
+      showUnmergeReview(button, originalSenses(target), { onConfirm: async () => {
         const originals = originalSenses(target);
         const split = driveSync.unmergeWordMeanings(button.dataset.unmergeMeaning);
         for (let i = 0; i < originals.length; i += 1) {
           for (let j = i + 1; j < originals.length; j += 1) {
             if (originals[i].partOfSpeech === originals[j].partOfSpeech) {
-              await recordMeaningJudgment(target.word, originals[i], originals[j], false, { encodeDefinitionTexts: async () => null,
-                correctionAction: 'unmerge', surface: 'library' });
+              await recordMeaningJudgment(target.word, originals[i], originals[j], false, { correctionAction: 'unmerge', surface: 'library' });
             }
           }
         }
         explanationStatus = `Unmerged into ${split.length} separate meanings.`;
         render();
-      } catch (error) { explanationStatus = error.message; render(); }
+      } });
     }));
     container.querySelector('[data-cancel-delete]')?.addEventListener('click', () => { deleteId = null; render(); });
     container.querySelector('[data-confirm-delete]')?.addEventListener('click', event => { driveSync.deleteWord(event.currentTarget.dataset.confirmDelete); deleteId = null; render(); });

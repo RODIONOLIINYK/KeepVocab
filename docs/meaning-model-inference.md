@@ -66,21 +66,26 @@ Automatic merges use `0.6916793788299911`, the user-selected best-F1 operating
 point with precision above 60% on the provenance-checked validation cohort.
 It is the midpoint of the optimal validation interval
 `(0.6875979386818168, 0.6957608189781654]`, chosen before test evaluation to avoid
-an FP16 score boundary. Review suggestions start at `0.5`. User judgments override
-the model; parts of speech remain separate; complete linkage prevents a chain
+an FP16 score boundary. Review suggestions start at `0.5`. Judgments in the
+current lookup override the model; parts of speech remain separate; complete linkage prevents a chain
 of individually similar meanings from collapsing distinct meanings. Missing,
-failed, or removed models leave deterministic/user grouping and Gemini fallback
-available. Cache identities include the encoder checksum and preprocessing
+failed, or removed models leave deterministic grouping, current lookup judgments,
+and Gemini fallback available. Cache identities include the encoder checksum and preprocessing
 version, so legacy SigLIP scores cannot become reference-model merge scores.
 
 Entries larger than 24 definitions are scored in bounded batches. Merged cards
 display one member's definition and retain all originals. Unmerge is available
-in Add Word and the Library. Explicit merge/unmerge corrections persist as an
-append-only local journal alongside each pair's latest judgment. Events retain
-the exact available definitions/provenance, action, timestamp, previous label,
-model identity/threshold, and score when available. Settings → Local models →
-Export merge corrections exports both records and events. Missing dictionary
-extraction receipts must be quarantined before any future training; a user
+in Add Word and the Library, with the exact member definitions shown before a
+confirmed split. Explicit merge/unmerge corrections persist only as an
+append-only training journal. Events retain the exact available
+definitions/provenance, action, timestamp, model identity/threshold, and score
+when available. Feedback generates no vectors and fits no local head. Existing
+feedback vectors, learned heads, and persistent inference overrides are removed
+on startup while training-log events are retained. New dictionary searches use
+the model again; saved Library edits remain saved. Review similar meanings stays
+open and advances after decisions, including while the current lookup regroups.
+Settings → Local models → Export merge corrections exports the journal.
+Missing dictionary extraction receipts must be quarantined before any future training; a user
 correction alone does not establish dictionary provenance.
 
 The exported checkpoint is the seed-42 zero-smoothing control that exactly

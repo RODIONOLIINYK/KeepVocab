@@ -3,26 +3,8 @@ import assert from 'node:assert/strict';
 import { MemoryStorage, driveSync } from '../js/services/driveSync.js?v=18908';
 import { consolidationStatusMessages, setupAddWordModal } from '../js/components/AddWordModal.js';
 import { mountMeaningPairReview } from '../js/components/MeaningPairReview.js';
-import { meaningLearningState, meaningPairKey, recordMeaningJudgment } from '../js/services/meaningEquivalenceLearning.js';
-import { MEANING_COMPARISON_VERSION } from '../js/services/meaningComparison.js';
+import { getMeaningCorrectionsForTraining, createMeaningJudgment, recordMeaningJudgment } from '../js/services/meaningEquivalenceLearning.js';
 import { disableImageLearning } from '../js/services/imageLearning.js?v=18908';
-import { CLIP_CACHE, CLIP_DOWNLOAD_URLS, CLIP_TAG, CLIP_DIMENSION } from '../js/ml/clipConfig.js';
-
-const vector = axis => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === axis));
-
-function cachedFiles(urls = CLIP_DOWNLOAD_URLS) {
-  const entries = new Set(urls);
-  return {
-    keys: async () => entries.size ? [CLIP_CACHE] : [],
-    open: async () => ({
-      keys: async () => [...entries],
-      match: async url => entries.has(url)
-        ? new Response('cached', { headers: { 'content-length': '6' } })
-        : undefined
-    })
-  };
-}
-
 class MockClassList {
   constructor(el) { this.el = el; this.set = new Set(); }
   _syncFromString(value) {
@@ -320,148 +302,54 @@ test('AddWordModal shows actionable warnings only in single and bulk flows', asy
 
 });
 
-test('MeaningPairReview persists manual judgments immediately without blocking and enriches exact unchanged records in the background', async context => {
+test('MeaningPairReview logs exact decisions without vectors, workers or permanent overrides', async context => {
   const { storage, document } = setupDom(context);
   driveSync.storage = storage;
-  await driveSync.imageHistory.ready;
-
-  const senseA = { id: 'a', word: 'probe', partOfSpeech: 'verb', definition: 'To examine closely with an instrument.' };
-  const senseB = { id: 'b', word: 'probe', partOfSpeech: 'verb', definition: '(UK) To investigate thoroughly.' };
-  const entry = { word: 'probe', senses: [senseA, senseB] };
-  const key = meaningPairKey(entry.word, 'verb', senseA.definition, senseB.definition);
-
-  let releaseEncode;
-  const encodeStarted = new Promise(resolve => {
-    // Wait hook set inside encoder below
-    context._signalStart = resolve;
-  });
-  let encodeCalls = 0;
-  let capturedTexts = null;
-
-  const container = document.createElement('div');
+  const a = { id: 'a', word: 'probe', partOfSpeech: 'verb', definition: 'To examine closely with an instrument.' };
+  const b = { id: 'b', word: 'probe', partOfSpeech: 'verb', definition: '(UK) To investigate thoroughly.' };
   let changes = 0;
-  const controller = mountMeaningPairReview(container, entry, {
-    onChange: () => { changes++; },
-    encodeDefinitionTexts: async texts => {
-      encodeCalls++;
-      capturedTexts = texts;
-      context._signalStart();
-      await new Promise(resolve => { releaseEncode = resolve; });
-      return texts.map((_, index) => vector(index));
-    }
+  globalThis.Worker = class { constructor() { assert.fail('Feedback must not load an encoder'); } };
+  const container = document.createElement('div');
+  mountMeaningPairReview(container, { word: 'probe', senses: [a, b] }, {
+    onChange: record => { changes++; assert.equal(record.label, 1); },
+    encodeDefinitionTexts: () => assert.fail('Feedback must not encode vectors')
   });
-
-  const opener = container.children[0];
-  const panel = container.children[1];
-  await opener.click();
-  const sameButton = panel.querySelectorAll('button').find(b => b.textContent === 'Same meaning');
-  assert.ok(sameButton);
-
-  // Manual click completes immediately without waiting on releaseEncode()
-  await sameButton.click();
+  await container.children[0].click();
+  await container.children[1].querySelectorAll('button').find(b => b.textContent === 'Same meaning').click();
   assert.equal(changes, 1);
+  assert.equal(container.children[1].hidden, false);
+  const { corrections } = await getMeaningCorrectionsForTraining();
+  const saved = corrections.find(row => row.word === 'probe');
+  assert.equal(saved.label, 1);
+  assert.equal(saved.senseA.definition, a.definition);
+  const persisted = await driveSync.imageHistory.readState('meaningEquivalenceLearning-v1');
+  assert.deepEqual(Object.keys(persisted), ['corrections']);
+  assert.equal(JSON.stringify(persisted).includes('rawA'), false);
 
-  const immediatelySaved = (await meaningLearningState()).records.find(r => r.key === key);
-  assert.ok(immediatelySaved);
-  assert.equal(immediatelySaved.label, 1);
-  assert.equal(immediatelySaved.source, 'user');
-  assert.equal(immediatelySaved.evidence, undefined);
-
-  // Simulate AddWordModal re-rendering and destroying the controller while background enrichment runs
-  controller.destroy();
-
-  await encodeStarted;
-  assert.equal(encodeCalls, 1);
-  assert.equal(capturedTexts.length, 6);
-  releaseEncode();
-  await controller.whenEnriched();
-
-  const enriched = (await meaningLearningState()).records.find(r => r.key === key);
-  assert.equal(enriched.label, 1);
-  assert.equal(enriched.evidence?.encoder, CLIP_TAG);
-  assert.equal(enriched.evidence?.comparisonVersion, MEANING_COMPARISON_VERSION);
-  assert.equal(enriched.evidence?.rawA?.length, CLIP_DIMENSION);
+  // A fresh review does not hide a pair simply because it was logged before.
+  const next = document.createElement('div');
+  mountMeaningPairReview(next, { word: 'probe', senses: [a, b] });
+  await next.children[0].click();
+  assert.ok(next.children[1].querySelectorAll('button').find(b => b.textContent === 'Same meaning'));
 });
 
-test('MeaningPairReview background enrichment skips downloads when uninstalled and refuses to overwrite a modified or encoder-mismatched record', async context => {
-  const { storage, document } = setupDom(context);
-  driveSync.storage = storage;
-  await driveSync.imageHistory.ready;
-
-  const workers = [];
-  globalThis.Worker = class {
-    constructor() { workers.push(this); }
-    postMessage() {}
-    terminate() {}
-  };
-  globalThis.caches = cachedFiles([]);
-
-  const senseA = { id: 'a', word: 'draft', partOfSpeech: 'noun', definition: 'A preliminary version of a document.' };
-  const senseB = { id: 'b', word: 'draft', partOfSpeech: 'noun', definition: 'A current of air in a room.' };
-  const entry = { word: 'draft', senses: [senseA, senseB] };
-  const key = meaningPairKey(entry.word, 'noun', senseA.definition, senseB.definition);
-
-  // 1. Uninstalled model: manual judgment persists, zero workers spawned
-  const container1 = document.createElement('div');
-  const c1 = mountMeaningPairReview(container1, entry, {
-    storage,
-    cacheStorage: cachedFiles([])
-  });
-  await container1.children[0].click();
-  await container1.children[1].querySelectorAll('button').find(b => b.textContent === 'Different meanings').click();
-  await c1.whenEnriched();
-  assert.equal(workers.length, 0);
-  const savedUninstalled = (await meaningLearningState()).records.find(r => r.key === key);
-  assert.equal(savedUninstalled.label, 0);
-  assert.equal(savedUninstalled.evidence, undefined);
-
-  // 2. Modified record during in-flight encoding: stale enrichment refuses to overwrite newer judgment
-  const senseC = { id: 'c', word: 'bank', partOfSpeech: 'noun', definition: 'A financial institution.' };
-  const senseD = { id: 'd', word: 'bank', partOfSpeech: 'noun', definition: 'The land alongside a river.' };
-  const bankKey = meaningPairKey('bank', 'noun', senseC.definition, senseD.definition);
-  let releaseBankEncode, bankEncodeStartedResolve;
-  const bankEncodeStarted = new Promise(resolve => { bankEncodeStartedResolve = resolve; });
-
-  const container2 = document.createElement('div');
-  const c2 = mountMeaningPairReview(container2, { word: 'bank', senses: [senseC, senseD] }, {
-    encodeDefinitionTexts: async texts => {
-      bankEncodeStartedResolve();
-      await new Promise(resolve => { releaseBankEncode = resolve; });
-      return texts.map((_, index) => vector(index));
-    }
-  });
-  await container2.children[0].click();
-  await container2.children[1].querySelectorAll('button').find(b => b.textContent === 'Same meaning').click();
-  await bankEncodeStarted;
-
-  // Overwrite record externally before stale enrichment completes
-  await recordMeaningJudgment('bank', senseC, senseD, false, { encodeDefinitionTexts: async () => null });
-  releaseBankEncode();
-  await c2.whenEnriched();
-
-  const finalBank = (await meaningLearningState()).records.find(r => r.key === bankKey);
-  assert.equal(finalBank.label, 0, 'newer Different meanings label must remain intact');
-  assert.equal(finalBank.evidence, undefined, 'stale Same meaning enrichment must not attach after record changed');
-
-  // 3. Mismatched encoder tag from custom encoder is rejected
-  const senseE = { id: 'e', word: 'seal', partOfSpeech: 'noun', definition: 'A marine mammal.' };
-  const senseF = { id: 'f', word: 'seal', partOfSpeech: 'noun', definition: 'A stamp used to close an envelope.' };
-  const sealKey = meaningPairKey('seal', 'noun', senseE.definition, senseF.definition);
-
-  const container3 = document.createElement('div');
-  const c3 = mountMeaningPairReview(container3, { word: 'seal', senses: [senseE, senseF] }, {
-    encodeDefinitionTexts: async texts => ({
-      model: 'stale-encoder-v0',
-      vectors: texts.map((_, index) => vector(index))
-    })
-  });
-  await container3.children[0].click();
-  await container3.children[1].querySelectorAll('button').find(b => b.textContent === 'Different meanings').click();
-  await c3.whenEnriched();
-
-  const finalSeal = (await meaningLearningState()).records.find(r => r.key === sealKey);
-  assert.equal(finalSeal.label, 0);
-  assert.equal(finalSeal.evidence, undefined);
+test('MeaningPairReview stays closed when the user closes it during an asynchronous update', async context => {
+  const { storage, document } = setupDom(context); driveSync.storage = storage;
+  let release, started;
+  const updating = new Promise(resolve => { started = resolve; });
+  const container = document.createElement('div');
+  mountMeaningPairReview(container, { word: 'bank', senses: [
+    { partOfSpeech: 'noun', definition: 'A financial institution.' },
+    { partOfSpeech: 'noun', definition: 'The land alongside a river.' }
+  ] }, { onChange: async () => { started(); await new Promise(resolve => { release = resolve; }); } });
+  const [opener, panel] = container.children;
+  await opener.click();
+  const pending = panel.querySelectorAll('button').find(b => b.textContent === 'Different meanings').click();
+  await updating;
+  await opener.click();
+  release(); await pending;
+  assert.equal(panel.hidden, true);
+  assert.equal(opener.getAttribute('aria-expanded'), 'false');
 });
 
 test('MeaningPairReview skips deterministic near-duplicates and already-judged near-duplicate twins', async context => {
@@ -476,10 +364,10 @@ test('MeaningPairReview skips deterministic near-duplicates and already-judged n
     { id: 'd', word: 'calm', partOfSpeech: 'verb', definition: '(intransitive) To become calm.' },
     { id: 'e', word: 'calm', partOfSpeech: 'verb', definition: 'To soothe or quiet down.' }
   ];
-  await recordMeaningJudgment('calm', calmSenses[0], calmSenses[1], false, { encodeDefinitionTexts: async () => null });
+  const sessionRecord = createMeaningJudgment('calm', calmSenses[0], calmSenses[1], false);
 
   const container = document.createElement('div');
-  mountMeaningPairReview(container, { word: 'calm', senses: calmSenses }, { storage });
+  mountMeaningPairReview(container, { word: 'calm', senses: calmSenses }, { sessionRecords: [sessionRecord] });
   await container.children[0].click();
   const paragraphs = container.children[1].querySelectorAll('p').map(p => p.textContent);
   assert.ok(paragraphs.some(text => text === 'To soothe or quiet down.'),
@@ -528,31 +416,76 @@ test('AddWordModal shows an Unmerge button on merged meanings and splits them cl
   assert.ok(unmergeBtn, 'merged sense row must render an Unmerge button');
   assert.equal(unmergeBtn.textContent, 'Unmerge');
 
+  const before = (await getMeaningCorrectionsForTraining()).corrections.length;
   await unmergeBtn.click();
+  let review = senseList.querySelector('.unmerge-review');
+  assert.ok(review.textContent.includes('(transitive) To make or keep warm.'));
+  assert.ok(review.textContent.includes('(intransitive) To make or keep warm.'));
+  assert.equal(senseList.querySelectorAll('.sense-option').length, 2, 'preview must not split yet');
+  await review.querySelectorAll('button').find(b => b.textContent === 'Keep merged').click();
+  assert.equal((await getMeaningCorrectionsForTraining()).corrections.length, before, 'cancel must not record a label');
+  await unmergeBtn.click();
+  review = senseList.querySelector('.unmerge-review');
+  await review.querySelectorAll('button').find(b => b.textContent === 'Unmerge these meanings').click();
   for (let i = 0; i < 40 && senseList.querySelectorAll('.sense-option').length < 3; i++) {
     await new Promise(resolve => setTimeout(resolve, 5));
   }
 
   assert.equal(senseList.querySelectorAll('.sense-option').length, 3);
   assert.equal(senseList.querySelector('.sense-unmerge-btn'), null);
-  const savedState = await meaningLearningState();
-  assert.ok(savedState.records.some(r => r.word === 'warm' && r.label === 0));
+  const savedState = await getMeaningCorrectionsForTraining();
   assert.ok(savedState.corrections.some(r => r.word === 'warm' && r.action === 'unmerge' && r.surface === 'add-word'));
+  await lookupForm.dispatchEvent({ type: 'submit' });
+  for (let i = 0; i < 40 && senseList.querySelectorAll('.sense-option').length !== 2; i++) await new Promise(resolve => setTimeout(resolve, 5));
+  assert.equal(senseList.querySelectorAll('.sense-option').length, 2, 'new lookup must merge normally despite the log');
+
 });
 
-test('user correction journal preserves merge/unmerge reversals and exact provenance without duplicating enrichment', async context => {
+test('user correction journal preserves merge/unmerge reversals and exact provenance without storing vectors or overrides', async context => {
   const { storage } = setupDom(context); driveSync.storage = storage;
   const a = { word: 'correction-probe', partOfSpeech: 'noun', sourceDefinition: 'Original dictionary A.', sourceUrl: 'https://dictionary.test/a', license: 'CC BY-SA' };
   const b = { ...a, sourceDefinition: 'Original dictionary B.', sourceUrl: 'https://dictionary.test/b' };
   for (const label of [false, true, false]) await recordMeaningJudgment(a.word, a, b, label,
     { encodeDefinitionTexts: async () => null, surface: 'library', modelScore: .72 });
-  await recordMeaningJudgment(a.word, a, b, false, { encodeDefinitionTexts: async () => null, recordCorrection: false });
-  const state = await meaningLearningState(), events = state.corrections.filter(row => row.word === a.word);
+  const state = await getMeaningCorrectionsForTraining(), events = state.corrections.filter(row => row.word === a.word);
   assert.deepEqual(events.map(row => row.label), [0, 1, 0]);
   assert.equal(new Set(events.map(row => row.id)).size, 3);
   assert.equal(events[0].senseA.sourceDefinition, a.sourceDefinition);
   assert.equal(events[0].senseB.sourceUrl, b.sourceUrl);
   assert.equal(events[0].model.score, .72);
   assert.equal(events[0].trainingEligibility, 'pending-dictionary-provenance-validation');
-  assert.equal(state.records.find(row => row.word === a.word).label, 0);
+  assert.equal(state.records, undefined);
+});
+
+test('AddWordModal keeps Review similar meanings open and applies decisions only to the current lookup', async context => {
+  const { storage, document } = setupDom(context); driveSync.storage = storage;
+  globalThis.fetch = async () => new Response(JSON.stringify([{
+    word: 'bank', meanings: [{ partOfSpeech: 'noun', definitions: [
+      { definition: 'A financial institution.' }, { definition: 'A business providing financial services.' }, { definition: 'The land alongside a river.' }
+    ] }]
+  }]), { headers: { 'content-type': 'application/json' } });
+  setupAddWordModal();
+  document.getElementById('add-word-input').value = 'bank';
+  const lookup = document.getElementById('add-word-lookup-form');
+  await lookup.dispatchEvent({ type: 'submit' });
+  const container = document.getElementById('add-word-meaning-review');
+  for (let i = 0; i < 40 && !container.children.length; i++) await new Promise(resolve => setTimeout(resolve, 5));
+  const [opener, panel] = container.children;
+  const list = document.getElementById('add-word-sense-list');
+  assert.equal(list.querySelectorAll('.sense-option').length, 3);
+  await opener.click();
+  await panel.querySelectorAll('button').find(b => b.textContent === 'Same meaning').click();
+  assert.equal(list.querySelectorAll('.sense-option').length, 2);
+  assert.equal(container.children[1], panel, 'regrouping must keep the same review panel');
+  assert.equal(panel.hidden, false);
+  assert.equal(opener.getAttribute('aria-expanded'), 'true');
+  await panel.querySelectorAll('button').find(b => b.textContent === 'Different meanings').click();
+  assert.equal(panel.hidden, false);
+  await panel.querySelectorAll('button').find(b => b.textContent === 'Skip').click();
+  assert.match(panel.textContent, /No more meaning pairs/);
+  await lookup.dispatchEvent({ type: 'submit' });
+  for (let i = 0; i < 40 && list.querySelectorAll('.sense-option').length !== 3; i++) await new Promise(resolve => setTimeout(resolve, 5));
+  assert.equal(list.querySelectorAll('.sense-option').length, 3);
+  assert.notEqual(container.children[1], panel);
+  assert.equal(container.children[1].hidden, true);
 });

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { groupEntrySensesLocally } from '../js/services/localSenseGrouping.js';
 import { groupSimilarSenses, areSensesNearDuplicate } from '../js/services/learningDefinitions.js';
-import { driveSync, DriveSyncService, MemoryStorage } from '../js/services/driveSync.js?v=18908';
+import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js?v=18908';
 import { MEANING_EMBEDDING_CENTER } from '../js/ml/pretrainedSemanticHeads.js';
 import { meaningPairKey } from '../js/services/meaningEquivalenceLearning.js';
 
@@ -87,15 +87,15 @@ test('uncalibrated centered similarity cannot automatically merge opposite meani
   }
 });
 
-test('an explicit Different meanings judgment splits a model merge without rerunning inference', async context => {
+test('an explicit Different meanings judgment splits a model merge in the current lookup without rerunning inference', async () => {
   const a = sense('a', 'Permitted to enter.'), b = sense('b', 'Forbidden to enter.');
   const entry = { word: a.word, senses: [a, b] };
   const grouped = { ...entry, senses: groupSimilarSenses(entry.senses, { matches: () => true }) };
   assert.equal(grouped.senses.length, 1);
-  context.mock.method(driveSync.imageHistory, 'readState', async () => ({
+  const meaningLearningState = {
     records: [{ source: 'user', label: 0, key: meaningPairKey(a.word, a.partOfSpeech, a.definition, b.definition) }]
-  }));
-  const regrouped = await groupEntrySensesLocally(grouped, { storage: null, reuseSemanticScoresOnly: true });
+  };
+  const regrouped = await groupEntrySensesLocally(grouped, { storage: null, reuseSemanticScoresOnly: true, meaningLearningState });
   assert.equal(regrouped.senses.length, 2);
   assert.equal(regrouped.senseConsolidation.userReviewed, true);
 });

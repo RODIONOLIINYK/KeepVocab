@@ -46,6 +46,12 @@ export class ImageLearningHistoryStore {
   }
   async load(indexedDB) {
     let fallback = [];
+    // Retire vectors, learned heads and persistent overrides; retain only the log.
+    try {
+      const key = `${PREFIX}_meaningEquivalenceLearning-v1`;
+      const saved = JSON.parse(this.storage?.getItem(key) || 'null');
+      if (saved && ('records' in saved || 'head' in saved)) this.storage.setItem(key, JSON.stringify({ corrections: saved.corrections || [] }));
+    } catch { /* Leave unreadable data alone; normal history remains available. */ }
     try {
       const manifest = JSON.parse(this.storage?.getItem(PREFIX) || '{}'); this.resetAt = iso(manifest.resetAt) || '';
       const reset = JSON.parse(this.storage?.getItem(`${PREFIX}_resetAt`) || 'null');
@@ -61,6 +67,16 @@ export class ImageLearningHistoryStore {
         };
         request.onsuccess = () => { request.result.onversionchange = () => request.result.close(); resolve(request.result); };
         request.onerror = () => reject(request.error); request.onblocked = () => reject(new Error('Photo history is busy.'));
+      });
+      await new Promise((resolve, reject) => {
+        const tx = this.database.transaction('state', 'readwrite');
+        const state = tx.objectStore('state');
+        const request = state.get('meaningEquivalenceLearning-v1');
+        request.onsuccess = () => {
+          const saved = request.result;
+          if (saved && ('records' in saved || 'head' in saved)) state.put({ corrections: saved.corrections || [] }, 'meaningEquivalenceLearning-v1');
+        };
+        tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); tx.onabort = () => reject(tx.error);
       });
       const state = await this.readState('resetAt'); if (timestamp(state) > timestamp(this.resetAt)) this.resetAt = state;
       if (fallback.length) await this.persist(mergeImageEvents(fallback).filter(r => timestamp(r.updatedAt) > timestamp(this.resetAt)));

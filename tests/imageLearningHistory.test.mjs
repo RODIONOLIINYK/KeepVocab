@@ -65,3 +65,22 @@ test('a reset marker survives a fallback manifest quota failure and prevents old
   assert.equal((await store.all()).length,0);storage.setItem=set;
   assert.equal((await new ImageLearningHistoryStore(storage,undefined).all()).length,0);
 });
+
+
+test('meaning-feedback migration retains the training journal and drops old vectors, heads and overrides', async () => {
+  const key = 'meaningEquivalenceLearning-v1';
+  const corrections = [{ id: 'old-correction', label: 0, senseA: { sourceDefinition: 'Exact dictionary text.' } }];
+  const obsolete = { records: [{ evidence: { rawA: [1, 2, 3] } }], head: { weights: [9] }, corrections, revision: 4 };
+  const storage = new MemoryStorage();
+  storage.setItem(`keepvocab_image_history_v2_${key}`, JSON.stringify(obsolete));
+  const fallback = new ImageLearningHistoryStore(storage, null); await fallback.ready;
+  assert.deepEqual(await fallback.readState(key), { corrections });
+  const restarted = new ImageLearningHistoryStore(storage, null); await restarted.ready;
+  assert.deepEqual(await restarted.readState(key), { corrections });
+  const indexedDB = new IDBFactory();
+  const store = new ImageLearningHistoryStore(new MemoryStorage(), indexedDB); await store.ready;
+  await store.writeState(key, obsolete);
+  const migrated = new ImageLearningHistoryStore(new MemoryStorage(), indexedDB); await migrated.ready;
+  assert.deepEqual(await migrated.readState(key), { corrections });
+  store.database.close(); migrated.database.close();
+});

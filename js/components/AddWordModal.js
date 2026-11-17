@@ -1,3 +1,4 @@
+import { showUnmergeReview } from './UnmergeReview.js';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { fetchWordEntry, wordEntryToWord, prepareWordsForLibrary, prepareBulkLearnerExplanations } from '../services/wordEntry.js?v=18908';
 import { BULK_LOOKUP_DELAY_MS, MAX_BULK_WORDS, parseBulkWordList, lookupBulkWords, retryMissingBulkWords, bulkResultToWord, dedupeBulkResults } from '../services/bulkWords.js?v=18908';
@@ -120,6 +121,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   document.body.insertAdjacentHTML('beforeend', ADD_WORD_MARKUP);
   let currentFetchedData = null;
   let meaningPairReview = null;
+  let meaningReviewSession = { records: [] };
   let activeCourseId = driveSync.getActiveCourseId();
   let activeTranslationLanguage = getTranslationLanguage();
   let generation = 0;
@@ -423,6 +425,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
 
   const clearSenseState = () => {
     meaningPairReview?.destroy(); meaningPairReview = null;
+    meaningReviewSession = { records: [] };
     document.getElementById('add-word-meaning-review')?.replaceChildren();
     consolidationNotes?.replaceChildren();
     if (consolidationNotes) consolidationNotes.hidden = true;
@@ -574,23 +577,25 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     const originals = originalSenses(sense).map(item => ({ ...item, word: item.word || word }));
     if (originals.length < 2) return;
     const targets = originals;
+    const session = meaningReviewSession;
     for (let i = 0; i < targets.length; i += 1) {
       for (let j = i + 1; j < targets.length; j += 1) {
         if (String(targets[i].partOfSpeech || '').toLowerCase() !== String(targets[j].partOfSpeech || '').toLowerCase()) continue;
-        await recordMeaningJudgment(word, targets[i], targets[j], false, { encodeDefinitionTexts: async () => null,
+        const { record } = await recordMeaningJudgment(word, targets[i], targets[j], false, {
           correctionAction: 'unmerge', surface: 'add-word', modelTag: entry.meaningEquivalenceModel });
+        session.records = [...session.records.filter(row => row.key !== record.key), record];
       }
     }
     if (currentFetchedData !== entry) return;
     const state = { drafts: [...senseDrafts.values()], selected: new Set(selectedSenseIds), focused: focusedSenseId };
     const regrouped = await consolidateEntrySenses(entry, {
-      reuseSemanticScoresOnly: true,
+      reuseSemanticScoresOnly: true, meaningLearningState: session,
       ...(entry?.senseConsolidation?.source === 'local' ? { consolidateSenses: false } : {})
     });
     if (currentFetchedData !== entry) return;
     currentFetchedData = regrouped;
     renderSenses(regrouped, state);
-    formStatus.textContent = `Unmerged ${originals.length} meanings for “${word}”. They will stay separate.`;
+    formStatus.textContent = `Unmerged ${originals.length} meanings for “${word}”. They are separate for this lookup.`;
   };
 
   const renderSenseOptions = () => {
@@ -670,11 +675,11 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         unmergeBtn.textContent = 'Unmerge';
         unmergeBtn.setAttribute('aria-label', `Unmerge ${merged.length} meanings for ${mainDef}`);
         unmergeBtn.addEventListener('click', () => {
-          unmergeBtn.disabled = true;
-          unmergeSenseGroup(sense).catch(error => {
-            unmergeBtn.disabled = false;
-            formStatus.textContent = error?.message || 'Could not unmerge meanings.';
-          });
+          const entry = currentFetchedData;
+          showUnmergeReview(unmergeBtn, merged, { onConfirm: async () => {
+            if (currentFetchedData !== entry) return;
+            await unmergeSenseGroup(sense);
+          } });
         });
         row.appendChild(unmergeBtn);
       }
@@ -683,23 +688,31 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   };
 
   const renderSenses = (data, previous = null) => {
-    meaningPairReview?.destroy();
-    meaningPairReview = mountMeaningPairReview(document.getElementById('add-word-meaning-review'), data, {
-      onChange: async () => {
-        persistFocusedDraft();
-        const entry = currentFetchedData;
-        const state = { drafts: [...senseDrafts.values()], selected: new Set(selectedSenseIds), focused: focusedSenseId };
-        try {
-          const regrouped = await consolidateEntrySenses(entry, { reuseSemanticScoresOnly: true });
-          if (currentFetchedData !== entry) return;
-          currentFetchedData = regrouped;
-          renderSenses(regrouped, state);
-          formStatus.textContent = 'Meaning judgment saved. The grouped meanings have been updated.';
-        } catch {
-          formStatus.textContent = 'Judgment saved. Look up the word again to refresh the grouped meanings.';
+    if (!previous) {
+      meaningPairReview?.destroy();
+      meaningReviewSession = { records: [] };
+      const session = meaningReviewSession;
+      const reviewGeneration = generation;
+      meaningPairReview = mountMeaningPairReview(document.getElementById('add-word-meaning-review'), data, {
+        sessionRecords: () => session.records,
+        onChange: async record => {
+          if (meaningReviewSession !== session || generation !== reviewGeneration) return;
+          session.records = [...session.records.filter(row => row.key !== record.key), record];
+          persistFocusedDraft();
+          const entry = currentFetchedData;
+          const state = { drafts: [...senseDrafts.values()], selected: new Set(selectedSenseIds), focused: focusedSenseId };
+          try {
+            const regrouped = await consolidateEntrySenses(entry, { reuseSemanticScoresOnly: true, meaningLearningState: session });
+            if (currentFetchedData !== entry || generation !== reviewGeneration) return;
+            currentFetchedData = regrouped;
+            renderSenses(regrouped, state);
+            formStatus.textContent = 'The grouped meanings have been updated.';
+          } catch {
+            if (currentFetchedData === entry && generation === reviewGeneration) formStatus.textContent = 'Could not update the grouped meanings. Please try again.';
+          }
         }
-      }
-    });
+      });
+    }
     showAllSenses = false;
     meaningMode = 'grouped';
     modeStates = new Map();

@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112041-reference-merge';
+const CACHE_NAME = 'keepvocab-v112042-meaning-review';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -58,6 +58,7 @@ const ASSETS_TO_CACHE = [
   './js/services/meaningEquivalenceLearning.js',
   './js/services/learnedHeadValidation.js',
   './js/components/MeaningPairReview.js',
+  './js/components/UnmergeReview.js',
   './js/ml/TRANSFORMERS-LICENSE.txt',
   './js/ml/ONNX-RUNTIME-LICENSE.txt',
   './js/ml/clipWorker.bundle.js',
