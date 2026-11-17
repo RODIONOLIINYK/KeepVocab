@@ -13,13 +13,13 @@ https://huggingface.co/Rodion228huyfogdrun/KeepVocab-meaning-merge-minilm-l6-v7/
 
 Source and releases: https://github.com/RODIONOLIINYK/KeepVocab/releases
 
-App release: https://github.com/RODIONOLIINYK/KeepVocab/releases/tag/v1.12.41
+App release: https://github.com/RODIONOLIINYK/KeepVocab/releases/tag/v1.12.44
 
 Apple Silicon installer:
-https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.41/KeepVocab-1.12.41-macOS-arm64.dmg
+https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.44/KeepVocab-1.12.44-macOS-arm64.dmg
 
 Android installer:
-https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.41/KeepVocab-1.12.41-Android-debug.apk
+https://github.com/RODIONOLIINYK/KeepVocab/releases/download/v1.12.44/KeepVocab-1.12.44-Android-debug.apk
 
 SigLIP upstream model: https://huggingface.co/onnx-community/siglip2-base-patch16-256-ONNX
 

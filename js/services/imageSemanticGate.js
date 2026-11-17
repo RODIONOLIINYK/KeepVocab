@@ -1,12 +1,12 @@
 // SigLIP2 raw cosine is not a probability or the former encoder's score scale.
-// A conservative validation-only manual-shortlist cutoff of .12852 was rounded
-// upward to .13. Automatic image selection has separate, stricter checks.
+// The user-selected validation best-F1 shortlist cutoff comes from the exact
+// encoder definition-only replay. Automatic selection keeps separate stricter checks.
 // Target match must meet the minimum similarity,
 // exceed the unwanted-content prompt score (selected > unwanted), and not score
 // lower than an explicit visual contrast (margin >= 0). Generic dictionary
 // alternatives remain ranking hints, since their descriptions can overlap.
 export const IMAGE_SEMANTIC_FILTER = Object.freeze({
-  minimumSimilarity: .13,
+  minimumSimilarity: 0.06327517532812867,
   closeContrastMargin: .02,
   candidatePoolSize: 45
 });

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { canAutoSelectImage, isUncertainImageMatch, imageChoiceLabels, imageReplacementLabels } from '../js/services/imageChoicePolicy.js';
+import { passesImageSemanticGate } from '../js/services/imageSemanticGate.js';
 import { CLIP_TAG } from '../js/ml/clipConfig.js';
 
 function candidates(patch = {}) {
@@ -64,4 +65,10 @@ test('uncertainty-triggered active learning flags tight margins and boundary can
   assert.equal(isUncertainImageMatch(candidates({ preference: 0.78, selected: 0.42, margin: 0.2, score: 0.52 })).uncertain, false);
   assert.equal(isUncertainImageMatch(candidates({ score: 0.43 })).uncertain, true);
   assert.equal(isUncertainImageMatch(candidates({ margin: 0.082 })).uncertain, true);
+});
+
+test('the best-F1 shortlist cutoff admits weaker manual candidates without automatically choosing them', () => {
+  const photos = candidates({ selected: .08, unwanted: .02, contrast: null, margin: 0 });
+  assert.equal(passesImageSemanticGate(photos[0].ml), true);
+  assert.equal(canAutoSelectImage(photos), false);
 });

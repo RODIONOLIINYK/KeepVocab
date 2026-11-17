@@ -1,4 +1,21 @@
-# Image screening and the current personal ranker — 1.12.9
+# Image screening
+
+## Current SigLIP2 shortlist — 1.12.44
+
+The app uses the user-selected best-F1 minimum similarity
+`0.06327517532812867` for image eligibility. It also requires the target score
+to exceed the unwanted-content score and retains explicit visual-contrast checks.
+Personal preference cannot rescue a rejected candidate. Automatic selection has
+separate stricter requirements; passing this cutoff makes a photo eligible for
+the manual chooser. Encoder weights and preprocessing are unchanged.
+
+This cutoff was selected on the existing definition-only validation cohort using
+the exact deployed SigLIP2 encoder and the production full-frame/crop scoring.
+The historical labels measure target presence rather than the current foreground
+suitability standard, and the replay does not cover generated scenes or complete
+live galleries. It is not a new production-accuracy claim.
+
+## Historical MobileCLIP screening — 1.12.9
 
 The live chooser now encodes up to 30 candidate photos with frozen MobileCLIP S0
 (FP16 text, FP32 vision). It keeps a photo only when selected-meaning similarity

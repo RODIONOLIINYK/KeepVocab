@@ -9,15 +9,18 @@ import { MemoryStorage } from '../js/services/driveSync.js';
 
 const vector = axis => Array.from({length:CLIP_DIMENSION},(_,i)=>Number(i===axis));
 test('the encoder-specific semantic cutoff is inclusive, selected must exceed unwanted, and missing scores fail',()=>{
-  assert.deepEqual(IMAGE_SEMANTIC_FILTER,{minimumSimilarity:.13,closeContrastMargin:.02,candidatePoolSize:45});
-  assert.equal(passesImageSemanticGate({selected:.13,unwanted:.129}),true);
+  assert.deepEqual(IMAGE_SEMANTIC_FILTER,{minimumSimilarity:0.06327517532812867,closeContrastMargin:.02,candidatePoolSize:45});
+  const cutoff = IMAGE_SEMANTIC_FILTER.minimumSimilarity;
+  assert.equal(passesImageSemanticGate({selected:cutoff,unwanted:cutoff-1e-8}),true);
+  assert.equal(passesImageSemanticGate({selected:cutoff-1e-8,unwanted:0}),false);
+  assert.equal(passesImageSemanticGate({selected:.08,unwanted:.02}),true);
   assert.equal(passesImageSemanticGate({selected:.25,unwanted:.24,margin:.02}),true);
-  for(const row of [{selected:.1299,unwanted:0},{selected:.13,unwanted:.13},{selected:.22,unwanted:.25},{selected:.24,unwanted:.1,margin:-.01},{selected:NaN,unwanted:0},{selected:.9},null])assert.equal(passesImageSemanticGate(row),false);
+  for(const row of [{selected:cutoff,unwanted:cutoff},{selected:.22,unwanted:.25},{selected:.24,unwanted:.1,margin:-.01},{selected:NaN,unwanted:0},{selected:.9},null])assert.equal(passesImageSemanticGate(row),false);
 });
 test('personal taste cannot resurrect a failed semantic match or unwanted-content rejection',()=>{
   const model=createPersonalizer();model.weights.fill(0);
   model.weights[0]=10;model.weights[PERSONALIZER_INPUTS * 32]=1;model.weights[PERSONALIZER_INPUTS * 32 + 32 + 32 * 16]=10;
-  const items=[.12,.21,.24].map((selected,i)=>({candidate:{id:i},vector:vector(i),meaningFeatures:encodeMeaning(vector(3)),
+  const items=[.05,.21,.24].map((selected,i)=>({candidate:{id:i},vector:vector(i),meaningFeatures:encodeMeaning(vector(3)),
     semantic:{selected,margin:0,unwanted:i===2?.25:0,contrast:null,score:selected}}));
   assert.equal(rankEmbeddedImages(items,model)[0].candidate.id,0,'the rejected photo has the largest learned score');
   assert.deepEqual(rankEmbeddedImages(items,model,{semanticFilter:true}).map(r=>r.candidate.id),[1]);
@@ -66,7 +69,7 @@ test('the inspected foreground apple passes the SigLIP2 shortlist without turnin
  assert.equal(passesImageSemanticGate(semantic),true);
  const [ranked]=rankEmbeddedImages([{candidate:{id:'verified-red-apple'},vector:vector(0),semantic}],null,{semanticFilter:true,fallbackLimit:9});
  assert.equal(ranked.uncertain,false);assert.ok(!ranked.belowThreshold);
- assert.equal(passesImageSemanticGate({selected:.10761977960923627,unwanted:.05871344923801159,margin:0,contrast:null}),false);
+ assert.equal(passesImageSemanticGate({selected:.10761977960923627,unwanted:.05871344923801159,margin:0,contrast:null}),true);
 });
 
 test('overlapping dictionary alternatives cannot veto a literal apple, while explicit visual contrasts remain strict',()=>{
@@ -75,5 +78,6 @@ test('overlapping dictionary alternatives cannot veto a literal apple, while exp
  assert.equal(ranked.belowThreshold,undefined);
  assert.equal(ranked.uncertain,false);
  assert.equal(passesImageSemanticGate({...semantic,contrastSource:'explicit'}),false);
- assert.equal(passesImageSemanticGate({...semantic,selected:.08,unwanted:.02}),false);
+ assert.equal(passesImageSemanticGate({...semantic,selected:.08,unwanted:.02}),true);
+ assert.equal(passesImageSemanticGate({...semantic,selected:.06,unwanted:.02}),false);
 });

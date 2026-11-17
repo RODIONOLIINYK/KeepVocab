@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112043-merged-definitions';
+const CACHE_NAME = 'keepvocab-v112044-image-best-f1';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -39,6 +39,7 @@ const ASSETS_TO_CACHE = [
   './js/services/bulkWords.js',
   './js/services/imageSearch.js',
   './js/services/imageLearning.js',
+  './js/services/imageSemanticGate.js',
   './js/services/imageModelStartup.js',
   './js/services/imagePreferences.js',
   './js/services/imageLearningHistory.js',

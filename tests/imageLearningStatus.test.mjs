@@ -218,7 +218,7 @@ test('production local scoring returns nine closest failed matches as manual-onl
   });
   assert.equal(imageCalls, 12); assert.equal(images.length, 9);
   assert.deepEqual(images.map(image => image.url), candidates.slice(3).reverse().map(image => image.url));
-  assert.ok(images.every(image => image.ml.belowThreshold && image.ml.selected < .13));
+  assert.ok(images.every(image => image.ml.belowThreshold && image.ml.selected <= image.ml.unwanted));
   assert.ok(images.every((image, i) => !i || image.ml.cosine <= images[i - 1].ml.cosine));
   const container = new ReviewContainer();
   const review = mountImageReview(container, [{ ...meaning, imageCandidates: images }]);
