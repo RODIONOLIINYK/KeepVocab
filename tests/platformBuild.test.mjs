@@ -332,9 +332,12 @@ test('every cache-busted entrypoint and module import is included in the offline
   assert.match(serviceWorker, /new Request\(url, \{ cache: 'reload' \}\)/);
   assert.match(serviceWorker, /fetch\(event\.request, \{ cache: 'no-store' \}\)/);
   assert.equal([...precachedUrls].some(url => /\?v=\d+/.test(url)), false, 'Offline cache should not download duplicate version aliases.');
-  // Includes both model workers, their shared runtime, and the image eligibility policy.
+  // Includes both model workers, their shared runtime, eligibility policy, and
+  // the two modules that share inference across app windows.
   assert.equal(precachedUrls.has('js/services/imageSemanticGate.js'), true, 'The image cutoff must be available on the first offline launch.');
-  assert.ok(precachedUrls.size <= 131, `Offline install should stay compact; found ${precachedUrls.size} requests.`);
+  assert.equal(precachedUrls.has('js/services/inferenceWorker.js'), true);
+  assert.equal(precachedUrls.has('js/services/sharedInferenceScope.js'), true);
+  assert.ok(precachedUrls.size <= 133, `Offline install should stay compact; found ${precachedUrls.size} requests.`);
 
   for (const match of html.matchAll(/(?:src|href)=["']([^"']+\?v=\d+)["']/g)) {
     const canonicalPath = match[1].split(/[?#]/)[0];

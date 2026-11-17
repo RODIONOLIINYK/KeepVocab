@@ -3,6 +3,7 @@ import { MEANING_MODEL_ASSETS } from '../ml/meaningAssets.js';
 import { meaningEmbeddingText } from './meaningComparison.js';
 import { modelCacheStorage, handleModelCacheRequest } from './modelCache.js';
 import { readModelDownload } from './modelDownloadProgress.js';
+import { createInferenceWorker, resetInferenceWorkers } from './inferenceWorker.js';
 
 let worker, nextId = 0;
 const pending = new Map();
@@ -54,6 +55,7 @@ export async function downloadMeaningModel() {
 }
 export async function removeMeaningModel() {
   if (downloading) throw new Error('Wait for the merge model download to finish.');
+  resetInferenceWorkers('meaning');
   stop(new Error('The merge model was removed.'));
   await modelCacheStorage()?.delete(MEANING_CACHE);
   installed = false; phase = 'not-installed'; downloadProgress = null; message = 'Merge model files removed.'; emit();
@@ -67,7 +69,7 @@ function rpc(payload, { signal } = {}) {
   signal?.throwIfAborted();
   if (typeof Worker === 'undefined') return Promise.reject(new Error('Web Workers are unavailable.'));
   if (!worker) {
-    const active = worker = new Worker(new URL('../ml/meaningWorker.bundle.js', import.meta.url), { type: 'module' });
+    const active = worker = createInferenceWorker('meaning');
     active.onmessage = ({ data }) => {
       if (worker !== active) return;
       if (data.type === 'model-cache') { void handleModelCacheRequest(active, data); return; }
@@ -78,11 +80,18 @@ function rpc(payload, { signal } = {}) {
       else if (data.result?.model !== MEANING_MODEL_TAG) item.reject(new Error('Meaning model identity mismatch.'));
       else item.resolve(data.result);
     };
-    active.onerror = () => { if (worker === active) stop(new Error('The meaning model could not start.')); };
+    active.onerror = event => {
+      if (worker !== active) return;
+      const removed = event?.message === 'The shared model was disabled or removed.';
+      if (removed) installed = false;
+      phase = removed ? 'not-installed' : 'error';
+      message = removed ? 'Merge model files removed.' : 'The meaning model could not start.';
+      stop(new Error(message)); emit();
+    };
   }
   return new Promise((resolve, reject) => {
     const id = ++nextId;
-    const abort = () => { pending.delete(id); cleanup(); reject(signal.reason || new Error('Meaning comparison cancelled.')); };
+    const abort = () => { worker?.postMessage({ type: 'cancel', id }); pending.delete(id); cleanup(); reject(signal.reason || new Error('Meaning comparison cancelled.')); };
     const timer = setTimeout(() => stop(new Error('Meaning comparison timed out.')), 90_000);
     const cleanup = () => { clearTimeout(timer); signal?.removeEventListener('abort', abort); };
     pending.set(id, { resolve, reject, cleanup });

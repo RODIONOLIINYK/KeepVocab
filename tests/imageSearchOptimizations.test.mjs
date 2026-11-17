@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildVisualSceneDescriptions, compactGeneratedScene, compactVisualSearchQuery, isConcreteVisualScene, prepareImageScenes, generateVisualScenesWithGemini, imageSenseFingerprint, imageSceneRecordFor, findRelevantImages, findPexelsImages, rankImageCandidates, updateImageFeedback, rerankImagesWithGemini } from '../js/services/imageSearch.js';
+import { buildVisualSceneDescriptions, compactGeneratedScene, compactVisualSearchQuery, isConcreteVisualScene, prepareImageScenes, generateVisualScenesWithGemini, imageSenseFingerprint, imageSceneRecordFor, findRelevantImages, findPexelsImages, rankImageCandidates, updateImageFeedback } from '../js/services/imageSearch.js';
 
 function storage() {
   const data = new Map([['keepvocab_gemini_live_key_v1', 'test-image-api-key']]);
@@ -176,11 +176,11 @@ test('search keeps the exact prompt after rejecting one of its results', async (
 
 test('search ranks the whole bounded candidate pool before choosing a small result set and avoids needless pixel loads', async () => {
   let loads = 0;
-  const images = Array.from({ length: 40 }, (_, index) => ({ title: index === 4 ? 'Unique pool river bank scene' : `River bank ${index}`, thumbnail: `https://pool.test/${index}.jpg`, foreign_landing_url: `https://pool.test/source/${index}`, tags: ['river', 'bank'] }));
+  const images = Array.from({ length: 40 }, (_, index) => ({ title: index === 2 ? 'Unique pool river bank scene' : `River bank ${index}`, thumbnail: `https://pool.test/${index}.jpg`, foreign_landing_url: `https://pool.test/source/${index}`, tags: ['river', 'bank'] }));
   const found = await findRelevantImages(sense('widepool'), { aiScenes: false, extraQueries: ['unique pool river bank scene'], onlyExtraQueries: true, limit: 1,
     fetchImpl: async () => ({ ok: true, json: async () => ({ results: images }) }), loadImage: async () => { loads++; return true; }
   });
-  assert.equal(found[0].url, 'https://pool.test/4.jpg');
+  assert.equal(found[0].url, 'https://pool.test/2.jpg');
   assert.ok(loads <= 2);
 });
 
@@ -188,32 +188,6 @@ test('Pexels exposes medium previews rather than full-size image URLs', async ()
   const found = await findPexelsImages('medium-preview-optimization', 'key', async () => ({ ok: true, json: async () => ({ photos: [{ url: 'https://pexels.test/source', alt: 'Medium preview', src: { medium: 'https://pexels.test/medium.jpg', large: 'https://pexels.test/large.jpg' } }] }) }));
   assert.equal(found[0].url, 'https://pexels.test/medium.jpg');
   assert.equal(found[0].thumbnailUrl, found[0].url);
-});
-
-test('optional hard-case vision sends at most four verified small thumbnails, ignores invented IDs, and caches its ranking', async () => {
-  const saved = storage(); let imageCalls = 0; let visionCalls = 0;
-  const candidates = Array.from({ length: 8 }, (_, index) => ({ url: `https://vision.test/full/${index}.jpg`, thumbnailUrl: `https://vision.test/preview/${index}.jpg`, title: 'Person balancing stones', searchQuery: 'person balancing stones' }));
-  const options = { storage: saved, semanticRerank: true,
-    fetchImpl: async (url, request) => {
-      if (url.includes('generativelanguage.googleapis.com')) {
-        visionCalls++;
-        const images = JSON.parse(request.body).contents[0].parts.filter(part => part.inlineData);
-        assert.equal(images.length, 4);
-        for (const image of images) { const size = JSON.parse(Buffer.from(image.inlineData.data, 'base64').toString()); assert.ok(size.width <= 384 && size.height <= 384); }
-        return response({ ranking: [6, 1, 1, 0] });
-      }
-      imageCalls++; assert.ok(url.includes('/preview/'));
-      return new Response('original', { headers: { 'content-type': 'image/jpeg' } });
-    },
-    decode: async blob => { const value = await blob.text(); return value === 'original' ? { width: 1200, height: 600 } : JSON.parse(value); },
-    resize: async (_image, size) => new Blob([JSON.stringify({ width: size.width, height: size.height })], { type: 'image/jpeg' })
-  };
-  const word = sense('vision');
-  assert.equal((await rerankImagesWithGemini(word, candidates, { ...options, semanticRerank: false }))[0], candidates[0]);
-  const result = await rerankImagesWithGemini(word, candidates, options);
-  assert.equal(result[0], candidates[1]); assert.equal(result[1], candidates[0]);
-  await rerankImagesWithGemini(word, candidates, options);
-  assert.equal(imageCalls, 4); assert.equal(visionCalls, 1);
 });
 
 test('explicitly disabled scene generation makes no new AI requests, even with a Gemini key', async () => {
@@ -228,6 +202,25 @@ test('explicitly disabled scene generation makes no new AI requests, even with a
   assert.equal(prepared.imageScenes, undefined);
   await findRelevantImages(prepared, { aiScenes: false, storage: saved, fetchImpl, validateImages: false });
   assert.equal(sceneCalls, 0);
+});
+
+test('image evaluation never uploads photographs even with a key and the old rerank flag', async () => {
+  const requests = [];
+  const found = await findRelevantImages(sense('no-image-uploads'), {
+    storage: storage(), aiScenes: false, semanticRerank: true,
+    onlyExtraQueries: true, extraQueries: ['person carrying heavy bags'],
+    provider: 'pexels', pexelsApiKey: 'no-image-uploads-key', validateImages: false,
+    fetchImpl: async (value, options) => {
+      const url = new URL(value); requests.push(url);
+      assert.equal(url.hostname, 'api.pexels.com');
+      assert.equal(options?.body, undefined);
+      return { ok: true, json: async () => ({ photos: Array.from({ length: 3 }, (_, i) => ({
+        url: `https://no-image-upload.test/${i}`, alt: 'A person carrying bags', src: { medium: `https://no-image-upload.test/${i}.jpg` }
+      })) }) };
+    }
+  });
+  assert.equal(found.length, 3);
+  assert.equal(requests.length, 1);
 });
 
 test('prepared meaning prompts drive image searches without another AI call or raw definition fallbacks', async () => {
@@ -328,26 +321,26 @@ test('one-scene and duplicate-only generations are retried, never persisted as a
     fingerprint: imageSenseFingerprint(sense('invalid-single')), scenes: [scene] } }, { storage: saved }), null);
 });
 
-test('all prepared prompts contribute five unique candidates within the reduced scoring pool', async () => {
+test('all prepared prompts contribute three unique candidates within the reduced scoring pool', async () => {
   const saved = storage(); const scenes = [...pair, 'child arranging pebbles beside a garden pond'];
-  const [word] = await prepareImageScenes([sense('fifteen-per-scene')], { storage: saved, fetchImpl: async () => response({ scenes }) });
+  const [word] = await prepareImageScenes([sense('three-per-scene')], { storage: saved, fetchImpl: async () => response({ scenes }) });
   const requests = [];
   const found = await findRelevantImages(word, { storage: saved, aiScenes: false, provider: 'pexels', pexelsApiKey: 'synthetic', limit: 45, validateImages: false,
     fetchImpl: async value => {
       const url = new URL(value); requests.push(url);
       assert.equal(url.hostname, 'api.pexels.com', 'full prompt pools need no fallback');
-      assert.equal(url.searchParams.get('per_page'), '5');
+      assert.equal(url.searchParams.get('per_page'), '3');
       const index = scenes.map(compactVisualSearchQuery).indexOf(url.searchParams.get('query'));
       assert.ok(index >= 0);
       return { ok: true, json: async () => ({ photos: Array.from({ length: 30 }, (_, i) => ({
-        url: `https://pexels.test/fifteen/${index}/${i}`, alt: `${scenes[index]} frame ${i}`,
-        src: { medium: `https://photos.test/fifteen/${index}/${i}.jpg` }
+        url: `https://pexels.test/three/${index}/${i}`, alt: `${scenes[index]} frame ${i}`,
+        src: { medium: `https://photos.test/three/${index}/${i}.jpg` }
       })) }) };
     }
   });
   assert.equal(requests.length, 3);
-  assert.equal(found.length, 15);
-  assert.deepEqual(scenes.map(scene => found.filter(image => image.visualScene === scene).length), [5, 5, 5]);
+  assert.equal(found.length, 9);
+  assert.deepEqual(scenes.map(scene => found.filter(image => image.visualScene === scene).length), [3, 3, 3]);
 });
 
 test('a full first prompt does not suppress fallback searches for an empty second prompt', async () => {
@@ -365,7 +358,7 @@ test('a full first prompt does not suppress fallback searches for an empty secon
       })) } : {} };
     }
   });
-  assert.equal(results.length, 10);
+  assert.equal(results.length, 6);
   assert.ok(requested.some(r => r.host === 'api.openverse.org' && r.query === queries[1]));
   assert.ok(requested.filter(r => r.host !== 'api.pexels.com').every(r => r.query === queries[1]));
 });
@@ -381,7 +374,7 @@ test('different stock photos with identical alt captions remain eligible across 
       })) }) };
     }
   });
-  assert.equal(results.length, 5);
+  assert.equal(results.length, 3);
 });
 
 test('Gemini scene prompt enforces prominent foreground framing without 6-class taxonomy overhead', async () => {
@@ -433,16 +426,84 @@ test('cached Gemini scenes remain usable without a key, without generating new d
   assert.deepEqual([...new Set(queries)], prepared.imageScenes.scenes.map(compactVisualSearchQuery));
 });
 
-test('without Gemini scenes, word and exact meaning each receive five candidate slots before ranking',async()=>{
+test('without Gemini scenes, word and exact meaning each receive three candidate slots before ranking',async()=>{
  const word={word:'balancedretrievalprobe',partOfSpeech:'noun',definition:'The activity of imparting and acquiring skills.'};
  for(const saved of [storage(),{getItem:()=>null,setItem:()=>{}}]){
   const requests=[];
   const results=await findRelevantImages(word,{storage:saved,aiScenes:false,provider:'pexels',pexelsApiKey:'synthetic-balance-key',limit:45,validateImages:false,refresh:true,
-   fetchImpl:async value=>{const url=new URL(value);assert.equal(url.hostname,'api.pexels.com');requests.push(url.searchParams.get('query'));assert.equal(url.searchParams.get('per_page'),'5');const branch=url.searchParams.get('query')===word.word?'word':'meaning';return{ok:true,json:async()=>({photos:Array.from({length:15},(_,i)=>({id:`${branch}-${i}`,url:`https://balance.test/${branch}/${i}`,alt:`${url.searchParams.get('query')} frame ${i}`,src:{medium:`https://balance.test/${branch}/${i}.jpg`}}))})};}
+   fetchImpl:async value=>{const url=new URL(value);assert.equal(url.hostname,'api.pexels.com');requests.push(url.searchParams.get('query'));assert.equal(url.searchParams.get('per_page'),'3');const branch=url.searchParams.get('query')===word.word?'word':'meaning';return{ok:true,json:async()=>({photos:Array.from({length:15},(_,i)=>({id:`${branch}-${i}`,url:`https://balance.test/${branch}/${i}`,alt:`${url.searchParams.get('query')} frame ${i}`,src:{medium:`https://balance.test/${branch}/${i}.jpg`}}))})};}
   });
   if(requests.length) assert.deepEqual([...new Set(requests)],['balancedretrievalprobe','the activity of imparting and acquiring skills']);
-  assert.equal(results.length,10);
-  assert.equal(results.filter(r=>r.retrievalQueryType==='word').length,5);
-  assert.equal(results.filter(r=>r.retrievalQueryType==='meaning').length,5);
+  assert.equal(results.length,6);
+  assert.equal(results.filter(r=>r.retrievalQueryType==='word').length,3);
+  assert.equal(results.filter(r=>r.retrievalQueryType==='meaning').length,3);
  }
+});
+
+test('more than three prompts share nine slots and keep provider pagination stable', async () => {
+  const queries = ['first', 'second', 'third', 'fourth'].map(name => `four prompt budget scene ${name}`);
+  const requests = [];
+  const search = page => findRelevantImages(sense('four-prompts'), {
+    aiScenes: false, onlyExtraQueries: true, extraQueries: queries, page, limit: 100,
+    provider: 'pexels', pexelsApiKey: 'four-prompt-key', validateImages: false,
+    fetchImpl: async value => {
+      const url = new URL(value); requests.push(url);
+      assert.equal(url.hostname, 'api.pexels.com');
+      assert.equal(url.searchParams.get('per_page'), '3');
+      const scene = queries.indexOf(url.searchParams.get('query'));
+      return { ok: true, json: async () => ({ photos: Array.from({ length: 3 }, (_, i) => ({
+        url: `https://four-prompts.test/${page}/${scene}/${i}`, alt: 'Different photographs sharing an alt caption',
+        src: { medium: `https://four-prompts.test/${page}/${scene}/${i}.jpg` }
+      })) }) };
+    }
+  });
+  const first = await search(1), second = await search(2);
+  const counts = images => queries.map(query => images.filter(image => image.visualScene === query).length);
+  assert.deepEqual(counts(first), [3, 2, 2, 2]);
+  assert.deepEqual(counts(second), [2, 3, 2, 2]);
+  assert.equal(requests.length, 8, 'a full per-prompt quota starts no catalog fallback');
+});
+
+test('more than nine prompts rotate the active searches without exceeding nine evaluations', async () => {
+  const queries = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'].map(name => `prompt rotation scene ${name}`);
+  for (const page of [1, 2]) {
+    const requests = [];
+    const found = await findRelevantImages(sense('ten-prompts'), {
+      aiScenes: false, onlyExtraQueries: true, extraQueries: queries, page, limit: 100,
+      provider: 'pexels', pexelsApiKey: 'ten-prompt-key', validateImages: false,
+      fetchImpl: async value => {
+        const url = new URL(value); requests.push(url.searchParams.get('query'));
+        assert.equal(url.hostname, 'api.pexels.com');
+        assert.equal(url.searchParams.get('per_page'), '1');
+        const scene = queries.indexOf(url.searchParams.get('query'));
+        return { ok: true, json: async () => ({ photos: [{
+          url: `https://ten-prompts.test/${page}/${scene}`, alt: 'Prominent subject',
+          src: { medium: `https://ten-prompts.test/${page}/${scene}.jpg` }
+        }] }) };
+      }
+    });
+    assert.equal(found.length, 9);
+    assert.equal(requests.length, 9);
+    assert.ok(!requests.includes(queries[page === 1 ? 9 : 0]));
+    assert.equal(new Set(found.map(image => image.visualScene)).size, 9);
+  }
+});
+
+test('equivalent provider queries share one quota and one request', async () => {
+  let requests = 0;
+  const found = await findRelevantImages(sense('query-dedup'), {
+    aiScenes: false, onlyExtraQueries: true,
+    extraQueries: ['a person lifting a heavy box', 'person lifting heavy box'],
+    provider: 'pexels', pexelsApiKey: 'query-dedup-key', limit: 9, validateImages: false,
+    fetchImpl: async value => {
+      const url = new URL(value); requests++;
+      assert.equal(url.hostname, 'api.pexels.com');
+      assert.equal(url.searchParams.get('query'), 'person lifting heavy box');
+      return { ok: true, json: async () => ({ photos: Array.from({ length: 3 }, (_, i) => ({
+        url: `https://query-dedup.test/${i}`, alt: 'A person lifting a box', src: { medium: `https://query-dedup.test/${i}.jpg` }
+      })) }) };
+    }
+  });
+  assert.equal(found.length, 3);
+  assert.equal(requests, 1);
 });

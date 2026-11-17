@@ -1,5 +1,3 @@
-import { bytesToBase64 } from '../utils/base64.js?v=18908';
-
 const MAX_DIMENSION = 384;
 export const IMAGE_THUMBNAIL_BATCH_LIMIT = 4;
 const MAX_SOURCE_BYTES = 2_000_000;
@@ -155,8 +153,7 @@ async function prepare(url, config, signal) {
       } finally { resized.close?.(); }
     }
     if (signal.aborted || !blob.size || blob.size > config.maxBytes) return null;
-    const bytes = await abortable(blob.arrayBuffer(), signal);
-    return { inlineData: { mimeType: mimeType(blob.type), data: bytesToBase64(bytes) }, width, height, byteLength: blob.size };
+    return { blob, width, height, byteLength: blob.size };
   } finally { decoded.close?.(); }
 }
 
@@ -173,7 +170,7 @@ function forget(key) {
 
 function remember(key, value) {
   forget(key);
-  const cost = value ? value.inlineData.data.length * 2 + 128 : 64;
+  const cost = value ? value.byteLength + 128 : 64;
   cache.set(key, { value, cost, expires: Date.now() + (value ? 15 * 60_000 : 30_000) });
   cachedBytes += cost;
   while (cache.size > CACHE_LIMIT || cachedBytes > CACHE_BYTES) forget(cache.keys().next().value);
@@ -216,7 +213,7 @@ async function sharedThumbnail(url, config, signal) {
 }
 
 /**
- * Prepare at most four optional vision cues using browser CORS fetch and canvas.
+ * Prepare at most four binary vision cues using browser CORS fetch and canvas.
  * Each result's candidateId/index maps to the original input index, including when
  * earlier candidates fail. decode(blob,{signal}) and resize(decoded,{width,height,
  * quality,signal}) are injectable; resized bytes are decoded again to verify size.
@@ -243,7 +240,10 @@ export async function prepareImageThumbnails(images, options = {}) {
       const candidate = images[index];
       for (const url of imageUrls(candidate, options.preferOriginal)) try {
         const value = await sharedThumbnail(url, config, signal);
-        if (value && !signal.aborted) { results[index] = { ...value, inlineData: { ...value.inlineData }, candidateId: index, index, candidate }; break; }
+        if (value && !signal.aborted) {
+          results[index] = { ...value, candidateId: index, index, candidate };
+          break;
+        }
       } catch { /* Fall back to the preview if the original exceeds the mobile budget. */ }
     }
   }));

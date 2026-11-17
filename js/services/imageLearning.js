@@ -1,6 +1,5 @@
 import { driveSync } from './driveSync.js?v=18908';
 import { IMAGE_THUMBNAIL_BATCH_LIMIT, prepareImageThumbnails } from './imageThumbnails.js?v=18908';
-import { base64ToBytes } from '../utils/base64.js';
 import { CLIP_TAG, CLIP_CACHE, CLIP_DOWNLOAD_URLS, VECTOR_DB, MODEL_DOWNLOAD_MB } from '../ml/clipConfig.js';
 import { cosine, normalizedVector, preferenceFeatures, encodeFullFeatures, decodeFeatures, mergeImageLearning, preferenceProbability } from './imagePreferences.js';
 
@@ -10,8 +9,10 @@ import { IMAGE_PREPROCESSING, encodeMeaning, personalizerScore, isCurrentPersona
 import { ImagePersonalizerTraining } from './imagePersonalizerTraining.js';
 import { scheduleImageModelWarmup } from './imageModelStartup.js';
 import { IMAGE_SEMANTIC_FILTER, passesImageSemanticGate } from './imageSemanticGate.js';
+import { imageEvaluationCandidates, MAX_IMAGE_CANDIDATES } from './imageSearchPlan.js';
 import { invariantRankingScore } from './vocabInvariantHead.js';
 import { modelCacheStorage, handleModelCacheRequest } from './modelCache.js';
+import { createInferenceWorker, resetInferenceWorkers } from './inferenceWorker.js';
 let trainingInstance;
 function training() { return trainingInstance ||= new ImagePersonalizerTraining(driveSync); }
 let cachedModel = null;
@@ -158,7 +159,7 @@ export async function initializeImageLearning({ requestDownload, storage = globa
   if (config.prompted || typeof config.enabled === 'boolean' || !requestDownload) return { installed: false, prompted: false, enabled: false };
   // Persist before showing the prompt so closing the app does not make it reappear.
   saveDeviceConfig({ enabled: false, prompted: true, downloadConsent: 'declined' }, storage);
-  const accepted = await requestDownload({ downloadMB: MODEL_DOWNLOAD_MB });
+  const accepted = await requestDownload({ downloadMB: MODEL_DOWNLOAD_MB, capability: getImageModelCapability() });
   if (accepted) {
     saveDeviceConfig({ enabled: true, downloadConsent: 'accepted' }, storage);
     await enable({ allowMetered: true, storage });
@@ -237,11 +238,40 @@ function stopWorker(reason = 'The local image model was stopped.') {
 // scored concurrently by single-threaded vision-only workers. Each extra worker
 // holds its own vision graph, so low-memory devices get fewer of them. Devices
 // with one or two cores keep today's single worker.
+function imageDeviceProfile(env) {
+  const reportedCores = Number(env.navigator?.hardwareConcurrency), reportedMemory = Number(env.navigator?.deviceMemory);
+  const cores = Number.isFinite(reportedCores) && reportedCores >= 1 ? Math.floor(reportedCores) : null;
+  const memoryGB = Number.isFinite(reportedMemory) && reportedMemory > 0 ? reportedMemory : null;
+  const platform = env.Capacitor?.getPlatform?.();
+  const mobile = platform === 'android' || platform === 'ios' || env.navigator?.userAgentData?.mobile === true
+    || /Android|iPhone|iPad|iPod/i.test(env.navigator?.userAgent || '')
+    || (env.navigator?.platform === 'MacIntel' && Number(env.navigator?.maxTouchPoints) > 1);
+  return { cores, memoryGB, mobile };
+}
+
+export function getImageModelCapability(env = globalThis) {
+  const profile = imageDeviceProfile(env);
+  if (!profile.mobile) return { ...profile, status: 'not-mobile', warning: '' };
+  if ((profile.memoryGB !== null && profile.memoryGB < 6) || (profile.cores !== null && profile.cores < 4)) {
+    return { ...profile, status: 'limited', warning: 'This phone reports limited memory or CPU capacity. Image matching may be slow, so adding a word can take longer while photos are checked.' };
+  }
+  if (profile.memoryGB === null || profile.cores === null) {
+    return { ...profile, status: 'unknown', warning: 'We could not verify this phone’s memory and CPU capacity. Image matching may be slow, so adding a word can take longer while photos are checked.' };
+  }
+  return { ...profile, status: 'supported', warning: '' };
+}
+
 export function inferencePlan(env = globalThis) {
-  const cores = Math.max(1, Math.floor(Number(env.navigator?.hardwareConcurrency) || 1));
+  const profile = imageDeviceProfile(env), cores = profile.cores || 1, memory = profile.memoryGB;
   const budget = Math.max(1, Math.min(4, cores - 1));
+  const mobile = profile.mobile;
+  if (mobile) {
+    // Unknown RAM (notably iOS) is not permission to duplicate a vision graph.
+    // Leave CPU capacity for the UI; only >=6 GB / >=4-core devices use a helper.
+    const parallelism = Number.isFinite(memory) && memory >= 6 && cores >= 4 ? 2 : 1;
+    return env.crossOriginIsolated === true ? { workers: 1, threads: parallelism } : { workers: parallelism, threads: 1 };
+  }
   if (env.crossOriginIsolated === true) return { workers: 1, threads: budget };
-  const memory = Number(env.navigator?.deviceMemory);
   const memoryCap = Number.isFinite(memory) && memory > 0 ? Math.max(1, Math.floor(memory / 2)) : 2;
   return { workers: Math.min(budget, memoryCap), threads: 1 };
 }
@@ -273,12 +303,14 @@ function settle(data, source) {
   if (data.error) item.reject(Object.assign(new Error(data.error), { backendFailure: data.backendFailure }));
   else { workerReady = true; item.resolve(data.result); }
 }
-function ensureVisionHelpers() {
+function ensureVisionHelpers(candidateCount, exhaustive = false) {
   const plan = inferencePlan();
-  if (helpersDisabled || !worker || !workerReady || helpers.length || plan.workers <= 1 || typeof Worker === 'undefined') return;
-  for (let i = 1; i < plan.workers; i++) {
+  // Small evaluations do not justify loading several extra vision graphs.
+  const workers = exhaustive ? plan.workers : Math.min(plan.workers, 2, Math.ceil(candidateCount / IMAGE_THUMBNAIL_BATCH_LIMIT));
+  if (helpersDisabled || !worker || !workerReady || helpers.length || workers <= 1 || typeof Worker === 'undefined') return;
+  for (let i = 1; i < workers; i++) {
     try {
-      const helper = new Worker(new URL('../ml/clipWorker.bundle.js', import.meta.url), { type: 'module' });
+      const helper = createInferenceWorker('clip', { role: 'vision', slot: i });
       const initializeId = -(++nextId);
       // The primary worker owns the visible status; helpers only return vectors.
       helper.onmessage = ({ data }) => {
@@ -305,7 +337,7 @@ function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = fa
   const activeStorage = () => workerStorage === undefined ? globalThis.localStorage : workerStorage;
   if (type !== 'texts') cancelScheduledWarmup();
   if (!worker) {
-    const activeWorker = worker = new Worker(new URL('../ml/clipWorker.bundle.js', import.meta.url), { type: 'module' });
+    const activeWorker = worker = createInferenceWorker('clip');
     activeWorker.onmessage = ({ data }) => {
       if (worker !== activeWorker) return;
       if (data.type === 'model-cache') { void handleModelCacheRequest(activeWorker, data); return; }
@@ -328,8 +360,9 @@ function rpc(type, payload = {}, { signal, allowMetered = false, cachedOnly = fa
       const errorMessage = 'Local image inference failed. Metadata search is still available.';
       const imageEnabled = imageLearningEnabled(activeStorage());
       if (imageEnabled) { phase = 'error'; message = errorMessage; }
+      else { phase = 'off'; message = 'Local image scoring is off. You can enable it again in Settings.'; }
       stopWorker(errorMessage);
-      if (imageEnabled) emit();
+      emit();
     };
   }
   // The same request may move to a CPU worker. Its caller must follow that
@@ -397,6 +430,7 @@ export async function enableImageLearning(options = {}) {
   }
 }
 export function disableImageLearning() {
+  resetInferenceWorkers('clip');
   featureGeneration++; training().stop(); saveDeviceConfig({ enabled: false, prompted: true });stopWorker();textEncodingDetail = null;phase = 'off';message = 'Local image scoring is off. You can enable it again in Settings.';emit();
 }
 export async function clearImageModelDownloads() {
@@ -453,7 +487,7 @@ export function imageClipPrompts(word, options = {}) {
   const rawDefinition = word.definition || word.sourceDefinition;
   const targetDefinition = stripNegatedClauses(rawDefinition);
   const selected = `A photo illustrating ${word.word} (${word.partOfSpeech || 'word'}): ${targetDefinition}`;
-  const rawScenes = [...new Set([...(options.extraQueries || []), ...(options.scenes || []), ...(word.imageScenes?.scenes || [])].map(s => String(s).trim()).filter(Boolean))].slice(0, 3);
+  const rawScenes = [...new Set([...(options.extraQueries || []), ...(options.scenes || []), ...(word.imageScenes?.scenes || [])].map(s => String(s).trim()).filter(Boolean))].slice(0, MAX_IMAGE_CANDIDATES);
   const scenes = rawScenes.map(scene => `A photo of ${scene}`);
   const contrasts = [...new Set([...(options.contrasts || []), ...(word.imageScenes?.contrasts || [])].map(s => String(s).trim()).filter(Boolean))].slice(0, 3).map(scene => `A photo of ${scene}`);
   const alternatives = contrasts.length ? [] : [...new Set([...(options.otherDefinitions || []), ...(word.otherDefinitions || [])])].filter(value => value && value !== word.definition && value !== word.sourceDefinition && !sharesVisualDefinitionTokens(value, rawDefinition)).slice(0, 8).map(value => `A photo illustrating ${word.word}: ${value}`);
@@ -647,6 +681,10 @@ export async function encodeDefinitionTexts(texts, options = {}) {
 
 export async function rankImagesLocally(word, candidates, options = {}) {
   if (!imageLearningEnabled(options.storage) || !candidates.length) return candidates;
+  if (!options.exhaustiveScoring) candidates = imageEvaluationCandidates(candidates, options.page);
+  if (!candidates.length) return [];
+  const scoringLimit = Math.min(candidates.length, Math.max(1, Math.min(options.exhaustiveScoring ? 45 : MAX_IMAGE_CANDIDATES,
+    Number(options.localCandidateLimit) || (options.exhaustiveScoring ? 45 : IMAGE_SEMANTIC_FILTER.candidatePoolSize))));
   const generation = featureGeneration;
   const lifecycle = {};
   const current = () => generation === featureGeneration && imageLearningEnabled(options.storage) && !options.signal?.aborted
@@ -661,21 +699,17 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     }
     const prompt = imageClipPrompts(word, options);
     // Start vision helpers now so they compile while the prompts are embedded.
-    ensureVisionHelpers();
+    ensureVisionHelpers(scoringLimit, options.exhaustiveScoring);
     const texts = await rpc('texts', { texts: prompt.texts }, inference);
     if (!current() || !workerReady) return [];
     // A picker opened before startup warmup creates the primary worker above.
-    ensureVisionHelpers();
+    ensureVisionHelpers(scoringLimit, options.exhaustiveScoring);
     const meaningFeatures = encodeMeaning(texts[0]);
     const meanVector = vectors => vectors.length ? normalizedVector(vectors.reduce((a, v) => a.map((x, i) => x + v[i]), Array(texts[0].length).fill(0))) : null;
     const sceneVector = meanVector(texts.slice(1, 1 + prompt.sceneCount)) || texts[0];
     const contrastVector = meanVector(texts.slice(1 + prompt.sceneCount, 1 + prompt.sceneCount + prompt.alternativeCount));
     const items = [];
-    // Oversample in bounded worker batches; only screened photos reach the UI.
-    const scoringLimit = Math.min(candidates.length, Math.max(4, Math.min(45,
-      Number(options.localCandidateLimit) || IMAGE_SEMANTIC_FILTER.candidatePoolSize)));
-    const requiredScenes = new Set(candidates.slice(0, scoringLimit).map(image => image.visualScene).filter(Boolean));
-    const checkedScenes = new Set();
+    // The foreground pool is already bounded before downloading any pixels.
     // Each batch keeps every worker busy (two images per worker) while the
     // next batch of thumbnails downloads. A single-worker device keeps 4.
     const step = Math.max(IMAGE_THUMBNAIL_BATCH_LIMIT, 2 * (1 + helpers.length));
@@ -696,11 +730,10 @@ export async function rankImagesLocally(word, candidates, options = {}) {
       const currentBatch = nextBatch;
       nextBatch = prepareBatch(offset + step);
       const thumbnails = await currentBatch;
-      candidates.slice(offset, Math.min(offset + step, scoringLimit)).forEach(image => checkedScenes.add(image.visualScene));
       if (!current()) return [];
       // Dispatch the whole batch at once; results keep candidate order.
       const embeddedBatch = await Promise.all(thumbnails.map(thumbnail =>
-        rpc('image', { blob: new Blob([base64ToBytes(thumbnail.inlineData.data)], { type: thumbnail.inlineData.mimeType }), multiView: true }, inference)
+        rpc('image', { blob: thumbnail.blob, multiView: true }, inference)
           .catch(err => { if (err?.backendFailure || !current()) throw err; return null; })));
       if (!current() || !workerReady) return [];
       thumbnails.forEach((thumbnail, index) => {
@@ -718,12 +751,6 @@ export async function rankImagesLocally(word, candidates, options = {}) {
         items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, rankingEvidence, semantic });
       });
       phase = 'scoring';message = `Scored ${items.length} of ${candidates.length} image suggestions locally.`;emit();
-      // Fill a useful first gallery instead of always exhausting 45 candidates.
-      // Search deeper when matches are scarce, duplicated, or a retrieval scene
-      // has not been checked. Research can explicitly request the complete pool.
-      if (!options.exhaustiveScoring && offset + step >= 12
-        && [...requiredScenes].every(scene => checkedScenes.has(scene))
-        && rankEmbeddedImages(items, null, { semanticFilter: true }).length >= 9) break;
     }
     const model = await training().current();
     if (!current() || !workerReady) return [];

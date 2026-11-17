@@ -2,6 +2,9 @@ import { AutoModel, AutoTokenizer, env } from '@huggingface/transformers';
 import { MEANING_MAX_TOKENS, MEANING_MODEL_TAG, MEANING_MODEL_BASE, MEANING_MODEL_REPO, MEANING_MODEL_REVISION, MEANING_CACHE } from '../js/ml/meaningConfig.js';
 import { referenceEmbedding, referenceFeatures, referenceProbability } from '../js/services/meaningReferenceFeatures.js';
 import { workerModelCache } from '../js/services/modelCache.js';
+import { sharedInferenceScope } from '../js/services/sharedInferenceScope.js';
+
+const channel = typeof self.postMessage === 'function' ? self : sharedInferenceScope(self, 'meaning');
 
 const base = new URL(MEANING_MODEL_BASE);
 env.allowLocalModels = false;
@@ -73,10 +76,13 @@ async function run({ type, texts, pairs }) {
   return { model: MEANING_MODEL_TAG, scores: pairs.map(([a, b]) => referenceProbability(referenceFeatures(memory.get(texts[a]), memory.get(texts[b]), scorer), scorer)) };
 }
 let queue = Promise.resolve();
-self.onmessage = ({ data }) => {
+const cancelled = new Set();
+channel.onmessage = ({ data }) => {
   if (data.type === 'model-cache-result') return;
+  if (data.type === 'cancel') { cancelled.add(data.id); return; }
   queue = queue.then(async () => {
-    try { self.postMessage({ id: data.id, result: await run(data) }); }
-    catch (error) { self.postMessage({ id: data.id, error: error.message || 'Meaning comparison failed.' }); }
+    if (cancelled.delete(data.id)) return;
+    try { const result = await run(data); if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, result }); }
+    catch (error) { if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, error: error.message || 'Meaning comparison failed.' }); }
   });
 };

@@ -263,9 +263,9 @@ test('library displays the complete screened prompt pool before requesting anoth
   const {container,requests}=installImageEditor(context,'fox running pagination trial',30);
   await container.click('[data-edit-word]'); await finishImageSearch(container);
   const count=()=>(container.innerHTML.match(/data-library-image="/g)||[]).length;
-  assert.equal(count(),5); const before=requests.length;
+  assert.equal(count(),3); const before=requests.length;
   await container.click('#refresh-library-images'); await finishImageSearch(container);
-  assert.ok(requests.length>before); assert.equal(count(),10,'excluded photos are replaced by remaining distinct results');
+  assert.ok(requests.length>before); assert.equal(count(),6,'excluded photos are replaced by remaining distinct results');
 });
 
 test('the library initially combines all prepared scenes instead of silently selecting scene one', async context => {
@@ -286,12 +286,12 @@ test('the library initially combines all prepared scenes instead of silently sel
   await container.click('[data-edit-word]'); await finishImageSearch(container);
   assert.equal(new Set(queries).size, 3);
   assert.match(container.innerHTML, /Results from all search prompts/);
-  assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 15);
+  assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 9);
   await container.click('[data-image-concept]', 1); await finishImageSearch(container);
-  assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 5);
+  assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 3);
   await container.click('[data-image-concept]', 0); await finishImageSearch(container);
   assert.match(container.innerHTML, /Results from all search prompts/);
-  assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 15);
+  assert.equal((container.innerHTML.match(/data-library-image="/g) || []).length, 9);
 });
 
 test('Library keeps merged meanings editable without offering an Unmerge action', context => {

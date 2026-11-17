@@ -8,7 +8,6 @@ import { normalizedVector } from '../js/services/imagePreferences.js';
 import { fullFrameImage } from '../js/services/imagePreprocessing.js';
 import { IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
 import { prepareImageThumbnails } from '../js/services/imageThumbnails.js';
-import { base64ToBytes } from '../js/utils/base64.js';
 
 export async function imageEvaluationRuntime({ cacheDir = 'work/image-pretraining/cache', directory = '.', allowDownloads = false, preprocessing = IMAGE_PREPROCESSING, progress = () => {} } = {}) {
   await mkdir(cacheDir, { recursive: true }); env.cacheDir = resolve(cacheDir, 'models'); env.allowLocalModels = true;
@@ -53,9 +52,9 @@ export async function imageEvaluationRuntime({ cacheDir = 'work/image-pretrainin
           const resized = await image.resize(width, height); return new Blob([await resized.toSharp().jpeg({ quality: Math.round(quality * 100) }).toBuffer()], { type: 'image/jpeg' });
         } });
       if (!thumbnail) throw new Error(`Image unavailable: ${candidate.id}`);
-      const bytes = base64ToBytes(thumbnail.inlineData.data), hash = createHash('sha256').update(bytes).digest('hex');
+      const bytes = new Uint8Array(await thumbnail.blob.arrayBuffer()), hash = createHash('sha256').update(bytes).digest('hex');
       return cached(`${CLIP_TAG}:${preprocessing}:image:${hash}`, async () => {
-        const [, processor, , visionModel] = await initialize(), image = await RawImage.fromBlob(new Blob([bytes], { type: thumbnail.inlineData.mimeType }));
+        const [, processor, , visionModel] = await initialize(), image = await RawImage.fromBlob(thumbnail.blob);
         const frame = preprocessing === IMAGE_PREPROCESSING ? await fullFrameImage(image, RawImage) : image;
         const inputs = await processor(frame), output = await visionModel(inputs), vector = Array.from((output.image_embeds || output.pooler_output).data);
         for (const tensor of [...Object.values(inputs), ...Object.values(output)]) tensor?.dispose?.(); return vector;

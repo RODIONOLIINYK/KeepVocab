@@ -416,8 +416,8 @@ test('all keyless catalogs run concurrently and the small pool mixes sources', {
   });
 
   assert.equal(started, 4);
-  assert.equal(results.length, 5);
-  assert.deepEqual(new Set(results.slice(0, 4).map(result => result.source)), new Set(['Openverse', 'Wikimedia Commons', 'Library of Congress', 'NASA Images']));
+  assert.equal(results.length, 3);
+  assert.deepEqual(new Set(results.slice(0, 4).map(result => result.source)), new Set(['Openverse', 'Wikimedia Commons', 'Library of Congress']));
 });
 
 test('result-page changes are forwarded to every image provider', async () => {

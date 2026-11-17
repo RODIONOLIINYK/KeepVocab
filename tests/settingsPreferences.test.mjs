@@ -1,9 +1,9 @@
 import test from 'node:test';
 import { MODEL_DOWNLOAD_MB } from '../js/ml/clipConfig.js';
 import assert from 'node:assert/strict';
-import { renderSettingsView } from '../js/components/SettingsView.js';
+import { renderSettingsView, requestImageModelDownload } from '../js/components/SettingsView.js';
 import { MemoryStorage } from '../js/services/driveSync.js?v=18908';
-import { initializeImageLearning, disableImageLearning } from '../js/services/imageLearning.js?v=18908';
+import { initializeImageLearning, disableImageLearning, getImageModelCapability } from '../js/services/imageLearning.js?v=18908';
 import { getFsrsLearningStatus } from '../js/services/fsrsLearning.js';
 
 async function setup(t) {
@@ -101,4 +101,80 @@ test('failed enabling reports a concise recovery action instead of the raw excep
   await enable.listeners.get('click')();
   assert.equal(query('#image-learning-status').textContent, 'Could not turn on image suggestions. Check your connection and try again.');
   assert.equal(enable.disabled, false);
+});
+
+function installDownloadDialog(t) {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'document'), dialogs = [];
+  const opener = { isConnected: true, focus() {} };
+  globalThis.document = {
+    activeElement: opener,
+    body: { appendChild(dialog) { dialogs.push(dialog); } },
+    createElement() {
+      const controls = new Map();
+      return { innerHTML: '', listeners: new Map(),
+        querySelector(selector) {
+          if (!controls.has(selector)) controls.set(selector, { listeners: new Map(), focus() {}, addEventListener(type, callback) { this.listeners.set(type, callback); } });
+          return controls.get(selector);
+        },
+        addEventListener(type, callback) { this.listeners.set(type, callback); },
+        remove() { dialogs.splice(dialogs.indexOf(this), 1); }
+      };
+    }
+  };
+  t.after(() => { if (original) Object.defineProperty(globalThis, 'document', original); else delete globalThis.document; });
+  return dialogs;
+}
+
+test('phone checks warn conservatively without claiming unknown hardware is sufficient', () => {
+  const phone = { userAgent: 'Android', hardwareConcurrency: 8 };
+  assert.equal(getImageModelCapability({ navigator: { ...phone, deviceMemory: 2 } }).status, 'limited');
+  assert.equal(getImageModelCapability({ navigator: phone }).status, 'unknown');
+  assert.equal(getImageModelCapability({ navigator: { ...phone, deviceMemory: 8 } }).warning, '');
+  assert.equal(getImageModelCapability({ navigator: { ...phone, deviceMemory: 8, hardwareConcurrency: 2 } }).status, 'limited');
+  assert.equal(getImageModelCapability({ navigator: { hardwareConcurrency: 2, deviceMemory: 2 } }).warning, '', 'phone warning is not shown on desktops');
+});
+
+test('a slow phone can decline before workers or downloads start, then explicitly download anyway', async t => {
+  const { container, query } = await setup(t);
+  t.mock.getter(globalThis, 'navigator', () => ({ userAgent: 'Android', deviceMemory: 2, hardwareConcurrency: 4 }));
+  const dialogs = installDownloadDialog(t);
+  let workers = 0;
+  globalThis.Worker = class {
+    constructor() { workers++; assert.equal(dialogs.length, 0, 'warning must be accepted before model initialization'); }
+    postMessage(data) { assert.equal(data.allowDownloads, true); queueMicrotask(() => this.onmessage({ data: { id: data.id, result: { backend: 'wasm' } } })); }
+    terminate() {}
+  };
+  renderSettingsView(container);
+  const enable = query('#enable-image-learning');
+  const skipped = enable.listeners.get('click')();
+  assert.equal(workers, 0);
+  assert.equal(dialogs.length, 1);
+  assert.match(dialogs[0].innerHTML, /Performance warning|adding a word can take longer/);
+  assert.match(dialogs[0].innerHTML, /aria-describedby="image-model-description image-model-performance-warning"/);
+  dialogs[0].querySelector('[data-decline]').listeners.get('click')();
+  await skipped;
+  assert.equal(workers, 0);
+  assert.equal(enable.disabled, false);
+  assert.equal(JSON.parse(localStorage.getItem('keepvocab_image_learning_device_v1')).enabled, false);
+  const accepted = enable.listeners.get('click')();
+  assert.match(dialogs[0].innerHTML, /Download anyway/);
+  dialogs[0].querySelector('[data-download]').listeners.get('click')();
+  await accepted;
+  assert.equal(workers, 1);
+  assert.equal(query('#image-learning-status').textContent, 'Ready.');
+});
+
+test('unknown phone capability is included in the initial consent prompt before installation', async t => {
+  t.mock.getter(globalThis, 'navigator', () => ({ userAgent: 'iPhone', hardwareConcurrency: 6 }));
+  const dialogs = installDownloadDialog(t), storage = new MemoryStorage();
+  let installations = 0;
+  const started = initializeImageLearning({ storage, cacheStorage: { keys: async () => [] },
+    requestDownload: requestImageModelDownload, enable: async () => { installations++; } });
+  for (let turn = 0; turn < 10 && !dialogs.length; turn++) await new Promise(setImmediate);
+  assert.equal(dialogs.length, 1);
+  assert.match(dialogs[0].innerHTML, /could not verify this phone/);
+  assert.equal(installations, 0);
+  dialogs[0].listeners.get('keydown')({ key: 'Escape', preventDefault() {}, stopPropagation() {} });
+  await started;
+  assert.equal(installations, 0);
 });

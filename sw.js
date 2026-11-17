@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112045-small-image-pool';
+const CACHE_NAME = 'keepvocab-v112046-shared-inference';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -26,6 +26,8 @@ const ASSETS_TO_CACHE = [
   './js/services/meaningReference.js',
   './js/services/meaningReferenceFeatures.js',
   './js/services/modelCache.js',
+  './js/services/inferenceWorker.js',
+  './js/services/sharedInferenceScope.js',
   './js/services/modelDownloadProgress.js',
   './js/ml/meaningConfig.js',
   './js/ml/meaningAssets.js',

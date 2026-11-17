@@ -7,7 +7,6 @@ import { resolve, dirname } from 'node:path';
 import { AutoTokenizer, AutoProcessor, CLIPTextModelWithProjection, CLIPVisionModelWithProjection, RawImage, env } from '@huggingface/transformers';
 import { fullFrameImage } from '../js/services/imagePreprocessing.js';
 import { prepareImageThumbnails } from '../js/services/imageThumbnails.js';
-import { base64ToBytes } from '../js/utils/base64.js';
 
 const model = 'Xenova/mobileclip_s0', revision = '757d59c9c6870a76a4b0306f05f5061bca15c39f';
 const cache = resolve(process.argv[2] || '/tmp/keepvocab-clip-check/models');
@@ -61,7 +60,7 @@ try {
       resize: async (image, { width, height, quality }) => new Blob([await (await image.resize(width, height)).toSharp().jpeg({ quality: Math.round(quality * 100) }).toBuffer()], { type: 'image/jpeg' }),
     });
     if (!thumb) throw Error(`Unable to prepare ${sample.id}`);
-    const image = await RawImage.fromBlob(new Blob([base64ToBytes(thumb.inlineData.data)], {type: thumb.inlineData.mimeType}));
+    const image = await RawImage.fromBlob(thumb.blob);
     const processed = await processor(await fullFrameImage(image, RawImage));
     const q = await q8(processed), f = await fp32(processed);
     const qv = Array.from(q.image_embeds.data), fv = Array.from(f.image_embeds.data);

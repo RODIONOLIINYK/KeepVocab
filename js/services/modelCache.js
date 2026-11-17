@@ -1,4 +1,5 @@
 import { bytesToBase64, base64ToBytes } from '../utils/base64.js';
+import { sharedInferenceScope } from './sharedInferenceScope.js';
 
 function nativeStorage() {
   if (globalThis.keepVocabDesktop?.modelStorage) return globalThis.keepVocabDesktop.modelStorage;
@@ -65,9 +66,10 @@ export function modelCacheStorage() {
 
 // Workers use this proxy instead of writing browser profile model caches.
 export function workerModelCache(cache) {
+  const channel = typeof self.postMessage === 'function' ? self : sharedInferenceScope(self, cache === 'keepvocab-meaning-model-v1' ? 'meaning' : 'clip');
   let next = 0;
   const pending = new Map();
-  self.addEventListener('message', ({ data }) => {
+  channel.addEventListener('message', ({ data }) => {
     if (data.type !== 'model-cache-result' || data.cache !== cache) return;
     const item = pending.get(data.cacheId);
     if (!item) return;
@@ -77,7 +79,7 @@ export function workerModelCache(cache) {
   const call = (operation, payload) => new Promise((resolve, reject) => {
     const cacheId = ++next;
     pending.set(cacheId, { resolve, reject });
-    self.postMessage({ type: 'model-cache', cache, cacheId, operation, ...payload });
+    channel.postMessage({ type: 'model-cache', cache, cacheId, operation, ...payload });
   });
   return {
     match: async request => {
@@ -89,6 +91,8 @@ export function workerModelCache(cache) {
 }
 export async function handleModelCacheRequest(worker, data) {
   if (data.type !== 'model-cache') return false;
+  const reply = { type: 'model-cache-result', cache: data.cache, cacheId: data.cacheId,
+    ...(data.sharedCacheToken !== undefined ? { sharedCacheToken: data.sharedCacheToken } : {}) };
   try {
     if (!['keepvocab-clip-model-v3', 'keepvocab-meaning-model-v1'].includes(data.cache)) throw new Error('Unknown model cache.');
     const cache = await modelCacheStorage()?.open(data.cache);
@@ -99,7 +103,7 @@ export async function handleModelCacheRequest(worker, data) {
       if (response) result = { bytes: await response.arrayBuffer(), headers: [...response.headers] };
     } else if (data.operation === 'put') await cache.put(data.url, new Response(data.bytes, { headers: data.headers }));
     else throw new Error('Unknown model cache operation.');
-    worker.postMessage({ type: 'model-cache-result', cache: data.cache, cacheId: data.cacheId, result });
-  } catch (error) { worker.postMessage({ type: 'model-cache-result', cache: data.cache, cacheId: data.cacheId, error: error.message }); }
+    worker.postMessage({ ...reply, result });
+  } catch (error) { worker.postMessage({ ...reply, error: error.message }); }
   return true;
 }

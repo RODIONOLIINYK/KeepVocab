@@ -26,7 +26,7 @@ import { renderDailySessionMode } from './components/DailySessionMode.js?v=18908
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18908';
 import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18908';
 import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18908';
-import { renderSettingsView } from './components/SettingsView.js?v=18908';
+import { renderSettingsView, requestImageModelDownload } from './components/SettingsView.js?v=18908';
 
 function repairContradictoryExamples() {
   for (const word of driveSync.getWords()) {
@@ -109,27 +109,6 @@ function initApp() {
   // Installed inference starts on app opening, independent of idle time.
   void preloadMeaningModel().catch(error => console.warn('Meaning model preload failed.', error));
   void initializeImageLearning({ requestDownload: requestImageModelDownload }).catch(() => showToast('Image suggestions could not start. You can still choose photos.', 'error'));
-}
-
-function requestImageModelDownload({ downloadMB }) {
-  return new Promise(resolve => {
-    const opener = document.activeElement;
-    const backdrop = document.createElement('div');
-    backdrop.className = 'modal-backdrop active';
-    backdrop.innerHTML = `<section class="modal-box" role="dialog" aria-modal="true" aria-labelledby="image-model-title" aria-describedby="image-model-description">
-      <h2 id="image-model-title">Smarter image suggestions</h2>
-      <p id="image-model-description">Download optional files (about ${downloadMB} MB) for better photo suggestions.</p>
-      <p>You can turn this on later in Settings → Local models.</p>
-      <div class="engagement-modal-actions"><button type="button" class="status-pill offline" data-decline>Skip</button><button type="button" class="btn-green-solid" data-download>Download and turn on</button></div>
-    </section>`;
-    const finish = accepted => { backdrop.remove(); if (opener?.isConnected) opener.focus(); resolve(accepted); };
-    backdrop.querySelector('[data-decline]').addEventListener('click', () => finish(false));
-    backdrop.querySelector('[data-download]').addEventListener('click', () => finish(true));
-    backdrop.addEventListener('click', event => { if (event.target === backdrop) finish(false); });
-    backdrop.addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); } });
-    document.body.appendChild(backdrop);
-    backdrop.querySelector('[data-decline]').focus();
-  });
 }
 
 function showToast(msg, type = 'success') {

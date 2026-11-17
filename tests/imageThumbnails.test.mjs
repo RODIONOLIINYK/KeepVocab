@@ -6,6 +6,18 @@ const candidate = id => ({ url: `https://images.example/${id}.jpg` });
 const imageResponse = (body = 'source') => new Response(body, { headers: { 'content-type': 'image/jpeg' } });
 const smallDecode = async () => ({ width: 80, height: 60 });
 
+test('binary inference reuses immutable thumbnail bytes without materializing Base64', async () => {
+  let calls = 0;
+  const options = { fetchImpl: async () => { calls++; return imageResponse('exact binary pixels'); }, decode: smallDecode };
+  const [first] = await prepareImageThumbnails([candidate('binary')], options);
+  assert.ok(first.blob instanceof Blob);
+  assert.equal(first.inlineData, undefined);
+  assert.equal(await first.blob.text(), 'exact binary pixels');
+  const [again] = await prepareImageThumbnails([candidate('binary')], options);
+  assert.equal(again.blob, first.blob, 'binary callers share the cached immutable backing data');
+  assert.equal(calls, 1);
+});
+
 test('small thumbnails preserve their original bytes and prefer previews to full images', async () => {
   const requested = [];
   const images = [{ ...candidate('full'), thumbnailUrl: 'https://images.example/preview.jpg' }];
@@ -18,8 +30,8 @@ test('small thumbnails preserve their original bytes and prefer previews to full
   assert.equal(result[0].candidate, images[0]);
   assert.equal(result[0].candidateId, 0);
   assert.equal(result[0].index, 0);
-  assert.equal(result[0].inlineData.data, Buffer.from('source').toString('base64'));
-  assert.equal(result[0].inlineData.mimeType, 'image/jpeg');
+  assert.equal(await result[0].blob.text(), 'source');
+  assert.equal(result[0].blob.type, 'image/jpeg');
   assert.equal(result[0].byteLength, 6);
 });
 
@@ -126,8 +138,8 @@ test('concurrent reranking deduplicates downloads and one aborted consumer canno
   assert.equal((await second).length, 1);
   assert.equal(calls, 1);
   const cached = await prepareImageThumbnails([candidate('shared')], options);
-  cached[0].inlineData.data = 'changed by caller';
-  assert.equal((await prepareImageThumbnails([candidate('shared')], options))[0].inlineData.data, Buffer.from('source').toString('base64'));
+  cached[0].blob = new Blob(['changed by caller']);
+  assert.equal(await (await prepareImageThumbnails([candidate('shared')], options))[0].blob.text(), 'source');
   assert.equal(calls, 1);
 });
 

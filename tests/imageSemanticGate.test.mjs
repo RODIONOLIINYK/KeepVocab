@@ -9,7 +9,7 @@ import { MemoryStorage } from '../js/services/driveSync.js';
 
 const vector = axis => Array.from({length:CLIP_DIMENSION},(_,i)=>Number(i===axis));
 test('the encoder-specific semantic cutoff is inclusive, selected must exceed unwanted, and missing scores fail',()=>{
-  assert.deepEqual(IMAGE_SEMANTIC_FILTER,{minimumSimilarity:0.06327517532812867,closeContrastMargin:.02,candidatePoolSize:45});
+  assert.deepEqual(IMAGE_SEMANTIC_FILTER,{minimumSimilarity:0.06327517532812867,closeContrastMargin:.02,candidatePoolSize:9});
   const cutoff = IMAGE_SEMANTIC_FILTER.minimumSimilarity;
   assert.equal(passesImageSemanticGate({selected:cutoff,unwanted:cutoff-1e-8}),true);
   assert.equal(passesImageSemanticGate({selected:cutoff-1e-8,unwanted:0}),false);
@@ -37,7 +37,7 @@ test('a full configured Pexels pool avoids unrelated catalog requests',async()=>
     onlyExtraQueries:true,extraQueries:['semantic gate pool fox running'],validateImages:false,limit:6,
     fetchImpl:async url=>{calls.push(new URL(url).hostname);return {ok:true,json:async()=>({photos:Array.from({length:40},(_,i)=>({id:99000+i,url:`https://www.pexels.com/photo/${99000+i}/`,alt:`Fox running semantic-gate-pool ${i}`,src:{medium:`https://images.pexels.com/photos/${99000+i}/image.jpeg`}}))})};}
   });
-  assert.equal(results.length,5);assert.deepEqual(calls,['api.pexels.com']);
+  assert.equal(results.length,3);assert.deepEqual(calls,['api.pexels.com']);
 });
 
 test('if every scored image fails, manual review contains the nine highest final scores without diversity reranking',()=>{

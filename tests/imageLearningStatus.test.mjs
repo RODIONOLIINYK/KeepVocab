@@ -21,6 +21,21 @@ class ReviewContainer {
 const meaning = { id: 'river', word: 'bank', definition: 'Land beside a river.', partOfSpeech: 'noun' };
 const photo = { url: 'https://images.example/river.jpg', title: 'A river bank' };
 
+test('mobile inference budgets RAM conservatively across native apps, browsers and tablets', () => {
+  const android = { userAgent: 'Mozilla/5.0 (Linux; Android 16)', hardwareConcurrency: 8 };
+  for (const deviceMemory of [undefined, 0, 2, 4]) {
+    assert.deepEqual(inferencePlan({ navigator: { ...android, deviceMemory } }), { workers: 1, threads: 1 });
+    assert.deepEqual(inferencePlan({ navigator: { ...android, deviceMemory }, crossOriginIsolated: true }), { workers: 1, threads: 1 });
+  }
+  assert.deepEqual(inferencePlan({ navigator: { ...android, deviceMemory: 8 } }), { workers: 2, threads: 1 });
+  assert.deepEqual(inferencePlan({ navigator: { ...android, deviceMemory: 8 }, crossOriginIsolated: true }), { workers: 1, threads: 2 });
+  assert.deepEqual(inferencePlan({ navigator: { ...android, deviceMemory: 8, hardwareConcurrency: 2 } }), { workers: 1, threads: 1 });
+  assert.deepEqual(inferencePlan({ navigator: { hardwareConcurrency: 8, userAgent: 'iPhone' } }), { workers: 1, threads: 1 });
+  assert.deepEqual(inferencePlan({ navigator: { hardwareConcurrency: 8, platform: 'MacIntel', maxTouchPoints: 5 } }), { workers: 1, threads: 1 });
+  assert.deepEqual(inferencePlan({ navigator: { hardwareConcurrency: 8 }, Capacitor: { getPlatform: () => 'android' } }), { workers: 1, threads: 1 });
+  assert.deepEqual(inferencePlan({ navigator: { hardwareConcurrency: 8, deviceMemory: 8, userAgentData: { mobile: true } } }), { workers: 2, threads: 1 });
+});
+
 async function setup(context, navigator = { hardwareConcurrency: 2 }) {
   const original = { storage: globalThis.localStorage, Worker: globalThis.Worker };
   context.mock.getter(globalThis, 'navigator', () => navigator);
@@ -216,8 +231,8 @@ test('production local scoring returns nine closest failed matches as manual-onl
     fetchImpl: async () => new Response('fixture pixels', { headers: { 'content-type': 'image/jpeg' } }),
     decode: async () => ({ width: 64, height: 64 }), resize: () => assert.fail('No resize needed')
   });
-  assert.equal(imageCalls, 12); assert.equal(images.length, 9);
-  assert.deepEqual(images.map(image => image.url), candidates.slice(3).reverse().map(image => image.url));
+  assert.equal(imageCalls, 9); assert.equal(images.length, 9);
+  assert.deepEqual(images.map(image => image.url), candidates.slice(0, 9).reverse().map(image => image.url));
   assert.ok(images.every(image => image.ml.belowThreshold && image.ml.selected <= image.ml.unwanted));
   assert.ok(images.every((image, i) => !i || image.ml.cosine <= images[i - 1].ml.cosine));
   const container = new ReviewContainer();
@@ -227,6 +242,37 @@ test('production local scoring returns nine closest failed matches as manual-onl
   assert.doesNotMatch(container.innerHTML, /aria-checked="true"/);
   await container.click('choose');
   assert.match(container.innerHTML, /aria-checked="true"/);
+});
+
+test('foreground evaluations load at most one extra vision graph and never download more than nine photos', async context => {
+  await setup(context, { hardwareConcurrency: 8, deviceMemory: 8 });
+  const workers = [], scored = [];
+  const vector = axis => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === axis));
+  globalThis.Worker = class {
+    constructor() { workers.push(this); }
+    postMessage(data) {
+      const result = data.type === 'initialize' ? { backend: 'wasm' }
+        : data.type === 'texts' ? data.payload.texts.map((_, i) => vector(i ? 1 : 0))
+          : (scored.push(data.payload.blob), vector(0));
+      queueMicrotask(() => this.onmessage({ data: { id: data.id, result } }));
+    }
+    terminate() {}
+  };
+  for (const count of [3, 40]) {
+    disableImageLearning();
+    localStorage.setItem('keepvocab_image_learning_device_v1', JSON.stringify({ enabled: true, downloadConsent: 'accepted' }));
+    workers.length = 0; scored.length = 0;
+    await enableImageLearning();
+    let downloads = 0;
+    await rankImagesLocally(meaning, Array.from({ length: count }, (_, i) => ({ url: `https://bounded-workers-${count}.test/${i}.jpg` })), {
+      localCandidateLimit: 45,
+      fetchImpl: async () => { downloads++; return new Response('pixels', { headers: { 'content-type': 'image/jpeg' } }); },
+      decode: async () => ({ width: 64, height: 64 })
+    });
+    assert.equal(workers.length, count === 3 ? 1 : 2);
+    assert.equal(downloads, Math.min(count, 9));
+    assert.equal(scored.length, Math.min(count, 9), 'an output limit cannot silently expand the evaluation budget');
+  }
 });
 
 test('provider suggestions remain manually available when inference fails, without falsely claiming a failed threshold',async context=>{
@@ -241,22 +287,24 @@ test('provider suggestions remain manually available when inference fails, witho
   onlyExtraQueries:true,extraQueries:['river bank'],
   fetchImpl:async()=>({ok:true,json:async()=>({photos:Array.from({length:20},(_,i)=>({id:9000+i,url:`https://www.pexels.com/photo/${9000+i}/`,alt:`River scene ${i}`,src:{medium:`https://images.pexels.com/photos/${9000+i}/image.jpeg`}}))})})
  });
- assert.equal(images.length,5);
+ assert.equal(images.length,3);
  assert.ok(images.every(image=>image.ml.screening==='not-scored'&&image.ml.uncertain&&!image.ml.belowThreshold));
  const container=new ReviewContainer();const controller=mountImageReview(container,[{...meaning,imageCandidates:images}]);cleanup.push(()=>controller.destroy());
  assert.match(container.innerHTML,/have not been checked/);
  assert.doesNotMatch(container.innerHTML,/No images passed the match threshold/);
 });
 
-test('first gallery stops after twelve good diverse images, but scarce matches and duplicate photos search deeper',async context=>{
+test('foreground scoring keeps its budget for good, scarce, duplicate and late-scene candidates',async context=>{
  await setup(context);const vector=axis=>Array.from({length:CLIP_DIMENSION},(_,i)=>Number(i===axis));
  for(const mode of ['good','scarce','duplicates','late-scene']){
   disableImageLearning();localStorage.setItem('keepvocab_image_learning_device_v1',JSON.stringify({enabled:true,downloadConsent:'accepted'}));let calls=0;
   globalThis.Worker=class{postMessage(data){let result;if(data.type==='texts')result=data.payload.texts.map((_,i)=>vector(i?1:0));else{const index=calls++;result=mode==='scarce'&&index<44?vector(1):vector(mode==='duplicates'?2:index+2).map((v,i)=>i===0?.6:v*.8);}queueMicrotask(()=>{if(data.type==='texts')this.onmessage({data:{type:'status',phase:'ready',backend:'wasm'}});this.onmessage({data:{id:data.id,result}});});}terminate(){}};
   const candidates=Array.from({length:45},(_,i)=>({url:`https://adaptive-${mode}.test/${i}.jpg`,visualScene:mode==='late-scene'&&i===44?'last':`scene${mode==='late-scene'?0:i%3}`}));
   const result=await rankImagesLocally(meaning,candidates,{fetchImpl:async()=>new Response('pixels',{headers:{'content-type':'image/jpeg'}}),decode:async()=>({width:64,height:64})});
-  assert.equal(calls,mode==='good'?12:45,mode);assert.ok(result.length>=1);
-  assert.ok(result.every(image=>image.ml.screening==='scored'&&!image.ml.belowThreshold));
+  assert.equal(calls,mode==='late-scene'?4:9,mode);assert.ok(result.length>=1);
+  assert.ok(result.every(image=>image.ml.screening==='scored'));
+  if(mode==='scarce') assert.ok(result.every(image=>image.ml.belowThreshold));
+  if(mode==='late-scene') assert.ok(result.some(image=>image.visualScene==='last'));
  }
 });
 

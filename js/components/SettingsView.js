@@ -1,5 +1,5 @@
 import { getFsrsLearningStatus, subscribeFsrsLearning, saveFsrsPreferences } from '../services/fsrsLearning.js';
-import { getImageLearningStatus, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18908';
+import { getImageLearningStatus, getImageModelCapability, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18908';
 import { getMeaningModelStatus, checkMeaningModelInstalled, subscribeMeaningModel, downloadMeaningModel, removeMeaningModel } from '../services/meaningReference.js';
 import { renderModelProgress, paintModelProgress } from '../services/modelDownloadProgress.js';
 import { getMeaningCorrectionsForTraining } from '../services/meaningEquivalenceLearning.js';
@@ -11,6 +11,30 @@ import { getReminderStatus, supportsReminders } from '../services/reminderServic
 import { completedExercisesToday } from '../services/learningStats.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
+
+export function requestImageModelDownload({ downloadMB = getImageLearningStatus().downloadMB, capability = getImageModelCapability() } = {}) {
+  return new Promise(resolve => {
+    const opener = document.activeElement;
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop active';
+    const warning = capability.warning || '';
+    backdrop.innerHTML = `<section class="modal-box" role="dialog" aria-modal="true" aria-labelledby="image-model-title" aria-describedby="image-model-description${warning ? ' image-model-performance-warning' : ''}">
+      <h2 id="image-model-title">Smarter image suggestions</h2>
+      <p id="image-model-description">Download optional files (about ${Number(downloadMB) || 0} MB) for better photo suggestions.</p>
+      ${warning ? `<p id="image-model-performance-warning" role="note"><strong>Performance warning.</strong> ${escapeHtml(warning)}</p><p>You can download anyway or continue without the image model.</p>` : ''}
+      <p>You can turn this on later in Settings → Local models.</p>
+      <div class="engagement-modal-actions"><button type="button" class="status-pill offline" data-decline>Skip</button><button type="button" class="btn-green-solid" data-download>${warning ? 'Download anyway' : 'Download and turn on'}</button></div>
+    </section>`;
+    let finished = false;
+    const finish = accepted => { if (finished) return; finished = true; backdrop.remove(); if (opener?.isConnected) opener.focus(); resolve(accepted); };
+    backdrop.querySelector('[data-decline]').addEventListener('click', () => finish(false));
+    backdrop.querySelector('[data-download]').addEventListener('click', () => finish(true));
+    backdrop.addEventListener('click', event => { if (event.target === backdrop) finish(false); });
+    backdrop.addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(false); } });
+    document.body.appendChild(backdrop);
+    backdrop.querySelector('[data-decline]').focus();
+  });
+}
 
 function heading(icon, title, description, state = '', configured = false, expandable = false, stateId = '') {
   return `<span class="settings-icon"><i class="${icon}" aria-hidden="true"></i></span><div><h2>${title}</h2><p>${description}</p></div>${state || expandable ? `<span class="settings-heading-meta">${state ? `<span ${stateId ? `id="${stateId}"` : ''} class="settings-state ${configured ? 'connected' : ''}">${state}</span>` : ''}${expandable ? '<i class="fa-solid fa-chevron-down settings-chevron" aria-hidden="true"></i>' : ''}</span>` : ''}`;
@@ -137,7 +161,12 @@ export function renderSettingsView(container, onNavigate) {
     catch { query('#image-learning-status').textContent = failureMessage; }
     finally { button.disabled = false; }
   });
-  learningAction('#enable-image-learning', () => enableImageLearning({ allowMetered: true, download: !getImageLearningStatus().installed }), 'Could not turn on image suggestions. Check your connection and try again.');
+  learningAction('#enable-image-learning', async () => {
+    const download = !getImageLearningStatus().installed;
+    const capability = getImageModelCapability();
+    if (download && capability.warning && !await requestImageModelDownload({ capability })) return;
+    await enableImageLearning({ allowMetered: true, download });
+  }, 'Could not turn on image suggestions. Check your connection and try again.');
   learningAction('#disable-image-learning', disableImageLearning, 'Could not turn off image suggestions. Try again.');
   learningAction('#clear-image-model', clearImageModelDownloads, 'Could not remove files. Close other KeepVocab windows and try again.');
   learningAction('#reset-image-preferences', resetImagePreferences, 'Could not reset photo preferences. Try again.', 'Photo preferences reset.');

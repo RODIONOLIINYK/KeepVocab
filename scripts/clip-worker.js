@@ -5,6 +5,9 @@ import { normalizedVector } from '../js/services/imagePreferences.js';
 import { fullFrameImage, centerCropImage } from '../js/services/imagePreprocessing.js';
 import { IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
 import { workerModelCache } from '../js/services/modelCache.js';
+import { sharedInferenceScope } from '../js/services/sharedInferenceScope.js';
+
+const channel = typeof self.postMessage === 'function' ? self : sharedInferenceScope(self, 'clip');
 
 env.allowLocalModels = false;
 // Some optional tokenizer/config lookups omit revision. Pin their URLs and cache
@@ -75,7 +78,7 @@ let vectorWrites = 0;
 const VECTOR_TAG = `${CLIP_TAG}:validated-wasm-v1`;
 const memory = new Map();
 const cancelled = new Set();
-const status = detail => self.postMessage({ type: 'status', ...detail });
+const status = detail => channel.postMessage({ type: 'status', ...detail });
 async function db() {
   if (!self.indexedDB) return null;
   if (!database) database = new Promise(resolve => {
@@ -83,6 +86,7 @@ async function db() {
     request.onupgradeneeded = () => request.result.createObjectStore('vectors', { keyPath: 'key' });
     request.onsuccess = () => {
       const conn = request.result;
+      conn.onversionchange = () => conn.close();
       try {
         const store = conn.transaction('vectors', 'readwrite').objectStore('vectors');
         const all = store.getAll();
@@ -254,7 +258,7 @@ async function run({ type, payload, device }) {
   throw new Error('Unsupported model request.');
 }
 let queue = Promise.resolve();
-self.onmessage = ({ data }) => {
+channel.onmessage = ({ data }) => {
   if (data.type === 'model-cache-result') return;
   if (data.type === 'cancel') { cancelled.add(data.id); return; }
   queue = queue.then(async () => {
@@ -263,7 +267,7 @@ self.onmessage = ({ data }) => {
       allowDownloads = data.allowDownloads === true;
       if (!models && data.role === 'vision') role = 'vision';
       configureThreads(data.threads);
-      const result = await run(data); if (!cancelled.delete(data.id)) self.postMessage({ id: data.id, result }); }
-    catch (error) { if (!cancelled.delete(data.id)) self.postMessage({ id: data.id, error: error.message || 'Local image inference failed.', backendFailure: backend === 'webgpu' }); }
+      const result = await run(data); if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, result }); }
+    catch (error) { if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, error: error.message || 'Local image inference failed.', backendFailure: backend === 'webgpu' }); }
   }).catch(() => {});
 };

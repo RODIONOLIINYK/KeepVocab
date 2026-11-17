@@ -8,7 +8,7 @@
 export const IMAGE_SEMANTIC_FILTER = Object.freeze({
   minimumSimilarity: 0.06327517532812867,
   closeContrastMargin: .02,
-  candidatePoolSize: 45
+  candidatePoolSize: 9
 });
 
 export function passesImageSemanticGate(semantic, policy = IMAGE_SEMANTIC_FILTER) {
