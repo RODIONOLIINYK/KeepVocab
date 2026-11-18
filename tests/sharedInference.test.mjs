@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MessageChannel } from 'node:worker_threads';
-import { sharedInferenceScope } from '../js/services/sharedInferenceScope.js';
+import { inferenceQueue, sharedInferenceScope } from '../js/services/sharedInferenceScope.js';
 import { handleModelCacheRequest } from '../js/services/modelCache.js';
 
 async function fixture(context) {
@@ -143,4 +143,24 @@ test('immediate re-enabling uses a fresh shared generation before the old reset 
   env.created[1].channel.postMessage({ id: env.created[1].requests[0].id, result: 'ready' });
   await env.waitFor(() => replies.length === 1);
   assert.equal(replies[0].result, 'ready');
+});
+
+test('cancelling queued and active inference leaves the next request usable', async () => {
+  const started = [], replies = [];
+  let finishForward;
+  const gate = new Promise(resolve => { finishForward = resolve; });
+  const dispatch = inferenceQueue({ postMessage: reply => replies.push(reply) }, async (request, current) => {
+    started.push(request.text);
+    await gate;
+    return current() ? request.text : 'cancelled';
+  }, { drain: () => [] });
+  dispatch({ data: { id: 1, text: 'running' } });
+  await Promise.resolve();
+  dispatch({ data: { id: 2, text: 'queued' } });
+  for (const id of [1, 2, 99]) dispatch({ data: { type: 'cancel', id } });
+  const replacement = dispatch({ data: { id: 1, text: 'replacement' } });
+  finishForward();
+  await replacement;
+  assert.deepEqual(started, ['running', 'replacement']);
+  assert.deepEqual(replies, [{ id: 1, result: 'replacement', timings: [] }]);
 });

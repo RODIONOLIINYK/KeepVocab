@@ -28,31 +28,55 @@ export function modelCacheStorage() {
         readLocation: async request => {
           const url = urlOf(request);
           if (!/^https?:\/\//.test(url || '')) return undefined;
-          const info = await invoke({ action: 'stat', cache, key: await digest(url) });
-          return info.size > 0 ? info : undefined;
-        },
-        has: async request => {
-          const info = await invoke({ action: 'stat', cache, key: await digest(urlOf(request)) });
-          return info.size > 0 || Boolean((await native.match(request))?.ok);
-        },
-        match: async request => {
-          const url = urlOf(request);
-          if (!/^https?:\/\//.test(url || '')) return undefined;
-          const info = await native.readLocation(request);
-          if (info) return readModelResponse(info);
-          // Move existing profile downloads into the app-owned folder once.
+          const key = await digest(url);
+          const stat = () => invoke({ action: 'stat', cache, key });
+          const info = await stat();
+          if (info.size > 0) return info;
+          // Migrate directly from the old response stream and keep the old
+          // copy available if the native commit fails.
           const old = await legacy?.match(request);
-          if (old) { await native.put(request, old.clone()); await legacy.delete(request); }
-          return old;
+          if (!old?.ok) return undefined;
+          await native.put(request, old);
+          await legacy.delete(request);
+          return stat();
+        },
+        has: async request => Boolean((await native.readLocation(request))?.size),
+        match: async request => {
+          const info = await native.readLocation(request);
+          return info?.size ? readModelResponse(info) : undefined;
         },
         put: async (request, response) => {
           const url = urlOf(request), key = await digest(url);
           const token = [...crypto.getRandomValues(new Uint8Array(12))].map(b => b.toString(16).padStart(2, '0')).join('');
-          const bytes = new Uint8Array(await response.arrayBuffer());
+          const reader = response.body?.getReader();
+          if (!reader) throw new Error('Empty model file.');
+          const buffer = new Uint8Array(1024 * 1024);
+          let filled = 0, offset = 0;
+          const write = async () => {
+            await invoke({ action: 'write', cache, key, token, offset, data: bytesToBase64(buffer.subarray(0, filled)) });
+            offset += filled;
+            filled = 0;
+          };
           try {
-            for (let offset = 0; offset < bytes.length; offset += 1024 * 1024) await invoke({ action: 'write', cache, key, token, offset, data: bytesToBase64(bytes.subarray(offset, offset + 1024 * 1024)) });
-            await invoke({ action: 'commit', cache, key, token, size: bytes.length, url, headers: [...response.headers] });
-          } catch (error) { await invoke({ action: 'abort', cache, key, token }).catch(() => {}); throw error; }
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              for (let start = 0; start < value.byteLength;) {
+                const length = Math.min(buffer.length - filled, value.byteLength - start);
+                buffer.set(value.subarray(start, start + length), filled);
+                filled += length;
+                start += length;
+                if (filled === buffer.length) await write();
+              }
+            }
+            if (filled) await write();
+            if (!offset) throw new Error('Empty model file.');
+            await invoke({ action: 'commit', cache, key, token, size: offset, url, headers: [...response.headers] });
+          } catch (error) {
+            void reader.cancel().catch(() => {});
+            await invoke({ action: 'abort', cache, key, token }).catch(() => {});
+            throw error;
+          } finally { reader.releaseLock(); }
         },
         delete: async request => { await invoke({ action: 'delete', cache, key: await digest(urlOf(request)) }); await legacy?.delete(request); return true; },
         keys: async () => [...new Set([...(await invoke({ action: 'keys', cache })).urls, ...(await legacy?.keys() || []).map(urlOf)])]
@@ -85,7 +109,7 @@ export function workerModelCache(cache, { measure = (_stage, operation) => opera
       if (!data) return undefined;
       return data.readUrl ? readModelResponse(data, measure) : new Response(data.bytes, { headers: data.headers });
     },
-    put: async (request, response) => { await call('put', { url: urlOf(request), bytes: await response.arrayBuffer(), headers: [...response.headers] }); }
+    put: async (request, response) => { await call('put', { url: urlOf(request), bytes: await response.blob(), headers: [...response.headers] }); }
   };
 }
 export async function handleModelCacheRequest(worker, data) {
@@ -100,15 +124,18 @@ export async function handleModelCacheRequest(worker, data) {
     if (data.operation === 'match') {
       // Send the tiny local descriptor to the worker. The worker consumes the
       // binary stream itself, without a model-sized renderer/worker copy.
-      result = await cache.readLocation?.(data.url);
-      if (!result) {
+      if (cache.readLocation) result = await cache.readLocation(data.url);
+      else {
         const response = await cache.match(data.url);
         if (response) result = { bytes: await response.arrayBuffer(), headers: [...response.headers] };
       }
     } else if (data.operation === 'put') await cache.put(data.url, new Response(data.bytes, { headers: data.headers }));
     else throw new Error('Unknown model cache operation.');
-    worker.postMessage({ ...reply, result }, result?.bytes ? [result.bytes] : []);
-  } catch (error) { worker.postMessage({ ...reply, error: error.message }); }
+    reply.result = result;
+  } catch (error) { reply.error = error.message; }
+  // The requesting window may detach while its storage operation is in flight.
+  try { worker.postMessage(reply, reply.result?.bytes ? [reply.result.bytes] : []); }
+  catch { /* The detached worker can no longer receive a cache reply. */ }
   return true;
 }
 

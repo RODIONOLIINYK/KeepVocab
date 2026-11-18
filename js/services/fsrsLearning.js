@@ -32,8 +32,9 @@ function trainWorker(events, models, persistence) {
       if (data.progress) { message = `Fitting ${data.progress.channel} memory parameters (${data.progress.pass}/${data.progress.total})…`;emit(persistence);return; }
       finish();if (data.error) reject(new Error(data.error)); else resolve(data.results);
     };
-    worker.onerror = () => { finish();reject(new Error('Memory training could not finish. Current parameters were retained.')); };
-    worker.postMessage({ events, models });
+    worker.onmessageerror = worker.onerror = () => { finish();reject(new Error('Memory training could not finish. Current parameters were retained.')); };
+    try { worker.postMessage({ events, models }); }
+    catch (error) { finish(); reject(error); }
   });
 }
 export async function trainPersonalScheduler(persistence = driveSync, { force = false } = {}) {

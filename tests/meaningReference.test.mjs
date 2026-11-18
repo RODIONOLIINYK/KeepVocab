@@ -206,3 +206,25 @@ test('driveSync.unmergeWordMeanings splits a saved merged card into separate mea
   assert.equal(secondary.attribution, 'Dictionary source');
   assert.deepEqual(secondary.groupedSenses, []);
 });
+
+test('a slow install check is shared and cannot resurrect a removed merge model', async t => {
+  const oldCaches = globalThis.caches, oldWorker = globalThis.Worker;
+  t.after(() => { globalThis.caches = oldCaches; globalThis.Worker = oldWorker; });
+  let opens = 0, resolveProbe, started;
+  const checking = new Promise(resolve => { started = resolve; });
+  globalThis.Worker = class { constructor() { assert.fail('Removed model was started'); } };
+  globalThis.caches = { open: async () => {
+    opens++;
+    return { has: () => new Promise(resolve => { resolveProbe = resolve; started(); }) };
+  }, delete: async () => true };
+  const service = await import('../js/services/meaningReference.js?interrupted-check');
+  const warmup = service.preloadMeaningModel(), check = service.checkMeaningModelInstalled();
+  await checking;
+  assert.equal(opens, 1);
+  assert.equal(service.getMeaningModelStatus().installed, false);
+  await service.removeMeaningModel();
+  resolveProbe(true);
+  assert.equal(await check, false);
+  assert.equal(await warmup, null);
+  assert.equal(service.getMeaningModelStatus().phase, 'not-installed');
+});

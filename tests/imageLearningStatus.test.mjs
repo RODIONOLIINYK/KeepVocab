@@ -42,6 +42,7 @@ async function setup(context, navigator = { hardwareConcurrency: 2 }) {
   const cleanup = [];
   globalThis.localStorage = new MemoryStorage();
   localStorage.setItem('keepvocab_image_learning_device_v1', JSON.stringify({ enabled: true, downloadConsent: 'accepted' }));
+  localStorage.setItem('keepvocab_image_candidate_budget', '9');
   await initializeImageLearning({ cacheStorage: { keys: async () => [] } });
   context.after(() => {
     for (const release of cleanup) release();
@@ -127,7 +128,7 @@ test('lazy local scoring marks the model installed when its worker becomes ready
   assert.ok(states.some(state => state.phase === 'ready' && state.installed === true));
 });
 
-test('CLIP scores all forty-five scene candidates and rejects failures before display', async context => {
+test('even exhaustive requests are bounded to nine scene candidates and reject failures before display', async context => {
   await setup(context); let imageCalls = 0;
   const vector = axis => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === axis));
   globalThis.Worker = class {
@@ -136,7 +137,7 @@ test('CLIP scores all forty-five scene candidates and rejects failures before di
       if (data.type === 'texts') result = data.payload.texts.map((_, i) => vector(i ? 1 : 0));
       else {
         const index = imageCalls++;
-        result = index === 44 ? vector(1) : vector(index + 2).map((value, i) => i === 0 ? .6 : value * .8);
+        result = index === 8 ? vector(1) : vector(index + 2).map((value, i) => i === 0 ? .6 : value * .8);
       }
       queueMicrotask(() => {
         if (data.type === 'texts') this.onmessage({ data: { type: 'status', phase: 'ready', backend: 'wasm' } });
@@ -148,12 +149,12 @@ test('CLIP scores all forty-five scene candidates and rejects failures before di
   const candidates = Array.from({ length: 45 }, (_, i) => ({ url: `https://clip45.test/${i}.jpg`, title: `River scene ${i}`, visualScene: `scene ${i % 3}` }));
   const results = await rankImagesLocally(meaning, candidates, {
     exhaustiveScoring: true,
-    fetchImpl: async () => new Response('pixels', { headers: { 'content-type': 'image/jpeg' } }),
+    fetchImpl: async url => new Response(String(url), { headers: { 'content-type': 'image/jpeg' } }),
     decode: async () => ({ width: 64, height: 64 }), resize: () => assert.fail('Small images need no resize')
   });
-  assert.equal(imageCalls, 45);
-  assert.equal(results.length, 44);
-  assert.ok(!results.some(image => image.url === candidates[44].url));
+  assert.equal(imageCalls, 9);
+  assert.equal(results.length, 8);
+  assert.ok(!results.some(image => image.url === candidates[8].url));
 });
 
 test('three and four scoring workers receive every prepared candidate in larger and partial batches', async context => {
@@ -198,10 +199,10 @@ test('three and four scoring workers receive every prepared candidate in larger 
       },
       decode: async () => ({ width: 64, height: 64 })
     });
-    const expected = candidates.map((_, index) => index).filter(index => index !== 5);
+    const expected = candidates.slice(0, 9).map((_, index) => index).filter(index => index !== 5);
     assert.equal(workers.length, size);
     assert.deepEqual(scored.sort((a, b) => a - b), expected);
-    assert.deepEqual(results.map(image => image.url), expected.map(index => candidates[index].url));
+    assert.deepEqual(results.map(image => image.url).sort(), expected.map(index => candidates[index].url).sort());
     disableImageLearning();
   }
 });
@@ -211,11 +212,12 @@ test('production local scoring returns nine closest failed matches as manual-onl
   let imageCalls = 0;
   const vector = axis => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === axis));
   globalThis.Worker = class {
-    postMessage(data) {
+    async postMessage(data) {
       let result;
       if (data.type === 'texts') result = data.payload.texts.map((_, i) => vector(i ? 1 : 0));
       else {
-        const index = imageCalls++, similarity = .05 + index * .005;
+        imageCalls++;
+        const index = Number(new URL(await data.payload.blob.text()).pathname.slice(1, -4)), similarity = .05 + index * .005;
         result = Array(CLIP_DIMENSION).fill(0); result[0] = similarity; result[1] = .2;
         result[index + 2] = Math.sqrt(1 - similarity ** 2 - .2 ** 2);
       }
@@ -228,7 +230,7 @@ test('production local scoring returns nine closest failed matches as manual-onl
   };
   const candidates = Array.from({ length: 12 }, (_, i) => ({ url: `https://fallback-review.test/${i}.jpg` }));
   const images = await rankImagesLocally(meaning, candidates, {
-    fetchImpl: async () => new Response('fixture pixels', { headers: { 'content-type': 'image/jpeg' } }),
+    fetchImpl: async url => new Response(String(url), { headers: { 'content-type': 'image/jpeg' } }),
     decode: async () => ({ width: 64, height: 64 }), resize: () => assert.fail('No resize needed')
   });
   assert.equal(imageCalls, 9); assert.equal(images.length, 9);
@@ -266,7 +268,7 @@ test('foreground evaluations load at most one extra vision graph and never downl
     let downloads = 0;
     await rankImagesLocally(meaning, Array.from({ length: count }, (_, i) => ({ url: `https://bounded-workers-${count}.test/${i}.jpg` })), {
       localCandidateLimit: 45,
-      fetchImpl: async () => { downloads++; return new Response('pixels', { headers: { 'content-type': 'image/jpeg' } }); },
+      fetchImpl: async url => { downloads++; return new Response(String(url), { headers: { 'content-type': 'image/jpeg' } }); },
       decode: async () => ({ width: 64, height: 64 })
     });
     assert.equal(workers.length, count === 3 ? 1 : 2);
@@ -300,7 +302,7 @@ test('foreground scoring keeps its budget for good, scarce, duplicate and late-s
   disableImageLearning();localStorage.setItem('keepvocab_image_learning_device_v1',JSON.stringify({enabled:true,downloadConsent:'accepted'}));let calls=0;
   globalThis.Worker=class{postMessage(data){let result;if(data.type==='texts')result=data.payload.texts.map((_,i)=>vector(i?1:0));else{const index=calls++;result=mode==='scarce'&&index<44?vector(1):vector(mode==='duplicates'?2:index+2).map((v,i)=>i===0?.6:v*.8);}queueMicrotask(()=>{if(data.type==='texts')this.onmessage({data:{type:'status',phase:'ready',backend:'wasm'}});this.onmessage({data:{id:data.id,result}});});}terminate(){}};
   const candidates=Array.from({length:45},(_,i)=>({url:`https://adaptive-${mode}.test/${i}.jpg`,visualScene:mode==='late-scene'&&i===44?'last':`scene${mode==='late-scene'?0:i%3}`}));
-  const result=await rankImagesLocally(meaning,candidates,{fetchImpl:async()=>new Response('pixels',{headers:{'content-type':'image/jpeg'}}),decode:async()=>({width:64,height:64})});
+  const result=await rankImagesLocally(meaning,candidates,{fetchImpl:async url=>new Response(String(url),{headers:{'content-type':'image/jpeg'}}),decode:async()=>({width:64,height:64})});
   assert.equal(calls,mode==='late-scene'?4:9,mode);assert.ok(result.length>=1);
   assert.ok(result.every(image=>image.ml.screening==='scored'));
   if(mode==='scarce') assert.ok(result.every(image=>image.ml.belowThreshold));
@@ -325,6 +327,7 @@ test('a failed vision helper retries its image on the primary worker', async con
           this.onmessage({ data: { id: data.id, result: data.payload.texts.map((_, i) => axis(i ? 1 : 0)) } });
         } else if (data.type === 'image') {
           const index = Number(await data.payload.blob.text());
+          await new Promise(resolve => setTimeout(resolve, 1));
           if (this.index > 0) {
             assert.equal(data.allowDownloads, false);
             helperFailures++;
@@ -365,9 +368,9 @@ test('a loading helper cannot delay images and becomes eligible only after its i
         waiting.push(() => this.onmessage({ data: { id: data.id, result: { backend: 'wasm' } } }));
         return; // Deliberately keep the helper cold until the first batch finishes.
       }
-      queueMicrotask(() => {
+      queueMicrotask(async () => {
         if (data.type === 'cancel') return;
-        if (data.type === 'image') scored.push(this.index);
+        if (data.type === 'image') { scored.push(this.index); await new Promise(resolve => setTimeout(resolve, 1)); }
         const result = data.type === 'initialize' ? { backend: 'wasm' }
           : data.type === 'texts' ? data.payload.texts.map(() => axis(0)) : axis(0);
         this.onmessage({ data: { id: data.id, result } });
@@ -378,7 +381,7 @@ test('a loading helper cannot delay images and becomes eligible only after its i
   const candidates = Array.from({ length: 8 }, (_, i) => ({ url: `https://cold-helper.test/${i}.jpg` }));
   const rank = () => rankFresh(meaning, candidates, {
     exhaustiveScoring: true,
-    fetchImpl: async () => new Response('pixels', { headers: { 'content-type': 'image/jpeg' } }),
+    fetchImpl: async url => new Response(String(url), { headers: { 'content-type': 'image/jpeg' } }),
     decode: async () => ({ width: 64, height: 64 })
   });
   const timeout = setTimeout(() => assert.fail('A cold helper blocked the primary batch'), 1000);
@@ -390,4 +393,127 @@ test('a loading helper cannot delay images and becomes eligible only after its i
   await rank();
   assert.ok(scored.includes(1), 'the initialized helper can score later images');
   assert.equal(workers.length, 2, 'initialization does not create duplicate helpers');
+});
+
+test('review starts after three images and publishes each later candidate as it finishes', async context => {
+  const { createImageScoringSession } = await import('../js/services/imageScoringSession.js');
+  await setup(context);
+  let images = 0;
+  const downloads = [];
+  const axis = index => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === index));
+  globalThis.Worker = class {
+    postMessage(data) {
+      let result;
+      if (data.type === 'texts') result = data.payload.texts.map((_, i) => axis(i ? 1 : 0));
+      else if (data.type === 'image') {
+        const index = images++;
+        const similarity = index === 0 ? .8 : .5;
+        result = axis(index + 2).map((v, i) => i === 0 ? similarity : v * Math.sqrt(1 - similarity ** 2));
+      } else result = { backend: 'wasm' };
+      queueMicrotask(() => this.onmessage({ data: { id: data.id, result } }));
+    }
+    terminate() {}
+  };
+  const candidates = Array.from({ length: 9 }, (_, i) => ({ url: `https://six-first.test/${i}.jpg` }));
+  const imageScoringSession = createImageScoringSession();
+  const results = await rankImagesLocally(meaning, candidates, {
+    imageScoringSession, imageCandidateBudget: 9, deferImageScoring: true,
+    fetchImpl: async url => { downloads.push(url); return new Response(url, { headers: { 'content-type': 'image/jpeg' } }); },
+    decode: async () => ({ width: 64, height: 64 })
+  });
+  assert.equal(images, 3);
+  assert.equal(downloads.length, 3);
+  assert.equal(results.filter(image => image.ml.screening === 'pending').length, 6);
+  const snapshots = [];
+  await new Promise(resolve => {
+    imageScoringSession.subscribe(results.at(-1).ml.reviewJob, update => {
+      snapshots.push(update);
+      if (!update.some(image => image.ml.screening === 'pending')) resolve();
+    });
+  });
+  assert.deepEqual(snapshots.map(update => update.filter(image => image.ml.screening === 'pending').length), [5, 4, 3, 2, 1, 0]);
+  assert.equal(images, 9);
+  assert.equal(downloads.length, 9);
+  imageScoringSession.clear();
+  assert.equal(imageScoringSession.size, 0);
+});
+
+test('addition-scoped raw vectors are reused for another meaning and cleared before the next addition', async context => {
+  const { createImageScoringSession } = await import('../js/services/imageScoringSession.js');
+  await setup(context);
+  let imageCalls = 0, textCalls = 0;
+  const vector = axis => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === axis));
+  globalThis.Worker = class {
+    postMessage(data) {
+      const result = data.type === 'texts' ? (textCalls++, data.payload.texts.map(() => vector(textCalls % 2)))
+        : data.type === 'image' ? (imageCalls++, vector(0)) : { backend: 'wasm' };
+      queueMicrotask(() => this.onmessage({ data: { id: data.id, result } }));
+    }
+    terminate() {}
+  };
+  const session = createImageScoringSession();
+  const options = { imageScoringSession: session, fetchImpl: async () => new Response('same bytes', { headers: { 'content-type': 'image/jpeg' } }), decode: async () => ({ width: 64, height: 64 }) };
+  const first = await rankImagesLocally(meaning, [photo], options);
+  const second = await rankImagesLocally({ ...meaning, definition: 'A different definition.' }, [photo], options);
+  assert.equal(imageCalls, 1); assert.equal(textCalls, 2);
+  assert.notEqual(first[0].ml.sense, second[0].ml.sense);
+  assert.notEqual(first[0].ml.selected, second[0].ml.selected, 'scores use the new meaning embedding');
+  session.clear(); assert.equal(session.size, 0);
+  await rankImagesLocally(meaning, [photo], { ...options, imageScoringSession: createImageScoringSession() });
+  assert.equal(imageCalls, 2);
+});
+
+test('the foreground chooser keeps the full budget when the model prefers only one photo', async context => {
+  await setup(context);
+  const { findRelevantImages } = await import('../js/services/imageSearch.js');
+  const { createImageScoringSession } = await import('../js/services/imageScoringSession.js');
+  const axis = index => Array.from({ length: CLIP_DIMENSION }, (_, i) => Number(i === index));
+  const textPrompts = [];
+  globalThis.Worker = class {
+    async postMessage(data) {
+      let result = { backend: 'wasm' };
+      if (data.type === 'texts') {
+        textPrompts.push(data.payload.texts);
+        result = data.payload.texts.map((_, index) => axis(index === 0 ? 0 : 1));
+      }
+      if (data.type === 'image') {
+        const url = new URL(await data.payload.blob.text());
+        result = axis(url.pathname.endsWith('/word/0.jpg') ? 0 : 1);
+      }
+      queueMicrotask(() => this.onmessage({ data: { id: data.id, result } }));
+    }
+    terminate() {}
+  };
+
+  for (const budget of [3, 6, 9]) {
+    const session = createImageScoringSession();
+    const candidates = await findRelevantImages({ ...meaning, word: `probe${budget}` }, {
+      imageCandidateBudget: budget, imageScoringSession: session, deferImageScoring: true, aiScenes: false,
+      provider: 'pexels', pexelsApiKey: 'synthetic', validateImages: false,
+      fetchImpl: async value => {
+        const url = new URL(value);
+        if (url.hostname !== 'api.pexels.com') return new Response(value, { headers: { 'content-type': 'image/jpeg' } });
+        const query = url.searchParams.get('query') === `probe${budget}` ? 'word' : 'definition';
+        const count = Number(url.searchParams.get('per_page'));
+        return Response.json({ photos: Array.from({ length: count }, (_, i) => ({
+          url: `https://full-budget.test/${budget}/${query}/${i}`, alt: 'A photo',
+          src: { medium: `https://full-budget.test/${budget}/${query}/${i}.jpg` }
+        })) });
+      },
+      decode: async () => ({ width: 64, height: 64 })
+    });
+    assert.equal(candidates.length, budget);
+    assert.equal(candidates.filter(image => image.ml.screening === 'scored').length, 3);
+    const final = budget === 3 ? candidates : await new Promise(resolve => {
+      session.subscribe(candidates.at(-1).ml.reviewJob, update => {
+        if (!update.some(image => image.ml.screening === 'pending')) resolve(update);
+      });
+    });
+    assert.equal(final.length, budget);
+    assert.match(final[0].url, /word\/0\.jpg$/);
+    assert.equal(final.filter(image => image.ml.belowThreshold).length, budget - 1);
+    session.clear();
+  }
+  assert.ok(textPrompts[0].some(text => text === 'A photo of probe3'));
+  assert.ok(textPrompts[0][0].includes(meaning.definition));
 });

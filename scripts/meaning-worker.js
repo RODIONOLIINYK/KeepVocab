@@ -3,7 +3,7 @@ import { AutoModel, AutoTokenizer, env } from '@huggingface/transformers';
 import { MEANING_MAX_TOKENS, MEANING_MODEL_TAG, MEANING_MODEL_BASE, MEANING_MODEL_REPO, MEANING_MODEL_REVISION, MEANING_CACHE } from '../js/ml/meaningConfig.js';
 import { referenceEmbedding, referenceFeatures, referenceProbability } from '../js/services/meaningReferenceFeatures.js';
 import { workerModelCache } from '../js/services/modelCache.js';
-import { sharedInferenceScope } from '../js/services/sharedInferenceScope.js';
+import { inferenceQueue, sharedInferenceScope } from '../js/services/sharedInferenceScope.js';
 
 const timings = createInferenceTimings('meaning');
 const channel = typeof self.postMessage === 'function' ? self : sharedInferenceScope(self, 'meaning');
@@ -49,8 +49,9 @@ async function initialize() {
   return loading;
 }
 const memory = new Map();
-async function run({ type, texts, pairs }) {
+async function run({ type, texts, pairs }, current) {
   const { tokenizer, model, scorer } = await initialize();
+  if (!current()) return;
   if (type === 'initialize') return { model: MEANING_MODEL_TAG };
   if (!Array.isArray(texts) || texts.length > 24 || texts.some(text => typeof text !== 'string' || text.length > 4000)
     || !Array.isArray(pairs) || pairs.length > 276 || pairs.some(p => !Array.isArray(p) || p.length !== 2 || p.some(i => !Number.isInteger(i) || i < 0 || i >= texts.length))) throw new Error('Invalid meaning comparison.');
@@ -59,11 +60,13 @@ async function run({ type, texts, pairs }) {
     const value = memory.get(text); memory.delete(text); memory.set(text, value);
   }
   for (let start = 0; start < missing.length; start += 8) {
+    if (!current()) return;
     const batch = missing.slice(start, start + 8);
     const inputs = tokenizer(batch, { padding: 'max_length', max_length: MEANING_MAX_TOKENS, truncation: true });
     let output;
     try {
       output = await timings.measure('meaning-forward', () => model(inputs), { batch: batch.length });
+      if (!current()) return;
       const hidden = output.last_hidden_state.tolist();
       const ids = inputs.input_ids.tolist().map(row => row.map(Number));
       const masks = inputs.attention_mask.tolist().map(row => row.map(Number));
@@ -77,14 +80,4 @@ async function run({ type, texts, pairs }) {
   }
   return { model: MEANING_MODEL_TAG, scores: pairs.map(([a, b]) => referenceProbability(referenceFeatures(memory.get(texts[a]), memory.get(texts[b]), scorer), scorer)) };
 }
-let queue = Promise.resolve();
-const cancelled = new Set();
-channel.onmessage = ({ data }) => {
-  if (data.type === 'model-cache-result') return;
-  if (data.type === 'cancel') { cancelled.add(data.id); return; }
-  queue = queue.then(async () => {
-    if (cancelled.delete(data.id)) return;
-    try { const result = await run(data); if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, result, timings: timings.drain() }); }
-    catch (error) { if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, error: error.message || 'Meaning comparison failed.', timings: timings.drain() }); }
-  });
-};
+channel.onmessage = inferenceQueue(channel, run, timings);

@@ -7,7 +7,7 @@ import { isModernUsageExample, hasExampleSenseConflict } from './exampleSearch.j
 import { meaningPairKey, embedMeaningAnchors, pairEvidence } from './meaningEquivalenceLearning.js';
 import { equivalenceProbability, validEquivalenceHead } from './meaningEquivalenceHead.js';
 import { meaningComparisonText, meaningEmbeddingText, MEANING_COMPARISON_VERSION } from './meaningComparison.js';
-import { scoreReferenceMeaningPairs } from './meaningReference.js';
+import { checkMeaningModelInstalled, getMeaningModelStatus, scoreReferenceMeaningPairs } from './meaningReference.js';
 import { MEANING_MODEL_TAG, MEANING_MERGE_THRESHOLD, MEANING_REVIEW_THRESHOLD } from '../ml/meaningConfig.js';
 
 import { MEANING_EMBEDDING_CENTER } from '../ml/pretrainedSemanticHeads.js';
@@ -17,7 +17,6 @@ const VERSION = 5;
 export const MEANING_GROUPING_POLICY = Object.freeze({
   localSimilarity: 0.45, reviewSimilarity: 0.40, maxEmbeddedSenses: 24, automaticCosineMerging: false
 });
-const LOCAL_SIMILARITY = MEANING_GROUPING_POLICY.localSimilarity;
 const REVIEW_SIMILARITY = MEANING_GROUPING_POLICY.reviewSimilarity;
 const MAX_EMBEDDED_SENSES = MEANING_GROUPING_POLICY.maxEmbeddedSenses;
 const CONSOLIDATION_CACHE = 'keepvocab_learner_meaning_groups_v1';
@@ -63,22 +62,33 @@ export async function consolidateEntrySenses(entry, options = {}) {
     senses.sort((a, b) => rank(a) - rank(b));
     entry = { ...entry, senses, additionalSenses: [] };
   }
-  const learning = options.meaningLearningState || { records: [], head: null };
-  const local = await groupEntrySensesLocally(entry, { ...options, meaningLearningState: learning });
   const settings = { ...getGeminiSettings(options.storage), ...options.settings };
-  // Local duplicate rules run first. A partial merge or a two-sense entry must
-  // not disable semantic resolution of the remaining dictionary paraphrases.
-  if (options.groupSenses === false || options.consolidateSenses === false || entry.aiGenerated
-    || !settings.apiKey || settings.enabled === false) return local;
+  const canGroup = options.groupSenses !== false && !entry.aiGenerated;
+  const reference = canGroup && (options.scoreMeaningPairs || (typeof Worker !== 'undefined'
+    && (getMeaningModelStatus().installed || await checkMeaningModelInstalled().catch(() => false))));
+  const gemini = canGroup && !reference && options.consolidateSenses !== false && settings.apiKey && settings.enabled !== false;
+  const provider = reference ? 'local' : gemini ? 'gemini' : null;
+  entry = { ...entry, meaningGroupingProvider: provider };
+  options.signal?.throwIfAborted();
+  if (!provider && !options.encodeDefinitionTexts) {
+    return { ...entry, meaningInference: { local: 'unavailable', comparedPairs: 0 } };
+  }
+  await options.onRawMeanings?.(entry);
+  options.signal?.throwIfAborted();
+  const learning = options.meaningLearningState || { records: [], head: null };
+  const localOptions = { ...options, meaningLearningState: learning };
+  if (!reference && !options.encodeDefinitionTexts) localOptions.semanticGrouping = false;
+  const local = await groupEntrySensesLocally(entry, localOptions);
+  if (!gemini) return local;
   const allSenses = allEntrySenses(entry).flatMap(originalSenses);
-  // Only exact duplicates and explicit user equivalences are atomic. A local
-  // similarity prediction must not prevent Gemini from correcting that merge.
-  const certain = await groupEntrySensesLocally(entry, { ...options, meaningLearningState: learning, semanticGrouping: false });
+  // The fallback uses the same deterministic duplicates and user constraints.
+  const certain = options.encodeDefinitionTexts
+    ? await groupEntrySensesLocally(entry, { ...localOptions, semanticGrouping: false }) : local;
   const senses = allEntrySenses(certain);
   if (!senses.length) return local;
   if (senses.length < 2) return local;
   if (new Set(senses.map(s => String(s.partOfSpeech || 'word').trim().toLowerCase())).size === senses.length) return local;
-  const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
+  const storage = options.entryCacheStorage ?? (options.storage === undefined ? globalThis.localStorage : options.storage);
   const model = options.model || settings.textModel;
   const judgments = new Map(learning.records.filter(row => row.source === 'user').map(row => [row.key, row.label]));
   const constraints = [];
@@ -192,19 +202,36 @@ function centeredVector(vector) {
   return normalizedVector(normalized.map((value, index) => value - MEANING_EMBEDDING_CENTER[index]));
 }
 
-function clusterSenses(senses, scores, word) {
+function clusterSenses(senses, scores, distinctPairs, word) {
   const clusters = senses.map((_, index) => [index]);
-  const pairScore = (a, b) => scores.get(Math.min(a, b) + ':' + Math.max(a, b)) ?? -1;
+  const pairKey = (a, b) => Math.min(a, b) + ':' + Math.max(a, b);
+  const pairScore = (a, b) => scores.get(pairKey(a, b)) ?? -1;
+  const merge = (a, b) => {
+    clusters[a].push(...clusters[b]);
+    clusters.splice(b, 1);
+  };
+
+  // User-confirmed equivalences can link a whole group. A recorded distinction
+  // takes priority even if other confirmations would connect its two members.
+  for (const [key, score] of scores) {
+    if (score !== 3) continue;
+    const [left, right] = key.split(':').map(Number);
+    const a = clusters.findIndex(group => group.includes(left));
+    const b = clusters.findIndex(group => group.includes(right));
+    if (a === b || clusters[a].some(i => clusters[b].some(j => distinctPairs.has(pairKey(i, j))))) continue;
+    merge(Math.min(a, b), Math.max(a, b));
+  }
+
+  // Statistical links still require all cross-group comparisons to pass. Use
+  // their actual strength so a weak passing edge cannot win on dictionary order.
   while (true) {
-    let chosen = null, best = LOCAL_SIMILARITY - 1e-9;
+    let chosen = null, best = 0;
     for (let a = 0; a < clusters.length; a++) for (let b = a + 1; b < clusters.length; b++) {
       const score = Math.min(...clusters[a].flatMap(i => clusters[b].map(j => pairScore(i, j))));
       if (score > best) { best = score; chosen = [a, b]; }
     }
     if (!chosen) break;
-    const [a, b] = chosen;
-    clusters[a].push(...clusters[b]);
-    clusters.splice(b, 1);
+    merge(...chosen);
   }
   return clusters.map(indices => groupSimilarSenses(indices.sort((a, b) => a - b).map(i => senses[i]), {
     word, matches: () => true
@@ -232,6 +259,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
     && ((areSensesNearDuplicate(left, row.a) && areSensesNearDuplicate(right, row.b))
       || (areSensesNearDuplicate(left, row.b) && areSensesNearDuplicate(right, row.a))));
   const scores = new Map(), candidates = new Map();
+  const distinctPairs = new Set();
   let userReviewed = false;
   for (let a = 0; a < senses.length; a++) for (let b = a + 1; b < senses.length; b++) {
     const left = senses[a], right = senses[b];
@@ -242,10 +270,12 @@ export async function groupEntrySensesLocally(entry, options = {}) {
     if (judgment !== undefined) {
       userReviewed = true;
       if (judgment === 1) scores.set(pair, 3);
+      else distinctPairs.add(pair);
     } else if (areSensesNearDuplicate(left, right)) {
       scores.set(pair, 2);
     } else if (hasDistinctTwin(left, right)) {
       userReviewed = true;
+      distinctPairs.add(pair);
     } else {
       candidates.set(pair, key);
     }
@@ -256,7 +286,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
   // The separately installed MiniLM reference owns production comparisons. Legacy injected
   // SigLIP encoders remain available to historical tests and research callers.
   if (!options.encodeDefinitionTexts || options.scoreMeaningPairs) {
-    const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
+    const storage = options.entryCacheStorage ?? (options.storage === undefined ? globalThis.localStorage : options.storage);
     const cache = readObjectCache(storage, 'keepvocab_reference_meaning_scores_v1');
     const key = JSON.stringify([2, MEANING_MODEL_TAG, MEANING_COMPARISON_VERSION,
       senses.map(s => [s.word, s.partOfSpeech, source(s)])]);
@@ -382,7 +412,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
           const probability = probabilities.get(pairKey);
           if (probability === undefined) continue;
           inference.comparedPairs++;
-          if (probability >= MEANING_MERGE_THRESHOLD) scores.set(pair, 1);
+          if (probability >= MEANING_MERGE_THRESHOLD) scores.set(pair, probability);
           if (probability >= MEANING_REVIEW_THRESHOLD && !reviewMap.has(pairKey)) reviewMap.set(pairKey, probability);
         }
         if (inference.local === 'ready' && inference.comparedPairs < candidates.size) inference.local = 'partial';
@@ -393,7 +423,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
         inference.reason = error.message || 'The meaning merge model is unavailable.';
       }
     }
-    const result = packagedLocal(entry, clusterSenses(senses, scores, entry.word));
+    const result = packagedLocal(entry, clusterSenses(senses, scores, distinctPairs, entry.word));
     if (userReviewed) result.senseConsolidation.userReviewed = true;
     result.meaningReviewScores = [...reviewMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 24);
     result.meaningInference = inference;
@@ -412,7 +442,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
   const equivalenceScores = [];
   if (!activeHead) inference.scorer = 'review-only-cosine';
   if (candidates.size && options.semanticGrouping !== false) {
-    const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
+    const storage = options.entryCacheStorage ?? (options.storage === undefined ? globalThis.localStorage : options.storage);
     const key = JSON.stringify([VERSION, MEANING_COMPARISON_VERSION, CLIP_TAG, entry.word,
       senses.map(s => [s.word, s.partOfSpeech, source(s)])]);
     const cache = readObjectCache(storage, CACHE_KEY);
@@ -479,7 +509,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
         const probability = previous.get(pairKey);
         if (!Number.isFinite(probability)) continue;
         equivalenceScores.push([pairKey, probability]);
-        if (probability >= activeHead.threshold) scores.set(pair, 1);
+        if (probability >= activeHead.threshold) scores.set(pair, probability);
       }
       if (equivalenceScores.length) { inference.scorer = 'calibrated-equivalence'; inference.local = 'cached'; }
     } else if (activeHead && !options.reuseSemanticScoresOnly) {
@@ -495,7 +525,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
             if (!byIndex.has(a) || !byIndex.has(b)) continue;
             const probability = equivalenceProbability(activeHead, pairEvidence(senses[a], senses[b], byIndex.get(a), byIndex.get(b)));
             if (probability !== null) equivalenceScores.push([pairKey, probability]);
-            if (probability !== null && probability >= activeHead.threshold) scores.set(pair, 1);
+            if (probability !== null && probability >= activeHead.threshold) scores.set(pair, probability);
           }
           if (equivalenceScores.length) inference.scorer = 'calibrated-equivalence';
         } else {
@@ -509,7 +539,7 @@ export async function groupEntrySensesLocally(entry, options = {}) {
     }
   }
 
-  const result = packagedLocal(entry, clusterSenses(senses, scores, entry.word));
+  const result = packagedLocal(entry, clusterSenses(senses, scores, distinctPairs, entry.word));
   if (userReviewed) result.senseConsolidation.userReviewed = true;
   result.meaningReviewScores = reviews.sort((a, b) => b[1] - a[1]).slice(0, 24);
   result.meaningInference = inference;

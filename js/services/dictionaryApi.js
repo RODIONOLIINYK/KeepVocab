@@ -27,7 +27,7 @@ export function hasUkrainianTranslation(value) {
 export async function translateEnglishText(text, options = {}) {
   const source = String(text || '').replace(/\s+/g, ' ').trim();
   if (!source) return '';
-  const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
+  const storage = options.entryCacheStorage ?? (options.storage === undefined ? globalThis.localStorage : options.storage);
   const cache = readObjectCache(storage, TRANSLATION_CACHE_KEY);
   const cached = cache[source];
   if (!options.force && cacheEntryIsFresh(cached, TRANSLATION_TTL_MS) && hasUkrainianTranslation(cached.data)) return cached.data;
@@ -313,28 +313,29 @@ async function requestJson(url, fetchImpl, timeoutMs, signal) {
   }
 }
 
-async function lookupPrimary(cleanWord, fetchImpl, timeoutMs) {
-  const payload = await requestJson(`${PRIMARY_API_BASE}${encodeURIComponent(cleanWord)}`, fetchImpl, timeoutMs);
+async function lookupPrimary(cleanWord, fetchImpl, timeoutMs, signal) {
+  const payload = await requestJson(`${PRIMARY_API_BASE}${encodeURIComponent(cleanWord)}`, fetchImpl, timeoutMs, signal);
   const result = parseFreeDictionary(payload, cleanWord);
   if (!result) throw new DictionaryApiError(`“${cleanWord}” was not found in the dictionary.`, 'NOT_FOUND');
   return result;
 }
 
-async function lookupFallback(cleanWord, fetchImpl, timeoutMs) {
+async function lookupFallback(cleanWord, fetchImpl, timeoutMs, signal) {
   const url = new URL(FALLBACK_API_BASE);
   url.searchParams.set('sp', cleanWord);
   url.searchParams.set('md', 'd');
   url.searchParams.set('max', '3');
-  const payload = await requestJson(url.toString(), fetchImpl, timeoutMs);
+  const payload = await requestJson(url.toString(), fetchImpl, timeoutMs, signal);
   const result = parseDatamuse(payload, cleanWord);
   if (!result) throw new DictionaryApiError(`“${cleanWord}” was not found in the dictionary.`, 'NOT_FOUND');
   return result;
 }
 
 export async function fetchWordDetails(word, options = {}) {
+  options.signal?.throwIfAborted();
   const cleanWord = normalizeQuery(word);
   const fetchImpl = options.fetchImpl || globalThis.fetch?.bind(globalThis);
-  const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
+  const storage = options.entryCacheStorage ?? (options.storage === undefined ? globalThis.localStorage : options.storage);
   const timeoutMs = options.timeoutMs || DEFAULT_TIMEOUT_MS;
   const cache = readObjectCache(storage, CACHE_KEY);
 
@@ -351,16 +352,18 @@ export async function fetchWordDetails(word, options = {}) {
   let fallbackError;
   let result;
   try {
-    result = await lookupPrimary(cleanWord, fetchImpl, Math.min(timeoutMs, PRIMARY_TIMEOUT_MS));
+    result = await lookupPrimary(cleanWord, fetchImpl, Math.min(timeoutMs, PRIMARY_TIMEOUT_MS), options.signal);
   } catch (error) {
+    options.signal?.throwIfAborted();
     primaryError = error;
     try {
-      result = await lookupFallback(cleanWord, fetchImpl, Math.min(timeoutMs, FALLBACK_TIMEOUT_MS));
+      result = await lookupFallback(cleanWord, fetchImpl, Math.min(timeoutMs, FALLBACK_TIMEOUT_MS), options.signal);
     } catch (fallback) {
       fallbackError = fallback;
     }
   }
 
+  options.signal?.throwIfAborted();
   if (!result) {
     if (cache[cleanWord]?.data) return cachedResult(cache[cleanWord].data, cleanWord);
     if (fallbackError instanceof DictionaryApiError && fallbackError.code === 'NOT_FOUND') {

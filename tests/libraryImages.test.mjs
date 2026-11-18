@@ -271,6 +271,7 @@ test('library displays the complete screened prompt pool before requesting anoth
 test('the library initially combines all prepared scenes instead of silently selecting scene one', async context => {
   const { container, word } = installImageEditor(context, '');
   globalThis.localStorage.setItem('keepvocab_gemini_live_key_v1', 'synthetic-library-scene-key');
+  globalThis.localStorage.setItem('keepvocab_image_candidate_budget', '9');
   Object.assign(word, { word: 'conquest', definition: 'A victory gained through force.', partOfSpeech: 'noun' });
   word.imageScenes = { version: 1, generatorVersion: '5', source: 'gemini', fingerprint: imageSenseFingerprint(word), generatedAt: new Date().toISOString(), scenes: ['soldier planting a flag on a captured ridge', 'troops entering a fortified city after battle', 'army raising a banner over a captured fortress'] }; 
   const queries = [];

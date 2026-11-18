@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { buildVisualSceneDescriptions, compactGeneratedScene, compactVisualSearchQuery, isConcreteVisualScene, prepareImageScenes, generateVisualScenesWithGemini, imageSenseFingerprint, imageSceneRecordFor, findRelevantImages, findPexelsImages, rankImageCandidates, updateImageFeedback } from '../js/services/imageSearch.js';
 
 function storage() {
-  const data = new Map([['keepvocab_gemini_live_key_v1', 'test-image-api-key']]);
+  const data = new Map([['keepvocab_gemini_live_key_v1', 'test-image-api-key'], ['keepvocab_image_candidate_budget', '6']]);
   return { getItem: key => data.get(key) || null, setItem: (key, value) => data.set(key, value) };
 }
 const scene = 'person balancing stones beside quiet water';
@@ -318,11 +318,11 @@ test('one-scene and duplicate-only generations are retried, never persisted as a
   assert.equal(calls, 2);
   assert.deepEqual(prepared.imageScenes.scenes, pair);
   assert.equal(imageSceneRecordFor({ ...sense('invalid-single'), imageScenes: { ...prepared.imageScenes,
-    fingerprint: imageSenseFingerprint(sense('invalid-single')), scenes: [scene] } }, { storage: saved }), null);
+    fingerprint: imageSenseFingerprint(sense('invalid-single')), scenes: [scene] } }, { storage: saved, imageCandidateBudget: 6 }), null);
 });
 
 test('all prepared prompts contribute three unique candidates within the reduced scoring pool', async () => {
-  const saved = storage(); const scenes = [...pair, 'child arranging pebbles beside a garden pond'];
+  const saved = storage(); saved.setItem('keepvocab_image_candidate_budget', '9'); const scenes = [...pair, 'child arranging pebbles beside a garden pond'];
   const [word] = await prepareImageScenes([sense('three-per-scene')], { storage: saved, fetchImpl: async () => response({ scenes }) });
   const requests = [];
   const found = await findRelevantImages(word, { storage: saved, aiScenes: false, provider: 'pexels', pexelsApiKey: 'synthetic', limit: 45, validateImages: false,
@@ -345,7 +345,7 @@ test('all prepared prompts contribute three unique candidates within the reduced
 
 test('a full first prompt does not suppress fallback searches for an empty second prompt', async () => {
   const queries = ['first prompt unique stock sample', 'second prompt empty stock sample']; const requested = [];
-  const results = await findRelevantImages(sense('per-scene-fallback'), { aiScenes: false, onlyExtraQueries: true, extraQueries: queries,
+  const results = await findRelevantImages(sense('per-scene-fallback'), { aiScenes: false, onlyExtraQueries: true, extraQueries: queries, imageCandidateBudget: 6,
     provider: 'pexels', pexelsApiKey: 'synthetic', limit: 45, validateImages: false,
     fetchImpl: async value => {
       const url = new URL(value); const query = url.searchParams.get('query') || url.searchParams.get('q') || url.searchParams.get('gsrsearch');
@@ -430,7 +430,7 @@ test('without Gemini scenes, word and exact meaning each receive three candidate
  const word={word:'balancedretrievalprobe',partOfSpeech:'noun',definition:'The activity of imparting and acquiring skills.'};
  for(const saved of [storage(),{getItem:()=>null,setItem:()=>{}}]){
   const requests=[];
-  const results=await findRelevantImages(word,{storage:saved,aiScenes:false,provider:'pexels',pexelsApiKey:'synthetic-balance-key',limit:45,validateImages:false,refresh:true,
+  const results=await findRelevantImages(word,{storage:saved,imageCandidateBudget:6,aiScenes:false,provider:'pexels',pexelsApiKey:'synthetic-balance-key',limit:45,validateImages:false,refresh:true,
    fetchImpl:async value=>{const url=new URL(value);assert.equal(url.hostname,'api.pexels.com');requests.push(url.searchParams.get('query'));assert.equal(url.searchParams.get('per_page'),'3');const branch=url.searchParams.get('query')===word.word?'word':'meaning';return{ok:true,json:async()=>({photos:Array.from({length:15},(_,i)=>({id:`${branch}-${i}`,url:`https://balance.test/${branch}/${i}`,alt:`${url.searchParams.get('query')} frame ${i}`,src:{medium:`https://balance.test/${branch}/${i}.jpg`}}))})};}
   });
   if(requests.length) assert.deepEqual([...new Set(requests)],['balancedretrievalprobe','the activity of imparting and acquiring skills']);
@@ -444,7 +444,7 @@ test('more than three prompts share nine slots and keep provider pagination stab
   const queries = ['first', 'second', 'third', 'fourth'].map(name => `four prompt budget scene ${name}`);
   const requests = [];
   const search = page => findRelevantImages(sense('four-prompts'), {
-    aiScenes: false, onlyExtraQueries: true, extraQueries: queries, page, limit: 100,
+    aiScenes: false, onlyExtraQueries: true, extraQueries: queries, page, limit: 100, imageCandidateBudget: 9,
     provider: 'pexels', pexelsApiKey: 'four-prompt-key', validateImages: false,
     fetchImpl: async value => {
       const url = new URL(value); requests.push(url);
@@ -469,7 +469,7 @@ test('more than nine prompts rotate the active searches without exceeding nine e
   for (const page of [1, 2]) {
     const requests = [];
     const found = await findRelevantImages(sense('ten-prompts'), {
-      aiScenes: false, onlyExtraQueries: true, extraQueries: queries, page, limit: 100,
+      aiScenes: false, onlyExtraQueries: true, extraQueries: queries, page, limit: 100, imageCandidateBudget: 9,
       provider: 'pexels', pexelsApiKey: 'ten-prompt-key', validateImages: false,
       fetchImpl: async value => {
         const url = new URL(value); requests.push(url.searchParams.get('query'));
@@ -506,4 +506,92 @@ test('equivalent provider queries share one quota and one request', async () => 
   });
   assert.equal(found.length, 3);
   assert.equal(requests, 1);
+});
+
+test('the three-image budget searches the spelling and exact definition and fills unused prompt slots', async () => {
+  const saved = storage();
+  saved.setItem('keepvocab_image_candidate_budget', '3');
+  const word = { word: 'scoringprobe', definition: 'A curved piece of wood', sourceDefinition: 'A thin wooden piece bent into an arc' };
+  const requested = [];
+  const images = await findRelevantImages(word, {
+    storage: saved, validateImages: false, provider: 'pexels', pexelsApiKey: 'synthetic',
+    fetchImpl: async value => {
+      const url = new URL(value);
+      if (url.hostname === 'generativelanguage.googleapis.com') assert.fail('Three-image lookup uses two direct prompts');
+      if (url.hostname !== 'api.pexels.com') return { ok: true, json: async () => ({}) };
+      requested.push(url.searchParams.get('query'));
+      const photos = requested.length === 1 ? Array.from({ length: 3 }, (_, i) => ({
+        url: `https://budget.test/refill/${i}`, alt: 'A photo',
+        src: { medium: `https://budget.test/refill/${i}.jpg` }
+      })) : [];
+      return { ok: true, json: async () => ({ photos }) };
+    }
+  });
+  assert.deepEqual(requested, [word.word, word.sourceDefinition.toLowerCase()]);
+  assert.equal(images.length, 3);
+  assert.equal(new Set(images.map(image => image.url)).size, 3);
+  assert.ok(images.every(image => image.retrievalQueryType === 'word'));
+});
+
+test('larger image budgets generate two or three scenes with three photos each', async () => {
+  const saved = storage();
+  const word = sense('budget-setting');
+  const scenes = [...pair, 'child arranging pebbles beside a garden pond'];
+  const generated = [];
+  const fetchImpl = async (value, request) => {
+    const url = new URL(value);
+    if (url.hostname === 'generativelanguage.googleapis.com') {
+      const prompt = JSON.parse(request.body).contents[0].parts[0].text;
+      const count = Number(prompt.match(/Return exactly ([123]) distinct valid scene/)[1]);
+      generated.push(count);
+      return response({ scenes: scenes.slice(0, count) });
+    }
+    assert.equal(url.hostname, 'api.pexels.com');
+    const index = scenes.map(compactVisualSearchQuery).indexOf(url.searchParams.get('query'));
+    return { ok: true, json: async () => ({ photos: Array.from({ length: 3 }, (_, i) => ({
+      url: `https://budget.test/${index}/${i}`, alt: 'A photo',
+      src: { medium: `https://budget.test/${index}/${i}.jpg` }
+    })) }) };
+  };
+  for (const budget of [6, 9, 6]) {
+    saved.setItem('keepvocab_image_candidate_budget', String(budget));
+    const images = await findRelevantImages(word, {
+      storage: saved, fetchImpl, validateImages: false, provider: 'pexels', pexelsApiKey: 'synthetic'
+    });
+    assert.equal(images.length, budget);
+    assert.equal(new Set(images.map(image => image.visualScene)).size, budget / 3);
+  }
+  assert.deepEqual(generated, [2, 3], 'a smaller budget can reuse a cached scene set');
+});
+
+test('an uninstalled image model still shows three images first and fills its remaining slots one by one', async () => {
+  const { createImageScoringSession } = await import('../js/services/imageScoringSession.js');
+  const word = { word: 'uninstalledsearchprobe', definition: 'A pale green frog with long toes' };
+  const imageScoringSession = createImageScoringSession();
+  const loaded = [];
+  const candidates = await findRelevantImages(word, {
+    imageCandidateBudget: 9, imageScoringSession, deferImageScoring: true, aiScenes: false,
+    provider: 'pexels', pexelsApiKey: 'synthetic',
+    fetchImpl: async value => {
+      const url = new URL(value);
+      assert.equal(url.hostname, 'api.pexels.com');
+      const query = url.searchParams.get('query');
+      return { ok: true, json: async () => ({ photos: Array.from({ length: 5 }, (_, i) => ({
+        url: `https://progress.test/${encodeURIComponent(query)}/${i}`, alt: 'A photo',
+        src: { medium: `https://progress.test/${encodeURIComponent(query)}/${i}.jpg` }
+      })) }) };
+    },
+    loadImage: async value => { loaded.push(value); return true; }
+  });
+  assert.equal(candidates.length, 9);
+  assert.equal(loaded.length, 3);
+  assert.equal(candidates.filter(image => image.ml?.screening === 'pending').length, 6);
+  const counts = [];
+  await new Promise(resolve => imageScoringSession.subscribe(candidates.at(-1).ml.reviewJob, images => {
+    counts.push(images.filter(image => image.ml?.screening !== 'pending').length);
+    if (counts.at(-1) === 9) resolve();
+  }));
+  assert.deepEqual(counts, [4, 5, 6, 7, 8, 9]);
+  assert.equal(loaded.length, 9);
+  imageScoringSession.clear();
 });

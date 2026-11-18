@@ -6,7 +6,7 @@ import { normalizedVector } from '../js/services/imagePreferences.js';
 import { fullFrameImage, centerCropImage } from '../js/services/imagePreprocessing.js';
 import { IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
 import { workerModelCache } from '../js/services/modelCache.js';
-import { sharedInferenceScope } from '../js/services/sharedInferenceScope.js';
+import { inferenceQueue, sharedInferenceScope } from '../js/services/sharedInferenceScope.js';
 
 const timings = createInferenceTimings('clip');
 const channel = typeof self.postMessage === 'function' ? self : sharedInferenceScope(self, 'clip');
@@ -60,7 +60,7 @@ env.fetch = (input, options) => {
   if (!allowDownloads) throw new Error('Model files are missing. Download the local image model in Settings to continue.');
   return fetchCompactModelFile(input, options, originalFetch, reportModelDownload);
 };
-let backend = 'wasm';
+const backend = 'wasm';
 let runtimeReady;
 async function prepareRuntime() {
   if (!runtimeReady) runtimeReady = (async () => {
@@ -79,7 +79,6 @@ let vectorWrites = 0;
 // Retire those cached vectors while retaining the downloaded model files.
 const VECTOR_TAG = `${CLIP_TAG}:validated-wasm-v1`;
 const memory = new Map();
-const cancelled = new Set();
 const status = detail => channel.postMessage({ type: 'status', ...detail });
 async function db() {
   if (!self.indexedDB) return null;
@@ -88,37 +87,47 @@ async function db() {
     request.onupgradeneeded = () => request.result.createObjectStore('vectors', { keyPath: 'key' });
     request.onsuccess = () => {
       const conn = request.result;
-      conn.onversionchange = () => conn.close();
+      conn.onversionchange = () => { conn.close(); database = null; };
       try {
         const store = conn.transaction('vectors', 'readwrite').objectStore('vectors');
-        const all = store.getAll();
-        all.onsuccess = () => all.result.forEach(item => {
-          if (typeof item?.key === 'string' && !item.key.startsWith(`${VECTOR_TAG}:`)) store.delete(item.key);
-        });
+        const cursor = store.openKeyCursor();
+        cursor.onsuccess = () => {
+          const item = cursor.result;
+          if (!item) return;
+          const key = item.key;
+          // Image vectors now belong to the page's short-lived scoring session.
+          if (typeof key === 'string' && (!key.startsWith(`${VECTOR_TAG}:`) || key.includes(':image:') || key.includes(':crop68:'))) store.delete(key);
+          item.continue();
+        };
       } catch { /* Pruning retired encoder vectors is best-effort. */ }
       resolve(conn);
     };
     request.onerror = () => resolve(null);
   });
-  return database;
+  return database.catch(() => null);
+}
+function rememberVector(key, vector) {
+  memory.delete(key);
+  memory.set(key, vector);
+  if (memory.size > 80) memory.delete(memory.keys().next().value);
+  return vector;
 }
 async function readVector(key) {
-  if (memory.has(key)) return memory.get(key);
-  const database = await db();
-  let record;
-  if (database) record = await new Promise(resolve => {
-    const request = database.transaction('vectors').objectStore('vectors').get(key);
-    request.onsuccess = () => resolve(request.result); request.onerror = () => resolve(null);
-  });
-  let vector;
-  try { vector = record ? normalizedVector(Array.from(record.vector)) : null; } catch { vector = null; }
-  if (vector) memory.set(key, vector);
-  return vector;
+  if (memory.has(key)) return rememberVector(key, memory.get(key));
+  try {
+    const database = await db();
+    if (!database) return null;
+    const record = await new Promise((resolve, reject) => {
+      const request = database.transaction('vectors').objectStore('vectors').get(key);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    return record ? rememberVector(key, normalizedVector(record.vector)) : null;
+  } catch { return null; } // A missing or unreadable optional cache is a miss.
 }
 async function storeVector(key, vector) {
   const database = await db();
-  memory.set(key, vector);
-  while (memory.size > 80) memory.delete(memory.keys().next().value);
+  rememberVector(key, vector);
   if (database) {
     try {
       const store = database.transaction('vectors', 'readwrite').objectStore('vectors');
@@ -149,15 +158,15 @@ async function cachedMany(keys, compute) {
   }
   return vectors;
 }
-async function cached(key, compute) {
-  return (await cachedMany([key], async () => [await compute()]))[0];
-}
 function outputRows(tensor, count) {
-  const values = tensor.type === 'float16' ? tensor.to('float32').data : tensor.data;
-  if (values.length !== count * CLIP_DIMENSION) throw new Error('Invalid embedding dimensions.');
-  return Array.from({ length: count }, (_, row) => Array.from(values.slice(row * CLIP_DIMENSION, (row + 1) * CLIP_DIMENSION)));
+  const converted = tensor.type === 'float16' ? tensor.to('float32') : null;
+  try {
+    const values = (converted || tensor).data;
+    if (values.length !== count * CLIP_DIMENSION) throw new Error('Invalid embedding dimensions.');
+    return Array.from({ length: count }, (_, row) => Array.from(values.subarray(row * CLIP_DIMENSION, (row + 1) * CLIP_DIMENSION)));
+  } finally { converted?.dispose(); }
 }
-async function initialize(devicePreference = 'auto') {
+async function initialize() {
   if (models) return models;
   models = timings.measure('initialize', async () => {
     status({ phase: 'loading', message: 'Loading local image and text models…' });
@@ -173,38 +182,24 @@ async function initialize(devicePreference = 'auto') {
       visionOnly ? null : AutoTokenizer.from_pretrained(CLIP_MODEL, config),
       AutoProcessor.from_pretrained(CLIP_MODEL, config)
     ]);
-    let textModel, visionModel;
-    // CPU agrees with the evaluation encoder. Successful GPU execution alone
-    // is insufficient: this graph produced silently incorrect vision vectors.
-    const devices = ['wasm'];
-    for (const device of devices) {
-      try {
-        backend = device;
-        const towers = await Promise.allSettled([
-          visionOnly ? null : SiglipTextModel.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_TEXT_DTYPE }),
-          SiglipVisionModel.from_pretrained(CLIP_MODEL, { ...config, device, dtype: CLIP_VISION_DTYPE })
-        ]);
-        // A rejected Promise.all loses both assignments, including a tower
-        // that finishes later. Keep ownership until both settle so failures
-        // release every loaded graph before a retry or CPU fallback.
-        textModel = towers[0].status === 'fulfilled' ? towers[0].value : null;
-        visionModel = towers[1].status === 'fulfilled' ? towers[1].value : null;
-        const failed = towers.find(result => result.status === 'rejected');
-        if (failed) throw failed.reason;
-        backend = device; break;
-      } catch (error) {
-        await textModel?.dispose().catch(() => {}); await visionModel?.dispose().catch(() => {});
-        textModel = null; visionModel = null;
-        throw error;
-      }
+    const towers = await Promise.allSettled([
+      visionOnly ? null : SiglipTextModel.from_pretrained(CLIP_MODEL, { ...config, device: backend, dtype: CLIP_TEXT_DTYPE }),
+      SiglipVisionModel.from_pretrained(CLIP_MODEL, { ...config, device: backend, dtype: CLIP_VISION_DTYPE })
+    ]);
+    const failed = towers.find(result => result.status === 'rejected');
+    if (failed) {
+      await Promise.allSettled(towers.map(async tower => { if (tower.status === 'fulfilled') await tower.value?.dispose(); }));
+      throw failed.reason;
     }
+    const [textModel, visionModel] = towers.map(tower => tower.value);
     status({ phase: 'ready', backend, message: 'Local image model is ready.' });
     return { tokenizer, processor, textModel, visionModel };
   }).catch(error => { models = null; throw error; });
   return models;
 }
-async function run({ type, payload, device }) {
-  const model = await initialize(device);
+async function run({ type, payload }, current = () => true) {
+  const model = await initialize();
+  if (!current()) return;
   if (type === 'initialize') return { backend, model: CLIP_TAG };
   if (type === 'texts') {
     if (!model.textModel) throw new Error('This worker only scores images.');
@@ -212,6 +207,7 @@ async function run({ type, payload, device }) {
     if (!Array.isArray(texts) || texts.length > 20 || texts.some(text => typeof text !== 'string' || text.length > 2000)) throw new Error('Invalid text embedding request.');
     const result = [];
     for (let start = 0; start < texts.length; start += 8) {
+      if (!current()) return;
       const batch = texts.slice(start, start + 8);
       result.push(...await cachedMany(batch.map(text => `${VECTOR_TAG}:text:${text}`), async missing => {
         const inputs = model.tokenizer(missing.map(index => batch[index].toLowerCase()), { padding: 'max_length', max_length: CLIP_TEXT_MAX_LENGTH, truncation: true });
@@ -229,47 +225,29 @@ async function run({ type, payload, device }) {
   if (type === 'image') {
     const blob = payload.blob;
     if (!(blob instanceof Blob) || blob.size > 128_000 || !/^image\/(png|jpeg|webp)$/.test(blob.type)) throw new Error('Invalid thumbnail.');
-    const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())), value => value.toString(16).padStart(2, '0')).join('');
-    let decodedImage = null;
-    const decodeOnce = async () => {
-      if (!decodedImage) {
-        decodedImage = await RawImage.fromBlob(blob);
-        if (decodedImage.width > 384 || decodedImage.height > 384) throw new Error('Thumbnail is too large.');
-      }
-      return decodedImage;
-    };
-    const keys = [`${VECTOR_TAG}:${IMAGE_PREPROCESSING}:image:${digest}`];
-    if (payload.multiView) keys.push(`${VECTOR_TAG}:${IMAGE_PREPROCESSING}:crop68:${digest}`);
-    const [fullVector, cropVector] = await cachedMany(keys, async missing => {
-      const image = await decodeOnce();
-      const frames = await Promise.all(missing.map(index => index === 0
-        ? fullFrameImage(image, RawImage) : centerCropImage(image, RawImage, 256, 0.68)));
-      const inputs = await model.processor(frames);
-      let output;
-      try {
-        output = await timings.measure('image-forward', () => model.visionModel({ pixel_values: inputs.pixel_values }), { batch: frames.length });
-        return outputRows(output.image_embeds || output.pooler_output, frames.length);
-      } finally {
-        for (const tensor of [...Object.values(inputs), ...Object.values(output || {})]) tensor?.dispose?.();
-      }
-    });
+    const image = await RawImage.fromBlob(blob);
+    if (image.width > 384 || image.height > 384) throw new Error('Thumbnail is too large.');
+    if (!current()) return;
+    const frames = [fullFrameImage(image, RawImage)];
+    if (payload.multiView) frames.push(centerCropImage(image, RawImage, 256, 0.68));
+    const inputs = await model.processor(await Promise.all(frames));
+    let output, fullVector, cropVector;
+    try {
+      if (!current()) return;
+      output = await timings.measure('image-forward', () => model.visionModel({ pixel_values: inputs.pixel_values }), { batch: frames.length });
+      [fullVector, cropVector] = outputRows(output.image_embeds || output.pooler_output, frames.length);
+    } finally {
+      for (const tensor of [...Object.values(inputs), ...Object.values(output || {})]) tensor?.dispose?.();
+    }
     if (!payload.multiView) return fullVector;
     const blendVector = normalizedVector(fullVector.map((v, i) => 0.55 * v + 0.45 * cropVector[i]));
     return { vector: blendVector, fullVector, cropVector };
   }
   throw new Error('Unsupported model request.');
 }
-let queue = Promise.resolve();
-channel.onmessage = ({ data }) => {
-  if (data.type === 'model-cache-result') return;
-  if (data.type === 'cancel') { cancelled.add(data.id); return; }
-  queue = queue.then(async () => {
-    if (cancelled.delete(data.id)) return;
-    try {
-      allowDownloads = data.allowDownloads === true;
-      if (!models && data.role === 'vision') role = 'vision';
-      configureThreads(data.threads);
-      const result = await run(data); if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, result, timings: timings.drain() }); }
-    catch (error) { if (!cancelled.delete(data.id)) channel.postMessage({ id: data.id, error: error.message || 'Local image inference failed.', backendFailure: backend === 'webgpu', timings: timings.drain() }); }
-  }).catch(() => {});
-};
+channel.onmessage = inferenceQueue(channel, (data, current) => {
+  allowDownloads = data.allowDownloads === true;
+  if (!models && data.role === 'vision') role = 'vision';
+  configureThreads(data.threads);
+  return run(data, current);
+}, timings);

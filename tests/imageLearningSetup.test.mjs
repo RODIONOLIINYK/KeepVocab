@@ -1,3 +1,4 @@
+import { inferenceQueue } from '../js/services/sharedInferenceScope.js';
 import { createInferenceTimings } from '../js/services/inferenceTimings.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -113,21 +114,19 @@ test('the worker shares the bundled runtime offline and rejects model fetches wi
     const factory = { from_pretrained: async (_, options) => { assert.equal(options.local_files_only, false); return {}; } };
     const tower = expected => ({ from_pretrained: async (_, options) => { assert.equal(options.device, 'wasm'); assert.equal(options.dtype, expected); assert.equal(options.local_files_only, false); return {}; } });
     const self = { location: { href: 'https://keepvocab.test/js/ml/clipWorker.bundle.js' }, caches: cacheStorage(urls), postMessage: message => messages.push(message), navigator: { gpu: { requestAdapter: () => { throw Error('Unvalidated GPU must not be requested'); } } } };
-    const context = vm.createContext({ createInferenceTimings, env, self, workerModelCache: () => ({}), CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, SiglipTextModel: tower(CLIP_TEXT_DTYPE), SiglipVisionModel: tower(CLIP_VISION_DTYPE), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL, Blob, Map, Set, Promise });
+    const context = vm.createContext({ inferenceQueue, createInferenceTimings, env, self, workerModelCache: () => ({}), CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS, AutoTokenizer: factory, AutoProcessor: factory, SiglipTextModel: tower(CLIP_TEXT_DTYPE), SiglipVisionModel: tower(CLIP_VISION_DTYPE), CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL, Blob, Map, Set, Promise });
     vm.runInContext(source, context);
     return { context, self, env };
   };
   const cached = makeContext(CLIP_RUNTIME_URLS);
-  cached.self.onmessage({ data: { id: 1, type: 'initialize', payload: {}, allowDownloads: false } });
-  await vm.runInContext('queue', cached.context);
+  await cached.self.onmessage({ data: { id: 1, type: 'initialize', payload: {}, allowDownloads: false } });
   assert.equal(messages.at(-1).result.backend, 'wasm');
   assert.equal(vm.runInContext('VECTOR_TAG', cached.context), 'tag:validated-wasm-v1');
   assert.equal(cached.env.backends.onnx.wasm.wasmPaths.wasm, 'https://keepvocab.test/js/ml/runtime/ort-wasm-simd-threaded.asyncify.wasm');
   assert.equal(calls.length, 0);
   assert.throws(() => cached.env.fetch('https://example.test/missing-model.onnx'), /missing|Download/);
   const missing = makeContext([]);
-  missing.self.onmessage({ data: { id: 2, type: 'initialize', payload: {}, allowDownloads: false } });
-  await vm.runInContext('queue', missing.context);
+  await missing.self.onmessage({ data: { id: 2, type: 'initialize', payload: {}, allowDownloads: false } });
   assert.equal(messages.at(-1).result.backend, 'wasm', 'runtime no longer depends on downloaded cache files');
   assert.equal(calls.length, 0);
 });
@@ -143,7 +142,7 @@ test('parallel tower failure releases a late successful tower before reporting f
       return new Promise((resolve, reject) => { gates[name] = { resolve, reject }; });
     } });
     const self = { location: { href: 'https://keepvocab.test/js/ml/clipWorker.bundle.js' }, caches: cacheStorage(CLIP_RUNTIME_URLS), postMessage: message => messages.push(message), navigator: {} };
-    const context = vm.createContext({ createInferenceTimings,
+    const context = vm.createContext({ inferenceQueue, createInferenceTimings,
       env: { fetch: async () => { throw Error('Unexpected download'); }, backends: { onnx: { wasm: {} } } },
       self, workerModelCache: () => ({}), CLIP_MODEL_BASE, CLIP_MODEL: 'model', CLIP_REVISION: 'revision', CLIP_TAG: 'tag', CLIP_CACHE, VECTOR_DB: 'vectors', CLIP_RUNTIME_URLS,
       AutoTokenizer: factory, AutoProcessor: factory,
@@ -151,7 +150,7 @@ test('parallel tower failure releases a late successful tower before reporting f
       CLIP_TEXT_DTYPE, CLIP_VISION_DTYPE, URL, Blob, Map, Set, Promise
     });
     vm.runInContext(source, context);
-    self.onmessage({ data: { id: 1, type: 'initialize', payload: {}, allowDownloads: false } });
+    const first = self.onmessage({ data: { id: 1, type: 'initialize', payload: {}, allowDownloads: false } });
     for (let turn = 0; turn < 20 && (!gates.text || !gates.vision); turn++) await new Promise(setImmediate);
     assert.ok(gates.text && gates.vision, 'both towers start in parallel');
     gates[failing].reject(Error(`${failing} unavailable`));
@@ -159,11 +158,10 @@ test('parallel tower failure releases a late successful tower before reporting f
     assert.equal(messages.some(message => message.id === 1), false, 'cleanup waits for the other tower to settle');
     const surviving = failing === 'text' ? 'vision' : 'text';
     gates[surviving].resolve({ dispose: async () => disposed.push(surviving) });
-    await vm.runInContext('queue', context);
+    await first;
     assert.deepEqual(disposed, [surviving]);
     assert.equal(messages.at(-1).error, `${failing} unavailable`);
-    self.onmessage({ data: { id: 2, type: 'initialize', payload: {}, allowDownloads: false } });
-    await vm.runInContext('queue', context);
+    await self.onmessage({ data: { id: 2, type: 'initialize', payload: {}, allowDownloads: false } });
     assert.equal(messages.at(-1).result.backend, 'wasm');
     assert.deepEqual(calls, { text: 2, vision: 2 });
     assert.deepEqual(disposed, [surviving], 'successful retry models remain available for the session');

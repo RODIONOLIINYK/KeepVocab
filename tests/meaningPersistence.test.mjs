@@ -264,3 +264,29 @@ test('merge tombstones survive stale device sync and stale duplicate remote file
   assert.equal(reinstalled.getWords()[0].practiceStats.attempts, 11);
   assert.ok(reinstalled.getTombstones().some(item => item.id === 'meaning-two'));
 });
+
+test('a group spanning multiple model batches retains every original through save and unmerge', async () => {
+  const { consolidateEntrySenses } = await import('../js/services/localSenseGrouping.js');
+  const senses = Array.from({ length: 65 }, (_, i) => ({
+    id: String(i), word: 'fixture', partOfSpeech: 'noun', definition: 'Fixture ' + String.fromCharCode(97 + Math.floor(i / 26), 97 + i % 26) + '.'
+  }));
+  const pairsSeen = new Set();
+  const result = await consolidateEntrySenses({ word: 'fixture', senses }, {
+    storage: null, scoreMeaningPairs(batch, pairs) {
+      assert.ok(batch.length <= 24);
+      for (const [a, b] of pairs) pairsSeen.add([batch[a].id, batch[b].id].sort().join(':'));
+      return pairs.map(() => 0.99);
+    }
+  });
+  assert.equal(pairsSeen.size, senses.length * (senses.length - 1) / 2);
+  assert.equal(result.senses.length, 1);
+  assert.equal(result.senses[0].groupedSenses.length, senses.length);
+  const storage = new MemoryStorage(), service = new DriveSyncService(storage);
+  const saved = service.addWord(result.senses[0]);
+  const reloaded = new DriveSyncService(storage);
+  const [card] = reloaded.getWords();
+  assert.equal(card.groupedSenses.length, senses.length);
+  assert.equal(card.sourceDefinitions.length, senses.length);
+  const split = reloaded.unmergeWordMeanings(saved.id);
+  assert.deepEqual(new Set(split.map(item => item.sourceDefinition)), new Set(senses.map(item => item.definition)));
+});

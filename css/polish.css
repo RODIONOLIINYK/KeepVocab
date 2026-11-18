@@ -280,8 +280,8 @@
 .image-review__choice-check { display:grid; place-items:center; position:absolute; right:11px; top:11px; height:26px; width:26px; background:var(--primary-green); color:white; border:2px solid white; border-radius:50%; transform:scale(0); opacity:0; transition:transform 230ms cubic-bezier(.18,1.7,.5,1),opacity 120ms ease; }
 .image-review .image-review__choice.is-selected { border-color:var(--primary-green); background:var(--primary-green-light); color:var(--primary-green-hover); }
 .image-review__choice.is-selected .image-review__choice-check { transform:scale(1); opacity:1; }
-.image-review .image-review__choice:hover:not(:disabled) { transform:translateY(-3px); border-color:#98b68b; }
-.image-review .image-review__choice:active:not(:disabled) { transform:translateY(2px) scale(.985); border-bottom-width:2px; }
+.image-review button.image-review__choice:hover:not(:disabled) { transform:translateY(-3px); border-color:#98b68b; }
+.image-review button.image-review__choice:active:not(:disabled) { transform:translateY(2px) scale(.985); border-bottom-width:2px; }
 .image-review__row-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
 .image-review .image-review__secondary,.image-review .image-review__back { background:var(--bg-card); color:var(--text-main); border:2px solid var(--border-card); border-bottom-width:4px; padding:9px 13px; min-height:42px; }
 .image-review .image-review__back { margin-right:auto; }
@@ -313,7 +313,7 @@
 }
 @media(prefers-reduced-motion:reduce) {
  .image-review button,.image-review__choice-check { transition:none; }
- .image-review .image-review__choice:hover:not(:disabled),.image-review .image-review__choice:active:not(:disabled) { transform:none; }
+ .image-review button.image-review__choice:hover:not(:disabled),.image-review button.image-review__choice:active:not(:disabled) { transform:none; }
 }
 .image-review__choice.is-selected .image-review__choice-check { animation: image-pick-check 260ms cubic-bezier(.2,1.5,.45,1) both; }
 @keyframes image-pick-check { from { transform:scale(.3) rotate(-16deg); opacity:0; } to { transform:scale(1) rotate(0); opacity:1; } }
@@ -644,6 +644,7 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
 /* Definition view switch uses the same quiet segmented surface as Add Word tabs. */
 .sense-picker-heading > .sense-mode-toolbar { flex-direction: row; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
 .meaning-mode-switch { display: inline-flex; align-items: center; gap: 3px; padding: 4px; border-radius: 11px; background: var(--bg-subtle); }
+.meaning-mode-switch[hidden] { display: none; }
 .meaning-mode-switch button { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 6px 11px; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); font: 700 .76rem var(--font-body, 'Nunito', sans-serif); cursor: pointer; transition: background .15s, color .15s, box-shadow .15s; }
 .meaning-mode-switch button[aria-pressed="true"] { background: var(--bg-card, #fff); color: var(--primary-green-hover); box-shadow: 0 2px 6px rgba(31, 49, 35, .09); }
 .meaning-mode-switch button:hover { color: var(--primary-green-hover); }
@@ -683,3 +684,101 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
 .unmerge-review ol { padding-left: 24px; margin: 8px 0 12px; }
 .unmerge-review li { margin-bottom: 8px; overflow-wrap: anywhere; }
 .unmerge-review button { margin: 4px 6px 4px 0; }
+
+/* Waiting cards have the same footprint as the photos they'll become. */
+.image-review__choices, #add-word-sense-list { overflow-anchor: none; }
+.image-review__placeholder { text-align: center; border-radius: 12px; }
+.image-review__skeleton {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 130px;
+  border-radius: 7px;
+  background: linear-gradient(105deg,
+    var(--primary-green-light) 30%, var(--bg-card) 48%, var(--primary-green-light) 66%);
+  background-size: 250% 100%;
+  animation: image-checking 1.6s ease-in-out infinite;
+}
+.image-review__placeholder:nth-child(3n + 2) .image-review__skeleton { animation-delay: -.2s; }
+.image-review__placeholder:nth-child(3n) .image-review__skeleton { animation-delay: -.4s; }
+@keyframes image-checking { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .image-review__skeleton { animation: none; background: var(--primary-green-light); }
+}
+
+.image-budget-settings {
+  max-width: 22rem;
+  gap: 6px;
+  margin-block: 12px;
+}
+.image-budget-settings .settings-privacy { margin: 0; }
+
+@media (max-width: 600px) {
+  body:has(#add-word-modal.active) { overflow: hidden; }
+  #add-word-modal { inset: var(--add-word-viewport-top, 0px) 0 auto; }
+  #add-word-modal .sense-modal-box {
+    width: 100%;
+    height: var(--add-word-viewport-height, 100dvh);
+    max-height: 100dvh;
+    overflow-anchor: none;
+    padding: 0 max(14px, env(safe-area-inset-right)) 0 max(14px, env(safe-area-inset-left));
+    border: 0;
+    border-radius: 0;
+    scrollbar-gutter: auto;
+    scroll-padding-block: calc(64px + env(safe-area-inset-top)) calc(76px + env(safe-area-inset-bottom));
+  }
+  #add-word-modal.active .sense-modal-box { animation: none; }
+  #add-word-modal .sense-modal-header {
+    top: 0;
+    gap: 8px;
+    padding: calc(6px + env(safe-area-inset-top)) 0 6px;
+    margin-bottom: 10px !important;
+  }
+  #add-word-modal #add-word-title { font-size: 1.15rem !important; margin: 0; }
+  #add-word-modal #btn-close-add-modal { min-width: 44px; min-height: 44px; }
+  #add-word-modal .add-mode-tabs { margin-bottom: 12px; }
+  #add-word-modal input, #add-word-modal textarea, #add-word-modal select { min-width: 0; font-size: 16px !important; }
+  #add-word-modal .quick-add-row input { width: 100%; box-sizing: border-box; }
+  #add-word-modal .quick-add-row button { justify-content: center; min-height: 44px; }
+  #add-word-modal .sense-picker-heading, #add-word-modal .sense-editor-heading { align-items: flex-start; flex-wrap: wrap; gap: 6px 12px; }
+  #add-word-modal .sense-picker-heading > div { min-width: 0; overflow-wrap: anywhere; }
+  #add-word-modal .sense-mode-toolbar button, #add-word-modal .text-action { min-height: 44px; }
+  #add-word-modal .sense-option-list, #add-word-modal .bulk-word-results { max-height: none; overflow: visible; }
+  #add-word-modal .sense-option-row { flex-wrap: wrap; }
+  #add-word-modal .sense-option { flex-basis: 100%; }
+  #add-word-modal .sense-option-body { overflow-wrap: anywhere; }
+  #add-word-modal .sense-unmerge-btn { min-height: 44px; margin-left: auto; }
+  #add-word-modal .sense-editor-grid { grid-template-columns: minmax(0, 1fr); }
+  #add-word-modal .sense-modal-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+    padding: 8px 0 max(10px, env(safe-area-inset-bottom));
+  }
+  #add-word-modal .sense-modal-actions button { min-width: 0; min-height: 44px; white-space: normal; justify-content: center; }
+  #add-word-modal.is-picking-images .sense-modal-header {
+    position: sticky;
+    right: auto;
+    justify-content: flex-end !important;
+    margin-bottom: 0 !important;
+    background: var(--bg-card);
+  }
+  #add-word-modal.is-picking-images #add-word-title { display: block; margin-right: auto; }
+  #add-word-modal.is-picking-images .add-word-title-default { display: none; }
+  #add-word-modal.is-picking-images .image-review__heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  #add-word-modal.is-picking-images .image-review__grid { padding-top: 10px; }
+  #add-word-modal .image-review__choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #add-word-modal .image-review__footer {
+    bottom: 0;
+    padding: 8px 0 max(10px, env(safe-area-inset-bottom));
+  }
+  #add-word-modal .image-review__footer > button { min-height: 44px; padding-inline: 9px; }
+  #add-word-modal .image-review__row-actions button { min-height: 44px; }
+}

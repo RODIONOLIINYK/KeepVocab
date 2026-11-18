@@ -115,7 +115,7 @@ test('Gemini turns the exact word sense into concise public-catalog search scene
   const scenes = await generateVisualScenesWithGemini(
     { word: 'bank', partOfSpeech: 'noun', definition: 'The land beside a river.' },
     {
-      storage,
+      storage, imageCandidateBudget: 9,
       fetchImpl: async (_url, options) => {
         prompt = JSON.parse(options.body).contents[0].parts[0].text;
         return { ok: true, async json() { return { candidates: [{ content: { parts: [{ text: '{"scenes":["family relaxing beside grassy river at sunset","children walking along shallow river shoreline","fisherman standing beside muddy river under trees"]}' }] } }] }; } };
@@ -139,7 +139,7 @@ test('physical object meanings search the object name without inventing a scene'
   const wrench = { word: 'wrench', partOfSpeech: 'noun', definition: 'A metal tool used for gripping and turning nuts and bolts.' };
   const laptops = { word: 'laptops', partOfSpeech: 'noun', definition: 'Plural of laptop; portable computers small enough to use on the lap.' };
   const scenes = await generateVisualScenesWithGemini(wrench, {
-    storage,
+    storage, imageCandidateBudget: 6,
     fetchImpl: async () => ({ ok: true, async json() { return { candidates: [{ content: { parts: [{ text: '{"scenes":["wrench"]}' }] } }] }; } })
   });
 

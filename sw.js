@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v112047-binary-model-startup';
+const CACHE_NAME = 'keepvocab-v112048-progressive-add-word';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -42,6 +42,8 @@ const ASSETS_TO_CACHE = [
   './js/services/bulkWords.js',
   './js/services/imageSearch.js',
   './js/services/imageLearning.js',
+  './js/services/imageScoringSession.js',
+  './js/utils/animatedLayout.js',
   './js/services/imageSemanticGate.js',
   './js/services/imageModelStartup.js',
   './js/services/imagePreferences.js',

@@ -142,7 +142,7 @@ export async function generateGeminiParts(parts, options = {}) {
       response = await fetchImpl(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        signal: options.signal || AbortSignal.timeout(timeoutMs),
+        signal: options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs),
         body
       });
     } catch (error) {
@@ -172,7 +172,7 @@ export async function generateGeminiParts(parts, options = {}) {
     const fenced = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
     try { return JSON.parse(fenced ? fenced[1] : text); } catch { throw new Error('Gemini returned an invalid structured response.'); }
   };
-  if (options.dedupe === false) return execute();
+  if (options.dedupe === false || options.entryCacheStorage) return execute();
   if (inFlightRequests.has(key)) return inFlightRequests.get(key);
   const pending = execute().finally(() => {
     if (inFlightRequests.get(key) === pending) inFlightRequests.delete(key);

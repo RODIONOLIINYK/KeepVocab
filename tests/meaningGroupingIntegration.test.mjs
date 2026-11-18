@@ -111,3 +111,16 @@ test('Gemini consolidation retains local review scores and a later judgment pres
   const changed=await consolidateEntrySenses(first,{...opts,reuseSemanticScoresOnly:true});
   assert.deepEqual(changed.senses.map(s=>s.groupedSenses.length),[1,1,2]);
 });
+
+test('an installed reference scorer owns grouping even with a Gemini key', async () => {
+  const opts = options(() => assert.fail('Unexpected Gemini request'));
+  let calls = 0;
+  const result = await consolidateEntrySenses(entry, { ...opts, scoreMeaningPairs: async (_senses, pairs) => {
+    calls++;
+    return pairs.map(() => .99);
+  } });
+  assert.equal(calls, 1);
+  assert.equal(opts.calls, 0);
+  assert.equal(result.meaningGroupingProvider, 'local');
+  assert.equal(result.senses.length, 1);
+});

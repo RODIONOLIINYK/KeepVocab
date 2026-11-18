@@ -52,3 +52,12 @@ test('retired bounded-head weights are not used as current preferences and saved
   assert.equal(await trainer.personal(),null);assert.equal(await trainer.current(),null);
   assert.equal(await store.imageHistory.model(),old);assert.equal((await store.getImageEvents()).length,records.length);
 });
+
+test('disabling suggestions while loading the personal head avoids spawning a trainer', async t => {
+  replaceWorker(t, class { constructor() { assert.fail('Training has already been stopped'); } });
+  const store = await persistence();
+  const trainer = new ImagePersonalizerTraining(store, { pretrained: noPretrained });
+  store.imageHistory.readState = async () => { trainer.stop(); return null; };
+  assert.match((await trainer.train()).reason, /cancelled/);
+  assert.equal(trainer.worker, null);
+});

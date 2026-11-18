@@ -9,7 +9,12 @@ function sharedGeneration(kind) {
   catch { return generations.get(kind) || '0'; }
 }
 globalThis.addEventListener?.('pagehide', () => {
-  for (const connection of [...connections]) connection.terminate();
+  for (const connection of [...connections]) {
+    connection.terminate();
+    // A page restored from the back/forward cache retains its JS services.
+    // Settle pending calls so the restored page can open a fresh port.
+    connection.onerror?.({ message: 'The model connection closed when the page was hidden.' });
+  }
 });
 
 // The compiled model entry points support both dedicated and shared workers.
@@ -27,7 +32,10 @@ export function createInferenceWorker(kind, { role = 'full', slot = 0 } = {}) {
       const port = shared.port;
       const connection = {
         onmessage: null, onerror: null,
-        postMessage(data, transfer = []) { if (!closed) port.postMessage(data, transfer); },
+        postMessage(data, transfer = []) {
+          if (closed) throw new Error('The shared model connection is closed.');
+          port.postMessage(data, transfer);
+        },
         terminate() {
           if (closed) return;
           closed = true; connections.delete(connection);
@@ -51,7 +59,9 @@ export function createInferenceWorker(kind, { role = 'full', slot = 0 } = {}) {
       return connection;
     }
   }
-  return new Worker(url, { type: 'module' });
+  const worker = new Worker(url, { type: 'module' });
+  worker.onmessageerror = () => worker.onerror?.({ message: 'The model response could not be read.' });
+  return worker;
 }
 
 // Explicit settings actions invalidate loaded copies in every app window.

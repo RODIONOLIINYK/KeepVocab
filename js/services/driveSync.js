@@ -245,7 +245,7 @@ function reconcileMergedMeanings(words, tombstones) {
       if (Object.prototype.hasOwnProperty.call(learning, field)) merged[field] = learning[field];
       else delete merged[field];
     }
-    merged.sourceDefinitions = [...new Set(group.flatMap(word => [word.sourceDefinition || word.definition, ...(word.sourceDefinitions || [])]))].sort().slice(0, 12);
+    merged.sourceDefinitions = [...new Set(group.flatMap(word => [word.sourceDefinition || word.definition, ...(word.sourceDefinitions || [])]))].sort();
     merged.groupedSenses = normalizeGroupedSenses([...new Map(group.flatMap(originalSenses)
       .map(sense => [JSON.stringify([sense.id, sense.sourceDefinition || sense.definition]), sense])).values()]);
     merged.updatedAt = new Date(Math.max(...group.map(recordTimestamp))).toISOString();
@@ -307,7 +307,7 @@ function normalizeStoredWord(candidate, fallbackMonthYear = null, fallbackSource
     partOfSpeech,
     definition: definition || 'Definition not provided.',
     sourceDefinition: String(candidate.sourceDefinition || definition).trim(),
-    sourceDefinitions: [...new Set((Array.isArray(candidate.sourceDefinitions) ? candidate.sourceDefinitions : []).map(String).map(value => value.trim()).filter(Boolean))].slice(0, 12),
+    sourceDefinitions: [...new Set((Array.isArray(candidate.sourceDefinitions) ? candidate.sourceDefinitions : []).map(String).map(value => value.trim()).filter(Boolean))],
     groupedSenses: normalizeGroupedSenses(candidate.groupedSenses),
     sourceFingerprint: String(candidate.sourceFingerprint || ''),
     explanationSource: String(candidate.explanationSource || ''),
@@ -918,7 +918,7 @@ export class DriveSyncService {
     if (Object.prototype.hasOwnProperty.call(patch, 'explanationVersion')) cleanPatch.explanationVersion = Number(patch.explanationVersion) || 0;
     if (Object.prototype.hasOwnProperty.call(patch, 'imageScenes')) cleanPatch.imageScenes = normalizeImageScenes(patch.imageScenes);
     if (Array.isArray(patch.groupedSenses)) cleanPatch.groupedSenses = normalizeGroupedSenses(patch.groupedSenses);
-    if (Array.isArray(patch.sourceDefinitions)) cleanPatch.sourceDefinitions = [...new Set(patch.sourceDefinitions.map(String).map(value => value.trim()).filter(Boolean))].slice(0, 12);
+    if (Array.isArray(patch.sourceDefinitions)) cleanPatch.sourceDefinitions = [...new Set(patch.sourceDefinitions.map(String).map(value => value.trim()).filter(Boolean))];
     if (Array.isArray(patch.labels)) cleanPatch.labels = [...new Set(patch.labels.map(String).map(value => value.trim()).filter(Boolean))].slice(0, 20);
     if (patch.imageFeedback && typeof patch.imageFeedback === 'object') cleanPatch.imageFeedback = {
       rejectedUrls: [...new Set((patch.imageFeedback.rejectedUrls || []).map(String).filter(Boolean))].slice(0, 80),
@@ -1027,7 +1027,7 @@ export class DriveSyncService {
     merged.mastered = records.every(word => word.mastered);
     const reviewDates = records.map(word => Date.parse(word.nextReviewDate || word.createdAt)).filter(Number.isFinite);
     merged.nextReviewDate = new Date(reviewDates.length ? Math.min(...reviewDates) : Date.now()).toISOString();
-    merged.sourceDefinitions = [...new Set(records.flatMap(word => [word.sourceDefinition || word.definition, ...(word.sourceDefinitions || [])]))].slice(0, 12);
+    merged.sourceDefinitions = [...new Set(records.flatMap(word => [word.sourceDefinition || word.definition, ...(word.sourceDefinitions || [])]))];
     merged.groupedSenses = normalizeGroupedSenses(records.flatMap(originalSenses));
     merged = withReviewHistorySources(merged, records.flatMap(reviewHistorySources));
     merged.updatedAt = new Date().toISOString();

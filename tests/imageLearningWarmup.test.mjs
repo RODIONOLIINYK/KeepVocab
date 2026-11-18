@@ -318,8 +318,8 @@ test('the foreground picker screens at most nine photos and never appends unscor
   const env = setup(context, { config: { enabled: true } });
   const candidates = Array.from({length:50},(_,i)=>({...photo,url:`https://images.example/pool-${i}.jpg`}));
   const images = await rankImagesLocally(meaning, candidates, {
-    storage: env.storage,
-    fetchImpl: async () => new Response('image pixels', { headers: { 'content-type': 'image/jpeg' } }),
+    storage: env.storage, imageCandidateBudget: 9,
+    fetchImpl: async url => new Response(String(url), { headers: { 'content-type': 'image/jpeg' } }),
     decode: async () => ({ width:64, height:64 }),
     resize: () => assert.fail('Small photos need no resize')
   });

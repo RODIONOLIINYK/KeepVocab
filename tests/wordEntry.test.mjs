@@ -39,7 +39,7 @@ test('saving generates image prompts together for every exact meaning and reuses
   const alternatives = ['landlord handing a folded warning letter to tenant', 'listener leaning forward while another person speaks'];
   let requests = 0;
   const options = {
-    storage, translationLanguage: 'en', existingWords: [{ word: 'notice', definition: otherMeaning }],
+    storage, translationLanguage: 'en', imageCandidateBudget: 6, existingWords: [{ word: 'notice', definition: otherMeaning }],
     fetchImpl: async (_url, request) => {
       requests++;
       const prompt = JSON.parse(request.body).contents[0].parts[0].text;

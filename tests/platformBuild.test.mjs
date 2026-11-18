@@ -338,7 +338,9 @@ test('every cache-busted entrypoint and module import is included in the offline
   assert.equal(precachedUrls.has('js/services/inferenceWorker.js'), true);
   assert.equal(precachedUrls.has('js/services/inferenceTimings.js'), true);
   assert.equal(precachedUrls.has('js/services/sharedInferenceScope.js'), true);
-  assert.ok(precachedUrls.size <= 134, `Offline install should stay compact; found ${precachedUrls.size} requests.`);
+  assert.equal(precachedUrls.has('js/services/imageScoringSession.js'), true);
+  assert.equal(precachedUrls.has('js/utils/animatedLayout.js'), true);
+  assert.ok(precachedUrls.size <= 136, `Offline install should stay compact; found ${precachedUrls.size} requests.`);
 
   for (const match of html.matchAll(/(?:src|href)=["']([^"']+\?v=\d+)["']/g)) {
     const canonicalPath = match[1].split(/[?#]/)[0];

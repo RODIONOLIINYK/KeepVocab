@@ -1,6 +1,10 @@
 // Exact five-feature reference scorer. Pooling includes special tokens and the
 // complete context; token matching excludes specials and the first-colon prefix.
-const dot = (a, b) => a.reduce((sum, value, index) => sum + value * b[index], 0);
+function dot(a, b) {
+  let sum = 0;
+  for (let i = 0; i < a.length; i++) sum += a[i] * b[i];
+  return sum;
+}
 const normalize = values => {
   const norm = Math.max(Math.hypot(...values), 1e-12);
   return values.map(value => value / norm);
@@ -37,8 +41,13 @@ export function referenceFeatures(a, b, scorer) {
     ab[i] = Math.max(ab[i], similarity); ba[j] = Math.max(ba[j], similarity);
   }));
   const weightedMean = (values, ids) => {
-    const weights = ids.map(id => scorer.idfLookup[id] ?? scorer.defaultIdf);
-    return values.reduce((sum, value, i) => sum + value * weights[i], 0) / Math.max(1e-6, weights.reduce((sum, w) => sum + w, 0));
+    let sum = 0, total = 0;
+    for (let i = 0; i < values.length; i++) {
+      const weight = scorer.idfLookup[ids[i]] ?? scorer.defaultIdf;
+      sum += values[i] * weight;
+      total += weight;
+    }
+    return sum / Math.max(1e-6, total);
   };
   return [cosine, (weightedMean(ab, a.ids) + weightedMean(ba, b.ids)) / 2,
     (Math.min(...ab) + Math.min(...ba)) / 2, (quantile(ab, .25) + quantile(ba, .25)) / 2,

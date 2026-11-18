@@ -5,7 +5,7 @@ const { mkdtemp, readFile, writeFile, rm } = require('node:fs/promises');
 const { tmpdir } = require('node:os');
 const { createHash } = require('node:crypto');
 const path = require('node:path');
-const { modelStorageOperation } = require('../desktop/modelStorage.cjs');
+const { modelStorageOperation, handleModelStorageRequest } = require('../desktop/modelStorage.cjs');
 const root = path.resolve(__dirname, '..'), origin = 'http://127.0.0.1:8085';
 let temporary;
 app.commandLine.appendSwitch('disable-gpu');
@@ -27,6 +27,7 @@ app.whenReady().then(async () => {
   protocol.handle('http', async request => {
     const url = new URL(request.url);
     if (url.origin !== origin) return new Response(null, { status: 403 });
+    if (url.pathname.startsWith('/_keepvocab_models/')) return handleModelStorageRequest(storage, request);
     if (url.pathname === '/verification.html') return new Response('<!doctype html><title>Model verification</title>', { headers: { 'Content-Type': 'text/html' } });
     if (url.pathname === '/validation.json') return new Response(JSON.stringify(rows), { headers: { 'Content-Type': 'application/json' } });
     const file = path.resolve(root, 'www', '.' + decodeURIComponent(url.pathname));

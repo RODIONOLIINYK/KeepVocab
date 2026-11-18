@@ -1,4 +1,5 @@
-import { recordInferenceTimings } from './inferenceTimings.js';
+import { createImageScoringSession } from './imageScoringSession.js';
+import { createInferenceTimings, recordInferenceTimings } from './inferenceTimings.js';
 import { driveSync } from './driveSync.js?v=18908';
 import { IMAGE_THUMBNAIL_BATCH_LIMIT, prepareImageThumbnails } from './imageThumbnails.js?v=18908';
 import { CLIP_TAG, CLIP_CACHE, CLIP_DOWNLOAD_URLS, VECTOR_DB, MODEL_DOWNLOAD_MB } from '../ml/clipConfig.js';
@@ -10,7 +11,7 @@ import { IMAGE_PREPROCESSING, encodeMeaning, personalizerScore, isCurrentPersona
 import { ImagePersonalizerTraining } from './imagePersonalizerTraining.js';
 import { scheduleImageModelWarmup } from './imageModelStartup.js';
 import { IMAGE_SEMANTIC_FILTER, passesImageSemanticGate } from './imageSemanticGate.js';
-import { imageEvaluationCandidates, MAX_IMAGE_CANDIDATES } from './imageSearchPlan.js';
+import { imageEvaluationCandidates, MAX_IMAGE_CANDIDATES, INITIAL_IMAGE_CANDIDATES, imageCandidateBudget } from './imageSearchPlan.js';
 import { invariantRankingScore } from './vocabInvariantHead.js';
 import { modelCacheStorage, handleModelCacheRequest } from './modelCache.js';
 import { createInferenceWorker, resetInferenceWorkers } from './inferenceWorker.js';
@@ -65,10 +66,10 @@ export async function hasDownloadedImageModel(cacheStorage = modelCacheStorage()
     if (!names.includes(CLIP_CACHE)) return false;
     const cache = await cacheStorage.open(CLIP_CACHE);
     const activeUrls = new Set(CLIP_DOWNLOAD_URLS.filter(url => !url.includes('/ort-wasm-')));
-    void Promise.resolve(cache.keys?.()).then(keys => keys?.forEach(req => {
+    void Promise.resolve(cache.keys?.()).then(keys => Promise.all((keys || []).map(req => {
       const url = typeof req === 'string' ? req : req?.url;
-      if (url && !activeUrls.has(url)) void cache.delete?.(req);
-    })).catch(() => {});
+      if (url && !activeUrls.has(url)) return cache.delete?.(req);
+    }))).catch(() => {});
     let complete = true;
     // Inspect every file even in a partial install, so all existing profile
     // downloads migrate into app-owned storage before the app can be removed.
@@ -119,7 +120,8 @@ async function resolveInstalledTextModel(options = {}) {
   if (options.cacheStorage) {
     const epoch = cacheEpoch;
     const present = await hasDownloadedImageModel(options.cacheStorage);
-    if (present && epoch === cacheEpoch) installed = true;
+    if (epoch !== cacheEpoch) return false;
+    if (present) installed = true;
     return present;
   }
   if (installed) return true;
@@ -127,7 +129,8 @@ async function resolveInstalledTextModel(options = {}) {
   if (!installCheckPromise) {
     const epoch = cacheEpoch;
     installCheckPromise = hasDownloadedImageModel().then(present => {
-      if (epoch === cacheEpoch) installed = present;
+      if (epoch !== cacheEpoch) return false;
+      installed = present;
       return present;
     }).finally(() => { installCheckPromise = null; });
   }
@@ -140,7 +143,10 @@ export async function checkMeaningTextEncodingStatus(options = {}) {
 }
 // Check cached files first; defer optional model initialization until after paint/idle.
 export async function initializeImageLearning({ requestDownload, storage = globalThis.localStorage, cacheStorage = modelCacheStorage(), enable = enableImageLearning, scheduleWarmup = scheduleImageModelWarmup } = {}) {
-  installed = await hasDownloadedImageModel(cacheStorage);
+  const epoch = cacheEpoch;
+  const present = await hasDownloadedImageModel(cacheStorage);
+  if (epoch !== cacheEpoch) return { installed, prompted: false, enabled: imageLearningEnabled(storage) };
+  installed = present;
   const config = deviceConfig(storage);
   if (installed) {
     if (config.enabled !== false) {
@@ -492,10 +498,11 @@ export function stripNegatedClauses(text) {
   return stripped.length >= 4 ? stripped : raw;
 }
 export function imageClipPrompts(word, options = {}) {
-  const rawDefinition = word.definition || word.sourceDefinition;
+  const rawDefinition = options.wordPrompt ? word.sourceDefinition || word.definition : word.definition || word.sourceDefinition;
   const targetDefinition = stripNegatedClauses(rawDefinition);
   const selected = `A photo illustrating ${word.word} (${word.partOfSpeech || 'word'}): ${targetDefinition}`;
   const rawScenes = [...new Set([...(options.extraQueries || []), ...(options.scenes || []), ...(word.imageScenes?.scenes || [])].map(s => String(s).trim()).filter(Boolean))].slice(0, MAX_IMAGE_CANDIDATES);
+  if (options.wordPrompt && word.word && !rawScenes.length) rawScenes.push(word.word);
   const scenes = rawScenes.map(scene => `A photo of ${scene}`);
   const contrasts = [...new Set([...(options.contrasts || []), ...(word.imageScenes?.contrasts || [])].map(s => String(s).trim()).filter(Boolean))].slice(0, 3).map(scene => `A photo of ${scene}`);
   const alternatives = contrasts.length ? [] : [...new Set([...(options.otherDefinitions || []), ...(word.otherDefinitions || [])])].filter(value => value && value !== word.definition && value !== word.sourceDefinition && !sharesVisualDefinitionTokens(value, rawDefinition)).slice(0, 8).map(value => `A photo illustrating ${word.word}: ${value}`);
@@ -543,42 +550,54 @@ export function semanticScores(image, texts, sceneCount, alternativeCount, wInv 
   return { selected, contrast, margin, unwanted, cropProminence, bgClutter, cosine: scene,
     score: selected + (contrast === null ? 0 : 0.6 * margin) - 0.25 * Math.max(0, unwanted) - (hasMultiView ? 0.15 * Math.max(0, bgClutter) : 0) };
 }
-export function rankEmbeddedImages(items, model = null, { semanticFilter = false, fallbackLimit = 0 } = {}) {
-  // Preference can reorder eligible photos, but cannot rescue a failed match.
-  const eligible = semanticFilter ? items.filter(item => passesImageSemanticGate(item.semantic)) : items;
-  if (semanticFilter && !eligible.length && fallbackLimit > 0) {
-    return items.map((item, index) => ({ ...item, index, features: preferenceFeatures(item.vector, item.semantic),
-      probability: .5, uncertain: true, belowThreshold: true, score: invariantRankingScore(model?.wInv, item.rankingEvidence) ?? item.semantic.score ?? item.semantic.cosine ?? item.semantic.selected }))
-      .filter(item => Number.isFinite(item.score))
-      .sort((a, b) => b.score - a.score || a.index - b.index).slice(0, Math.min(9, fallbackLimit));
+function scoreEmbeddedImage(item, model, semanticFilter) {
+  const features = preferenceFeatures(item.vector, item.semantic);
+  const invariantScore = invariantRankingScore(model?.wInv, item.rankingEvidence);
+  const passes = passesImageSemanticGate(item.semantic);
+  if (semanticFilter && !passes) {
+    return { ...item, features, probability: .5, uncertain: true, belowThreshold: true,
+      score: invariantScore ?? item.semantic.score ?? item.semantic.cosine ?? item.semantic.selected };
   }
-  const scored = eligible.map((item, index) => {
-    const features = preferenceFeatures(item.vector, item.semantic);
-    const encoded = encodeFullFeatures(features);
-    const neural = isCurrentPersonalizer(model) && model.role !== 'semantic' && item.meaningFeatures;
-    const invariantScore = invariantRankingScore(model?.wInv, item.rankingEvidence);
-    const adjustment = neural ? personalizerScore(model, encoded, item.meaningFeatures) - personalizerScore(null, encoded, item.meaningFeatures) : 0;
-    const probability = invariantScore ?? (neural ? 1 / (1 + Math.exp(-8 * adjustment)) : preferenceProbability(model, features));
-    // Early feedback should have little influence. A visual preference must not
-    // positively reward an image that matches another supplied sense better.
+  // A valid invariant score determines both rank and confidence.
+  let score = invariantScore, probability = invariantScore;
+  if (invariantScore === null) {
+    const neural = item.meaningFeatures && model?.role !== 'semantic' && isCurrentPersonalizer(model);
+    if (neural) {
+      const encoded = encodeFullFeatures(features);
+      const personal = personalizerScore(model, encoded, item.meaningFeatures);
+      const adjustment = personal - personalizerScore(null, encoded, item.meaningFeatures);
+      probability = 1 / (1 + Math.exp(-8 * adjustment));
+      if (!model.invariantOnly) score = personal;
+    } else {
+      probability = preferenceProbability(model, features);
+    }
     const strength = 0.12 * Math.min(1, (model?.trainedLabels || 0) / 64);
     const preference = item.semantic.margin < 0 ? Math.min(0, probability - 0.5) : probability - 0.5;
-    // Taste preferences are not match confidence. A new user's neutral .5
-    // preference must not flag every otherwise clear semantic match.
-    const uncertain = !passesImageSemanticGate(item.semantic)
-      || (invariantScore !== null && Math.abs(invariantScore - 0.5) < 0.18)
-      || (item.semantic.contrastSource !== 'dictionary' && item.semantic.contrast !== null && item.semantic.margin < IMAGE_SEMANTIC_FILTER.closeContrastMargin);
-    return { ...item, index, features, probability, uncertain, score: invariantScore ?? (neural && !model.invariantOnly ? personalizerScore(model, encoded, item.meaningFeatures) : item.semantic.score + strength * preference) };
-  });
-  // Scores are shown in descending order; diversity penalties must not silently
-  // reorder the list after a learned model has scored it.
-  scored.sort((a, b) => b.score - a.score || a.index - b.index);
+    score ??= item.semantic.score + strength * preference;
+  }
+  const uncertain = !passes || (invariantScore !== null && Math.abs(invariantScore - 0.5) < 0.18)
+    || (item.semantic.contrastSource !== 'dictionary' && item.semantic.contrast !== null && item.semantic.margin < IMAGE_SEMANTIC_FILTER.closeContrastMargin);
+  return { ...item, features, probability, uncertain, score };
+}
+
+function orderScoredImages(items, { fallbackLimit = 0, keepRejected = false } = {}) {
+  const sorted = [...items].sort((a, b) => b.score - a.score || a.index - b.index);
+  const eligible = sorted.filter(item => !item.belowThreshold);
+  const fallback = fallbackLimit > 0 && (keepRejected || !eligible.length)
+    ? sorted.filter(item => item.belowThreshold && Number.isFinite(item.score)).slice(0, Math.min(MAX_IMAGE_CANDIDATES, fallbackLimit))
+    : [];
+  if (keepRejected) return [...eligible, ...fallback];
   const selected = [];
-  while (scored.length) {
-    const candidate = scored.shift();
+  for (const candidate of eligible) {
     if (!selected.some(item => cosine(item.vector, candidate.vector) > 0.97)) selected.push(candidate);
   }
-  return selected;
+  return [...selected, ...fallback];
+}
+
+export function rankEmbeddedImages(items, model = null, options = {}) {
+  return orderScoredImages(items.map((item, index) => ({
+    ...scoreEmbeddedImage(item, model, options.semanticFilter), index
+  })), options);
 }
 async function awaitWarmupForTextEncoding(signal) {
   while (warmupPromise || activeInitializePromise) {
@@ -689,15 +708,27 @@ export async function encodeDefinitionTexts(texts, options = {}) {
 
 export async function rankImagesLocally(word, candidates, options = {}) {
   if (!imageLearningEnabled(options.storage) || !candidates.length) return candidates;
-  if (!options.exhaustiveScoring) candidates = imageEvaluationCandidates(candidates, options.page);
+  candidates = imageEvaluationCandidates(candidates, options.page, imageCandidateBudget(options), options.candidateLimitPerPrompt);
   if (!candidates.length) return [];
-  const scoringLimit = Math.min(candidates.length, Math.max(1, Math.min(options.exhaustiveScoring ? 45 : MAX_IMAGE_CANDIDATES,
-    Number(options.localCandidateLimit) || (options.exhaustiveScoring ? 45 : IMAGE_SEMANTIC_FILTER.candidatePoolSize))));
+  const scoringLimit = Math.min(candidates.length, Math.max(1, Math.min(MAX_IMAGE_CANDIDATES,
+    Number(options.localCandidateLimit) || IMAGE_SEMANTIC_FILTER.candidatePoolSize)));
+  candidates = candidates.slice(0, scoringLimit);
+  const defer = options.deferImageScoring && options.imageScoringSession && scoringLimit > INITIAL_IMAGE_CANDIDATES;
+  if (defer) {
+    const firstPass = imageEvaluationCandidates(candidates, options.page, INITIAL_IMAGE_CANDIDATES);
+    const firstPassUrls = new Set(firstPass.map(image => image.url));
+    candidates = [...firstPass, ...candidates.filter(image => !firstPassUrls.has(image.url))];
+  }
+  const imageScoringSession = options.imageScoringSession || createImageScoringSession();
+  const stageTimings = createInferenceTimings('clip');
+  const finishRanking = stageTimings.measure.start('image-ranking', { batch: defer ? INITIAL_IMAGE_CANDIDATES : scoringLimit });
   const generation = featureGeneration;
   const lifecycle = {};
-  const current = () => generation === featureGeneration && imageLearningEnabled(options.storage) && !options.signal?.aborted
+  let deferredSignal;
+  const current = () => !deferredSignal?.aborted && !imageScoringSession.closed && generation === featureGeneration && imageLearningEnabled(options.storage) && !options.signal?.aborted
     && (lifecycle.workerGeneration === undefined || lifecycle.workerGeneration === workerGeneration);
   const inference = { ...options, lifecycle };
+  const scoreSignal = () => deferredSignal && options.signal ? AbortSignal.any([deferredSignal, options.signal]) : deferredSignal || options.signal;
   try {
     // Let startup finish its GPU-to-CPU recovery before adding picker requests
     // to the worker queue: replacing a failed worker rejects its pending RPCs.
@@ -708,7 +739,7 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     const prompt = imageClipPrompts(word, options);
     // Start vision helpers now so they compile while the prompts are embedded.
     ensureVisionHelpers(scoringLimit, options.exhaustiveScoring);
-    const texts = await rpc('texts', { texts: prompt.texts }, inference);
+    const [texts, model] = await Promise.all([rpc('texts', { texts: prompt.texts }, inference), training().current()]);
     if (!current() || !workerReady) return [];
     // A picker opened before startup warmup creates the primary worker above.
     ensureVisionHelpers(scoringLimit, options.exhaustiveScoring);
@@ -717,58 +748,117 @@ export async function rankImagesLocally(word, candidates, options = {}) {
     const sceneVector = meanVector(texts.slice(1, 1 + prompt.sceneCount)) || texts[0];
     const contrastVector = meanVector(texts.slice(1 + prompt.sceneCount, 1 + prompt.sceneCount + prompt.alternativeCount));
     const items = [];
+    const sense = fingerprint(word);
+    if (!current()) return [];
+    cachedModel = model;
     // The foreground pool is already bounded before downloading any pixels.
-    // Each batch keeps every worker busy (two images per worker) while the
-    // next batch of thumbnails downloads. A single-worker device keeps 4.
+    // Prepare only the active wave; later waves start once review is mounted.
     const step = Math.max(IMAGE_THUMBNAIL_BATCH_LIMIT, 2 * (1 + helpers.length));
-    const prepareBatch = start => {
-      if (start >= scoringLimit) return null;
-      const end = Math.min(start + step, scoringLimit);
+    const prepareBatch = (start, waveEnd) => {
+      if (start >= waveEnd) return null;
+      const end = Math.min(start + step, waveEnd);
       const groups = [];
       for (let offset = start; offset < end; offset += IMAGE_THUMBNAIL_BATCH_LIMIT) {
         groups.push(prepareImageThumbnails(candidates.slice(offset, Math.min(offset + IMAGE_THUMBNAIL_BATCH_LIMIT, end)), {
-          ...options, limit: IMAGE_THUMBNAIL_BATCH_LIMIT, preferOriginal: true, timeoutMs: options.timeoutMs || 2800
+          ...options, signal: scoreSignal(), thumbnailCache: imageScoringSession.thumbnailCache, limit: IMAGE_THUMBNAIL_BATCH_LIMIT, preferOriginal: false, timeoutMs: options.timeoutMs || 2800
         }));
       }
-      return Promise.all(groups).then(results => results.flat());
+      return stageTimings.measure('thumbnail-prepare', () => Promise.all(groups).then(results => results.flat()), { batch: end - start });
     };
-    let nextBatch = prepareBatch(0);
-    for (let offset = 0; offset < scoringLimit; offset += step) {
-      if (!current()) return [];
-      const currentBatch = nextBatch;
-      nextBatch = prepareBatch(offset + step);
-      const thumbnails = await currentBatch;
-      if (!current()) return [];
-      // Dispatch the whole batch at once; results keep candidate order.
-      const embeddedBatch = await Promise.all(thumbnails.map(thumbnail =>
-        rpc('image', { blob: thumbnail.blob, multiView: true }, inference)
-          .catch(err => { if (err?.backendFailure || !current()) throw err; return null; })));
-      if (!current() || !workerReady) return [];
-      thumbnails.forEach((thumbnail, index) => {
-        const embedded = embeddedBatch[index];
-        if (!embedded) return;
-        const vector = Array.isArray(embedded) ? embedded : embedded.vector;
-        const semantic = semanticScores(embedded, texts, prompt.sceneCount, prompt.alternativeCount);
-        // Dictionary senses are not mutually exclusive visual contrasts:
-        // e.g. "something resembling an apple" also embeds the actual fruit.
-        // Retain their ranking penalty without treating it as calibrated doubt.
-        semantic.contrastSource = prompt.contrastSource;
-        const rankingEvidence = { encoder: CLIP_TAG, full: embedded.fullVector || vector, crop: embedded.cropVector || vector,
-          baselineScore: semantic.score,
-          meaning: texts[0], scene: sceneVector, contrast: contrastVector, unwanted: texts.at(-1) };
-        items.push({ candidate: thumbnail.candidate, vector, meaningFeatures, rankingEvidence, semantic });
+    let job;
+    const candidatePositions = new Map(candidates.map((candidate, index) => [candidate.url, index]));
+    const settled = new Set();
+    const unchecked = new Map();
+    const keepUnchecked = async candidate => {
+      if (options.keepRejected && current()
+        && (!options.checkUncheckedImage || await options.checkUncheckedImage(candidate, scoreSignal())) && current()) {
+        unchecked.set(candidate.url, candidate);
+      }
+    };
+    const embedThumbnail = async thumbnail => {
+      const embedded = await imageScoringSession.embed(thumbnail.blob,
+        `${CLIP_TAG}:${IMAGE_PREPROCESSING}:dual-view:${featureGeneration}:${workerGeneration}`,
+        () => rpc('image', { blob: thumbnail.blob, multiView: true }, { ...inference, signal: scoreSignal() })
+      ).catch(error => {
+        if (!options.keepRejected && (error?.backendFailure || !current())) throw error;
+        return null;
       });
-      phase = 'scoring';message = `Scored ${items.length} of ${candidates.length} image suggestions locally.`;emit();
+      if (!embedded || !current() || !workerReady) {
+        if (options.keepRejected) unchecked.set(thumbnail.candidate.url, thumbnail.candidate);
+        return;
+      }
+      const vector = Array.isArray(embedded) ? embedded : embedded.vector;
+      const semantic = semanticScores(embedded, texts, prompt.sceneCount, prompt.alternativeCount);
+      semantic.contrastSource = prompt.contrastSource;
+      const rankingEvidence = { encoder: CLIP_TAG, full: embedded.fullVector || vector, crop: embedded.cropVector || vector,
+        baselineScore: semantic.score, meaning: texts[0], scene: sceneVector, contrast: contrastVector, unwanted: texts.at(-1) };
+      const scored = scoreEmbeddedImage({ candidate: thumbnail.candidate, vector, meaningFeatures, rankingEvidence, semantic }, model, true);
+      scored.index = candidatePositions.get(thumbnail.candidate.url);
+      scored.encodedFeatures = encodeFullFeatures(scored.features);
+      items.push(scored);
+    };
+    const snapshot = (pending = true) => {
+      const scored = orderScoredImages(items, { fallbackLimit: MAX_IMAGE_CANDIDATES, keepRejected: options.keepRejected });
+      return [...scored.map(item => ({ ...item.candidate, ml: { model: CLIP_TAG, sense, features: item.encodedFeatures, meaningFeatures, preprocessing: IMAGE_PREPROCESSING, scenes: prompt.scenes,
+      ...(job ? { reviewJob: job.key } : {}), screening: 'scored', rankingEvidence: item.rankingEvidence, belowThreshold: Boolean(item.belowThreshold), uncertain: Boolean(item.uncertain), cosine: item.semantic.cosine, selected: item.semantic.selected, contrast: item.semantic.contrast, contrastSource: item.semantic.contrastSource, margin: item.semantic.margin, unwanted: item.semantic.unwanted, cropProminence: item.semantic.cropProminence ?? 0, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
+      trainedComparisons: model?.trainedComparisons || 0, trainedPositiveLabels: model?.trainedPositiveLabels || 0, trainedNegativeLabels: model?.trainedNegativeLabels || 0, score: item.score } })),
+      ...[...unchecked.values()].map(candidate => ({ ...candidate, ml: { reviewJob: job?.key, screening: 'not-scored', uncertain: true } })),
+      ...(pending ? candidates.filter(candidate => !settled.has(candidate.url)).map(candidate => ({
+        ...candidate, ml: { screening: 'pending', reviewJob: job?.key }
+      })) : [])];
+    };
+    const initialCount = defer ? INITIAL_IMAGE_CANDIDATES : scoringLimit;
+    let nextBatch = prepareBatch(0, initialCount);
+    for (let offset = 0; offset < initialCount; offset += step) {
+      if (!current()) return [];
+      const prepared = nextBatch;
+      nextBatch = prepareBatch(offset + step, initialCount);
+      const thumbnails = await prepared;
+      if (!current()) return [];
+      const preparedUrls = new Set(thumbnails.map(thumbnail => thumbnail.candidate.url));
+      const missing = candidates.slice(offset, Math.min(offset + step, initialCount)).filter(candidate => !preparedUrls.has(candidate.url));
+      await Promise.all([...thumbnails.map(embedThumbnail), ...missing.map(keepUnchecked)]);
+      if (!current() && !options.keepRejected) return [];
     }
-    const model = await training().current();
-    if (!current() || !workerReady) return [];
-    cachedModel = model;
-    const scored = rankEmbeddedImages(items, model, { semanticFilter: true, fallbackLimit: 9 });
-    phase = 'ready';message = items.length ? `${items.length} image suggestions scored locally.` : 'These images could not be checked. You can choose a photo manually.';emit();
-    return [...scored.map(item => ({ ...item.candidate, ml: { model: CLIP_TAG, sense: fingerprint(word), features: encodeFullFeatures(item.features), meaningFeatures, preprocessing: IMAGE_PREPROCESSING, scenes: prompt.scenes,
-      screening: 'scored', rankingEvidence: item.rankingEvidence, belowThreshold: Boolean(item.belowThreshold), uncertain: Boolean(item.uncertain), cosine: item.semantic.cosine, selected: item.semantic.selected, contrast: item.semantic.contrast, contrastSource: item.semantic.contrastSource, margin: item.semantic.margin, unwanted: item.semantic.unwanted, cropProminence: item.semantic.cropProminence ?? 0, preference: item.probability, trainedLabels: model?.trainedLabels || 0,
-      trainedComparisons: model?.trainedComparisons || 0, trainedPositiveLabels: model?.trainedPositiveLabels || 0, trainedNegativeLabels: model?.trainedNegativeLabels || 0, score: item.score } }))];
+    candidates.slice(0, initialCount).forEach(candidate => settled.add(candidate.url));
+    if (defer && current()) {
+      job = imageScoringSession.defer(async publish => {
+        const finishDeferred = stageTimings.measure.start('image-ranking', { batch: scoringLimit - initialCount });
+        try {
+          for (let offset = initialCount; offset < scoringLimit && current(); offset += step) {
+            await Promise.all(candidates.slice(offset, offset + step).map(async candidate => {
+              try {
+                const [thumbnail] = await stageTimings.measure('thumbnail-prepare', () =>
+                  prepareImageThumbnails([candidate], {
+                    ...options, signal: scoreSignal(), thumbnailCache: imageScoringSession.thumbnailCache, limit: 1, preferOriginal: false, timeoutMs: options.timeoutMs || 2800
+                  }), { batch: 1 });
+                if (thumbnail && current()) await embedThumbnail(thumbnail);
+                else await keepUnchecked(candidate);
+              } catch {
+                // A failed photo leaves the other choices and their scores intact.
+              } finally {
+                settled.add(candidate.url);
+                if (current()) publish(snapshot());
+              }
+            }));
+          }
+        } finally {
+          if (settled.size < scoringLimit && !deferredSignal.aborted && !options.signal?.aborted && !imageScoringSession.closed) publish(snapshot(false));
+          if (current()) { phase = 'ready'; message = `${items.length} image suggestions scored locally.`; emit(); }
+          finishDeferred();
+          recordInferenceTimings(stageTimings.drain());
+        }
+      });
+      deferredSignal = job.signal;
+      return snapshot();
+    }
+    phase = 'ready'; message = `${items.length} image suggestions scored locally.`; emit();
+    return snapshot(false);
   } catch (error) { if (current()) { phase = 'error';message = `${error.message} Image screening could not finish.`;emit(); } return []; }
+  finally {
+    finishRanking(); recordInferenceTimings(stageTimings.drain());
+    if (!options.imageScoringSession) imageScoringSession.clear();
+  }
 }
 let feedbackQueue = Promise.resolve();
 async function imageRecordIds(word, image) {

@@ -5,13 +5,26 @@ const exact = value => String(value || '').replace(/\s+/g, ' ').trim();
 export const IMAGE_CANDIDATES_PER_SCENE = 3;
 export const IMAGE_REVIEW_BATCH_SIZE = 9;
 export const MAX_IMAGE_CANDIDATES = 9;
+export const INITIAL_IMAGE_CANDIDATES = 3;
+const IMAGE_BUDGET_KEY = 'keepvocab_image_candidate_budget';
+export function imageCandidateBudget(options = {}) {
+  let saved;
+  try { saved = (options.storage === undefined ? globalThis.localStorage : options.storage)?.getItem(IMAGE_BUDGET_KEY); } catch {}
+  const value = Number(options.imageCandidateBudget ?? saved);
+  return [3, 6, 9].includes(value) ? value : 3;
+}
+export function saveImageCandidateBudget(value, storage = globalThis.localStorage) {
+  if (![3, 6, 9].includes(Number(value))) throw new Error('Choose 3, 6, or 9 images.');
+  storage?.setItem(IMAGE_BUDGET_KEY, String(value));
+}
+export const imageSceneCount = options => imageCandidateBudget(options) / IMAGE_CANDIDATES_PER_SCENE;
 
 // Integer shares keep the combined vision budget at nine. Rotate remainder
 // slots on subsequent pages, including which prompts run when there are >9.
-export function imageCandidateBudgets(promptCount, page = 1) {
+export function imageCandidateBudgets(promptCount, page = 1, limit = MAX_IMAGE_CANDIDATES, perPrompt = IMAGE_CANDIDATES_PER_SCENE) {
   const count = Number.isFinite(Number(promptCount)) ? Math.max(0, Math.floor(Number(promptCount))) : 0;
   if (!count) return [];
-  const total = Math.min(MAX_IMAGE_CANDIDATES, count * IMAGE_CANDIDATES_PER_SCENE);
+  const total = Math.min(MAX_IMAGE_CANDIDATES, Math.max(1, Math.floor(Number(limit) || MAX_IMAGE_CANDIDATES)), count * perPrompt);
   const base = Math.floor(total / count);
   const budgets = Array(count).fill(base);
   const start = (Number.isFinite(Number(page)) ? Math.max(1, Math.floor(Number(page) || 1)) - 1 : 0) % count;
@@ -20,7 +33,9 @@ export function imageCandidateBudgets(promptCount, page = 1) {
 }
 
 // Also bound direct scorer callers, before any thumbnail download or inference.
-export function imageEvaluationCandidates(candidates, page = 1) {
+export function imageEvaluationCandidates(candidates, page = 1, limit = MAX_IMAGE_CANDIDATES, perPrompt = IMAGE_CANDIDATES_PER_SCENE) {
+  const cap = Math.min(MAX_IMAGE_CANDIDATES, Math.max(1, Math.floor(Number(limit) || MAX_IMAGE_CANDIDATES)));
+
   const seen = new Set();
   const unique = candidates.filter(image => {
     if (!image?.url || seen.has(image.url)) return false;
@@ -34,12 +49,12 @@ export function imageEvaluationCandidates(candidates, page = 1) {
   }
   // Retrieval has already allocated these slots; do not reallocate after a
   // prompt yielded fewer unique results (or reorder an already ranked pool).
-  if (unique.length <= MAX_IMAGE_CANDIDATES && [...groups.values()].every(group => group.length <= IMAGE_CANDIDATES_PER_SCENE)) return unique;
-  if (groups.size === 1 && groups.has('')) return unique.slice(0, MAX_IMAGE_CANDIDATES);
+  if (unique.length <= cap && [...groups.values()].every(group => group.length <= perPrompt)) return unique;
+  if (groups.size === 1 && groups.has('')) return unique.slice(0, cap);
   const buckets = [...groups.values()];
-  const budgets = imageCandidateBudgets(buckets.length, page);
+  const budgets = imageCandidateBudgets(buckets.length, page, cap, perPrompt);
   const selected = [];
-  for (let row = 0; row < IMAGE_CANDIDATES_PER_SCENE; row++) {
+  for (let row = 0; row < perPrompt; row++) {
     buckets.forEach((bucket, index) => { if (row < budgets[index] && bucket[row]) selected.push(bucket[row]); });
   }
   return selected;

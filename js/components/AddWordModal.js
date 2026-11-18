@@ -1,3 +1,5 @@
+import { updateAnimatedLayout } from '../utils/animatedLayout.js';
+import { createImageScoringSession } from '../services/imageScoringSession.js';
 import { showUnmergeReview } from './UnmergeReview.js';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { fetchWordEntry, wordEntryToWord, prepareWordsForLibrary, prepareBulkLearnerExplanations } from '../services/wordEntry.js?v=18908';
@@ -7,16 +9,17 @@ import { getTranslationLanguage, isUkrainianTranslationEnabled } from '../servic
 import { definitionForLearning, exampleForLearning, entrySensesForMode, originalSenses } from '../services/learningDefinitions.js?v=18908';
 import { consolidateEntrySenses } from '../services/localSenseGrouping.js?v=18908';
 import { recordMeaningJudgment } from '../services/meaningEquivalenceLearning.js';
-import { canAutoSelectImage } from '../services/imageChoicePolicy.js';
 import { recordImagePreference, warmImageLearning } from '../services/imageLearning.js?v=18908';
 import { mountMeaningPairReview } from './MeaningPairReview.js';
 
 // Regrouping changes card IDs. Keep selections and edits attached to the
 // original dictionary senses, including when a reviewed group is split again.
+const meaningMemberKeys = sense => originalSenses(sense).map(s => s.id || `${s.partOfSpeech}:${s.sourceDefinition || s.definition}`);
+
 export function remapMeaningDrafts(previous, senses) {
-  const members = sense => new Set(originalSenses(sense).map(s => s.id || `${s.partOfSpeech}:${s.sourceDefinition || s.definition}`));
+  const members = sense => new Set(meaningMemberKeys(sense));
   const old = previous.drafts.map(draft => ({ draft, members: members(draft) }));
-  const selectedMembers = new Set(old.filter(item => previous.selected.has(item.draft.id)).flatMap(item => [...item.members]));
+  const selectedMembers = previous.selectedMembers || new Set(old.filter(item => previous.selected.has(item.draft.id)).flatMap(item => [...item.members]));
   const focused = old.find(item => item.draft.id === previous.focused)?.members || new Set();
   const selected = new Set(); let focusedId = null;
   const drafts = senses.map(sense => {
@@ -25,7 +28,7 @@ export function remapMeaningDrafts(previous, senses) {
     const source = matches.find(item => item.draft.id === previous.focused)
       || matches.find(item => previous.selected.has(item.draft.id)) || matches[0];
     const edits = source ? Object.fromEntries(['definition', 'partOfSpeech', 'usageNote', 'translation', 'translationLanguage',
-      'example', 'phonetic', 'explanationSource', 'sourceFingerprint'].filter(key => source.draft[key] !== undefined).map(key => [key, source.draft[key]])) : {};
+      'example', 'phonetic', 'explanationSource', 'sourceFingerprint'].filter(key => source.draft[key] !== undefined && (!previous.baseline || source.draft[key] !== previous.baseline.get(source.draft.id)?.[key])).map(key => [key, source.draft[key]])) : {};
     if ([...ids].some(id => selectedMembers.has(id))) selected.add(sense.id);
     if (!focusedId && [...ids].some(id => focused.has(id))) focusedId = sense.id;
     return { ...sense, ...edits };
@@ -45,7 +48,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
     <div class="modal-box sense-modal-box" role="dialog" aria-modal="true" aria-labelledby="add-word-title">
       <div class="sense-modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h2 id="add-word-title" style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800;">
-          <i class="fa-solid fa-circle-plus" style="color: var(--primary-green);"></i> Add Word to Library
+          <span class="add-word-title-default"><i class="fa-solid fa-circle-plus" style="color: var(--primary-green);"></i> Add Word to Library</span><span class="add-word-title-images" hidden></span>
         </h2>
         <button class="status-pill offline" id="btn-close-add-modal" aria-label="Close add word" style="font-size: 0.8rem; padding: 4px 8px;">✕</button>
       </div>
@@ -58,7 +61,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
       <div id="single-add-panel" role="tabpanel" aria-labelledby="single-add-tab">
       <div style="display: flex; flex-direction: column; gap: 12px;">
         <form class="quick-add-row" id="add-word-lookup-form" style="display: flex; gap: 10px;">
-          <input type="text" id="add-word-input" aria-label="English word or phrase" placeholder="Type a word, then press Enter" enterkeyhint="search" autocomplete="off" autocapitalize="none" autofocus style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 0.95rem;">
+          <input type="text" id="add-word-input" aria-label="English word or phrase" placeholder="Type a word, then press Enter" enterkeyhint="search" autocomplete="off" autocapitalize="none" style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 0.95rem;">
           <button type="submit" class="btn-green-solid" id="btn-auto-fetch-word" style="padding: 10px 16px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings</button>
         </form>
 
@@ -66,7 +69,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
           <div class="sense-picker-heading">
             <div><strong id="prev-w-title">Serendipity</strong><span id="prev-w-phonetic">/ˌser.ənˈdɪp.ə.ti/</span></div>
             <div class="sense-mode-toolbar"><span id="sense-count-label">Choose a meaning</span>
-              <div class="meaning-mode-switch" role="group" aria-label="Definition mode">
+              <div id="add-word-meaning-modes" class="meaning-mode-switch" role="group" aria-label="Definition mode" hidden>
                 <button type="button" data-meaning-mode="grouped" aria-pressed="true">Grouped</button>
                 <button type="button" data-meaning-mode="raw" aria-pressed="false">Raw</button>
               </div>
@@ -146,6 +149,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   let cancelImageReview = null;
   let bulkImageController = null;
   let pendingImageFeedback = [];
+  let imageScoringSession = null;
   const saveImageFeedback = () => {
     const feedback = pendingImageFeedback;
     pendingImageFeedback = [];
@@ -153,17 +157,48 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       void Promise.resolve().then(() => recordImagePreference(label.word, label.action, label.image, { preferredImage: label.preferredImage, decisionId: label.decisionId, feedbackReason: label.feedbackReason })).catch(() => {});
     }
   };
+  let entrySession;
+  const getEntrySession = () => {
+    if (entrySession) return entrySession;
+    const controller = new AbortController();
+    const data = new Map();
+    const imageSearchCache = new Map();
+    entrySession = {
+      options: {
+        signal: controller.signal,
+        entryCacheStorage: {
+          getItem: key => data.get(key) ?? null,
+          setItem: (key, value) => { if (!controller.signal.aborted) data.set(key, value); }
+        },
+        imageSearchCache
+      },
+      close() { controller.abort(); data.clear(); imageSearchCache.clear(); }
+    };
+    return entrySession;
+  };
   const beginOperation = () => {
     const revision = generation;
     const courseId = activeCourseId;
     const translationLanguage = activeTranslationLanguage;
+    const sessionOptions = getEntrySession().options;
     return {
-      courseId, translationLanguage,
+      courseId, translationLanguage, sessionOptions,
       isCurrent: () => revision === generation && courseId === driveSync.getActiveCourseId() && translationLanguage === getTranslationLanguage(),
-      lookup: (term, options = {}) => fetchWordEntry(term, courseId, { ...options, translationLanguage }),
+      lookup: (term, options = {}) => fetchWordEntry(term, courseId, {
+        ...sessionOptions, ...options, translationLanguage,
+        signal: options.signal ? AbortSignal.any([sessionOptions.signal, options.signal]) : sessionOptions.signal
+      })
     };
   };
   const modal = document.getElementById('add-word-modal');
+  const fitMobileViewport = () => {
+    const viewport = window.visualViewport;
+    if (!viewport || !modal.classList.contains('active')) return;
+    modal.style.setProperty('--add-word-viewport-height', `${viewport.height}px`);
+    modal.style.setProperty('--add-word-viewport-top', `${viewport.offsetTop}px`);
+  };
+  window.visualViewport?.addEventListener('resize', fitMobileViewport);
+  window.visualViewport?.addEventListener('scroll', fitMobileViewport);
   const imageReviewRoot = document.createElement('div');
   imageReviewRoot.hidden = true;
   modal.querySelector('.modal-box').appendChild(imageReviewRoot);
@@ -211,6 +246,11 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   let focusedSenseId = null;
   let showAllSenses = false;
   let meaningMode = 'grouped';
+  let meaningLookupController;
+  let grouping = false;
+  let choseRawMeaning = false;
+  let groupedSelectionMembers = new Set();
+  let draftBaseline = new Map();
   let modeStates = new Map();
   let bulkResults = [];
 
@@ -241,6 +281,9 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   };
 
   const resetAsyncControls = () => {
+    meaningLookupController?.abort();
+    meaningLookupController = null;
+    grouping = false;
     bulkImageController?.abort();
     bulkImageController = null;
     bulkSkipImages.hidden = true;
@@ -274,8 +317,10 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
     editorSubtitle.textContent = 'Type a custom meaning or find dictionary meanings above';
     modal.classList.add('active');
+    fitMobileViewport();
     void warmImageLearning().catch(() => {});
-    window.setTimeout(() => input.focus(), 0);
+    modal.querySelector('.sense-modal-box').scrollTop = 0;
+    if (!window.matchMedia?.('(pointer: coarse)').matches) window.setTimeout(() => input.focus(), 0);
   };
 
   const setAddMode = (mode, focus = true) => {
@@ -286,7 +331,8 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     bulkTab.setAttribute('aria-selected', String(bulk));
     singlePanel.hidden = bulk;
     bulkPanel.hidden = !bulk;
-    if (focus) window.setTimeout(() => (bulk ? bulkInput : input).focus(), 0);
+    modal.querySelector('.sense-modal-box').scrollTop = 0;
+    if (focus && !window.matchMedia?.('(pointer: coarse)').matches) window.setTimeout(() => (bulk ? bulkInput : input).focus(), 0);
   };
 
   const updateBulkSaveState = () => {
@@ -352,17 +398,19 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
 
       if (result.status === 'ready') {
         const senses = entrySensesForMode(result.data, result.meaningMode);
-        const modes = document.createElement('div'); modes.className = 'meaning-mode-switch'; modes.setAttribute('role', 'group'); modes.setAttribute('aria-label', `Definition mode for ${result.term}`);
-        for (const mode of ['grouped', 'raw']) {
-          const button = document.createElement('button'); button.type = 'button'; button.textContent = mode === 'raw' ? 'Raw' : 'Grouped';
-          button.setAttribute('aria-pressed', String((result.meaningMode || 'grouped') === mode));
-          button.disabled = mode === 'raw' && !entrySensesForMode(result.data, 'raw').length;
-          button.addEventListener('click', () => {
-            result.modeSelections ||= {}; result.modeSelections[result.meaningMode || 'grouped'] = result.selectedSenseIndex || 0;
-            result.meaningMode = mode; result.selectedSenseIndex = result.modeSelections[mode] || 0; renderBulkResults();
-          }); modes.appendChild(button);
+        if (result.data.meaningGroupingProvider) {
+          const modes = document.createElement('div'); modes.className = 'meaning-mode-switch'; modes.setAttribute('role', 'group'); modes.setAttribute('aria-label', `Definition mode for ${result.term}`);
+          for (const mode of ['grouped', 'raw']) {
+            const button = document.createElement('button'); button.type = 'button'; button.textContent = mode === 'raw' ? 'Raw' : 'Grouped';
+            button.setAttribute('aria-pressed', String((result.meaningMode || 'grouped') === mode));
+            button.disabled = mode === 'raw' && !entrySensesForMode(result.data, 'raw').length;
+            button.addEventListener('click', () => {
+              result.modeSelections ||= {}; result.modeSelections[result.meaningMode || 'grouped'] = result.selectedSenseIndex || 0;
+              result.meaningMode = mode; result.selectedSenseIndex = result.modeSelections[mode] || 0; renderBulkResults();
+            }); modes.appendChild(button);
+          }
+          row.appendChild(modes);
         }
-        row.appendChild(modes);
         const label = document.createElement('label');
         label.textContent = 'Meaning to import';
         const select = document.createElement('select');
@@ -454,6 +502,9 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     meaningMode = 'grouped';
     modeStates = new Map();
     senseDrafts = new Map();
+    draftBaseline = new Map();
+    groupedSelectionMembers = new Set();
+    choseRawMeaning = false;
     selectedSenseIds = new Set();
     focusedSenseId = null;
     showAllSenses = false;
@@ -467,6 +518,9 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
 
   const resetModal = () => {
     generation += 1;
+    entrySession?.close();
+    entrySession = null;
+    imageScoringSession?.clear(); imageScoringSession = null;
     imageReviewController?.destroy();
     imageReviewController = null;
     cancelImageReview?.();
@@ -500,31 +554,44 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
 
   const reviewPreparedImages = words => {
     pendingImageFeedback = [];
-    if (words.every(word => (!word.imageUrl && !word.imageCandidates?.length) || canAutoSelectImage(word.imageCandidates))) {
+    if (words.every(word => !word.imageUrl && !word.imageCandidates?.length)) {
       return Promise.resolve(words.map(({ imageCandidates, ...word }) => word));
     }
     return new Promise(resolve => {
       const wasBulk = !bulkPanel.hidden;
+      const box = modal.querySelector('.sense-modal-box');
+      const previousScroll = box.scrollTop;
       const tabs = modal.querySelector('.add-mode-tabs');
       singlePanel.hidden = true;
       bulkPanel.hidden = true;
       tabs.hidden = true;
       imageReviewRoot.hidden = false;
       modal.classList.add('is-picking-images');
+      const imageTitle = modal.querySelector('.add-word-title-images');
+      if (imageTitle) {
+        imageTitle.hidden = false;
+        imageTitle.textContent = words.length === 1 ? 'Choose an image' : 'Choose your images';
+      }
       const finish = result => {
         imageReviewController?.destroy();
         imageReviewController = null;
         cancelImageReview = null;
         imageReviewRoot.hidden = true;
+        imageReviewRoot.replaceChildren();
         modal.classList.remove('is-picking-images');
+        if (imageTitle) imageTitle.hidden = true;
         tabs.hidden = false;
         singlePanel.hidden = wasBulk;
         bulkPanel.hidden = !wasBulk;
+        box.scrollTop = previousScroll;
         if (!result) pendingImageFeedback = [];
         resolve(result);
       };
       cancelImageReview = () => finish(null);
+      box.scrollTop = 0;
       imageReviewController = mountImageReview(imageReviewRoot, words, {
+        imageScoringSession,
+        imageSearchOptions: getEntrySession().options,
         onApply: (result, { feedback = [] } = {}) => { pendingImageFeedback = feedback; finish(result); },
         onCancel: () => finish(null),
         // Feedback is committed only after the corresponding library save succeeds.
@@ -562,20 +629,19 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   const persistFocusedDraft = () => {
     if (!focusedSenseId || !senseDrafts.has(focusedSenseId)) return;
     const previous = senseDrafts.get(focusedSenseId);
-    senseDrafts.set(focusedSenseId, {
-      ...previous,
-      sourceDefinition: previous.definition === definitionInput.value.trim() ? previous.sourceDefinition || previous.definition : definitionInput.value.trim(),
-      sourceFingerprint: previous.definition === definitionInput.value.trim() ? previous.sourceFingerprint || '' : '',
-      explanationSource: previous.definition === definitionInput.value.trim() ? previous.explanationSource || '' : 'manual',
-      usageNote: usageNoteInput.value.trim(),
-      phonetic: phoneticInput.value.trim(),
-      partOfSpeech: posInput.value.trim() || 'unknown',
-      definition: definitionInput.value.trim(),
-      usageNote: usageNoteInput.value.trim(),
-      explanationSource: 'manual',
-      translation: translationInput.value.trim(),
-      example: exampleInput.value.trim()
-    });
+    const definition = definitionInput.value.trim();
+    const edited = definition !== (previous.definition || '');
+    const fields = { definition, usageNote: usageNoteInput.value.trim(), phonetic: phoneticInput.value.trim(),
+      partOfSpeech: posInput.value.trim() || 'unknown', translation: translationInput.value.trim(), example: exampleInput.value.trim() };
+    const changes = Object.fromEntries(Object.entries(fields).filter(([key, value]) =>
+      value !== (previous[key] || (key === 'partOfSpeech' ? 'unknown' : ''))));
+    if (grouping && Object.keys(changes).length) {
+      choseRawMeaning = true;
+      groupedSelectionMembers = new Set([...selectedSenseIds].flatMap(id => meaningMemberKeys(senseDrafts.get(id))));
+    }
+    senseDrafts.set(focusedSenseId, { ...previous, ...changes, ...(edited ? {
+      sourceDefinition: definition, sourceFingerprint: '', explanationSource: 'manual'
+    } : {}) });
   };
 
   const loadFocusedDraft = () => {
@@ -611,7 +677,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     if (currentFetchedData !== entry) return;
     const state = { drafts: [...senseDrafts.values()], selected: new Set(selectedSenseIds), focused: focusedSenseId };
     const regrouped = await consolidateEntrySenses(entry, {
-      reuseSemanticScoresOnly: true, meaningLearningState: session,
+      ...getEntrySession().options, reuseSemanticScoresOnly: true, meaningLearningState: session,
       ...(entry?.senseConsolidation?.source === 'local' ? { consolidateSenses: false } : {})
     });
     if (currentFetchedData !== entry) return;
@@ -625,9 +691,10 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     const senses = [...senseDrafts.values()];
     document.getElementById('sense-count-label').textContent = `${selectedSenseIds.size} of ${senses.length} selected`;
     btnSave.innerHTML = `<i class="fa-solid fa-bookmark"></i> Save ${selectedSenseIds.size} meaning${selectedSenseIds.size === 1 ? '' : 's'}`;
+    senseList.setAttribute('aria-busy', String(grouping));
     document.querySelectorAll('[data-meaning-mode]').forEach(button => {
       button.setAttribute('aria-pressed', String(button.dataset.meaningMode === meaningMode));
-      button.disabled = button.dataset.meaningMode === 'raw' && !entrySensesForMode(currentFetchedData, 'raw').length;
+      button.disabled = grouping || (button.dataset.meaningMode === 'raw' && !entrySensesForMode(currentFetchedData, 'raw').length);
     });
     toggleSenses.hidden = senses.length <= 5;
     toggleSenses.setAttribute('aria-expanded', String(showAllSenses));
@@ -639,6 +706,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       const isMerged = merged.length > 1;
       const row = document.createElement('div');
       row.className = 'sense-option-row';
+      row.dataset.meaningMembers = JSON.stringify(meaningMemberKeys(sense));
       const button = document.createElement('button');
       button.type = 'button';
       button.className = `sense-option${selected ? ' selected' : ''}${focusedSenseId === sense.id ? ' focused' : ''}`;
@@ -678,13 +746,17 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         persistFocusedDraft();
         if (selectedSenseIds.has(sense.id) && selectedSenseIds.size > 1) selectedSenseIds.delete(sense.id);
         else selectedSenseIds.add(sense.id);
+        if (grouping) {
+          choseRawMeaning = true;
+          groupedSelectionMembers = new Set([...selectedSenseIds].flatMap(id => meaningMemberKeys(senseDrafts.get(id))));
+        }
         focusedSenseId = selectedSenseIds.has(sense.id) ? sense.id : [...selectedSenseIds][0] || null;
         renderSenseOptions();
         loadFocusedDraft();
         formStatus.textContent = `${selectedSenseIds.size} meaning${selectedSenseIds.size === 1 ? '' : 's'} selected. Each keeps its own definition, example, and review progress.`;
       });
       row.appendChild(button);
-      if (isMerged) {
+      if (isMerged && !grouping) {
         const unmergeBtn = document.createElement('button');
         unmergeBtn.type = 'button';
         unmergeBtn.className = 'sense-unmerge-btn';
@@ -704,7 +776,13 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   };
 
   const renderSenses = (data, previous = null) => {
-    if (!previous) {
+    const groupingAvailable = Boolean(data.meaningGroupingProvider);
+    document.getElementById('add-word-meaning-modes').hidden = !groupingAvailable;
+    if (!groupingAvailable || grouping) {
+      meaningPairReview?.destroy();
+      meaningPairReview = null;
+      document.getElementById('add-word-meaning-review').replaceChildren();
+    } else if (!previous || previous.progressive) {
       meaningPairReview?.destroy();
       meaningReviewSession = { records: [] };
       const session = meaningReviewSession;
@@ -718,7 +796,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
           const entry = currentFetchedData;
           const state = { drafts: [...senseDrafts.values()], selected: new Set(selectedSenseIds), focused: focusedSenseId };
           try {
-            const regrouped = await consolidateEntrySenses(entry, { reuseSemanticScoresOnly: true, meaningLearningState: session });
+            const regrouped = await consolidateEntrySenses(entry, { ...getEntrySession().options, reuseSemanticScoresOnly: true, meaningLearningState: session });
             if (currentFetchedData !== entry || generation !== reviewGeneration) return;
             currentFetchedData = regrouped;
             renderSenses(regrouped, state);
@@ -729,7 +807,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         }
       });
     }
-    showAllSenses = false;
+    showAllSenses = previous?.progressive ? previous.showAll : false;
     meaningMode = 'grouped';
     modeStates = new Map();
     const senses = entrySensesForMode(data);
@@ -737,38 +815,50 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       const id = String(sense.id || index);
       return [id, { ...sense, id, phonetic: data.phonetic || '', audioUrl: data.audioUrl || '' }];
     }));
+    draftBaseline = new Map(senseDrafts);
     focusedSenseId = senseDrafts.keys().next().value || null;
     selectedSenseIds = new Set(focusedSenseId ? [focusedSenseId] : []);
     if (previous) {
       const restored = remapMeaningDrafts(previous, [...senseDrafts.values()]);
       senseDrafts = restored.drafts; selectedSenseIds = restored.selected; focusedSenseId = restored.focused;
     }
-    renderSenseOptions();
-    loadFocusedDraft();
     const consolidation = consolidationStatusMessages(data, { single: true });
-    if (consolidationNotes) {
-      consolidationNotes.replaceChildren();
-      if (consolidation.warning) {
-        const warningEl = document.createElement('p');
-        warningEl.className = 'sense-helper consolidation-warning';
-        warningEl.setAttribute('role', 'alert');
-        warningEl.textContent = consolidation.warning;
-        consolidationNotes.appendChild(warningEl);
+    const rerender = () => {
+      if (consolidationNotes) {
+        consolidationNotes.replaceChildren();
+        if (consolidation.warning) {
+          const warningEl = document.createElement('p');
+          warningEl.className = 'sense-helper consolidation-warning';
+          warningEl.setAttribute('role', 'alert');
+          warningEl.textContent = consolidation.warning;
+          consolidationNotes.appendChild(warningEl);
+        }
+        if (consolidation.diagnostics) {
+          const diagEl = document.createElement('p');
+          diagEl.className = 'sense-helper consolidation-diagnostics';
+          diagEl.textContent = consolidation.diagnostics;
+          consolidationNotes.appendChild(diagEl);
+        }
+        if (consolidation.summary) {
+          const summaryEl = document.createElement('p');
+          summaryEl.className = 'sense-helper consolidation-summary';
+          summaryEl.textContent = consolidation.summary;
+          consolidationNotes.appendChild(summaryEl);
+        }
+        consolidationNotes.hidden = !consolidation.lines.length;
       }
-      if (consolidation.diagnostics) {
-        const diagEl = document.createElement('p');
-        diagEl.className = 'sense-helper consolidation-diagnostics';
-        diagEl.textContent = consolidation.diagnostics;
-        consolidationNotes.appendChild(diagEl);
-      }
-      if (consolidation.summary) {
-        const summaryEl = document.createElement('p');
-        summaryEl.className = 'sense-helper consolidation-summary';
-        summaryEl.textContent = consolidation.summary;
-        consolidationNotes.appendChild(summaryEl);
-      }
-      consolidationNotes.hidden = !consolidation.lines.length;
-    }
+      renderSenseOptions();
+      loadFocusedDraft();
+    };
+    if (previous?.progressive) {
+      const focusedRow = document.activeElement?.closest?.('[data-meaning-members]');
+      const focusedMembers = focusedRow ? JSON.parse(focusedRow.dataset.meaningMembers) : [];
+      updateAnimatedLayout(senseList, rerender, {
+        selector: '[data-meaning-members]', keys: row => JSON.parse(row.dataset.meaningMembers)
+      });
+      if (focusedMembers.length) [...senseList.children].find(row => JSON.parse(row.dataset.meaningMembers)
+        .some(key => focusedMembers.includes(key)))?.querySelector('.sense-option')?.focus({ preventScroll: true });
+    } else rerender();
     formStatus.textContent = consolidation.lines.length
       ? consolidation.lines.join(' ')
       : 'Choose the meanings you use. Dictionary examples are included when available; you can save without an example.';
@@ -776,7 +866,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
 
   document.querySelectorAll('[data-meaning-mode]').forEach(button => button.addEventListener('click', () => {
     const next = button.dataset.meaningMode;
-    if (next === meaningMode || !currentFetchedData) return;
+    if (grouping || next === meaningMode || !currentFetchedData) return;
     persistFocusedDraft();
     modeStates.set(meaningMode, { senseDrafts, selectedSenseIds, focusedSenseId, showAllSenses });
     meaningMode = next;
@@ -824,7 +914,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       bulkStatus.textContent = `This list has ${allTerms.length} words. Keep the first ${MAX_BULK_WORDS} or split it into smaller batches.`;
       return;
     }
-    const { isCurrent, lookup, translationLanguage } = beginOperation();
+    const { isCurrent, lookup, translationLanguage, sessionOptions } = beginOperation();
     bulkPrepare.disabled = true;
     bulkPrepare.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finding meanings…';
     bulkStatus.textContent = `Looking up ${allTerms.length} word${allTerms.length === 1 ? '' : 's'}…`;
@@ -832,6 +922,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     updateBulkProgress({ completed: 0, total: allTerms.length, phase: 'Finding meanings', startedAt: lookupStartedAt });
     try {
       const lookedUp = await lookupBulkWords(allTerms, term => lookup(term, { learnerExplanations: false }), {
+        signal: sessionOptions.signal,
         delayMs: BULK_LOOKUP_DELAY_MS,
         retries: 2,
         retryDelayMs: 750,
@@ -843,7 +934,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       });
       if (!isCurrent()) return;
       bulkStatus.textContent = 'Preparing clear meanings…';
-      const explained = await prepareBulkLearnerExplanations(lookedUp, { translationLanguage });
+      const explained = await prepareBulkLearnerExplanations(lookedUp, { ...sessionOptions, translationLanguage });
       if (!isCurrent()) return;
       bulkResults = dedupeBulkResults(explained);
       renderBulkResults();
@@ -866,7 +957,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
   bulkRetryMissing.addEventListener('click', async () => {
     const missingCount = bulkResults.filter(result => result.status !== 'ready').length;
     if (!missingCount) return;
-    const { isCurrent, lookup, translationLanguage } = beginOperation();
+    const { isCurrent, lookup, translationLanguage, sessionOptions } = beginOperation();
     const retryStartedAt = Date.now();
     bulkRetryMissing.disabled = true;
     bulkPrepare.disabled = true;
@@ -874,6 +965,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     bulkStatus.textContent = `Retrying only ${missingCount} missing word${missingCount === 1 ? '' : 's'}…`;
     try {
       const retried = await retryMissingBulkWords(bulkResults, term => lookup(term, { learnerExplanations: false }), {
+        signal: sessionOptions.signal,
         delayMs: BULK_LOOKUP_DELAY_MS,
         retries: 2,
         retryDelayMs: 1000,
@@ -884,7 +976,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
         }
       });
       if (!isCurrent()) return;
-      const explained = await prepareBulkLearnerExplanations(retried, { translationLanguage });
+      const explained = await prepareBulkLearnerExplanations(retried, { ...sessionOptions, translationLanguage });
       if (!isCurrent()) return;
       bulkResults = dedupeBulkResults(explained);
       renderBulkResults();
@@ -909,8 +1001,10 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       bulkStatus.textContent = 'Every word needs an intended meaning before the list can be saved.';
       return;
     }
-    const { isCurrent, courseId, translationLanguage } = beginOperation();
+    const { isCurrent, courseId, translationLanguage, sessionOptions } = beginOperation();
     const originalButton = bulkSave.innerHTML;
+    const scoringSession = createImageScoringSession();
+    imageScoringSession?.clear(); imageScoringSession = scoringSession;
     bulkSave.disabled = true;
     const imageController = new AbortController();
     bulkImageController = imageController;
@@ -920,7 +1014,7 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     updateBulkProgress({ completed: 0, total: items.length, phase: 'Choosing images', startedAt: imageStartedAt });
     try {
       const enrichedItems = await prepareWordsForLibrary(items, {
-        courseId, translationLanguage, existingWords: driveSync.getWords(),
+        ...sessionOptions, courseId, translationLanguage, imageScoringSession: scoringSession, existingWords: driveSync.getWords(),
         skipImagesSignal: imageController.signal,
         onProgress: ({ completed, total, word }) => {
           if (!isCurrent() || imageController.signal.aborted) return;
@@ -954,6 +1048,8 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       bulkSave.disabled = false;
       bulkSave.innerHTML = originalButton;
     } finally {
+      scoringSession.clear();
+      if (imageScoringSession === scoringSession) imageScoringSession = null;
       if (bulkImageController === imageController) {
         bulkImageController = null;
         bulkSkipImages.hidden = true;
@@ -987,17 +1083,53 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
     if (!w) { input.focus(); return; }
 
     const { isCurrent, lookup } = beginOperation();
+    choseRawMeaning = false;
     btnFetch.disabled = true;
     btnFetch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finding meanings…';
 
-    try {
-      const data = await lookup(w);
-      if (!isCurrent()) return;
+    meaningLookupController = new AbortController();
+    const { signal } = meaningLookupController;
+    let showedRaw = false;
+    const showProgress = (data, final = false) => {
+      if (!isCurrent() || signal.aborted) return;
+      if (showedRaw) persistFocusedDraft();
+      const previous = showedRaw ? {
+        drafts: [...senseDrafts.values()], selected: new Set(selectedSenseIds), focused: focusedSenseId,
+        baseline: draftBaseline, progressive: true, showAll: showAllSenses,
+        selectedMembers: choseRawMeaning ? groupedSelectionMembers : new Set()
+      } : null;
       currentFetchedData = data;
-      input.value = currentFetchedData.word;
-      document.getElementById('prev-w-title').textContent = currentFetchedData.word;
-      document.getElementById('prev-w-phonetic').textContent = currentFetchedData.phonetic;
-      renderSenses(currentFetchedData);
+      grouping = !final;
+      btnSave.disabled = grouping;
+      input.value = data.word;
+      document.getElementById('prev-w-title').textContent = data.word;
+      document.getElementById('prev-w-phonetic').textContent = data.phonetic || '';
+      preview.style.display = 'block';
+      renderSenses(data, previous);
+      if (!final) {
+        if (!showedRaw) {
+          groupedSelectionMembers = new Set([...selectedSenseIds].flatMap(id => meaningMemberKeys(senseDrafts.get(id))));
+          showAllSenses = true;
+          renderSenseOptions();
+        }
+        formStatus.textContent = 'Grouping equivalent meanings. You can select meanings now.';
+        showedRaw = true;
+      }
+    };
+    try {
+      const data = await lookup(w, {
+        signal,
+        onRawMeanings: async entry => {
+          if (entry.aiGenerated) return;
+          showProgress(entry);
+          if (!document.hidden && window.requestAnimationFrame) await new Promise(resolve => {
+            const timeout = setTimeout(resolve, 120);
+            window.requestAnimationFrame(() => setTimeout(() => { clearTimeout(timeout); resolve(); }, 0));
+          });
+        }
+      });
+      if (!isCurrent()) return;
+      showProgress(data, true);
       if (currentFetchedData.aiGenerated) formStatus.textContent = isUkrainianTranslationEnabled() ? 'AI suggestion — review the English meaning and Ukrainian translation before saving.' : 'AI suggestion — review the meaning before saving.';
       if (isUkrainianTranslationEnabled() && currentFetchedData.senses.some(sense => sense.translationLanguage !== 'uk')) formStatus.textContent = 'Some Ukrainian translations are unavailable. Enter them manually or save the English meaning and add a translation later.';
       if (currentFetchedData.correctedFrom) {
@@ -1006,20 +1138,28 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       preview.style.display = 'block';
     } catch (err) {
       if (!isCurrent()) return;
+      grouping = false;
+      btnSave.disabled = false;
+      if (showedRaw && currentFetchedData) {
+        showProgress(currentFetchedData, true);
+        formStatus.textContent = 'Grouping could not finish. You can still save a displayed meaning.';
+        return;
+      }
       currentFetchedData = null; preview.style.display = 'none';
       formStatus.textContent = err.message || 'Lookup failed. You can still enter the exact meaning manually below.';
       showToast(err.message || 'Could not fetch word details.', 'error');
     } finally {
       if (!isCurrent()) return;
+      meaningLookupController = null;
       btnFetch.disabled = false;
-        btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
+      btnFetch.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Find meanings';
     }
   }
   lookupForm.addEventListener('submit', event => { event.preventDefault(); lookupSingleWord(); });
 
   btnSave.addEventListener('click', async () => {
     const wordText = input.value.trim();
-    if (!wordText) return;
+    if (!wordText || grouping) return;
 
     persistFocusedDraft();
     const selectedDrafts = [...selectedSenseIds].map(id => senseDrafts.get(id)).filter(Boolean);
@@ -1045,12 +1185,14 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       return;
     }
 
-    const { isCurrent, courseId, translationLanguage } = beginOperation();
+    const { isCurrent, courseId, translationLanguage, sessionOptions } = beginOperation();
     const originalButton = btnSave.innerHTML;
+    const scoringSession = createImageScoringSession();
+    imageScoringSession?.clear(); imageScoringSession = scoringSession;
     btnSave.disabled = true;
     try {
       const enrichedItems = await prepareWordsForLibrary(items, {
-        courseId, translationLanguage, existingWords: driveSync.getWords(),
+        ...sessionOptions, courseId, translationLanguage, imageScoringSession: scoringSession, existingWords: driveSync.getWords(),
         onProgress: ({ completed, total }) => {
           if (!isCurrent()) return;
           formStatus.textContent = `Choosing image ${completed} of ${total}…`;
@@ -1076,6 +1218,9 @@ export function setupAddWordModal({ onSaved = () => {}, onClose = () => {}, show
       showToast(error.message, 'error');
       btnSave.disabled = false;
       btnSave.innerHTML = originalButton;
+    } finally {
+      scoringSession.clear();
+      if (imageScoringSession === scoringSession) imageScoringSession = null;
     }
   });
   return { open: openModal, close: closeModal };

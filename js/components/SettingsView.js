@@ -1,3 +1,4 @@
+import { imageCandidateBudget, saveImageCandidateBudget } from '../services/imageSearchPlan.js';
 import { getFsrsLearningStatus, subscribeFsrsLearning, saveFsrsPreferences } from '../services/fsrsLearning.js';
 import { getImageLearningStatus, getImageModelCapability, subscribeImageLearning, enableImageLearning, disableImageLearning, clearImageModelDownloads, resetImagePreferences } from '../services/imageLearning.js?v=18908';
 import { getMeaningModelStatus, checkMeaningModelInstalled, subscribeMeaningModel, downloadMeaningModel, removeMeaningModel } from '../services/meaningReference.js';
@@ -96,6 +97,13 @@ export function renderSettingsView(container, onNavigate) {
           <div class="settings-actions"><button class="btn-green-solid" id="download-meaning-model">Download merge model</button><button class="status-pill offline" id="remove-meaning-model">Remove merge model files</button><button class="status-pill offline" id="export-meaning-corrections">Export merge corrections</button></div>
         </section>
         <section class="local-model-item" aria-labelledby="siglip-model-heading"><h3 id="siglip-model-heading">Image suggestions · SigLIP</h3><p>Ranks photos for the selected meaning. About ${getImageLearningStatus().downloadMB} MB. <a href="https://huggingface.co/google/siglip2-base-patch16-256" target="_blank" rel="noopener noreferrer">License</a></p>
+          <div class="settings-form image-budget-settings">
+            <label class="settings-full-width" for="settings-image-budget">Images per meaning
+              <select id="settings-image-budget" aria-describedby="image-budget-help">${[3, 6, 9].map(count => `<option value="${count}" ${imageCandidateBudget() === count ? 'selected' : ''}>${count} images · ${count === 3 ? 'word and definition' : `${count / 3} scenes`}</option>`).join('')}</select>
+            </label>
+            <p class="settings-privacy" id="image-budget-help">The chooser opens after the first three photos are checked.</p>
+          </div>
+          <p id="image-budget-status" class="settings-service-status" role="status"></p>
           <p id="image-learning-status" role="status" aria-live="polite"></p>${renderModelProgress('image-model-progress', 'SigLIP model download progress')}
           <div class="settings-actions"><button class="btn-green-solid" id="enable-image-learning">Download SigLIP</button><button class="status-pill offline" id="disable-image-learning">Turn off</button><button class="status-pill offline" id="clear-image-model">Remove downloaded files</button><button class="status-pill offline" id="reset-image-preferences">Reset photo preferences</button></div>
         </section>
@@ -121,6 +129,10 @@ export function renderSettingsView(container, onNavigate) {
       : state.phase === 'error' ? 'Retry download' : 'Download SigLIP';
     query('#clear-image-model').hidden = !state.installed;
   };
+  query('#settings-image-budget').addEventListener('change', event => {
+    try { saveImageCandidateBudget(event.target.value); query('#image-budget-status').textContent = 'Image budget saved.'; }
+    catch (error) { query('#image-budget-status').textContent = error.message; }
+  });
   paintLearning(getImageLearningStatus());
   const paintMeaning = state => {
     const output = query('#meaning-model-status');

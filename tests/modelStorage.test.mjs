@@ -96,3 +96,18 @@ test('native worker cache sends a small descriptor, browser cache transfers its 
   await handleModelCacheRequest(worker, request);
   assert.equal(replies[1].transfer[0], replies[1].data.result.bytes);
 });
+
+test('native cache streams bounded chunks and aborts a failed write without publishing it', async t => {
+  const previous = globalThis.keepVocabDesktop;
+  t.after(() => { globalThis.keepVocabDesktop = previous; });
+  const operations = [];
+  globalThis.keepVocabDesktop = { modelStorage: async request => {
+    operations.push(request.action);
+    if (request.action === 'write' && request.offset) throw new Error('Storage full');
+  } };
+  const cache = await modelCacheStorage().open('keepvocab-clip-model-v3');
+  const response = new Response(new Uint8Array(2 * 1024 * 1024 + 5));
+  response.arrayBuffer = () => assert.fail('Native writes must stream the input');
+  await assert.rejects(cache.put('https://models.test/large', response), /Storage full/);
+  assert.deepEqual(operations, ['write', 'write', 'abort']);
+});

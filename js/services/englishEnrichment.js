@@ -75,7 +75,7 @@ export async function fetchEnglishEntry(term, options = {}) {
 export async function enrichEnglishEntry(term, options = {}) {
   const word = normalizeQuery(term);
   options.signal?.throwIfAborted();
-  const storage = options.storage === undefined ? globalThis.localStorage : options.storage;
+  const storage = options.entryCacheStorage ?? (options.storage === undefined ? globalThis.localStorage : options.storage);
   const settings = aiSettings(options);
   if (!settings.enabled) throw new DictionaryApiError('Add your Google AI Studio key in Settings to ask Gemini for meanings.', 'AI_NOT_CONFIGURED');
   const cache = readObjectCache(storage, CACHE_KEY);

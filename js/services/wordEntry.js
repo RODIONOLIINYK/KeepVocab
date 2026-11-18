@@ -1,3 +1,5 @@
+import { imageCandidateBudget } from './imageSearchPlan.js';
+import { createImageScoringSession } from './imageScoringSession.js';
 import { fetchEnglishEntry, enrichEnglishEntry } from './englishEnrichment.js?v=18908';
 import { withEntryTranslations } from './dictionaryApi.js?v=18908';
 import { bulkResultToWord, attachImagesSequentially, withSkippableImages } from './bulkWords.js?v=18908';
@@ -61,16 +63,17 @@ export async function prepareWordsForLibrary(words, { existingWords = [], onProg
   // Saving never makes another paid explanation request or requires an example.
   // Keep trustworthy dictionary examples; missing/unsuitable ones can be added later.
   const explained = await withLearnerExplanations({ senses: checked }, { ...translationOptions, learnerExplanations: false });
-  const imageOptions = { ...translationOptions };
+  const imageOptions = { ...translationOptions, imageCandidateBudget: imageCandidateBudget(translationOptions), deferImageScoring: Boolean(translationOptions.imageScoringSession) };
   const withOtherDefinitions = word => ({ ...word, otherDefinitions: [...new Set([
     ...(word.otherDefinitions || []),
     ...existingWords.filter(item => String(item.word || '').toLowerCase() === word.word.toLowerCase()).map(item => item.sourceDefinition || item.definition)
   ].filter(definition => definition && definition !== (word.sourceDefinition || word.definition)))] });
-  const scenesPromise = imageOptions.skipImagesSignal?.aborted
+  const scenesPromise = imageOptions.imageCandidateBudget === 3 || imageOptions.skipImagesSignal?.aborted
     ? Promise.resolve(null)
     : prepareImageScenes(explained.senses.map(withOtherDefinitions), imageOptions).catch(() => null);
   const translated = await withEntryTranslations(explained, translationOptions);
-  return withSkippableImages(translated.senses, async () => {
+  const imageScoringSession = imageOptions.imageScoringSession || createImageScoringSession();
+  try { return await withSkippableImages(translated.senses, async () => {
     const preparedScenes = await scenesPromise;
     const visualWords = translated.senses.map((word, index) => {
       const item = withOtherDefinitions(word);
@@ -81,6 +84,7 @@ export async function prepareWordsForLibrary(words, { existingWords = [], onProg
     if (imageOptions.skipImagesSignal?.aborted) return translated.senses;
     // Scenes are prepared together above. Image providers reuse those exact
     // meaning prompts without starting another paid generation for each word.
-    return attachImagesSequentially(visualWords, findImages, { ...imageOptions, aiScenes: false, excludeUrls: imageUrlsForWords(existingWords), onProgress });
+    return attachImagesSequentially(visualWords, findImages, { ...imageOptions, imageScoringSession, aiScenes: false, excludeUrls: imageUrlsForWords(existingWords), onProgress });
   }, imageOptions.skipImagesSignal);
+  } finally { if (!imageOptions.imageScoringSession) imageScoringSession.clear(); }
 }

@@ -5,6 +5,19 @@ import { consolidationStatusMessages, setupAddWordModal } from '../js/components
 import { mountMeaningPairReview } from '../js/components/MeaningPairReview.js';
 import { getMeaningCorrectionsForTraining, createMeaningJudgment, recordMeaningJudgment } from '../js/services/meaningEquivalenceLearning.js';
 import { disableImageLearning } from '../js/services/imageLearning.js?v=18908';
+import { MEANING_MODEL_TAG } from '../js/ml/meaningConfig.js';
+import { removeMeaningModel } from '../js/services/meaningReference.js';
+
+function installMergeModel(context) {
+  globalThis.caches = { open: async () => ({ has: async () => true }), delete: async () => true };
+  globalThis.Worker = class {
+    postMessage({ id, pairs = [] }) {
+      queueMicrotask(() => this.onmessage({ data: { id, result: { model: MEANING_MODEL_TAG, scores: pairs.map(() => 0) } } }));
+    }
+    terminate() {}
+  };
+  context.after(removeMeaningModel);
+}
 class MockClassList {
   constructor(el) { this.el = el; this.set = new Set(); }
   _syncFromString(value) {
@@ -273,10 +286,10 @@ test('AddWordModal shows actionable warnings only in single and bulk flows', asy
   // Single-word lookup flow
   const wordInput = document.getElementById('add-word-input');
   const lookupForm = document.getElementById('add-word-lookup-form');
-  const preview = document.getElementById('add-word-preview');
+  const find = document.getElementById('btn-auto-fetch-word');
   wordInput.value = 'charge';
   await lookupForm.dispatchEvent({ type: 'submit' });
-  for (let i = 0; i < 40 && preview.style.display !== 'block'; i++) {
+  for (let i = 0; i < 40 && find.disabled; i++) {
     await new Promise(resolve => setTimeout(resolve, 5));
   }
 
@@ -381,6 +394,7 @@ test('MeaningPairReview skips deterministic near-duplicates and already-judged n
 test('AddWordModal shows an Unmerge button on merged meanings and splits them cleanly when clicked', async context => {
   const { storage, document } = setupDom(context);
   driveSync.storage = storage;
+  installMergeModel(context);
   await driveSync.imageHistory.ready;
 
   globalThis.fetch = async url => {
@@ -405,10 +419,10 @@ test('AddWordModal shows an Unmerge button on merged meanings and splits them cl
   setupAddWordModal();
   const wordInput = document.getElementById('add-word-input');
   const lookupForm = document.getElementById('add-word-lookup-form');
-  const preview = document.getElementById('add-word-preview');
+  const find = document.getElementById('btn-auto-fetch-word');
   wordInput.value = 'warm';
   await lookupForm.dispatchEvent({ type: 'submit' });
-  for (let i = 0; i < 40 && preview.style.display !== 'block'; i++) {
+  for (let i = 0; i < 40 && find.disabled; i++) {
     await new Promise(resolve => setTimeout(resolve, 5));
   }
 
@@ -461,6 +475,7 @@ test('user correction journal preserves merge/unmerge reversals and exact proven
 
 test('AddWordModal keeps Review similar meanings open and applies decisions only to the current lookup', async context => {
   const { storage, document } = setupDom(context); driveSync.storage = storage;
+  installMergeModel(context);
   globalThis.fetch = async () => new Response(JSON.stringify([{
     word: 'bank', meanings: [{ partOfSpeech: 'noun', definitions: [
       { definition: 'A financial institution.' }, { definition: 'A business providing financial services.' }, { definition: 'The land alongside a river.' }
@@ -494,6 +509,7 @@ test('AddWordModal keeps Review similar meanings open and applies decisions only
 
 test('jit shows every source in a three-member merge, including the displayed representative', async context => {
   const { storage, document } = setupDom(context); driveSync.storage = storage;
+  installMergeModel(context);
   const definitions = [
     '(US, originally prison slang, derogatory) An inexperienced, foolhardy young man.',
     '(African-American Vernacular, Florida, slang) A term of address for a young man.',
@@ -508,7 +524,7 @@ test('jit shows every source in a three-member merge, including the displayed re
   const review = document.getElementById('add-word-meaning-review');
   for (let i = 0; i < 40 && !review.children.length; i++) await new Promise(resolve => setTimeout(resolve, 5));
   await review.children[0].click();
-  for (let i = 0; i < 3; i++) await review.children[1].querySelectorAll('button').find(b => b.textContent === 'Same meaning').click();
+  for (let i = 0; i < 2; i++) await review.children[1].querySelectorAll('button').find(b => b.textContent === 'Same meaning').click();
   const list = document.getElementById('add-word-sense-list');
   assert.equal(list.querySelectorAll('.sense-option').length, 1);
   const sources = list.querySelector('.merged-definition-list');
@@ -520,6 +536,7 @@ test('jit shows every source in a three-member merge, including the displayed re
 
 test('bulk import shows all merged definitions and uses a compact example disclosure', async context => {
   const { storage, document } = setupDom(context); driveSync.storage = storage;
+  installMergeModel(context);
   const definitions = ['To make or keep warm.', '(transitive) To make or keep warm.', '(intransitive) To make or keep warm.'];
   globalThis.fetch = async () => new Response(JSON.stringify([{
     word: 'warm', meanings: [{ partOfSpeech: 'verb', definitions: definitions.map(definition => ({ definition })) }]
@@ -534,4 +551,89 @@ test('bulk import shows all merged definitions and uses a compact example disclo
   const disclosure = row.querySelector('.bulk-example-details');
   assert.equal(disclosure.tagName, 'DETAILS');
   assert.match(disclosure.querySelector('summary').textContent, /example \(optional\)/i);
+});
+
+test('progressive lookup keeps the final grouping order, preserves explicit choices, and starts fresh after close', async context => {
+  const { storage, document } = setupDom(context);
+  driveSync.storage = storage;
+  storage.setItem('keepvocab_gemini_live_key_v1', 'synthetic-progressive-grouping-key');
+  const definitions = [
+    'To make a quiet repeated sound.',
+    'To emit a faint noise over and over.',
+    'To move rapidly around a room.'
+  ];
+  let lookups = 0;
+  let finishMerge;
+  globalThis.fetch = async (url, request) => {
+    if (String(url).includes('freedictionaryapi.com')) {
+      lookups++;
+      return Response.json([{ word: 'buzz', meanings: [{ partOfSpeech: 'verb', definitions: definitions.map(definition => ({ definition })) }] }]);
+    }
+    const prompt = JSON.parse(request.body).contents[0].parts[0].text;
+    const [{ id, senses }] = JSON.parse(prompt.split('\nParts: ')[1]);
+    const distinct = senses.find(sense => sense.definition.includes('move rapidly'));
+    const groups = [
+      { members: [distinct.id], definition: distinct.definition, usageNote: '' },
+      { members: senses.filter(sense => sense !== distinct).map(sense => sense.id), definition: definitions[0], usageNote: '' }
+    ];
+    return new Promise(resolve => { finishMerge = () => resolve(Response.json({ candidates: [{ content: { parts: [{ text: JSON.stringify({ parts: { [id]: groups } }) }] } }] })); });
+  };
+  const modal = setupAddWordModal();
+  const form = document.getElementById('add-word-lookup-form');
+  const input = document.getElementById('add-word-input');
+  const list = document.getElementById('add-word-sense-list');
+  const find = document.getElementById('btn-auto-fetch-word');
+  const waitFor = async predicate => {
+    for (let i = 0; i < 100 && !predicate(); i++) await new Promise(resolve => setTimeout(resolve, 2));
+    assert.ok(predicate());
+  };
+  for (const selectRaw of [false, true]) {
+    finishMerge = null;
+    modal.open();
+    input.value = 'buzz';
+    await form.dispatchEvent({ type: 'submit' });
+    await waitFor(() => Boolean(finishMerge));
+    const raw = list.querySelectorAll('.sense-option');
+    assert.equal(raw.length, 3);
+    if (selectRaw) await raw[1].click();
+    finishMerge();
+    await waitFor(() => !find.disabled);
+    const final = list.querySelectorAll('.sense-option');
+    assert.equal(final.length, 2);
+    assert.match(final[0].textContent, /move rapidly/);
+    assert.match(final[1].textContent, /2 merged/);
+    assert.equal(final[0].getAttribute('aria-pressed'), String(!selectRaw));
+    assert.equal(final[1].getAttribute('aria-pressed'), String(selectRaw));
+    modal.close();
+    assert.equal(input.value, '');
+    assert.equal(list.querySelectorAll('.sense-option').length, 0);
+  }
+  assert.equal(lookups, 2, 'closing drops the lookup and merge result caches');
+  assert.equal(storage.getItem('keepvocab_dictionary_cache_v5'), null);
+  assert.equal(storage.getItem('keepvocab_learner_meaning_groups_v1'), null);
+});
+
+test('single and bulk lookup show dictionary choices without grouping controls when both providers are absent', async context => {
+  const { storage, document } = setupDom(context);
+  driveSync.storage = storage;
+  globalThis.Worker = undefined;
+  globalThis.fetch = async url => {
+    assert.match(String(url), /freedictionaryapi/);
+    return Response.json([{ word: 'bank', meanings: [{ partOfSpeech: 'noun', definitions: [
+      { definition: 'A financial institution.' }, { definition: 'The land alongside a river.' }
+    ] }] }]);
+  };
+  setupAddWordModal();
+  document.getElementById('add-word-input').value = 'bank';
+  await document.getElementById('add-word-lookup-form').dispatchEvent({ type: 'submit' });
+  for (let i = 0; i < 40 && document.getElementById('btn-auto-fetch-word').disabled; i++) await new Promise(setImmediate);
+  assert.equal(document.getElementById('add-word-meaning-modes').hidden, true);
+  assert.equal(document.getElementById('add-word-meaning-review').children.length, 0);
+  assert.equal(document.getElementById('add-word-sense-list').querySelectorAll('.sense-option').length, 2);
+  assert.equal(document.getElementById('btn-save-new-word').disabled, false);
+  document.getElementById('bulk-word-input').value = 'bank';
+  await document.getElementById('prepare-bulk-words').click();
+  const row = document.getElementById('bulk-word-results').querySelector('.bulk-word-row');
+  assert.equal(row.querySelector('.meaning-mode-switch'), null);
+  assert.equal(row.querySelector('select').children.length, 2);
 });

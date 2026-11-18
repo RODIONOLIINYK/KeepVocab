@@ -38,14 +38,17 @@ export async function lookupBulkWords(terms, lookup, options = {}) {
   const onProgress = typeof options.onProgress === 'function' ? options.onProgress : () => {};
 
   for (let index = 0; index < queue.length; index += 1) {
+    options.signal?.throwIfAborted();
     const term = queue[index];
     let attempt = 0;
     let result;
     while (!result) {
       try {
+        options.signal?.throwIfAborted();
         const data = await lookup(term);
         result = { term, status: 'ready', data };
       } catch (error) {
+        options.signal?.throwIfAborted();
         if (attempt < retries && isTransientLookupError(error)) {
           attempt += 1;
           await wait(retryDelayMs * attempt);
@@ -54,6 +57,7 @@ export async function lookupBulkWords(terms, lookup, options = {}) {
         result = { term, status: 'manual', error: error instanceof Error ? error.message : String(error) };
       }
     }
+    options.signal?.throwIfAborted();
     results.push(result);
     onProgress({ completed: index + 1, total: queue.length, term, status: result.status });
     if (index < queue.length - 1) await wait(delayMs);
@@ -118,7 +122,7 @@ export async function attachImagesSequentially(words, findImages, options = {}) 
       ? AbortSignal.any([options.skipImagesSignal, options.signal]) : options.skipImagesSignal || options.signal;
 
     for (let index = 0; index < words.length; index += 1) {
-      if (options.skipImagesSignal?.aborted) return withoutImageCandidates(words);
+      if (options.skipImagesSignal?.aborted || signal?.aborted) return withoutImageCandidates(words);
       const word = { ...words[index] };
       try {
         const found = await findImages(word, { aiScenes: false, ...options, signal, excludeUrls: [...excluded], limit: IMAGE_REVIEW_BATCH_SIZE });
@@ -128,7 +132,7 @@ export async function attachImagesSequentially(words, findImages, options = {}) 
         // instead of making the learner wait for another search after every skip.
         word.imageCandidates = candidates;
         const [image] = candidates;
-        if (image?.url && !image.ml?.belowThreshold) {
+        if (image?.url && image.ml?.screening !== 'pending' && !image.ml?.belowThreshold) {
           Object.assign(word, imageSelectionPatch(image));
           excluded.add(image.url);
           if (image.sourceUrl) excluded.add(image.sourceUrl);

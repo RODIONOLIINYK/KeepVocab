@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { groupEntrySensesLocally } from '../js/services/localSenseGrouping.js';
 import { groupSimilarSenses, areSensesNearDuplicate } from '../js/services/learningDefinitions.js';
 import { DriveSyncService, MemoryStorage } from '../js/services/driveSync.js?v=18908';
@@ -114,4 +115,49 @@ test('offline lexical fallback preserves no and non- qualifications in otherwise
     const result = await groupEntrySensesLocally(entry, { storage: new MemoryStorage(), encodeDefinitionTexts: async () => null });
     assert.equal(result.senses.length, 2, `${a} / ${b}`);
   }
+});
+
+async function yieldNounSenses(indices) {
+  const fixture = JSON.parse(await readFile(new URL('./fixtures/learner-meaning-consolidation/yield.json', import.meta.url)));
+  return indices.map(index => ({ ...fixture.senses[index], word: fixture.word }));
+}
+
+test('the local model grows a consistent group past two despite an earlier weaker passing pair', async () => {
+  const [outside, ...members] = await yieldNounSenses([16, 12, 13, 14, 15]);
+  const ids = new Set(members.map(member => member.id));
+  for (const count of [3, 4]) {
+    const input = [outside, ...members.slice(0, count)];
+    const result = await groupEntrySensesLocally({ word: 'yield', senses: input }, {
+      storage: null,
+      scoreMeaningPairs: async (senses, pairs) => pairs.map(([a, b]) => {
+        if (ids.has(senses[a].id) && ids.has(senses[b].id)) return .99;
+        return senses[a].id === members[0].id || senses[b].id === members[0].id ? .7 : .05;
+      })
+    });
+    assert.deepEqual(result.senses.map(sense => sense.groupedSenses.map(member => member.id)), [
+      [outside.id], members.slice(0, count).map(member => member.id)
+    ]);
+    assert.equal(result.meaningInference.comparedPairs, count * (count + 1) / 2);
+  }
+});
+
+test('confirmed equivalences extend a group, while an explicit distinction still blocks it', async () => {
+  const sourceSenses = await yieldNounSenses([12, 13, 14, 15]);
+  const judgment = (a, b, label) => ({
+    source: 'user', label,
+    key: meaningPairKey('yield', 'noun', sourceSenses[a].definition, sourceSenses[b].definition)
+  });
+  const confirmations = [judgment(0, 1, 1), judgment(1, 2, 1), judgment(2, 3, 1)];
+  const entry = { word: 'yield', senses: sourceSenses };
+  const options = { storage: null, scoreMeaningPairs: async (_senses, pairs) => pairs.map(() => .05) };
+  const merged = await groupEntrySensesLocally(entry, { ...options, meaningLearningState: { records: confirmations } });
+  assert.deepEqual(merged.senses.map(sense => sense.groupedSenses.map(member => member.id)), [
+    sourceSenses.map(sense => sense.id)
+  ]);
+  const split = await groupEntrySensesLocally(entry, {
+    ...options, meaningLearningState: { records: [...confirmations, judgment(0, 3, 0)] }
+  });
+  assert.deepEqual(split.senses.map(sense => sense.groupedSenses.map(member => member.id)), [
+    sourceSenses.slice(0, 3).map(sense => sense.id), [sourceSenses[3].id]
+  ]);
 });

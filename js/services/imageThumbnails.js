@@ -5,11 +5,20 @@ const MAX_THUMBNAIL_BYTES = 128_000;
 const MAX_SOURCE_PIXELS = 24_000_000;
 const CACHE_LIMIT = 32;
 const CACHE_BYTES = 2_000_000;
-const cache = new Map();
-const inFlight = new Map();
+export function createImageThumbnailCache() {
+  return {
+    cache: new Map(), inFlight: new Map(), cachedBytes: 0,
+    clear() {
+      for (const pending of this.inFlight.values()) pending.controller.abort();
+      this.inFlight.clear();
+      this.cache.clear();
+      this.cachedBytes = 0;
+    }
+  };
+}
+const sharedCache = createImageThumbnailCache();
 const functionIds = new WeakMap();
 let nextFunctionId = 0;
-let cachedBytes = 0;
 
 function bounded(value, fallback, maximum) {
   const number = Number(value);
@@ -162,21 +171,25 @@ function functionId(fn) {
   return functionIds.get(fn);
 }
 
-function forget(key) {
-  const entry = cache.get(key);
-  if (entry) cachedBytes -= entry.cost;
-  cache.delete(key);
+function forget(state, key) {
+  const entry = state.cache.get(key);
+  if (entry) state.cachedBytes -= entry.cost;
+  state.cache.delete(key);
 }
 
-function remember(key, value) {
-  forget(key);
+function remember(state, key, value) {
+  const { cache } = state;
+  forget(state, key);
   const cost = value ? value.byteLength + 128 : 64;
   cache.set(key, { value, cost, expires: Date.now() + (value ? 15 * 60_000 : 30_000) });
-  cachedBytes += cost;
-  while (cache.size > CACHE_LIMIT || cachedBytes > CACHE_BYTES) forget(cache.keys().next().value);
+  state.cachedBytes += cost;
+  while (cache.size > CACHE_LIMIT || state.cachedBytes > CACHE_BYTES) forget(state, cache.keys().next().value);
 }
 
 async function sharedThumbnail(url, config, signal) {
+  const state = config.thumbnailCache;
+  const { cache, inFlight } = state;
+  signal.throwIfAborted();
   const key = JSON.stringify([url, config.maxDimension, config.maxBytes, config.maxSourceBytes, config.timeoutMs,
     functionId(config.fetchImpl), functionId(config.decode), functionId(config.resize)]);
   const cached = cache.get(key);
@@ -185,14 +198,14 @@ async function sharedThumbnail(url, config, signal) {
     cache.set(key, cached);
     return cached.value;
   }
-  if (cached) forget(key);
+  if (cached) forget(state, key);
   let pending = inFlight.get(key);
   if (!pending) {
     const controller = new AbortController();
     pending = { controller, users: 0, settled: false };
     const timer = setTimeout(() => controller.abort(), config.timeoutMs);
     pending.promise = prepare(url, config, controller.signal).catch(() => null).then(value => {
-      if (!controller.signal.aborted) remember(key, value);
+      if (!controller.signal.aborted) remember(state, key, value);
       return value;
     }).finally(() => {
       clearTimeout(timer);
@@ -222,6 +235,7 @@ async function sharedThumbnail(url, config, signal) {
 export async function prepareImageThumbnails(images, options = {}) {
   const limit = bounded(options.limit, IMAGE_THUMBNAIL_BATCH_LIMIT, IMAGE_THUMBNAIL_BATCH_LIMIT);
   const config = {
+    thumbnailCache: options.thumbnailCache ?? sharedCache,
     fetchImpl: options.fetchImpl || globalThis.fetch,
     decode: options.decode || decodeInBrowser,
     resize: options.resize || resizeInBrowser,

@@ -1,3 +1,5 @@
+import { updateAnimatedLayout } from '../utils/animatedLayout.js';
+import { createImageScoringSession } from '../services/imageScoringSession.js';
 import { canAutoSelectImage, imageChoiceLabels } from '../services/imageChoicePolicy.js';
 import { IMAGE_REVIEW_BATCH_SIZE } from '../services/imageSearchPlan.js';
 import { recordImagePreference } from '../services/imageLearning.js?v=18908';
@@ -21,13 +23,14 @@ function identities(image) {
 
 /** A temporary review surface: only onApply receives image changes; inputs and progress are never mutated. */
 export function mountImageReview(container, words, {
-  onApply = () => {}, onCancel = () => {}, findImages = findRelevantImages, onProgress = () => {}, excludeUrls = [], originalWords = null, onFeedback = recordImagePreference, allowSkipPending = false
+  imageScoringSession: suppliedSession, imageSearchOptions = {}, onApply = () => {}, onCancel = () => {}, findImages = findRelevantImages, onProgress = () => {}, excludeUrls = [], originalWords = null, onFeedback = recordImagePreference, allowSkipPending = false
 } = {}) {
+  let imageScoringSession = suppliedSession || createImageScoringSession();
   const headingId = `image-review-heading-${++reviewId}`;
   const rows = (Array.isArray(words) ? words : []).map((word, index) => {
     const original = clone(word);
     const candidates = (Array.isArray(word.imageCandidates) ? word.imageCandidates : []).filter(image => safeImage(image?.url)).map(clone);
-    const proposal = candidates.find(image => image.url === word.imageUrl) || currentImage(word) || candidates[0] || null;
+    const proposal = candidates.find(image => image.url === word.imageUrl && image.ml?.screening !== 'pending') || currentImage(word) || candidates.find(image => image.ml?.screening !== 'pending') || null;
     if (!candidates.length && proposal) candidates.push(proposal);
     delete original.imageCandidates;
     // Preparation may attach a proposal to a previously imageless word. Skip
@@ -67,12 +70,12 @@ export function mountImageReview(container, words, {
       const rect = img.getBoundingClientRect();
       const area = rect.width * rect.height;
       const visible = Math.max(0, Math.min(rect.right, width) - Math.max(rect.left, 0)) * Math.max(0, Math.min(rect.bottom, height) - Math.max(rect.top, 0));
-      if (area > 0 && visible / area >= .5) row.viewed.add(candidateIndex);
+      if (area > 0 && visible / area >= .5) row.viewed.add(candidate.url);
     }
   }
 
   const choiceLabels = row => imageChoiceLabels(row.original, row.proposal,
-    [...row.viewed].map(i => row.candidates[i]).filter(image => image && !conflict(rows.indexOf(row), image)));
+    [...row.viewed].map(url => row.candidates.find(candidate => candidate.url === url)).filter(image => image && !conflict(rows.indexOf(row), image)));
 
   function counts() {
     return { total: rows.length, kept: rows.filter(row => row.decision === 'keep').length, skipped: rows.filter(row => row.decision === 'skip').length,
@@ -80,28 +83,34 @@ export function mountImageReview(container, words, {
   }
 
   function render() {
+    updateAnimatedLayout(container, renderContent, { selector: '[data-image-review-key]', keys: node => [node.dataset?.imageReviewKey], preserveAnchor: false });
+  }
+  function renderContent() {
     if (!active) return;
     const progress = counts();
     const single = rows.length === 1;
     const addSingle = allowSkipPending && single;
     const focus = globalThis.document?.activeElement;
     const focusedChoice = focus?.dataset?.imageReviewAction && container.contains?.(focus) ? { ...focus.dataset } : null;
+    if (focusedChoice?.imageReviewKey) focusedChoice.url = JSON.parse(focusedChoice.imageReviewKey)[1];
     container.innerHTML = `<section class="image-review ${single ? 'image-review--single' : ''}" aria-labelledby="${headingId}">
       <header class="image-review__heading"><div><h2 id="${headingId}">${single ? 'Choose an image' : 'Choose your images'}</h2></div></header>
       <div class="image-review__grid">${rows.map((row, index) => {
         const chosen = row.decision === 'keep' ? row.proposal : null;
         const existing = currentImage(row.original);
-        const firstAvailable = row.candidates.findIndex(candidate => !conflict(index, candidate));
+        const firstAvailable = row.candidates.findIndex(candidate => candidate.ml?.screening !== 'pending' && !conflict(index, candidate));
         const status = row.loading ? 'Finding more images…' : row.error || (row.decision === 'skip' ? (existing ? 'Current image kept.' : 'No image. Your word and meaning will still be saved.') : chosen ? (row.automatic && !row.explicit ? 'Suggested photo. You can change it.' : 'Selected. Save to use this image.') : row.candidates[0]?.ml?.screening === 'not-scored' ? 'Image matching could not finish. These suggestions have not been checked.' : row.candidates[0]?.ml?.belowThreshold ? 'No images passed the match threshold. Choose from the closest matches.' : 'Tap an image to select it.');
-        return `<article class="image-review__card ${chosen ? 'is-kept' : row.decision === 'skip' ? 'is-without-image' : ''}" aria-busy="${row.loading}">
+        return `<article class="image-review__card ${chosen ? 'is-kept' : row.decision === 'skip' ? 'is-without-image' : ''}" aria-busy="${row.loading || row.candidates.some(image => image.ml?.screening === 'pending')}">
           <div class="image-review__meaning"><h3>${escapeHtml(row.original.word)}</h3><p>${escapeHtml(row.original.definition)}</p></div>
           ${row.candidates.length ? `<div class="image-review__choices" role="radiogroup" aria-label="Image options for ${escapeHtml(row.original.word)}">${row.candidates.slice(0, row.visibleCount).map((candidate, candidateIndex) => {
             const selected = chosen?.url === candidate.url;
-            const unavailable = conflict(index, candidate);
+            const layoutKey = escapeHtml(JSON.stringify([index, candidate.url]));
+            if (candidate.ml?.screening === 'pending') return `<div class="image-review__choice image-review__placeholder" data-image-review-key="${layoutKey}" aria-label="Image ${candidateIndex + 1} waiting to be checked" aria-busy="true"><span class="image-review__skeleton" aria-hidden="true"></span><span class="image-review__choice-label">Checking image…</span></div>`;
+            const unavailable = conflict(index, candidate) || candidate.ml?.screening === 'pending';
             const warning = renderImageUncertaintyBadge(candidate);
-            return `<button type="button" role="radio" aria-checked="${selected}" tabindex="${selected || !chosen && candidateIndex === firstAvailable ? 0 : -1}" class="image-review__choice ${selected ? 'is-selected' : ''}" data-image-review-action="choose" data-image-review-index="${index}" data-image-review-candidate="${candidateIndex}" aria-label="Choose image ${candidateIndex + 1} for ${escapeHtml(row.original.word)}${warning ? candidate.ml?.screening === 'not-scored' ? ' — not checked' : ' — uncertain match' : ''}" ${applying || unavailable ? 'disabled' : ''}><img src="${escapeHtml(safeImage(candidate.thumbnailUrl) || safeImage(candidate.url))}" alt="${escapeHtml(candidate.title || `Option ${candidateIndex + 1}`)}" loading="${candidateIndex < 9 ? 'eager' : 'lazy'}" decoding="async"><span class="image-review__choice-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span><span class="image-review__choice-label">${warning}${selected ? 'Selected' : `Option ${candidateIndex + 1}`}</span></button>`;
+            return `<button type="button" role="radio" aria-checked="${selected}" tabindex="${selected || !chosen && candidateIndex === firstAvailable ? 0 : -1}" class="image-review__choice ${selected ? 'is-selected' : ''}" data-image-review-key="${layoutKey}" data-image-review-action="choose" data-image-review-index="${index}" data-image-review-candidate="${candidateIndex}" aria-label="Choose image ${candidateIndex + 1} for ${escapeHtml(row.original.word)}${warning ? candidate.ml?.screening === 'not-scored' ? ' — not checked' : ' — uncertain match' : ''}" ${applying || unavailable ? 'disabled' : ''}><img src="${escapeHtml(safeImage(candidate.thumbnailUrl) || safeImage(candidate.url))}" alt="${escapeHtml(candidate.title || `Option ${candidateIndex + 1}`)}" loading="${candidateIndex < 9 ? 'eager' : 'lazy'}" decoding="async"><span class="image-review__choice-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span><span class="image-review__choice-label">${warning}${selected ? 'Selected' : `Option ${candidateIndex + 1}`}</span></button>`;
           }).join('')}</div>` : '<div class="image-review__empty"><i class="fa-regular fa-image" aria-hidden="true"></i><span>No images yet. You can add one later.</span></div>'}
-          <div class="image-review__row-actions">${row.proposal ? `<button type="button" class="image-review__secondary" data-image-review-action="wrong" data-image-review-index="${index}" ${applying ? 'disabled' : ''}>Wrong meaning</button><button type="button" class="image-review__secondary" data-image-review-action="background" data-image-review-index="${index}" ${applying ? 'disabled' : ''}>Target too small / in background</button>` : ''}<button type="button" class="image-review__secondary" data-image-review-action="next" data-image-review-index="${index}" ${row.loading || applying ? 'disabled' : ''}><i class="fa-solid fa-rotate" aria-hidden="true"></i> ${row.loading ? 'Searching…' : row.candidates.length ? 'Find more' : 'Find images'}</button>${addSingle ? '' : `<button type="button" class="image-review__secondary" data-image-review-action="skip" data-image-review-index="${index}" aria-pressed="${row.decision === 'skip'}" ${applying ? 'disabled' : ''}>${existing ? 'Keep current image' : 'No image'}</button>`}</div>
+          <div class="image-review__row-actions">${row.proposal ? `<button type="button" class="image-review__secondary" data-image-review-action="wrong" data-image-review-index="${index}" ${applying ? 'disabled' : ''}>Wrong meaning</button><button type="button" class="image-review__secondary" data-image-review-action="background" data-image-review-index="${index}" ${applying ? 'disabled' : ''}>Target too small / in background</button>` : ''}<button type="button" class="image-review__secondary" data-image-review-action="next" data-image-review-index="${index}" ${row.loading || applying || row.candidates.some(image => image.ml?.screening === 'pending') ? 'disabled' : ''}><i class="fa-solid fa-rotate" aria-hidden="true"></i> ${row.loading ? 'Searching…' : row.candidates.length ? 'Find more' : 'Find images'}</button>${addSingle ? '' : `<button type="button" class="image-review__secondary" data-image-review-action="skip" data-image-review-index="${index}" aria-pressed="${row.decision === 'skip'}" ${applying ? 'disabled' : ''}>${existing ? 'Keep current image' : 'No image'}</button>`}</div>
           <p class="image-review__status ${row.error ? 'image-review__error' : ''}" role="status" aria-live="polite">${escapeHtml(status)}</p>
           ${chosen ? `<p class="image-review__credit">${safeLink(chosen.sourceUrl) ? `<a href="${escapeHtml(safeLink(chosen.sourceUrl))}" target="_blank" rel="noopener noreferrer">${escapeHtml(chosen.attribution || chosen.source || 'Image source')}</a>` : escapeHtml(chosen.attribution || chosen.source || '')}${chosen.license ? ` · ${escapeHtml(chosen.license)}` : ''}</p>` : ''}
         </article>`;
@@ -110,6 +119,7 @@ export function mountImageReview(container, words, {
       ${applyError ? `<p class="image-review__status image-review__error" role="alert">${escapeHtml(applyError)}</p>` : ''}
     </section>`;
     if (focusedChoice) {
+      if (focusedChoice.url) focusedChoice.imageReviewCandidate = rows[Number(focusedChoice.imageReviewIndex)]?.candidates.findIndex(image => image.url === focusedChoice.url);
       const selector = `[data-image-review-action="${focusedChoice.imageReviewAction}"]${focusedChoice.imageReviewIndex != null ? `[data-image-review-index="${Number(focusedChoice.imageReviewIndex)}"]` : ''}${focusedChoice.imageReviewCandidate != null ? `[data-image-review-candidate="${Number(focusedChoice.imageReviewCandidate)}"]` : ''}`;
       container.querySelector?.(selector)?.focus?.({ preventScroll: true });
     }
@@ -120,6 +130,8 @@ export function mountImageReview(container, words, {
     const row = rows[index];
     if (row.loading || applying) return;
     if (row.visibleCount < row.candidates.length) { row.visibleCount += IMAGE_REVIEW_BATCH_SIZE; render(); return; }
+    if (row.candidates.some(image => image.ml?.screening === 'pending')) return;
+    if (imageScoringSession.closed) imageScoringSession = createImageScoringSession();
     row.controller?.abort();
     const controller = new AbortController();
     row.controller = controller;
@@ -131,17 +143,17 @@ export function mountImageReview(container, words, {
     const excluded = new Set([...reserved(index), ...row.seen]);
     render();
     try {
-      const candidates = await findImages(clone(row.original), { limit: IMAGE_REVIEW_BATCH_SIZE, page: row.page, excludeUrls: [...excluded], signal: controller.signal });
+      const candidates = await findImages(clone(row.original), { ...imageSearchOptions, imageScoringSession, deferImageScoring: true, limit: IMAGE_REVIEW_BATCH_SIZE, page: row.page, excludeUrls: [...excluded], signal: imageSearchOptions.signal ? AbortSignal.any([controller.signal, imageSearchOptions.signal]) : controller.signal });
       if (!active || revision !== row.revision || controller.signal.aborted) return;
       const candidate = (Array.isArray(candidates) ? candidates : []).find(image => safeImage(image?.url)
-        && !identities(image).some(url => excluded.has(url)) && !conflict(index, image));
-      if (!candidate) {
+        && !identities(image).some(url => excluded.has(url)) && image.ml?.screening !== 'pending' && !conflict(index, image));
+      if (!candidate && !candidates.some(image => image.ml?.screening === 'pending')) {
         row.error = 'No different image found. Try another search or save without a new image.';
       } else {
         const fresh = candidates.filter(image => safeImage(image?.url) && !identities(image).some(url => excluded.has(url)) && !conflict(index, image)).map(clone);
         row.candidates = [...row.candidates, ...fresh];
         row.visibleCount = row.candidates.length;
-        if (!kept) row.proposal = clone(candidate);
+        if (!kept && candidate) row.proposal = clone(candidate);
         row.automatic = !kept && canAutoSelectImage(row.candidates);
         if (!kept) row.explicit = false;
         if (row.automatic) row.decision = 'keep';
@@ -150,17 +162,25 @@ export function mountImageReview(container, words, {
     } catch {
       if (active && revision === row.revision && !controller.signal.aborted) row.error = 'Images are unavailable right now. Your word can still be saved.';
     } finally {
-      if (active && revision === row.revision && !controller.signal.aborted) { row.loading = false; render(); }
+      if (active && revision === row.revision && !controller.signal.aborted) { row.loading = false; render(); watchRow(index); }
     }
   }
 
   async function apply() {
     if (applying || !rows.length || rows.some(row => !allowSkipPending && row.decision === 'pending')) return;
-    rows.forEach(row => { row.controller?.abort(); row.revision++; row.loading = false; });
+    if (rows.some((row, index) => row.decision === 'keep' && conflict(index, row.proposal))) {
+      applyError = 'Choose different images for meanings sharing the same photo.';
+      render();
+      return;
+    }
+    rows.forEach(row => {
+      row.unsubscribe?.(); row.controller?.abort(); row.revision++; row.loading = false;
+      row.candidates = row.candidates.filter(image => image.ml?.screening !== 'pending');
+    });
+    imageScoringSession.clear();
     applying = true;
     applyError = '';
     render();
-    if (rows.some((row, index) => row.decision === 'keep' && conflict(index, row.proposal))) { applying = false; applyError = 'Choose different images for meanings sharing the same photo.'; render(); return; }
     const result = rows.map(row => {
       const word = clone(row.original);
       return row.decision === 'keep' ? { ...word, ...imageSelectionPatch({ ...row.proposal, url: safeImage(row.proposal.url), sourceUrl: safeLink(row.proposal.sourceUrl) }) } : word;
@@ -177,9 +197,10 @@ export function mountImageReview(container, words, {
   }
 
   function destroy() {
+    if (imageScoringSession !== suppliedSession) imageScoringSession.clear();
     if (!active) return;
     active = false;
-    rows.forEach(row => row.controller?.abort());
+    rows.forEach(row => { row.unsubscribe?.(); row.controller?.abort(); });
     container.removeEventListener('click', handleClick);
     container.removeEventListener('keydown', handleKeydown);
   }
@@ -209,11 +230,11 @@ export function mountImageReview(container, words, {
       (row.rejections ||= []).push({ word: clone(row.original), action: 'wrong', image: clone(row.proposal),
         ...(action === 'background' ? { feedbackReason: 'background' } : {}) });
       row.candidates = row.candidates.filter(candidate => candidate.url !== row.proposal.url);
-      row.proposal = row.candidates[0] || null; row.decision = 'pending'; row.explicit = false; row.automatic = false;
+      row.proposal = row.candidates.find(image => image.ml?.screening !== 'pending') || null; row.decision = 'pending'; row.explicit = false; row.automatic = false;
       render(); return;
     }
     if (action === 'skip') {
-      row.controller?.abort(); row.revision++; row.loading = false; row.decision = 'skip'; row.proposal = currentImage(row.original); row.explicit = false; row.error = '';
+      row.unsubscribe?.(); row.controller?.abort(); row.revision++; row.loading = false; row.candidates = row.candidates.filter(image => image.ml?.screening !== 'pending'); row.decision = 'skip'; row.proposal = currentImage(row.original); row.explicit = false; row.error = '';
       if (allowSkipPending && rows.length === 1) return apply();
     }
     if (action === 'choose') selectImage(index, Number(button.dataset.imageReviewCandidate));
@@ -224,7 +245,7 @@ export function mountImageReview(container, words, {
   function selectImage(index, candidateIndex) {
     const row = rows[index];
     const candidate = row?.candidates[candidateIndex];
-    if (!candidate || conflict(index, candidate)) return;
+    if (!candidate || candidate.ml?.screening === 'pending' || conflict(index, candidate)) return;
     rememberVisible(index);
     row.proposal = clone(candidate); row.decision = 'keep'; row.explicit = true; row.error = '';
     // Keyboard navigation can reach choices retained from an older, larger batch.
@@ -237,7 +258,7 @@ export function mountImageReview(container, words, {
     const index = Number(button.dataset.imageReviewIndex);
     const row = rows[index];
     if (!row) return;
-    const choices = row.candidates.map((image, i) => !conflict(index, image) ? i : -1).filter(i => i >= 0);
+    const choices = row.candidates.map((image, i) => image.ml?.screening !== 'pending' && !conflict(index, image) ? i : -1).filter(i => i >= 0);
     if (!choices.length) return;
     event.preventDefault();
     const current = choices.indexOf(Number(button.dataset.imageReviewCandidate));
@@ -248,8 +269,33 @@ export function mountImageReview(container, words, {
     container.querySelector?.(`[data-image-review-action="choose"][data-image-review-index="${index}"][data-image-review-candidate="${target}"]`)?.focus?.({preventScroll:true});
   }
 
+  function watchRow(index) {
+    const row = rows[index];
+    const job = row.candidates.find(image => image.ml?.screening === 'pending')?.ml.reviewJob;
+    if (!job || row.decision === 'skip') return;
+    row.unsubscribe?.();
+    const revision = row.revision;
+    const previousUrls = new Set(row.candidates.filter(image => image.ml?.reviewJob === job).map(image => image.url));
+    row.unsubscribe = imageScoringSession.subscribe(job, images => {
+      if (!active || applying || row.revision !== revision || row.decision === 'skip') return;
+      const rejected = new Set((row.rejections || []).map(label => label.image.url));
+      const fresh = images.filter(image => !rejected.has(image.url) && safeImage(image.url)).map(clone);
+      if (row.explicit && row.proposal && previousUrls.has(row.proposal.url) && !fresh.some(image => image.url === row.proposal.url)) fresh.push(row.proposal);
+      row.candidates = [...row.candidates.filter(image => !previousUrls.has(image.url)), ...fresh];
+      const quality = image => image.ml?.screening === 'pending' ? 3 : image.ml?.screening === 'not-scored' ? 2 : image.ml?.belowThreshold ? 1 : 0;
+      row.candidates.sort((a, b) => quality(a) - quality(b) || (Number(b.ml?.score) || 0) - (Number(a.ml?.score) || 0));
+      if (!row.explicit) {
+        row.proposal = row.candidates.find(image => image.ml?.screening !== 'pending' && !conflict(index, image)) || null;
+        row.automatic = canAutoSelectImage(row.candidates.filter(image => image.ml?.screening !== 'pending'));
+        row.decision = row.automatic ? 'keep' : 'pending';
+      }
+      render();
+    });
+  }
+
   container.addEventListener('click', handleClick);
   container.addEventListener('keydown', handleKeydown);
   render();
+  rows.forEach((_, index) => watchRow(index));
   return { destroy };
 }

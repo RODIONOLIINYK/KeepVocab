@@ -114,6 +114,9 @@ export function sharedInferenceScope(scope, kind) {
       port.addEventListener('close', () => detach(port));
       port.start();
       if (lastStatus && !send(port, lastStatus)) detach(port);
+      for (const route of cacheRequests.values()) {
+        if (!ports.has(route.port)) sendCache(route);
+      }
     }
   };
   if (control) control.onmessage = ({ data }) => {
@@ -121,4 +124,31 @@ export function sharedInferenceScope(scope, kind) {
   };
   scopes.set(scope, channel);
   return channel;
+}
+
+// Both ONNX workers serialize graph access. Only queued or running IDs are
+// retained. Cancellation can stop the next batch even after a forward began.
+export function inferenceQueue(channel, run, timings) {
+  let tail = Promise.resolve();
+  const active = new Map();
+  return ({ data }) => {
+    if (data.type === 'model-cache-result') return;
+    if (data.type === 'cancel') { active.delete(data.id); return; }
+    const id = data.id;
+    if (!Number.isSafeInteger(id) || active.has(id)) return;
+    active.set(id, data);
+    const current = () => active.get(id) === data;
+    const operation = tail.then(async () => {
+      if (!current()) return;
+      let reply;
+      try { reply = { result: await run(data, current) }; }
+      catch (error) { reply = { error: error?.message || 'Local model inference failed.' }; }
+      const samples = timings.drain();
+      if (!current()) return;
+      active.delete(id);
+      channel.postMessage({ id, ...reply, timings: samples });
+    });
+    tail = operation.catch(() => {});
+    return tail;
+  };
 }

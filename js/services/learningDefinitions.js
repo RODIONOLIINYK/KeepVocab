@@ -66,7 +66,7 @@ export function normalizeGroupedSenses(value) {
   const fields = ['id', 'word', 'partOfSpeech', 'definition', 'sourceDefinition', 'sourceUrl', 'attribution',
     'example', 'exampleSourceUrl', 'exampleAttribution', 'exampleLicense', 'usageNote', 'translation', 'translationLanguage'];
   return (Array.isArray(value) ? value : []).filter(item => item && typeof item.definition === 'string' && item.definition.trim())
-    .slice(0, 60).map(item => ({ ...Object.fromEntries(fields.filter(key => typeof item[key] === 'string').map(key => [key, item[key].slice(0, 2000)])),
+    .map(item => ({ ...Object.fromEntries(fields.filter(key => typeof item[key] === 'string').map(key => [key, item[key].slice(0, 2000)])),
       labels: (Array.isArray(item.labels) ? item.labels : []).filter(s => typeof s === 'string').slice(0, 20),
       antonyms: (Array.isArray(item.antonyms) ? item.antonyms : []).filter(s => typeof s === 'string').slice(0, 20) }));
 }
@@ -223,7 +223,8 @@ export async function withLearnerExplanations(entry, options = {}) {
   const settings = { ...getGeminiSettings(storage), ...options.settings };
   const enabled = Boolean(String(settings.apiKey || '').trim()) && options.settings?.enabled !== false;
   const model = options.model || settings.textModel;
-  const cache = readObjectCache(storage, CACHE_KEY);
+  const cacheStorage = options.entryCacheStorage ?? storage;
+  const cache = readObjectCache(cacheStorage, CACHE_KEY);
   const pending = [];
   const explicit = Boolean(options.force || options.requireSupport);
   let blockedError = null;
@@ -272,7 +273,7 @@ Senses: ${JSON.stringify(batch.map(({ id, word, preserveDefinition }) => ({ id, 
           }, maxOutputTokens: options.requireSupport ? Math.min(16384, Math.max(2048, batch.length * 800)) : Math.min(8192, Math.max(768, batch.length * 360)) });
         options.signal?.throwIfAborted();
         const rows = Array.isArray(result?.senses) ? result.senses : [];
-        const updatedCache = readObjectCache(storage, CACHE_KEY);
+        const updatedCache = readObjectCache(cacheStorage, CACHE_KEY);
         const retry = [];
         for (const item of batch) {
           const matches = rows.filter(row => String(row?.id ?? '') === item.id);
@@ -282,7 +283,7 @@ Senses: ${JSON.stringify(batch.map(({ id, word, preserveDefinition }) => ({ id, 
           senses[Number(item.id)] = applyExplanation(item.word, candidate, model, item.preserveDefinition, explicit);
           updatedCache[item.key] = { cachedAt: Date.now(), data: candidate };
         }
-        writeRecentObjectCache(storage, CACHE_KEY, updatedCache, 300);
+        writeRecentObjectCache(cacheStorage, CACHE_KEY, updatedCache, 300);
         batch = retry;
       } catch (error) {
         if (options.signal?.aborted) throw error;

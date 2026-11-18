@@ -36,3 +36,13 @@ test('direct evaluation selects across grouped prompts before applying the nine-
   const anonymous = candidates.map(({ visualScene, ...image }) => image);
   assert.deepEqual(imageEvaluationCandidates(anonymous), anonymous.slice(0, 9));
 });
+
+test('the six-image first pass keeps scene diversity and never exceeds a nine-image request', () => {
+  const pool = Array.from({ length: 3 }, (_, scene) => Array.from({ length: 3 }, (_, i) => ({
+    url: `https://progressive.test/${scene}/${i}.jpg`, visualScene: `scene ${scene}`
+  }))).flat();
+  const first = imageEvaluationCandidates(pool, 1, 6);
+  assert.equal(first.length, 6);
+  assert.deepEqual([0, 1, 2].map(i => first.filter(image => image.visualScene === `scene ${i}`).length), [2, 2, 2]);
+  assert.equal(imageEvaluationCandidates(pool, 1, 45).length, 9);
+});

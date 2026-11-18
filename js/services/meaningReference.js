@@ -10,23 +10,38 @@ let worker, nextId = 0;
 const pending = new Map();
 const listeners = new Set();
 let installed = false, phase = 'not-installed', message = 'Download the merge model to compare meanings locally.', downloading;
-let downloadProgress = null, preloadPromise;
+let downloadProgress = null, preloadPromise, installCheck, removal;
+let generation = 0;
 const downloadBytes = () => Object.values(MEANING_MODEL_ASSETS).reduce((sum, file) => sum + file.bytes, 0);
 export const getMeaningModelStatus = () => ({ installed, phase, message, ready: phase === 'ready', downloadProgress,
-  downloadMB: Math.ceil(Object.values(MEANING_MODEL_ASSETS).reduce((sum, file) => sum + file.bytes, 0) / 1e6) });
+  downloadMB: Math.ceil(downloadBytes() / 1e6) });
 function emit() { for (const listener of listeners) listener(getMeaningModelStatus()); }
 export function subscribeMeaningModel(listener) { listeners.add(listener); return () => listeners.delete(listener); }
-export async function checkMeaningModelInstalled() {
-  const cache = await modelCacheStorage()?.open(MEANING_CACHE);
-  installed = Boolean(cache);
-  if (cache) for (const file of Object.keys(MEANING_MODEL_ASSETS)) {
-    const url = MEANING_MODEL_BASE + file;
-    if (!(cache.has ? await cache.has(url) : (await cache.match(url))?.ok)) installed = false;
-  }
-  if (!installed && phase !== 'downloading') { phase = 'not-installed'; message = 'Download the merge model to compare meanings locally.'; }
-  emit(); return installed;
+export function checkMeaningModelInstalled() {
+  if (removal) return Promise.resolve(false);
+  if (installCheck) return installCheck;
+  const started = generation;
+  const check = (async () => {
+    const cache = await modelCacheStorage()?.open(MEANING_CACHE);
+    let complete = Boolean(cache);
+    for (const file of Object.keys(MEANING_MODEL_ASSETS)) {
+      if (!complete || started !== generation) break;
+      const url = MEANING_MODEL_BASE + file;
+      complete = Boolean(cache.has ? await cache.has(url) : (await cache.match(url))?.ok);
+    }
+    if (started !== generation) return false;
+    installed = complete;
+    if (!installed && phase !== 'downloading') {
+      phase = 'not-installed'; message = 'Download the merge model to compare meanings locally.';
+    }
+    emit();
+    return installed;
+  })().finally(() => { if (installCheck === check) installCheck = null; });
+  installCheck = check;
+  return check;
 }
 export async function downloadMeaningModel() {
+  if (removal) await removal;
   if (downloading) return downloading;
   downloading = (async () => {
     phase = 'downloading'; message = 'Downloading merge model…'; emit();
@@ -49,6 +64,10 @@ export async function downloadMeaningModel() {
       await cache.put(url, new Response(bytes, { headers: { 'Content-Length': String(bytes.byteLength), 'Content-Type': file.endsWith('.json') ? 'application/json' : 'application/octet-stream' } }));
       completed += asset.bytes;
     }
+    // An earlier startup check may have observed a partial installation.
+    generation++;
+    installCheck = null;
+    preloadPromise = null;
     installed = true;
     return await preloadMeaningModel();
   })().catch(error => { phase = 'error'; message = error.message; emit(); throw error; }).finally(() => { downloading = null; });
@@ -56,10 +75,20 @@ export async function downloadMeaningModel() {
 }
 export async function removeMeaningModel() {
   if (downloading) throw new Error('Wait for the merge model download to finish.');
+  if (removal) return removal;
+  generation++;
+  installed = false;
+  preloadPromise = null;
+  installCheck = null;
   resetInferenceWorkers('meaning');
   stop(new Error('The merge model was removed.'));
-  await modelCacheStorage()?.delete(MEANING_CACHE);
-  installed = false; phase = 'not-installed'; downloadProgress = null; message = 'Merge model files removed.'; emit();
+  removal = Promise.resolve().then(async () => {
+    await modelCacheStorage()?.delete(MEANING_CACHE);
+    phase = 'not-installed'; downloadProgress = null; message = 'Merge model files removed.'; emit();
+  }).catch(error => {
+    phase = 'error'; message = error.message; emit(); throw error;
+  }).finally(() => { removal = null; });
+  return removal;
 }
 function stop(error) {
   worker?.terminate(); worker = null;
@@ -85,7 +114,12 @@ function rpc(payload, { signal } = {}) {
     active.onerror = event => {
       if (worker !== active) return;
       const removed = event?.message === 'The shared model was disabled or removed.';
-      if (removed) installed = false;
+      if (removed) {
+        generation++;
+        installCheck = null;
+        preloadPromise = null;
+        installed = false;
+      }
       phase = removed ? 'not-installed' : 'error';
       message = removed ? 'Merge model files removed.' : 'The meaning model could not start.';
       stop(new Error(message)); emit();
@@ -94,7 +128,10 @@ function rpc(payload, { signal } = {}) {
   return new Promise((resolve, reject) => {
     const id = ++nextId;
     const abort = () => { worker?.postMessage({ type: 'cancel', id }); pending.delete(id); cleanup(); reject(signal.reason || new Error('Meaning comparison cancelled.')); };
-    const timer = setTimeout(() => stop(new Error('Meaning comparison timed out.')), 90_000);
+    const timer = setTimeout(() => {
+      phase = 'error'; message = 'Meaning comparison timed out.';
+      stop(new Error(message)); emit();
+    }, 90_000);
     const cleanup = () => { clearTimeout(timer); signal?.removeEventListener('abort', abort); };
     pending.set(id, { resolve, reject, cleanup });
     signal?.addEventListener('abort', abort, { once: true });
@@ -103,25 +140,34 @@ function rpc(payload, { signal } = {}) {
   });
 }
 export function preloadMeaningModel() {
+  if (removal) return Promise.resolve(null);
   if (phase === 'ready' && worker) return Promise.resolve({ model: MEANING_MODEL_TAG });
   if (preloadPromise) return preloadPromise;
-  preloadPromise = (async () => {
-    if (!await checkMeaningModelInstalled()) return null;
+  const started = generation;
+  const operation = (async () => {
+    if ((!installed && !await checkMeaningModelInstalled()) || started !== generation) return null;
     phase = 'loading'; message = 'Loading merge model…'; emit();
     downloadProgress = { loaded: downloadBytes(), total: downloadBytes(), stage: 'loading' }; emit();
     const result = await rpc({ type: 'initialize' });
+    if (started !== generation) return null;
     phase = 'ready'; message = 'Merge model ready. Meanings are compared on this device.'; emit(); return result;
-  })().catch(error => { phase = 'error'; message = error.message; emit(); throw error; }).finally(() => { preloadPromise = null; });
-  return preloadPromise;
+  })().catch(error => {
+    if (started !== generation) return null;
+    phase = 'error'; message = error.message; emit(); throw error;
+  }).finally(() => { if (preloadPromise === operation) preloadPromise = null; });
+  preloadPromise = operation;
+  return operation;
 }
 export async function scoreReferenceMeaningPairs(senses, pairs, options = {}) {
-  if (!installed && !await checkMeaningModelInstalled()) {
+  const started = generation;
+  if ((!installed && !await checkMeaningModelInstalled()) || started !== generation) {
     const error = new Error('Download the merge model in Settings to compare meanings locally.');
     error.code = 'NOT_INSTALLED';
     throw error;
   }
   const texts = senses.map(sense => meaningEmbeddingText(sense.sourceDefinition || sense.definition));
   const result = await rpc({ type: 'compare', texts, pairs }, options);
+  if (started !== generation) throw new Error('The merge model installation changed.');
   if (!Array.isArray(result.scores) || result.scores.length !== pairs.length || result.scores.some(score => !Number.isFinite(score) || score < 0 || score > 1)) throw new Error('Invalid meaning model scores.');
   phase = 'ready'; message = 'Merge model ready. Meanings are compared on this device.'; emit();
   return result.scores;

@@ -5,7 +5,7 @@ const limit = 64;
 export function recordInferenceTimings(rows) {
   if (!Array.isArray(rows)) return;
   for (const row of rows) {
-    if (!['clip', 'meaning'].includes(row?.model) || !['initialize', 'text-forward', 'image-forward', 'meaning-forward', 'cache-read'].includes(row.stage)
+    if (!['clip', 'meaning'].includes(row?.model) || !['initialize', 'text-forward', 'image-forward', 'meaning-forward', 'cache-read', 'thumbnail-prepare', 'image-ranking'].includes(row.stage)
       || !Number.isFinite(row.ms) || row.ms < 0) continue;
     const safe = { model: row.model, stage: row.stage, ms: row.ms };
     for (const key of ['first', 'batch', 'bytes']) if (typeof row[key] === 'boolean' || Number.isFinite(row[key])) safe[key] = row[key];

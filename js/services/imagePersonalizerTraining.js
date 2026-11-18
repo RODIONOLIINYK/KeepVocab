@@ -40,30 +40,34 @@ export class ImagePersonalizerTraining {
       // A public semantic head stays immutable. Personal fitting starts as an
       // exact copy; the frozen copy remains an acceptance comparator.
       const initialization = model ? null : createPreferencePersonalizer(await this.semantic());
-      if (requestedGeneration !== this.generation) return { accepted: false, reason: 'Training cancelled.' };
-      const generation = this.generation, resetAt = this.persistence.imageHistory.resetAt;
+      const resetAt = this.persistence.imageHistory.resetAt;
       const invariantIncumbent = await this.persistence.imageHistory.readState?.('invariantHead');
+      if (requestedGeneration !== this.generation) return { accepted: false, reason: 'Training cancelled.' };
       const result = await new Promise((resolve, reject) => {
         const worker = new Worker(new URL('../ml/imageTrainer.worker.js', import.meta.url), { type: 'module' }); this.worker = worker;
         const finish = () => { clearTimeout(timeout); worker.terminate(); if (this.worker === worker) this.worker = null; this.cancel = null; };
         const timeout = setTimeout(() => { finish(); reject(new Error('Photo preferences could not finish updating.')); }, 45000);
         this.cancel = () => { finish(); resolve({ accepted: false, reason: 'Training cancelled.' }); };
         worker.onmessage = ({ data }) => { if (data.progress) return; finish(); if (data.error) reject(new Error(data.error)); else resolve(data.result); };
-        worker.onerror = () => { finish(); reject(new Error('Photo preferences could not be updated.')); };
-        worker.postMessage({ records, model, invariantIncumbent, options: { ...IMAGE_TRAINING_RECIPE, ...options,
-          maxMilliseconds: Math.min(Number(options.maxMilliseconds) || MOBILE_IMAGE_TRAINING_BUDGET_MS, MOBILE_IMAGE_TRAINING_BUDGET_MS), task: 'preference' }, initialization });
+        worker.onmessageerror = worker.onerror = () => { finish(); reject(new Error('Photo preferences could not be updated.')); };
+        try { worker.postMessage({ records, model, invariantIncumbent, options: { ...IMAGE_TRAINING_RECIPE, ...options,
+          maxMilliseconds: Math.min(Number(options.maxMilliseconds) || MOBILE_IMAGE_TRAINING_BUDGET_MS, MOBILE_IMAGE_TRAINING_BUDGET_MS), task: 'preference' }, initialization }); }
+        catch (error) { finish(); reject(error); }
       });
       this.report = result;
-      if (result.invariant?.accepted && validInvariantHead(result.invariant.head) && generation === this.generation
-        && resetAt === this.persistence.imageHistory.resetAt && before === signature(await this.persistence.getImageEvents())) {
-        await this.persistence.imageHistory.writeState?.('invariantHead', result.invariant.head);
+      if (result.invariant?.accepted && validInvariantHead(result.invariant.head)) {
+        const latest = await this.persistence.getImageEvents();
+        if (requestedGeneration === this.generation && resetAt === this.persistence.imageHistory.resetAt && before === signature(latest)) {
+          await this.persistence.imageHistory.writeState?.('invariantHead', result.invariant.head);
+        }
       }
       if (result.accepted && (!isCurrentPersonalizer(result.model) || result.model.role !== 'preference')) {
         return { accepted: false, reason: 'Only a separately validated personal preference model can replace personal weights.' };
       }
       if (result.accepted) {
         const latest = await this.persistence.getImageEvents(), active = await this.personal();
-        if (generation !== this.generation || resetAt !== this.persistence.imageHistory.resetAt || before !== signature(latest) || (active?.revision || 0) !== (model?.revision || 0)) {
+        if (requestedGeneration !== this.generation) return { accepted: false, reason: 'Training cancelled.' };
+        if (resetAt !== this.persistence.imageHistory.resetAt || before !== signature(latest) || (active?.revision || 0) !== (model?.revision || 0)) {
           this.request(); return { accepted: false, reason: 'Photo choices changed during training; candidate discarded.' };
         }
         const ranking = imageRankingAcceptance(result);
