@@ -784,11 +784,38 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
 }
 
 /* ---------- Streak Engagement System (v1.13) ---------- */
+html, body, * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.modal-box { scrollbar-gutter: auto; }
+
 .badge-streak { cursor: pointer; transition: transform 160ms var(--duo-spring), background 140ms ease, border-color 140ms ease; }
 .badge-streak:hover { border-color: #fdba74; background: #ffedd5; }
 .badge-streak.is-at-risk { border-color: #f59e0b; background: #fffbeb; color: #b45309; }
 .badge-streak.is-safe { border-color: #fdba74; background: #fff7ed; color: #c2410c; }
-.badge-goal.is-reached { border-color: #86efac; background: #dcfce7; color: #166534; }
+.badge-goal {
+  background: transparent;
+  border-color: var(--border-card);
+  color: var(--text-muted);
+  font-weight: 650;
+  opacity: .86;
+}
+.badge-goal i { color: var(--text-dim); }
+.badge-goal.is-reached {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+  opacity: 1;
+}
+.badge-goal.is-reached i { color: var(--primary-green-hover); }
 .app-toast.streak { background: linear-gradient(135deg, #ea580c, #d97706); }
 
 .today-view .today-progress-card {
@@ -804,7 +831,8 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 10px 14px;
 }
 .today-view .today-streak.is-at-risk {
   border-color: #f59e0b;
@@ -823,10 +851,84 @@ h1, h2, h3, .card-tag, .btn-green-solid, .status-pill { font-family: var(--font-
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px 18px;
-  padding-top: 12px;
+  gap: 10px 18px;
+}
+.today-goal-subtle {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-top: 11px;
   border-top: 1px solid var(--border-card);
 }
+.today-goal-subtle .today-progress-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+.today-goal-subtle .today-goal-label {
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: .02em;
+}
+.today-goal-subtle strong {
+  font-size: .74rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.today-goal-subtle small {
+  margin-left: auto;
+  font-size: .7rem;
+  color: var(--text-dim);
+}
+.today-goal-subtle .today-progress-track {
+  height: 6px;
+  background: var(--bg-subtle);
+}
+.today-goal-subtle .today-progress-track span {
+  background: #86efac;
+}
+.today-goal-subtle:has(small.is-complete) .today-progress-track span {
+  background: var(--primary-green);
+}
+
+.goal-subtle-edit {
+  position: relative;
+  font-size: .74rem;
+  color: var(--text-muted);
+}
+.goal-subtle-edit > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-card);
+  background: var(--bg-app);
+  color: var(--text-muted);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.goal-subtle-edit > summary::-webkit-details-marker { display: none; }
+.goal-subtle-edit > summary:hover { border-color: var(--duo-line-dark); color: var(--text-main); }
+.goal-subtle-edit[open] > .goal-subtle-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.goal-subtle-form label { font-size: .7rem; color: var(--text-muted); white-space: nowrap; }
+.goal-subtle-form input {
+  width: 68px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-card);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--text-main);
+  font-size: .78rem;
+}
+.goal-subtle-form button { min-height: 32px; padding: 4px 10px; font-size: .72rem; }
+.goal-subtle-message { margin-top: 4px; font-size: .68rem; color: var(--primary-green-hover); text-align: right; }
 .streak-week-strip {
   display: grid;
   grid-template-columns: repeat(7, minmax(34px, 1fr));

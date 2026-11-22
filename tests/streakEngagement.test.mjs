@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   MAX_STREAK_FREEZES,
   autoApplyStreakFreezes,
@@ -196,4 +197,17 @@ test('Today and Progress views render the 7-day strip, freezes, heatmap, and mil
   assert.match(statsContainer.innerHTML, /class="streak-heatmap"/);
   assert.match(statsContainer.innerHTML, /class="streak-milestones"/);
   assert.match(statsContainer.innerHTML, /Streak Freezes/);
+  assert.doesNotMatch(statsContainer.innerHTML, /due-preview|Due now|goal-settings/);
+  assert.match(statsContainer.innerHTML, /class="goal-subtle-edit"/);
+});
+
+test('scrollbars are hidden across both the main app and the macOS menu-bar quick-add window', () => {
+  const polish = readFileSync(new URL('../css/polish.css', import.meta.url), 'utf8');
+  const quickAdd = readFileSync(new URL('../css/quick-add.css', import.meta.url), 'utf8');
+  assert.match(polish, /scrollbar-width:\s*none/);
+  assert.match(polish, /::-webkit-scrollbar[\s\S]*display:\s*none/);
+  assert.match(polish, /\.modal-box\s*\{\s*scrollbar-gutter:\s*auto/);
+  assert.match(quickAdd, /scrollbar-width:\s*none/);
+  assert.match(quickAdd, /::-webkit-scrollbar[\s\S]*display:\s*none/);
+  assert.match(quickAdd, /scrollbar-gutter:\s*auto/);
 });

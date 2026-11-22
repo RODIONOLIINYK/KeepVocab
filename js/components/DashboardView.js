@@ -171,21 +171,21 @@ export function renderDashboardView(container, onNavigate) {
     </article>
     <div class="spec-card today-progress-card">
       <div class="today-progress-top">
-        <div class="today-progress-copy"><span>Your daily goal</span><strong id="today-progress-count">${completedToday} of ${dailyGoal} exercises</strong><small id="today-goal-nudge" class="${completedToday >= dailyGoal ? 'is-complete' : ''}">${escapeHtml(dailyGoalEncouragement(completedToday, dailyGoal, streakSummary.currentStreak))}</small></div>
         <span class="today-streak ${streakSummary.atRisk ? 'is-at-risk' : streakSummary.practicedToday && streakSummary.currentStreak > 0 ? 'is-safe' : ''}" id="today-streak-pill"><i class="fa-solid fa-fire" aria-hidden="true"></i> <span id="today-streak-label">${streakSummary.currentStreak} day streak</span></span>
-      </div>
-      <div class="today-progress-track" id="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div>
-      <div class="today-streak-rhythm">
-        <div class="streak-week-strip" id="today-streak-week" role="list" aria-label="Last 7 days study rhythm">${renderStreakWeekStrip(streakSummary.weekWindow)}</div>
-        <div class="streak-meta-block">
-          <div class="streak-meta-pills">
-            <span class="streak-meta-pill freeze" title="Streak Freezes automatically protect a missed day. Earn one at 3 days and every 7-day streak milestone (max 2 banked)."><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> <span id="today-freeze-pill">${streakSummary.bankedFreezes}/${streakSummary.maxFreezes} freezes</span></span>
-            ${streakSummary.longestStreak > 0 ? `<span class="streak-meta-pill best"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i> Best ${streakSummary.longestStreak}d</span>` : ''}
-          </div>
-          <small class="streak-milestone-note" id="today-milestone-note">${escapeHtml(streakMilestoneCopy(streakSummary))}</small>
+        <div class="streak-meta-pills">
+          <span class="streak-meta-pill freeze" title="Streak Freezes automatically protect a missed day. Earn one at 3 days and every 7-day streak milestone (max 2 banked)."><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> <span id="today-freeze-pill">${streakSummary.bankedFreezes}/${streakSummary.maxFreezes} freezes</span></span>
+          ${streakSummary.longestStreak > 0 ? `<span class="streak-meta-pill best"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i> Best ${streakSummary.longestStreak}d</span>` : ''}
         </div>
       </div>
+      <div class="today-streak-rhythm">
+        <div class="streak-week-strip" id="today-streak-week" role="list" aria-label="Last 7 days study rhythm">${renderStreakWeekStrip(streakSummary.weekWindow)}</div>
+        <small class="streak-milestone-note" id="today-milestone-note">${escapeHtml(streakMilestoneCopy(streakSummary))}</small>
+      </div>
       ${showStreakAlert ? `<div class="today-streak-alert ${streakSummary.protectedYesterday ? 'is-freeze' : 'is-risk'}" id="today-streak-alert" role="status"><i class="fa-solid ${streakSummary.protectedYesterday ? 'fa-shield-halved' : 'fa-fire'}" aria-hidden="true"></i><span>${escapeHtml(streakAlertCopy)}</span><button type="button" class="today-streak-save-btn" id="today-save-streak">Quick save</button></div>` : ''}
+      <div class="today-goal-subtle">
+        <div class="today-progress-copy"><span class="today-goal-label">Daily target</span><strong id="today-progress-count">${completedToday} of ${dailyGoal} exercises</strong><small id="today-goal-nudge" class="${completedToday >= dailyGoal ? 'is-complete' : ''}">${escapeHtml(dailyGoalEncouragement(completedToday, dailyGoal, streakSummary.currentStreak))}</small></div>
+        <div class="today-progress-track" id="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div>
+      </div>
     </div>
     <div class="today-grid">
       <section class="spec-card practice-launchpad" aria-labelledby="practice-heading"><div class="card-header-bar"><div><h2 id="practice-heading">Practice your way</h2><p>A little variety keeps it interesting.</p></div><i class="fa-solid fa-dumbbell" aria-hidden="true"></i></div><div class="practice-quick-grid">${MODES.map(([view, icon, title, copy], index) => `<button class="practice-quick-card" style="--i:${index}" data-practice-view="${view}"><i class="fa-solid ${icon}" aria-hidden="true"></i><span><strong>${title}</strong><small>${copy}</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>`).join('')}</div></section>
