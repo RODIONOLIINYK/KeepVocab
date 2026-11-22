@@ -5,12 +5,56 @@ import { driveSync } from '../services/driveSync.js?v=18908';
 import { getDueWords } from '../services/srsEngine.js?v=18908';
 import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18908';
 import { normalizeLearningStats } from '../services/learningStats.js?v=18908';
+import { getStreakSummary } from '../services/studyActivity.js';
 import { weaknessScore } from '../services/dailySession.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
+const DISPLAY_MILESTONES = [3, 7, 14, 21, 30, 50, 100, 365];
+
 function dateKey(date) {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+}
+
+function renderStreakConsistencyCard(summary) {
+  const statusLabel = summary.atRisk ? 'At risk today'
+    : summary.practicedToday && summary.currentStreak > 0 ? 'Safe today'
+      : 'Ready to start';
+  const statusClass = summary.atRisk ? 'is-at-risk'
+    : summary.practicedToday && summary.currentStreak > 0 ? 'is-safe'
+      : 'is-idle';
+  const freezeNote = summary.bankedFreezes >= summary.maxFreezes
+    ? 'Full protection banked'
+    : `Next freeze at ${summary.nextFreezeAtStreak}-day streak`;
+  const cells = summary.monthWindow.map(day => {
+    const label = day.status === 'frozen'
+      ? `${day.dateKey}: Protected by Streak Freeze`
+      : `${day.dateKey}: ${day.count} exercise${day.count === 1 ? '' : 's'}${day.isGoalReached ? ' (goal reached)' : ''}`;
+    return `<span class="heatmap-cell lvl-${day.intensity}${day.isFrozen ? ' is-frozen' : ''}${day.isToday ? ' is-today' : ''}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${day.isFrozen ? '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>' : ''}</span>`;
+  }).join('');
+  const best = Math.max(summary.currentStreak, summary.longestStreak);
+  const badges = DISPLAY_MILESTONES.map(days => {
+    const achieved = best >= days;
+    const isNext = !achieved && summary.nextMilestone === days;
+    return `<div class="milestone-badge${achieved ? ' is-achieved' : ''}${isNext ? ' is-next' : ''}"><span class="milestone-icon"><i class="fa-solid ${achieved ? 'fa-circle-check' : isNext ? 'fa-fire' : 'fa-lock'}" aria-hidden="true"></i></span><strong>${days}d</strong><small>${achieved ? 'Unlocked' : isNext ? `${summary.daysToMilestone}d left` : 'Milestone'}</small></div>`;
+  }).join('');
+  return `<article class="spec-card streak-stats-card" aria-labelledby="streak-rhythm-heading">
+    <div class="today-section-heading"><div><span class="eyebrow">Habit momentum</span><h2 id="streak-rhythm-heading">Streak &amp; consistency</h2></div><span class="streak-status-chip ${statusClass}"><i class="fa-solid fa-fire" aria-hidden="true"></i> ${statusLabel}</span></div>
+    <div class="streak-overview-grid">
+      <div><span>Current streak</span><strong>${summary.currentStreak} ${summary.currentStreak === 1 ? 'day' : 'days'}</strong><small>${summary.currentStreak > 0 ? `${summary.daysToMilestone}d to ${summary.nextMilestone}d milestone` : '1 exercise starts today'}</small></div>
+      <div><span>Longest streak</span><strong>${summary.longestStreak} ${summary.longestStreak === 1 ? 'day' : 'days'}</strong><small>Personal record</small></div>
+      <div><span>Last 28 days</span><strong>${summary.activeDaysLast28} / 28</strong><small>Active study days</small></div>
+      <div><span>Streak Freezes</span><strong>${summary.bankedFreezes} / ${summary.maxFreezes}</strong><small>${escapeHtml(freezeNote)}</small></div>
+    </div>
+    <div class="streak-heatmap-section">
+      <div class="streak-heatmap-heading"><span>Last 28 days</span><div class="streak-heatmap-legend" aria-hidden="true"><span>Less</span><i class="heatmap-cell lvl-0"></i><i class="heatmap-cell lvl-1"></i><i class="heatmap-cell lvl-2"></i><i class="heatmap-cell lvl-3"></i><i class="heatmap-cell lvl-4"></i><span>More</span><i class="heatmap-cell is-frozen"></i><span>Freeze</span></div></div>
+      <div class="streak-heatmap" role="img" aria-label="${summary.activeDaysLast28} active days in the last 28 days">${cells}</div>
+    </div>
+    <div class="streak-milestones-section">
+      <span class="eyebrow">Milestones</span>
+      <div class="streak-milestones">${badges}</div>
+    </div>
+  </article>`;
 }
 
 export function renderStatsView(container, onNavigate) {
@@ -26,6 +70,7 @@ export function renderStatsView(container, onNavigate) {
   const spoken = mastery.filter(item => item.data.speaking >= .65).length;
   const weak = words.filter(word => weaknessScore(word) > 0).length;
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
+  const streakSummary = getStreakSummary(settings);
   const reviewsToday = settings.reviewsDate === dateKey(new Date()) ? Number(settings.reviewsToday || 0) : 0;
   const activity = settings.reviewActivity || {};
   const weekly = Array.from({ length: 7 }, (_, offset) => {
@@ -46,6 +91,7 @@ export function renderStatsView(container, onNavigate) {
 
   container.innerHTML = `<section class="full-view-stack progress-view" aria-labelledby="progress-heading"><div class="progress-hero"><div><span class="eyebrow">Your learning over time</span><h1 id="progress-heading">Your vocabulary is becoming usable</h1><p>Recognition is the start. Recall, context, and speaking show what you can actively use.</p></div><button class="btn-green-solid" id="progress-workout">${dueWords.length ? `Review ${dueWords.length} due` : 'Start a workout'}</button></div>
     <div class="progress-mastery-grid"><article><span>Saved</span><strong>${words.length}</strong><small>vocabulary cards</small></article><article><span>Recognized</span><strong>${recognized}</strong><small>meaning identified</small></article><article><span>Recalled unaided</span><strong>${recalled}</strong><small>produced from memory</small></article><article><span>Used in context</span><strong>${context}</strong><small>understood in a situation</small></article><article><span>Used productively</span><strong>${productive}</strong><small>own sentences</small></article><article><span>Used while speaking</span><strong>${spoken}</strong><small>activated with Mira</small></article></div>
+    ${renderStreakConsistencyCard(streakSummary)}
     <div class="progress-detail-grid"><article class="spec-card"><div class="today-section-heading"><div><span class="eyebrow">Last 7 days</span><h2>${weekly.reduce((sum, day) => sum + day.count, 0)} exercises</h2></div><span id="stats-today-count">${reviewsToday}/${dailyGoal} today</span></div><div class="activity-chart">${weekly.map(day => `<div title="${day.count} exercises"><span>${day.count || ''}</span><i style="height:${day.count ? Math.max(18, Math.round(day.count / maxActivity * 120)) : 8}px"></i><small>${day.label}</small></div>`).join('')}</div></article>
       <article class="spec-card progress-outcomes"><span class="eyebrow">Learning outcomes</span><div><span>Sessions completed</span><strong>${stats.sessionsCompleted}</strong></div><div><span>Weak words improved</span><strong>${stats.weakWordsImproved}</strong></div><div><span>Speaking minutes</span><strong>${Math.round(stats.speakingMinutes)}</strong></div><div><span>Weak words now</span><strong>${weak}</strong></div><p><i class="fa-solid fa-cloud"></i> ${auth.isConnected ? 'These stats are included in your Drive backup.' : 'Connect Drive in Settings to restore these stats on another installation.'}</p></article></div>
     <article class="spec-card algorithm-details"><div class="today-section-heading"><div><span class="eyebrow">Scheduling detail</span><h2>Recall intervals</h2></div><span>Mastered words still return</span></div><div class="box-distribution">${intervalGroups.map(group => `<div><span>${group.label}</span><i><b style="width:${Math.round(group.count / Math.max(1,...intervalGroups.map(item => item.count)) * 100)}%"></b></i><strong>${group.count}</strong></div>`).join('')}</div><p class="section-helper">FSRS-6 schedules recall against a ${Math.round(memoryConfig.retention * 100)}% target. Recognition and answers with hints have separate memory states. Older words keep their saved review dates until reviewed.</p></article>

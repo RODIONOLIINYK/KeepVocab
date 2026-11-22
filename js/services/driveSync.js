@@ -9,7 +9,7 @@ import { mergeImageLearning } from './imagePreferences.js';
 
 import { getGeminiBackupRecord, restoreGeminiBackupRecord, sanitizeGeminiBackupRecord } from './geminiSettings.js?v=18908';
 import { getImageProviderBackupRecord, restoreImageProviderBackupRecord, sanitizeImageProviderBackupRecord } from './imageSearch.js?v=18908';
-import { activityByDevice, aggregateActivity, normalizedActivity, streakFromActivity, currentStudyStats } from './studyActivity.js';
+import { activityByDevice, aggregateActivity, autoApplyStreakFreezes, bankedStreakFreezes, currentStudyStats, isStreakMilestone, longestStreakFromActivity, normalizedActivity, normalizedDateList, shouldAwardStreakFreeze, streakFromActivity } from './studyActivity.js';
 import { localDateKey } from '../utils/dates.js';
 import { safeImageUrl, safeImageSourceUrl } from '../utils/imageUrls.js';
 import { getCourseDefinition, isCourseId } from '../data/courses.js';
@@ -432,6 +432,9 @@ export class DriveSyncService {
         activeNotebook: getCurrentMonthNotebookTitle(),
         dailyGoal: 20,
         dailyStreak: 0,
+        longestStreak: 0,
+        streakFreezeDates: [],
+        streakFreezeAwards: [],
         lastReviewDate: null,
         reviewsToday: 0,
         reviewsDate: null,
@@ -1202,33 +1205,107 @@ export class DriveSyncService {
     return courseId;
   }
 
+  ensureStreakProtection(date = new Date()) {
+    const settings = this.getSettings();
+    let streakFreezeAwards = normalizedDateList(settings.streakFreezeAwards);
+    let streakFreezeDates = normalizedDateList(settings.streakFreezeDates);
+    let seededFreeze = false;
+    const currentStreak = streakFromActivity(settings.reviewActivity || {}, date, streakFreezeDates);
+    if (currentStreak >= 3 && !streakFreezeAwards.length && !streakFreezeDates.length) {
+      const yesterday = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1, 12, 0, 0, 0);
+      streakFreezeAwards = [localDateKey(yesterday)];
+      seededFreeze = true;
+    }
+    const autoFreeze = autoApplyStreakFreezes({ ...settings, streakFreezeAwards, streakFreezeDates }, date);
+    streakFreezeDates = autoFreeze.streakFreezeDates;
+    if (seededFreeze || autoFreeze.changed) {
+      const dailyStreak = streakFromActivity(settings.reviewActivity || {}, date, streakFreezeDates);
+      const longestStreak = longestStreakFromActivity(settings.reviewActivity || {}, streakFreezeDates, settings.longestStreak);
+      this.updateSettings({
+        streakFreezeAwards,
+        streakFreezeDates,
+        dailyStreak,
+        longestStreak
+      }, { silent: !autoFreeze.changed });
+      return {
+        appliedDates: autoFreeze.appliedDates,
+        streak: dailyStreak,
+        seededFreeze,
+        bankedFreezes: bankedStreakFreezes(streakFreezeAwards, streakFreezeDates)
+      };
+    }
+    return {
+      appliedDates: [],
+      streak: currentStreak,
+      seededFreeze: false,
+      bankedFreezes: bankedStreakFreezes(streakFreezeAwards, streakFreezeDates)
+    };
+  }
+
   recordReview(date = new Date()) {
     const key = localDateKey(date);
     const settings = this.getSettings();
     const exerciseActivityByDevice = activityByDevice(settings);
     const previousActivity = aggregateActivity(exerciseActivityByDevice);
-    const previousStreak = streakFromActivity(previousActivity, date);
-    const firstActivityToday = !(Number(previousActivity[key]) > 0);
+    let streakFreezeAwards = normalizedDateList(settings.streakFreezeAwards);
+    let streakFreezeDates = normalizedDateList(settings.streakFreezeDates);
+    const autoFreeze = autoApplyStreakFreezes({
+      ...settings,
+      reviewActivity: previousActivity,
+      streakFreezeAwards,
+      streakFreezeDates
+    }, date);
+    streakFreezeDates = autoFreeze.streakFreezeDates;
+    const previousStreak = streakFromActivity(previousActivity, date, streakFreezeDates);
+    const previousTodayCount = Number(previousActivity[key] || 0);
+    const firstActivityToday = !(previousTodayCount > 0);
     const deviceActivity = { ...(exerciseActivityByDevice[this.deviceId] || {}) };
     deviceActivity[key] = Number(deviceActivity[key] || 0) + 1;
     exerciseActivityByDevice[this.deviceId] = normalizedActivity(deviceActivity);
     const reviewActivity = aggregateActivity(exerciseActivityByDevice);
+    const streak = streakFromActivity(reviewActivity, date, streakFreezeDates);
+    let earnedFreeze = false;
+    if (firstActivityToday && shouldAwardStreakFreeze(streak, key, streakFreezeAwards, streakFreezeDates)) {
+      streakFreezeAwards = normalizedDateList([...streakFreezeAwards, key]);
+      earnedFreeze = true;
+    }
+    const longestStreak = longestStreakFromActivity(reviewActivity, streakFreezeDates, settings.longestStreak);
+    const reviewsToday = Number(reviewActivity[key] || 0);
+    const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
     this.updateSettings({
       exerciseActivityByDevice,
       reviewActivity,
       reviewsDate: key,
-      reviewsToday: Number(reviewActivity[key] || 0),
+      reviewsToday,
       lastReviewDate: key,
-      dailyStreak: streakFromActivity(reviewActivity, date)
+      dailyStreak: streak,
+      longestStreak,
+      streakFreezeDates,
+      streakFreezeAwards
     });
     // The first exercise of a local day extends (or starts) the streak once.
     // Synced activity from another device never reaches this path.
-    const streak = streakFromActivity(reviewActivity, date);
-    if (firstActivityToday && streak > previousStreak && localDateKey(date) === localDateKey(new Date())
-        && typeof globalThis.dispatchEvent === 'function' && typeof globalThis.CustomEvent === 'function') {
-      globalThis.dispatchEvent(new CustomEvent('keepvocab:streak-extended', { detail: { streak, previousStreak, date: key } }));
+    const isToday = key === localDateKey(new Date());
+    const canDispatch = typeof globalThis.dispatchEvent === 'function' && typeof globalThis.CustomEvent === 'function';
+    if (firstActivityToday && streak > previousStreak && isToday && canDispatch) {
+      globalThis.dispatchEvent(new CustomEvent('keepvocab:streak-extended', {
+        detail: {
+          streak,
+          previousStreak,
+          date: key,
+          milestone: isStreakMilestone(streak) ? streak : null,
+          earnedFreeze,
+          freezeProtected: autoFreeze.appliedDates.length > 0,
+          bankedFreezes: bankedStreakFreezes(streakFreezeAwards, streakFreezeDates)
+        }
+      }));
     }
-    return Number(reviewActivity[key] || 0);
+    if (previousTodayCount < dailyGoal && reviewsToday >= dailyGoal && isToday && canDispatch) {
+      globalThis.dispatchEvent(new CustomEvent('keepvocab:goal-reached', {
+        detail: { completed: reviewsToday, dailyGoal, streak, date: key }
+      }));
+    }
+    return reviewsToday;
   }
 
   getActiveNotebook() {

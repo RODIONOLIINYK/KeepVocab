@@ -88,7 +88,11 @@ test('the macOS package supports Apple Silicon only, stays sandboxed, and keeps 
   assert.match(desktopMain, /menuBarTray\.on\('click', \(_event, bounds\) => showQuickAddWindow\(bounds\)\)/);
   assert.doesNotMatch(desktopMain, /menuBarTray\.setContextMenu/, 'Clicking the menu-bar icon must open Quick Add without a dropdown menu');
   assert.match(desktopMain, /quick-add\.html/);
-  assert.match(desktopMain, /setVisibleOnAllWorkspaces\(true, \{ visibleOnFullScreen: true \}\)/);
+  assert.match(desktopMain, /setVisibleOnAllWorkspaces\(true, \{ visibleOnFullScreen: true, skipTransformProcessType: true \}\)/);
+  assert.match(desktopMain, /app\.dock\?\.show\?\.\(\)/);
+  assert.match(desktopMain, /mainWindow\.on\('close', event => \{\s*if \(process\.platform !== 'darwin' \|\| isQuitting\) return;\s*event\.preventDefault\(\);/);
+  assert.match(desktopMain, /app\.on\('activate', \(\) => \{\s*showMainWindow\(\);/);
+  assert.match(desktopMain, /app\.on\('second-instance', \(\) => \{\s*showMainWindow\(\);/);
   assert.match(readFileSync(resolve(projectRoot, 'scripts/build-web.mjs'), 'utf8'), /quick-add\.html/);
   const menuBarSvg = readFileSync(resolve(projectRoot, 'icons/keepvocab-menubar-template.svg'), 'utf8');
   assert.doesNotMatch(menuBarSvg, /<rect|#[0-9a-f]{6}[^>]*fill=/i, 'The menu-bar template must not include a background tile');

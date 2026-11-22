@@ -26,6 +26,8 @@ const MIME_TYPES = new Map([
 ]);
 
 let mainWindow;
+let mainWindowReady = false;
+let shouldShowMainWindow = true;
 let quickAddWindow;
 let menuBarTray;
 let isQuitting = false;
@@ -207,7 +209,25 @@ function configureSmokeTest(window) {
   });
 }
 
+function showMainWindow() {
+  shouldShowMainWindow = true;
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    createMainWindow();
+    return;
+  }
+  if (process.platform === 'darwin') {
+    app.dock?.show?.();
+    app.show?.();
+  }
+  if (!mainWindowReady) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  if (!mainWindow.isVisible()) mainWindow.show();
+  mainWindow.focus();
+  if (process.platform === 'darwin') app.focus({ steal: true });
+}
+
 function createMainWindow() {
+  mainWindowReady = false;
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 820,
@@ -226,8 +246,25 @@ function createMainWindow() {
 
   configureNavigation(mainWindow);
   configureSmokeTest(mainWindow);
-  mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.once('ready-to-show', () => {
+    mainWindowReady = true;
+    if (shouldShowMainWindow) showMainWindow();
+  });
+  mainWindow.on('close', event => {
+    if (process.platform !== 'darwin' || isQuitting) return;
+    event.preventDefault();
+    shouldShowMainWindow = false;
+    if (mainWindow.isFullScreen()) {
+      mainWindow.once('leave-full-screen', () => {
+        if (!isQuitting && mainWindow && !mainWindow.isDestroyed()) mainWindow.hide();
+      });
+      mainWindow.setFullScreen(false);
+      return;
+    }
+    mainWindow.hide();
+  });
   mainWindow.on('closed', () => {
+    mainWindowReady = false;
     mainWindow = null;
   });
   void mainWindow.loadURL(APP_ORIGIN);
@@ -268,7 +305,7 @@ function createQuickAddWindow() {
       sandbox: true,
     },
   });
-  quickAddWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  quickAddWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true });
   quickAddWindow.on('blur', () => quickAddWindow?.hide());
   quickAddWindow.on('close', event => {
     if (isQuitting) return;
@@ -279,6 +316,10 @@ function createQuickAddWindow() {
 }
 
 function showQuickAddWindow(trayBounds) {
+  if (quickAddWindow && !quickAddWindow.isDestroyed() && quickAddWindow.isVisible()) {
+    quickAddWindow.hide();
+    return;
+  }
   if (!quickAddWindow || quickAddWindow.isDestroyed()) createQuickAddWindow();
   positionQuickAddWindow(trayBounds);
   quickAddWindow.show();
@@ -303,13 +344,12 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
   app.on('second-instance', () => {
-    if (!mainWindow) return;
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
+    showMainWindow();
   });
 
   app.whenReady().then(async () => {
     try {
+      if (process.platform === 'darwin') app.dock?.show?.();
       await configureAppProtocol();
       configurePermissions();
       configureDesktopBridge();
@@ -326,8 +366,7 @@ if (!app.requestSingleInstanceLock()) {
   });
 
   app.on('activate', () => {
-    if (!mainWindow) createMainWindow();
-    else { mainWindow.show(); mainWindow.focus(); }
+    showMainWindow();
   });
 }
 

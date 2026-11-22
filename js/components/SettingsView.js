@@ -10,6 +10,7 @@ import { clearGeminiSettings, getGeminiSettings, saveGeminiSettings, testGeminiS
 import { getImageProviderSettings, saveImageProviderSettings } from '../services/imageSearch.js?v=18908';
 import { getReminderStatus, supportsReminders } from '../services/reminderService.js?v=18908';
 import { completedExercisesToday } from '../services/learningStats.js?v=18908';
+import { getStreakSummary } from '../services/studyActivity.js';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -60,9 +61,10 @@ export function renderSettingsView(container, onNavigate) {
   const imageProvider = getImageProviderSettings();
   const drive = driveSync.getDriveStatus();
   const settings = driveSync.getSettings();
+  const streakSummary = getStreakSummary(settings);
   const completedToday = completedExercisesToday(settings);
-  const streak = Math.max(0, Number(settings.dailyStreak || 0));
-  const streakAtRisk = streak > 0 && completedToday === 0;
+  const streak = streakSummary.currentStreak;
+  const streakAtRisk = streakSummary.atRisk;
   const remindersAvailable = supportsReminders();
   const pexelsReady = imageProvider.provider === 'pexels' && Boolean(imageProvider.pexelsApiKey);
   const lastSync = drive.lastSynced ? new Date(drive.lastSynced) : null;
@@ -74,7 +76,7 @@ export function renderSettingsView(container, onNavigate) {
         <form id="translation-settings-form" class="settings-form"><label>Learning language<input value="English" readonly aria-readonly="true"></label><label>Translation language<select id="settings-translation-language"><option value="en" ${settings.translationLanguage !== 'uk' ? 'selected' : ''}>English (default)</option><option value="uk" ${settings.translationLanguage === 'uk' ? 'selected' : ''}>Ukrainian · Українська</option></select></label><div class="settings-actions"><button class="btn-green-solid">Save language</button></div><p id="translation-settings-status" class="settings-service-status" role="status" aria-live="polite"></p></form>
       </section>
       <section class="settings-card"><div class="settings-card-heading">${heading('fa-solid fa-arrow-rotate-right', 'Routine & sound', `${Math.max(1, Number(settings.dailyGoal) || 20)} exercises a day · interaction sounds ${settings.soundEnabled === false ? 'off' : 'on'}`)}</div>
-        <div class="settings-streak-status ${streakAtRisk ? 'is-at-risk' : ''}"><strong>${streakAtRisk ? `Keep your ${streak}-day streak alive` : completedToday > 0 ? 'Your streak is safe today' : 'Build your streak'}</strong><p>${streakAtRisk ? 'Complete one exercise before midnight.' : completedToday > 0 ? 'Come back tomorrow to keep it growing.' : 'One exercise today is a good start.'}</p></div>
+        <div class="settings-streak-status ${streakAtRisk ? 'is-at-risk' : ''}"><strong>${streakAtRisk ? `Keep your ${streak}-day streak alive` : completedToday > 0 ? 'Your streak is safe today' : 'Build your streak'}</strong><p>${streakAtRisk ? 'Complete one exercise before midnight.' : completedToday > 0 ? 'Come back tomorrow to keep it growing.' : 'One exercise today is a good start.'} ${streakSummary.bankedFreezes} of ${streakSummary.maxFreezes} Streak Freezes banked${streakSummary.longestStreak > 0 ? ` · Best: ${streakSummary.longestStreak} days` : ''}.</p></div>
         <div class="settings-actions"><button class="status-pill offline" id="settings-routine">Edit routine</button>${remindersAvailable ? `<button class="status-pill offline" id="settings-notifications"><i class="fa-solid fa-bell" aria-hidden="true"></i> ${settings.reminderEnabled ? 'Manage reminders' : 'Set up reminders'}</button>` : ''}</div>${remindersAvailable ? '<p id="settings-notification-status" class="settings-notification-status" role="status" aria-live="polite">Checking notification access…</p>' : ''}
       </section>
       <details class="settings-card settings-disclosure"><summary class="settings-card-heading">${heading('fa-solid fa-clock', 'Review timing', 'Choose how often words return.', '', false, true)}</summary><div class="settings-disclosure-body">

@@ -21,7 +21,8 @@ import { renderSpellingMode, renderChooseWordMode } from './components/PracticeM
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18908';
 import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18908';
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18908';
-import { renderDashboardView, updateDashboardGoalNudge } from './components/DashboardView.js?v=18908';
+import { renderDashboardView, updateDashboardGoalNudge, updateDashboardStreakUI } from './components/DashboardView.js?v=18908';
+import { getStreakSummary } from './services/studyActivity.js';
 import { renderDailySessionMode } from './components/DailySessionMode.js?v=18908';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18908';
 import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18908';
@@ -60,8 +61,38 @@ let viewEnterTimer = null;
 let navigationRevision = 0;
 let reminderRefreshTimer = null;
 let pendingReminderPermissionRequest = false;
+let lastStreakToastAt = 0;
 
 document.addEventListener('DOMContentLoaded', initApp);
+
+function pulseBadge(element) {
+  if (!element) return;
+  element.classList.remove('is-celebrating');
+  void element.offsetWidth;
+  element.classList.add('is-celebrating');
+  window.setTimeout(() => element.classList.remove('is-celebrating'), 900);
+}
+
+function streakExtendedMessage(detail = {}) {
+  const streak = Math.max(1, Number(detail.streak) || 1);
+  const banked = Math.max(0, Number(detail.bankedFreezes) || 0);
+  if (detail.milestone && detail.earnedFreeze) {
+    return `${streak}-day streak milestone! You earned a Streak Freeze (${banked}/2 banked).`;
+  }
+  if (detail.earnedFreeze) {
+    return `${streak}-day streak! You earned a Streak Freeze (${banked}/2 banked).`;
+  }
+  if (detail.milestone) {
+    return `${streak}-day streak milestone! Amazing consistency.`;
+  }
+  if (detail.freezeProtected) {
+    return `Streak Freeze saved yesterday — your ${streak}-day streak lives on!`;
+  }
+  if (streak === 1) {
+    return 'Day 1 started — come back tomorrow to grow your streak!';
+  }
+  return `${streak}-day streak secured for today!`;
+}
 
 function initApp() {
   setupMobileViewport();
@@ -74,8 +105,36 @@ function initApp() {
     navigateTo(currentView);
     queueSmartReminderRefresh({ requestPermission: true });
   } });
+  const initialProtection = driveSync.ensureStreakProtection();
   setupEngagementSystem();
-  window.addEventListener('keepvocab:streak-extended', () => updateDashboardDerivedState());
+  window.addEventListener('keepvocab:streak-extended', event => {
+    updateDashboardDerivedState();
+    pulseBadge(document.querySelector('.badge-streak'));
+    pulseBadge(document.getElementById('today-streak-pill'));
+    lastStreakToastAt = Date.now();
+    showToast(streakExtendedMessage(event.detail), 'streak');
+  });
+  window.addEventListener('keepvocab:goal-reached', event => {
+    updateDashboardDerivedState();
+    pulseBadge(document.querySelector('.badge-goal'));
+    if (Date.now() - lastStreakToastAt < 600) return;
+    const completed = Number(event.detail?.completed || 0);
+    const dailyGoal = Math.max(1, Number(event.detail?.dailyGoal || 20));
+    showToast(`Daily goal reached! ${completed}/${dailyGoal} exercises complete.`, 'success');
+  });
+  const headerStreakBadge = document.querySelector('.badge-streak');
+  if (headerStreakBadge) {
+    headerStreakBadge.setAttribute('role', 'button');
+    headerStreakBadge.setAttribute('tabindex', '0');
+    const openStreakStats = () => navigateTo('stats');
+    headerStreakBadge.addEventListener('click', openStreakStats);
+    headerStreakBadge.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openStreakStats();
+      }
+    });
+  }
   setupReminderNavigation().catch(error => console.warn('Reminder navigation setup failed.', error));
   setupMonthDropdown();
   setupKeyboardShortcuts();
@@ -106,6 +165,9 @@ function initApp() {
   navigateTo(hash);
   renderConnectionState();
   updateDashboardDerivedState();
+  if (initialProtection?.appliedDates?.length) {
+    showToast(`Streak Freeze protected yesterday — your ${initialProtection.streak}-day streak is still alive!`, 'streak');
+  }
   // Installed inference starts on app opening, independent of idle time.
   void preloadMeaningModel().catch(error => console.warn('Meaning model preload failed.', error));
   void initializeImageLearning({ requestDownload: requestImageModelDownload }).catch(() => showToast('Image suggestions could not start. You can still choose photos.', 'error'));
@@ -117,16 +179,17 @@ function showToast(msg, type = 'success') {
 
   const toast = document.createElement('div');
   toast.id = 'app-toast';
-  toast.className = `app-toast ${type === 'success' ? 'success' : 'error'}`;
+  const variant = type === 'streak' ? 'streak' : type === 'success' ? 'success' : 'error';
+  toast.className = `app-toast ${variant}`;
   const icon = document.createElement('i');
-  icon.className = `fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}`;
+  icon.className = `fa-solid ${variant === 'streak' ? 'fa-fire' : variant === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}`;
   const label = document.createElement('span');
   label.textContent = String(msg);
   toast.append(icon, label);
   document.body.appendChild(toast);
-  playInteractionSound(type === 'success' ? 'success' : 'error');
+  playInteractionSound(variant === 'streak' ? 'streak' : variant === 'success' ? 'success' : 'error');
 
-  setTimeout(() => toast.remove(), 4000);
+  setTimeout(() => toast.remove(), variant === 'streak' ? 4800 : 4000);
 }
 
 function updateGoalDisplay() {
@@ -134,14 +197,24 @@ function updateGoalDisplay() {
   const display = `${goalCount} / ${dailyGoal}`;
   const hdrGoal = document.getElementById('hdr-goal-count');
   if (hdrGoal) hdrGoal.textContent = display;
+  document.querySelector('.badge-goal')?.classList.toggle('is-reached', goalCount >= dailyGoal);
 }
 
 function updateDashboardDerivedState() {
   const settings = driveSync.getSettings();
-  goalCount = Number(settings.reviewsToday || 0);
+  const summary = getStreakSummary(settings);
+  goalCount = summary.reviewsToday;
   updateGoalDisplay();
   const streak = document.getElementById('hdr-streak-count');
-  if (streak) streak.textContent = String(Number(settings.dailyStreak || 0));
+  if (streak) streak.textContent = String(summary.currentStreak);
+  const streakBadge = document.querySelector('.badge-streak');
+  if (streakBadge) {
+    streakBadge.classList.toggle('is-at-risk', summary.atRisk);
+    streakBadge.classList.toggle('is-safe', summary.practicedToday && summary.currentStreak > 0);
+    streakBadge.title = summary.atRisk
+      ? `${summary.currentStreak}-day streak at risk — 1 exercise saves it · ${summary.bankedFreezes}/${summary.maxFreezes} freezes`
+      : `${summary.currentStreak}-day streak · ${summary.bankedFreezes}/${summary.maxFreezes} freezes · View progress`;
+  }
   updateVisibleDailyProgress(settings);
   renderConnectionState();
 }
@@ -152,6 +225,7 @@ function updateVisibleDailyProgress(settings = driveSync.getSettings()) {
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
   const completed = settings.reviewsDate === localDateKey() ? Math.max(0, Number(settings.reviewsToday || 0)) : 0;
   updateDashboardGoalNudge(document, completed, dailyGoal, Number(settings.dailyStreak || 0));
+  updateDashboardStreakUI(document, settings);
   const dashboardCount = document.getElementById('today-progress-count');
   if (dashboardCount) dashboardCount.textContent = `${completed} of ${dailyGoal} exercises`;
   const track = document.getElementById('today-progress-track');
@@ -409,6 +483,7 @@ function setupEngagementSystem() {
       const today = localDateKey();
       if (today !== reminderDay) {
         reminderDay = today;
+        driveSync.ensureStreakProtection();
         updateDashboardDerivedState();
         if (['dashboard', 'stats', 'settings'].includes(currentView)) navigateTo(currentView);
       }
@@ -421,6 +496,7 @@ function setupEngagementSystem() {
     const today = localDateKey();
     if (today === reminderDay) return;
     reminderDay = today;
+    driveSync.ensureStreakProtection();
     updateDashboardDerivedState();
     if (currentView === 'dashboard') navigateTo('dashboard');
     queueSmartReminderRefresh();

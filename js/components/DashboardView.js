@@ -3,6 +3,7 @@ import { driveSync } from '../services/driveSync.js?v=18908';
 import { buildScheduledPracticeSession, evaluateDailyStudyPlan, weaknessScore } from '../services/dailySession.js?v=18908';
 import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18908';
 import { completedExercisesToday } from '../services/learningStats.js?v=18908';
+import { getStreakSummary } from '../services/studyActivity.js';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -36,6 +37,57 @@ export function updateDashboardGoalNudge(root, completed, goal, streak) {
   if (!nudge) return;
   nudge.textContent = dailyGoalEncouragement(completed, goal, streak);
   nudge.classList.toggle('is-complete', completed >= goal);
+}
+
+export function streakMilestoneCopy(summary) {
+  if (!summary) return 'Start a 3-day streak to earn your first Streak Freeze.';
+  if (summary.currentStreak === 0 && summary.longestStreak >= 3) {
+    return `Personal best: ${summary.longestStreak} days · 1 exercise starts a fresh streak.`;
+  }
+  if (summary.currentStreak === 0) {
+    return 'Reach a 3-day streak to earn your first Streak Freeze.';
+  }
+  const dayLabel = summary.daysToMilestone === 1 ? '1 day' : `${summary.daysToMilestone} days`;
+  const freezeBonus = summary.nextFreezeAtStreak === summary.nextMilestone ? ' (+1 Streak Freeze)' : '';
+  return `${dayLabel} to your ${summary.nextMilestone}-day milestone${freezeBonus}`;
+}
+
+export function renderStreakWeekStrip(weekWindow = []) {
+  return weekWindow.map(day => {
+    const icon = day.status === 'goal' ? 'fa-circle-check'
+      : day.status === 'done' ? 'fa-check'
+        : day.status === 'frozen' ? 'fa-shield-halved'
+          : day.status === 'at-risk' ? 'fa-fire'
+            : '';
+    const stateLabel = day.status === 'goal' ? `Daily goal reached (${day.count} exercises)`
+      : day.status === 'done' ? `${day.count} exercise${day.count === 1 ? '' : 's'}`
+        : day.status === 'frozen' ? 'Protected by Streak Freeze'
+          : day.status === 'at-risk' ? 'Practice today to keep your streak'
+            : day.isToday ? 'Today — not practiced yet'
+              : 'No practice';
+    return `<div class="streak-day is-${day.status}${day.isToday ? ' is-today' : ''}" role="listitem" title="${escapeHtml(`${day.dateKey}: ${stateLabel}`)}" aria-label="${escapeHtml(`${day.weekdayShort}: ${stateLabel}`)}"><span class="streak-day-dot">${icon ? `<i class="fa-solid ${icon}" aria-hidden="true"></i>` : ''}</span><small>${escapeHtml(day.weekdayShort)}</small></div>`;
+  }).join('');
+}
+
+export function updateDashboardStreakUI(root, settings = {}) {
+  const summary = getStreakSummary(settings);
+  const streakPill = root.querySelector('#today-streak-pill');
+  if (streakPill) {
+    streakPill.classList?.toggle('is-at-risk', summary.atRisk);
+    streakPill.classList?.toggle('is-safe', summary.practicedToday && summary.currentStreak > 0);
+  }
+  const freezePill = root.querySelector('#today-freeze-pill');
+  if (freezePill) {
+    freezePill.textContent = `${summary.bankedFreezes}/${summary.maxFreezes} freeze${summary.maxFreezes === 1 ? '' : 's'}`;
+  }
+  const milestoneNote = root.querySelector('#today-milestone-note');
+  if (milestoneNote) milestoneNote.textContent = streakMilestoneCopy(summary);
+  const week = root.querySelector('#today-streak-week');
+  if (week) week.innerHTML = renderStreakWeekStrip(summary.weekWindow);
+  const alert = root.querySelector('#today-streak-alert');
+  if (alert && !summary.atRisk && !(summary.protectedYesterday && !summary.practicedToday)) {
+    alert.hidden = true;
+  }
 }
 
 export function dashboardWorkoutState(session, plan, hasWords) {
@@ -84,6 +136,12 @@ export function renderDashboardView(container, onNavigate) {
   const completedToday = completedExercisesToday(settings);
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
   const progress = Math.min(100, Math.round(completedToday / dailyGoal * 100));
+  const streakSummary = getStreakSummary(settings);
+  const showStreakAlert = (streakSummary.atRisk || (streakSummary.protectedYesterday && !streakSummary.practicedToday)) && activeWords.length > 0;
+  const quickSaveRoute = session.exercises.length ? 'review' : activeWordCount >= 2 ? 'choose' : 'flashcards';
+  const streakAlertCopy = streakSummary.protectedYesterday
+    ? `Streak Freeze protected yesterday. Complete 1 exercise today to keep your ${streakSummary.currentStreak}-day streak going.`
+    : `Keep your ${streakSummary.currentStreak}-day streak alive — 1 quick exercise before midnight saves it.`;
   const stages = activeWords.reduce((counts, word) => {
     counts[masteryStage(normalizeMastery(word))] += 1;
     return counts;
@@ -111,7 +169,24 @@ export function renderDashboardView(container, onNavigate) {
 
       </div>
     </article>
-    <div class="spec-card today-progress-card"><div class="today-progress-copy"><span>Your daily goal</span><strong id="today-progress-count">${completedToday} of ${dailyGoal} exercises</strong><small id="today-goal-nudge" class="${completedToday >= dailyGoal ? 'is-complete' : ''}">${escapeHtml(dailyGoalEncouragement(completedToday, dailyGoal, Number(settings.dailyStreak || 0)))}</small></div><div class="today-progress-track" id="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div><span class="today-streak"><i class="fa-solid fa-fire" aria-hidden="true"></i> <span id="today-streak-label">${Number(settings.dailyStreak || 0)} day streak</span></span></div>
+    <div class="spec-card today-progress-card">
+      <div class="today-progress-top">
+        <div class="today-progress-copy"><span>Your daily goal</span><strong id="today-progress-count">${completedToday} of ${dailyGoal} exercises</strong><small id="today-goal-nudge" class="${completedToday >= dailyGoal ? 'is-complete' : ''}">${escapeHtml(dailyGoalEncouragement(completedToday, dailyGoal, streakSummary.currentStreak))}</small></div>
+        <span class="today-streak ${streakSummary.atRisk ? 'is-at-risk' : streakSummary.practicedToday && streakSummary.currentStreak > 0 ? 'is-safe' : ''}" id="today-streak-pill"><i class="fa-solid fa-fire" aria-hidden="true"></i> <span id="today-streak-label">${streakSummary.currentStreak} day streak</span></span>
+      </div>
+      <div class="today-progress-track" id="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div>
+      <div class="today-streak-rhythm">
+        <div class="streak-week-strip" id="today-streak-week" role="list" aria-label="Last 7 days study rhythm">${renderStreakWeekStrip(streakSummary.weekWindow)}</div>
+        <div class="streak-meta-block">
+          <div class="streak-meta-pills">
+            <span class="streak-meta-pill freeze" title="Streak Freezes automatically protect a missed day. Earn one at 3 days and every 7-day streak milestone (max 2 banked)."><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> <span id="today-freeze-pill">${streakSummary.bankedFreezes}/${streakSummary.maxFreezes} freezes</span></span>
+            ${streakSummary.longestStreak > 0 ? `<span class="streak-meta-pill best"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i> Best ${streakSummary.longestStreak}d</span>` : ''}
+          </div>
+          <small class="streak-milestone-note" id="today-milestone-note">${escapeHtml(streakMilestoneCopy(streakSummary))}</small>
+        </div>
+      </div>
+      ${showStreakAlert ? `<div class="today-streak-alert ${streakSummary.protectedYesterday ? 'is-freeze' : 'is-risk'}" id="today-streak-alert" role="status"><i class="fa-solid ${streakSummary.protectedYesterday ? 'fa-shield-halved' : 'fa-fire'}" aria-hidden="true"></i><span>${escapeHtml(streakAlertCopy)}</span><button type="button" class="today-streak-save-btn" id="today-save-streak">Quick save</button></div>` : ''}
+    </div>
     <div class="today-grid">
       <section class="spec-card practice-launchpad" aria-labelledby="practice-heading"><div class="card-header-bar"><div><h2 id="practice-heading">Practice your way</h2><p>A little variety keeps it interesting.</p></div><i class="fa-solid fa-dumbbell" aria-hidden="true"></i></div><div class="practice-quick-grid">${MODES.map(([view, icon, title, copy], index) => `<button class="practice-quick-card" style="--i:${index}" data-practice-view="${view}"><i class="fa-solid ${icon}" aria-hidden="true"></i><span><strong>${title}</strong><small>${copy}</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>`).join('')}</div></section>
       <aside class="today-insights"><section class="spec-card today-insight-card"><div class="card-header-bar"><h2>Your vocabulary</h2><i class="fa-solid fa-book-open" aria-hidden="true"></i></div><div class="today-section-heading"><div><h3>${activeWordCount} saved ${activeWordCount === 1 ? 'word' : 'words'}</h3><small>${activeWords.length} tracked meaning${activeWords.length === 1 ? '' : 's'} in ${notebookLabel}</small></div></div><div class="mastery-mini-list"><div><span>Recognized</span><strong>${stages.recognized + stages.recalled + stages.context + stages.productive}</strong></div><div><span>Reliably recalled</span><strong>${stages.recalled + stages.context + stages.productive}</strong></div><div><span>Used in context</span><strong>${stages.context + stages.productive}</strong></div><div><span>Used productively</span><strong>${stages.productive}</strong></div></div><button class="text-action" data-practice-view="stats">See your progress <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></section>
@@ -122,6 +197,7 @@ export function renderDashboardView(container, onNavigate) {
   </section>`;
 
   container.querySelector('#start-daily-session').addEventListener('click', () => session.exercises.length ? go('review', onNavigate) : practiceWords.length ? go('library', onNavigate) : document.getElementById('btn-header-quick-add')?.click());
+  container.querySelector('#today-save-streak')?.addEventListener('click', () => go(quickSaveRoute, onNavigate));
   container.querySelectorAll('[data-practice-view]').forEach(button => button.addEventListener('click', () => go(button.dataset.practiceView, onNavigate)));
   container.querySelector('#today-settings').addEventListener('click', () => go('settings', onNavigate));
   container.querySelector('#dashboard-drive-settings').addEventListener('click', () => go('settings', onNavigate));

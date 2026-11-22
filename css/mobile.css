@@ -530,3 +530,64 @@
   .typed-review-prompt:has(.practice-answer-form) > .review-pos-hint { grid-column: 1; justify-self: center; }
   .typed-review-prompt .practice-answer-form { grid-column: 2; grid-row: 1 / span 4; align-self: center; }
 }
+
+/* Streak Engagement mobile layout (v1.13) */
+@media (max-width: 720px) {
+  .nav-user-area .badge-streak {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 40px;
+    padding: 6px 10px;
+    font-size: .78rem;
+  }
+  .nav-user-area .badge-streak .badge-detail { display: none; }
+  .nav-user-area .badge-streak .badge-compact { display: inline; }
+
+  .today-view .today-progress-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 15px 16px;
+  }
+  .today-progress-top {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .today-streak-rhythm {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .streak-week-strip {
+    width: 100%;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .streak-day-dot { width: 30px; height: 30px; font-size: .7rem; }
+  .streak-meta-block { align-items: flex-start; }
+  .streak-meta-pills { justify-content: flex-start; }
+  .streak-milestone-note { text-align: left; }
+  .today-streak-alert {
+    flex-wrap: wrap;
+    padding: 11px 12px;
+    font-size: .78rem;
+  }
+  .today-streak-save-btn {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .streak-heatmap { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .heatmap-cell { min-height: 28px; border-radius: 7px; }
+  .streak-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .streak-milestones { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+  .milestone-badge { padding: 9px 4px; }
+}
+@media (max-width: 359px) {
+  .nav-user-area .badge-streak { padding: 6px 8px; font-size: .74rem; }
+  .streak-day-dot { width: 26px; height: 26px; font-size: .64rem; }
+  .streak-milestones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

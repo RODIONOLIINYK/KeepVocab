@@ -1,9 +1,10 @@
-import { mergeActivityByDevice, aggregateActivity, currentStudyStats } from './studyActivity.js';
+import { mergeActivityByDevice, aggregateActivity, currentStudyStats, longestStreakFromActivity, normalizedDateList } from './studyActivity.js';
 import { COURSE_DEFINITIONS, getCourseDefinition, isCourseId } from '../data/courses.js';
 import { normalizeTranslationLanguage } from './translationSettings.js';
 
 export const COURSE_SCOPED_SETTING_KEYS = Object.freeze([
-  'activeNotebook', 'dailyGoal', 'practiceSessionSize', 'dailyStreak', 'lastReviewDate', 'reviewsToday', 'reviewsDate',
+  'activeNotebook', 'dailyGoal', 'practiceSessionSize', 'dailyStreak', 'longestStreak', 'streakFreezeDates', 'streakFreezeAwards',
+  'lastReviewDate', 'reviewsToday', 'reviewsDate',
   'reviewActivity', 'exerciseActivityByDevice', 'learningStats', 'speakingProgress',
   'reminderEnabled', 'reminderExplicitlyDisabled', 'smartReminderEnabled', 'streakReminderEnabled', 'reminderTime', 'reviewStartMoments',
   'practicePreferenceUpdatedAt'
@@ -67,6 +68,9 @@ export function defaultCourseProfile(courseId, seed = {}) {
     dailyGoal: course.dailyGoal,
     practiceSessionSize: 20,
     dailyStreak: 0,
+    longestStreak: 0,
+    streakFreezeDates: [],
+    streakFreezeAwards: [],
     lastReviewDate: null,
     reviewsToday: 0,
     reviewsDate: null,
@@ -197,6 +201,19 @@ export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
   const practicePreferences = mergePracticePreferences(localProfile, remoteProfile, baseProfile);
   const exerciseActivityByDevice = mergeActivityByDevice(localProfile, remoteProfile);
   const reviewActivity = aggregateActivity(exerciseActivityByDevice);
+  const streakFreezeDates = normalizedDateList([
+    ...(Array.isArray(localProfile.streakFreezeDates) ? localProfile.streakFreezeDates : []),
+    ...(Array.isArray(remoteProfile.streakFreezeDates) ? remoteProfile.streakFreezeDates : [])
+  ]);
+  const streakFreezeAwards = normalizedDateList([
+    ...(Array.isArray(localProfile.streakFreezeAwards) ? localProfile.streakFreezeAwards : []),
+    ...(Array.isArray(remoteProfile.streakFreezeAwards) ? remoteProfile.streakFreezeAwards : [])
+  ]);
+  const longestStreak = longestStreakFromActivity(
+    reviewActivity,
+    streakFreezeDates,
+    Math.max(Number(localProfile.longestStreak) || 0, Number(remoteProfile.longestStreak) || 0)
+  );
   const lastReviewDate = Object.keys(reviewActivity).sort().at(-1) || baseProfile.lastReviewDate;
   const reviewStartMoments = mergeReviewStartMoments(localProfile, remoteProfile);
   const explicitlyDisabled = baseProfile.reminderExplicitlyDisabled === true;
@@ -210,8 +227,11 @@ export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
     speakingProgress,
     exerciseActivityByDevice,
     reviewActivity,
+    streakFreezeDates,
+    streakFreezeAwards,
+    longestStreak,
     lastReviewDate,
-    ...currentStudyStats({ ...baseProfile, reviewActivity, lastReviewDate })
+    ...currentStudyStats({ ...baseProfile, reviewActivity, streakFreezeDates, longestStreak, lastReviewDate })
   } } });
 }
 

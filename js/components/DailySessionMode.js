@@ -5,6 +5,7 @@ import { driveSync } from '../services/driveSync.js?v=18908';
 import { buildScheduledPracticeSession, buildWeakWordsSession, weaknessScore } from '../services/dailySession.js?v=18908';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
 import { recordSessionCompletion } from '../services/learningStats.js?v=18908';
+import { getStreakSummary } from '../services/studyActivity.js';
 import { speakWord } from '../services/speechService.js?v=18908';
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
 import { buildWordChoices } from '../services/wordChoices.js?v=18908';
@@ -47,8 +48,23 @@ function refreshPlanAt(container, at, refresh) {
   setTimeout(check, Math.max(50, Math.min(deadline - Date.now() + 50, 60000)));
 }
 
+function renderSessionStreakStrip(settings) {
+  const summary = getStreakSummary(settings);
+  const streakLabel = summary.currentStreak > 0
+    ? `${summary.currentStreak}-day streak`
+    : 'Streak ready';
+  const statusCopy = summary.goalReachedToday
+    ? `Daily goal reached (${summary.reviewsToday}/${summary.dailyGoal})`
+    : `${summary.reviewsToday}/${summary.dailyGoal} today`;
+  const milestoneCopy = summary.currentStreak > 0
+    ? `${summary.daysToMilestone}d to ${summary.nextMilestone}d milestone`
+    : '1 exercise starts a streak';
+  return `<div class="session-rhythm-bar" aria-label="Streak summary"><span><i class="fa-solid fa-fire" aria-hidden="true"></i> <strong>${escapeHtml(streakLabel)}</strong></span><span><i class="fa-solid fa-bullseye" aria-hidden="true"></i> ${escapeHtml(statusCopy)}</span><span><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> ${summary.bankedFreezes}/${summary.maxFreezes} freezes</span><span class="session-rhythm-milestone">${escapeHtml(milestoneCopy)}</span></div>`;
+}
+
 function renderScheduledRestState(container, onNavigate, notebookLabel, result = null) {
-  const session = buildScheduledPracticeSession(getScheduledPracticeWords(driveSync), ensureDailyStudyPlan(driveSync));
+  const settings = ensureDailyStudyPlan(driveSync);
+  const session = buildScheduledPracticeSession(getScheduledPracticeWords(driveSync), settings);
   const plan = session.dailyPlan;
   const ready = session.exercises.length > 0;
   const waiting = plan.waitingTodayCount > 0;
@@ -60,7 +76,7 @@ function renderScheduledRestState(container, onNavigate, notebookLabel, result =
     : waiting ? `${plan.waitingTodayCount} word${plan.waitingTodayCount === 1 ? ' still needs' : 's still need'} practice today.${nextTime ? ` The next review opens at ${nextTime}.` : ' They return when their review is due.'} FSRS spaces learning steps so you can try recalling them again.`
       : plan.isPlanComplete ? `You finished today’s plan.${plan.reviseTomorrowCount ? ` ${plan.reviseTomorrowCount} word${plan.reviseTomorrowCount === 1 ? ' is' : 's are'} currently scheduled to revise tomorrow.` : ' Your next plan starts at 8:00 AM.'}`
         : 'Your saved words are resting until their scheduled reviews. Your next plan starts at 8:00 AM.';
-  container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-complete-heading"><div class="spec-card practice-shell review-recall-shell"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-${waiting ? 'clock' : 'dumbbell'}" aria-hidden="true"></i> Practice</div><span class="muted-label">${escapeHtml(notebookLabel)}</span></div><div class="useful-empty-state mode-complete"><img class="mascot-result" src="assets/${waiting ? 'keepvocab-sprig-thinking' : 'keepvocab-sprig-celebrate'}.webp" alt="Sprig"><h2 id="practice-complete-heading">${heading}</h2><p role="status">${result ? `${result.correct} of ${result.total} exercises were correct. ` : ''}${escapeHtml(nextCopy)}</p>${result ? `<div class="review-score-orb"><strong>${result.correct}</strong><span>correct</span></div>` : ''}<div class="inline-actions">${ready ? '<button class="btn-green-solid" id="daily-continue">Continue today’s plan</button>' : ''}<button class="${ready ? 'status-pill offline' : 'btn-green-solid'}" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-open-library">Open library</button>${result ? '<button class="status-pill offline" id="daily-stats">View progress</button>' : ''}</div></div></div></section>`;
+  container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-complete-heading"><div class="spec-card practice-shell review-recall-shell"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-${waiting ? 'clock' : 'dumbbell'}" aria-hidden="true"></i> Practice</div><span class="muted-label">${escapeHtml(notebookLabel)}</span></div><div class="useful-empty-state mode-complete"><img class="mascot-result" src="assets/${waiting ? 'keepvocab-sprig-thinking' : 'keepvocab-sprig-celebrate'}.webp" alt="Sprig"><h2 id="practice-complete-heading">${heading}</h2><p role="status">${result ? `${result.correct} of ${result.total} exercises were correct. ` : ''}${escapeHtml(nextCopy)}</p>${result ? `<div class="review-score-orb"><strong>${result.correct}</strong><span>correct</span></div>${renderSessionStreakStrip(settings)}` : ''}<div class="inline-actions">${ready ? '<button class="btn-green-solid" id="daily-continue">Continue today’s plan</button>' : ''}<button class="${ready ? 'status-pill offline' : 'btn-green-solid'}" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-open-library">Open library</button>${result ? '<button class="status-pill offline" id="daily-stats">View progress</button>' : ''}</div></div></div></section>`;
   container.querySelector('#daily-continue')?.addEventListener('click', () => renderDailySessionMode(container, onNavigate));
   container.querySelector('#daily-finish').addEventListener('click', () => go('dashboard', onNavigate));
   container.querySelector('#daily-open-library').addEventListener('click', () => go('library', onNavigate));
@@ -108,7 +124,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       renderScheduledRestState(container, onNavigate, practiceNotebookLabel, { correct: score, total: queue.length });
       return;
     } else {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-complete-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Practice complete</span><h1>${options.kind === 'weak' ? 'Your weak words are getting stronger' : 'You moved your vocabulary forward'}</h1><p>${score} of ${queue.length} exercises were correct. ${improved ? `${improved} weak word${improved === 1 ? '' : 's'} improved.` : 'Mistakes are already shaping your next workout.'}</p><div class="daily-complete-metrics"><div><strong>${score}</strong><span>correct</span></div><div><strong>${queue.length}</strong><span>exercises</span></div><div><strong>${improved}</strong><span>recovered</span></div></div><div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card daily-complete-card"><img src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><span class="eyebrow">Practice complete</span><h1>${options.kind === 'weak' ? 'Your weak words are getting stronger' : 'You moved your vocabulary forward'}</h1><p>${score} of ${queue.length} exercises were correct. ${improved ? `${improved} weak word${improved === 1 ? '' : 's'} improved.` : 'Mistakes are already shaping your next workout.'}</p><div class="daily-complete-metrics"><div><strong>${score}</strong><span>correct</span></div><div><strong>${queue.length}</strong><span>exercises</span></div><div><strong>${improved}</strong><span>recovered</span></div></div>${renderSessionStreakStrip(driveSync.getSettings())}<div class="inline-actions"><button class="btn-green-solid" id="daily-finish">Back to Today</button><button class="status-pill offline" id="daily-stats">View progress</button></div></div></section>`;
     }
     container.querySelector('#daily-finish').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelector('#daily-stats').addEventListener('click', () => go('stats', onNavigate));
