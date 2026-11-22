@@ -25,10 +25,15 @@ test('local calendar streak spans year boundaries and DST without a 90-day cap',
 });
 test('study recording updates streak and daily totals together without double-counting days', () => {
   const service = new DriveSyncService(new MemoryStorage());
+  service.updateSettings({ dailyGoal: 2 });
   service.recordReview(new Date(2026, 8, 4, 12));
-  service.recordReview(today); service.recordReview(today);
+  assert.equal(service.read('keepvocab_settings').dailyStreak, 0, 'streak stays 0 until daily goal is reached');
+  service.recordReview(new Date(2026, 8, 4, 12));
+  service.recordReview(today);
+  service.recordReview(today);
+  service.recordReview(today);
   const stats = service.read('keepvocab_settings');
-  assert.equal(stats.dailyStreak, 2); assert.equal(stats.reviewsToday, 2);
+  assert.equal(stats.dailyStreak, 2); assert.equal(stats.reviewsToday, 3);
 });
 test('repeating reminder copy never freezes numbers or yesterday’s remaining goal', () => {
   for (const dueCount of [0, 1, 54]) {

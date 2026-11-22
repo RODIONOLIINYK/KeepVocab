@@ -9,7 +9,7 @@ import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18908';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections } from '../services/wordSelection.js?v=18908';
 import { stableWordChoices } from '../services/wordChoices.js?v=18908';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput } from './PracticeElements.js?v=18908';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput, renderPracticeMascot } from './PracticeElements.js?v=18909';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function emptyMode(container, icon, title, detail, onNavigate) {
@@ -26,6 +26,7 @@ export function renderSpellingMode(container, onNavigate) {
   const originalCount = queue.length;
   let index = 0;
   let score = 0;
+  let combo = 0;
   let answered = false;
   let correct = false;
   let questionStartedAt = performance.now();
@@ -39,14 +40,17 @@ export function renderSpellingMode(container, onNavigate) {
     }
     const word = queue[index];
     container.innerHTML = `
-      <section class="full-view-stack"><div class="spec-card practice-shell">
+      <section class="full-view-stack"><div class="spec-card practice-shell${combo >= 3 ? ' is-hot-combo' : ''}">
         ${renderPracticeHeader({ exitId: 'spell-exit', label: '', current: index, total: queue.length, score, answered })}
         <div class="practice-prompt">
-          <div class="practice-icon"><i class="fa-solid fa-headphones"></i></div>
-          <p>Listen, then type the word that matches this definition.</p>
-          <blockquote>${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}
-          <div class="listen-controls"><button class="audio-btn-circle large" id="spell-listen" aria-label="Play word"><i class="fa-solid fa-volume-high"></i></button><button class="status-pill offline" id="spell-listen-slow"><i class="fa-solid fa-gauge-simple"></i> Slow</button></div>
-          <p class="speech-help" id="spell-audio-status" role="status" aria-live="polite">Tap the speaker to hear the word. Use Slow to repeat it clearly.</p>
+          ${renderPracticeMascot({
+            heading: 'Type what you hear',
+            bubbleHtml: `<div class="duo-bubble-audio"><button class="audio-btn-circle" id="spell-listen" aria-label="Play word"><i class="fa-solid fa-volume-high"></i></button><button class="status-pill offline" id="spell-listen-slow"><i class="fa-solid fa-gauge-simple"></i> Slow</button></div><blockquote class="duo-bubble-quote">${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}`,
+            answered,
+            correct,
+            combo
+          })}
+          <p class="speech-help" id="spell-audio-status" role="status" aria-live="polite"></p>
           ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word will return sooner for another review.'}</span></div><button class="btn-green-solid" id="spell-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
         </div>
       </div></section>`;
@@ -69,8 +73,8 @@ export function renderSpellingMode(container, onNavigate) {
       const answer = container.querySelector('#spell-answer').value.trim().toLowerCase();
       if (!answer) return;
       correct = evaluateRecallAnswer(word.word, answer);
-      playInteractionSound(correct ? 'correct' : 'wrong');
-      if (correct) score += 1;
+      if (correct) { score += 1; combo += 1; } else { combo = 0; }
+      playInteractionSound(correct ? 'correct' : 'wrong', { combo });
       recordExerciseResult({ wordId: word.id, exerciseType: 'listen-and-spell', correct, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'listening-recall', producedUnaided: correct });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       answered = true;
@@ -92,6 +96,7 @@ export function renderChooseWordMode(container, onNavigate) {
   const originalCount = queue.length;
   let index = 0;
   let score = 0;
+  let combo = 0;
   let selectedId = null;
   let questionStartedAt = performance.now();
   const choiceState = { targetId: null, options: [] };
@@ -108,12 +113,16 @@ export function renderChooseWordMode(container, onNavigate) {
     const answered = selectedId !== null;
     const isCorrect = evaluateChoiceAnswer(target.id, selectedId);
     container.innerHTML = `
-      <section class="full-view-stack"><div class="spec-card practice-shell">
+      <section class="full-view-stack"><div class="spec-card practice-shell${combo >= 3 ? ' is-hot-combo' : ''}">
         ${renderPracticeHeader({ exitId: 'choose-exit', label: 'Choose Word', current: index, total: queue.length, score, answered })}
         <div class="practice-prompt choose-prompt">
-          <img class="practice-mascot" src="assets/keepvocab-sprig-thinking.webp" alt="" aria-hidden="true">
-          <p>Which word matches this definition?</p>
-          <blockquote>${escapeHtml(definitionForLearning(target))}</blockquote>${isUkrainianTranslationEnabled() && target.translationLanguage === 'uk' && target.translation ? `<p class="word-translation" lang="uk">${escapeHtml(target.translation)}</p>` : ''}
+          ${renderPracticeMascot({
+            heading: 'Choose the word',
+            bubbleHtml: `<blockquote class="duo-bubble-quote">${escapeHtml(definitionForLearning(target))}</blockquote>${isUkrainianTranslationEnabled() && target.translationLanguage === 'uk' && target.translation ? `<p class="word-translation" lang="uk">${escapeHtml(target.translation)}</p>` : ''}`,
+            answered,
+            correct: isCorrect,
+            combo
+          })}
           ${renderChoiceGrid({ options, targetId: target.id, selectedId })}
           ${renderAnswerFeedback({ answered, correct: isCorrect, answer: target.word, detail: exampleForLearning(target) || (isCorrect ? 'You matched the meaning.' : ''), nextId: 'choose-next', nextLabel: index + 1 === queue.length ? 'See result' : 'Next question' })}
         </div>
@@ -123,8 +132,8 @@ export function renderChooseWordMode(container, onNavigate) {
       if (selectedId !== null) return;
       selectedId = button.dataset.choice;
       const correct = evaluateChoiceAnswer(target.id, selectedId);
-      playInteractionSound(correct ? 'correct' : 'wrong');
-      if (correct) score += 1;
+      if (correct) { score += 1; combo += 1; } else { combo = 0; }
+      playInteractionSound(correct ? 'correct' : 'wrong', { combo });
       recordExerciseResult({ wordId: target.id, exerciseType: 'choose-word', correct, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: correct ? '' : selectedId });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       render();

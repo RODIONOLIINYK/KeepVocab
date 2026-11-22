@@ -26,6 +26,7 @@ import { getStreakSummary } from './services/studyActivity.js';
 import { renderDailySessionMode } from './components/DailySessionMode.js?v=18908';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18908';
 import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18908';
+import { renderSentenceBuilderMode } from './components/SentenceBuilderMode.js?v=18908';
 import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18908';
 import { renderSettingsView, requestImageModelDownload } from './components/SettingsView.js?v=18908';
 
@@ -210,9 +211,9 @@ function updateDashboardDerivedState() {
   const streakBadge = document.querySelector('.badge-streak');
   if (streakBadge) {
     streakBadge.classList.toggle('is-at-risk', summary.atRisk);
-    streakBadge.classList.toggle('is-safe', summary.practicedToday && summary.currentStreak > 0);
+    streakBadge.classList.toggle('is-safe', summary.streakSafeToday);
     streakBadge.title = summary.atRisk
-      ? `${summary.currentStreak}-day streak at risk — 1 exercise saves it · ${summary.bankedFreezes}/${summary.maxFreezes} freezes`
+      ? `${summary.currentStreak}-day streak — finish today’s goal (${summary.reviewsToday}/${summary.dailyGoal}) to keep it · ${summary.bankedFreezes}/${summary.maxFreezes} freezes`
       : `${summary.currentStreak}-day streak · ${summary.bankedFreezes}/${summary.maxFreezes} freezes · View progress`;
   }
   updateVisibleDailyProgress(settings);
@@ -227,7 +228,7 @@ function updateVisibleDailyProgress(settings = driveSync.getSettings()) {
   updateDashboardGoalNudge(document, completed, dailyGoal, Number(settings.dailyStreak || 0));
   updateDashboardStreakUI(document, settings);
   const dashboardCount = document.getElementById('today-progress-count');
-  if (dashboardCount) dashboardCount.textContent = `${completed} of ${dailyGoal} exercises`;
+  if (dashboardCount) dashboardCount.textContent = `${completed} / ${dailyGoal}`;
   const track = document.getElementById('today-progress-track');
   if (track) {
     track.setAttribute('aria-valuemax', String(dailyGoal));
@@ -509,12 +510,12 @@ function setupEngagementSystem() {
 
 function navigateTo(viewName) {
   const navigationId = ++navigationRevision;
-  if (viewName === 'daily') {
+  if (viewName === 'daily' || viewName === 'weak') {
     viewName = 'review';
-    if (location.hash === '#daily') history.replaceState(null, '', '#review');
+    if (location.hash === '#daily' || location.hash === '#weak') history.replaceState(null, '', '#review');
   }
   if (viewName === 'challenge') viewName = 'choose';
-  if (!['dashboard', 'weak', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'speaking', 'settings'].includes(viewName)) viewName = 'dashboard';
+  if (!['dashboard', 'review', 'library', 'stats', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'sentence', 'useit', 'speaking', 'settings'].includes(viewName)) viewName = 'dashboard';
   if (currentView === 'match' && viewName !== 'match') teardownMatchSprintMode();
   if (currentView === 'speaking' && viewName !== 'speaking') teardownSpeakingMode();
   if (currentView === 'useit' && viewName !== 'useit') teardownUseItMode();
@@ -522,7 +523,7 @@ function navigateTo(viewName) {
   if (location.hash !== `#${viewName}`) history.pushState(null, '', `#${viewName}`);
   document.body.classList.toggle('speaking-view', viewName === 'speaking');
   document.body.classList.toggle('dashboard-view', viewName === 'dashboard');
-  document.body.classList.toggle('immersive-view', ['weak', 'review', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'useit', 'library', 'stats', 'settings'].includes(viewName));
+  document.body.classList.toggle('immersive-view', ['review', 'spelling', 'choose', 'visual', 'match', 'flashcards', 'context', 'sentence', 'useit', 'library', 'stats', 'settings'].includes(viewName));
   const activeMonthLabel = document.getElementById('active-month-label');
   if (activeMonthLabel) activeMonthLabel.textContent = driveSync.getActiveNotebook().replace(/ Vocabulary$/, '');
 
@@ -536,9 +537,7 @@ function navigateTo(viewName) {
   const container = document.getElementById('view-container');
   if (!container) return;
 
-  if (viewName === 'weak') {
-    renderDailySessionMode(container, navigateTo, { kind: 'weak' });
-  } else if (viewName === 'review') {
+  if (viewName === 'review') {
     renderDailySessionMode(container, navigateTo);
 
   } else if (viewName === 'library') {
@@ -557,6 +556,8 @@ function navigateTo(viewName) {
     renderFlashcardsMode(container, navigateTo);
   } else if (viewName === 'context') {
     renderContextQuizMode(container, navigateTo);
+  } else if (viewName === 'sentence') {
+    renderSentenceBuilderMode(container, navigateTo);
   } else if (viewName === 'useit') {
     renderUseItMode(container, navigateTo);
   } else if (viewName === 'speaking') {

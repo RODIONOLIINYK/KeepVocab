@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v113001-hide-scrollbars-subtle-goal';
+const CACHE_NAME = 'keepvocab-v114000-sentence-builder-duo-practice';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -87,6 +87,8 @@ const ASSETS_TO_CACHE = [
   './js/services/exerciseEvaluation.js',
   './js/services/useItEvaluation.js',
   './js/services/dailySession.js',
+  './js/services/sentenceBuilder.js',
+  './js/services/dailyQuests.js',
   './js/services/learningStats.js',
   './js/services/studyActivity.js',
   './js/services/appUpdates.js',
@@ -113,6 +115,7 @@ const ASSETS_TO_CACHE = [
   './js/components/DailySessionMode.js',
   './js/components/FlashcardsMode.js',
   './js/components/ContextQuizMode.js',
+  './js/components/SentenceBuilderMode.js',
   './js/components/UseItMode.js',
   './js/components/UseItExercise.js',
   './js/components/SettingsView.js',

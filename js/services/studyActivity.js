@@ -63,20 +63,21 @@ export function aggregateActivity(shards) {
   return normalizedActivity(totals);
 }
 
-export function streakFromActivity(activity, now = new Date(), freezeDates = []) {
+export function streakFromActivity(activity, now = new Date(), freezeDates = [], dailyGoal = 1) {
+  const threshold = Math.max(1, Math.round(Number(dailyGoal) || 1));
   const today = localDateKey(now);
   const yesterdayDate = shiftDate(now, -1);
   const yesterday = localDateKey(yesterdayDate);
   const freezeSet = new Set(normalizedDateList(freezeDates));
   let cursor = localNoon(now);
-  if (!(Number(activity?.[today]) > 0)) {
-    if (!(Number(activity?.[yesterday]) > 0) && !freezeSet.has(yesterday)) return 0;
+  if (!(Number(activity?.[today]) >= threshold)) {
+    if (!(Number(activity?.[yesterday]) >= threshold) && !freezeSet.has(yesterday)) return 0;
     cursor = yesterdayDate;
   }
   let streak = 0;
   while (true) {
     const key = localDateKey(cursor);
-    if (Number(activity?.[key]) > 0) {
+    if (Number(activity?.[key]) >= threshold) {
       streak += 1;
       cursor.setDate(cursor.getDate() - 1);
       continue;
@@ -90,9 +91,10 @@ export function streakFromActivity(activity, now = new Date(), freezeDates = [])
   return streak;
 }
 
-export function longestStreakFromActivity(activity = {}, freezeDates = [], storedBest = 0) {
+export function longestStreakFromActivity(activity = {}, freezeDates = [], storedBest = 0, dailyGoal = 1) {
+  const threshold = Math.max(1, Math.round(Number(dailyGoal) || 1));
   const activeDates = Object.entries(activity && typeof activity === 'object' ? activity : {})
-    .filter(([date, count]) => DATE_KEY_PATTERN.test(date) && Number(count) > 0)
+    .filter(([date, count]) => DATE_KEY_PATTERN.test(date) && Number(count) >= threshold)
     .map(([date]) => date);
   const freezeSet = new Set(normalizedDateList(freezeDates));
   const timeline = [...new Set([...activeDates, ...freezeSet])].sort((a, b) => a.localeCompare(b));
@@ -143,30 +145,31 @@ export function nextFreezeMilestone(streak, banked = 0) {
 
 export function autoApplyStreakFreezes(profile = {}, now = new Date()) {
   const activity = profile?.reviewActivity || {};
+  const dailyGoal = Math.max(1, Math.round(Number(profile?.dailyGoal) || 20));
   const awards = normalizedDateList(profile?.streakFreezeAwards);
   const used = normalizedDateList(profile?.streakFreezeDates);
   const usedSet = new Set(used);
   const today = localDateKey(now);
   const banked = bankedStreakFreezes(awards, used);
-  if (banked <= 0 || Number(activity[today]) > 0) {
+  if (banked <= 0 || Number(activity[today]) >= dailyGoal) {
     return { appliedDates: [], streakFreezeDates: used, changed: false };
   }
   const yesterdayKey = localDateKey(shiftDate(now, -1));
-  if (Number(activity[yesterdayKey]) > 0 || usedSet.has(yesterdayKey)) {
+  if (Number(activity[yesterdayKey]) >= dailyGoal || usedSet.has(yesterdayKey)) {
     return { appliedDates: [], streakFreezeDates: used, changed: false };
   }
   const gapDates = [];
   for (let offset = 1; offset <= banked; offset += 1) {
     const candidateDate = shiftDate(now, -offset);
     const key = localDateKey(candidateDate);
-    if (Number(activity[key]) > 0 || usedSet.has(key)) break;
+    if (Number(activity[key]) >= dailyGoal || usedSet.has(key)) break;
     gapDates.push(key);
   }
   if (!gapDates.length) return { appliedDates: [], streakFreezeDates: used, changed: false };
   const anchorDate = shiftDate(now, -(gapDates.length + 1));
   const anchorKey = localDateKey(anchorDate);
-  const anchorHasSupport = Number(activity[anchorKey]) > 0 || usedSet.has(anchorKey);
-  if (!anchorHasSupport || streakFromActivity(activity, anchorDate, used) <= 0) {
+  const anchorHasSupport = Number(activity[anchorKey]) >= dailyGoal || usedSet.has(anchorKey);
+  if (!anchorHasSupport || streakFromActivity(activity, anchorDate, used, dailyGoal) <= 0) {
     return { appliedDates: [], streakFreezeDates: used, changed: false };
   }
   const appliedDates = [...gapDates].reverse();
@@ -197,19 +200,19 @@ export function buildStreakWindow(activity = {}, freezeDates = [], { days = 7, d
   const count = Math.max(1, Math.min(90, Math.floor(Number(days) || 7)));
   const goal = Math.max(1, Math.round(Number(dailyGoal) || 20));
   const freezeSet = new Set(normalizedDateList(freezeDates));
-  const activeStreak = streak == null ? streakFromActivity(activity, now, freezeDates) : Math.max(0, Number(streak) || 0);
+  const activeStreak = streak == null ? streakFromActivity(activity, now, freezeDates, goal) : Math.max(0, Number(streak) || 0);
   const todayKey = localDateKey(now);
   return Array.from({ length: count }, (_, index) => {
     const date = shiftDate(now, -(count - 1 - index));
     const key = localDateKey(date);
     const exercises = Math.max(0, Math.round(Number(activity?.[key]) || 0));
     const isToday = key === todayKey;
-    const isFrozen = exercises === 0 && freezeSet.has(key);
     const isGoalReached = exercises >= goal;
+    const isFrozen = !isGoalReached && freezeSet.has(key);
     const status = isGoalReached ? 'goal'
-      : exercises > 0 ? 'done'
-        : isFrozen ? 'frozen'
-          : isToday && activeStreak > 0 ? 'at-risk'
+      : isFrozen ? 'frozen'
+        : isToday && activeStreak > 0 ? 'at-risk'
+          : exercises > 0 ? 'done'
             : isToday ? 'today'
               : 'missed';
     const intensity = exercises === 0 ? 0
@@ -245,10 +248,11 @@ export function getStreakSummary(profile = {}, now = new Date()) {
   const reviewsToday = stats.reviewsToday;
   const practicedToday = reviewsToday > 0;
   const goalReachedToday = reviewsToday >= dailyGoal;
-  const atRisk = currentStreak > 0 && !practicedToday;
+  const streakSafeToday = goalReachedToday && currentStreak > 0;
+  const atRisk = currentStreak > 0 && !goalReachedToday;
   const bankedFreezes = bankedStreakFreezes(freezeAwards, freezeDates);
   const yesterdayKey = localDateKey(shiftDate(now, -1));
-  const protectedYesterday = freezeSet.has(yesterdayKey) && !(Number(activity[yesterdayKey]) > 0);
+  const protectedYesterday = freezeSet.has(yesterdayKey) && !(Number(activity[yesterdayKey]) >= dailyGoal);
   const milestone = nextStreakMilestone(currentStreak);
   const nextFreezeAtStreak = nextFreezeMilestone(currentStreak, bankedFreezes);
   const bestForBadges = Math.max(currentStreak, longestStreak);
@@ -263,6 +267,7 @@ export function getStreakSummary(profile = {}, now = new Date()) {
     reviewsToday,
     practicedToday,
     goalReachedToday,
+    streakSafeToday,
     atRisk,
     bankedFreezes,
     maxFreezes: MAX_STREAK_FREEZES,
@@ -281,16 +286,17 @@ export function getStreakSummary(profile = {}, now = new Date()) {
 
 export function currentStudyStats(profile = {}, now = new Date()) {
   const activity = profile.reviewActivity || {};
+  const dailyGoal = Math.max(1, Math.round(Number(profile.dailyGoal) || 20));
   const freezeDates = normalizedDateList(profile.streakFreezeDates);
   const today = localDateKey(now);
   const yesterdayKey = localDateKey(shiftDate(now, -1));
   const legacyActive = [today, yesterdayKey].includes(profile.lastReviewDate);
   const dailyStreak = Object.keys(activity).length
-    ? streakFromActivity(activity, now, freezeDates)
+    ? streakFromActivity(activity, now, freezeDates, dailyGoal)
     : legacyActive ? Math.max(0, Number(profile.dailyStreak) || 0) : 0;
   const longestStreak = Math.max(
     dailyStreak,
-    longestStreakFromActivity(activity, freezeDates, profile.longestStreak)
+    longestStreakFromActivity(activity, freezeDates, profile.longestStreak, dailyGoal)
   );
   return {
     dailyStreak,

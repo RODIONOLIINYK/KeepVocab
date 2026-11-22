@@ -124,18 +124,21 @@ test('a successful first FSRS answer moves Today from ready to waiting, then bac
   assert.equal(workout.action, 'Continue practice');
 });
 
-test('Today practice launchpad excludes the AI Speaking button while keeping vocabulary modes', () => {
+test('Today practice launchpad includes Build Sentence and excludes AI Speaking and retired Weak Words', () => {
   const container = { innerHTML: '', querySelector: () => ({ addEventListener: () => {} }), querySelectorAll: () => [] };
   renderDashboardView(container, () => {});
   assert.match(container.innerHTML, /Practice your way/);
   assert.doesNotMatch(container.innerHTML, /data-practice-view="speaking"|AI Speaking/);
+  assert.doesNotMatch(container.innerHTML, /data-practice-view="weak"|Weak Words/);
+  assert.match(container.innerHTML, /data-practice-view="sentence"/);
   assert.match(container.innerHTML, /data-practice-view="useit"/);
-  assert.match(container.innerHTML, /data-practice-view="weak"/);
+  assert.match(container.innerHTML, /Today’s quests/);
 });
 
-test('first exercise updates the streak once without adding a UI step', () => {
+test('reaching the daily goal updates the streak once without adding a UI step', () => {
   const storage = new MemoryStorage();
   const service = new DriveSyncService(storage);
+  service.updateSettings({ dailyGoal: 2 });
   const events = [];
   const originalDispatch = globalThis.dispatchEvent;
   globalThis.dispatchEvent = event => { if (event?.type === 'keepvocab:streak-extended') events.push(event.detail); return true; };
@@ -143,9 +146,13 @@ test('first exercise updates the streak once without adding a UI step', () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     service.recordReview(yesterday);
+    service.recordReview(yesterday);
     assert.equal(events.length, 0);
 
     const today = new Date();
+    service.recordReview(today);
+    assert.equal(events.length, 0, 'partial progress below daily goal does not extend the streak');
+
     service.recordReview(today);
     assert.equal(events.length, 1);
     assert.equal(events[0].streak, 2);
@@ -153,7 +160,7 @@ test('first exercise updates the streak once without adding a UI step', () => {
     assert.equal(events[0].date, localDateKey(today));
 
     service.recordReview(today);
-    assert.equal(events.length, 1, 'second exercise on the same day does not re-trigger streak celebration');
+    assert.equal(events.length, 1, 'extra exercise after reaching daily goal does not re-trigger streak celebration');
 
   } finally {
     if (originalDispatch === undefined) delete globalThis.dispatchEvent;
@@ -163,10 +170,10 @@ test('first exercise updates the streak once without adding a UI step', () => {
 
 
 test('daily goal encouragement follows real progress and updates in place', () => {
-  assert.match(dailyGoalEncouragement(0, 5, 0), /one exercise/i);
-  assert.match(dailyGoalEncouragement(0, 5, 3), /streak/i);
-  assert.match(dailyGoalEncouragement(2, 5, 3), /3 exercises/);
-  assert.match(dailyGoalEncouragement(4, 5, 3), /1 exercise/);
+  assert.match(dailyGoalEncouragement(0, 5, 0), /5 exercises.*start a streak/i);
+  assert.match(dailyGoalEncouragement(0, 5, 3), /5 exercises.*keep your streak/i);
+  assert.match(dailyGoalEncouragement(2, 5, 3), /3 exercises.*keep your streak/i);
+  assert.match(dailyGoalEncouragement(4, 5, 3), /1 exercise.*keep your streak/i);
   const classes = new Set();
   const nudge = { textContent: '', classList: { toggle: (name, enabled) => enabled ? classes.add(name) : classes.delete(name) } };
   const root = { querySelector: selector => selector === '#today-goal-nudge' ? nudge : null };

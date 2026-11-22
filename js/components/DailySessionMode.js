@@ -13,8 +13,10 @@ import { escapeHtml } from '../utils/html.js';
 import { replaceTargetWordForm, sentenceUsesTargetForm } from '../utils/wordForms.js?v=18908';
 import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18908';
 import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18908';
+import { getGeminiSettings } from '../services/geminiSettings.js?v=18908';
+import { buildSentencePuzzle, evaluateSentenceAssembly, generateSentenceBuilderSet } from '../services/sentenceBuilder.js';
 import { mountUseItExercise } from './UseItExercise.js?v=18908';
-import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement } from './PracticeElements.js?v=18908';
+import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement, formatMemoryBoost, renderPracticeMascot } from './PracticeElements.js?v=18909';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {
@@ -24,13 +26,14 @@ function cloze(word) {
 }
 
 function exerciseCopy(exercise, word) {
-  if (exercise.exerciseType === 'image-recognition') return { title: 'Choose the word', prompt: 'Which word matches this visual idea?' };
-  if (exercise.exerciseType === 'meaning-recognition') return { title: 'Choose the meaning', prompt: `What does “${word.word}” mean?` };
-  if (exercise.exerciseType === 'definition-recognition') return { title: 'Recognize it', prompt: definitionForLearning(word) };
-  if (exercise.exerciseType === 'listening-recall') return { title: 'Listen & recall', prompt: 'Listen, then type the word.' };
-  if (exercise.exerciseType === 'context-cloze') return { title: 'Fill the gap (base word)', prompt: cloze(word) };
-  if (exercise.exerciseType === 'use-it') return { title: 'Use it', prompt: `Use “${word.word}” in your own sentence.` };
-  return { title: 'Write the word', prompt: definitionForLearning(word) };
+  if (exercise.exerciseType === 'image-recognition') return { title: 'Visual Match', icon: 'fa-images', prompt: 'Choose the word that matches this image.', sprig: 'Which word fits this visual?' };
+  if (exercise.exerciseType === 'meaning-recognition') return { title: 'Choose the meaning', icon: 'fa-list-check', prompt: `What does “${word.word}” mean?`, sprig: 'Pick the closest meaning.' };
+  if (exercise.exerciseType === 'definition-recognition') return { title: 'Choose Word', icon: 'fa-list-check', prompt: definitionForLearning(word), sprig: 'Spot the exact word.' };
+  if (exercise.exerciseType === 'listening-recall') return { title: 'Listen & Spell', icon: 'fa-headphones', prompt: 'Listen closely, then type the word.', sprig: 'Tap play and trust your ear!' };
+  if (exercise.exerciseType === 'sentence-builder') return { title: 'Build Sentence', icon: 'fa-align-left', prompt: `Arrange the tiles to use “${word.word}”.`, sprig: `Put “${word.word}” in its natural place.` };
+  if (exercise.exerciseType === 'context-cloze') return { title: 'Context', icon: 'fa-book-open-reader', prompt: cloze(word), sprig: 'Fill the gap in this real situation.' };
+  if (exercise.exerciseType === 'use-it') return { title: 'Use It', icon: 'fa-pen-nib', prompt: `Use “${word.word}” in your own sentence.`, sprig: 'Make this word yours!' };
+  return { title: 'Write the word', icon: 'fa-keyboard', prompt: definitionForLearning(word), sprig: 'Recall it from memory.' };
 }
 
 // Refresh only the still-visible result/rest screen. A due learning step must
@@ -58,7 +61,7 @@ function renderSessionStreakStrip(settings) {
     : `${summary.reviewsToday}/${summary.dailyGoal} today`;
   const milestoneCopy = summary.currentStreak > 0
     ? `${summary.daysToMilestone}d to ${summary.nextMilestone}d milestone`
-    : '1 exercise starts a streak';
+    : `${Math.max(0, summary.dailyGoal - summary.reviewsToday)} left to start streak`;
   return `<div class="session-rhythm-bar" aria-label="Streak summary"><span><i class="fa-solid fa-fire" aria-hidden="true"></i> <strong>${escapeHtml(streakLabel)}</strong></span><span><i class="fa-solid fa-bullseye" aria-hidden="true"></i> ${escapeHtml(statusCopy)}</span><span><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> ${summary.bankedFreezes}/${summary.maxFreezes} freezes</span><span class="session-rhythm-milestone">${escapeHtml(milestoneCopy)}</span></div>`;
 }
 
@@ -104,18 +107,74 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
   const selectedIds = new Set(queue.map(exercise => exercise.wordId));
   recordModeWordSelections(driveSync, words.filter(word => selectedIds.has(word.id)), { mode: options.kind === 'weak' ? 'weak' : 'practice' });
   const initialWeak = new Map(words.map(word => [word.id, weaknessScore(word)]));
+  const retriedWordIds = new Set();
   let index = 0;
   let score = 0;
+  let combo = 0;
   let answered = false;
   let correct = false;
   let hintsUsed = 0;
+  let memoryBoost = '';
   let learnerResponse = '';
   let confusedWithWordId = '';
   let useItResult = null;
   let useItController = null;
+  let sentencePuzzle = null;
+  let sentencePuzzleKey = '';
+  let sentenceChosenIds = [];
   let questionStartedAt = performance.now();
+  const aiSentenceByWordId = new Map();
+
+  if (options.kind !== 'weak' && getGeminiSettings().enabled) {
+    const sentenceWordIds = [...new Set(queue.filter(item => item.exerciseType === 'sentence-builder').map(item => item.wordId))];
+    const sentenceWords = sentenceWordIds.map(id => words.find(word => word.id === id)).filter(Boolean);
+    if (sentenceWords.length) {
+      generateSentenceBuilderSet(sentenceWords).then(generated => {
+        for (const item of generated?.items || []) {
+          aiSentenceByWordId.set(String(item.wordId), item);
+        }
+        const active = queue[index];
+        if (
+          active?.exerciseType === 'sentence-builder' &&
+          !answered &&
+          sentenceChosenIds.length === 0 &&
+          aiSentenceByWordId.has(String(active.wordId)) &&
+          container.querySelector('.review-recall-shell')
+        ) {
+          sentencePuzzleKey = '';
+          render();
+        }
+      }).catch(() => { /* saved-example puzzle remains active seamlessly */ });
+    }
+  }
 
   const currentWord = () => driveSync.getWords().find(word => word.id === queue[index]?.wordId);
+
+  function resetQuestionState() {
+    answered = false;
+    correct = false;
+    hintsUsed = 0;
+    memoryBoost = '';
+    learnerResponse = '';
+    confusedWithWordId = '';
+    useItResult = null;
+    sentencePuzzle = null;
+    sentencePuzzleKey = '';
+    sentenceChosenIds = [];
+    questionStartedAt = performance.now();
+  }
+
+  function queueMissedRecovery(exercise) {
+    if (!exercise || exercise.isRetry || retriedWordIds.has(exercise.wordId)) return;
+    retriedWordIds.add(exercise.wordId);
+    queue.push({
+      id: `${exercise.wordId}-retry-${queue.length}`,
+      wordId: exercise.wordId,
+      exerciseType: exercise.exerciseType === 'sentence-builder' ? 'typed-recall' : exercise.exerciseType,
+      source: exercise.source,
+      isRetry: true
+    });
+  }
 
   function complete() {
     const improved = driveSync.getWords().filter(word => (initialWeak.get(word.id) || 0) > weaknessScore(word)).length;
@@ -143,13 +202,20 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     if (exercise.exerciseType === 'use-it') {
       useItResult = await evaluateUseItSentence(word, learnerResponse);
       correct = useItResult.correct;
-    } else if (['image-recognition', 'definition-recognition', 'meaning-recognition'].includes(exercise.exerciseType)) correct = evaluateChoiceAnswer(word.id, selectedId);
-    else correct = evaluateRecallAnswer(word.word, learnerResponse);
+    } else if (exercise.exerciseType === 'sentence-builder' && sentencePuzzle) {
+      const tileById = new Map(sentencePuzzle.tiles.map(tile => [tile.id, tile]));
+      const chosenTokens = sentenceChosenIds.map(id => tileById.get(id)?.text).filter(Boolean);
+      correct = evaluateSentenceAssembly(sentencePuzzle.targetTokens, chosenTokens).correct;
+    } else if (['image-recognition', 'definition-recognition', 'meaning-recognition'].includes(exercise.exerciseType)) {
+      correct = evaluateChoiceAnswer(word.id, selectedId);
+    } else {
+      correct = evaluateRecallAnswer(word.word, learnerResponse);
+    }
     const recallType = exercise.exerciseType === 'use-it' ? 'productive'
-      : exercise.exerciseType === 'context-cloze' ? 'context'
+      : ['context-cloze', 'sentence-builder'].includes(exercise.exerciseType) ? 'context'
         : exercise.exerciseType === 'listening-recall' ? 'listening-recall'
           : ['image-recognition', 'definition-recognition', 'meaning-recognition'].includes(exercise.exerciseType) ? 'recognition' : 'free-recall';
-    recordExerciseResult({
+    const applied = recordExerciseResult({
       wordId: word.id,
       exerciseType: `daily-${exercise.exerciseType}`,
       correct,
@@ -160,8 +226,16 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       confusedWithWordId,
       learnerResponse: recallType === 'productive' ? learnerResponse : ''
     });
-    playInteractionSound(correct ? 'correct' : 'wrong');
-    if (correct) score += 1;
+    if (correct) {
+      score += 1;
+      combo += 1;
+      memoryBoost = formatMemoryBoost(applied?.transition);
+    } else {
+      combo = 0;
+      memoryBoost = '';
+      queueMissedRecovery(exercise);
+    }
+    playInteractionSound(correct ? 'correct' : 'wrong', { combo });
     window.dispatchEvent(new CustomEvent('keepvocab:progress'));
     render();
   }
@@ -172,7 +246,23 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     if (index >= queue.length) return complete();
     const exercise = queue[index];
     const word = currentWord();
-    if (!word) { index += 1; return render(); }
+    if (!word) { index += 1; resetQuestionState(); return render(); }
+    if (exercise.exerciseType === 'sentence-builder') {
+      const aiItem = aiSentenceByWordId.get(String(word.id));
+      const key = `${exercise.id}:${word.id}:${aiItem ? aiItem.source : 'local'}`;
+      if (sentencePuzzleKey !== key) {
+        sentencePuzzle = buildSentencePuzzle(word, words, {
+          sentence: aiItem?.sentence || null,
+          distractors: aiItem?.distractors || null,
+          source: aiItem?.source || 'saved-example'
+        });
+        sentencePuzzleKey = key;
+        sentenceChosenIds = [];
+      }
+      if (!sentencePuzzle) {
+        exercise.exerciseType = 'typed-recall';
+      }
+    }
     const copy = exerciseCopy(exercise, word);
     const choiceMode = ['image-recognition', 'definition-recognition', 'meaning-recognition'].includes(exercise.exerciseType);
     const optionsList = choiceMode ? buildWordChoices(word, words, 4, exercise.exerciseType === 'meaning-recognition' ? 'definition' : 'word') : [];
@@ -181,8 +271,8 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     const sessionLabel = options.kind === 'weak' ? 'Weak Words' : 'Practice';
     const progress = practiceProgress({ current: index, total: queue.length, score, answered });
     const mascot = answered ? (correct ? 'assets/keepvocab-sprig-celebrate.webp' : 'assets/keepvocab-sprout-mascot.webp') : 'assets/keepvocab-sprig-thinking.webp';
-    if (options.kind === 'weak' && exercise.exerciseType === 'use-it') {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell weak-use-it-shell"><div class="practice-topline"><button class="status-pill offline" id="daily-exit"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Today</button><span>Weak Words · ${index + 1} of ${queue.length}</span><strong>${escapeHtml(progress.status)}</strong></div><div class="review-progress" role="progressbar" aria-label="Weak Words progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${progress.completed}"><span style="width:${progress.percent}%"></span></div><div id="weak-useit-exercise-root"></div></div></section>`;
+    if (exercise.exerciseType === 'use-it') {
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell weak-use-it-shell${combo >= 3 ? ' is-hot-combo' : ''}"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> Use It</div><span class="muted-label">${escapeHtml(practiceNotebookLabel)}</span></div><div class="practice-topline"><button class="status-pill offline" id="daily-exit"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Today</button><span>${sessionLabel} · ${index + 1} of ${queue.length}</span><strong>${escapeHtml(progress.status)}</strong></div><div class="review-progress" role="progressbar" aria-label="${sessionLabel} progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${progress.completed}"><span style="width:${progress.percent}%"></span></div><div id="weak-useit-exercise-root"></div></div></section>`;
       container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
       useItController = mountUseItExercise(container.querySelector('#weak-useit-exercise-root'), {
         word,
@@ -203,19 +293,13 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
             producedUnaided: true,
             learnerResponse
           });
+          if (correct) { score += 1; combo += 1; } else { combo = 0; queueMissedRecovery(exercise); }
           window.dispatchEvent(new CustomEvent('keepvocab:progress'));
-          playInteractionSound(correct ? 'correct' : 'wrong');
-          if (correct) score += 1;
+          playInteractionSound(correct ? 'correct' : 'wrong', { combo });
         },
         onNext() {
           index += 1;
-          answered = false;
-          correct = false;
-          hintsUsed = 0;
-          learnerResponse = '';
-          confusedWithWordId = '';
-          useItResult = null;
-          questionStartedAt = performance.now();
+          resetQuestionState();
           render(true);
         }
       });
@@ -223,15 +307,43 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     }
     if (options.kind !== 'weak') {
       const visual = exercise.exerciseType === 'image-recognition';
-      container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-heading"><div class="spec-card practice-shell review-recall-shell">
-        <div class="card-header-bar"><div class="card-tag" id="practice-heading"><i class="fa-solid fa-${visual ? 'images' : 'keyboard'}"></i> ${visual ? 'Visual Match' : 'Practice'}</div><span class="muted-label">${escapeHtml(practiceNotebookLabel)}</span></div>
+      const sentenceMode = exercise.exerciseType === 'sentence-builder' && sentencePuzzle;
+      const listening = exercise.exerciseType === 'listening-recall';
+      const contextMode = exercise.exerciseType === 'context-cloze';
+      const tileById = sentenceMode ? new Map(sentencePuzzle.tiles.map(tile => [tile.id, tile])) : null;
+      const chosenSet = sentenceMode ? new Set(sentenceChosenIds) : null;
+      const chosenTiles = sentenceMode ? sentenceChosenIds.map(id => tileById.get(id)).filter(Boolean) : [];
+      const recallTypeForFeedback = sentenceMode || contextMode ? 'context' : listening ? 'listening-recall' : visual ? 'recognition' : 'free-recall';
+      const feedbackDetail = sentenceMode
+        ? sentencePuzzle.sentence
+        : (exampleForLearning(word) || definitionForLearning(word));
+      const headingText = sentenceMode ? 'Build the sentence'
+        : listening ? 'Type what you hear'
+          : visual ? 'Which word matches?'
+            : contextMode ? 'Fill in the blank'
+              : 'Write the word';
+      const bubbleHtml = sentenceMode
+        ? `<div class="duo-bubble-word-row"><strong>${escapeHtml(word.word)}</strong><span class="duo-bubble-tags"><span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>${sentencePuzzle.source === 'ai' ? '<span class="duo-source-chip"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> AI sentence</span>' : ''}</span></div><p class="duo-bubble-copy">${escapeHtml(sentencePuzzle.definition)}</p>`
+        : listening
+          ? `<div class="duo-bubble-audio"><button type="button" class="audio-btn-circle" id="daily-listen" aria-label="Play the word"><i class="fa-solid fa-volume-high"></i></button><p class="duo-bubble-copy">${escapeHtml(definitionForLearning(word))}</p></div>`
+          : contextMode
+            ? `<blockquote class="duo-bubble-quote">${escapeHtml(cloze(word))}</blockquote><span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>`
+            : `<blockquote class="duo-bubble-quote">${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}<span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>`;
+      container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-heading"><div class="spec-card practice-shell review-recall-shell${combo >= 3 ? ' is-hot-combo' : ''}">
+        <div class="card-header-bar"><div class="card-tag" id="practice-heading"><i class="fa-solid fa-dumbbell" aria-hidden="true"></i> Practice</div><span class="muted-label">${escapeHtml(practiceNotebookLabel)}</span></div>
         ${renderPracticeHeader({ exitId: 'daily-exit', current: index, total: queue.length, score, answered })}
-        <div class="${visual ? 'visual-prompt' : 'practice-prompt typed-review-prompt'}">
-          <div class="practice-icon"><i class="fa-solid fa-${visual ? 'images' : 'keyboard'}" aria-hidden="true"></i></div>
-          <p>${visual ? 'Choose the word that matches this image.' : 'Type the word that matches this definition.'}</p>
-          ${visual ? `<figure class="practice-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>` : `<blockquote>${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}<span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>`}
-          ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><strong><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'}" aria-hidden="true"></i> ${correct ? escapeHtml(answerEncouragement({ correct, recallType: visual ? 'recognition' : 'free-recall', hintsUsed })) : 'Answer'}: ${escapeHtml(word.word)}</strong><span>${escapeHtml(exampleForLearning(word) || definitionForLearning(word))}</span></div><div class="inline-actions"><button class="status-pill offline" id="practice-hear-answer"><i class="fa-solid fa-volume-high"></i> Hear answer</button><button class="btn-green-solid" id="daily-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button></div>`
+        <div class="${visual ? 'visual-prompt' : sentenceMode ? 'practice-prompt sentence-prompt' : 'practice-prompt typed-review-prompt'}">
+          ${visual
+            ? `<div class="duo-stage-heading"><h2>${escapeHtml(headingText)}</h2>${combo >= 3 ? `<span class="duo-combo-badge"><i class="fa-solid fa-fire" aria-hidden="true"></i> ${combo} in a row</span>` : ''}</div><figure class="practice-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>`
+            : renderPracticeMascot({ heading: headingText, bubbleHtml, answered, correct, combo, retry: Boolean(exercise.isRetry) })}
+          ${sentenceMode
+            ? `<div class="sentence-answer-tray${answered ? (correct ? ' is-correct' : ' is-incorrect') : ''}" id="sentence-tray" aria-label="Your assembled sentence">
+                 ${chosenTiles.length ? chosenTiles.map(tile => `<button type="button" class="sentence-tile is-placed" data-remove-tile="${escapeHtml(tile.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(tile.text)}</button>`).join('') : '<span class="sentence-tray-placeholder">Tap words below in order…</span>'}
+               </div>`
+            : ''}
+          ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><strong><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'}" aria-hidden="true"></i> ${correct ? escapeHtml(answerEncouragement({ correct, recallType: recallTypeForFeedback, hintsUsed })) : (sentenceMode ? 'Expected sentence' : 'Answer')}${sentenceMode ? '' : `: ${escapeHtml(word.word)}`}</strong><span>${escapeHtml(feedbackDetail)}</span>${correct && memoryBoost ? `<em class="memory-boost-pill"><i class="fa-solid fa-seedling" aria-hidden="true"></i> ${escapeHtml(memoryBoost)}</em>` : ''}</div><div class="inline-actions"><button class="status-pill offline" id="practice-hear-answer"><i class="fa-solid fa-volume-high"></i> ${sentenceMode ? 'Hear sentence' : 'Hear answer'}</button><button class="btn-green-solid" id="daily-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button></div>`
             : visual ? `<div class="choice-grid">${optionsList.map(option => `<button class="choice-button" data-daily-choice="${escapeHtml(option.id)}"><span>${escapeHtml(option.word)}</span></button>`).join('')}</div>`
+            : sentenceMode ? `<div class="sentence-tile-bank" role="group" aria-label="Word bank">${sentencePuzzle.tiles.map(tile => { const used = chosenSet.has(tile.id); return `<button type="button" class="sentence-tile${used ? ' is-used' : ''}" data-pick-tile="${escapeHtml(tile.id)}" ${used ? 'disabled aria-hidden="true" tabindex="-1"' : ''}>${escapeHtml(tile.text)}</button>`; }).join('')}</div><div class="sentence-controls"><button type="button" class="status-pill offline" id="daily-sentence-hint"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Hint</button><button type="button" class="status-pill offline" id="daily-sentence-clear" ${chosenTiles.length ? '' : 'disabled'}>Clear</button><button type="button" class="btn-green-solid" id="daily-sentence-check" data-sound="none" ${chosenTiles.length ? '' : 'disabled'}>Check</button></div>`
             : `<form class="practice-answer-form" id="daily-form"><input id="daily-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type the word" aria-label="Your answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
         </div>
       </div></section>`;
@@ -253,13 +365,56 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       render();
     });
     container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
-    container.querySelector('#practice-hear-answer')?.addEventListener('click', () => speakWord(word.word, 'en-US', 0.9, word.audioUrl));
+    container.querySelector('#practice-hear-answer')?.addEventListener('click', () => {
+      if (exercise.exerciseType === 'sentence-builder' && sentencePuzzle) speakWord(sentencePuzzle.sentence, 'en-US', 0.92);
+      else speakWord(word.word, 'en-US', 0.9, word.audioUrl);
+    });
     container.querySelector('#daily-listen')?.addEventListener('click', async () => {
       const played = await speakWord(word.word, 'en-US', 0.86, word.audioUrl);
       if (!played && queue[index] === exercise && !answered) {
         exercise.exerciseType = 'typed-recall';
         render();
       }
+    });
+    container.querySelectorAll('[data-pick-tile]').forEach(button => button.addEventListener('click', () => {
+      const id = button.dataset.pickTile;
+      if (!id || answered || sentenceChosenIds.includes(id)) return;
+      sentenceChosenIds.push(id);
+      render();
+    }));
+    container.querySelectorAll('[data-remove-tile]').forEach(button => button.addEventListener('click', () => {
+      const id = button.dataset.removeTile;
+      if (!id || answered) return;
+      sentenceChosenIds = sentenceChosenIds.filter(item => item !== id);
+      render();
+    }));
+    container.querySelector('#daily-sentence-clear')?.addEventListener('click', () => {
+      sentenceChosenIds = [];
+      render();
+    });
+    container.querySelector('#daily-sentence-hint')?.addEventListener('click', () => {
+      if (answered || !sentencePuzzle) return;
+      const tileMap = new Map(sentencePuzzle.tiles.map(tile => [tile.id, tile]));
+      const prefix = [];
+      for (let i = 0; i < sentencePuzzle.targetTokens.length; i += 1) {
+        const expectedText = sentencePuzzle.targetTokens[i];
+        const current = tileMap.get(sentenceChosenIds[i]);
+        if (current && current.text === expectedText) {
+          prefix.push(sentenceChosenIds[i]);
+        } else {
+          const nextTile = sentencePuzzle.tiles.find(tile => !tile.isDistractor && tile.text === expectedText && !prefix.includes(tile.id));
+          if (nextTile) {
+            sentenceChosenIds = [...prefix, nextTile.id];
+            hintsUsed += 1;
+            render();
+          }
+          return;
+        }
+      }
+    });
+    container.querySelector('#daily-sentence-check')?.addEventListener('click', () => {
+      if (!sentenceChosenIds.length || answered) return;
+      void submit(sentenceChosenIds.join(' '));
     });
     container.querySelectorAll('[data-daily-choice]').forEach(button => button.addEventListener('click', () => submit(button.textContent, button.dataset.dailyChoice)));
     container.querySelector('#daily-form')?.addEventListener('submit', async event => {
@@ -271,7 +426,10 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       await submit(answer);
     });
     container.querySelector('#daily-hint')?.addEventListener('click', () => { hintsUsed += 1; container.querySelector('#daily-hint-copy').textContent = exercise.exerciseType === 'use-it' ? `Try a situation where “${word.word}” naturally describes what happened.` : `It starts with “${word.word.slice(0, Math.min(2, word.word.length))}”.`; });
-    container.querySelector('#daily-next')?.addEventListener('click', () => { index += 1; answered = false; correct = false; hintsUsed = 0; learnerResponse = ''; confusedWithWordId = ''; useItResult = null; questionStartedAt = performance.now(); render(true); });
+    container.querySelector('#daily-next')?.addEventListener('click', () => { index += 1; resetQuestionState(); render(true); });
+    if (exercise.exerciseType === 'listening-recall' && !answered && focusInput) {
+      void speakWord(word.word, 'en-US', 0.86, word.audioUrl);
+    }
     focusPracticeInput(container.querySelector('#daily-answer'), { allowTouch: focusInput });
   }
 

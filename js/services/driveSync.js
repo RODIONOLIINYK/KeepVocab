@@ -1207,20 +1207,21 @@ export class DriveSyncService {
 
   ensureStreakProtection(date = new Date()) {
     const settings = this.getSettings();
+    const dailyGoal = Math.max(1, Math.round(Number(settings.dailyGoal) || 20));
     let streakFreezeAwards = normalizedDateList(settings.streakFreezeAwards);
     let streakFreezeDates = normalizedDateList(settings.streakFreezeDates);
     let seededFreeze = false;
-    const currentStreak = streakFromActivity(settings.reviewActivity || {}, date, streakFreezeDates);
+    const currentStreak = streakFromActivity(settings.reviewActivity || {}, date, streakFreezeDates, dailyGoal);
     if (currentStreak >= 3 && !streakFreezeAwards.length && !streakFreezeDates.length) {
       const yesterday = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1, 12, 0, 0, 0);
       streakFreezeAwards = [localDateKey(yesterday)];
       seededFreeze = true;
     }
-    const autoFreeze = autoApplyStreakFreezes({ ...settings, streakFreezeAwards, streakFreezeDates }, date);
+    const autoFreeze = autoApplyStreakFreezes({ ...settings, dailyGoal, streakFreezeAwards, streakFreezeDates }, date);
     streakFreezeDates = autoFreeze.streakFreezeDates;
     if (seededFreeze || autoFreeze.changed) {
-      const dailyStreak = streakFromActivity(settings.reviewActivity || {}, date, streakFreezeDates);
-      const longestStreak = longestStreakFromActivity(settings.reviewActivity || {}, streakFreezeDates, settings.longestStreak);
+      const dailyStreak = streakFromActivity(settings.reviewActivity || {}, date, streakFreezeDates, dailyGoal);
+      const longestStreak = longestStreakFromActivity(settings.reviewActivity || {}, streakFreezeDates, settings.longestStreak, dailyGoal);
       this.updateSettings({
         streakFreezeAwards,
         streakFreezeDates,
@@ -1245,33 +1246,34 @@ export class DriveSyncService {
   recordReview(date = new Date()) {
     const key = localDateKey(date);
     const settings = this.getSettings();
+    const dailyGoal = Math.max(1, Math.round(Number(settings.dailyGoal) || 20));
     const exerciseActivityByDevice = activityByDevice(settings);
     const previousActivity = aggregateActivity(exerciseActivityByDevice);
     let streakFreezeAwards = normalizedDateList(settings.streakFreezeAwards);
     let streakFreezeDates = normalizedDateList(settings.streakFreezeDates);
     const autoFreeze = autoApplyStreakFreezes({
       ...settings,
+      dailyGoal,
       reviewActivity: previousActivity,
       streakFreezeAwards,
       streakFreezeDates
     }, date);
     streakFreezeDates = autoFreeze.streakFreezeDates;
-    const previousStreak = streakFromActivity(previousActivity, date, streakFreezeDates);
+    const previousStreak = streakFromActivity(previousActivity, date, streakFreezeDates, dailyGoal);
     const previousTodayCount = Number(previousActivity[key] || 0);
-    const firstActivityToday = !(previousTodayCount > 0);
     const deviceActivity = { ...(exerciseActivityByDevice[this.deviceId] || {}) };
     deviceActivity[key] = Number(deviceActivity[key] || 0) + 1;
     exerciseActivityByDevice[this.deviceId] = normalizedActivity(deviceActivity);
     const reviewActivity = aggregateActivity(exerciseActivityByDevice);
-    const streak = streakFromActivity(reviewActivity, date, streakFreezeDates);
+    const reviewsToday = Number(reviewActivity[key] || 0);
+    const reachedGoalNow = previousTodayCount < dailyGoal && reviewsToday >= dailyGoal;
+    const streak = streakFromActivity(reviewActivity, date, streakFreezeDates, dailyGoal);
     let earnedFreeze = false;
-    if (firstActivityToday && shouldAwardStreakFreeze(streak, key, streakFreezeAwards, streakFreezeDates)) {
+    if (reachedGoalNow && shouldAwardStreakFreeze(streak, key, streakFreezeAwards, streakFreezeDates)) {
       streakFreezeAwards = normalizedDateList([...streakFreezeAwards, key]);
       earnedFreeze = true;
     }
-    const longestStreak = longestStreakFromActivity(reviewActivity, streakFreezeDates, settings.longestStreak);
-    const reviewsToday = Number(reviewActivity[key] || 0);
-    const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
+    const longestStreak = longestStreakFromActivity(reviewActivity, streakFreezeDates, settings.longestStreak, dailyGoal);
     this.updateSettings({
       exerciseActivityByDevice,
       reviewActivity,
@@ -1283,11 +1285,11 @@ export class DriveSyncService {
       streakFreezeDates,
       streakFreezeAwards
     });
-    // The first exercise of a local day extends (or starts) the streak once.
+    // Completing today's daily goal extends (or starts) the streak once.
     // Synced activity from another device never reaches this path.
     const isToday = key === localDateKey(new Date());
     const canDispatch = typeof globalThis.dispatchEvent === 'function' && typeof globalThis.CustomEvent === 'function';
-    if (firstActivityToday && streak > previousStreak && isToday && canDispatch) {
+    if (reachedGoalNow && streak > previousStreak && isToday && canDispatch) {
       globalThis.dispatchEvent(new CustomEvent('keepvocab:streak-extended', {
         detail: {
           streak,
@@ -1300,7 +1302,7 @@ export class DriveSyncService {
         }
       }));
     }
-    if (previousTodayCount < dailyGoal && reviewsToday >= dailyGoal && isToday && canDispatch) {
+    if (reachedGoalNow && isToday && canDispatch) {
       globalThis.dispatchEvent(new CustomEvent('keepvocab:goal-reached', {
         detail: { completed: reviewsToday, dailyGoal, streak, date: key }
       }));

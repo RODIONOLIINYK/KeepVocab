@@ -17,13 +17,15 @@ import { renderDashboardView, streakMilestoneCopy, updateDashboardStreakUI } fro
 import { renderStatsView } from '../js/components/StatsView.js';
 import { localDateKey } from '../js/utils/dates.js';
 
-test('streak freezes bridge a missed day without inflating active streak count', () => {
+test('streak freezes bridge a missed day without inflating active streak count and require meeting daily goal', () => {
   const activity = { '2026-11-18': 4, '2026-11-19': 6, '2026-11-20': 5 };
   const nov22 = new Date(2026, 10, 22, 12);
 
   assert.equal(streakFromActivity(activity, nov22), 0);
   assert.equal(streakFromActivity(activity, nov22, ['2026-11-21']), 3);
   assert.equal(streakFromActivity({ ...activity, '2026-11-22': 2 }, nov22, ['2026-11-21']), 4);
+  assert.equal(streakFromActivity({ ...activity, '2026-11-22': 2 }, nov22, ['2026-11-21'], 4), 3, 'partial day below daily goal does not extend the streak');
+  assert.equal(streakFromActivity({ ...activity, '2026-11-22': 4 }, nov22, ['2026-11-21'], 4), 4);
   assert.equal(streakFromActivity({}, nov22, ['2026-11-21']), 0, 'floating freeze with no prior study never creates a streak');
 });
 
@@ -42,6 +44,7 @@ test('autoApplyStreakFreezes bridges saveable gaps and never wastes freezes on e
   const activity = { '2026-11-18': 3, '2026-11-19': 4, '2026-11-20': 2 };
 
   const oneDayMissed = autoApplyStreakFreezes({
+    dailyGoal: 2,
     reviewActivity: activity,
     streakFreezeAwards: ['2026-11-20'],
     streakFreezeDates: []
@@ -50,6 +53,7 @@ test('autoApplyStreakFreezes bridges saveable gaps and never wastes freezes on e
   assert.deepEqual(oneDayMissed.appliedDates, ['2026-11-21']);
 
   const twoDaysMissedOneFreeze = autoApplyStreakFreezes({
+    dailyGoal: 2,
     reviewActivity: activity,
     streakFreezeAwards: ['2026-11-20'],
     streakFreezeDates: []
@@ -58,6 +62,7 @@ test('autoApplyStreakFreezes bridges saveable gaps and never wastes freezes on e
   assert.deepEqual(twoDaysMissedOneFreeze.appliedDates, []);
 
   const twoDaysMissedTwoFreezes = autoApplyStreakFreezes({
+    dailyGoal: 2,
     reviewActivity: activity,
     streakFreezeAwards: ['2026-11-15', '2026-11-20'],
     streakFreezeDates: []
@@ -69,23 +74,24 @@ test('autoApplyStreakFreezes bridges saveable gaps and never wastes freezes on e
 test('longestStreakFromActivity, milestones, and 7/28-day windows reflect real history', () => {
   const now = new Date(2026, 10, 22, 12);
   const activity = {
-    '2026-10-01': 5,
-    '2026-10-02': 5,
-    '2026-10-03': 5,
-    '2026-10-04': 5,
-    '2026-10-05': 5,
+    '2026-10-01': 20,
+    '2026-10-02': 20,
+    '2026-10-03': 20,
+    '2026-10-04': 20,
+    '2026-10-05': 20,
     '2026-11-19': 20,
-    '2026-11-21': 4
+    '2026-11-21': 20,
+    '2026-11-22': 4
   };
-  assert.equal(longestStreakFromActivity(activity, ['2026-11-20']), 5);
+  assert.equal(longestStreakFromActivity(activity, ['2026-11-20'], 0, 20), 5);
   assert.deepEqual(nextStreakMilestone(5), { target: 7, previous: 3, remaining: 2, progressPercent: 50 });
 
   const week = buildStreakWindow(activity, ['2026-11-20'], { days: 7, dailyGoal: 20, now });
   assert.equal(week.length, 7);
   assert.equal(week.find(day => day.dateKey === '2026-11-19').status, 'goal');
   assert.equal(week.find(day => day.dateKey === '2026-11-20').status, 'frozen');
-  assert.equal(week.find(day => day.dateKey === '2026-11-21').status, 'done');
-  assert.equal(week.find(day => day.dateKey === '2026-11-22').status, 'at-risk');
+  assert.equal(week.find(day => day.dateKey === '2026-11-21').status, 'goal');
+  assert.equal(week.find(day => day.dateKey === '2026-11-22').status, 'at-risk', 'today stays at-risk until daily goal is met');
 
   const summary = getStreakSummary({
     reviewActivity: activity,
@@ -97,7 +103,7 @@ test('longestStreakFromActivity, milestones, and 7/28-day windows reflect real h
   assert.equal(summary.longestStreak, 5);
   assert.equal(summary.atRisk, true);
   assert.equal(summary.bankedFreezes, 0);
-  assert.equal(summary.activeDaysLast28, 2);
+  assert.equal(summary.activeDaysLast28, 3);
   assert.equal(summary.monthWindow.length, 28);
 });
 
@@ -112,21 +118,28 @@ test('recordReview awards freezes on day 3, emits goal-reached once, and protect
     const dMinus2 = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2, 12);
     const dMinus1 = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 12);
     service.recordReview(dMinus2);
+    service.recordReview(dMinus2);
     service.recordReview(dMinus1);
-    service.recordReview(today);
+    service.recordReview(dMinus1);
 
+    // First review today is below daily goal (1 of 2): neither streak nor goal should trigger yet.
+    service.recordReview(today);
+    assert.equal(events.filter(event => event.type === 'keepvocab:streak-extended').length, 0);
+    assert.equal(events.filter(event => event.type === 'keepvocab:goal-reached').length, 0);
+
+    // Second review reaches daily goal: extends streak to day 3, awards freeze, and emits goal-reached.
+    service.recordReview(today);
     const streakEvent = events.find(event => event.type === 'keepvocab:streak-extended');
     assert.ok(streakEvent);
     assert.equal(streakEvent.detail.streak, 3);
     assert.equal(streakEvent.detail.milestone, 3);
     assert.equal(streakEvent.detail.earnedFreeze, true);
     assert.equal(streakEvent.detail.bankedFreezes, 1);
-
-    assert.equal(events.filter(event => event.type === 'keepvocab:goal-reached').length, 0);
-    service.recordReview(today);
     assert.equal(events.filter(event => event.type === 'keepvocab:goal-reached').length, 1);
+
     service.recordReview(today);
     assert.equal(events.filter(event => event.type === 'keepvocab:goal-reached').length, 1, 'goal-reached fires only once per day');
+    assert.equal(events.filter(event => event.type === 'keepvocab:streak-extended').length, 1, 'streak-extended fires only once per day');
 
     const twoDaysLater = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2, 12);
     const protection = service.ensureStreakProtection(twoDaysLater);
@@ -177,8 +190,8 @@ test('Today and Progress views render the 7-day strip, freezes, heatmap, and mil
   assert.match(dashboardContainer.innerHTML, /id="today-freeze-pill"/);
   assert.match(dashboardContainer.innerHTML, /id="today-milestone-note"/);
 
-  assert.match(streakMilestoneCopy({ currentStreak: 0, longestStreak: 9 }), /Personal best: 9 days/);
-  assert.match(streakMilestoneCopy({ currentStreak: 5, longestStreak: 5, daysToMilestone: 2, nextMilestone: 7, nextFreezeAtStreak: 7 }), /2 days to your 7-day milestone \(\+1 Streak Freeze\)/);
+  assert.match(streakMilestoneCopy({ currentStreak: 0, longestStreak: 9 }), /Best: 9 days/);
+  assert.match(streakMilestoneCopy({ currentStreak: 5, longestStreak: 5, daysToMilestone: 2, nextMilestone: 7, nextFreezeAtStreak: 7 }), /2d to 7d milestone · \+1 freeze/);
 
   const elements = new Map();
   const makeEl = () => ({ textContent: '', innerHTML: '', hidden: false, classList: { toggle() {} } });

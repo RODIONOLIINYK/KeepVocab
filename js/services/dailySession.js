@@ -1,6 +1,7 @@
 import { completedExercisesToday } from './learningStats.js?v=18908';
 import { getDueWords } from './srsEngine.js?v=18908';
 import { masteryStage, normalizeMastery, normalizeMistakes } from './exerciseResult.js?v=18908';
+import { canBuildSentenceExercise } from './sentenceBuilder.js';
 import {
   ensureDailyStudyPlan,
   evaluateDailyStudyPlan,
@@ -85,27 +86,125 @@ export function selectPracticeWords(words, options = {}) {
 
 export function recommendedExerciseType(word) {
   const stage = masteryStage(normalizeMastery(word));
+  const hasSentence = canBuildSentenceExercise(word);
   let available;
   if (stage === 'seen') available = word.imageUrl ? ['image-recognition', 'definition-recognition'] : ['definition-recognition'];
-  else if (stage === 'recognized') available = ['typed-recall', 'listening-recall'];
-  else if (stage === 'recalled') available = ['context-cloze', 'use-it'];
-  else if (stage === 'context') available = ['use-it', 'listening-recall'];
-  else available = ['typed-recall', 'context-cloze', 'use-it'];
+  else if (stage === 'recognized') available = ['typed-recall', 'listening-recall', ...(hasSentence ? ['sentence-builder'] : [])];
+  else if (stage === 'recalled') available = [...(hasSentence ? ['sentence-builder', 'context-cloze'] : []), 'use-it', 'listening-recall'];
+  else if (stage === 'context') available = ['use-it', ...(hasSentence ? ['sentence-builder'] : []), 'listening-recall'];
+  else available = ['typed-recall', ...(hasSentence ? ['sentence-builder', 'context-cloze'] : []), 'use-it'];
   return available[0];
 }
 
-// Keep the selected words and their order; only assign the requested task mix.
+function normalizeLastMode(word) {
+  const raw = String(word?.mastery?.lastExerciseType || word?.lastExerciseResult?.exerciseType || '').toLowerCase();
+  return raw.replace(/^daily-/, '');
+}
+
+// Keep the selected words and their FSRS urgency order intact while assigning a
+// varied, stage-appropriate reinforcement mode to each word (1 word = 1 task).
 function practiceExercises(selected, words) {
-  const visualCandidates = words.length > 1
-    ? selected.flatMap((item, index) => item.word.imageUrl
-      && !['recognition', 'assisted'].includes(item.word.srs?.lastChannel) ? [index] : []) : [];
-  const visualCount = Math.min(Math.round(selected.length * 0.3), visualCandidates.length);
-  const visualPositions = new Set(Array.from({ length: visualCount }, (_, index) =>
-    visualCandidates[Math.floor((index + 0.5) * visualCandidates.length / visualCount)]));
+  const distinctChoiceWords = new Set((Array.isArray(words) ? words : [])
+    .map(word => String(word?.word || '').trim().toLowerCase())
+    .filter(Boolean)).size;
+  const hasChoices = distinctChoiceWords > 1;
+  const total = selected.length;
+  const maxByMode = {
+    'image-recognition': Math.max(1, Math.round(total * 0.25)),
+    'sentence-builder': Math.max(1, Math.round(total * 0.3)),
+    'context-cloze': Math.max(1, Math.round(total * 0.25)),
+    'listening-recall': Math.max(1, Math.round(total * 0.25)),
+    'use-it': Math.min(2, Math.max(1, Math.floor(total / 5))),
+    'typed-recall': total
+  };
+  const usedCounts = {};
+  const recentModes = [];
+
   return selected.map((item, index) => {
-    const exerciseType = visualPositions.has(index) ? 'image-recognition' : 'typed-recall';
-    return { id: `${item.word.id}-${index}-${exerciseType}`, wordId: item.word.id,
-      exerciseType, source: item.source, immediateRetry: false };
+    const word = item.word;
+    const stage = masteryStage(normalizeMastery(word));
+    const lastMode = normalizeLastMode(word);
+    const afterRecognition = ['recognition', 'assisted'].includes(word.srs?.lastChannel);
+    const hasSentence = canBuildSentenceExercise(word);
+    const canImage = hasChoices && Boolean(word.imageUrl) && !afterRecognition;
+    const canUseIt = ['recalled', 'context', 'productive'].includes(stage) && total >= 3;
+
+    // Stage-driven preference ladder: each FSRS review advances the word across
+    // complementary pathways (recognition -> recall/audio -> sentence/context -> production).
+    const ladder = stage === 'seen'
+      ? [
+        ...(canImage ? ['image-recognition'] : []),
+        'typed-recall',
+        ...(hasSentence ? ['sentence-builder'] : []),
+        'listening-recall',
+        ...(hasSentence ? ['context-cloze'] : [])
+      ]
+      : stage === 'recognized'
+        ? [
+          'typed-recall',
+          'listening-recall',
+          ...(hasSentence ? ['sentence-builder', 'context-cloze'] : []),
+          ...(canImage ? ['image-recognition'] : [])
+        ]
+        : stage === 'recalled'
+          ? [
+            ...(hasSentence ? ['sentence-builder', 'context-cloze'] : []),
+            'listening-recall',
+            ...(canUseIt ? ['use-it'] : []),
+            'typed-recall',
+            ...(canImage ? ['image-recognition'] : [])
+          ]
+          : [
+            ...(canUseIt ? ['use-it'] : []),
+            ...(hasSentence ? ['sentence-builder', 'context-cloze'] : []),
+            'listening-recall',
+            'typed-recall',
+            ...(canImage ? ['image-recognition'] : [])
+          ];
+
+    const candidates = [...new Set(ladder.length ? ladder : ['typed-recall'])];
+    let bestMode = 'typed-recall';
+    let bestScore = -Infinity;
+
+    for (let rank = 0; rank < candidates.length; rank += 1) {
+      const mode = candidates[rank];
+      const count = usedCounts[mode] || 0;
+      if (mode !== 'typed-recall' && count >= (maxByMode[mode] || total)) continue;
+      // Single-word libraries should always default to active typed recall unless
+      // a stronger contextual mode is explicitly earned.
+      if (total === 1 && mode === 'image-recognition') continue;
+
+      let score = 40 - rank * 6;
+      // Strongly prefer modes not yet featured in this session for variety.
+      if (count === 0) score += 16;
+      else score -= count * 5;
+      // Avoid repeating the exact same mode this word just saw on its prior review.
+      if (lastMode && (lastMode === mode || (lastMode === 'spelling' && mode === 'listening-recall'))) {
+        score -= 22;
+      }
+      // Avoid consecutive runs of the same exercise type inside a session.
+      if (recentModes.at(-1) === mode) score -= 18;
+      if (recentModes.at(-2) === mode) score -= 6;
+      // Encourage sentence-builder, listening-recall, and context-cloze so learners
+      // who stay in Practice naturally reinforce words across all key skills.
+      if (['sentence-builder', 'context-cloze', 'listening-recall'].includes(mode) && count === 0) {
+        score += 6;
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        bestMode = mode;
+      }
+    }
+
+    usedCounts[bestMode] = (usedCounts[bestMode] || 0) + 1;
+    recentModes.push(bestMode);
+    return {
+      id: `${word.id}-${index}-${bestMode}`,
+      wordId: word.id,
+      exerciseType: bestMode,
+      source: item.source,
+      immediateRetry: false
+    };
   });
 }
 

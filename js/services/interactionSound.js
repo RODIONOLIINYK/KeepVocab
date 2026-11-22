@@ -47,19 +47,23 @@ function getAudioContext() {
   return audioContext;
 }
 
-export function playInteractionSound(kind = 'tap') {
+const COMBO_SEMITONES = [0, 2, 4, 7, 9, 12];
+
+export function playInteractionSound(kind = 'tap', options = {}) {
   if (!enabledProvider()) return false;
   playInteractionHaptic(kind);
   const context = getAudioContext();
   if (!context) return false;
 
+  const combo = kind === 'correct' ? Math.max(1, Math.min(COMBO_SEMITONES.length, Math.floor(Number(options?.combo) || 1))) : 1;
+  const pitchFactor = combo > 1 ? Math.pow(2, COMBO_SEMITONES[combo - 1] / 12) : 1;
   const start = context.currentTime + 0.005;
   for (const tone of getInteractionSoundProfile(kind)) {
     const toneStart = start + Number(tone.delay || 0);
     const oscillator = context.createOscillator();
     const gain = context.createGain();
     oscillator.type = tone.type;
-    oscillator.frequency.setValueAtTime(tone.frequency, toneStart);
+    oscillator.frequency.setValueAtTime(tone.frequency * pitchFactor, toneStart);
     gain.gain.setValueAtTime(0.0001, toneStart);
     gain.gain.exponentialRampToValueAtTime(tone.volume, toneStart + 0.012);
     gain.gain.exponentialRampToValueAtTime(0.0001, toneStart + tone.duration);

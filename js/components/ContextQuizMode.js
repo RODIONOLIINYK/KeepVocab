@@ -8,7 +8,7 @@ import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=18908';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { stableWordChoices } from '../services/wordChoices.js?v=18908';
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice } from './PracticeElements.js?v=18908';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice, renderPracticeMascot } from './PracticeElements.js?v=18909';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE, now = new Date(), settings = null) {
@@ -47,6 +47,7 @@ export function renderContextQuizMode(container, onNavigate) {
   let quizWords = [];
   let current = 0;
   let score = 0;
+  let combo = 0;
   let selectedId = null;
   let questionStartedAt = 0;
   const choiceState = { targetId: null, options: [] };
@@ -101,13 +102,16 @@ export function renderContextQuizMode(container, onNavigate) {
     const correct = evaluateChoiceAnswer(target.id, selectedId);
     const cloze = clozeContextSentence(generatedItem.sentence, target.word);
     const sourceLabel = generatedItem.source === 'saved-example' ? 'Saved example' : 'AI-generated sentence';
-    container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell">
+    container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell${combo >= 3 ? ' is-hot-combo' : ''}">
       ${renderPracticeHeader({ exitId: 'context-exit', label: 'Context', current, total: quizWords.length, score, answered })}
       <div class="practice-prompt choose-prompt">
-        <img class="practice-mascot" src="assets/keepvocab-sprig-thinking.webp" alt="" aria-hidden="true">
-        <p>${'Choose the word that fits this sentence.'}</p>
-        <blockquote lang="${'en'}">${escapeHtml(cloze)}</blockquote>
-        <span class="muted-label">${sourceLabel}</span>
+        ${renderPracticeMascot({
+          heading: 'Fill in the blank',
+          bubbleHtml: `<blockquote class="duo-bubble-quote" lang="en">${escapeHtml(cloze)}</blockquote><span class="muted-label">${sourceLabel}</span>`,
+          answered,
+          correct,
+          combo
+        })}
         ${renderChoiceGrid({ options, targetId: target.id, selectedId, attribute: 'data-context-word' })}
         ${renderAnswerFeedback({ recallType: 'context', answered, correct, answer: target.word, detail: generatedItem.sentence, nextId: 'context-next', nextLabel: current + 1 === quizWords.length ? 'See results' : 'Next sentence' })}
       </div>
@@ -117,7 +121,8 @@ export function renderContextQuizMode(container, onNavigate) {
       if (selectedId !== null) return;
       selectedId = button.dataset.contextWord;
       const isCorrect = evaluateChoiceAnswer(target.id, selectedId);
-      playInteractionSound(isCorrect ? 'correct' : 'wrong');
+      if (isCorrect) combo += 1; else combo = 0;
+      playInteractionSound(isCorrect ? 'correct' : 'wrong', { combo });
       if (isCorrect) score += 1;
       recordExerciseResult({ wordId: target.id, exerciseType: 'context-cloze', correct: isCorrect, responseTimeMs: performance.now() - questionStartedAt, recallType: 'context', producedUnaided: false, confusedWithWordId: isCorrect ? '' : selectedId });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));

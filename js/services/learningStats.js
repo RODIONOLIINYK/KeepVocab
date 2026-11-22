@@ -1,4 +1,5 @@
 import { driveSync } from './driveSync.js?v=18908';
+import { applyExerciseToDailyQuests, normalizeDailyQuestState } from './dailyQuests.js';
 import { localDateKey } from '../utils/dates.js';
 
 const MAX_SESSION_HISTORY = 60;
@@ -19,7 +20,8 @@ export function normalizeLearningStats(settings = {}) {
     speakingMinutes: Math.max(0, Number(current.speakingMinutes) || 0),
     speakingSessions: Math.max(0, Number(current.speakingSessions) || 0),
     lastSessionAt: String(current.lastSessionAt || ''),
-    sessionHistory: Array.isArray(current.sessionHistory) ? current.sessionHistory.slice(-MAX_SESSION_HISTORY) : []
+    sessionHistory: Array.isArray(current.sessionHistory) ? current.sessionHistory.slice(-MAX_SESSION_HISTORY) : [],
+    dailyQuests: normalizeDailyQuestState(current.dailyQuests)
   };
 }
 
@@ -30,6 +32,7 @@ export function recordLearningExercise(result, persistence = driveSync) {
   stats.totalExercises += 1;
   if (result.correct) stats.correctExercises += 1;
   if (result.correct && ['productive', 'speaking'].includes(result.recallType)) stats.productiveUses += 1;
+  stats.dailyQuests = applyExerciseToDailyQuests(stats.dailyQuests, result, result.occurredAt ? new Date(result.occurredAt) : new Date());
   persistence.updateSettings({ learningStats: stats }, { silent: true });
   return stats;
 }

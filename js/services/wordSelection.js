@@ -119,8 +119,9 @@ export function normalizeWordPracticeStats(word) {
 export function updateWordPracticeStats(word, result) {
   const current = normalizeWordPracticeStats(word);
   const exerciseType = String(result.exerciseType || 'unknown');
-  const mode = ({ 'context-cloze': 'context', 'ai-speaking': 'speaking',
-    'daily-typed-recall': 'practice', 'daily-image-recognition': 'practice' })[exerciseType] || exerciseType;
+  const mode = exerciseType.startsWith('daily-')
+    ? 'practice'
+    : ({ 'context-cloze': 'context', 'ai-speaking': 'speaking' })[exerciseType] || exerciseType;
   const modeStats = normalizeModeStats(current.byMode[mode]);
   const recalled = Boolean(result.correct);
   const recallAttempt = result.recallType !== 'recognition';

@@ -16,11 +16,11 @@ function dateKey(date) {
 }
 
 function renderStreakConsistencyCard(summary) {
-  const statusLabel = summary.atRisk ? 'At risk today'
-    : summary.practicedToday && summary.currentStreak > 0 ? 'Safe today'
+  const statusLabel = summary.atRisk ? 'Goal pending'
+    : summary.streakSafeToday ? 'Safe today'
       : 'Ready to start';
   const statusClass = summary.atRisk ? 'is-at-risk'
-    : summary.practicedToday && summary.currentStreak > 0 ? 'is-safe'
+    : summary.streakSafeToday ? 'is-safe'
       : 'is-idle';
   const freezeNote = summary.bankedFreezes >= summary.maxFreezes
     ? 'Full protection banked'
@@ -40,7 +40,7 @@ function renderStreakConsistencyCard(summary) {
   return `<article class="spec-card streak-stats-card" aria-labelledby="streak-rhythm-heading">
     <div class="today-section-heading"><div><span class="eyebrow">Habit momentum</span><h2 id="streak-rhythm-heading">Streak &amp; consistency</h2></div><span class="streak-status-chip ${statusClass}"><i class="fa-solid fa-fire" aria-hidden="true"></i> ${statusLabel}</span></div>
     <div class="streak-overview-grid">
-      <div><span>Current streak</span><strong>${summary.currentStreak} ${summary.currentStreak === 1 ? 'day' : 'days'}</strong><small>${summary.currentStreak > 0 ? `${summary.daysToMilestone}d to ${summary.nextMilestone}d milestone` : '1 exercise starts today'}</small></div>
+      <div><span>Current streak</span><strong>${summary.currentStreak} ${summary.currentStreak === 1 ? 'day' : 'days'}</strong><small>${summary.currentStreak > 0 ? `${summary.daysToMilestone}d to ${summary.nextMilestone}d milestone` : `Finish ${summary.dailyGoal} today to start`}</small></div>
       <div><span>Longest streak</span><strong>${summary.longestStreak} ${summary.longestStreak === 1 ? 'day' : 'days'}</strong><small>Personal record</small></div>
       <div><span>Last 28 days</span><strong>${summary.activeDaysLast28} / 28</strong><small>Active study days</small></div>
       <div><span>Streak Freezes</span><strong>${summary.bankedFreezes} / ${summary.maxFreezes}</strong><small>${escapeHtml(freezeNote)}</small></div>

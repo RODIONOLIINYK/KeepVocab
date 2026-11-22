@@ -209,10 +209,12 @@ export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
     ...(Array.isArray(localProfile.streakFreezeAwards) ? localProfile.streakFreezeAwards : []),
     ...(Array.isArray(remoteProfile.streakFreezeAwards) ? remoteProfile.streakFreezeAwards : [])
   ]);
+  const effectiveGoal = Math.max(1, Math.round(Number(practicePreferences.dailyGoal ?? baseProfile.dailyGoal) || 20));
   const longestStreak = longestStreakFromActivity(
     reviewActivity,
     streakFreezeDates,
-    Math.max(Number(localProfile.longestStreak) || 0, Number(remoteProfile.longestStreak) || 0)
+    Math.max(Number(localProfile.longestStreak) || 0, Number(remoteProfile.longestStreak) || 0),
+    effectiveGoal
   );
   const lastReviewDate = Object.keys(reviewActivity).sort().at(-1) || baseProfile.lastReviewDate;
   const reviewStartMoments = mergeReviewStartMoments(localProfile, remoteProfile);

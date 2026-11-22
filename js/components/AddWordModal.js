@@ -50,7 +50,7 @@ const ADD_WORD_MARKUP = `<!-- Quick Add New Word Modal -->
         <h2 id="add-word-title" style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800;">
           <span class="add-word-title-default"><i class="fa-solid fa-circle-plus" style="color: var(--primary-green);"></i> Add Word to Library</span><span class="add-word-title-images" hidden></span>
         </h2>
-        <button class="status-pill offline" id="btn-close-add-modal" aria-label="Close add word" style="font-size: 0.8rem; padding: 4px 8px;">✕</button>
+        <button type="button" class="status-pill offline" id="btn-close-add-modal" aria-label="Close add word"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       </div>
 
       <div class="add-mode-tabs" role="tablist" aria-label="Add vocabulary mode">

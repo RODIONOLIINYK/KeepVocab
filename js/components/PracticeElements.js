@@ -54,3 +54,32 @@ export function renderAnswerFeedback({ answered, correct, answer, detail = '', n
 export function renderPracticeNotice({ title, detail, actions, complete = false, loading = false }) {
   return `<section class="full-view-stack"><div class="spec-card useful-empty-state${complete ? ' mode-complete' : ''}"${loading ? ' aria-live="polite" aria-busy="true"' : ''}><img class="${loading ? 'practice-mascot' : 'mascot-result'}" src="assets/keepvocab-sprig-${complete ? 'celebrate' : 'thinking'}.webp" alt=""><h2>${escapeHtml(title)}</h2><p>${escapeHtml(detail)}</p><div class="inline-actions">${actions.map(({ id, label, secondary }) => `<button class="${secondary ? 'status-pill offline' : 'btn-green-solid'}" id="${escapeHtml(id)}">${escapeHtml(label)}</button>`).join('')}</div></div></section>`;
 }
+
+export function formatMemoryBoost(transition) {
+  const afterDays = Number(transition?.after?.scheduled_days || 0);
+  const beforeDays = Number(transition?.before?.scheduled_days || 0);
+  if (!(afterDays >= 1)) return '';
+  const roundedAfter = Math.round(afterDays);
+  const roundedBefore = Math.round(beforeDays);
+  if (roundedBefore >= 1 && roundedAfter > roundedBefore) {
+    return `Memory boosted · ${roundedBefore}d → ${roundedAfter}d`;
+  }
+  return `Next review in ${roundedAfter} ${roundedAfter === 1 ? 'day' : 'days'}`;
+}
+
+export function renderPracticeMascot({ heading = '', bubbleHtml = '', answered = false, correct = false, combo = 0, retry = false } = {}) {
+  const mood = answered ? (correct ? 'celebrate' : 'encourage') : 'thinking';
+  const asset = mood === 'celebrate' ? 'assets/keepvocab-sprig-celebrate.webp'
+    : mood === 'encourage' ? 'assets/keepvocab-sprout-mascot.webp'
+      : 'assets/keepvocab-sprig-thinking.webp';
+  const comboBadge = combo >= 3
+    ? `<span class="duo-combo-badge"><i class="fa-solid fa-fire" aria-hidden="true"></i> ${combo} in a row</span>`
+    : retry
+      ? '<span class="duo-retry-badge"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Previous mistake</span>'
+      : '';
+  return `<div class="duo-stage-heading">${heading ? `<h2>${escapeHtml(heading)}</h2>` : ''}${comboBadge}</div>
+    <div class="duo-prompt-row is-${mood}">
+      <img class="duo-prompt-mascot" src="${asset}" alt="" aria-hidden="true" width="108" height="108">
+      <div class="duo-speech-bubble">${bubbleHtml}</div>
+    </div>`;
+}

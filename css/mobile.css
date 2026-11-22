@@ -553,40 +553,40 @@
   }
   .today-progress-top {
     align-items: center;
-    gap: 8px;
+    gap: 6px 10px;
   }
-  .today-streak-rhythm {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .today-goal-subtle small { margin-left: 0; }
-  .today-goal-subtle .today-progress-track { height: 5px; }
+  .streak-meta-inline { font-size: .7rem; }
+  .today-goal-subtle .today-progress-track { height: 6px; }
   .streak-week-strip {
     width: 100%;
+    display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 4px;
+    padding-left: 0;
+    padding-top: 12px;
+    border-left: 0;
+    border-top: 1px solid var(--border-card);
   }
   .streak-day-dot { width: 30px; height: 30px; font-size: .7rem; }
-  .streak-meta-block { align-items: flex-start; }
-  .streak-meta-pills { justify-content: flex-start; }
-  .streak-milestone-note { text-align: left; }
-  .today-streak-alert {
-    flex-wrap: wrap;
-    padding: 11px 12px;
-    font-size: .78rem;
-  }
-  .today-streak-save-btn {
-    width: 100%;
-    min-height: 44px;
-    justify-content: center;
-  }
 
   .streak-heatmap { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
   .heatmap-cell { min-height: 28px; border-radius: 7px; }
   .streak-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .streak-milestones { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
   .milestone-badge { padding: 9px 4px; }
+
+  .practice-shell .practice-prompt { min-height: 280px; gap: 16px; }
+  .practice-shell .practice-answer-form { grid-template-columns: 1fr; }
+  .practice-shell .practice-answer-form .btn-green-solid { width: 100%; }
+  .duo-stage-heading { flex-wrap: wrap; gap: 6px 10px; }
+  .duo-prompt-row { gap: 12px; }
+  .duo-prompt-mascot { width: 76px; height: 76px; flex-basis: 76px; }
+  .duo-speech-bubble { padding: 12px 14px; border-radius: 14px; min-width: 0; }
+  .duo-speech-bubble::before { left: -6px; width: 10px; height: 10px; }
+  .duo-bubble-audio .audio-btn-circle { width: 44px; height: 44px; font-size: .98rem; }
+  .sentence-tile { min-height: 44px; padding: 8px 13px; font-size: .88rem; }
+  .sentence-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sentence-controls .btn-green-solid { grid-column: 1 / -1; width: 100%; margin-left: 0; }
 }
 @media (max-width: 359px) {
   .nav-user-area .badge-streak { padding: 6px 8px; font-size: .74rem; }

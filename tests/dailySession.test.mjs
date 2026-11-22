@@ -66,16 +66,22 @@ test('Daily Session avoids immediate unnecessary duplicate words', () => {
   assert.equal(hasImmediateDuplicates(session.exercises), false);
 });
 
-test('practice is fourteen typed descriptions and six visual matches with images available', () => {
+test('practice mixes complementary modes across distinct words without duplicating a word', () => {
   const words = Array.from({ length: 30 }, (_, index) => makeWord(index, {
-    imageUrl: `https://example.com/word${index}.png`, example: `This is word${index}.`,
+    imageUrl: `https://example.com/word${index}.png`,
+    example: `We carefully discussed word${index} during the morning meeting.`,
     mastery: { recognition: 1, recall: 1, context: 1, productive: 1 }
   }));
   const session = buildDailySession(words, { now: NOW });
   assert.equal(DEFAULT_SESSION_SIZE, 20);
   assert.equal(session.exercises.length, 20);
-  assert.equal(session.exercises.filter(exercise => exercise.exerciseType === 'typed-recall').length, 14);
-  assert.equal(session.exercises.filter(exercise => exercise.exerciseType === 'image-recognition').length, 6);
+  const types = new Set(session.exercises.map(exercise => exercise.exerciseType));
+  assert.ok(types.has('sentence-builder'));
+  assert.ok(types.has('context-cloze'));
+  assert.ok(types.has('listening-recall'));
+  assert.ok(types.has('use-it'));
+  assert.ok(types.has('typed-recall'));
+  assert.ok(session.exercises.filter(exercise => exercise.exerciseType === 'use-it').length <= 2);
   assert.equal(new Set(session.exercises.map(exercise => exercise.wordId)).size, 20);
   assert.ok(session.exercises.every(exercise => !exercise.round));
 });
@@ -92,11 +98,11 @@ test('only due words are selected, and images never change selected words or ord
   assert.deepEqual(withImages.exercises.map(exercise => exercise.wordId), withoutImages.exercises.map(exercise => exercise.wordId));
 });
 
-test('missing images fall back to typed descriptions without changing selected words', () => {
+test('missing images avoid visual prompts without changing selected words', () => {
   const words = Array.from({ length: 12 }, (_, index) => makeWord(index));
   const session = buildDailySession(words, { now: NOW });
   assert.equal(session.exercises.length, 12);
-  assert.ok(session.exercises.every(exercise => exercise.exerciseType === 'typed-recall'));
+  assert.equal(session.exercises.filter(exercise => exercise.exerciseType === 'image-recognition').length, 0);
   const imageWordId = session.exercises[0].wordId;
   const oneImage = buildDailySession(words.map(word => word.id === imageWordId ? { ...word, imageUrl: 'https://example.com/one.png' } : word), { now: NOW });
   assert.equal(oneImage.exercises.filter(exercise => exercise.exerciseType === 'image-recognition').length, 1);
@@ -208,7 +214,7 @@ test('the next workout tests recall after recognition instead of repeating image
   const due = new Date(words[0].nextReviewDate);
   const session = buildDailySession(words, { now: due });
   assert.equal(session.exercises.length, 4);
-  assert.ok(session.exercises.every(exercise => exercise.exerciseType === 'typed-recall'));
+  assert.ok(session.exercises.every(exercise => exercise.exerciseType !== 'image-recognition'));
 });
 
 test('past lifetime mistakes do not outrank a fresh unresolved miss after recovery', () => {
