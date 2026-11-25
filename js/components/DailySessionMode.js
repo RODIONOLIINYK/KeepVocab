@@ -16,7 +16,7 @@ import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18908';
 import { getGeminiSettings } from '../services/geminiSettings.js?v=18908';
 import { buildSentencePuzzle, evaluateSentenceAssembly, generateSentenceBuilderSet } from '../services/sentenceBuilder.js';
 import { mountUseItExercise } from './UseItExercise.js?v=18908';
-import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement, bindSentenceExampleCue, formatMemoryBoost, renderPracticeMascot, renderSentenceExampleCue } from './PracticeElements.js?v=18910';
+import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement, formatMemoryBoost, renderPracticeMascot } from './PracticeElements.js?v=18910';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {
@@ -122,7 +122,6 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
   let sentencePuzzle = null;
   let sentencePuzzleKey = '';
   let sentenceChosenIds = [];
-  let sentenceExampleRevealed = false;
   let questionStartedAt = performance.now();
   const aiSentenceByWordId = new Map();
 
@@ -151,7 +150,6 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     sentencePuzzle = null;
     sentencePuzzleKey = '';
     sentenceChosenIds = [];
-    sentenceExampleRevealed = false;
     questionStartedAt = performance.now();
   }
 
@@ -196,7 +194,10 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     } else if (exercise.exerciseType === 'sentence-builder' && sentencePuzzle) {
       const tileById = new Map(sentencePuzzle.tiles.map(tile => [tile.id, tile]));
       const chosenTokens = sentenceChosenIds.map(id => tileById.get(id)?.text).filter(Boolean);
-      correct = evaluateSentenceAssembly(sentencePuzzle.targetTokens, chosenTokens).correct;
+      correct = evaluateSentenceAssembly(sentencePuzzle.targetTokens, chosenTokens, {
+        opening: sentencePuzzle.opening,
+        acceptedSentences: sentencePuzzle.acceptedSentences
+      }).correct;
     } else if (['image-recognition', 'definition-recognition', 'meaning-recognition'].includes(exercise.exerciseType)) {
       correct = evaluateChoiceAnswer(word.id, selectedId);
     } else {
@@ -246,12 +247,12 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       if (sentencePuzzleKey !== key) {
         sentencePuzzle = buildSentencePuzzle(word, words, {
           sentence: aiItem?.sentence || null,
-          distractors: aiItem?.distractors || null,
+          chunks: aiItem?.chunks || null,
+          acceptedSentences: aiItem?.acceptedSentences || null,
           source: aiItem?.source || 'saved-example'
         });
         sentencePuzzleKey = key;
         sentenceChosenIds = [];
-        sentenceExampleRevealed = false;
       }
       if (!sentencePuzzle) {
         exercise.exerciseType = 'typed-recall';
@@ -312,11 +313,14 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       const feedbackDetail = sentenceMode
         ? sentencePuzzle.sentence
         : (exampleForLearning(word) || definitionForLearning(word));
-      const headingText = sentenceMode ? 'Rebuild the example'
+      const headingText = sentenceMode ? (sentencePuzzle.opening ? 'Complete the sentence' : 'Build the sentence')
         : listening ? 'Type what you hear'
           : visual ? 'Which word matches?'
             : contextMode ? 'Fill in the blank'
               : 'Write the word';
+      const lockedOpeningHtml = sentenceMode && sentencePuzzle.opening
+        ? `<span class="sentence-tile is-locked" aria-label="Sentence opening">${escapeHtml(sentencePuzzle.opening)}</span>`
+        : '';
       const bubbleHtml = sentenceMode
         ? `<div class="duo-bubble-word-row"><strong>${escapeHtml(word.word)}</strong><span class="duo-bubble-tags"><span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>${sentencePuzzle.source === 'ai' ? '<span class="duo-source-chip"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> AI sentence</span>' : ''}</span></div><p class="duo-bubble-copy">${escapeHtml(sentencePuzzle.definition)}</p>`
         : listening
@@ -331,15 +335,14 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
           ${visual
             ? `<div class="duo-stage-heading"><h2>${escapeHtml(headingText)}</h2>${combo >= 3 ? `<span class="duo-combo-badge"><i class="fa-solid fa-fire" aria-hidden="true"></i> ${combo} in a row</span>` : ''}</div><figure class="practice-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>`
             : renderPracticeMascot({ heading: headingText, bubbleHtml, answered, correct, combo, retry: Boolean(exercise.isRetry) })}
-          ${sentenceMode && !answered ? renderSentenceExampleCue(sentencePuzzle.sentence, sentenceExampleRevealed) : ''}
           ${sentenceMode
             ? `<div class="sentence-answer-tray${answered ? (correct ? ' is-correct' : ' is-incorrect') : ''}" id="sentence-tray" aria-label="Your assembled sentence">
-                 ${chosenTiles.length ? chosenTiles.map(tile => `<button type="button" class="sentence-tile is-placed" data-remove-tile="${escapeHtml(tile.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(tile.text)}</button>`).join('') : '<span class="sentence-tray-placeholder">Put the tiles in the same order as the example.</span>'}
+                 ${lockedOpeningHtml}${chosenTiles.length ? chosenTiles.map(tile => `<button type="button" class="sentence-tile is-placed" data-remove-tile="${escapeHtml(tile.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(tile.text)}</button>`).join('') : `<span class="sentence-tray-placeholder">${sentencePuzzle.opening ? 'Tap the phrase tiles below to finish the sentence.' : 'Tap the phrase tiles below in order.'}</span>`}
                </div>`
             : ''}
           ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><strong><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'}" aria-hidden="true"></i> ${correct ? escapeHtml(answerEncouragement({ correct, recallType: recallTypeForFeedback, hintsUsed })) : (sentenceMode ? 'Expected sentence' : 'Answer')}${sentenceMode ? '' : `: ${escapeHtml(word.word)}`}</strong><span>${escapeHtml(feedbackDetail)}</span>${correct && memoryBoost ? `<em class="memory-boost-pill"><i class="fa-solid fa-seedling" aria-hidden="true"></i> ${escapeHtml(memoryBoost)}</em>` : ''}</div><div class="inline-actions"><button class="status-pill offline" id="practice-hear-answer"><i class="fa-solid fa-volume-high"></i> ${sentenceMode ? 'Hear sentence' : 'Hear answer'}</button><button class="btn-green-solid" id="daily-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button></div>`
             : visual ? `<div class="choice-grid">${optionsList.map(option => `<button class="choice-button" data-daily-choice="${escapeHtml(option.id)}"><span>${escapeHtml(option.word)}</span></button>`).join('')}</div>`
-            : sentenceMode ? `<div class="sentence-tile-bank" role="group" aria-label="Word bank">${sentencePuzzle.tiles.map(tile => { const used = chosenSet.has(tile.id); return `<button type="button" class="sentence-tile${used ? ' is-used' : ''}" data-pick-tile="${escapeHtml(tile.id)}" ${used ? 'disabled aria-hidden="true" tabindex="-1"' : ''}>${escapeHtml(tile.text)}</button>`; }).join('')}</div><div class="sentence-controls"><button type="button" class="status-pill offline" id="daily-sentence-hint"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Hint</button><button type="button" class="status-pill offline" id="daily-sentence-clear" ${chosenTiles.length ? '' : 'disabled'}>Clear</button><button type="button" class="btn-green-solid" id="daily-sentence-check" data-sound="none" ${canCheckSentence ? '' : 'disabled'}>Check</button></div>`
+            : sentenceMode ? `<div class="sentence-tile-bank" role="group" aria-label="Phrase bank">${sentencePuzzle.tiles.map(tile => { const used = chosenSet.has(tile.id); return `<button type="button" class="sentence-tile${used ? ' is-used' : ''}" data-pick-tile="${escapeHtml(tile.id)}" ${used ? 'disabled aria-hidden="true" tabindex="-1"' : ''}>${escapeHtml(tile.text)}</button>`; }).join('')}</div><div class="sentence-controls"><button type="button" class="status-pill offline" id="daily-sentence-hint"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Hint</button><button type="button" class="status-pill offline" id="daily-sentence-clear" ${chosenTiles.length ? '' : 'disabled'}>Clear</button><button type="button" class="btn-green-solid" id="daily-sentence-check" data-sound="none" ${canCheckSentence ? '' : 'disabled'}>Check</button></div>`
             : `<form class="practice-answer-form" id="daily-form"><input id="daily-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type the word" aria-label="Your answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
         </div>
       </div></section>`;
@@ -361,12 +364,6 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       render();
     });
     container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
-    if (container.querySelector('#sentence-play-example')) {
-      bindSentenceExampleCue(container, sentencePuzzle.sentence, revealed => {
-        sentenceExampleRevealed = revealed;
-        if (revealed) hintsUsed += 1;
-      });
-    }
     container.querySelector('#practice-hear-answer')?.addEventListener('click', () => {
       if (exercise.exerciseType === 'sentence-builder' && sentencePuzzle) speakWord(sentencePuzzle.sentence, 'en-US', 0.92);
       else speakWord(word.word, 'en-US', 0.9, word.audioUrl);

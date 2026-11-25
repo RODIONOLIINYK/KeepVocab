@@ -6,6 +6,7 @@ export const COURSE_SCOPED_SETTING_KEYS = Object.freeze([
   'activeNotebook', 'dailyGoal', 'practiceSessionSize', 'dailyStreak', 'longestStreak', 'streakFreezeDates', 'streakFreezeAwards',
   'lastReviewDate', 'reviewsToday', 'reviewsDate',
   'reviewActivity', 'exerciseActivityByDevice', 'learningStats', 'speakingProgress',
+  'equippedTheme', 'equippedBadge',
   'reminderEnabled', 'reminderExplicitlyDisabled', 'smartReminderEnabled', 'streakReminderEnabled', 'reminderTime', 'reviewStartMoments',
   'practicePreferenceUpdatedAt'
 ]);
@@ -189,6 +190,46 @@ function mergeReviewStartMoments(localProfile = {}, remoteProfile = {}) {
   return [...byDay.values()].sort((a, b) => b - a).slice(0, 45).map(date => date.toISOString());
 }
 
+function mergeLearningStats(localProfile = {}, remoteProfile = {}, baseProfile = {}) {
+  const local = localProfile.learningStats && typeof localProfile.learningStats === 'object' ? localProfile.learningStats : {};
+  const remote = remoteProfile.learningStats && typeof remoteProfile.learningStats === 'object' ? remoteProfile.learningStats : {};
+  const base = baseProfile.learningStats && typeof baseProfile.learningStats === 'object' ? baseProfile.learningStats : {};
+  const localQuests = local.dailyQuests && typeof local.dailyQuests === 'object' ? local.dailyQuests : null;
+  const remoteQuests = remote.dailyQuests && typeof remote.dailyQuests === 'object' ? remote.dailyQuests : null;
+  let mergedQuests = base.dailyQuests || localQuests || remoteQuests || undefined;
+  if (localQuests && remoteQuests && localQuests.date && localQuests.date === remoteQuests.date) {
+    const localCounts = localQuests.counts || {};
+    const remoteCounts = remoteQuests.counts || {};
+    mergedQuests = {
+      date: localQuests.date,
+      exercises: Math.max(Number(localQuests.exercises) || 0, Number(remoteQuests.exercises) || 0),
+      currentCombo: Math.max(Number(localQuests.currentCombo) || 0, Number(remoteQuests.currentCombo) || 0),
+      bestCombo: Math.max(Number(localQuests.bestCombo) || 0, Number(remoteQuests.bestCombo) || 0),
+      counts: {
+        sentence: Math.max(Number(localCounts.sentence) || 0, Number(remoteCounts.sentence) || 0),
+        listening: Math.max(Number(localCounts.listening) || 0, Number(remoteCounts.listening) || 0),
+        context: Math.max(Number(localCounts.context) || 0, Number(remoteCounts.context) || 0),
+        useit: Math.max(Number(localCounts.useit) || 0, Number(remoteCounts.useit) || 0)
+      },
+      claimedIds: [...new Set([...(Array.isArray(localQuests.claimedIds) ? localQuests.claimedIds : []), ...(Array.isArray(remoteQuests.claimedIds) ? remoteQuests.claimedIds : [])])],
+      bonusClaimed: Boolean(localQuests.bonusClaimed || remoteQuests.bonusClaimed)
+    };
+  }
+  return {
+    ...base,
+    totalExercises: Math.max(Number(local.totalExercises) || 0, Number(remote.totalExercises) || 0),
+    correctExercises: Math.max(Number(local.correctExercises) || 0, Number(remote.correctExercises) || 0),
+    sessionsCompleted: Math.max(Number(local.sessionsCompleted) || 0, Number(remote.sessionsCompleted) || 0),
+    weakWordsImproved: Math.max(Number(local.weakWordsImproved) || 0, Number(remote.weakWordsImproved) || 0),
+    productiveUses: Math.max(Number(local.productiveUses) || 0, Number(remote.productiveUses) || 0),
+    speakingMinutes: Math.max(Number(local.speakingMinutes) || 0, Number(remote.speakingMinutes) || 0),
+    speakingSessions: Math.max(Number(local.speakingSessions) || 0, Number(remote.speakingSessions) || 0),
+    xp: Math.max(Number(local.xp) || 0, Number(remote.xp) || 0),
+    questsCompletedTotal: Math.max(Number(local.questsCompletedTotal) || 0, Number(remote.questsCompletedTotal) || 0),
+    ...(mergedQuests ? { dailyQuests: mergedQuests } : {})
+  };
+}
+
 export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
   const local = migrateCourseSettings(localSettings);
   const remote = migrateCourseSettings(remoteSettings);
@@ -198,6 +239,7 @@ export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
   const remoteProfile = remote.courseProfiles.english;
   const baseProfile = !hasProfileData(localSettings) ? remoteProfile : !hasProfileData(remoteSettings) ? localProfile : newestRecord(localProfile, remoteProfile);
   const speakingProgress = mergeSpeakingProgress(localProfile, remoteProfile);
+  const learningStats = mergeLearningStats(localProfile, remoteProfile, baseProfile);
   const practicePreferences = mergePracticePreferences(localProfile, remoteProfile, baseProfile);
   const exerciseActivityByDevice = mergeActivityByDevice(localProfile, remoteProfile);
   const reviewActivity = aggregateActivity(exerciseActivityByDevice);
@@ -227,6 +269,7 @@ export function mergeCourseProfiles(localSettings = {}, remoteSettings = {}) {
     reminderExplicitlyDisabled: explicitlyDisabled,
     reviewStartMoments,
     speakingProgress,
+    learningStats,
     exerciseActivityByDevice,
     reviewActivity,
     streakFreezeDates,

@@ -5,11 +5,12 @@ import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=
 import { completedExercisesToday } from '../services/learningStats.js?v=18908';
 import { getStreakSummary } from '../services/studyActivity.js';
 import { getDailyQuests } from '../services/dailyQuests.js';
+import { getRewardSummary, renderBadgeSvg } from '../services/xpRewards.js';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
 const MODES = [
-  ['sentence', 'fa-align-left', 'Build Sentence', 'Arrange words into a real sentence'],
+  ['sentence', 'fa-align-left', 'Build Sentence', 'Assemble short phrase tiles'],
   ['context', 'fa-book-open-reader', 'Context', 'Complete real situations'],
   ['spelling', 'fa-headphones', 'Listen & Spell', 'Recall from sound'],
   ['useit', 'fa-pen-nib', 'Use It', 'Create your own sentence'],
@@ -142,6 +143,7 @@ export function renderDashboardView(container, onNavigate) {
   const progress = Math.min(100, Math.round(completedToday / dailyGoal * 100));
   const streakSummary = getStreakSummary(settings);
   const dailyQuests = getDailyQuests(settings);
+  const rewards = getRewardSummary(settings);
   const stages = activeWords.reduce((counts, word) => {
     counts[masteryStage(normalizeMastery(word))] += 1;
     return counts;
@@ -174,7 +176,7 @@ export function renderDashboardView(container, onNavigate) {
       <div class="daily-workout-copy"><div class="daily-kicker-row"><span class="daily-kicker"><i class="fa-solid fa-seedling" aria-hidden="true"></i> Your daily practice</span><span class="daily-eval-badge"><i class="fa-regular fa-clock" aria-hidden="true"></i> ${escapeHtml(workout.state === 'waiting' && plan.nextReadyAt ? `Next at ${timeLabel(plan.nextReadyAt)}` : 'New plan at 8:00 AM')}</span></div><h2 id="workout-heading">${escapeHtml(workout.heading)}</h2><p class="daily-workout-meta">${escapeHtml(workout.description)}</p>
         <div class="daily-workout-actions"><button class="today-primary-cta" id="start-daily-session"><span>${escapeHtml(workout.action)}</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>${modeCounts.length ? `<span class="workout-composition">${modeCounts.map(item => `<span><i class="fa-solid ${item.icon}" aria-hidden="true"></i> ${item.count} ${item.label}</span>`).join('')}</span>` : ''}</div>
       </div>
-      <div class="daily-workout-mascot"><div class="mascot-bubble">${escapeHtml(workout.bubble)}</div><img src="${mascotImage}" alt="" aria-hidden="true" width="640" height="640"></div>
+      <div class="daily-workout-mascot"><div class="mascot-bubble">${escapeHtml(workout.bubble)}</div><img src="${mascotImage}" alt="" aria-hidden="true" width="640" height="640"><span class="sprig-equipped-badge" title="${escapeHtml(`${rewards.equippedBadgeDef.name} badge · Level ${rewards.level}`)}" aria-label="${escapeHtml(`Equipped badge: ${rewards.equippedBadgeDef.name}`)}">${renderBadgeSvg(rewards.equippedBadge, 20)}<small>Lv. ${rewards.level}</small></span></div>
       <div class="daily-plan-overview"><div class="daily-plan-heading"><h3>Your plan at a glance</h3><span><i class="fa-solid fa-circle-check" aria-hidden="true"></i> ${plan.completedTodayCount} of ${plan.plannedTodayCount} done</span></div><div class="daily-plan-buckets" role="group" aria-label="Daily study plan">${buckets.map(([kind, icon, count, title, copy]) => `<div class="daily-plan-bucket ${kind}"><span class="bucket-icon"><i class="fa-solid ${icon}" aria-hidden="true"></i></span><strong>${count}</strong><div><span>${title}</span><small>${copy}</small></div></div>`).join('')}</div>
 
       </div>
@@ -202,14 +204,29 @@ export function renderDashboardView(container, onNavigate) {
       <aside class="today-insights">
         <section class="spec-card today-quests-card" aria-labelledby="today-quests-heading">
           <div class="card-header-bar"><h2 id="today-quests-heading">Today’s quests</h2><span class="quests-count-pill${dailyQuests.allDone ? ' is-done' : ''}">${dailyQuests.completedCount}/${dailyQuests.totalCount}</span></div>
+          <div class="quest-xp-summary">
+            <div class="quest-xp-top">
+              <span class="quest-level-badge">${renderBadgeSvg(rewards.equippedBadge, 18)}<strong>Lv. ${rewards.level} · ${escapeHtml(rewards.title)}</strong></span>
+              <span class="quest-xp-total">${rewards.xp} XP</span>
+            </div>
+            <div class="quest-xp-track" role="progressbar" aria-label="Level XP progress" aria-valuemin="0" aria-valuemax="${rewards.xpForNextLevel}" aria-valuenow="${rewards.xpIntoLevel}"><span style="width:${rewards.progressPercent}%"></span></div>
+            <div class="quest-xp-meta">
+              <small>${rewards.nextUnlock ? `${Math.max(0, rewards.nextUnlock.unlockXp - rewards.xp)} XP to unlock ${escapeHtml(rewards.nextUnlock.name)}` : 'All rewards unlocked!'}</small>
+              <button type="button" class="text-action quest-rewards-link" data-practice-view="stats">Rewards</button>
+            </div>
+          </div>
           <div class="quest-list">${dailyQuests.quests.map(quest => {
             const pct = Math.min(100, Math.round(quest.progress / Math.max(1, quest.target) * 100));
             return `<button type="button" class="quest-row${quest.done ? ' is-done' : ''}" data-practice-view="${quest.route}">
               <span class="quest-icon"><i class="fa-solid ${quest.done ? 'fa-circle-check' : quest.icon}" aria-hidden="true"></i></span>
               <span class="quest-body"><strong>${escapeHtml(quest.title)}</strong><span class="quest-bar"><i style="width:${pct}%"></i></span></span>
-              <span class="quest-progress">${quest.progress}/${quest.target}</span>
+              <span class="quest-reward-col"><span class="quest-xp-pill${quest.done ? ' is-done' : ''}">+${quest.xpReward} XP</span><span class="quest-progress">${quest.progress}/${quest.target}</span></span>
             </button>`;
           }).join('')}</div>
+          <div class="quest-chest-banner${dailyQuests.allDone ? ' is-claimed' : ''}">
+            <i class="fa-solid ${dailyQuests.allDone ? 'fa-circle-check' : 'fa-wand-magic-sparkles'}" aria-hidden="true"></i>
+            <span>${dailyQuests.allDone ? `All quests done! +${dailyQuests.earnedQuestXp} XP earned today.` : `Finish all 3 quests for a +${dailyQuests.bonusXp} XP bonus.`}</span>
+          </div>
         </section>
         <section class="spec-card today-insight-card"><div class="card-header-bar"><h2>Your vocabulary</h2><i class="fa-solid fa-book-open" aria-hidden="true"></i></div><div class="today-section-heading"><div><h3>${activeWordCount} saved ${activeWordCount === 1 ? 'word' : 'words'}</h3><small>${activeWords.length} tracked meaning${activeWords.length === 1 ? '' : 's'} in ${notebookLabel}</small></div></div><div class="mastery-mini-list"><div><span>Recognized</span><strong>${stages.recognized + stages.recalled + stages.context + stages.productive}</strong></div><div><span>Reliably recalled</span><strong>${stages.recalled + stages.context + stages.productive}</strong></div><div><span>Used in context</span><strong>${stages.context + stages.productive}</strong></div><div><span>Used productively</span><strong>${stages.productive}</strong></div></div><button class="text-action" data-practice-view="stats">See your progress <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></section>
         <section class="spec-card today-insight-card compact"><span class="cloud-dot ${auth.isConnected ? 'connected' : auth.lastError ? 'error' : ''}"><i class="fa-solid fa-cloud" aria-hidden="true"></i></span><div><strong>${auth.isConnected ? 'Drive backup active' : auth.lastError ? 'Backup needs attention' : 'Keep your words safe'}</strong><small>${escapeHtml(auth.isConnected ? `Last sync ${auth.lastSynced ? new Date(auth.lastSynced).toLocaleDateString() : 'pending'}` : auth.lastError || 'Set up Drive backup in Settings')}</small></div><button class="icon-action" id="dashboard-drive-settings" aria-label="Open backup settings"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></section>

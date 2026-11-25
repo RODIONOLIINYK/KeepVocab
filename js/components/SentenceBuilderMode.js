@@ -13,7 +13,7 @@ import {
 import { ensureDailyStudyPlan, getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
-import { bindSentenceExampleCue, formatMemoryBoost, renderPracticeHeader, renderPracticeMascot, renderPracticeNotice, renderSentenceExampleCue } from './PracticeElements.js?v=18910';
+import { formatMemoryBoost, renderPracticeHeader, renderPracticeMascot, renderPracticeNotice } from './PracticeElements.js?v=18910';
 
 export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
   const allWords = getActivePracticeWords(driveSync);
@@ -38,7 +38,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     if (!allWords.length) {
       notice(
         'Save a word to start',
-        'Add vocabulary and KeepVocab will turn your meanings into interactive word-tile sentence puzzles.',
+        'Add vocabulary and KeepVocab will turn your meanings into short phrase-tile sentence puzzles.',
         [
           { id: 'sentence-empty-primary', label: 'Add a word', run: () => document.getElementById('btn-header-quick-add')?.click() },
           { id: 'sentence-empty-home', label: 'Back to Today', secondary: true, run: () => go('dashboard', onNavigate) }
@@ -48,7 +48,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     }
     notice(
       'Connect Gemini or add examples',
-      'Build Sentence generates fresh sentences with Gemini, or uses saved example sentences from your Library.',
+      'Build Sentence generates short phrase puzzles with Gemini, or uses saved example sentences from your Library.',
       [
         { id: 'sentence-empty-gemini', label: 'Set up Google AI Studio', run: () => go('settings', onNavigate) },
         { id: 'sentence-empty-library', label: 'Open library', secondary: true, run: () => go('library', onNavigate) },
@@ -68,7 +68,6 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
   let hintsUsed = 0;
   let memoryBoost = '';
   let chosenIds = [];
-  let exampleRevealed = false;
   let puzzle = null;
   let startedAt = performance.now();
 
@@ -78,12 +77,12 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     puzzle = word
       ? buildSentencePuzzle(word, allWords, {
         sentence: generated?.sentence || null,
-        distractors: generated?.distractors || null,
+        chunks: generated?.chunks || null,
+        acceptedSentences: generated?.acceptedSentences || null,
         source: generated?.source || 'saved-example'
       })
       : null;
     chosenIds = [];
-    exampleRevealed = false;
     answered = false;
     correct = false;
     hintsUsed = 0;
@@ -132,7 +131,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     }
     notice(
       'Creating fresh sentence puzzles…',
-      'Generating short, natural sentences from your saved meanings with Gemini.',
+      'Generating short, unambiguous phrase puzzles from your saved meanings with Gemini.',
       [{ id: 'sentence-cancel', label: 'Cancel', secondary: true, run: () => go('dashboard', onNavigate) }],
       { loading: true }
     );
@@ -163,7 +162,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     if (index >= words.length) {
       notice(
         'Sentence Builder complete',
-        `You assembled ${score} of ${words.length} sentences cleanly. Building real word order locks vocabulary into active grammar.`,
+        `You assembled ${score} of ${words.length} sentences cleanly. Putting phrases together locks vocabulary into active grammar.`,
         [
           { id: 'sentence-again', label: geminiEnabled ? 'Build fresh AI set' : 'Build another set', run: () => renderSentenceBuilderMode(container, onNavigate, { force: true }) },
           { id: 'sentence-home', label: 'Back to Today', secondary: true, run: () => go('dashboard', onNavigate) }
@@ -187,6 +186,9 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     const sourceBadge = puzzle.source === 'ai'
       ? '<span class="duo-source-chip"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> AI sentence</span>'
       : '';
+    const lockedOpeningHtml = puzzle.opening
+      ? `<span class="sentence-tile is-locked" aria-label="Sentence opening">${escapeHtml(puzzle.opening)}</span>`
+      : '';
 
     container.innerHTML = `<section class="full-view-stack" aria-labelledby="sentence-heading">
       <div class="spec-card practice-shell sentence-shell${combo >= 3 ? ' is-hot-combo' : ''}">
@@ -197,17 +199,17 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
         ${renderPracticeHeader({ exitId: 'sentence-exit', label: '', current: index, total: words.length, score, answered })}
         <div class="practice-prompt sentence-prompt">
           ${renderPracticeMascot({
-            heading: 'Rebuild the example',
+            heading: puzzle.opening ? 'Complete the sentence' : 'Build the sentence',
             bubbleHtml: `<div class="duo-bubble-word-row"><strong>${escapeHtml(word.word)}</strong><span class="duo-bubble-tags"><span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>${sourceBadge}</span></div><p class="duo-bubble-copy">${escapeHtml(puzzle.definition)}</p>`,
             answered,
             correct,
             combo
           })}
-          ${answered ? '' : renderSentenceExampleCue(puzzle.sentence, exampleRevealed)}
           <div class="sentence-answer-tray${answered ? (correct ? ' is-correct' : ' is-incorrect') : ''}" id="sentence-tray" aria-label="Your assembled sentence">
+            ${lockedOpeningHtml}
             ${chosenTiles.length
               ? chosenTiles.map(tile => `<button type="button" class="sentence-tile is-placed" data-remove-tile="${escapeHtml(tile.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(tile.text)}</button>`).join('')
-              : '<span class="sentence-tray-placeholder">Put the tiles in the same order as the example.</span>'}
+              : `<span class="sentence-tray-placeholder">${puzzle.opening ? 'Tap the phrase tiles below to finish the sentence.' : 'Tap the phrase tiles below in order.'}</span>`}
           </div>
           ${answered
             ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite">
@@ -219,7 +221,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
                 <button type="button" class="status-pill offline" id="sentence-hear"><i class="fa-solid fa-volume-high" aria-hidden="true"></i> Hear sentence</button>
                 <button type="button" class="btn-green-solid" id="sentence-next">${index + 1 === words.length ? 'See result' : 'Next sentence'}</button>
               </div>`
-            : `<div class="sentence-tile-bank" role="group" aria-label="Word bank">
+            : `<div class="sentence-tile-bank" role="group" aria-label="Phrase bank">
                 ${puzzle.tiles.map(tile => {
                   const used = chosenSet.has(tile.id);
                   return `<button type="button" class="sentence-tile${used ? ' is-used' : ''}" data-pick-tile="${escapeHtml(tile.id)}" ${used ? 'disabled aria-hidden="true" tabindex="-1"' : ''}>${escapeHtml(tile.text)}</button>`;
@@ -235,10 +237,6 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     </section>`;
 
     container.querySelector('#sentence-exit').addEventListener('click', () => go('dashboard', onNavigate));
-    if (!answered) bindSentenceExampleCue(container, puzzle.sentence, revealed => {
-      exampleRevealed = revealed;
-      if (revealed) hintsUsed += 1;
-    });
     container.querySelectorAll('[data-pick-tile]').forEach(button => button.addEventListener('click', () => {
       const id = button.dataset.pickTile;
       if (!id || chosenSet.has(id) || answered) return;
@@ -264,7 +262,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
         if (currentTile && currentTile.text === expectedText) {
           prefix.push(chosenIds[i]);
         } else {
-          const nextTile = puzzle.tiles.find(tile => !tile.isDistractor && tile.text === expectedText && !prefix.includes(tile.id));
+          const nextTile = puzzle.tiles.find(tile => tile.text === expectedText && !prefix.includes(tile.id));
           if (nextTile) {
             chosenIds = [...prefix, nextTile.id];
             hintsUsed += 1;
@@ -276,7 +274,10 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     });
     container.querySelector('#sentence-check')?.addEventListener('click', () => {
       if (!canCheck) return;
-      const evaluation = evaluateSentenceAssembly(puzzle.targetTokens, chosenTiles.map(tile => tile.text));
+      const evaluation = evaluateSentenceAssembly(puzzle.targetTokens, chosenTiles.map(tile => tile.text), {
+        opening: puzzle.opening,
+        acceptedSentences: puzzle.acceptedSentences
+      });
       answered = true;
       correct = evaluation.correct;
       if (correct) {

@@ -48,8 +48,8 @@ test('Use It finishes through its original navigation without an added result st
   assert.doesNotMatch(useIt, /mode-completion-card|useit-home|useit-again|mountPracticeCompletion/);
 });
 
-test('removed celebration cannot load through app startup, components, or offline assets', async () => {
+test('removed completion overlays cannot load through app startup, components, or offline assets', async () => {
   for (const file of ['index.html', 'sw.js', 'js/app.js', ...['DailySessionMode', 'FlashcardsMode', 'PracticeModes', 'ContextQuizMode', 'UseItMode', 'MatchSprintMode', 'VisualMatchMode', 'SpeakingMode'].map(name => `js/components/${name}.js`)]) {
-    assert.doesNotMatch(await source(file), /StreakCelebration|completion\.css|mountPracticeCompletion/, file);
+    assert.doesNotMatch(await source(file), /completion\.css|mountPracticeCompletion/, file);
   }
 });

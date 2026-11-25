@@ -3,8 +3,9 @@ import { readFsrsConfig } from '../services/fsrsConfig.js';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { getDueWords } from '../services/srsEngine.js?v=18908';
 import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18908';
-import { normalizeLearningStats } from '../services/learningStats.js?v=18908';
+import { equipCosmeticReward, normalizeLearningStats } from '../services/learningStats.js?v=18908';
 import { getStreakSummary } from '../services/studyActivity.js';
+import { getRewardSummary, renderBadgeSvg } from '../services/xpRewards.js';
 import { weaknessScore } from '../services/dailySession.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
@@ -56,10 +57,51 @@ function renderStreakConsistencyCard(summary) {
   </article>`;
 }
 
+function renderRewardsCard(rewards) {
+  const themeCards = rewards.themes.map(theme => {
+    const status = theme.equipped ? 'Active' : theme.unlocked ? 'Use theme' : `Lv. ${theme.unlockLevel} · ${theme.unlockXp} XP`;
+    return `<button type="button" class="unlock-card theme-card${theme.equipped ? ' is-equipped' : ''}${theme.unlocked ? ' is-unlocked' : ' is-locked'}" data-equip-theme="${escapeHtml(theme.id)}" ${theme.unlocked ? '' : 'disabled'}>
+      <span class="theme-swatch" style="background:linear-gradient(135deg, ${theme.swatch}, ${theme.swatchAccent})" aria-hidden="true">${theme.unlocked ? (theme.equipped ? '<i class="fa-solid fa-check"></i>' : '') : '<i class="fa-solid fa-lock"></i>'}</span>
+      <span class="unlock-copy"><strong>${escapeHtml(theme.name)}</strong><small>${escapeHtml(status)}</small></span>
+    </button>`;
+  }).join('');
+
+  const badgeCards = rewards.badges.map(badge => {
+    const status = badge.equipped ? 'Equipped' : badge.unlocked ? 'Equip' : `Lv. ${badge.unlockLevel} · ${badge.unlockXp} XP`;
+    return `<button type="button" class="unlock-card badge-card${badge.equipped ? ' is-equipped' : ''}${badge.unlocked ? ' is-unlocked' : ' is-locked'}" data-equip-badge="${escapeHtml(badge.id)}" ${badge.unlocked ? '' : 'disabled'}>
+      <span class="badge-preview" style="background:${badge.bg}" aria-hidden="true">${renderBadgeSvg(badge.id, 26)}${badge.unlocked ? '' : '<i class="fa-solid fa-lock unlock-lock-dot"></i>'}</span>
+      <span class="unlock-copy"><strong>${escapeHtml(badge.name)}</strong><small>${escapeHtml(status)}</small></span>
+    </button>`;
+  }).join('');
+
+  return `<article class="spec-card rewards-stats-card" id="rewards-section" aria-labelledby="rewards-heading">
+    <div class="today-section-heading">
+      <div><span class="eyebrow">Quests &amp; rewards</span><h2 id="rewards-heading">Level ${rewards.level} · ${escapeHtml(rewards.title)}</h2></div>
+      <span class="rewards-xp-chip">${renderBadgeSvg(rewards.equippedBadge, 18)}<strong>${rewards.xp} XP</strong></span>
+    </div>
+    <div class="rewards-level-bar">
+      <div class="rewards-level-meta">
+        <span>${rewards.xpIntoLevel} / ${rewards.xpForNextLevel} XP to Level ${rewards.level + 1}</span>
+        <strong>${rewards.questsCompletedTotal} quest${rewards.questsCompletedTotal === 1 ? '' : 's'} completed</strong>
+      </div>
+      <div class="quest-xp-track" role="progressbar" aria-label="Profile level progress" aria-valuemin="0" aria-valuemax="${rewards.xpForNextLevel}" aria-valuenow="${rewards.xpIntoLevel}"><span style="width:${rewards.progressPercent}%"></span></div>
+    </div>
+    <div class="rewards-group">
+      <div class="rewards-group-heading"><span class="eyebrow">App themes</span><small>${rewards.unlockedThemeCount}/${rewards.themes.length} unlocked</small></div>
+      <div class="unlock-grid">${themeCards}</div>
+    </div>
+    <div class="rewards-group">
+      <div class="rewards-group-heading"><span class="eyebrow">Sprig badges</span><small>${rewards.unlockedBadgeCount}/${rewards.badges.length} unlocked</small></div>
+      <div class="unlock-grid">${badgeCards}</div>
+    </div>
+  </article>`;
+}
+
 export function renderStatsView(container, onNavigate) {
   const words = driveSync.getWords();
   const settings = driveSync.getSettings();
   const stats = normalizeLearningStats(settings);
+  const rewards = getRewardSummary(settings);
   const dueWords = getDueWords(words);
   const mastery = words.map(word => ({ word, data: normalizeMastery(word) }));
   const recognized = mastery.filter(item => ['recognized', 'recalled', 'context', 'productive'].includes(masteryStage(item.data))).length;
@@ -91,11 +133,20 @@ export function renderStatsView(container, onNavigate) {
   container.innerHTML = `<section class="full-view-stack progress-view" aria-labelledby="progress-heading"><div class="progress-hero"><div><span class="eyebrow">Your learning over time</span><h1 id="progress-heading">Your vocabulary is becoming usable</h1><p>Recognition is the start. Recall, context, and speaking show what you can actively use.</p></div><button class="btn-green-solid" id="progress-workout">${dueWords.length ? `Review ${dueWords.length} due` : 'Start a workout'}</button></div>
     <div class="progress-mastery-grid"><article><span>Saved</span><strong>${words.length}</strong><small>vocabulary cards</small></article><article><span>Recognized</span><strong>${recognized}</strong><small>meaning identified</small></article><article><span>Recalled unaided</span><strong>${recalled}</strong><small>produced from memory</small></article><article><span>Used in context</span><strong>${context}</strong><small>understood in a situation</small></article><article><span>Used productively</span><strong>${productive}</strong><small>own sentences</small></article><article><span>Used while speaking</span><strong>${spoken}</strong><small>activated with Mira</small></article></div>
     ${renderStreakConsistencyCard(streakSummary)}
+    ${renderRewardsCard(rewards)}
     <div class="progress-detail-grid"><article class="spec-card"><div class="today-section-heading"><div><span class="eyebrow">Last 7 days</span><h2>${weekly.reduce((sum, day) => sum + day.count, 0)} exercises</h2></div><details class="goal-subtle-edit"><summary id="stats-today-count">${reviewsToday}/${dailyGoal} today</summary><form id="daily-goal-form" class="goal-subtle-form"><label for="daily-goal-input">Daily target</label><input type="number" id="daily-goal-input" min="1" max="200" value="${dailyGoal}" aria-label="Daily exercise goal"><button class="status-pill offline">Save</button></form><p id="goal-save-message" class="goal-subtle-message" role="status" aria-live="polite"></p></details></div><div class="activity-chart">${weekly.map(day => `<div title="${day.count} exercises"><span>${day.count || ''}</span><i style="height:${day.count ? Math.max(18, Math.round(day.count / maxActivity * 120)) : 8}px"></i><small>${day.label}</small></div>`).join('')}</div></article>
       <article class="spec-card progress-outcomes"><span class="eyebrow">Learning outcomes</span><div><span>Sessions completed</span><strong>${stats.sessionsCompleted}</strong></div><div><span>Weak words improved</span><strong>${stats.weakWordsImproved}</strong></div><div><span>Speaking minutes</span><strong>${Math.round(stats.speakingMinutes)}</strong></div><div><span>Weak words now</span><strong>${weak}</strong></div><p><i class="fa-solid fa-cloud"></i> ${auth.isConnected ? 'These stats are included in your Drive backup.' : 'Connect Drive in Settings to restore these stats on another installation.'}</p></article></div>
     <article class="spec-card algorithm-details"><div class="today-section-heading"><div><span class="eyebrow">Scheduling detail</span><h2>Recall intervals</h2></div><span>Mastered words still return</span></div><div class="box-distribution">${intervalGroups.map(group => `<div><span>${group.label}</span><i><b style="width:${Math.round(group.count / Math.max(1,...intervalGroups.map(item => item.count)) * 100)}%"></b></i><strong>${group.count}</strong></div>`).join('')}</div><p class="section-helper">FSRS-6 schedules recall against a ${Math.round(memoryConfig.retention * 100)}% target. Recognition and answers with hints have separate memory states. Older words keep their saved review dates until reviewed.</p></article></section>`;
 
   container.querySelector('#progress-workout').addEventListener('click', () => go('daily', onNavigate));
+  container.querySelectorAll('[data-equip-theme]').forEach(button => button.addEventListener('click', () => {
+    equipCosmeticReward({ themeId: button.dataset.equipTheme }, driveSync);
+    renderStatsView(container, onNavigate);
+  }));
+  container.querySelectorAll('[data-equip-badge]').forEach(button => button.addEventListener('click', () => {
+    equipCosmeticReward({ badgeId: button.dataset.equipBadge }, driveSync);
+    renderStatsView(container, onNavigate);
+  }));
   container.querySelector('#daily-goal-form').addEventListener('submit', event => {
     event.preventDefault();
     const value = Math.max(1, Math.min(200, Number(container.querySelector('#daily-goal-input').value) || 20));

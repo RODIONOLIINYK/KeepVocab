@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v114001-sentence-cues-streak-reminders';
+const CACHE_NAME = 'keepvocab-v115000-phrase-chunks-xp-streak-celebration';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -89,6 +89,7 @@ const ASSETS_TO_CACHE = [
   './js/services/dailySession.js',
   './js/services/sentenceBuilder.js',
   './js/services/dailyQuests.js',
+  './js/services/xpRewards.js',
   './js/services/learningStats.js',
   './js/services/studyActivity.js',
   './js/services/appUpdates.js',
@@ -112,6 +113,7 @@ const ASSETS_TO_CACHE = [
   './js/components/MatchSprintMode.js',
   './js/components/SpeakingMode.js',
   './js/components/DashboardView.js',
+  './js/components/StreakCelebration.js',
   './js/components/DailySessionMode.js',
   './js/components/FlashcardsMode.js',
   './js/components/ContextQuizMode.js',

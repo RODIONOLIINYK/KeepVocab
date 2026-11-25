@@ -20,11 +20,18 @@ const PROFILES = {
     { frequency: 233.08, duration: 0.13, volume: 0.16, type: 'triangle', delay: 0.075 }
   ],
   streak: [
-    { frequency: 392, duration: 0.09, volume: 0.13, type: 'triangle' },
-    { frequency: 523.25, duration: 0.09, volume: 0.15, type: 'triangle', delay: 0.09 },
-    { frequency: 659.25, duration: 0.1, volume: 0.17, type: 'sine', delay: 0.18 },
-    { frequency: 783.99, duration: 0.11, volume: 0.18, type: 'sine', delay: 0.27 },
-    { frequency: 1046.5, duration: 0.26, volume: 0.17, type: 'sine', delay: 0.38 }
+    { frequency: 392, duration: 0.09, volume: 0.14, type: 'triangle' },
+    { frequency: 523.25, duration: 0.09, volume: 0.16, type: 'triangle', delay: 0.08 },
+    { frequency: 659.25, duration: 0.11, volume: 0.18, type: 'sine', delay: 0.16 },
+    { frequency: 783.99, duration: 0.12, volume: 0.19, type: 'sine', delay: 0.25 },
+    { frequency: 1046.5, duration: 0.28, volume: 0.18, type: 'sine', delay: 0.35 },
+    { frequency: 1318.5, duration: 0.34, volume: 0.14, type: 'sine', delay: 0.44 }
+  ],
+  levelup: [
+    { frequency: 523.25, duration: 0.08, volume: 0.15, type: 'sine' },
+    { frequency: 659.25, duration: 0.08, volume: 0.16, type: 'sine', delay: 0.075 },
+    { frequency: 783.99, duration: 0.09, volume: 0.17, type: 'sine', delay: 0.15 },
+    { frequency: 1046.5, duration: 0.24, volume: 0.18, type: 'sine', delay: 0.23 }
   ]
 };
 
@@ -79,7 +86,7 @@ export function playInteractionHaptic(kind = 'tap') {
   const haptics = globalThis.Capacitor?.Plugins?.Haptics;
   if (!haptics) return false;
   try {
-    if (['correct', 'success', 'streak'].includes(kind) && haptics.notification) haptics.notification({ type: 'SUCCESS' }).catch?.(() => {});
+    if (['correct', 'success', 'streak', 'levelup'].includes(kind) && haptics.notification) haptics.notification({ type: 'SUCCESS' }).catch?.(() => {});
     else if (['wrong', 'error'].includes(kind) && haptics.notification) haptics.notification({ type: 'WARNING' }).catch?.(() => {});
     else haptics.impact?.({ style: 'LIGHT' }).catch?.(() => {});
     return true;

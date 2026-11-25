@@ -580,6 +580,9 @@
   .sentence-tile { min-height: 44px; padding: 8px 13px; font-size: .88rem; }
   .sentence-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .sentence-controls .btn-green-solid { grid-column: 1 / -1; width: 100%; margin-left: 0; }
+  .unlock-grid { grid-template-columns: 1fr; }
+  .streak-celebration-card { padding: 22px 16px 18px; border-radius: 22px; }
+  .streak-celebration-dot { width: 30px; height: 30px; font-size: .72rem; }
 }
 @media (max-width: 359px) {
   .streak-day-dot { width: 26px; height: 26px; font-size: .64rem; }

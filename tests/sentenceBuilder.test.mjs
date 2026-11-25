@@ -5,31 +5,90 @@ import {
   buildSentenceGenerationPrompt,
   buildSentencePuzzle,
   canBuildSentenceExercise,
+  chunkSentenceTokens,
   evaluateSentenceAssembly,
   generateSentenceBuilderSet
 } from '../js/services/sentenceBuilder.js';
-import { applyExerciseToDailyQuests, getDailyQuests } from '../js/services/dailyQuests.js';
+import { applyExerciseToDailyQuests, claimCompletedQuestRewards, getDailyQuests } from '../js/services/dailyQuests.js';
 import { buildDailySession } from '../js/services/dailySession.js';
 import { MemoryStorage } from '../js/services/driveSync.js';
 
-test('sentence builder validates examples, creates shuffled tiles with distractors, and evaluates assembly', () => {
-  const word = {
+test('sentence builder groups phrases to keep adjectives paired with nouns, locks opening anchor, and omits distractors', () => {
+  const candid = {
+    id: 'candid',
+    word: 'candid',
+    partOfSpeech: 'adjective',
+    definition: 'Truthful and straightforward.',
+    example: 'She gave a candid answer during the interview.'
+  };
+  assert.equal(canBuildSentenceExercise(candid), true);
+  assert.equal(canBuildSentenceExercise({ id: 'x', word: 'x', example: 'Too short.' }), false);
+
+  const puzzle = buildSentencePuzzle(candid, [candid]);
+  assert.ok(puzzle);
+  assert.equal(puzzle.opening, 'She', 'locks unambiguous opening chunk when target word is not inside it');
+  assert.deepEqual(puzzle.targetTokens, ['gave', 'a candid answer', 'during the interview']);
+  assert.equal(puzzle.distractorCount, 0, 'omits distractor tiles');
+  assert.equal(puzzle.tiles.length, puzzle.targetTokens.length, 'every bank tile belongs to the sentence');
+  assert.equal(
+    evaluateSentenceAssembly(puzzle.targetTokens, puzzle.targetTokens, { opening: puzzle.opening, acceptedSentences: puzzle.acceptedSentences }).correct,
+    true
+  );
+  assert.equal(
+    evaluateSentenceAssembly(puzzle.targetTokens, [...puzzle.targetTokens].reverse(), { opening: puzzle.opening, acceptedSentences: puzzle.acceptedSentences }).correct,
+    false
+  );
+
+  // Two adjectives + two nouns stay paired so adjectives are never interchangeable.
+  const chunks = chunkSentenceTokens(['The', 'quiet', 'student', 'read', 'the', 'old', 'book', 'at', 'home']);
+  assert.ok(chunks.includes('The quiet student'), 'keeps first adjective attached to its noun');
+  assert.ok(chunks.includes('the old book'), 'keeps second adjective attached to its noun');
+  assert.ok(chunks.includes('at home'), 'keeps preposition attached to its object');
+
+  // When chunk 0 contains the target word, leave opening empty instead of hiding the target word.
+  const resilient = {
     id: 'resilient',
     word: 'resilient',
     partOfSpeech: 'adjective',
     definition: 'Able to recover quickly from difficulties.',
     example: 'The resilient team recovered quickly after the setback.'
   };
-  const other = { id: 'vivid', word: 'vivid', partOfSpeech: 'adjective', definition: 'Bright and clear.' };
-  assert.equal(canBuildSentenceExercise(word), true);
-  assert.equal(canBuildSentenceExercise({ id: 'x', word: 'x', example: 'Too short.' }), false);
+  const resilientPuzzle = buildSentencePuzzle(resilient, [resilient]);
+  assert.ok(resilientPuzzle);
+  assert.equal(resilientPuzzle.opening, '');
+  assert.ok(resilientPuzzle.targetTokens.length >= 3 && resilientPuzzle.targetTokens.length <= 5);
+  assert.ok(resilientPuzzle.targetTokens.some(chunk => chunk.includes('resilient team')));
+});
 
-  const puzzle = buildSentencePuzzle(word, [word, other]);
-  assert.ok(puzzle);
-  assert.ok(puzzle.targetTokens.length >= 4 && puzzle.targetTokens.length <= 10);
-  assert.ok(puzzle.tiles.length > puzzle.targetTokens.length, 'includes distractor tiles');
-  assert.equal(evaluateSentenceAssembly(puzzle.targetTokens, puzzle.targetTokens).correct, true);
-  assert.equal(evaluateSentenceAssembly(puzzle.targetTokens, [...puzzle.targetTokens].reverse()).correct, false);
+test('sentence builder accepts alternate valid word orders from Gemini and movable adverbs', () => {
+  const word = {
+    id: 'meticulous',
+    word: 'meticulous',
+    partOfSpeech: 'adjective',
+    definition: 'Showing great attention to detail.'
+  };
+  const puzzle = buildSentencePuzzle(word, [word], {
+    sentence: 'The editor checked every meticulous note carefully.',
+    chunks: ['The editor', 'checked', 'every meticulous note', 'carefully'],
+    acceptedSentences: ['The editor carefully checked every meticulous note.'],
+    source: 'ai'
+  });
+  assert.equal(puzzle.opening, 'The editor');
+  assert.equal(
+    evaluateSentenceAssembly(puzzle.targetTokens, ['checked', 'every meticulous note', 'carefully'], {
+      opening: puzzle.opening,
+      acceptedSentences: puzzle.acceptedSentences
+    }).correct,
+    true
+  );
+  assert.equal(
+    evaluateSentenceAssembly(puzzle.targetTokens, ['carefully', 'checked', 'every meticulous note'], {
+      opening: puzzle.opening,
+      acceptedSentences: puzzle.acceptedSentences
+    }).correct,
+    true,
+    'accepts valid alternate placement of movable adverb'
+  );
 });
 
 test('multi-mode Practice avoids repeating the same mode a word saw last time', () => {
@@ -59,7 +118,7 @@ test('multi-mode Practice avoids repeating the same mode a word saw last time', 
   assert.notEqual(w2Task.exerciseType, 'context-cloze');
 });
 
-test('daily quests track warmup, combo, and mode variety per local day', () => {
+test('daily quests track warmup, combo, mode variety, and claim XP rewards once per day', () => {
   const now = new Date(2026, 10, 22, 12);
   let state = null;
   for (let i = 0; i < 3; i += 1) {
@@ -69,9 +128,15 @@ test('daily quests track warmup, combo, and mode variety per local day', () => {
   assert.equal(summary.quests.length, 3);
   assert.equal(summary.quests.find(q => q.id === 'combo').done, true);
   assert.equal(summary.quests.find(q => q.id === 'warmup').progress, 3);
+  assert.ok(summary.quests.every(q => q.xpReward > 0));
+
+  const firstClaim = claimCompletedQuestRewards(state, {}, now);
+  assert.ok(firstClaim.xpAwarded > 0);
+  const secondClaim = claimCompletedQuestRewards(firstClaim.state, {}, now);
+  assert.equal(secondClaim.xpAwarded, 0, 'does not double-claim quest XP');
 });
 
-test('Gemini sentence builder generates validated puzzles with distractors, caches them, and falls back to saved examples', async () => {
+test('Gemini sentence builder generates chunked puzzles without distractors, caches them, and falls back to saved examples', async () => {
   const storage = new MemoryStorage();
   const words = [
     {
@@ -91,7 +156,8 @@ test('Gemini sentence builder generates validated puzzles with distractors, cach
 
   const prompt = buildSentenceGenerationPrompt(words, { storage });
   assert.match(prompt, /meticulous/);
-  assert.match(prompt, /6 to 11 words/);
+  assert.match(prompt, /5 to 9 words/);
+  assert.match(prompt, /Do not include distractors/);
 
   let calls = 0;
   const generate = async () => {
@@ -101,8 +167,9 @@ test('Gemini sentence builder generates validated puzzles with distractors, cach
         items: [
           {
             wordId: 'w-ai-only',
-            sentence: 'The meticulous editor checked every paragraph carefully.',
-            distractors: ['swiftly', 'meticulous', 'two words', 'calmly']
+            sentence: 'The editor kept meticulous notes for the review.',
+            chunks: ['The editor', 'kept', 'meticulous notes', 'for the review'],
+            acceptedSentences: []
           },
           {
             wordId: 'w-fallback',
@@ -111,7 +178,6 @@ test('Gemini sentence builder generates validated puzzles with distractors, cach
         ]
       };
     }
-    // Repair call fails or misses w-fallback -> should fall back to saved example seamlessly.
     return { items: [] };
   };
 
@@ -122,7 +188,7 @@ test('Gemini sentence builder generates validated puzzles with distractors, cach
 
   const aiItem = result.items.find(item => item.wordId === 'w-ai-only');
   assert.equal(aiItem.source, 'ai');
-  assert.deepEqual(aiItem.distractors, ['swiftly', 'calmly'], 'filters out target word and multi-word distractors');
+  assert.deepEqual(aiItem.chunks, ['The editor', 'kept', 'meticulous notes', 'for the review']);
 
   const fallbackItem = result.items.find(item => item.wordId === 'w-fallback');
   assert.equal(fallbackItem.source, 'saved-example');
@@ -130,13 +196,15 @@ test('Gemini sentence builder generates validated puzzles with distractors, cach
 
   const puzzle = buildSentencePuzzle(words[0], words, {
     sentence: aiItem.sentence,
-    distractors: aiItem.distractors,
+    chunks: aiItem.chunks,
+    acceptedSentences: aiItem.acceptedSentences,
     source: aiItem.source
   });
   assert.equal(puzzle.source, 'ai');
-  assert.ok(puzzle.tiles.some(tile => tile.isDistractor && tile.text === 'swiftly'));
+  assert.equal(puzzle.opening, 'The editor');
+  assert.equal(puzzle.distractorCount, 0);
+  assert.equal(puzzle.tiles.length, 3);
 
-  // Cached hit avoids calling Gemini again until force: true.
   const cached = await generateSentenceBuilderSet(words, { storage, generate });
   assert.equal(calls, 2);
   assert.equal(cached.items.length, 2);
