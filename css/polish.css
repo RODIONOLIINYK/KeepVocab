@@ -2278,3 +2278,118 @@ body.streak-celebration-open { overflow: hidden; }
     animation: none !important;
   }
 }
+
+/* ---------- Talking Sprig Mascot & Live Voiceover Equalizer (Duolingo-style) ---------- */
+.duo-talking-mascot {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  width: 112px;
+  height: 118px;
+  flex: 0 0 112px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 180ms var(--duo-spring);
+}
+.duo-talking-mascot:hover { transform: scale(1.04) translateY(-2px); }
+.duo-talking-mascot:active { transform: scale(.96); }
+.sprig-talk-svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.sprig-mouth-talking { opacity: 0; transform-origin: 64px 78px; }
+.sprig-mouth-idle { opacity: 1; transition: opacity 100ms ease; }
+.sprig-sound-waves { opacity: 0; transition: opacity 150ms ease; }
+.sprig-head-rig { transform-origin: 63px 104px; }
+.sprig-leaves { transform-origin: 58px 38px; }
+.sprig-eyes { transform-origin: 62px 63px; }
+
+.duo-prompt-row.is-talking .sprig-mouth-idle { opacity: 0; }
+.duo-prompt-row.is-talking .sprig-mouth-talking { opacity: 1; }
+.duo-prompt-row.is-talking .sprig-sound-waves { opacity: 1; }
+.duo-prompt-row.is-talking .duo-speech-bubble {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-green) 14%, transparent);
+}
+.duo-prompt-row.is-talking .duo-speech-bubble::before {
+  border-left-color: var(--primary-green);
+  border-bottom-color: var(--primary-green);
+}
+
+.duo-voice-wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 28px;
+  padding: 0 4px;
+}
+.duo-voice-wave > i {
+  display: block;
+  width: 4px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--duo-line-dark);
+  transition: background 150ms ease, height 150ms ease;
+}
+.duo-voice-wave > i:nth-child(2),
+.duo-voice-wave > i:nth-child(4) { height: 14px; }
+.duo-voice-wave > i:nth-child(3) { height: 20px; }
+.duo-prompt-row.is-talking .duo-voice-wave > i { background: var(--primary-green); }
+
+@keyframes sprig-talk-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1, 1); }
+  25% { transform: translateY(-4px) rotate(2.6deg) scale(1.02, .98); }
+  55% { transform: translateY(1px) rotate(-1.5deg) scale(.99, 1.02); }
+  80% { transform: translateY(-3px) rotate(2deg) scale(1.015, .985); }
+}
+@keyframes sprig-leaves-talk {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-9deg); }
+  65% { transform: rotate(7deg); }
+}
+@keyframes sprig-mouth-syllable {
+  0%, 100% { transform: scale(0.92, 0.36); }
+  20% { transform: scale(1.08, 1.12); }
+  42% { transform: scale(0.86, 0.55); }
+  65% { transform: scale(1.12, 1.24); }
+  84% { transform: scale(0.95, 0.48); }
+}
+@keyframes sprig-eye-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.12); }
+}
+@keyframes sprig-wave-pulse {
+  0% { opacity: .25; transform: translateX(-2px) scale(.92); }
+  50% { opacity: 1; transform: translateX(3px) scale(1.05); }
+  100% { opacity: .25; transform: translateX(-2px) scale(.92); }
+}
+@keyframes duo-voice-bar {
+  0%, 100% { transform: scaleY(.45); }
+  50% { transform: scaleY(1.25); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .duo-prompt-row.has-talking-mascot .sprig-eyes {
+    animation: sprig-eye-blink 4.6s ease-in-out infinite;
+  }
+  .duo-prompt-row.is-talking .sprig-head-rig {
+    animation: sprig-talk-bob 420ms ease-in-out infinite;
+  }
+  .duo-prompt-row.is-talking .sprig-leaves {
+    animation: sprig-leaves-talk 340ms ease-in-out infinite;
+  }
+  .duo-prompt-row.is-talking .sprig-mouth-talking {
+    animation: sprig-mouth-syllable 360ms ease-in-out infinite;
+  }
+  .duo-prompt-row.is-talking .sprig-wave.w1 {
+    animation: sprig-wave-pulse 520ms ease-in-out infinite;
+  }
+  .duo-prompt-row.is-talking .sprig-wave.w2 {
+    animation: sprig-wave-pulse 520ms 160ms ease-in-out infinite;
+  }
+  .duo-prompt-row.is-talking .duo-voice-wave > i {
+    animation: duo-voice-bar 480ms ease-in-out infinite;
+  }
+  .duo-prompt-row.is-talking .duo-voice-wave > i:nth-child(2) { animation-delay: 80ms; }
+  .duo-prompt-row.is-talking .duo-voice-wave > i:nth-child(3) { animation-delay: 160ms; }
+  .duo-prompt-row.is-talking .duo-voice-wave > i:nth-child(4) { animation-delay: 240ms; }
+  .duo-prompt-row.is-talking .duo-voice-wave > i:nth-child(5) { animation-delay: 110ms; }
+}

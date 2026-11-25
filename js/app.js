@@ -9,6 +9,7 @@ import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.j
 import { DRIVE_SYNC_MIN_INTERVAL_MS, backgroundSyncDelay, shouldPullFromDrive } from './services/syncPolicy.js?v=18908';
 import { hasExampleSenseConflict, sanitizeExistingExamples } from './services/exampleSearch.js?v=18908';
 import { playInteractionSound, setInteractionSoundEnabledProvider, setupButtonSounds } from './services/interactionSound.js?v=18908';
+import { preloadSpeechVoices } from './services/speechService.js?v=18912';
 import { appendStudyMoment, buildReminderSchedule, cancelDailyReminder, formatReminderTime, getReminderStatus, normalizeReminderTime, openReminderSettings, scheduleDailyReminder, sendTestReminder, setupReminderNavigation, supportsReminders } from './services/reminderService.js?v=18908';
 import { buildScheduledPracticeSession } from './services/dailySession.js?v=18908';
 import { localDateKey } from './utils/dates.js';
@@ -17,7 +18,7 @@ import { backfillLibraryTranslations } from './services/libraryTranslations.js?v
 
 import { renderLibraryView } from './components/LibraryView.js?v=18908';
 import { renderStatsView } from './components/StatsView.js?v=18911';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18908';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18912';
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18908';
 import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18908';
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18908';
@@ -26,10 +27,10 @@ import { showStreakCelebration } from './components/StreakCelebration.js';
 import { getStreakSummary } from './services/studyActivity.js';
 import { awardStreakXp } from './services/learningStats.js?v=18911';
 import { applyAppTheme, getRewardSummary } from './services/xpRewards.js';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=18911';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18908';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=18912';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18912';
 import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18908';
-import { renderSentenceBuilderMode } from './components/SentenceBuilderMode.js?v=18911';
+import { renderSentenceBuilderMode } from './components/SentenceBuilderMode.js?v=18912';
 import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18908';
 import { renderSettingsView, requestImageModelDownload } from './components/SettingsView.js?v=18908';
 
@@ -99,6 +100,7 @@ function streakExtendedMessage(detail = {}) {
 }
 
 function initApp() {
+  preloadSpeechVoices();
   const initialRewards = getRewardSummary(driveSync.getSettings());
   applyAppTheme(initialRewards.equippedTheme, initialRewards.xp);
   setupMobileViewport();

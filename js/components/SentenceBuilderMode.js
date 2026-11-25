@@ -2,7 +2,7 @@ import { driveSync } from '../services/driveSync.js?v=18908';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
 import { getGeminiSettings } from '../services/geminiSettings.js?v=18908';
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
-import { speakWord } from '../services/speechService.js?v=18908';
+import { speakWord } from '../services/speechService.js?v=18912';
 import {
   buildLocalSentenceSet,
   buildSentencePuzzle,

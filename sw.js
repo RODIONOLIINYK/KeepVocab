@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v115000-phrase-chunks-xp-streak-celebration';
+const CACHE_NAME = 'keepvocab-v115001-natural-voiceover-talking-sprig';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',

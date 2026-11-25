@@ -6,7 +6,7 @@ import { buildScheduledPracticeSession, buildWeakWordsSession, weaknessScore } f
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
 import { recordSessionCompletion } from '../services/learningStats.js?v=18908';
 import { getStreakSummary } from '../services/studyActivity.js';
-import { speakWord } from '../services/speechService.js?v=18908';
+import { preloadAudioUrl, speakWord } from '../services/speechService.js?v=18912';
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
 import { buildWordChoices } from '../services/wordChoices.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
@@ -16,7 +16,7 @@ import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18908';
 import { getGeminiSettings } from '../services/geminiSettings.js?v=18908';
 import { buildSentencePuzzle, evaluateSentenceAssembly, generateSentenceBuilderSet } from '../services/sentenceBuilder.js';
 import { mountUseItExercise } from './UseItExercise.js?v=18908';
-import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement, formatMemoryBoost, renderPracticeMascot } from './PracticeElements.js?v=18910';
+import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement, formatMemoryBoost, renderPracticeMascot, renderVoiceWave, bindTalkingMascot } from './PracticeElements.js?v=18912';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {
@@ -305,6 +305,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       const sentenceMode = exercise.exerciseType === 'sentence-builder' && sentencePuzzle;
       const listening = exercise.exerciseType === 'listening-recall';
       const contextMode = exercise.exerciseType === 'context-cloze';
+      if (listening) preloadAudioUrl(word.audioUrl);
       const tileById = sentenceMode ? new Map(sentencePuzzle.tiles.map(tile => [tile.id, tile])) : null;
       const chosenSet = sentenceMode ? new Set(sentenceChosenIds) : null;
       const chosenTiles = sentenceMode ? sentenceChosenIds.map(id => tileById.get(id)).filter(Boolean) : [];
@@ -324,7 +325,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       const bubbleHtml = sentenceMode
         ? `<div class="duo-bubble-word-row"><strong>${escapeHtml(word.word)}</strong><span class="duo-bubble-tags"><span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>${sentencePuzzle.source === 'ai' ? '<span class="duo-source-chip"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> AI sentence</span>' : ''}</span></div><p class="duo-bubble-copy">${escapeHtml(sentencePuzzle.definition)}</p>`
         : listening
-          ? `<div class="duo-bubble-audio"><button type="button" class="audio-btn-circle" id="daily-listen" aria-label="Play the word"><i class="fa-solid fa-volume-high"></i></button><p class="duo-bubble-copy">${escapeHtml(definitionForLearning(word))}</p></div>`
+          ? `<div class="duo-bubble-audio"><button type="button" class="audio-btn-circle" id="daily-listen" aria-label="Play the word"><i class="fa-solid fa-volume-high"></i></button>${renderVoiceWave()}<button type="button" class="status-pill offline" id="daily-listen-slow" data-sound="none"><i class="fa-solid fa-gauge-simple"></i> Slow</button></div><p class="duo-bubble-copy">${escapeHtml(definitionForLearning(word))}</p>`
           : contextMode
             ? `<blockquote class="duo-bubble-quote">${escapeHtml(cloze(word))}</blockquote><span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>`
             : `<blockquote class="duo-bubble-quote">${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}<span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>`;
@@ -334,7 +335,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
         <div class="${visual ? 'visual-prompt' : sentenceMode ? 'practice-prompt sentence-prompt' : 'practice-prompt typed-review-prompt'}">
           ${visual
             ? `<div class="duo-stage-heading"><h2>${escapeHtml(headingText)}</h2>${combo >= 3 ? `<span class="duo-combo-badge"><i class="fa-solid fa-fire" aria-hidden="true"></i> ${combo} in a row</span>` : ''}</div><figure class="practice-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>`
-            : renderPracticeMascot({ heading: headingText, bubbleHtml, answered, correct, combo, retry: Boolean(exercise.isRetry) })}
+            : renderPracticeMascot({ heading: headingText, bubbleHtml, answered, correct, combo, retry: Boolean(exercise.isRetry), talking: listening })}
           ${sentenceMode
             ? `<div class="sentence-answer-tray${answered ? (correct ? ' is-correct' : ' is-incorrect') : ''}" id="sentence-tray" aria-label="Your assembled sentence">
                  ${lockedOpeningHtml}${chosenTiles.length ? chosenTiles.map(tile => `<button type="button" class="sentence-tile is-placed" data-remove-tile="${escapeHtml(tile.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(tile.text)}</button>`).join('') : `<span class="sentence-tray-placeholder">${sentencePuzzle.opening ? 'Tap the phrase tiles below to finish the sentence.' : 'Tap the phrase tiles below in order.'}</span>`}
@@ -365,16 +366,21 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     });
     container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelector('#practice-hear-answer')?.addEventListener('click', () => {
-      if (exercise.exerciseType === 'sentence-builder' && sentencePuzzle) speakWord(sentencePuzzle.sentence, 'en-US', 0.92);
-      else speakWord(word.word, 'en-US', 0.9, word.audioUrl);
+      if (exercise.exerciseType === 'sentence-builder' && sentencePuzzle) speakWord(sentencePuzzle.sentence, 'en-US', 0.95);
+      else speakWord(word.word, 'en-US', 0.95, word.audioUrl);
     });
-    container.querySelector('#daily-listen')?.addEventListener('click', async () => {
-      const played = await speakWord(word.word, 'en-US', 0.86, word.audioUrl);
+    const playListeningWord = async (rate = 0.95) => {
+      const played = await speakWord(word.word, 'en-US', rate, word.audioUrl);
       if (!played && queue[index] === exercise && !answered) {
         exercise.exerciseType = 'typed-recall';
         render();
       }
-    });
+    };
+    container.querySelector('#daily-listen')?.addEventListener('click', () => playListeningWord(0.95));
+    container.querySelector('#daily-listen-slow')?.addEventListener('click', () => playListeningWord(0.72));
+    if (exercise.exerciseType === 'listening-recall') {
+      bindTalkingMascot(container, () => playListeningWord(0.95));
+    }
     container.querySelectorAll('[data-pick-tile]').forEach(button => button.addEventListener('click', () => {
       const id = button.dataset.pickTile;
       if (!id || answered || sentenceChosenIds.includes(id)) return;
@@ -427,7 +433,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     container.querySelector('#daily-hint')?.addEventListener('click', () => { hintsUsed += 1; container.querySelector('#daily-hint-copy').textContent = exercise.exerciseType === 'use-it' ? `Try a situation where “${word.word}” naturally describes what happened.` : `It starts with “${word.word.slice(0, Math.min(2, word.word.length))}”.`; });
     container.querySelector('#daily-next')?.addEventListener('click', () => { index += 1; resetQuestionState(); render(true); });
     if (exercise.exerciseType === 'listening-recall' && !answered && focusInput) {
-      void speakWord(word.word, 'en-US', 0.86, word.audioUrl);
+      void speakWord(word.word, 'en-US', 0.95, word.audioUrl);
     }
     focusPracticeInput(container.querySelector('#daily-answer'), { allowTouch: focusInput });
   }

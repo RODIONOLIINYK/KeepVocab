@@ -1,7 +1,7 @@
 import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
-import { speakWord } from '../services/speechService.js?v=18908';
+import { preloadAudioUrl, speakWord } from '../services/speechService.js?v=18912';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
 import { selectPracticeWords } from '../services/dailySession.js?v=18908';
@@ -9,7 +9,7 @@ import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18908';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections } from '../services/wordSelection.js?v=18908';
 import { stableWordChoices } from '../services/wordChoices.js?v=18908';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput, renderPracticeMascot } from './PracticeElements.js?v=18909';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput, renderPracticeMascot, renderVoiceWave, bindTalkingMascot } from './PracticeElements.js?v=18912';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function emptyMode(container, icon, title, detail, onNavigate) {
@@ -39,35 +39,43 @@ export function renderSpellingMode(container, onNavigate) {
       return;
     }
     const word = queue[index];
+    preloadAudioUrl(word.audioUrl);
     container.innerHTML = `
       <section class="full-view-stack"><div class="spec-card practice-shell${combo >= 3 ? ' is-hot-combo' : ''}">
         ${renderPracticeHeader({ exitId: 'spell-exit', label: '', current: index, total: queue.length, score, answered })}
         <div class="practice-prompt">
           ${renderPracticeMascot({
             heading: 'Type what you hear',
-            bubbleHtml: `<div class="duo-bubble-audio"><button class="audio-btn-circle" id="spell-listen" aria-label="Play word"><i class="fa-solid fa-volume-high"></i></button><button class="status-pill offline" id="spell-listen-slow"><i class="fa-solid fa-gauge-simple"></i> Slow</button></div><blockquote class="duo-bubble-quote">${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}`,
+            bubbleHtml: `<div class="duo-bubble-audio"><button type="button" class="audio-btn-circle" id="spell-listen" aria-label="Play word"><i class="fa-solid fa-volume-high"></i></button>${renderVoiceWave()}<button type="button" class="status-pill offline" id="spell-listen-slow" data-sound="none"><i class="fa-solid fa-gauge-simple"></i> Slow</button></div><blockquote class="duo-bubble-quote">${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}`,
             answered,
             correct,
-            combo
+            combo,
+            talking: true
           })}
           <p class="speech-help" id="spell-audio-status" role="status" aria-live="polite"></p>
           ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word will return sooner for another review.'}</span></div><button class="btn-green-solid" id="spell-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
         </div>
       </div></section>`;
     container.querySelector('#spell-exit').addEventListener('click', () => go('dashboard', onNavigate));
-    const playWord = async (button, rate = 0.9) => {
-      button.disabled = true;
-      button.classList.add('playing');
+    const playWord = async (button, rate = 0.95) => {
+      if (button) {
+        button.disabled = true;
+        button.classList.add('playing');
+      }
       const played = await speakWord(word.word, 'en-US', rate, word.audioUrl);
-      button.disabled = false;
-      button.classList.remove('playing');
+      if (button) {
+        button.disabled = false;
+        button.classList.remove('playing');
+      }
       if (!played) {
         const status = container.querySelector('#spell-audio-status');
         if (status) status.textContent = 'Speech is unavailable. Install or enable an English voice in this device’s speech settings.';
       }
     };
-    container.querySelector('#spell-listen').addEventListener('click', event => playWord(event.currentTarget));
+    const listenButton = container.querySelector('#spell-listen');
+    listenButton.addEventListener('click', event => playWord(event.currentTarget, 0.95));
     container.querySelector('#spell-listen-slow').addEventListener('click', event => playWord(event.currentTarget, 0.72));
+    bindTalkingMascot(container, () => playWord(listenButton, 0.95));
     container.querySelector('#spell-form')?.addEventListener('submit', event => {
       event.preventDefault();
       const answer = container.querySelector('#spell-answer').value.trim().toLowerCase();

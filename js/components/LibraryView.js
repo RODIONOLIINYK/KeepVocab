@@ -2,7 +2,7 @@ import { fallbackImageSearchPlan, hasGeminiSceneDescription, MAX_IMAGE_CANDIDATE
 import { recordImagePreference } from '../services/imageLearning.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { driveSync, getCurrentMonthNotebookTitle } from '../services/driveSync.js?v=18908';
-import { speakWord } from '../services/speechService.js?v=18908';
+import { speakWord } from '../services/speechService.js?v=18912';
 import { clearImageSelectionPatch, findRelevantImages, prepareImageScenes, imageSenseFingerprint, getImageProviderSettings, imageSelectionPatch, imageUrlsForWords, updateImageFeedback, imageIdentityKeys } from '../services/imageSearch.js?v=18908';
 import { sanitizeExistingExamples } from '../services/exampleSearch.js?v=18908';
 import { imageChoiceLabels } from '../services/imageChoicePolicy.js';

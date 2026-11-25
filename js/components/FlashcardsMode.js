@@ -1,7 +1,7 @@
 import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
-import { speakWord } from '../services/speechService.js?v=18908';
+import { speakWord } from '../services/speechService.js?v=18912';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
 import { getRatingPreviews } from '../services/srsEngine.js?v=18908';
 import { escapeHtml } from '../utils/html.js';

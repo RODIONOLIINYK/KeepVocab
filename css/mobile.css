@@ -574,6 +574,7 @@
   .duo-stage-heading { flex-wrap: wrap; gap: 6px 10px; }
   .duo-prompt-row { gap: 12px; }
   .duo-prompt-mascot { width: 76px; height: 76px; flex-basis: 76px; }
+  .duo-talking-mascot { width: 84px; height: 88px; flex-basis: 84px; }
   .duo-speech-bubble { padding: 12px 14px; border-radius: 14px; min-width: 0; }
   .duo-speech-bubble::before { left: -6px; width: 10px; height: 10px; }
   .duo-bubble-audio .audio-btn-circle { width: 44px; height: 44px; font-size: .98rem; }
