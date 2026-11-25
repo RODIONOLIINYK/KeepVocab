@@ -62,12 +62,8 @@ export function renderStreakCelebrationMarkup(detail = {}, settings = {}) {
   const streak = Math.max(1, Number(detail.streak) || 1);
   const previousStreak = Math.max(0, Number(detail.previousStreak ?? Math.max(0, streak - 1)));
   const summary = getStreakSummary(settings);
-  const xpBonus = Math.max(0, Number(detail.xpBonus) || (detail.milestone ? 50 : 25));
   const banked = Math.max(0, Number(detail.bankedFreezes ?? summary.bankedFreezes) || 0);
   const rewards = [];
-  if (xpBonus > 0) {
-    rewards.push(`<span class="streak-reward-pill is-xp"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> +${xpBonus} XP</span>`);
-  }
   if (detail.milestone) {
     rewards.push(`<span class="streak-reward-pill is-milestone"><i class="fa-solid fa-fire" aria-hidden="true"></i> ${streak}-day milestone</span>`);
   }
@@ -76,9 +72,6 @@ export function renderStreakCelebrationMarkup(detail = {}, settings = {}) {
   }
   if (detail.freezeProtected) {
     rewards.push('<span class="streak-reward-pill is-freeze"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Protected by Freeze</span>');
-  }
-  if (detail.leveledUp && detail.nextLevel) {
-    rewards.push(`<span class="streak-reward-pill is-level"><i class="fa-solid fa-seedling" aria-hidden="true"></i> Level ${Number(detail.nextLevel)} unlocked!</span>`);
   }
 
   const weekHtml = summary.weekWindow.map(day => {

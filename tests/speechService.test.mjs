@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { onSpeechStateChange, selectLocaleVoice, speakWord } from '../js/services/speechService.js';
-import { renderPracticeMascot, renderTalkingSprigSvg, renderVoiceWave } from '../js/components/PracticeElements.js';
+import { renderPracticeMascot, renderTalkingSprig, renderVoiceWave } from '../js/components/PracticeElements.js';
 
 test('speech synthesis selects natural human voices and rejects macOS novelty/robotic voices like Albert', () => {
   const macVoices = [
@@ -152,7 +152,7 @@ test('a cancelled dictionary recording does not restart as browser speech', asyn
   }
 });
 
-test('Talking Sprig mascot renders animated mouth, sound waves, and voice equalizer', () => {
+test('Talking Sprig mascot uses illustrated talk-closed and talk-open frames with voice equalizer', () => {
   const mascotHtml = renderPracticeMascot({
     heading: 'Type what you hear',
     bubbleHtml: renderVoiceWave(),
@@ -160,9 +160,8 @@ test('Talking Sprig mascot renders animated mouth, sound waves, and voice equali
   });
   assert.match(mascotHtml, /has-talking-mascot/);
   assert.match(mascotHtml, /data-sprig-talk/);
-  assert.match(mascotHtml, /class="sprig-talk-svg"/);
-  assert.match(mascotHtml, /sprig-mouth-talking/);
-  assert.match(mascotHtml, /sprig-sound-waves/);
+  assert.match(mascotHtml, /keepvocab-sprig-talk-closed\.webp/);
+  assert.match(mascotHtml, /keepvocab-sprig-talk-open\.webp/);
   assert.match(mascotHtml, /duo-voice-wave/);
-  assert.match(renderTalkingSprigSvg('celebrate'), /sprig-eyes-happy/);
+  assert.match(renderTalkingSprig('celebrate'), /keepvocab-sprig-celebrate\.webp/);
 });

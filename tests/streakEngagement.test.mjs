@@ -15,6 +15,7 @@ import {
 import { DriveSyncService, MemoryStorage, mergeDriveSettings } from '../js/services/driveSync.js';
 import { renderDashboardView, streakMilestoneCopy, updateDashboardStreakUI } from '../js/components/DashboardView.js';
 import { renderStatsView } from '../js/components/StatsView.js';
+import { renderStreakCelebrationMarkup } from '../js/components/StreakCelebration.js';
 import { localDateKey } from '../js/utils/dates.js';
 
 test('streak freezes bridge a missed day without inflating active streak count and require meeting daily goal', () => {
@@ -241,8 +242,19 @@ test('Today and Progress views render the 7-day strip, freezes, heatmap, and mil
   assert.match(statsContainer.innerHTML, /class="streak-heatmap"/);
   assert.match(statsContainer.innerHTML, /class="streak-milestones"/);
   assert.match(statsContainer.innerHTML, /Streak Freezes/);
-  assert.doesNotMatch(statsContainer.innerHTML, /due-preview|Due now|goal-settings/);
+  assert.doesNotMatch(statsContainer.innerHTML, /due-preview|Due now|goal-settings|rewards-section|App themes|Sprig badges|These stats are included in your Drive backup/);
   assert.match(statsContainer.innerHTML, /class="goal-subtle-edit"/);
+
+  const celebrationHtml = renderStreakCelebrationMarkup(
+    { streak: 7, previousStreak: 6, milestone: 7, earnedFreeze: true, bankedFreezes: 2 },
+    { dailyGoal: 20, reviewActivity: {} }
+  );
+  assert.match(celebrationHtml, /class="streak-flame-svg"/);
+  assert.match(celebrationHtml, /data-from="6" data-to="7"/);
+  assert.match(celebrationHtml, /7 day streak!/);
+  assert.match(celebrationHtml, /is-today-ignite/);
+  assert.match(celebrationHtml, /\+1 Streak Freeze/);
+  assert.match(celebrationHtml, /id="btn-streak-celebration-continue"/);
 });
 
 test('scrollbars are hidden across both the main app and the macOS menu-bar quick-add window', () => {

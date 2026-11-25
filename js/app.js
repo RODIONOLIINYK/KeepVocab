@@ -17,17 +17,15 @@ import { setupMobileViewport } from './utils/mobileViewport.js';
 import { backfillLibraryTranslations } from './services/libraryTranslations.js?v=18908';
 
 import { renderLibraryView } from './components/LibraryView.js?v=18908';
-import { renderStatsView } from './components/StatsView.js?v=18911';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18912';
+import { renderStatsView } from './components/StatsView.js?v=18913';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18913';
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18908';
 import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18908';
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18908';
-import { renderDashboardView, updateDashboardGoalNudge, updateDashboardStreakUI } from './components/DashboardView.js?v=18911';
-import { showStreakCelebration } from './components/StreakCelebration.js';
+import { renderDashboardView, updateDashboardGoalNudge, updateDashboardStreakUI } from './components/DashboardView.js?v=18913';
+import { showStreakCelebration } from './components/StreakCelebration.js?v=18913';
 import { getStreakSummary } from './services/studyActivity.js';
-import { awardStreakXp } from './services/learningStats.js?v=18911';
-import { applyAppTheme, getRewardSummary } from './services/xpRewards.js';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=18912';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=18913';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18912';
 import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18908';
 import { renderSentenceBuilderMode } from './components/SentenceBuilderMode.js?v=18912';
@@ -100,9 +98,8 @@ function streakExtendedMessage(detail = {}) {
 }
 
 function initApp() {
+  document.documentElement.removeAttribute('data-theme');
   preloadSpeechVoices();
-  const initialRewards = getRewardSummary(driveSync.getSettings());
-  applyAppTheme(initialRewards.equippedTheme, initialRewards.xp);
   setupMobileViewport();
   startAutomaticUpdateChecks();
   setInteractionSoundEnabledProvider(() => driveSync.getSettings().soundEnabled !== false);
@@ -115,17 +112,11 @@ function initApp() {
   } });
   setupEngagementSystem();
   window.addEventListener('keepvocab:streak-extended', event => {
-    const streakXp = awardStreakXp(event.detail, driveSync);
     updateDashboardDerivedState();
     pulseBadge(document.querySelector('.badge-streak'));
     pulseBadge(document.getElementById('today-streak-pill'));
     lastStreakToastAt = Date.now();
-    showStreakCelebration({
-      ...event.detail,
-      xpBonus: streakXp.xpBonus,
-      leveledUp: streakXp.leveledUp,
-      nextLevel: streakXp.nextLevel
-    }, driveSync.getSettings());
+    showStreakCelebration(event.detail, driveSync.getSettings());
   });
   window.addEventListener('keepvocab:streak-protected', event => {
     const { streak, appliedDates } = event.detail;
@@ -140,27 +131,6 @@ function initApp() {
     const completed = Number(event.detail?.completed || 0);
     const dailyGoal = Math.max(1, Number(event.detail?.dailyGoal || 20));
     showToast(`Daily goal reached! ${completed}/${dailyGoal} exercises complete.`, 'success');
-  });
-  window.addEventListener('keepvocab:quest-completed', event => {
-    const detail = event.detail || {};
-    if (document.getElementById('streak-celebration-overlay')) return;
-    const xp = Number(detail.xpAwarded || 0);
-    if (detail.chestBonusAwarded) {
-      showToast(`All 3 daily quests complete! +${xp} XP chest bonus earned.`, 'levelup');
-    } else if (Array.isArray(detail.quests) && detail.quests.length) {
-      const title = detail.quests.length === 1 ? detail.quests[0].title : `${detail.quests.length} daily quests`;
-      showToast(`Quest complete: ${title} (+${xp} XP)`, 'levelup');
-    }
-  });
-  window.addEventListener('keepvocab:level-up', event => {
-    const detail = event.detail || {};
-    if (document.getElementById('streak-celebration-overlay')) return;
-    const unlockedNames = [
-      ...(Array.isArray(detail.themes) ? detail.themes.map(item => `${item.name} theme`) : []),
-      ...(Array.isArray(detail.badges) ? detail.badges.map(item => `${item.name} badge`) : [])
-    ];
-    const suffix = unlockedNames.length ? ` Unlocked: ${unlockedNames.join(' & ')}!` : '';
-    showToast(`Level ${detail.nextLevel} (${detail.nextTitle}) reached!${suffix}`, 'levelup');
   });
   const headerStreakBadge = document.querySelector('.badge-streak');
   if (headerStreakBadge) {
@@ -242,8 +212,6 @@ function updateGoalDisplay() {
 
 function updateDashboardDerivedState() {
   const settings = driveSync.getSettings();
-  const rewards = getRewardSummary(settings);
-  applyAppTheme(rewards.equippedTheme, rewards.xp);
   const summary = getStreakSummary(settings);
   goalCount = summary.reviewsToday;
   updateGoalDisplay();

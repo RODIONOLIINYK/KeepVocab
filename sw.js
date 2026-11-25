@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v115001-natural-voiceover-talking-sprig';
+const CACHE_NAME = 'keepvocab-v115002-talking-sprig-art-clean-ui';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -89,7 +89,6 @@ const ASSETS_TO_CACHE = [
   './js/services/dailySession.js',
   './js/services/sentenceBuilder.js',
   './js/services/dailyQuests.js',
-  './js/services/xpRewards.js',
   './js/services/learningStats.js',
   './js/services/studyActivity.js',
   './js/services/appUpdates.js',
@@ -141,6 +140,8 @@ const ASSETS_TO_CACHE = [
   './assets/keepvocab-sprig-thinking.webp',
   './assets/keepvocab-sprig-celebrate.webp',
   './assets/keepvocab-sprig-reminder.webp',
+  './assets/keepvocab-sprig-talk-closed.webp',
+  './assets/keepvocab-sprig-talk-open.webp',
   './icons/keepvocab-mark-v2-180.png',
   './icons/keepvocab-mark-v2-192.png',
   './icons/keepvocab-mark-v2-512.png',

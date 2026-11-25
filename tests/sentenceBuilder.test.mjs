@@ -9,7 +9,7 @@ import {
   evaluateSentenceAssembly,
   generateSentenceBuilderSet
 } from '../js/services/sentenceBuilder.js';
-import { applyExerciseToDailyQuests, claimCompletedQuestRewards, getDailyQuests } from '../js/services/dailyQuests.js';
+import { applyExerciseToDailyQuests, getDailyQuests } from '../js/services/dailyQuests.js';
 import { buildDailySession } from '../js/services/dailySession.js';
 import { MemoryStorage } from '../js/services/driveSync.js';
 
@@ -118,7 +118,7 @@ test('multi-mode Practice avoids repeating the same mode a word saw last time', 
   assert.notEqual(w2Task.exerciseType, 'context-cloze');
 });
 
-test('daily quests track warmup, combo, mode variety, and claim XP rewards once per day', () => {
+test('daily quests track warmup, combo, and mode variety per local day', () => {
   const now = new Date(2026, 10, 22, 12);
   let state = null;
   for (let i = 0; i < 3; i += 1) {
@@ -128,12 +128,6 @@ test('daily quests track warmup, combo, mode variety, and claim XP rewards once 
   assert.equal(summary.quests.length, 3);
   assert.equal(summary.quests.find(q => q.id === 'combo').done, true);
   assert.equal(summary.quests.find(q => q.id === 'warmup').progress, 3);
-  assert.ok(summary.quests.every(q => q.xpReward > 0));
-
-  const firstClaim = claimCompletedQuestRewards(state, {}, now);
-  assert.ok(firstClaim.xpAwarded > 0);
-  const secondClaim = claimCompletedQuestRewards(firstClaim.state, {}, now);
-  assert.equal(secondClaim.xpAwarded, 0, 'does not double-claim quest XP');
 });
 
 test('Gemini sentence builder generates chunked puzzles without distractors, caches them, and falls back to saved examples', async () => {

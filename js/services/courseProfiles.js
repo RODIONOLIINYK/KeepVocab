@@ -6,7 +6,6 @@ export const COURSE_SCOPED_SETTING_KEYS = Object.freeze([
   'activeNotebook', 'dailyGoal', 'practiceSessionSize', 'dailyStreak', 'longestStreak', 'streakFreezeDates', 'streakFreezeAwards',
   'lastReviewDate', 'reviewsToday', 'reviewsDate',
   'reviewActivity', 'exerciseActivityByDevice', 'learningStats', 'speakingProgress',
-  'equippedTheme', 'equippedBadge',
   'reminderEnabled', 'reminderExplicitlyDisabled', 'smartReminderEnabled', 'streakReminderEnabled', 'reminderTime', 'reviewStartMoments',
   'practicePreferenceUpdatedAt'
 ]);
@@ -210,9 +209,7 @@ function mergeLearningStats(localProfile = {}, remoteProfile = {}, baseProfile =
         listening: Math.max(Number(localCounts.listening) || 0, Number(remoteCounts.listening) || 0),
         context: Math.max(Number(localCounts.context) || 0, Number(remoteCounts.context) || 0),
         useit: Math.max(Number(localCounts.useit) || 0, Number(remoteCounts.useit) || 0)
-      },
-      claimedIds: [...new Set([...(Array.isArray(localQuests.claimedIds) ? localQuests.claimedIds : []), ...(Array.isArray(remoteQuests.claimedIds) ? remoteQuests.claimedIds : [])])],
-      bonusClaimed: Boolean(localQuests.bonusClaimed || remoteQuests.bonusClaimed)
+      }
     };
   }
   return {
@@ -224,8 +221,6 @@ function mergeLearningStats(localProfile = {}, remoteProfile = {}, baseProfile =
     productiveUses: Math.max(Number(local.productiveUses) || 0, Number(remote.productiveUses) || 0),
     speakingMinutes: Math.max(Number(local.speakingMinutes) || 0, Number(remote.speakingMinutes) || 0),
     speakingSessions: Math.max(Number(local.speakingSessions) || 0, Number(remote.speakingSessions) || 0),
-    xp: Math.max(Number(local.xp) || 0, Number(remote.xp) || 0),
-    questsCompletedTotal: Math.max(Number(local.questsCompletedTotal) || 0, Number(remote.questsCompletedTotal) || 0),
     ...(mergedQuests ? { dailyQuests: mergedQuests } : {})
   };
 }

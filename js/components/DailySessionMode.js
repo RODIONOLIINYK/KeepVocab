@@ -16,7 +16,7 @@ import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18908';
 import { getGeminiSettings } from '../services/geminiSettings.js?v=18908';
 import { buildSentencePuzzle, evaluateSentenceAssembly, generateSentenceBuilderSet } from '../services/sentenceBuilder.js';
 import { mountUseItExercise } from './UseItExercise.js?v=18908';
-import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement, formatMemoryBoost, renderPracticeMascot, renderVoiceWave, bindTalkingMascot } from './PracticeElements.js?v=18912';
+import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement, formatMemoryBoost, renderPracticeMascot, renderVoiceWave, bindTalkingMascot } from './PracticeElements.js?v=18913';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {

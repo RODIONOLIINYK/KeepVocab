@@ -1690,53 +1690,6 @@ body::-webkit-scrollbar,
 }
 .quest-row.is-done .quest-progress { color: var(--primary-green-hover); }
 
-/* ---------- Unlockable Cosmetic App Themes ---------- */
-html[data-theme="ocean"] {
-  --duo-green: #0284c7;
-  --duo-green-dark: #0369a1;
-  --duo-green-light: #e0f2fe;
-  --primary-green: var(--duo-green);
-  --primary-green-hover: #0369a1;
-  --primary-green-light: #f0f9ff;
-  --primary: var(--duo-green);
-}
-html[data-theme="sunset"] {
-  --duo-green: #ea580c;
-  --duo-green-dark: #c2410c;
-  --duo-green-light: #ffedd5;
-  --primary-green: var(--duo-green);
-  --primary-green-hover: #c2410c;
-  --primary-green-light: #fff7ed;
-  --primary: var(--duo-green);
-}
-html[data-theme="lavender"] {
-  --duo-green: #7c3aed;
-  --duo-green-dark: #6d28d9;
-  --duo-green-light: #ede9fe;
-  --primary-green: var(--duo-green);
-  --primary-green-hover: #6d28d9;
-  --primary-green-light: #f5f3ff;
-  --primary: var(--duo-green);
-}
-html[data-theme="sakura"] {
-  --duo-green: #db2777;
-  --duo-green-dark: #be185d;
-  --duo-green-light: #fce7f3;
-  --primary-green: var(--duo-green);
-  --primary-green-hover: #be185d;
-  --primary-green-light: #fdf2f8;
-  --primary: var(--duo-green);
-}
-html[data-theme="midnight"] {
-  --duo-green: #0f766e;
-  --duo-green-dark: #115e59;
-  --duo-green-light: #ccfbf1;
-  --primary-green: var(--duo-green);
-  --primary-green-hover: #115e59;
-  --primary-green-light: #f0fdfa;
-  --primary: var(--duo-green);
-}
-
 /* Locked opening anchor tile in Build Sentence */
 .sentence-tile.is-locked {
   display: inline-flex;
@@ -1749,232 +1702,18 @@ html[data-theme="midnight"] {
   box-shadow: none;
 }
 
-/* Sprig equipped badge medallion on Today hero */
-.daily-workout-mascot { position: relative; }
-.sprig-equipped-badge {
-  position: absolute;
-  right: 8px;
-  bottom: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px 5px 7px;
-  border-radius: 999px;
-  border: 2px solid var(--border-card);
-  border-bottom-width: 3px;
-  background: #fff;
-  color: var(--text-main);
-  font: 800 .72rem/1 var(--font-heading);
-  box-shadow: 0 6px 16px rgba(15, 23, 42, .08);
-}
-.sprig-badge-svg { display: block; flex: 0 0 auto; }
-
-/* Upgraded Quests card with XP bar, reward pills, and bonus chest */
-.quest-xp-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding: 10px 12px;
-  border-radius: 13px;
-  border: 1px solid var(--border-card);
-  background: var(--bg-app);
-}
-.quest-xp-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.quest-level-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-.quest-level-badge strong {
-  font: 800 .8rem/1.2 var(--font-heading);
-  color: var(--text-main);
-}
-.quest-xp-total {
-  font: 800 .76rem/1 var(--font-heading);
-  color: var(--primary-green-hover);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.quest-xp-track {
-  width: 100%;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--bg-subtle);
-  overflow: hidden;
-}
-.quest-xp-track > span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--primary-green), #f59e0b);
-  transition: width 260ms var(--duo-ease);
-}
-.quest-xp-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.quest-xp-meta small {
-  font-size: .7rem;
-  color: var(--text-muted);
-  line-height: 1.3;
-}
-.quest-rewards-link {
-  padding: 0;
-  font-size: .72rem !important;
-  white-space: nowrap;
-}
-.quest-reward-col {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-}
-.quest-xp-pill {
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  color: #b45309;
-  font: 800 .66rem/1.1 var(--font-heading);
-  white-space: nowrap;
-}
-.quest-xp-pill.is-done {
-  background: var(--primary-green-light);
-  border-color: var(--duo-green-light);
-  color: var(--primary-green-hover);
-}
 .quest-chest-banner {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 9px 11px;
   border-radius: 12px;
-  border: 1px dashed #fcd34d;
-  background: #fffbeb;
-  color: #92400e;
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
   font: 700 .74rem/1.3 var(--font-body);
 }
-.quest-chest-banner i { color: #d97706; flex: 0 0 auto; }
-.quest-chest-banner.is-claimed {
-  border-style: solid;
-  border-color: #fde68a;
-  background: linear-gradient(135deg, #fffbeb, #fef3c7);
-  color: #78350f;
-}
-
-/* Progress view: Level, XP & Unlockables (Themes & Sprig Badges) */
-.rewards-stats-card { display: flex; flex-direction: column; gap: 18px; }
-.rewards-xp-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 2px solid #fde68a;
-  background: #fffbeb;
-  color: #92400e;
-  font: 800 .84rem/1 var(--font-heading);
-  white-space: nowrap;
-}
-.rewards-level-bar { display: flex; flex-direction: column; gap: 8px; }
-.rewards-level-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: .8rem;
-  color: var(--text-muted);
-}
-.rewards-level-meta strong { color: var(--text-main); font-weight: 700; }
-.rewards-group { display: flex; flex-direction: column; gap: 10px; }
-.rewards-group-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.rewards-group-heading small { color: var(--text-muted); font-size: .74rem; font-weight: 600; }
-.unlock-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-.unlock-card {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 11px 12px;
-  border-radius: 14px;
-  border: 2px solid var(--border-card);
-  border-bottom-width: 4px;
-  background: #fff;
-  color: var(--text-main);
-  text-align: left;
-  cursor: pointer;
-  transition: transform 150ms var(--duo-spring), border-color 140ms ease, background 140ms ease;
-}
-.unlock-card.is-unlocked:hover {
-  transform: translateY(-2px);
-  border-color: var(--primary-green);
-  background: var(--primary-green-light);
-}
-.unlock-card.is-equipped {
-  border-color: var(--primary-green);
-  background: var(--primary-green-light);
-}
-.unlock-card.is-locked {
-  opacity: .68;
-  background: var(--bg-app);
-  border-bottom-width: 2px;
-  cursor: not-allowed;
-}
-.theme-swatch {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  flex: 0 0 38px;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-size: .9rem;
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .14);
-}
-.badge-preview {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  flex: 0 0 40px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(15, 23, 42, .08);
-}
-.unlock-lock-dot {
-  position: absolute;
-  right: -4px;
-  bottom: -4px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--text-main);
-  color: #fff;
-  font-size: .56rem;
-  display: grid;
-  place-items: center;
-  border: 2px solid #fff;
-}
-.unlock-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.unlock-copy strong { font: 800 .82rem/1.2 var(--font-heading); color: var(--text-main); }
-.unlock-copy small { font-size: .7rem; color: var(--text-muted); line-height: 1.25; }
-.unlock-card.is-equipped .unlock-copy small { color: var(--primary-green-hover); font-weight: 700; }
+.quest-chest-banner i { color: var(--primary-green); flex: 0 0 auto; }
 
 /* ---------- Full-Screen Duolingo-Style Streak Celebration ---------- */
 body.streak-celebration-open { overflow: hidden; }
@@ -2260,9 +1999,6 @@ body.streak-celebration-open { overflow: hidden; }
   100% { transform: scale(1); }
 }
 
-@media (max-width: 900px) {
-  .unlock-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 @media (prefers-reduced-motion: reduce) {
   .streak-celebration-overlay,
   .streak-celebration-card,
@@ -2279,35 +2015,46 @@ body.streak-celebration-open { overflow: hidden; }
   }
 }
 
-/* ---------- Talking Sprig Mascot & Live Voiceover Equalizer (Duolingo-style) ---------- */
+/* ---------- Illustrated Talking Sprig Mascot & Live Voice Equalizer ---------- */
 .duo-talking-mascot {
   padding: 0;
   border: 0;
   background: transparent;
   width: 112px;
-  height: 118px;
+  height: 112px;
   flex: 0 0 112px;
   display: grid;
   place-items: center;
   cursor: pointer;
   transition: transform 180ms var(--duo-spring);
 }
-.duo-talking-mascot:hover { transform: scale(1.04) translateY(-2px); }
+.duo-talking-mascot:hover { transform: scale(1.05) translateY(-2px); }
 .duo-talking-mascot:active { transform: scale(.96); }
-.sprig-talk-svg { width: 100%; height: 100%; overflow: visible; display: block; }
-.sprig-mouth-talking { opacity: 0; transform-origin: 64px 78px; }
-.sprig-mouth-idle { opacity: 1; transition: opacity 100ms ease; }
-.sprig-sound-waves { opacity: 0; transition: opacity 150ms ease; }
-.sprig-head-rig { transform-origin: 63px 104px; }
-.sprig-leaves { transform-origin: 58px 38px; }
-.sprig-eyes { transform-origin: 62px 63px; }
+.sprig-talk-stage {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 82%;
+}
+.sprig-talk-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
+.sprig-talk-stage .sprig-talk-frame {
+  position: absolute;
+  inset: 0;
+}
+.sprig-talk-frame.is-open { opacity: 0; }
+.sprig-talk-frame.is-closed { opacity: 1; }
 
-.duo-prompt-row.is-talking .sprig-mouth-idle { opacity: 0; }
-.duo-prompt-row.is-talking .sprig-mouth-talking { opacity: 1; }
-.duo-prompt-row.is-talking .sprig-sound-waves { opacity: 1; }
 .duo-prompt-row.is-talking .duo-speech-bubble {
   border-color: var(--primary-green);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-green) 14%, transparent);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, .14);
 }
 .duo-prompt-row.is-talking .duo-speech-bubble::before {
   border-left-color: var(--primary-green);
@@ -2336,30 +2083,17 @@ body.streak-celebration-open { overflow: hidden; }
 
 @keyframes sprig-talk-bob {
   0%, 100% { transform: translateY(0) rotate(0deg) scale(1, 1); }
-  25% { transform: translateY(-4px) rotate(2.6deg) scale(1.02, .98); }
+  25% { transform: translateY(-4px) rotate(2.5deg) scale(1.025, .98); }
   55% { transform: translateY(1px) rotate(-1.5deg) scale(.99, 1.02); }
-  80% { transform: translateY(-3px) rotate(2deg) scale(1.015, .985); }
+  80% { transform: translateY(-3px) rotate(1.8deg) scale(1.015, .99); }
 }
-@keyframes sprig-leaves-talk {
-  0%, 100% { transform: rotate(0deg); }
-  30% { transform: rotate(-9deg); }
-  65% { transform: rotate(7deg); }
+@keyframes sprig-talk-frame-open {
+  0%, 18%, 48%, 68%, 100% { opacity: 0; }
+  19%, 47%, 69%, 94% { opacity: 1; }
 }
-@keyframes sprig-mouth-syllable {
-  0%, 100% { transform: scale(0.92, 0.36); }
-  20% { transform: scale(1.08, 1.12); }
-  42% { transform: scale(0.86, 0.55); }
-  65% { transform: scale(1.12, 1.24); }
-  84% { transform: scale(0.95, 0.48); }
-}
-@keyframes sprig-eye-blink {
-  0%, 92%, 100% { transform: scaleY(1); }
-  96% { transform: scaleY(0.12); }
-}
-@keyframes sprig-wave-pulse {
-  0% { opacity: .25; transform: translateX(-2px) scale(.92); }
-  50% { opacity: 1; transform: translateX(3px) scale(1.05); }
-  100% { opacity: .25; transform: translateX(-2px) scale(.92); }
+@keyframes sprig-talk-frame-closed {
+  0%, 18%, 48%, 68%, 100% { opacity: 1; }
+  19%, 47%, 69%, 94% { opacity: 0; }
 }
 @keyframes duo-voice-bar {
   0%, 100% { transform: scaleY(.45); }
@@ -2367,23 +2101,14 @@ body.streak-celebration-open { overflow: hidden; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .duo-prompt-row.has-talking-mascot .sprig-eyes {
-    animation: sprig-eye-blink 4.6s ease-in-out infinite;
-  }
-  .duo-prompt-row.is-talking .sprig-head-rig {
+  .duo-prompt-row.is-talking .sprig-talk-stage {
     animation: sprig-talk-bob 420ms ease-in-out infinite;
   }
-  .duo-prompt-row.is-talking .sprig-leaves {
-    animation: sprig-leaves-talk 340ms ease-in-out infinite;
+  .duo-prompt-row.is-talking .sprig-talk-frame.is-open {
+    animation: sprig-talk-frame-open 440ms steps(1, end) infinite;
   }
-  .duo-prompt-row.is-talking .sprig-mouth-talking {
-    animation: sprig-mouth-syllable 360ms ease-in-out infinite;
-  }
-  .duo-prompt-row.is-talking .sprig-wave.w1 {
-    animation: sprig-wave-pulse 520ms ease-in-out infinite;
-  }
-  .duo-prompt-row.is-talking .sprig-wave.w2 {
-    animation: sprig-wave-pulse 520ms 160ms ease-in-out infinite;
+  .duo-prompt-row.is-talking .sprig-talk-frame.is-closed {
+    animation: sprig-talk-frame-closed 440ms steps(1, end) infinite;
   }
   .duo-prompt-row.is-talking .duo-voice-wave > i {
     animation: duo-voice-bar 480ms ease-in-out infinite;
@@ -2392,4 +2117,8 @@ body.streak-celebration-open { overflow: hidden; }
   .duo-prompt-row.is-talking .duo-voice-wave > i:nth-child(3) { animation-delay: 160ms; }
   .duo-prompt-row.is-talking .duo-voice-wave > i:nth-child(4) { animation-delay: 240ms; }
   .duo-prompt-row.is-talking .duo-voice-wave > i:nth-child(5) { animation-delay: 110ms; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .duo-prompt-row.is-talking .sprig-talk-frame.is-open { opacity: 1; }
+  .duo-prompt-row.is-talking .sprig-talk-frame.is-closed { opacity: 0; }
 }
