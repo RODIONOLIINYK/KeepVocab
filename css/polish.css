@@ -1606,6 +1606,8 @@ body::-webkit-scrollbar,
   pointer-events: none;
   user-select: none;
 }
+.sentence-example-cue > p { margin-top: 8px; }
+
 .sentence-controls {
   width: 100%;
   display: flex;

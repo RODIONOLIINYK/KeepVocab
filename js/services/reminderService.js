@@ -272,7 +272,7 @@ export function buildSmartReminderPlan({
   streak = 0,
   now = new Date()
 } = {}) {
-  const normalizedGoal = Math.max(1, Number(dailyGoal || 20));
+  const normalizedGoal = Math.max(1, Math.round(Number(dailyGoal) || 20));
   const completed = Math.max(0, Number(reviewsToday || 0));
   const due = Math.max(0, Number(dueCount || 0));
   const remaining = Math.max(0, normalizedGoal - completed);
@@ -287,7 +287,7 @@ export function buildSmartReminderPlan({
       body: 'Make a little time for learning today. A short practice keeps your habit growing.',
       route: practiceRoute,
       reason: remaining === 0 ? 'goal-complete' : 'studied-today',
-      summary: remaining === 0 ? 'goal complete' : 'streak safe today',
+      summary: remaining === 0 ? 'goal complete' : 'practice started',
       repeat: false,
       nextAt: getTomorrowReminderAt(time, now)
     };
@@ -330,12 +330,15 @@ export function buildStreakMaintenancePlan({
   enabled = true,
   primaryTime = '19:00',
   reviewsToday = 0,
+  dailyGoal = 20,
   streak = 0,
   dueCount = 0,
   now = new Date()
 } = {}) {
   const activeStreak = Math.max(0, Number(streak || 0));
   const completed = Math.max(0, Number(reviewsToday || 0));
+  const goal = Math.max(1, Math.round(Number(dailyGoal) || 20));
+  const goalReached = completed >= goal;
   const due = Math.max(0, Number(dueCount || 0));
   if (!enabled || !activeStreak) return null;
 
@@ -344,9 +347,10 @@ export function buildStreakMaintenancePlan({
   let nextAt = null;
   let finalCall = false;
 
-  if (completed > 0) {
-    if (!baseTime) return null;
-    const [hour, minute] = baseTime.split(':').map(Number);
+  if (goalReached) {
+    time = baseTime || formatMinutesAsTime(FINAL_STREAK_RESCUE_MINUTES);
+    finalCall = !baseTime;
+    const [hour, minute] = time.split(':').map(Number);
     nextAt = new Date(now);
     nextAt.setDate(nextAt.getDate() + 1);
     nextAt.setHours(hour, minute, 0, 0);
@@ -382,15 +386,14 @@ export function buildStreakMaintenancePlan({
       : due > 0
         ? `${due} practice exercise${due === 1 ? ' is' : 's are'} ready right now.`
         : 'A small step counts—even on a busy day.';
+  const remaining = goalReached ? goal : goal - completed;
 
   return {
     time,
     title: finalCall
       ? `Final call: protect your ${activeStreak}-day streak`
       : `Protect your ${activeStreak}-day streak`,
-    body: finalCall
-      ? `Midnight is close! One quick exercise keeps your ${activeStreak}-day streak alive. ${nextMilestone}`
-      : `One exercise before midnight keeps your streak alive. ${nextMilestone}`,
+    body: `${finalCall ? 'Midnight is close! ' : ''}Finish ${remaining} ${completed > 0 && !goalReached ? 'more ' : ''}exercise${remaining === 1 ? '' : 's'} before midnight to keep your streak. ${nextMilestone}`,
     route: 'review',
     reason: 'streak-maintenance',
     summary: finalCall ? `${activeStreak}-day final call` : `${activeStreak}-day streak safeguard`,
@@ -460,11 +463,12 @@ export function buildReminderSchedule(options = {}) {
       reason: 'habit-follow-up'
     });
   }
-  const streakPrimaryTime = Number(options.reviewsToday || 0) > 0 ? plan.time : todayPrimaryTime;
+  const streakPrimaryTime = plan.reason === 'goal-complete' ? plan.time : todayPrimaryTime;
   const streakPlan = buildStreakMaintenancePlan({
     enabled: options.streakReminderEnabled !== false,
     primaryTime: streakPrimaryTime,
     reviewsToday: options.reviewsToday,
+    dailyGoal: options.dailyGoal,
     streak: options.streak,
     dueCount: effectiveDueCount,
     now

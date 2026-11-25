@@ -183,6 +183,37 @@ test('streak freeze awards, freeze dates, and longest streak merge cleanly acros
   assert.equal(bankedStreakFreezes(merged.streakFreezeAwards, merged.streakFreezeDates), 1);
 });
 
+test('a used freeze is announced once when opening the app or starting an unfinished daily goal', () => {
+  const today = new Date();
+  const twoDaysAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2, 12);
+  const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 12);
+  const events = [];
+  const originalDispatch = globalThis.dispatchEvent;
+  globalThis.dispatchEvent = event => { events.push(event); return true; };
+  try {
+    for (const applyFreeze of [
+      service => service.ensureStreakProtection(today),
+      service => service.recordReview(today)
+    ]) {
+      const service = new DriveSyncService(new MemoryStorage());
+      service.updateSettings({ dailyGoal: 2, streakFreezeAwards: [localDateKey(twoDaysAgo)] });
+      service.recordReview(twoDaysAgo);
+      service.recordReview(twoDaysAgo);
+      events.length = 0;
+      applyFreeze(service);
+      service.ensureStreakProtection(today);
+      const protections = events.filter(event => event.type === 'keepvocab:streak-protected');
+      assert.deepEqual(protections.map(event => event.detail), [{
+        streak: 1,
+        appliedDates: [localDateKey(yesterday)]
+      }]);
+    }
+  } finally {
+    if (originalDispatch === undefined) delete globalThis.dispatchEvent;
+    else globalThis.dispatchEvent = originalDispatch;
+  }
+});
+
 test('Today and Progress views render the 7-day strip, freezes, heatmap, and milestone copy', () => {
   const dashboardContainer = { innerHTML: '', querySelector: () => ({ addEventListener: () => {} }), querySelectorAll: () => [] };
   renderDashboardView(dashboardContainer, () => {});

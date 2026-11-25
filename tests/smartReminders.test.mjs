@@ -4,14 +4,18 @@ import { buildReminderSchedule, reminderNotifications, getHabitReminderTime, get
 
 const now = new Date(2026, 8, 30, 12);
 
-test('one exercise silences today while preparing tomorrow’s streak rescue', () => {
+test('partial progress keeps today’s streak rescue scheduled until the daily goal is met', () => {
   const plan = buildReminderSchedule({ now, reviewsToday: 1, dailyGoal: 20, streak: 6 });
   assert.equal(plan.reason, 'studied-today');
   const alarms = reminderNotifications(plan, plan.streakPlan);
   assert.equal(alarms.length, 8);
-  assert.ok(alarms.every(item => item.schedule.at.getDate() !== now.getDate()));
-  assert.equal(plan.streakPlan.nextAt.getDate(), 1);
+  const todayAlarms = alarms.filter(item => item.schedule.at.getDate() === now.getDate());
+  assert.deepEqual(todayAlarms.map(item => item.extra.reason), ['streak-maintenance']);
+  assert.match(plan.streakPlan.body, /19 more exercises before midnight/);
   assert.match(plan.streakPlan.body, /milestone/);
+  const complete = buildReminderSchedule({ now, reviewsToday: 20, dailyGoal: 20, streak: 7 });
+  assert.equal(complete.streakPlan.nextAt.getDate(), 1);
+  assert.match(complete.streakPlan.body, /Finish 20 exercises/);
 });
 
 test('only a live streak gets a rescue and later copy never threatens an expired streak', () => {
@@ -50,7 +54,7 @@ test('native scheduling removes old alarms and delivered warnings when activity 
   } } };
   try {
     await scheduleDailyReminder(buildReminderSchedule({ now, streak: 5 }));
-    await scheduleDailyReminder(buildReminderSchedule({ now, reviewsToday: 1, streak: 6 }));
+    await scheduleDailyReminder(buildReminderSchedule({ now, reviewsToday: 20, dailyGoal: 20, streak: 6 }));
     const alarms = calls.at(-1)[1].notifications;
     assert.ok(alarms.every(item => item.schedule.at > new Date(2026, 9, 1)));
     assert.deepEqual(calls.map(([type]) => type), ['cancel', 'remove', 'schedule', 'cancel', 'remove', 'schedule']);

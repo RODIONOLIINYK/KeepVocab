@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v114000-sentence-builder-duo-practice';
+const CACHE_NAME = 'keepvocab-v114001-sentence-cues-streak-reminders';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',

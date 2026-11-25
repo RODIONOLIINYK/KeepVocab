@@ -13,13 +13,14 @@ import {
 import { ensureDailyStudyPlan, getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
-import { formatMemoryBoost, renderPracticeHeader, renderPracticeMascot, renderPracticeNotice } from './PracticeElements.js?v=18909';
+import { bindSentenceExampleCue, formatMemoryBoost, renderPracticeHeader, renderPracticeMascot, renderPracticeNotice, renderSentenceExampleCue } from './PracticeElements.js?v=18910';
 
 export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
   const allWords = getActivePracticeWords(driveSync);
   const geminiEnabled = getGeminiSettings().enabled;
   const settings = ensureDailyStudyPlan(driveSync);
-  const pool = geminiEnabled ? allWords : allWords.filter(canBuildSentenceExercise);
+  const localWords = allWords.filter(word => canBuildSentenceExercise(word));
+  const pool = geminiEnabled ? allWords : localWords;
   const selectedWords = selectModeWords(pool, {
     mode: 'sentence-builder',
     limit: 10,
@@ -67,6 +68,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
   let hintsUsed = 0;
   let memoryBoost = '';
   let chosenIds = [];
+  let exampleRevealed = false;
   let puzzle = null;
   let startedAt = performance.now();
 
@@ -81,6 +83,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
       })
       : null;
     chosenIds = [];
+    exampleRevealed = false;
     answered = false;
     correct = false;
     hintsUsed = 0;
@@ -92,8 +95,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     itemByWordId = new Map((generatedSet?.items || []).map(item => [String(item.wordId), item]));
     words = selectedWords.filter(word => itemByWordId.has(String(word.id)));
     if (!words.length) {
-      const localEligible = allWords.filter(canBuildSentenceExercise);
-      const fallbackWords = selectModeWords(localEligible, {
+      const fallbackWords = selectModeWords(localWords, {
         mode: 'sentence-builder',
         limit: 10,
         settings,
@@ -142,7 +144,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     } catch (error) {
       if (!container.contains(loadingView)) return;
       try {
-        startSession(buildLocalSentenceSet(allWords.filter(canBuildSentenceExercise).slice(0, 10)));
+        startSession(buildLocalSentenceSet(localWords.slice(0, 10)));
       } catch {
         notice(
           'Could not create sentence puzzles',
@@ -181,7 +183,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     const tileById = new Map(puzzle.tiles.map(tile => [tile.id, tile]));
     const chosenSet = new Set(chosenIds);
     const chosenTiles = chosenIds.map(id => tileById.get(id)).filter(Boolean);
-    const canCheck = chosenTiles.length > 0 && !answered;
+    const canCheck = chosenTiles.length === puzzle.targetTokens.length && !answered;
     const sourceBadge = puzzle.source === 'ai'
       ? '<span class="duo-source-chip"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> AI sentence</span>'
       : '';
@@ -195,16 +197,17 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
         ${renderPracticeHeader({ exitId: 'sentence-exit', label: '', current: index, total: words.length, score, answered })}
         <div class="practice-prompt sentence-prompt">
           ${renderPracticeMascot({
-            heading: 'Build the sentence',
+            heading: 'Rebuild the example',
             bubbleHtml: `<div class="duo-bubble-word-row"><strong>${escapeHtml(word.word)}</strong><span class="duo-bubble-tags"><span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>${sourceBadge}</span></div><p class="duo-bubble-copy">${escapeHtml(puzzle.definition)}</p>`,
             answered,
             correct,
             combo
           })}
+          ${answered ? '' : renderSentenceExampleCue(puzzle.sentence, exampleRevealed)}
           <div class="sentence-answer-tray${answered ? (correct ? ' is-correct' : ' is-incorrect') : ''}" id="sentence-tray" aria-label="Your assembled sentence">
             ${chosenTiles.length
               ? chosenTiles.map(tile => `<button type="button" class="sentence-tile is-placed" data-remove-tile="${escapeHtml(tile.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(tile.text)}</button>`).join('')
-              : '<span class="sentence-tray-placeholder">Tap words below in order…</span>'}
+              : '<span class="sentence-tray-placeholder">Put the tiles in the same order as the example.</span>'}
           </div>
           ${answered
             ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite">
@@ -232,6 +235,10 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
     </section>`;
 
     container.querySelector('#sentence-exit').addEventListener('click', () => go('dashboard', onNavigate));
+    if (!answered) bindSentenceExampleCue(container, puzzle.sentence, revealed => {
+      exampleRevealed = revealed;
+      if (revealed) hintsUsed += 1;
+    });
     container.querySelectorAll('[data-pick-tile]').forEach(button => button.addEventListener('click', () => {
       const id = button.dataset.pickTile;
       if (!id || chosenSet.has(id) || answered) return;
@@ -268,7 +275,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
       }
     });
     container.querySelector('#sentence-check')?.addEventListener('click', () => {
-      if (answered || !chosenTiles.length) return;
+      if (!canCheck) return;
       const evaluation = evaluateSentenceAssembly(puzzle.targetTokens, chosenTiles.map(tile => tile.text));
       answered = true;
       correct = evaluation.correct;

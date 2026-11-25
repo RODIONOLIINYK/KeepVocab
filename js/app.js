@@ -23,10 +23,10 @@ import { renderMatchSprintMode, teardownMatchSprintMode } from './components/Mat
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18908';
 import { renderDashboardView, updateDashboardGoalNudge, updateDashboardStreakUI } from './components/DashboardView.js?v=18908';
 import { getStreakSummary } from './services/studyActivity.js';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=18908';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=18910';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18908';
 import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18908';
-import { renderSentenceBuilderMode } from './components/SentenceBuilderMode.js?v=18908';
+import { renderSentenceBuilderMode } from './components/SentenceBuilderMode.js?v=18910';
 import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18908';
 import { renderSettingsView, requestImageModelDownload } from './components/SettingsView.js?v=18908';
 
@@ -87,7 +87,7 @@ function streakExtendedMessage(detail = {}) {
     return `${streak}-day streak milestone! Amazing consistency.`;
   }
   if (detail.freezeProtected) {
-    return `Streak Freeze saved yesterday — your ${streak}-day streak lives on!`;
+    return `Streak Freeze kept your streak alive. You’re now at ${streak} days!`;
   }
   if (streak === 1) {
     return 'Day 1 started — come back tomorrow to grow your streak!';
@@ -106,7 +106,6 @@ function initApp() {
     navigateTo(currentView);
     queueSmartReminderRefresh({ requestPermission: true });
   } });
-  const initialProtection = driveSync.ensureStreakProtection();
   setupEngagementSystem();
   window.addEventListener('keepvocab:streak-extended', event => {
     updateDashboardDerivedState();
@@ -114,6 +113,12 @@ function initApp() {
     pulseBadge(document.getElementById('today-streak-pill'));
     lastStreakToastAt = Date.now();
     showToast(streakExtendedMessage(event.detail), 'streak');
+  });
+  window.addEventListener('keepvocab:streak-protected', event => {
+    const { streak, appliedDates } = event.detail;
+    const freezes = appliedDates.length === 1 ? 'A Streak Freeze' : `${appliedDates.length} Streak Freezes`;
+    lastStreakToastAt = Date.now();
+    showToast(`${freezes} kept your ${streak}-day streak alive!`, 'streak');
   });
   window.addEventListener('keepvocab:goal-reached', event => {
     updateDashboardDerivedState();
@@ -163,12 +168,10 @@ function initApp() {
   });
 
   const hash = window.location.hash.replace('#', '') || 'dashboard';
+  driveSync.ensureStreakProtection();
   navigateTo(hash);
   renderConnectionState();
   updateDashboardDerivedState();
-  if (initialProtection?.appliedDates?.length) {
-    showToast(`Streak Freeze protected yesterday — your ${initialProtection.streak}-day streak is still alive!`, 'streak');
-  }
   // Installed inference starts on app opening, independent of idle time.
   void preloadMeaningModel().catch(error => console.warn('Meaning model preload failed.', error));
   void initializeImageLearning({ requestDownload: requestImageModelDownload }).catch(() => showToast('Image suggestions could not start. You can still choose photos.', 'error'));
@@ -182,7 +185,9 @@ function showToast(msg, type = 'success') {
   toast.id = 'app-toast';
   const variant = type === 'streak' ? 'streak' : type === 'success' ? 'success' : 'error';
   toast.className = `app-toast ${variant}`;
+  toast.setAttribute('role', 'status');
   const icon = document.createElement('i');
+  icon.setAttribute('aria-hidden', 'true');
   icon.className = `fa-solid ${variant === 'streak' ? 'fa-fire' : variant === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}`;
   const label = document.createElement('span');
   label.textContent = String(msg);
@@ -246,7 +251,7 @@ function updateVisibleDailyProgress(settings = driveSync.getSettings()) {
 
 function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
   const settings = { ...driveSync.getSettings(), ...settingsOverride };
-  const reviewsToday = settings.reviewsDate === localDateKey(now) ? Number(settings.reviewsToday || 0) : 0;
+  const { reviewsToday, dailyGoal, currentStreak } = getStreakSummary(settings, now);
   const practiceWords = getScheduledPracticeWords(driveSync);
   const dueCount = buildScheduledPracticeSession(practiceWords, settings, { now }).wordCount;
   return buildReminderSchedule({
@@ -259,8 +264,8 @@ function currentSmartReminderPlan(settingsOverride = {}, now = new Date()) {
     practiceWords,
     dueCount,
     reviewsToday,
-    dailyGoal: settings.dailyGoal || 20,
-    streak: settings.dailyStreak || 0,
+    dailyGoal,
+    streak: currentStreak,
     now
   });
 }
@@ -331,7 +336,7 @@ function setupEngagementSystem() {
   document.getElementById('android-reminder-settings').hidden = !remindersAvailable;
   document.getElementById('android-reminder-note').hidden = !remindersAvailable;
   if (remindersAvailable) {
-    document.getElementById('routine-description').textContent = 'Let Sprig learn your weekday and weekend rhythm. One exercise keeps your streak safe and silences today’s reminders.';
+    document.getElementById('routine-description').textContent = 'Let Sprig learn your weekday and weekend rhythm. Reach your daily goal to keep your streak safe.';
     document.getElementById('routine-mascot').src = 'assets/keepvocab-sprig-reminder.webp';
   }
   const updateHelper = () => {
@@ -343,7 +348,8 @@ function setupEngagementSystem() {
     const plan = currentSmartReminderPlan({
       reminderTime: normalizeReminderTime(reminderTime.value),
       smartReminderEnabled: smartReminderEnabled.checked,
-      streakReminderEnabled: streakReminderEnabled.checked
+      streakReminderEnabled: streakReminderEnabled.checked,
+      dailyGoal: Number(routineGoal.value)
     });
     const streakPlan = plan.streakPlan;
     const practiceReadyPlan = plan.practiceReadyPlan;
@@ -353,7 +359,7 @@ function setupEngagementSystem() {
       : learnedTime
         ? 'Timing learned separately for weekdays and weekends.'
         : 'Smart timing will learn after three study days; your preferred time is used for now.';
-    helper.textContent = `Next plan: ${formatReminderTime(plan.time)} · ${plan.title}. ${timingCopy}${practiceReadyPlan ? ` Practice-ready alert at ${formatReminderTime(practiceReadyPlan.time)} (${practiceReadyPlan.summary}).` : ''}${streakPlan ? ` A streak safeguard is planned for ${formatReminderTime(streakPlan.time)} if you still have no activity. One exercise cancels today’s reminders.` : ''}`;
+    helper.textContent = `Next plan: ${formatReminderTime(plan.time)} · ${plan.title}. ${timingCopy}${practiceReadyPlan ? ` Practice-ready alert at ${formatReminderTime(practiceReadyPlan.time)} (${practiceReadyPlan.summary}).` : ''}${streakPlan ? ` Streak protection is planned for ${formatReminderTime(streakPlan.time)} if your goal is still unfinished that day.` : ''}`;
   };
 
   const updateTimeState = () => {
@@ -389,6 +395,7 @@ function setupEngagementSystem() {
   smartReminderEnabled.addEventListener('change', updateHelper);
   streakReminderEnabled.addEventListener('change', updateHelper);
   reminderTime.addEventListener('input', updateHelper);
+  routineGoal.addEventListener('input', updateHelper);
   document.getElementById('btn-test-reminder').addEventListener('click', async event => {
     const button = event.currentTarget;
     button.disabled = true;

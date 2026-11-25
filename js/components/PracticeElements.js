@@ -1,4 +1,5 @@
 import { escapeHtml } from '../utils/html.js';
+import { speakWord } from '../services/speechService.js?v=18908';
 
 // Let touch users read the clue before opening their keyboard. An explicit
 // Next/Edit action can resume typing; desktop practice keeps keyboard focus.
@@ -82,4 +83,27 @@ export function renderPracticeMascot({ heading = '', bubbleHtml = '', answered =
       <img class="duo-prompt-mascot" src="${asset}" alt="" aria-hidden="true" width="108" height="108">
       <div class="duo-speech-bubble">${bubbleHtml}</div>
     </div>`;
+}
+
+export function renderSentenceExampleCue(sentence, revealed) {
+  return `<div class="sentence-example-cue">
+    <div class="inline-actions">
+      <button type="button" class="status-pill offline" id="sentence-play-example" data-sound="none"><i class="fa-solid fa-volume-high" aria-hidden="true"></i> Play example</button>
+      <button type="button" class="status-pill offline" id="sentence-read-example" aria-controls="sentence-example-text" aria-expanded="${revealed}">${revealed ? 'Hide example' : 'Read example'}</button>
+    </div>
+    <p id="sentence-example-text" class="duo-bubble-copy" lang="en"${revealed ? '' : ' hidden'}>${escapeHtml(sentence)}</p>
+  </div>`;
+}
+
+export function bindSentenceExampleCue(container, sentence, onToggle) {
+  container.querySelector('#sentence-play-example').addEventListener('click', () => speakWord(sentence, 'en-US', 0.92));
+  const button = container.querySelector('#sentence-read-example');
+  const example = container.querySelector('#sentence-example-text');
+  button.addEventListener('click', () => {
+    const revealed = example.hidden;
+    example.hidden = !revealed;
+    button.setAttribute('aria-expanded', String(revealed));
+    button.textContent = revealed ? 'Hide example' : 'Read example';
+    onToggle(revealed);
+  });
 }

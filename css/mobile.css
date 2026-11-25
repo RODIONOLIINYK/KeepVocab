@@ -531,19 +531,12 @@
   .typed-review-prompt .practice-answer-form { grid-column: 2; grid-row: 1 / span 4; align-self: center; }
 }
 
-/* Streak Engagement mobile layout (v1.13) */
-@media (max-width: 720px) {
-  .nav-user-area .badge-streak {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 40px;
-    padding: 6px 10px;
-    font-size: .78rem;
-  }
-  .nav-user-area .badge-streak .badge-detail { display: none; }
-  .nav-user-area .badge-streak .badge-compact { display: inline; }
+@media (hover: none) and (pointer: coarse) {
+  .nav-user-area .badge-streak { display: none; }
+}
 
+/* Streak engagement on narrow screens */
+@media (max-width: 720px) {
   .today-view .today-progress-card {
     display: flex;
     flex-direction: column;
@@ -589,7 +582,6 @@
   .sentence-controls .btn-green-solid { grid-column: 1 / -1; width: 100%; margin-left: 0; }
 }
 @media (max-width: 359px) {
-  .nav-user-area .badge-streak { padding: 6px 8px; font-size: .74rem; }
   .streak-day-dot { width: 26px; height: 26px; font-size: .64rem; }
   .streak-milestones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

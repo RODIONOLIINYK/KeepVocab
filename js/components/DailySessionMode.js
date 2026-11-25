@@ -16,7 +16,7 @@ import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18908';
 import { getGeminiSettings } from '../services/geminiSettings.js?v=18908';
 import { buildSentencePuzzle, evaluateSentenceAssembly, generateSentenceBuilderSet } from '../services/sentenceBuilder.js';
 import { mountUseItExercise } from './UseItExercise.js?v=18908';
-import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement, formatMemoryBoost, renderPracticeMascot } from './PracticeElements.js?v=18909';
+import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement, bindSentenceExampleCue, formatMemoryBoost, renderPracticeMascot, renderSentenceExampleCue } from './PracticeElements.js?v=18910';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {
@@ -122,6 +122,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
   let sentencePuzzle = null;
   let sentencePuzzleKey = '';
   let sentenceChosenIds = [];
+  let sentenceExampleRevealed = false;
   let questionStartedAt = performance.now();
   const aiSentenceByWordId = new Map();
 
@@ -132,17 +133,6 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       generateSentenceBuilderSet(sentenceWords).then(generated => {
         for (const item of generated?.items || []) {
           aiSentenceByWordId.set(String(item.wordId), item);
-        }
-        const active = queue[index];
-        if (
-          active?.exerciseType === 'sentence-builder' &&
-          !answered &&
-          sentenceChosenIds.length === 0 &&
-          aiSentenceByWordId.has(String(active.wordId)) &&
-          container.querySelector('.review-recall-shell')
-        ) {
-          sentencePuzzleKey = '';
-          render();
         }
       }).catch(() => { /* saved-example puzzle remains active seamlessly */ });
     }
@@ -161,6 +151,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     sentencePuzzle = null;
     sentencePuzzleKey = '';
     sentenceChosenIds = [];
+    sentenceExampleRevealed = false;
     questionStartedAt = performance.now();
   }
 
@@ -249,7 +240,9 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     if (!word) { index += 1; resetQuestionState(); return render(); }
     if (exercise.exerciseType === 'sentence-builder') {
       const aiItem = aiSentenceByWordId.get(String(word.id));
-      const key = `${exercise.id}:${word.id}:${aiItem ? aiItem.source : 'local'}`;
+      // Once the example is available to the learner, freeze the tiles and
+      // reference for this question even if the Gemini result arrives later.
+      const key = `${exercise.id}:${word.id}`;
       if (sentencePuzzleKey !== key) {
         sentencePuzzle = buildSentencePuzzle(word, words, {
           sentence: aiItem?.sentence || null,
@@ -258,6 +251,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
         });
         sentencePuzzleKey = key;
         sentenceChosenIds = [];
+        sentenceExampleRevealed = false;
       }
       if (!sentencePuzzle) {
         exercise.exerciseType = 'typed-recall';
@@ -313,11 +307,12 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       const tileById = sentenceMode ? new Map(sentencePuzzle.tiles.map(tile => [tile.id, tile])) : null;
       const chosenSet = sentenceMode ? new Set(sentenceChosenIds) : null;
       const chosenTiles = sentenceMode ? sentenceChosenIds.map(id => tileById.get(id)).filter(Boolean) : [];
+      const canCheckSentence = sentenceMode && chosenTiles.length === sentencePuzzle.targetTokens.length;
       const recallTypeForFeedback = sentenceMode || contextMode ? 'context' : listening ? 'listening-recall' : visual ? 'recognition' : 'free-recall';
       const feedbackDetail = sentenceMode
         ? sentencePuzzle.sentence
         : (exampleForLearning(word) || definitionForLearning(word));
-      const headingText = sentenceMode ? 'Build the sentence'
+      const headingText = sentenceMode ? 'Rebuild the example'
         : listening ? 'Type what you hear'
           : visual ? 'Which word matches?'
             : contextMode ? 'Fill in the blank'
@@ -336,14 +331,15 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
           ${visual
             ? `<div class="duo-stage-heading"><h2>${escapeHtml(headingText)}</h2>${combo >= 3 ? `<span class="duo-combo-badge"><i class="fa-solid fa-fire" aria-hidden="true"></i> ${combo} in a row</span>` : ''}</div><figure class="practice-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>`
             : renderPracticeMascot({ heading: headingText, bubbleHtml, answered, correct, combo, retry: Boolean(exercise.isRetry) })}
+          ${sentenceMode && !answered ? renderSentenceExampleCue(sentencePuzzle.sentence, sentenceExampleRevealed) : ''}
           ${sentenceMode
             ? `<div class="sentence-answer-tray${answered ? (correct ? ' is-correct' : ' is-incorrect') : ''}" id="sentence-tray" aria-label="Your assembled sentence">
-                 ${chosenTiles.length ? chosenTiles.map(tile => `<button type="button" class="sentence-tile is-placed" data-remove-tile="${escapeHtml(tile.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(tile.text)}</button>`).join('') : '<span class="sentence-tray-placeholder">Tap words below in order…</span>'}
+                 ${chosenTiles.length ? chosenTiles.map(tile => `<button type="button" class="sentence-tile is-placed" data-remove-tile="${escapeHtml(tile.id)}" ${answered ? 'disabled' : ''}>${escapeHtml(tile.text)}</button>`).join('') : '<span class="sentence-tray-placeholder">Put the tiles in the same order as the example.</span>'}
                </div>`
             : ''}
           ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><strong><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'}" aria-hidden="true"></i> ${correct ? escapeHtml(answerEncouragement({ correct, recallType: recallTypeForFeedback, hintsUsed })) : (sentenceMode ? 'Expected sentence' : 'Answer')}${sentenceMode ? '' : `: ${escapeHtml(word.word)}`}</strong><span>${escapeHtml(feedbackDetail)}</span>${correct && memoryBoost ? `<em class="memory-boost-pill"><i class="fa-solid fa-seedling" aria-hidden="true"></i> ${escapeHtml(memoryBoost)}</em>` : ''}</div><div class="inline-actions"><button class="status-pill offline" id="practice-hear-answer"><i class="fa-solid fa-volume-high"></i> ${sentenceMode ? 'Hear sentence' : 'Hear answer'}</button><button class="btn-green-solid" id="daily-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button></div>`
             : visual ? `<div class="choice-grid">${optionsList.map(option => `<button class="choice-button" data-daily-choice="${escapeHtml(option.id)}"><span>${escapeHtml(option.word)}</span></button>`).join('')}</div>`
-            : sentenceMode ? `<div class="sentence-tile-bank" role="group" aria-label="Word bank">${sentencePuzzle.tiles.map(tile => { const used = chosenSet.has(tile.id); return `<button type="button" class="sentence-tile${used ? ' is-used' : ''}" data-pick-tile="${escapeHtml(tile.id)}" ${used ? 'disabled aria-hidden="true" tabindex="-1"' : ''}>${escapeHtml(tile.text)}</button>`; }).join('')}</div><div class="sentence-controls"><button type="button" class="status-pill offline" id="daily-sentence-hint"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Hint</button><button type="button" class="status-pill offline" id="daily-sentence-clear" ${chosenTiles.length ? '' : 'disabled'}>Clear</button><button type="button" class="btn-green-solid" id="daily-sentence-check" data-sound="none" ${chosenTiles.length ? '' : 'disabled'}>Check</button></div>`
+            : sentenceMode ? `<div class="sentence-tile-bank" role="group" aria-label="Word bank">${sentencePuzzle.tiles.map(tile => { const used = chosenSet.has(tile.id); return `<button type="button" class="sentence-tile${used ? ' is-used' : ''}" data-pick-tile="${escapeHtml(tile.id)}" ${used ? 'disabled aria-hidden="true" tabindex="-1"' : ''}>${escapeHtml(tile.text)}</button>`; }).join('')}</div><div class="sentence-controls"><button type="button" class="status-pill offline" id="daily-sentence-hint"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Hint</button><button type="button" class="status-pill offline" id="daily-sentence-clear" ${chosenTiles.length ? '' : 'disabled'}>Clear</button><button type="button" class="btn-green-solid" id="daily-sentence-check" data-sound="none" ${canCheckSentence ? '' : 'disabled'}>Check</button></div>`
             : `<form class="practice-answer-form" id="daily-form"><input id="daily-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type the word" aria-label="Your answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
         </div>
       </div></section>`;
@@ -365,6 +361,12 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       render();
     });
     container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
+    if (container.querySelector('#sentence-play-example')) {
+      bindSentenceExampleCue(container, sentencePuzzle.sentence, revealed => {
+        sentenceExampleRevealed = revealed;
+        if (revealed) hintsUsed += 1;
+      });
+    }
     container.querySelector('#practice-hear-answer')?.addEventListener('click', () => {
       if (exercise.exerciseType === 'sentence-builder' && sentencePuzzle) speakWord(sentencePuzzle.sentence, 'en-US', 0.92);
       else speakWord(word.word, 'en-US', 0.9, word.audioUrl);
@@ -413,7 +415,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       }
     });
     container.querySelector('#daily-sentence-check')?.addEventListener('click', () => {
-      if (!sentenceChosenIds.length || answered) return;
+      if (answered || sentenceChosenIds.length !== sentencePuzzle.targetTokens.length) return;
       void submit(sentenceChosenIds.join(' '));
     });
     container.querySelectorAll('[data-daily-choice]').forEach(button => button.addEventListener('click', () => submit(button.textContent, button.dataset.dailyChoice)));

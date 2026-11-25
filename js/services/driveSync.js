@@ -71,6 +71,11 @@ function safeJsonParse(raw, fallback) {
   }
 }
 
+function notifyStreakProtection(streak, appliedDates) {
+  if (!appliedDates.length || typeof globalThis.dispatchEvent !== 'function' || typeof globalThis.CustomEvent !== 'function') return;
+  globalThis.dispatchEvent(new CustomEvent('keepvocab:streak-protected', { detail: { streak, appliedDates } }));
+}
+
 function withoutDriveCredentials(value) {
   if (Array.isArray(value)) return value.map(withoutDriveCredentials);
   if (!value || typeof value !== 'object') return value;
@@ -1228,6 +1233,9 @@ export class DriveSyncService {
         dailyStreak,
         longestStreak
       }, { silent: !autoFreeze.changed });
+      if (localDateKey(date) === localDateKey()) {
+        notifyStreakProtection(dailyStreak, autoFreeze.appliedDates);
+      }
       return {
         appliedDates: autoFreeze.appliedDates,
         streak: dailyStreak,
@@ -1287,7 +1295,7 @@ export class DriveSyncService {
     });
     // Completing today's daily goal extends (or starts) the streak once.
     // Synced activity from another device never reaches this path.
-    const isToday = key === localDateKey(new Date());
+    const isToday = key === localDateKey();
     const canDispatch = typeof globalThis.dispatchEvent === 'function' && typeof globalThis.CustomEvent === 'function';
     if (reachedGoalNow && streak > previousStreak && isToday && canDispatch) {
       globalThis.dispatchEvent(new CustomEvent('keepvocab:streak-extended', {
@@ -1301,6 +1309,8 @@ export class DriveSyncService {
           bankedFreezes: bankedStreakFreezes(streakFreezeAwards, streakFreezeDates)
         }
       }));
+    } else if (isToday) {
+      notifyStreakProtection(streak, autoFreeze.appliedDates);
     }
     if (reachedGoalNow && isToday && canDispatch) {
       globalThis.dispatchEvent(new CustomEvent('keepvocab:goal-reached', {
