@@ -1,4 +1,4 @@
-// Exact five-feature reference scorer. Pooling includes special tokens and the
+// Reference scorer. Pooling includes special tokens and the
 // complete context; token matching excludes specials and the first-colon prefix.
 function dot(a, b) {
   let sum = 0;
@@ -30,7 +30,7 @@ function quantile(values, fraction) {
   const low = Math.floor(index), high = Math.ceil(index);
   return sorted[low] + (sorted[high] - sorted[low]) * (index - low);
 }
-export function referenceFeatures(a, b, scorer) {
+function tokenFeatures(a, b, scorer) {
   const cosine = Math.max(-1, Math.min(1, dot(a.pooled, b.pooled)));
   if (!a.tokens.length || !b.tokens.length) return [cosine, cosine, cosine, cosine, 1];
   // Each token-pair dot product contributes to both directions. Computing it
@@ -53,7 +53,22 @@ export function referenceFeatures(a, b, scorer) {
     (Math.min(...ab) + Math.min(...ba)) / 2, (quantile(ab, .25) + quantile(ba, .25)) / 2,
     Math.min(ab.length, ba.length) / Math.max(ab.length, ba.length)];
 }
+export function referenceLengthFeatures(textA, textB, scaler) {
+  if (typeof textA !== 'string' || typeof textB !== 'string') throw new Error('Full meaning texts are required for length features.');
+  if (scaler?.mean?.length !== 2 || scaler?.std?.length !== 2 || !scaler.mean.every(Number.isFinite)
+    || !scaler.std.every(value => Number.isFinite(value) && value > 0)) throw new Error('Invalid meaning length scaler.');
+  const countWords = text => (text.match(/[\p{L}\p{N}_]+(?:['’\-][\p{L}\p{N}_]+)*/gu) || []).length;
+  const countA = countWords(textA), countB = countWords(textB);
+  return [Math.min(countA, countB), Math.max(countA, countB)].map((count, index) =>
+    Math.fround(Math.fround(Math.fround(Math.log1p(count)) - scaler.mean[index]) / scaler.std[index]));
+}
+export function referenceFeatures(a, b, scorer, textA, textB) {
+  const features = tokenFeatures(a, b, scorer);
+  if (scorer.variant === 'plus_log_min_max_words') features.push(...referenceLengthFeatures(textA, textB, scorer.lengthScaler));
+  return features;
+}
 export function referenceProbability(features, scorer) {
+  if (features.length !== scorer.weights.length || !features.every(Number.isFinite)) throw new Error('Invalid meaning feature vector.');
   const logit = dot(features, scorer.weights) + scorer.bias;
   return 1 / (1 + Math.exp(-logit));
 }

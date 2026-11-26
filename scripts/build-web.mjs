@@ -1,6 +1,7 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { MEANING_MODEL_ASSETS } from '../js/ml/meaningAssets.js';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outputDir = path.join(projectRoot, 'www');
@@ -25,6 +26,13 @@ for (const directory of directories) {
   await cp(path.join(projectRoot, directory), path.join(outputDir, directory), {
     recursive: true,
   });
+}
+
+const meaningModelDirectory = 'models/meaning-minilm-v8';
+for (const file of Object.keys(MEANING_MODEL_ASSETS)) {
+  const destination = path.join(outputDir, meaningModelDirectory, file);
+  await mkdir(path.dirname(destination), { recursive: true });
+  await cp(path.join(projectRoot, meaningModelDirectory, file), destination);
 }
 
 if (process.env.KEEPVOCAB_MODEL_BASE) {

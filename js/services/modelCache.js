@@ -1,5 +1,6 @@
 import { bytesToBase64 } from '../utils/base64.js';
 import { sharedInferenceScope } from './sharedInferenceScope.js';
+import { MEANING_CACHE } from '../ml/meaningConfig.js';
 
 function nativeStorage() {
   if (globalThis.keepVocabDesktop?.modelStorage) return globalThis.keepVocabDesktop.modelStorage;
@@ -88,7 +89,7 @@ export function modelCacheStorage() {
 
 // Workers use this proxy instead of writing browser profile model caches.
 export function workerModelCache(cache, { measure = (_stage, operation) => operation() } = {}) {
-  const channel = typeof self.postMessage === 'function' ? self : sharedInferenceScope(self, cache === 'keepvocab-meaning-model-v1' ? 'meaning' : 'clip');
+  const channel = typeof self.postMessage === 'function' ? self : sharedInferenceScope(self, cache === MEANING_CACHE ? 'meaning' : 'clip');
   let next = 0;
   const pending = new Map();
   channel.addEventListener('message', ({ data }) => {
@@ -117,7 +118,7 @@ export async function handleModelCacheRequest(worker, data) {
   const reply = { type: 'model-cache-result', cache: data.cache, cacheId: data.cacheId,
     ...(data.sharedCacheToken !== undefined ? { sharedCacheToken: data.sharedCacheToken } : {}) };
   try {
-    if (!['keepvocab-clip-model-v3', 'keepvocab-meaning-model-v1'].includes(data.cache)) throw new Error('Unknown model cache.');
+    if (!['keepvocab-clip-model-v3', MEANING_CACHE].includes(data.cache)) throw new Error('Unknown model cache.');
     const cache = await modelCacheStorage()?.open(data.cache);
     if (!cache) throw new Error('Model storage is unavailable.');
     let result;

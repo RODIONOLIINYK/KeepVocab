@@ -4,7 +4,9 @@ import { consolidateEntrySenses, groupEntrySensesLocally } from '../js/services/
 import { MemoryStorage } from '../js/services/driveSync.js';
 import { meaningPairKey } from '../js/services/meaningEquivalenceLearning.js';
 import { MEANING_COMPARISON_VERSION } from '../js/services/meaningComparison.js';
-import { getPretrainedEquivalenceHead, MEANING_EMBEDDING_CENTER } from '../js/ml/pretrainedSemanticHeads.js';
+import { CLIP_TAG, CLIP_DIMENSION } from '../js/ml/clipConfig.js';
+import { EQUIVALENCE_HEAD_VERSION } from '../js/services/meaningEquivalenceHead.js';
+import { MEANING_EMBEDDING_CENTER } from '../js/ml/pretrainedSemanticHeads.js';
 
 const sense = (id, definition) => ({ id, word: 'testword', partOfSpeech: 'verb', definition });
 const entry = {word: 'testword', senses: [sense('a', 'To commence.'), sense('b', 'To start doing something.')]};
@@ -63,11 +65,16 @@ test('Gemini output contradicting a saved distinction fails closed with a visibl
 });
 
 function head(bias) {
-  const result=getPretrainedEquivalenceHead();
-  result.comparisonVersion=MEANING_COMPARISON_VERSION;
-  result.threshold=.9;
-  result.scorer={weights:Array(11).fill(0),mean:Array(11).fill(0),scale:Array(11).fill(1),bias};
-  return result;
+  return {
+    version: EQUIVALENCE_HEAD_VERSION,
+    encoder: CLIP_TAG,
+    dimension: CLIP_DIMENSION,
+    wProd: Array(CLIP_DIMENSION).fill(0),
+    wDiff: Array(CLIP_DIMENSION).fill(0),
+    comparisonVersion: MEANING_COMPARISON_VERSION,
+    threshold: .9,
+    scorer: { weights: Array(11).fill(0), mean: Array(11).fill(0), scale: Array(11).fill(1), bias }
+  };
 }
 
 test('a calibrated equivalence rejection overrides high generic cosine similarity', async () => {

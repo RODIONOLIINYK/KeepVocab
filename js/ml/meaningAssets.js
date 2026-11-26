@@ -1,23 +1,30 @@
-// Exported reference files, pinned by length and SHA-256.
 export const MEANING_MODEL_ASSETS = {
   "config.json": {
     "bytes": 745,
     "sha256": "0514187a557adadc96dff4ec2288b2149395effaf50d70465b80a0b7d6d50662"
   },
   "tokenizer.json": {
-    "bytes": 711396,
-    "sha256": "d241a60d5e8f04cc1b2b3e9ef7a4921b27bf526d9f6050ab90f9267a1f9e5c66"
+    "bytes": 711659,
+    "sha256": "c3bbeac7c7669ec478d44bac871031a47b39935533558d252d5b7699e7d4d457"
   },
   "tokenizer_config.json": {
-    "bytes": 591,
-    "sha256": "a19ac1db1adf342a8e57262bf0430ae2a623d767229b9190cdcf8f047e2f51ff"
+    "bytes": 401,
+    "sha256": "a5aeb4772b49c0eea1e6afd09ac4c5dc20807d7a953e3c0e218ccfe85589ee62"
   },
   "scorer.json": {
-    "bytes": 136909,
-    "sha256": "8bfa8d847c6d7d33747f87ccc5f146074dc0af6c67c21fc40a07c441ec0b4f60"
+    "bytes": 248319,
+    "sha256": "e5bdc1be37aa2576f363a93ede72cdb85777bd6c3f7679125bd90daf5da90418"
+  },
+  "LICENSE.txt": {
+    "bytes": 11358,
+    "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
   },
   "onnx/model_fp16.onnx": {
     "bytes": 45279365,
-    "sha256": "b82fa18b75097235c9def45a27916fe069b8c7f4885b283dc998f174ab43158b"
+    "sha256": "d12329b7d96a53a58d9ff33875668f8955f45272e8f4adec2995dc1fdac616ac"
+  },
+  "NOTICE.txt": {
+    "bytes": 292,
+    "sha256": "84be916307307ab984f2bc8271ff98cfa03f342bbbce9ac73d470c824de13fd9"
   }
 };

@@ -1,10 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { referenceEmbedding, referenceFeatures, referenceProbability } from '../js/services/meaningReferenceFeatures.js';
+import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { referenceEmbedding, referenceFeatures, referenceLengthFeatures, referenceProbability } from '../js/services/meaningReferenceFeatures.js';
 import { groupEntrySensesLocally } from '../js/services/localSenseGrouping.js';
 import { meaningPairKey } from '../js/services/meaningEquivalenceLearning.js';
 import { MemoryStorage } from '../js/services/driveSync.js?v=18908';
-import { MEANING_MODEL_TAG, MEANING_MERGE_THRESHOLD } from '../js/ml/meaningConfig.js';
+import { MEANING_MODEL_ID, MEANING_MODEL_TAG, MEANING_MODEL_BASE, MEANING_MODEL_SHA256, MEANING_SCORER_SHA256,
+  MEANING_MERGE_THRESHOLD, MEANING_REVIEW_THRESHOLD, MEANING_CACHE } from '../js/ml/meaningConfig.js';
 import { MEANING_MODEL_ASSETS } from '../js/ml/meaningAssets.js';
 
 test('reference pooling retains context while token matching masks the first-colon prefix, specials and padding', () => {
@@ -32,6 +35,59 @@ const senses = [
   { id: 'b', word: 'begin', partOfSpeech: 'verb', definition: 'To start doing something.' },
   { id: 'c', word: 'begin', partOfSpeech: 'verb', definition: 'To stop doing something.' }
 ];
+test('v8 Min/MaxLen uses symmetric full-gloss word counts and training-only float32 scaling', () => {
+  const scaler = { mean: [1.961212396621704, 2.4570188522338867], std: [.45669472217559814, .4575444161891937] };
+  const short = "can't well-known l’esprit café_2 ⅓", long = 'word '.repeat(140);
+  const expected = [5, 140].map((count, index) =>
+    Math.fround(Math.fround(Math.fround(Math.log1p(count)) - scaler.mean[index]) / scaler.std[index]));
+  assert.deepEqual(referenceLengthFeatures(short, long, scaler), expected);
+  assert.deepEqual(referenceLengthFeatures(long, short, scaler), expected);
+  assert.deepEqual(referenceLengthFeatures('', '', { mean: [0, 0], std: [1, 1] }), [0, 0]);
+  assert.deepEqual(referenceLengthFeatures('İstanbul', 'İstanbul', { mean: [0, 0], std: [1, 1] }), [Math.fround(Math.log1p(1)), Math.fround(Math.log1p(1))]);
+  assert.throws(() => referenceLengthFeatures(undefined, short, scaler), /Full meaning texts/);
+  assert.throws(() => referenceLengthFeatures(short, long, { mean: [0, 0], std: [0, 1] }), /scaler/);
+});
+test('v8 scorer consumes all seven features, including tokenless fallback, and rejects incomplete vectors', () => {
+  const encoded = { pooled: [1, 0], ids: [1], tokens: [[1, 0]] };
+  const scorer = { variant: 'plus_log_min_max_words', weights: [0, 0, 0, 0, 0, 1, 1], bias: 0,
+    idfLookup: {}, defaultIdf: 1, lengthScaler: { mean: [0, 0], std: [1, 1] } };
+  const features = referenceFeatures(encoded, encoded, scorer, 'one', 'one two');
+  assert.equal(features.length, 7);
+  assert.deepEqual(features.slice(0, 5), [1, 1, 1, 1, 1]);
+  assert.ok(Math.abs(referenceProbability(features, scorer) - 6 / 7) < 1e-7);
+  assert.deepEqual(referenceFeatures({ ...encoded, ids: [], tokens: [] }, encoded, scorer, 'one', 'one two'), features);
+  assert.throws(() => referenceFeatures(encoded, encoded, scorer), /Full meaning texts/);
+  assert.throws(() => referenceProbability(features.slice(0, 5), scorer), /feature vector/);
+});
+test('local v8 encoder, scorer and tokenizer match their pinned asset hashes and invalidate v7 caches', async () => {
+  assert.equal(MEANING_MODEL_ID, 'minilm-l6-v8-prefix-idf-bs16-minmax');
+  assert.equal(MEANING_MODEL_ASSETS['onnx/model_fp16.onnx'].sha256, MEANING_MODEL_SHA256);
+  assert.equal(MEANING_MODEL_ASSETS['scorer.json'].sha256, MEANING_SCORER_SHA256);
+  assert.ok(MEANING_MODEL_TAG.includes(MEANING_SCORER_SHA256));
+  assert.ok(MEANING_CACHE.includes(MEANING_SCORER_SHA256.slice(0, 12)));
+  assert.match(MEANING_CACHE, /^keepvocab-[a-z0-9-]{1,70}$/);
+  assert.ok(MEANING_REVIEW_THRESHOLD <= MEANING_MERGE_THRESHOLD);
+  for (const [filename, asset] of Object.entries(MEANING_MODEL_ASSETS)) {
+    const bytes = await readFile(new URL(filename, MEANING_MODEL_BASE));
+    assert.equal(bytes.length, asset.bytes, filename);
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), asset.sha256, filename);
+  }
+  const scorer = JSON.parse(await readFile(new URL('scorer.json', MEANING_MODEL_BASE)));
+  assert.equal(scorer.variant, 'plus_log_min_max_words');
+  assert.equal(scorer.weights.length, 7);
+  assert.equal(scorer.lengthScaler.mean.length, 2);
+  const build = await readFile(new URL('../scripts/build-web.mjs', import.meta.url), 'utf8');
+  assert.ok(build.includes("'models/meaning-minilm-v8'"));
+});
+test('v8 grouping uses the validation best-F1 boundary and retains every merged score for review', async () => {
+  for (const [probability, expectedCount] of [[MEANING_MERGE_THRESHOLD - 1e-8, 2], [MEANING_MERGE_THRESHOLD, 1], [.49, 1]]) {
+    const result = await groupEntrySensesLocally({ word: 'begin', senses: senses.slice(0, 2) }, {
+      storage: null, meaningLearningState: { records: [] }, scoreMeaningPairs: async () => [probability]
+    });
+    assert.equal(result.senses.length, expectedCount);
+    if (expectedCount === 1) assert.equal(result.meaningReviewScores.length, 1);
+  }
+});
 test('reference inference uses its threshold, complete linkage, user overrides and model-specific cached scores', async () => {
   const storage = new MemoryStorage(), entry = { word: 'begin', senses };
   let calls = 0;
@@ -58,7 +114,7 @@ test('reference unavailable, cancelled or invalid scores never produce statistic
   }
   const result = await groupEntrySensesLocally({ word: 'begin', senses: senses.slice(0, 2) }, { storage: null, meaningLearningState: { records: [] }, scoreMeaningPairs: async () => [MEANING_MERGE_THRESHOLD - 1e-8] });
   assert.equal(result.senses.length, 2);
-  assert.equal(result.meaningReviewScores.length, 1);
+  assert.equal(result.meaningReviewScores.length, 0);
 });
 
 test('a Different meanings judgment keeps near-duplicate twins cleanly separated across high model scores', async () => {
@@ -115,12 +171,16 @@ test('merge model download requires an explicit action, verifies bytes, reuses t
   const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2, '0')).join('');
   for (const key of Object.keys(MEANING_MODEL_ASSETS)) delete MEANING_MODEL_ASSETS[key];
   MEANING_MODEL_ASSETS['config.json'] = { bytes: bytes.length, sha256: hash };
-  const files = new Map(); let fetches = 0, workers = 0, terminated = 0, corrupt = true;
+  const files = new Map(), requests = []; let fetches = 0, workers = 0, terminated = 0, corrupt = true;
   globalThis.fetch = async () => { fetches++; return new Response(corrupt ? 'corrupt' : bytes); };
   globalThis.caches = { open: async () => ({ match: async url => files.get(url)?.clone(), put: async (url, response) => { files.set(url, response.clone()); } }), delete: async () => { files.clear(); } };
   globalThis.Worker = class {
     constructor() { workers++; }
-    postMessage(data) { queueMicrotask(() => this.onmessage({ data: { id: data.id, result: { model: MEANING_MODEL_TAG } } })); }
+    postMessage(data) {
+      requests.push(data);
+      queueMicrotask(() => this.onmessage({ data: { id: data.id, result: { model: MEANING_MODEL_TAG,
+        ...(data.type === 'compare' ? { scores: data.pairs.map(() => .7) } : {}) } } }));
+    }
     terminate() { terminated++; }
   };
   const service = await import('../js/services/meaningReference.js?download-lifecycle-test');
@@ -141,6 +201,10 @@ test('merge model download requires an explicit action, verifies bytes, reuses t
   assert.equal(fetches, 2); assert.equal(workers, 1);
   await service.downloadMeaningModel();
   assert.equal(fetches, 2, 'an installed model is not downloaded again');
+  await service.scoreReferenceMeaningPairs([{ sourceDefinition: '(countable) İstanbul.', definition: 'Ignored display text.' },
+    { definition: 'One two.' }], [[0, 1]]);
+  assert.deepEqual(requests.at(-1).comparisonTexts, ['İstanbul.', 'One two.']);
+  assert.deepEqual(requests.at(-1).texts, ['i̇stanbul.', 'one two.']);
   await service.removeMeaningModel();
   assert.equal(files.size, 0); assert.equal(terminated, 1);
   assert.equal(await service.preloadMeaningModel(), null);
@@ -149,7 +213,7 @@ test('merge model download requires an explicit action, verifies bytes, reuses t
 
 test('reference grouping scores beyond 24 senses, propagates scores to near-duplicate twins, picks one merged definition, and avoids stripped raw duplicates', async () => {
   const { consolidateEntrySenses } = await import('../js/services/localSenseGrouping.js');
-  assert.ok(MEANING_MERGE_THRESHOLD > .68 && MEANING_MERGE_THRESHOLD < .70);
+  assert.equal(MEANING_MERGE_THRESHOLD, 0.42793698608875275);
   const raw = [
     { id: 'r0', word: 'make', partOfSpeech: 'verb', definition: '(transitive) To create.' },
     { id: 'r1', word: 'make', partOfSpeech: 'verb', definition: 'To build, construct, produce, or originate.' },

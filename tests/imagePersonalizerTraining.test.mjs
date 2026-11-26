@@ -4,9 +4,8 @@ import { Worker as NodeWorker } from 'node:worker_threads';
 import { ImagePersonalizerTraining } from '../js/services/imagePersonalizerTraining.js';
 import { ImageLearningHistoryStore } from '../js/services/imageLearningHistory.js';
 import { MemoryStorage } from '../js/services/driveSync.js';
-import { createPersonalizer } from '../js/services/imagePersonalizer.js';
+import { createPersonalizer, LEGACY_PERSONALIZER_VERSION } from '../js/services/imagePersonalizer.js';
 import { imageChoiceHistory } from './fixtures/imageChoices.mjs';
-import { readJsonFile } from '../scripts/lib/json-files.mjs';
 import { imageRankingAcceptance } from '../js/services/imageChoicePolicy.js';
 
 test('improved average pairwise accuracy cannot promote fewer correct complete choices', () => {
@@ -45,8 +44,7 @@ test('reset or turning suggestions off cancels background training',async t=>{
 });
 
 test('retired bounded-head weights are not used as current preferences and saved choices remain intact',async t=>{
-  const saved=await readJsonFile(new URL('./fixtures/image-pretraining-fp16/candidate.json.gz',import.meta.url));
-  const old={...saved.model,role:'preference'},records=imageChoiceHistory();
+  const old={...createPersonalizer(),version:LEGACY_PERSONALIZER_VERSION,role:'preference'},records=imageChoiceHistory();
   const store={imageHistory:{ready:Promise.resolve(),resetAt:'',model:async()=>old},getImageEvents:async()=>records};
   const trainer=new ImagePersonalizerTraining(store,{pretrained:noPretrained});t.after(()=>trainer.stop());
   assert.equal(await trainer.personal(),null);assert.equal(await trainer.current(),null);

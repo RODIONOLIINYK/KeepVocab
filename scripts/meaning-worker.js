@@ -1,6 +1,6 @@
 import { createInferenceTimings } from '../js/services/inferenceTimings.js';
 import { AutoModel, AutoTokenizer, env } from '@huggingface/transformers';
-import { MEANING_MAX_TOKENS, MEANING_MODEL_TAG, MEANING_MODEL_BASE, MEANING_MODEL_REPO, MEANING_MODEL_REVISION, MEANING_CACHE } from '../js/ml/meaningConfig.js';
+import { MEANING_MAX_TOKENS, MEANING_MODEL_ID, MEANING_MODEL_TAG, MEANING_MODEL_BASE, MEANING_CACHE } from '../js/ml/meaningConfig.js';
 import { referenceEmbedding, referenceFeatures, referenceProbability } from '../js/services/meaningReferenceFeatures.js';
 import { workerModelCache } from '../js/services/modelCache.js';
 import { inferenceQueue, sharedInferenceScope } from '../js/services/sharedInferenceScope.js';
@@ -38,22 +38,22 @@ env.backends.onnx.wasm.wasmPaths = {
 let loading;
 async function initialize() {
   if (!loading) loading = timings.measure('initialize', async () => {
-    const options = { revision: MEANING_MODEL_REVISION };
-    const tokenizer = await AutoTokenizer.from_pretrained(MEANING_MODEL_REPO, options);
+    const tokenizer = await AutoTokenizer.from_pretrained(MEANING_MODEL_ID);
     const response = await env.customCache.match(new URL('scorer.json', base).href);
     if (!response?.ok) throw new Error('Download the merge model in Settings first.');
     const scorer = await response.json();
-    const model = await AutoModel.from_pretrained(MEANING_MODEL_REPO, { ...options, dtype: 'fp16', device: 'wasm' });
+    const model = await AutoModel.from_pretrained(MEANING_MODEL_ID, { dtype: 'fp16', device: 'wasm' });
     return { tokenizer, model, scorer };
   }).catch(error => { loading = null; throw error; });
   return loading;
 }
 const memory = new Map();
-async function run({ type, texts, pairs }, current) {
+async function run({ type, texts, comparisonTexts, pairs }, current) {
   const { tokenizer, model, scorer } = await initialize();
   if (!current()) return;
   if (type === 'initialize') return { model: MEANING_MODEL_TAG };
   if (!Array.isArray(texts) || texts.length > 24 || texts.some(text => typeof text !== 'string' || text.length > 4000)
+    || !Array.isArray(comparisonTexts) || comparisonTexts.length !== texts.length || comparisonTexts.some(text => typeof text !== 'string' || text.length > 4000)
     || !Array.isArray(pairs) || pairs.length > 276 || pairs.some(p => !Array.isArray(p) || p.length !== 2 || p.some(i => !Number.isInteger(i) || i < 0 || i >= texts.length))) throw new Error('Invalid meaning comparison.');
   const missing = [...new Set(texts.filter(text => !memory.has(text)))];
   for (const text of texts) if (memory.has(text)) {
@@ -78,6 +78,6 @@ async function run({ type, texts, pairs }, current) {
       for (const tensor of [...Object.values(inputs), ...Object.values(output || {})]) tensor?.dispose?.();
     }
   }
-  return { model: MEANING_MODEL_TAG, scores: pairs.map(([a, b]) => referenceProbability(referenceFeatures(memory.get(texts[a]), memory.get(texts[b]), scorer), scorer)) };
+  return { model: MEANING_MODEL_TAG, scores: pairs.map(([a, b]) => referenceProbability(referenceFeatures(memory.get(texts[a]), memory.get(texts[b]), scorer, comparisonTexts[a], comparisonTexts[b]), scorer)) };
 }
 channel.onmessage = inferenceQueue(channel, run, timings);

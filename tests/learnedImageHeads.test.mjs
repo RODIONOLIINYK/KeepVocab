@@ -8,18 +8,11 @@ import { targetGatedCosine } from '../js/services/imageLearning.js';
 import { normalizeImageEvent } from '../js/services/imageLearningHistory.js';
 import { encodeMeaning, IMAGE_PREPROCESSING } from '../js/services/imagePersonalizer.js';
 import { validateLearnedHead } from '../js/services/learnedHeadValidation.js';
-import { getPretrainedInvariantHead, getPretrainedEquivalenceHead } from '../js/ml/pretrainedSemanticHeads.js';
+import { getPretrainedInvariantHead } from '../js/ml/pretrainedSemanticHeads.js';
 
 const basis = i => Array.from({ length: CLIP_DIMENSION }, (_, j) => Number(j === i));
 const evidence = { encoder: CLIP_TAG, full: basis(0), crop: basis(1), meaning: basis(1), scene: basis(1), contrast: basis(0), unwanted: basis(2) };
-test('frozen generic paraphrase pretraining is encoder-specific, immutable and cannot independently merge meanings', () => {
-  const head = getPretrainedEquivalenceHead();
-  assert.equal(validEquivalenceHead(head), true);
-  assert.equal(head.threshold, null);
-  assert.equal(head.pretraining.sampleCount, 6000);
-  assert.equal(head.pretraining.automaticMerging, false);
-  head.wProd[0] = 123;
-  assert.notEqual(getPretrainedEquivalenceHead().wProd[0], 123);
+test('regressing pretrained image candidate stays inactive', () => {
   assert.equal(getPretrainedInvariantHead(), null, 'Regressing image candidate must stay inactive');
 });
 test('all twelve ranking features use the matching full/crop/scene/contrast views', () => {

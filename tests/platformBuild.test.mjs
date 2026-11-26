@@ -1,10 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, statSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Arch } from 'builder-util';
 import assertMacArchitecture from '../scripts/assert-mac-architecture.cjs';
+import { auditMlAssetBudget } from '../scripts/check-ml-budget.mjs';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -363,4 +366,15 @@ test('every cache-busted entrypoint and module import is included in the offline
       assert.equal(precachedUrls.has(importedUrl), true, `Module path is not available offline: ${importedUrl}`);
     }
   }
+});
+
+test('installed ML size guard includes bundled files and rejects a budget overrun', async context => {
+  const temp = await mkdtemp(join(os.tmpdir(), 'keepvocab-budget-'));
+  context.after(() => rm(temp, { recursive: true, force: true }));
+  await mkdir(join(temp, 'js'));
+  await writeFile(join(temp, 'js', 'adapter.js'), 'x'.repeat(100));
+  const report = await auditMlAssetBudget(temp);
+  assert.equal(report.bundledJsBytes, 100);
+  assert.ok(report.modelCacheBytes > 270_000_000);
+  await assert.rejects(auditMlAssetBudget(temp, { limitBytes: report.installedBytes - 1 }), /budget exceeded/);
 });

@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v115002-talking-sprig-art-clean-ui';
+const CACHE_NAME = 'keepvocab-v115003-lean-codebase';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -52,7 +52,6 @@ const ASSETS_TO_CACHE = [
   './js/services/imagePersonalizerTraining.js',
   './js/services/imagePreprocessing.js',
   './js/ml/imageTrainer.worker.js',
-  './js/ml/pretrainedImagePersonalizer.js',
   './js/ml/pretrainedSemanticHeads.js',
   './js/services/imageChoicePolicy.js',
   './js/ml/clipConfig.js',

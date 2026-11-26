@@ -6,11 +6,8 @@ www/
 android/.gradle/
 android/app/build/
 android/build/
-dist/*.apk
-dist/release/
-dist/macos/
+dist/
 work/
 
 __pycache__/
 *.pyc
-models/meaning-minilm-reference/onnx/

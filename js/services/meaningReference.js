@@ -1,7 +1,7 @@
 import { recordInferenceTimings } from './inferenceTimings.js';
 import { MEANING_MODEL_TAG, MEANING_MODEL_BASE, MEANING_CACHE } from '../ml/meaningConfig.js';
 import { MEANING_MODEL_ASSETS } from '../ml/meaningAssets.js';
-import { meaningEmbeddingText } from './meaningComparison.js';
+import { meaningComparisonText, meaningEmbeddingText } from './meaningComparison.js';
 import { modelCacheStorage, handleModelCacheRequest } from './modelCache.js';
 import { readModelDownload } from './modelDownloadProgress.js';
 import { createInferenceWorker, resetInferenceWorkers } from './inferenceWorker.js';
@@ -166,7 +166,8 @@ export async function scoreReferenceMeaningPairs(senses, pairs, options = {}) {
     throw error;
   }
   const texts = senses.map(sense => meaningEmbeddingText(sense.sourceDefinition || sense.definition));
-  const result = await rpc({ type: 'compare', texts, pairs }, options);
+  const comparisonTexts = senses.map(sense => meaningComparisonText(sense.sourceDefinition || sense.definition));
+  const result = await rpc({ type: 'compare', texts, comparisonTexts, pairs }, options);
   if (started !== generation) throw new Error('The merge model installation changed.');
   if (!Array.isArray(result.scores) || result.scores.length !== pairs.length || result.scores.some(score => !Number.isFinite(score) || score < 0 || score > 1)) throw new Error('Invalid meaning model scores.');
   phase = 'ready'; message = 'Merge model ready. Meanings are compared on this device.'; emit();

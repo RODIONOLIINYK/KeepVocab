@@ -5,6 +5,7 @@ const { mkdtemp, readFile, writeFile, rm } = require('node:fs/promises');
 const { tmpdir } = require('node:os');
 const { createHash } = require('node:crypto');
 const path = require('node:path');
+const { fileURLToPath } = require('node:url');
 const { modelStorageOperation, handleModelStorageRequest } = require('../desktop/modelStorage.cjs');
 const root = path.resolve(__dirname, '..'), origin = 'http://127.0.0.1:8085';
 let temporary;
@@ -13,13 +14,14 @@ app.whenReady().then(async () => {
   temporary = await mkdtemp(path.join(tmpdir(), 'keepvocab-wasm-verification-'));
   const { MEANING_MODEL_ASSETS } = await import('../js/ml/meaningAssets.js');
   const { MEANING_MODEL_BASE, MEANING_CACHE } = await import('../js/ml/meaningConfig.js');
+  const browserModelBase = new URL(path.relative(root, fileURLToPath(MEANING_MODEL_BASE)).split(path.sep).join('/') + '/', origin + '/').href;
   const storage = path.join(temporary, 'models');
   ipcMain.handle('keepvocab:model-storage', (_event, args) => modelStorageOperation(storage, args));
   const rows = JSON.parse(await readFile(process.argv[2] || path.join(root, 'work/meaning-reference-validation-input.json')));
   for (const [file, asset] of Object.entries(MEANING_MODEL_ASSETS)) {
-    const bytes = await readFile(path.join(root, 'models/meaning-minilm-reference', file));
+    const bytes = await readFile(new URL(file, MEANING_MODEL_BASE));
     if (createHash('sha256').update(bytes).digest('hex') !== asset.sha256) throw new Error('Wrong reference file: ' + file);
-    const url = MEANING_MODEL_BASE + file, key = createHash('sha256').update(url).digest('hex'), token = 'a'.repeat(24);
+    const url = browserModelBase + file, key = createHash('sha256').update(url).digest('hex'), token = 'a'.repeat(24);
     for (let offset = 0; offset < bytes.length; offset += 1024 * 1024) await modelStorageOperation(storage, { action: 'write', cache: MEANING_CACHE, key, token, offset, data: bytes.subarray(offset, offset + 1024 * 1024).toString('base64') });
     await modelStorageOperation(storage, { action: 'commit', cache: MEANING_CACHE, key, token, size: bytes.length, url, headers: [['content-length', String(bytes.length)]] });
   }
@@ -46,7 +48,7 @@ app.whenReady().then(async () => {
     const predictions = [];
     for (let start = 0; start < rows.length; start += 12) {
       const batch = rows.slice(start, start + 12);
-      const senses = batch.flatMap(row => [{definition: row.textA}, {definition: row.textB}]);
+      const senses = batch.flatMap(row => [{definition: row.comparisonA ?? row.textA}, {definition: row.comparisonB ?? row.textB}]);
       const scores = await scoreReferenceMeaningPairs(senses, batch.map((_, i) => [i * 2, i * 2 + 1]));
       scores.forEach((score, i) => {
         maxScoreError = Math.max(maxScoreError, Math.abs(score - batch[i].score));

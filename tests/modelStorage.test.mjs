@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { modelStorageOperation, handleModelStorageRequest } from '../desktop/modelStorage.cjs';
 import { modelCacheStorage, handleModelCacheRequest, readModelResponse } from '../js/services/modelCache.js';
+import { MEANING_CACHE } from '../js/ml/meaningConfig.js';
 
 test('native model cache migrates profile files, writes complete chunked files and removes its owned directory', async context => {
   const root = await mkdtemp(path.join(tmpdir(), 'keepvocab-model-storage-'));
@@ -39,6 +40,26 @@ test('native model storage rejects traversal and never exposes incomplete files'
   await assert.rejects(modelStorageOperation(root, { ...args, action: 'commit', size: 100 }), /Incomplete/);
   await modelStorageOperation(root, { ...args, action: 'abort' });
 });
+test('v8 meaning cache works with native storage and the worker bridge without accepting legacy worker caches', async context => {
+  const root = await mkdtemp(path.join(tmpdir(), 'keepvocab-v8-model-storage-'));
+  const prior = globalThis.keepVocabDesktop, oldCaches = globalThis.caches, oldFetch = globalThis.fetch;
+  globalThis.fetch = (url, options) => handleModelStorageRequest(root, new Request(new URL(url, 'http://127.0.0.1:8085'), options));
+  context.after(async () => {
+    globalThis.keepVocabDesktop = prior; globalThis.caches = oldCaches; globalThis.fetch = oldFetch;
+    await rm(root, { force: true, recursive: true });
+  });
+  globalThis.caches = undefined;
+  globalThis.keepVocabDesktop = { modelStorage: args => modelStorageOperation(root, args) };
+  const cache = await modelCacheStorage().open(MEANING_CACHE);
+  const url = 'https://localhost/models/meaning-minilm-v8/scorer.json';
+  await cache.put(url, new Response('v8 scorer'));
+  const replies = [], worker = { postMessage: reply => replies.push(reply) };
+  await handleModelCacheRequest(worker, { type: 'model-cache', cache: MEANING_CACHE, cacheId: 1, operation: 'match', url });
+  assert.equal(await (await readModelResponse(replies[0].result)).text(), 'v8 scorer');
+  await handleModelCacheRequest(worker, { type: 'model-cache', cache: 'keepvocab-meaning-model-v1', cacheId: 2, operation: 'match', url });
+  assert.match(replies[1].error, /Unknown model cache/);
+});
+
 test('native binary routes reject partial, invalid, missing and removed files', async context => {
   const root = await mkdtemp(path.join(tmpdir(), 'keepvocab-binary-model-'));
   context.after(() => rm(root, { force: true, recursive: true }));

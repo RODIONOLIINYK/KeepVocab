@@ -1,0 +1,4 @@
+KeepVocab v8 MiniLM meaning-equivalence encoder and Min/MaxLen scorer.
+Fine-tuned from sentence-transformers/paraphrase-MiniLM-L6-v2, Apache-2.0.
+Exported from the saved seed-42 checkpoint without fitting or recalibration.
+Dictionary training examples are not included in these model assets.

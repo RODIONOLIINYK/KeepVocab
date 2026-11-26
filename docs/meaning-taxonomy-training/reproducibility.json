@@ -1,8 +1,0 @@
-{
-  "sameSelectedConfig": true,
-  "sameThreshold": true,
-  "sameWeightsAndPreprocessing": true,
-  "identicalAll412ProbabilityRows": true,
-  "selectionOnlyReplayDidNotEvaluateTestTargets": true,
-  "exactSearchScoreTieGroupsInInitialRun": 0
-}

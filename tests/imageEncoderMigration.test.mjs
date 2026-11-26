@@ -49,13 +49,11 @@ test('installed model requires q4f16 vision asset, even if old q8 vision is pres
   assert.equal(await hasDownloadedImageModel(cacheStorage), true);
 });
 
-test('worker and evaluator use explicit compact q4f16 text and q4f16 vision SigLIP 2 towers', async () => {
+test('worker uses explicit compact q4f16 text and q4f16 vision SigLIP 2 towers', async () => {
   assert.equal(CLIP_TEXT_DTYPE, 'q4f16'); assert.equal(CLIP_VISION_DTYPE, 'q4f16');
-  for (const file of ['scripts/clip-worker.js', 'scripts/image-evaluation-runtime.mjs']) {
-    const source = await readFile(new URL(`../${file}`, import.meta.url), 'utf8');
-    assert.match(source, /SiglipTextModel\.from_pretrained\([^\n]*dtype:\s*CLIP_TEXT_DTYPE/);
-    assert.match(source, /SiglipVisionModel\.from_pretrained\([^\n]*dtype:\s*CLIP_VISION_DTYPE/);
-  }
+  const source = await readFile(new URL('../scripts/clip-worker.js', import.meta.url), 'utf8');
+  assert.match(source, /SiglipTextModel\.from_pretrained\([^\n]*dtype:\s*CLIP_TEXT_DTYPE/);
+  assert.match(source, /SiglipVisionModel\.from_pretrained\([^\n]*dtype:\s*CLIP_VISION_DTYPE/);
 });
 
 test('feedback cannot relabel an old vector as a new encoder when pixels cannot be embedded', async () => {

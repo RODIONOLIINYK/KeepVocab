@@ -17,9 +17,15 @@ Test rejected architectures with synthetic hook contexts; do not invoke an Intel
 or universal build to test the guard. Historical universal update assets may still
 be accepted by the updater without generating new universal builds.
 
-# Post-Change Release Workflow (Mandatory After Major Changes)
+# Post-Change Release Workflow (App Changes Only)
 
-After every major change, you MUST commit, push, and compile releases for both macOS and Android:
+Only app changes trigger commits and release builds. Training-only changes,
+model experiments, datasets, reports, plots, tests, and documentation must stay
+uncommitted and must not trigger version/cache bumps, app builds, tags, pushes,
+or releases unless the user explicitly asks. Version-only changes made for an
+experiment do not count as app changes.
+
+After every major app change, you MUST commit, push, and compile releases for both macOS and Android:
 1. Bump version in `package.json` (and `package-lock.json`), increment `versionCode` in `android/app/build.gradle`, and bump `CACHE_NAME` in `sw.js`.
 2. Run `npm test` and `npm run build:web` (which updates `js/services/version.js`).
 3. Compile the macOS (`arm64` only) release (`npm run mac:build`) and Android APK (`npm run android:apk`), and copy/rename the Android APK to `dist/KeepVocab-<version>-Android-debug.apk` alongside `SHA256SUMS.txt`.
@@ -47,4 +53,3 @@ To avoid unnecessary file reads, jump directly to the relevant module:
   - `wordEntry.js` & `bulkWords.js` — Dictionary/AI lookup and `prepareWordsForLibrary` pipeline.
   - `driveSync.js` — LocalStorage persistence (`keepvocab_words`, `keepvocab_settings`) and Google Drive sync.
   - `fsrs.js`, `dailySession.js`, `wordSelection.js`, `exerciseResult.js` — Spaced repetition scheduling and session selection.
-

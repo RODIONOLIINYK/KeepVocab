@@ -6,7 +6,7 @@ import { imageRankingAcceptance } from './imageChoicePolicy.js';
 
 const signature = records => JSON.stringify(activeImageExamples(records).map(r => [r.id, r.updatedAt]).sort());
 export class ImagePersonalizerTraining {
-  constructor(persistence, { pretrained = () => import('../ml/pretrainedImagePersonalizer.js') } = {}) { this.persistence = persistence; this.pretrained = pretrained; this.timer = null; this.active = null; this.worker = null; this.generation = 0; this.report = null; }
+  constructor(persistence, { pretrained = async () => null } = {}) { this.persistence = persistence; this.pretrained = pretrained; this.timer = null; this.active = null; this.worker = null; this.generation = 0; this.report = null; }
   async personal() {
     const history = this.persistence.imageHistory; await history.ready;
     const model = await history.model();

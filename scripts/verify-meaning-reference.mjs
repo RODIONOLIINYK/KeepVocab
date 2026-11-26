@@ -5,21 +5,21 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { AutoTokenizer, AutoModel, env } from '@huggingface/transformers';
 import { referenceEmbedding, referenceFeatures, referenceProbability } from '../js/services/meaningReferenceFeatures.js';
-import { MEANING_MERGE_THRESHOLD } from '../js/ml/meaningConfig.js';
+import { MEANING_MAX_TOKENS, MEANING_MODEL_BASE, MEANING_MERGE_THRESHOLD } from '../js/ml/meaningConfig.js';
 
 const input = process.argv[2];
 if (!input) throw new Error('Supply a reference validation input JSON file.');
 const rows = JSON.parse(await readFile(input, 'utf8'));
-const root = fileURLToPath(new URL('../models/meaning-minilm-reference/', import.meta.url));
+const root = fileURLToPath(MEANING_MODEL_BASE);
 env.allowRemoteModels = false;
 const tokenizer = await AutoTokenizer.from_pretrained(root, { local_files_only: true });
 const model = await AutoModel.from_pretrained(root, { local_files_only: true, dtype: 'fp16', device: 'cpu' });
-const scorer = JSON.parse(await readFile(new URL('../models/meaning-minilm-reference/scorer.json', import.meta.url)));
+const scorer = JSON.parse(await readFile(new URL('scorer.json', MEANING_MODEL_BASE)));
 const texts = [...new Set(rows.flatMap(row => [row.textA, row.textB]))], vectors = new Map();
 try {
   for (let start = 0; start < texts.length; start += 8) {
     const batch = texts.slice(start, start + 8);
-    const inputs = tokenizer(batch, { padding: 'max_length', max_length: 96, truncation: true });
+    const inputs = tokenizer(batch, { padding: 'max_length', max_length: MEANING_MAX_TOKENS, truncation: true });
     let output;
     try {
       output = await model(inputs);
@@ -30,7 +30,7 @@ try {
     } finally { for (const tensor of [...Object.values(inputs), ...Object.values(output || {})]) tensor?.dispose?.(); }
   }
 } finally { await model.dispose(); }
-const predictions = rows.map(row => ({ ...row, actual: referenceProbability(referenceFeatures(vectors.get(row.textA), vectors.get(row.textB), scorer), scorer) }));
+const predictions = rows.map(row => ({ ...row, actual: referenceProbability(referenceFeatures(vectors.get(row.textA), vectors.get(row.textB), scorer, row.comparisonA ?? row.textA, row.comparisonB ?? row.textB), scorer) }));
 const maxScoreError = Math.max(...predictions.map(row => Math.abs(row.actual - row.score)));
 const changedMergeDecisions = predictions.filter(row => (row.actual >= MEANING_MERGE_THRESHOLD) !== (row.score >= MEANING_MERGE_THRESHOLD)).map(row => row.pairId);
 const report = { runtime: 'Transformers.js native CPU FP16', pairs: rows.length, texts: texts.length,

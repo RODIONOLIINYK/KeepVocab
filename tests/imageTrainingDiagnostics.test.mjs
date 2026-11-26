@@ -1,10 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPersonalizer, createPersonalizerScorer, personalizerScore, imageDecisions, evaluatePersonalizer, fitImagePersonalizer, trainImagePersonalizer, validPersonalizer, isCurrentPersonalizer } from '../js/services/imagePersonalizer.js';
-import { gradientDiagnostic, fixedLabelBiasVariance } from '../scripts/lib/image-training-diagnostics.mjs';
+import { createPersonalizer, createPersonalizerScorer, personalizerScore, personalizerLossAndGradient, imageDecisions, evaluatePersonalizer, fitImagePersonalizer, trainImagePersonalizer, validPersonalizer, isCurrentPersonalizer, LEGACY_PERSONALIZER_VERSION } from '../js/services/imagePersonalizer.js';
 import { imageChoiceHistory } from './fixtures/imageChoices.mjs';
-import { readJsonFile } from '../scripts/lib/json-files.mjs';
-import { validPersonalizer as validArchivedPersonalizer } from '../scripts/lib/image-personalizer-v2.mjs';
 
 test('the shared fitting core memorizes a tiny batch without weakening production acceptance', () => {
   const history = imageChoiceHistory(4), decisions = imageDecisions(history), initial = createPersonalizer(), before = Float32Array.from(initial.weights);
@@ -19,12 +16,11 @@ test('the shared fitting core memorizes a tiny batch without weakening productio
   assert.equal(trainImagePersonalizer(history).accepted, false, 'a memorization run cannot activate a production head');
 });
 
-test('historical bounded weights remain reproducible but cannot initialize current fusion training', async () => {
-  const saved = await readJsonFile(new URL('./fixtures/image-pretraining-fp16/candidate.json.gz', import.meta.url));
-  assert.equal(validArchivedPersonalizer(saved.model), true);
-  assert.equal(validPersonalizer(saved.model), false);
-  assert.equal(isCurrentPersonalizer(saved.model), false);
-  assert.throws(() => fitImagePersonalizer(saved.model, imageDecisions(imageChoiceHistory(4)), imageDecisions(imageChoiceHistory(4))), /current model/);
+test('retired bounded weights cannot initialize current fusion training', () => {
+  const retired = { ...createPersonalizer(), version: LEGACY_PERSONALIZER_VERSION };
+  assert.equal(validPersonalizer(retired), false);
+  assert.equal(isCurrentPersonalizer(retired), false);
+  assert.throws(() => fitImagePersonalizer(retired, imageDecisions(imageChoiceHistory(4)), imageDecisions(imageChoiceHistory(4))), /current model/);
 });
 
 test('global norm clipping records clipping and merges a tiny final batch without discarding records', () => {
@@ -43,14 +39,18 @@ test('the personal head has an unrestricted score independent of the CLIP filter
   assert.equal(personalizerScore(model, row.features, row.meaningFeatures), 20);
 });
 
-test('all three backpropagation layers agree with finite differences', () => {
-  const model = createPersonalizer();
+test('backpropagation gradient matches finite differences across layers', () => {
+  const model = createPersonalizer(), decisions = imageDecisions(imageChoiceHistory(4)), eps = 1e-3;
   for (let i = model.weights.length - 17; i < model.weights.length; i++) model.weights[i] = .05 * Math.sin(i);
-  // Resolve Float32 activation rounding with a larger central step; boundary
-  // crossings are still excluded and the absolute error tolerance is unchanged.
-  const result = gradientDiagnostic(model, imageDecisions(imageChoiceHistory(4)), { epsilon: .001 });
-  assert.equal(result.passed, true, JSON.stringify(result));
-  for (const layer of [0,1,2]) assert.ok(result.checks.some(row => row.layer === layer && Math.abs(row.analytic) > 1e-6));
+  const { gradient } = personalizerLossAndGradient(model, decisions, 0);
+  const probe = [0, 32, model.weights.length - 20, model.weights.length - 2, model.weights.length - 1];
+  for (const index of probe) {
+    const plus = Float32Array.from(model.weights), minus = Float32Array.from(model.weights);
+    plus[index] += eps; minus[index] -= eps;
+    const numeric = (personalizerLossAndGradient({ ...model, weights: plus }, decisions, 0).loss
+      - personalizerLossAndGradient({ ...model, weights: minus }, decisions, 0).loss) / (2 * eps);
+    assert.ok(Math.abs(gradient[index] - numeric) < 1e-3, `index ${index}: analytic=${gradient[index]} numeric=${numeric}`);
+  }
 });
 
 test('a fixed scoring pass matches the guarded public score including rejected encoders', () => {
@@ -58,14 +58,4 @@ test('a fixed scoring pass matches the guarded public score including rejected e
   for (const candidate of [model, null, {...model, encoder: 'old-encoder'}]) {
     assert.equal(createPersonalizerScorer(candidate)(row.features, row.meaningFeatures), personalizerScore(candidate, row.features, row.meaningFeatures));
   }
-});
-
-test('the empirical Brier decomposition is additive and does not invent irreducible noise', () => {
-  const result = fixedLabelBiasVariance([[.2,.7],[.4,.9]], [.5,.5]);
-  assert.ok(Math.abs(result.squaredBiasToFixedLabels - .265) < 1e-12);
-  assert.ok(Math.abs(result.predictionVariance - .01) < 1e-12);
-  assert.ok(Math.abs(result.expectedBrierError - .275) < 1e-12);
-  assert.ok(Math.abs(result.identityResidual) < 1e-12);
-  assert.equal(result.irreducibleNoise, null);
-  assert.throws(() => fixedLabelBiasVariance([[.2],[.4]], [.5]), /Invalid/);
 });
