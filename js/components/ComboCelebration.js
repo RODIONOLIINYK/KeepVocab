@@ -4,18 +4,18 @@ import { escapeHtml } from '../utils/html.js';
 const COMBO_STEP = 5;
 
 const SPARKLES = [
-  { x: -206, y: -56, rot: -28, delay: 40, size: 13, color: '#FFD900', shape: 'star' },
-  { x: 208, y: -52, rot: 32, delay: 75, size: 14, color: '#FF9600', shape: 'star' },
-  { x: -222, y: 12, rot: -45, delay: 110, size: 10, color: '#58CC02', shape: 'pill' },
-  { x: 224, y: 10, rot: 40, delay: 95, size: 10, color: '#38BDF8', shape: 'pill' },
-  { x: -136, y: -74, rot: -18, delay: 130, size: 9, color: '#FF4B4B', shape: 'dot' },
-  { x: 142, y: -72, rot: 22, delay: 150, size: 9, color: '#A855F7', shape: 'dot' },
-  { x: -190, y: 58, rot: -35, delay: 140, size: 11, color: '#FFC800', shape: 'star' },
-  { x: 194, y: 56, rot: 28, delay: 165, size: 10, color: '#FF9600', shape: 'pill' },
-  { x: 0, y: -76, rot: 0, delay: 60, size: 12, color: '#FFD900', shape: 'star' },
-  { x: -64, y: -72, rot: -14, delay: 100, size: 8, color: '#38BDF8', shape: 'dot' },
-  { x: 66, y: -72, rot: 16, delay: 120, size: 8, color: '#58CC02', shape: 'dot' },
-  { x: 0, y: 74, rot: 24, delay: 175, size: 9, color: '#FFD900', shape: 'star' }
+  { x: -204, y: -50, rot: -28, delay: 40, size: 12, color: '#39BD55', shape: 'star' },
+  { x: 206, y: -48, rot: 32, delay: 75, size: 12, color: '#F59E0B', shape: 'star' },
+  { x: -218, y: 10, rot: -42, delay: 110, size: 9, color: '#86EFAC', shape: 'pill' },
+  { x: 220, y: 8, rot: 38, delay: 95, size: 9, color: '#39BD55', shape: 'pill' },
+  { x: -134, y: -70, rot: -18, delay: 130, size: 8, color: '#F58A22', shape: 'dot' },
+  { x: 138, y: -68, rot: 22, delay: 150, size: 8, color: '#4F8299', shape: 'dot' },
+  { x: -188, y: 54, rot: -32, delay: 140, size: 10, color: '#FBBF24', shape: 'star' },
+  { x: 192, y: 52, rot: 26, delay: 165, size: 9, color: '#86EFAC', shape: 'pill' },
+  { x: 0, y: -72, rot: 0, delay: 60, size: 11, color: '#FBBF24', shape: 'star' },
+  { x: -64, y: -68, rot: -14, delay: 100, size: 7, color: '#86EFAC', shape: 'dot' },
+  { x: 66, y: -68, rot: 16, delay: 120, size: 7, color: '#F59E0B', shape: 'dot' },
+  { x: 0, y: 70, rot: 24, delay: 175, size: 8, color: '#39BD55', shape: 'star' }
 ];
 
 export function isComboMilestone(combo) {
@@ -29,9 +29,9 @@ export function comboCelebrationConfig(combo) {
     return {
       count,
       tier: 'legend',
-      kicker: 'LEGENDARY STREAK',
+      kicker: 'FLOW STATE',
       headline: `${count} in a row!`,
-      subtitle: 'Pure fluency mode — nothing can stop you!',
+      subtitle: 'Pure fluency mode — nothing can stop you.',
       sound: 'combo10'
     };
   }
@@ -41,28 +41,28 @@ export function comboCelebrationConfig(combo) {
       tier: 'super',
       kicker: 'UNSTOPPABLE',
       headline: `${count} in a row!`,
-      subtitle: 'Flawless run — your memory is locked in!',
+      subtitle: 'Flawless run — your memory is locked in.',
       sound: 'combo10'
     };
   }
   return {
     count,
     tier: 'blaze',
-    kicker: 'ON FIRE',
+    kicker: 'ON A ROLL',
     headline: `${count} in a row!`,
-    subtitle: 'Not a single mistake — keep it rolling!',
+    subtitle: 'Not a single mistake — keep it going.',
     sound: 'combo5'
   };
 }
 
 function burstSvg(tier) {
-  const primary = tier === 'legend' ? '#C084FC' : tier === 'super' ? '#FF4B4B' : '#FF9600';
-  const accent = tier === 'legend' ? '#FFD900' : tier === 'super' ? '#FFD900' : '#FFC800';
+  const primary = tier === 'super' ? '#F58A22' : '#39BD55';
+  const accent = tier === 'legend' ? '#F59E0B' : tier === 'super' ? '#FBBF24' : '#86EFAC';
   return `<svg class="combo-burst-svg" viewBox="0 0 140 140" width="108" height="108" fill="none" aria-hidden="true">
     <defs>
       <radialGradient id="combo-glow-${tier}" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="${accent}" stop-opacity="0.55"/>
-        <stop offset="65%" stop-color="${primary}" stop-opacity="0.16"/>
+        <stop offset="0%" stop-color="${accent}" stop-opacity="0.45"/>
+        <stop offset="65%" stop-color="${primary}" stop-opacity="0.12"/>
         <stop offset="100%" stop-color="${primary}" stop-opacity="0"/>
       </radialGradient>
     </defs>

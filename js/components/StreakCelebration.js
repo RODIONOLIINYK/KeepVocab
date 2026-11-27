@@ -7,51 +7,51 @@ const MID_FLAME_PATH = 'M90 148C110 148 123 133 123 114C123 95 108 82 95 66C93 6
 const CORE_FLAME_PATH = 'M90 142C101 142 108 134 108 123C108 112 99 103 90 92C81 103 72 112 72 123C72 134 79 142 90 142Z';
 
 function flameSvg(isMilestone = false) {
-  return `<svg class="streak-flame-svg${isMilestone ? ' is-milestone' : ''}" viewBox="0 0 180 180" width="164" height="164" fill="none" aria-hidden="true">
+  return `<svg class="streak-flame-svg${isMilestone ? ' is-milestone' : ''}" viewBox="0 0 180 180" width="156" height="156" fill="none" aria-hidden="true">
     <defs>
       <radialGradient id="streak-aura-grad" cx="50%" cy="54%" r="50%">
-        <stop offset="0%" stop-color="#FFE066" stop-opacity="0.72"/>
-        <stop offset="55%" stop-color="#FF9600" stop-opacity="0.22"/>
-        <stop offset="100%" stop-color="#FF9600" stop-opacity="0"/>
+        <stop offset="0%" stop-color="#FDE68A" stop-opacity="0.58"/>
+        <stop offset="58%" stop-color="#F58A22" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="#F58A22" stop-opacity="0"/>
       </radialGradient>
       <linearGradient id="streak-outer-grad" x1="90" y1="20" x2="90" y2="154" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stop-color="#FFB800"/>
-        <stop offset="46%" stop-color="#FF9600"/>
-        <stop offset="100%" stop-color="#FF6B00"/>
+        <stop offset="0%" stop-color="#F59E0B"/>
+        <stop offset="50%" stop-color="#F58A22"/>
+        <stop offset="100%" stop-color="#EA580C"/>
       </linearGradient>
       <linearGradient id="streak-mid-grad" x1="90" y1="59" x2="90" y2="148" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stop-color="#FFE66D"/>
-        <stop offset="58%" stop-color="#FFC800"/>
-        <stop offset="100%" stop-color="#FF9F0A"/>
+        <stop offset="0%" stop-color="#FEF08A"/>
+        <stop offset="60%" stop-color="#FBBF24"/>
+        <stop offset="100%" stop-color="#F59E0B"/>
       </linearGradient>
       <linearGradient id="streak-core-grad" x1="90" y1="92" x2="90" y2="142" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stop-color="#FFFDF0"/>
-        <stop offset="100%" stop-color="#FFE57F"/>
+        <stop offset="0%" stop-color="#FFFDF5"/>
+        <stop offset="100%" stop-color="#FDE68A"/>
       </linearGradient>
     </defs>
 
-    <circle class="streak-flame-aura" cx="90" cy="96" r="76" fill="url(#streak-aura-grad)"/>
+    <circle class="streak-flame-aura" cx="90" cy="96" r="74" fill="url(#streak-aura-grad)"/>
 
     <g class="streak-sunburst" stroke-linecap="round">
-      <line class="streak-ray r1" x1="90" y1="14" x2="90" y2="0" stroke="#FFC800" stroke-width="6.5" pathLength="100"/>
-      <line class="streak-ray r2" x1="140" y1="36" x2="155" y2="21" stroke="#FF9600" stroke-width="6.5" pathLength="100"/>
-      <line class="streak-ray r3" x1="156" y1="92" x2="176" y2="92" stroke="#FFC800" stroke-width="6.5" pathLength="100"/>
-      <line class="streak-ray r4" x1="142" y1="142" x2="156" y2="155" stroke="#FF9600" stroke-width="6" pathLength="100"/>
-      <line class="streak-ray r5" x1="38" y1="142" x2="24" y2="155" stroke="#FF9600" stroke-width="6" pathLength="100"/>
-      <line class="streak-ray r6" x1="24" y1="92" x2="4" y2="92" stroke="#FFC800" stroke-width="6.5" pathLength="100"/>
-      <line class="streak-ray r7" x1="40" y1="36" x2="25" y2="21" stroke="#FF9600" stroke-width="6.5" pathLength="100"/>
+      <line class="streak-ray r1" x1="90" y1="14" x2="90" y2="2" stroke="#FBBF24" stroke-width="5.5" pathLength="100"/>
+      <line class="streak-ray r2" x1="140" y1="36" x2="152" y2="24" stroke="#F58A22" stroke-width="5.5" pathLength="100"/>
+      <line class="streak-ray r3" x1="156" y1="92" x2="172" y2="92" stroke="#FBBF24" stroke-width="5.5" pathLength="100"/>
+      <line class="streak-ray r4" x1="142" y1="142" x2="154" y2="153" stroke="#F58A22" stroke-width="5" pathLength="100"/>
+      <line class="streak-ray r5" x1="38" y1="142" x2="26" y2="153" stroke="#F58A22" stroke-width="5" pathLength="100"/>
+      <line class="streak-ray r6" x1="24" y1="92" x2="8" y2="92" stroke="#FBBF24" stroke-width="5.5" pathLength="100"/>
+      <line class="streak-ray r7" x1="40" y1="36" x2="28" y2="24" stroke="#F58A22" stroke-width="5.5" pathLength="100"/>
     </g>
 
     <g class="streak-sparks">
-      <circle class="streak-spark s1" cx="50" cy="24" r="4.5" fill="#FFC800"/>
-      <circle class="streak-spark s2" cx="132" cy="22" r="4" fill="#FF9600"/>
-      <circle class="streak-spark s3" cx="158" cy="64" r="3.5" fill="#FFD43B"/>
-      <circle class="streak-spark s4" cx="22" cy="64" r="3.5" fill="#FF9600"/>
+      <circle class="streak-spark s1" cx="50" cy="26" r="4" fill="#FBBF24"/>
+      <circle class="streak-spark s2" cx="132" cy="24" r="3.5" fill="#F58A22"/>
+      <circle class="streak-spark s3" cx="156" cy="64" r="3.2" fill="#39BD55"/>
+      <circle class="streak-spark s4" cx="24" cy="64" r="3.2" fill="#F58A22"/>
     </g>
 
     <g class="streak-flame-unlit">
-      <path d="${OUTER_FLAME_PATH}" fill="#E5E7EB"/>
-      <path d="${MID_FLAME_PATH}" fill="#F3F4F6"/>
+      <path d="${OUTER_FLAME_PATH}" fill="#E1E6DF"/>
+      <path d="${MID_FLAME_PATH}" fill="#F2F4EF"/>
     </g>
 
     <g class="streak-flame-lit">
