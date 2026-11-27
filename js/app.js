@@ -22,8 +22,8 @@ import { renderSpellingMode, renderChooseWordMode } from './components/PracticeM
 import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18908';
 import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18908';
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18908';
-import { renderDashboardView, updateDashboardGoalNudge, updateDashboardStreakUI } from './components/DashboardView.js?v=18913';
-import { showStreakCelebration } from './components/StreakCelebration.js?v=18913';
+import { renderDashboardView, updateDashboardGoalNudge, updateDashboardStreakUI } from './components/DashboardView.js?v=18914';
+import { showStreakCelebration } from './components/StreakCelebration.js?v=18914';
 import { getStreakSummary } from './services/studyActivity.js';
 import { renderDailySessionMode } from './components/DailySessionMode.js?v=18913';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18912';
@@ -74,27 +74,6 @@ function pulseBadge(element) {
   void element.offsetWidth;
   element.classList.add('is-celebrating');
   window.setTimeout(() => element.classList.remove('is-celebrating'), 900);
-}
-
-function streakExtendedMessage(detail = {}) {
-  const streak = Math.max(1, Number(detail.streak) || 1);
-  const banked = Math.max(0, Number(detail.bankedFreezes) || 0);
-  if (detail.milestone && detail.earnedFreeze) {
-    return `${streak}-day streak milestone! You earned a Streak Freeze (${banked}/2 banked).`;
-  }
-  if (detail.earnedFreeze) {
-    return `${streak}-day streak! You earned a Streak Freeze (${banked}/2 banked).`;
-  }
-  if (detail.milestone) {
-    return `${streak}-day streak milestone! Amazing consistency.`;
-  }
-  if (detail.freezeProtected) {
-    return `Streak Freeze kept your streak alive. You’re now at ${streak} days!`;
-  }
-  if (streak === 1) {
-    return 'Day 1 started — come back tomorrow to grow your streak!';
-  }
-  return `${streak}-day streak secured for today!`;
 }
 
 function initApp() {

@@ -245,16 +245,34 @@ test('Today and Progress views render the 7-day strip, freezes, heatmap, and mil
   assert.doesNotMatch(statsContainer.innerHTML, /due-preview|Due now|goal-settings|rewards-section|App themes|Sprig badges|These stats are included in your Drive backup/);
   assert.match(statsContainer.innerHTML, /class="goal-subtle-edit"/);
 
+  const todayKey = localDateKey(new Date());
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const twoDaysAgo = new Date();
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
   const celebrationHtml = renderStreakCelebrationMarkup(
     { streak: 7, previousStreak: 6, milestone: 7, earnedFreeze: true, bankedFreezes: 2 },
-    { dailyGoal: 20, reviewActivity: {} }
+    {
+      dailyGoal: 20,
+      reviewActivity: {
+        [localDateKey(twoDaysAgo)]: 20,
+        [localDateKey(yesterday)]: 20,
+        [todayKey]: 20
+      }
+    }
   );
-  assert.match(celebrationHtml, /class="streak-flame-svg"/);
+  assert.match(celebrationHtml, /class="streak-flame-svg is-milestone"/);
+  assert.match(celebrationHtml, /class="streak-flame-unlit"/);
+  assert.match(celebrationHtml, /class="streak-flame-lit"/);
+  assert.match(celebrationHtml, /class="streak-sunburst"/);
+  assert.match(celebrationHtml, /class="streak-counter-prev">6<\/span>/);
   assert.match(celebrationHtml, /data-from="6" data-to="7"/);
   assert.match(celebrationHtml, /7 day streak!/);
   assert.match(celebrationHtml, /is-today-ignite/);
+  assert.match(celebrationHtml, /streak-connector is-left is-today-connector/);
   assert.match(celebrationHtml, /\+1 Streak Freeze/);
   assert.match(celebrationHtml, /id="btn-streak-celebration-continue"/);
+  assert.doesNotMatch(celebrationHtml, /streak-celebration-sprig/);
 });
 
 test('scrollbars are hidden across both the main app and the macOS menu-bar quick-add window', () => {

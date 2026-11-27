@@ -132,7 +132,7 @@ test('Today practice launchpad includes Build Sentence and excludes AI Speaking 
   assert.doesNotMatch(container.innerHTML, /data-practice-view="weak"|Weak Words/);
   assert.match(container.innerHTML, /data-practice-view="sentence"/);
   assert.match(container.innerHTML, /data-practice-view="useit"/);
-  assert.match(container.innerHTML, /Today’s quests/);
+  assert.doesNotMatch(container.innerHTML, /Today’s quests|today-quests-card/);
 });
 
 test('reaching the daily goal updates the streak once without adding a UI step', () => {

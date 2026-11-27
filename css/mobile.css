@@ -581,8 +581,13 @@
   .sentence-tile { min-height: 44px; padding: 8px 13px; font-size: .88rem; }
   .sentence-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .sentence-controls .btn-green-solid { grid-column: 1 / -1; width: 100%; margin-left: 0; }
-  .streak-celebration-card { padding: 22px 16px 18px; border-radius: 22px; }
-  .streak-celebration-dot { width: 30px; height: 30px; font-size: .72rem; }
+  .streak-celebration-card { min-height: 100%; gap: 18px; }
+  .streak-celebration-stage { width: 152px; height: 146px; }
+  .streak-flame-svg { width: 144px; height: 144px; }
+  .streak-week-card { padding: 16px 12px 14px; border-radius: 18px; }
+  .streak-week-divider { width: calc(100% + 24px); margin: 2px -12px 0; }
+  .streak-celebration-dot { width: 32px; height: 32px; font-size: .72rem; }
+  .streak-connector { height: 18px; }
 }
 @media (max-width: 359px) {
   .streak-day-dot { width: 26px; height: 26px; font-size: .64rem; }

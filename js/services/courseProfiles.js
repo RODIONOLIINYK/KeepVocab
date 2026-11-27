@@ -192,26 +192,7 @@ function mergeReviewStartMoments(localProfile = {}, remoteProfile = {}) {
 function mergeLearningStats(localProfile = {}, remoteProfile = {}, baseProfile = {}) {
   const local = localProfile.learningStats && typeof localProfile.learningStats === 'object' ? localProfile.learningStats : {};
   const remote = remoteProfile.learningStats && typeof remoteProfile.learningStats === 'object' ? remoteProfile.learningStats : {};
-  const base = baseProfile.learningStats && typeof baseProfile.learningStats === 'object' ? baseProfile.learningStats : {};
-  const localQuests = local.dailyQuests && typeof local.dailyQuests === 'object' ? local.dailyQuests : null;
-  const remoteQuests = remote.dailyQuests && typeof remote.dailyQuests === 'object' ? remote.dailyQuests : null;
-  let mergedQuests = base.dailyQuests || localQuests || remoteQuests || undefined;
-  if (localQuests && remoteQuests && localQuests.date && localQuests.date === remoteQuests.date) {
-    const localCounts = localQuests.counts || {};
-    const remoteCounts = remoteQuests.counts || {};
-    mergedQuests = {
-      date: localQuests.date,
-      exercises: Math.max(Number(localQuests.exercises) || 0, Number(remoteQuests.exercises) || 0),
-      currentCombo: Math.max(Number(localQuests.currentCombo) || 0, Number(remoteQuests.currentCombo) || 0),
-      bestCombo: Math.max(Number(localQuests.bestCombo) || 0, Number(remoteQuests.bestCombo) || 0),
-      counts: {
-        sentence: Math.max(Number(localCounts.sentence) || 0, Number(remoteCounts.sentence) || 0),
-        listening: Math.max(Number(localCounts.listening) || 0, Number(remoteCounts.listening) || 0),
-        context: Math.max(Number(localCounts.context) || 0, Number(remoteCounts.context) || 0),
-        useit: Math.max(Number(localCounts.useit) || 0, Number(remoteCounts.useit) || 0)
-      }
-    };
-  }
+  const { dailyQuests: _ignoredDailyQuests, ...base } = baseProfile.learningStats && typeof baseProfile.learningStats === 'object' ? baseProfile.learningStats : {};
   return {
     ...base,
     totalExercises: Math.max(Number(local.totalExercises) || 0, Number(remote.totalExercises) || 0),
@@ -220,8 +201,7 @@ function mergeLearningStats(localProfile = {}, remoteProfile = {}, baseProfile =
     weakWordsImproved: Math.max(Number(local.weakWordsImproved) || 0, Number(remote.weakWordsImproved) || 0),
     productiveUses: Math.max(Number(local.productiveUses) || 0, Number(remote.productiveUses) || 0),
     speakingMinutes: Math.max(Number(local.speakingMinutes) || 0, Number(remote.speakingMinutes) || 0),
-    speakingSessions: Math.max(Number(local.speakingSessions) || 0, Number(remote.speakingSessions) || 0),
-    ...(mergedQuests ? { dailyQuests: mergedQuests } : {})
+    speakingSessions: Math.max(Number(local.speakingSessions) || 0, Number(remote.speakingSessions) || 0)
   };
 }
 

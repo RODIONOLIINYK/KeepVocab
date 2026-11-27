@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v115003-lean-codebase';
+const CACHE_NAME = 'keepvocab-v115004-duo-streak-no-quests';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -87,7 +87,6 @@ const ASSETS_TO_CACHE = [
   './js/services/useItEvaluation.js',
   './js/services/dailySession.js',
   './js/services/sentenceBuilder.js',
-  './js/services/dailyQuests.js',
   './js/services/learningStats.js',
   './js/services/studyActivity.js',
   './js/services/appUpdates.js',

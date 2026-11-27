@@ -1,5 +1,4 @@
 import { driveSync } from './driveSync.js?v=18908';
-import { applyExerciseToDailyQuests, normalizeDailyQuestState } from './dailyQuests.js';
 import { localDateKey } from '../utils/dates.js';
 
 const MAX_SESSION_HISTORY = 60;
@@ -8,7 +7,7 @@ export function completedExercisesToday(settings = {}, now = new Date()) {
   return settings.reviewsDate === localDateKey(now) ? Math.max(0, Number(settings.reviewsToday || 0)) : 0;
 }
 
-export function normalizeLearningStats(settings = {}, now = new Date()) {
+export function normalizeLearningStats(settings = {}) {
   const current = settings.learningStats && typeof settings.learningStats === 'object' ? settings.learningStats : {};
   return {
     version: 1,
@@ -20,20 +19,17 @@ export function normalizeLearningStats(settings = {}, now = new Date()) {
     speakingMinutes: Math.max(0, Number(current.speakingMinutes) || 0),
     speakingSessions: Math.max(0, Number(current.speakingSessions) || 0),
     lastSessionAt: String(current.lastSessionAt || ''),
-    sessionHistory: Array.isArray(current.sessionHistory) ? current.sessionHistory.slice(-MAX_SESSION_HISTORY) : [],
-    dailyQuests: normalizeDailyQuestState(current.dailyQuests, now)
+    sessionHistory: Array.isArray(current.sessionHistory) ? current.sessionHistory.slice(-MAX_SESSION_HISTORY) : []
   };
 }
 
 export function recordLearningExercise(result, persistence = driveSync) {
   if (!persistence?.getSettings || !persistence?.updateSettings) return null;
   const settings = persistence.getSettings();
-  const now = result.occurredAt ? new Date(result.occurredAt) : new Date();
-  const stats = normalizeLearningStats(settings, now);
+  const stats = normalizeLearningStats(settings);
   stats.totalExercises += 1;
   if (result.correct) stats.correctExercises += 1;
   if (result.correct && ['productive', 'speaking'].includes(result.recallType)) stats.productiveUses += 1;
-  stats.dailyQuests = applyExerciseToDailyQuests(stats.dailyQuests, result, now);
   persistence.updateSettings({ learningStats: stats }, { silent: true });
   return stats;
 }

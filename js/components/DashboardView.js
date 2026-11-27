@@ -4,7 +4,6 @@ import { buildScheduledPracticeSession, evaluateDailyStudyPlan } from '../servic
 import { masteryStage, normalizeMastery } from '../services/exerciseResult.js?v=18908';
 import { completedExercisesToday } from '../services/learningStats.js?v=18908';
 import { getStreakSummary } from '../services/studyActivity.js';
-import { getDailyQuests } from '../services/dailyQuests.js';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -141,7 +140,6 @@ export function renderDashboardView(container, onNavigate) {
   const dailyGoal = Math.max(1, Number(settings.dailyGoal || 20));
   const progress = Math.min(100, Math.round(completedToday / dailyGoal * 100));
   const streakSummary = getStreakSummary(settings);
-  const dailyQuests = getDailyQuests(settings);
   const stages = activeWords.reduce((counts, word) => {
     counts[masteryStage(normalizeMastery(word))] += 1;
     return counts;
@@ -200,18 +198,6 @@ export function renderDashboardView(container, onNavigate) {
     <div class="today-grid">
       <section class="spec-card practice-launchpad" aria-labelledby="practice-heading"><div class="card-header-bar"><div><h2 id="practice-heading">Practice your way</h2><p>A little variety keeps it interesting.</p></div><i class="fa-solid fa-dumbbell" aria-hidden="true"></i></div><div class="practice-quick-grid">${MODES.map(([view, icon, title, copy], index) => `<button class="practice-quick-card" style="--i:${index}" data-practice-view="${view}"><i class="fa-solid ${icon}" aria-hidden="true"></i><span><strong>${title}</strong><small>${copy}</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>`).join('')}</div></section>
       <aside class="today-insights">
-        <section class="spec-card today-quests-card" aria-labelledby="today-quests-heading">
-          <div class="card-header-bar"><h2 id="today-quests-heading">Today’s quests</h2><span class="quests-count-pill${dailyQuests.allDone ? ' is-done' : ''}">${dailyQuests.completedCount}/${dailyQuests.totalCount}</span></div>
-          <div class="quest-list">${dailyQuests.quests.map(quest => {
-            const pct = Math.min(100, Math.round(quest.progress / Math.max(1, quest.target) * 100));
-            return `<button type="button" class="quest-row${quest.done ? ' is-done' : ''}" data-practice-view="${quest.route}">
-              <span class="quest-icon"><i class="fa-solid ${quest.done ? 'fa-circle-check' : quest.icon}" aria-hidden="true"></i></span>
-              <span class="quest-body"><strong>${escapeHtml(quest.title)}</strong><span class="quest-bar"><i style="width:${pct}%"></i></span></span>
-              <span class="quest-progress">${quest.progress}/${quest.target}</span>
-            </button>`;
-          }).join('')}</div>
-          ${dailyQuests.allDone ? '<div class="quest-chest-banner is-claimed"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>All quests done today!</span></div>' : ''}
-        </section>
         <section class="spec-card today-insight-card"><div class="card-header-bar"><h2>Your vocabulary</h2><i class="fa-solid fa-book-open" aria-hidden="true"></i></div><div class="today-section-heading"><div><h3>${activeWordCount} saved ${activeWordCount === 1 ? 'word' : 'words'}</h3><small>${activeWords.length} tracked meaning${activeWords.length === 1 ? '' : 's'} in ${notebookLabel}</small></div></div><div class="mastery-mini-list"><div><span>Recognized</span><strong>${stages.recognized + stages.recalled + stages.context + stages.productive}</strong></div><div><span>Reliably recalled</span><strong>${stages.recalled + stages.context + stages.productive}</strong></div><div><span>Used in context</span><strong>${stages.context + stages.productive}</strong></div><div><span>Used productively</span><strong>${stages.productive}</strong></div></div><button class="text-action" data-practice-view="stats">See your progress <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></section>
         <section class="spec-card today-insight-card compact"><span class="cloud-dot ${auth.isConnected ? 'connected' : auth.lastError ? 'error' : ''}"><i class="fa-solid fa-cloud" aria-hidden="true"></i></span><div><strong>${auth.isConnected ? 'Drive backup active' : auth.lastError ? 'Backup needs attention' : 'Keep your words safe'}</strong><small>${escapeHtml(auth.isConnected ? `Last sync ${auth.lastSynced ? new Date(auth.lastSynced).toLocaleDateString() : 'pending'}` : auth.lastError || 'Set up Drive backup in Settings')}</small></div><button class="icon-action" id="dashboard-drive-settings" aria-label="Open backup settings"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></section>
       </aside>

@@ -2,60 +2,80 @@ import { getStreakSummary } from '../services/studyActivity.js';
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
 
-const CONFETTI_COLORS = ['#fb923c', '#facc15', '#4ade80', '#38bdf8', '#c084fc', '#f472b6'];
+const OUTER_FLAME_PATH = 'M90 154C122 154 142 132 142 103C142 78 125 60 114 44C108 35 104 27 99 20C86 32 77 48 74 62C70 55 66 48 63 43C47 58 38 80 38 103C38 132 58 154 90 154Z';
+const MID_FLAME_PATH = 'M90 148C110 148 123 133 123 114C123 95 108 82 95 66C93 63 91 61 90 59C84 70 74 82 66 95C60 103 57 109 57 114C57 133 70 148 90 148Z';
+const CORE_FLAME_PATH = 'M90 142C101 142 108 134 108 123C108 112 99 103 90 92C81 103 72 112 72 123C72 134 79 142 90 142Z';
 
-function confettiPiecesHtml(count = 24) {
-  return Array.from({ length: count }, (_, idx) => {
-    const angle = (idx / count) * 360;
-    const distance = 95 + (idx % 4) * 34;
-    const rad = (angle * Math.PI) / 180;
-    const tx = Math.round(Math.cos(rad) * distance);
-    const ty = Math.round(Math.sin(rad) * distance - 18);
-    const rot = ((idx * 47) % 360) - 180;
-    const delay = (idx % 6) * 45;
-    const color = CONFETTI_COLORS[idx % CONFETTI_COLORS.length];
-    return `<i class="streak-confetti-piece" style="--tx:${tx}px;--ty:${ty}px;--rot:${rot}deg;--delay:${delay}ms;--color:${color}"></i>`;
-  }).join('');
-}
-
-function flameSvg() {
-  return `<svg class="streak-flame-svg" viewBox="0 0 140 140" width="136" height="136" fill="none" aria-hidden="true">
+function flameSvg(isMilestone = false) {
+  return `<svg class="streak-flame-svg${isMilestone ? ' is-milestone' : ''}" viewBox="0 0 180 180" width="164" height="164" fill="none" aria-hidden="true">
     <defs>
-      <radialGradient id="streak-halo-grad" cx="50%" cy="55%" r="50%">
-        <stop offset="0%" stop-color="#fde047" stop-opacity="0.72"/>
-        <stop offset="60%" stop-color="#fb923c" stop-opacity="0.28"/>
-        <stop offset="100%" stop-color="#fb923c" stop-opacity="0"/>
+      <radialGradient id="streak-aura-grad" cx="50%" cy="54%" r="50%">
+        <stop offset="0%" stop-color="#FFE066" stop-opacity="0.72"/>
+        <stop offset="55%" stop-color="#FF9600" stop-opacity="0.22"/>
+        <stop offset="100%" stop-color="#FF9600" stop-opacity="0"/>
       </radialGradient>
-      <linearGradient id="streak-flame-outer" x1="70" y1="16" x2="70" y2="124" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stop-color="#fde047"/>
-        <stop offset="38%" stop-color="#fb923c"/>
-        <stop offset="100%" stop-color="#ea580c"/>
+      <linearGradient id="streak-outer-grad" x1="90" y1="20" x2="90" y2="154" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#FFB800"/>
+        <stop offset="46%" stop-color="#FF9600"/>
+        <stop offset="100%" stop-color="#FF6B00"/>
       </linearGradient>
-      <linearGradient id="streak-flame-inner" x1="70" y1="54" x2="70" y2="120" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stop-color="#fef9c3"/>
-        <stop offset="60%" stop-color="#fde047"/>
-        <stop offset="100%" stop-color="#f97316"/>
+      <linearGradient id="streak-mid-grad" x1="90" y1="59" x2="90" y2="148" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#FFE66D"/>
+        <stop offset="58%" stop-color="#FFC800"/>
+        <stop offset="100%" stop-color="#FF9F0A"/>
+      </linearGradient>
+      <linearGradient id="streak-core-grad" x1="90" y1="92" x2="90" y2="142" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#FFFDF0"/>
+        <stop offset="100%" stop-color="#FFE57F"/>
       </linearGradient>
     </defs>
-    <circle class="streak-flame-halo" cx="70" cy="76" r="58" fill="url(#streak-halo-grad)"/>
-    <g class="streak-flame-body">
-      <path d="M74 16c4 20-12 31-18 42-4 7-3 15-3 15s11-7 16-17c17 15 29 33 29 51 0 19-16 32-34 32-20 0-35-15-35-35 0-21 15-38 27-53 8-10 14-21 18-35z" fill="url(#streak-flame-outer)"/>
-      <path class="streak-flame-core" d="M68 62c11 10 17 20 17 31 0 11-8 20-19 20-11 0-19-9-19-20 0-11 8-20 21-31z" fill="url(#streak-flame-inner)"/>
-      <ellipse cx="66" cy="96" rx="7" ry="10" fill="#fffbeb" opacity="0.88"/>
+
+    <circle class="streak-flame-aura" cx="90" cy="96" r="76" fill="url(#streak-aura-grad)"/>
+
+    <g class="streak-sunburst" stroke-linecap="round">
+      <line class="streak-ray r1" x1="90" y1="14" x2="90" y2="0" stroke="#FFC800" stroke-width="6.5" pathLength="100"/>
+      <line class="streak-ray r2" x1="140" y1="36" x2="155" y2="21" stroke="#FF9600" stroke-width="6.5" pathLength="100"/>
+      <line class="streak-ray r3" x1="156" y1="92" x2="176" y2="92" stroke="#FFC800" stroke-width="6.5" pathLength="100"/>
+      <line class="streak-ray r4" x1="142" y1="142" x2="156" y2="155" stroke="#FF9600" stroke-width="6" pathLength="100"/>
+      <line class="streak-ray r5" x1="38" y1="142" x2="24" y2="155" stroke="#FF9600" stroke-width="6" pathLength="100"/>
+      <line class="streak-ray r6" x1="24" y1="92" x2="4" y2="92" stroke="#FFC800" stroke-width="6.5" pathLength="100"/>
+      <line class="streak-ray r7" x1="40" y1="36" x2="25" y2="21" stroke="#FF9600" stroke-width="6.5" pathLength="100"/>
     </g>
-    <circle class="streak-spark s1" cx="34" cy="48" r="3.5" fill="#fde047"/>
-    <circle class="streak-spark s2" cx="107" cy="44" r="3" fill="#fb923c"/>
-    <circle class="streak-spark s3" cx="99" cy="24" r="2.5" fill="#fef08a"/>
-    <circle class="streak-spark s4" cx="44" cy="28" r="2.2" fill="#fdba74"/>
+
+    <g class="streak-sparks">
+      <circle class="streak-spark s1" cx="50" cy="24" r="4.5" fill="#FFC800"/>
+      <circle class="streak-spark s2" cx="132" cy="22" r="4" fill="#FF9600"/>
+      <circle class="streak-spark s3" cx="158" cy="64" r="3.5" fill="#FFD43B"/>
+      <circle class="streak-spark s4" cx="22" cy="64" r="3.5" fill="#FF9600"/>
+    </g>
+
+    <g class="streak-flame-unlit">
+      <path d="${OUTER_FLAME_PATH}" fill="#E5E7EB"/>
+      <path d="${MID_FLAME_PATH}" fill="#F3F4F6"/>
+    </g>
+
+    <g class="streak-flame-lit">
+      <g class="streak-flame-body">
+        <path d="${OUTER_FLAME_PATH}" fill="url(#streak-outer-grad)"/>
+        <path class="streak-flame-mid" d="${MID_FLAME_PATH}" fill="url(#streak-mid-grad)"/>
+        <path class="streak-flame-core" d="${CORE_FLAME_PATH}" fill="url(#streak-core-grad)"/>
+      </g>
+    </g>
+  </svg>`;
+}
+
+function checkIconSvg() {
+  return `<svg class="streak-check-svg" viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true">
+    <path class="streak-check-path" d="M5.5 12.7L10 17.2L18.8 7.5" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" pathLength="100"/>
   </svg>`;
 }
 
 export function streakCelebrationSubtitle(detail = {}) {
   const streak = Math.max(1, Number(detail.streak) || 1);
-  if (detail.milestone) return `Incredible ${streak}-day milestone — your habit is locked in.`;
-  if (detail.freezeProtected) return 'A Streak Freeze carried you here, and today you kept the flame burning.';
-  if (streak === 1) return 'You sparked day 1. Show up tomorrow and watch this flame grow.';
-  return 'Daily goal complete — your vocabulary habit stays alive today.';
+  if (detail.milestone) return `Amazing ${streak}-day milestone — your habit is going strong.`;
+  if (detail.freezeProtected) return 'A Streak Freeze saved your spot, and today you kept the flame alive.';
+  if (streak === 1) return 'You sparked day 1! Come back tomorrow to keep your streak going.';
+  return 'You kept your streak alive! Come back tomorrow to keep it going.';
 }
 
 export function renderStreakCelebrationMarkup(detail = {}, settings = {}) {
@@ -74,35 +94,70 @@ export function renderStreakCelebrationMarkup(detail = {}, settings = {}) {
     rewards.push('<span class="streak-reward-pill is-freeze"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Protected by Freeze</span>');
   }
 
-  const weekHtml = summary.weekWindow.map(day => {
-    const isTodayLit = day.isToday;
+  const days = summary.weekWindow.map(day => {
+    const isTodayLit = Boolean(day.isToday);
     const isLit = isTodayLit || day.status === 'goal';
     const isFrozen = !isTodayLit && day.status === 'frozen';
-    const icon = isLit ? 'fa-check' : isFrozen ? 'fa-shield-halved' : '';
-    return `<div class="streak-celebration-day${isLit ? ' is-lit' : ''}${isTodayLit ? ' is-today-ignite' : ''}${isFrozen ? ' is-frozen' : ''}" role="listitem" aria-label="${escapeHtml(`${day.weekdayShort}: ${isLit ? 'completed' : isFrozen ? 'frozen' : 'not completed'}`)}">
-      <span class="streak-celebration-dot">${icon ? `<i class="fa-solid ${icon}" aria-hidden="true"></i>` : ''}</span>
+    return { ...day, isTodayLit, isLit, isFrozen, isActive: isLit || isFrozen };
+  });
+
+  const weekHtml = days.map((day, idx) => {
+    const prev = days[idx - 1];
+    const next = days[idx + 1];
+    const connectLeft = day.isActive && prev?.isActive;
+    const connectRight = day.isActive && next?.isActive;
+    const leftFrozen = connectLeft && (day.isFrozen || prev.isFrozen);
+    const rightFrozen = connectRight && (day.isFrozen || next.isFrozen);
+    const dotInner = day.isLit
+      ? checkIconSvg()
+      : day.isFrozen
+        ? '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>'
+        : '';
+    const classes = [
+      'streak-celebration-day',
+      day.isLit ? 'is-lit' : '',
+      day.isTodayLit ? 'is-today-ignite' : '',
+      day.isFrozen ? 'is-frozen' : '',
+      connectLeft ? 'connect-left' : '',
+      connectRight ? 'connect-right' : '',
+      leftFrozen ? 'connect-left-frozen' : '',
+      rightFrozen ? 'connect-right-frozen' : ''
+    ].filter(Boolean).join(' ');
+    return `<div class="${classes}" role="listitem" aria-label="${escapeHtml(`${day.weekdayShort}: ${day.isLit ? 'completed' : day.isFrozen ? 'frozen' : 'not completed'}`)}">
       <small>${escapeHtml(day.weekdayShort)}</small>
+      <div class="streak-celebration-cell">
+        ${connectLeft ? `<span class="streak-connector is-left${day.isTodayLit ? ' is-today-connector' : ''}" aria-hidden="true"></span>` : ''}
+        ${connectRight ? `<span class="streak-connector is-right${next?.isTodayLit ? ' is-pre-today-connector' : ''}" aria-hidden="true"></span>` : ''}
+        <span class="streak-celebration-dot">${dotInner}</span>
+      </div>
     </div>`;
   }).join('');
 
+  const srTitle = streak === 1 ? '1 day streak!' : `${streak} day streak!`;
+  const showRoll = previousStreak !== streak;
+
   return `<div class="streak-celebration-card${detail.milestone ? ' is-milestone' : ''}" role="dialog" aria-modal="true" aria-labelledby="streak-celebration-title">
-    <div class="streak-celebration-stage">
-      <div class="streak-confetti-burst" aria-hidden="true">${confettiPiecesHtml(24)}</div>
-      <div class="streak-shockwave" aria-hidden="true"></div>
-      <div class="streak-flame-wrap">${flameSvg()}</div>
-      <div class="streak-counter-wrap">
-        <span class="streak-counter-number" id="streak-celebration-count" data-from="${previousStreak}" data-to="${streak}">${previousStreak}</span>
+    <div class="streak-celebration-body">
+      <div class="streak-celebration-stage">
+        <div class="streak-flame-wrap">${flameSvg(Boolean(detail.milestone))}</div>
+      </div>
+      <div class="streak-counter-block">
+        <div class="streak-counter-slot${showRoll ? '' : ' is-static'}" aria-hidden="true">
+          ${showRoll ? `<span class="streak-counter-prev">${previousStreak}</span>` : ''}
+          <span class="streak-counter-number" id="streak-celebration-count" data-from="${previousStreak}" data-to="${streak}">${streak}</span>
+        </div>
+        <h2 id="streak-celebration-title" class="streak-celebration-heading"><span class="sr-only">${srTitle}</span><span aria-hidden="true">day streak!</span></h2>
+      </div>
+      <div class="streak-week-card">
+        <div class="streak-celebration-week" role="list" aria-label="Last 7 days streak progress">${weekHtml}</div>
+        <div class="streak-week-divider" aria-hidden="true"></div>
+        <p class="streak-celebration-subtitle">${escapeHtml(streakCelebrationSubtitle(detail))}</p>
+        ${rewards.length ? `<div class="streak-celebration-rewards">${rewards.join('')}</div>` : ''}
       </div>
     </div>
-    <h2 id="streak-celebration-title">${streak === 1 ? '1 day streak!' : `${streak} day streak!`}</h2>
-    <p class="streak-celebration-subtitle">${escapeHtml(streakCelebrationSubtitle(detail))}</p>
-    <div class="streak-celebration-week" role="list" aria-label="Last 7 days streak progress">${weekHtml}</div>
-    ${rewards.length ? `<div class="streak-celebration-rewards">${rewards.join('')}</div>` : ''}
-    <div class="streak-celebration-sprig">
-      <img src="assets/keepvocab-sprig-celebrate.webp" alt="" aria-hidden="true" width="64" height="64">
-      <span>${escapeHtml(detail.milestone ? 'Sprig is cheering for your milestone!' : 'Keep the momentum going tomorrow!')}</span>
+    <div class="streak-celebration-footer">
+      <button type="button" class="btn-green-solid streak-celebration-cta" id="btn-streak-celebration-continue">Continue</button>
     </div>
-    <button type="button" class="btn-green-solid streak-celebration-cta" id="btn-streak-celebration-continue">Continue</button>
   </div>`;
 }
 
@@ -121,32 +176,40 @@ export function showStreakCelebration(detail = {}, settings = {}, doc = globalTh
 
   playInteractionSound('streak');
 
-  const countEl = overlay.querySelector('#streak-celebration-count');
   const continueBtn = overlay.querySelector('#btn-streak-celebration-continue');
-  const streak = Math.max(1, Number(detail.streak) || 1);
-  const previous = Math.max(0, Number(detail.previousStreak ?? Math.max(0, streak - 1)));
   const reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
 
-  let tickTimer = null;
+  let igniteTimer = null;
+  let weekTimer = null;
   let revealTimer = null;
-  if (reducedMotion || previous === streak) {
-    if (countEl) countEl.textContent = String(streak);
-    overlay.classList.add('is-ignited');
+
+  if (reducedMotion) {
+    overlay.classList.add('is-ignited', 'is-week-ignited', 'is-cta-ready');
   } else {
-    tickTimer = globalThis.setTimeout(() => {
-      if (!overlay.isConnected || !countEl) return;
-      countEl.textContent = String(streak);
-      countEl.classList.add('is-ticked');
+    igniteTimer = globalThis.setTimeout(() => {
+      if (!overlay.isConnected) return;
       overlay.classList.add('is-ignited');
-    }, 460);
+    }, 320);
+    weekTimer = globalThis.setTimeout(() => {
+      if (!overlay.isConnected) return;
+      overlay.classList.add('is-week-ignited');
+    }, 640);
+    revealTimer = globalThis.setTimeout(() => {
+      if (!overlay.isConnected) return;
+      overlay.classList.add('is-cta-ready');
+      continueBtn?.focus?.({ preventScroll: true });
+    }, 820);
   }
 
-  revealTimer = globalThis.setTimeout(() => {
-    continueBtn?.focus?.({ preventScroll: true });
-  }, reducedMotion ? 20 : 620);
+  if (reducedMotion) {
+    revealTimer = globalThis.setTimeout(() => {
+      continueBtn?.focus?.({ preventScroll: true });
+    }, 20);
+  }
 
   const close = () => {
-    if (tickTimer) globalThis.clearTimeout(tickTimer);
+    if (igniteTimer) globalThis.clearTimeout(igniteTimer);
+    if (weekTimer) globalThis.clearTimeout(weekTimer);
     if (revealTimer) globalThis.clearTimeout(revealTimer);
     doc.removeEventListener('keydown', onKeyDown);
     overlay.classList.add('is-closing');
