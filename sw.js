@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v115004-duo-streak-no-quests';
+const CACHE_NAME = 'keepvocab-v115005-combo-reminders-drive';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -111,6 +111,7 @@ const ASSETS_TO_CACHE = [
   './js/components/SpeakingMode.js',
   './js/components/DashboardView.js',
   './js/components/StreakCelebration.js',
+  './js/components/ComboCelebration.js',
   './js/components/DailySessionMode.js',
   './js/components/FlashcardsMode.js',
   './js/components/ContextQuizMode.js',

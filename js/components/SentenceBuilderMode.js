@@ -13,7 +13,8 @@ import {
 import { ensureDailyStudyPlan, getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
-import { formatMemoryBoost, renderPracticeHeader, renderPracticeMascot, renderPracticeNotice } from './PracticeElements.js?v=18910';
+import { formatMemoryBoost, renderPracticeHeader, renderPracticeMascot, renderPracticeNotice, comboShellClasses } from './PracticeElements.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18915';
 
 export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
   const allWords = getActivePracticeWords(driveSync);
@@ -191,7 +192,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
       : '';
 
     container.innerHTML = `<section class="full-view-stack" aria-labelledby="sentence-heading">
-      <div class="spec-card practice-shell sentence-shell${combo >= 3 ? ' is-hot-combo' : ''}">
+      <div class="spec-card practice-shell sentence-shell${comboShellClasses(combo)}">
         <div class="card-header-bar">
           <div class="card-tag" id="sentence-heading"><i class="fa-solid fa-align-left" aria-hidden="true"></i> Build Sentence</div>
           <span class="muted-label">${escapeHtml(driveSync.getActiveNotebook())}</span>
@@ -296,7 +297,9 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
         producedUnaided: correct && hintsUsed === 0
       });
       memoryBoost = correct ? formatMemoryBoost(applied?.transition) : '';
-      playInteractionSound(correct ? 'correct' : 'wrong', { combo });
+      if (!correct || !showComboCelebration(combo)) {
+        playInteractionSound(correct ? 'correct' : 'wrong', { combo });
+      }
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       render();
     });

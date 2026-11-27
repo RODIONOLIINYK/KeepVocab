@@ -84,13 +84,29 @@ export function renderTalkingSprig(mood = 'thinking') {
   </span>`;
 }
 
+export function renderComboBadge(combo = 0) {
+  const count = Math.floor(Number(combo) || 0);
+  if (count < 3) return '';
+  const tier = count >= 15 ? ' is-legend' : count >= 10 ? ' is-super' : count >= 5 ? ' is-blaze' : '';
+  const icon = count >= 15 ? 'fa-wand-magic-sparkles' : 'fa-fire';
+  return `<span class="duo-combo-badge${tier}"><i class="fa-solid ${icon}" aria-hidden="true"></i> ${count} in a row</span>`;
+}
+
+export function comboShellClasses(combo = 0) {
+  const count = Math.floor(Number(combo) || 0);
+  if (count >= 10) return ' is-hot-combo is-super-combo is-ultra-combo';
+  if (count >= 5) return ' is-hot-combo is-super-combo';
+  if (count >= 3) return ' is-hot-combo';
+  return '';
+}
+
 export function renderPracticeMascot({ heading = '', bubbleHtml = '', answered = false, correct = false, combo = 0, retry = false, talking = false } = {}) {
   const mood = answered ? (correct ? 'celebrate' : 'encourage') : 'thinking';
   const asset = mood === 'celebrate' ? 'assets/keepvocab-sprig-celebrate.webp'
     : mood === 'encourage' ? 'assets/keepvocab-sprout-mascot.webp'
       : 'assets/keepvocab-sprig-thinking.webp';
   const comboBadge = combo >= 3
-    ? `<span class="duo-combo-badge"><i class="fa-solid fa-fire" aria-hidden="true"></i> ${combo} in a row</span>`
+    ? renderComboBadge(combo)
     : retry
       ? '<span class="duo-retry-badge"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Previous mistake</span>'
       : '';

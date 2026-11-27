@@ -32,6 +32,19 @@ const PROFILES = {
     { frequency: 659.25, duration: 0.08, volume: 0.16, type: 'sine', delay: 0.075 },
     { frequency: 783.99, duration: 0.09, volume: 0.17, type: 'sine', delay: 0.15 },
     { frequency: 1046.5, duration: 0.24, volume: 0.18, type: 'sine', delay: 0.23 }
+  ],
+  combo5: [
+    { frequency: 523.25, duration: 0.075, volume: 0.15, type: 'triangle' },
+    { frequency: 659.25, duration: 0.08, volume: 0.17, type: 'sine', delay: 0.065 },
+    { frequency: 783.99, duration: 0.09, volume: 0.18, type: 'sine', delay: 0.13 },
+    { frequency: 1046.5, duration: 0.22, volume: 0.2, type: 'sine', delay: 0.2 }
+  ],
+  combo10: [
+    { frequency: 587.33, duration: 0.07, volume: 0.15, type: 'triangle' },
+    { frequency: 739.99, duration: 0.075, volume: 0.16, type: 'sine', delay: 0.06 },
+    { frequency: 880, duration: 0.085, volume: 0.18, type: 'sine', delay: 0.12 },
+    { frequency: 1174.66, duration: 0.11, volume: 0.19, type: 'sine', delay: 0.185 },
+    { frequency: 1479.98, duration: 0.28, volume: 0.18, type: 'sine', delay: 0.26 }
   ]
 };
 
@@ -86,7 +99,7 @@ export function playInteractionHaptic(kind = 'tap') {
   const haptics = globalThis.Capacitor?.Plugins?.Haptics;
   if (!haptics) return false;
   try {
-    if (['correct', 'success', 'streak', 'levelup'].includes(kind) && haptics.notification) haptics.notification({ type: 'SUCCESS' }).catch?.(() => {});
+    if (['correct', 'success', 'streak', 'levelup', 'combo5', 'combo10'].includes(kind) && haptics.notification) haptics.notification({ type: 'SUCCESS' }).catch?.(() => {});
     else if (['wrong', 'error'].includes(kind) && haptics.notification) haptics.notification({ type: 'WARNING' }).catch?.(() => {});
     else haptics.impact?.({ style: 'LIGHT' }).catch?.(() => {});
     return true;

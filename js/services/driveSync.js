@@ -34,6 +34,8 @@ const BACKUP_FOLDER_NAME = 'KeepVocab Dictionary Backup';
 const BACKUP_APP_PROPERTY = 'keepVocabBackup';
 const SCHEMA_VERSION = 2;
 const TOKEN_RESTORE_BUFFER_MS = 30_000;
+const PROACTIVE_REFRESH_LEAD_MS = 5 * 60_000;
+const GIS_WAIT_TIMEOUT_MS = 6_000;
 
 function getNativeDriveAuthPlugin() {
   const capacitor = globalThis.Capacitor;
@@ -383,6 +385,7 @@ export class DriveSyncService {
     this.tokenExpiresAt = 0;
     this.googleAuthGeneration = 0;
     this.tokenRefreshPromise = null;
+    this.proactiveRefreshTimer = null;
     this.syncPromise = null;
     this.credentialCleanupPayloads = new Map();
     this.suppressEvents = false;
@@ -494,7 +497,10 @@ export class DriveSyncService {
   getDriveStatus() {
     const metadata = this.read(STORAGE_KEY_DRIVE_AUTH, { isConnected: false });
     const hasLiveToken = Boolean(this.accessToken && Date.now() < this.tokenExpiresAt);
-    return { ...metadata, remembered: Boolean(metadata.remembered), isConnected: Boolean(metadata.isConnected && hasLiveToken), folderName: BACKUP_FOLDER_NAME };
+    const isConnected = Boolean(metadata.isConnected && hasLiveToken);
+    const remembered = Boolean(metadata.remembered);
+    const autoBackupActive = Boolean(isConnected || (remembered && !metadata.lastError));
+    return { ...metadata, remembered, isConnected, autoBackupActive, folderName: BACKUP_FOLDER_NAME };
   }
 
   restoreGoogleToken() {
@@ -507,6 +513,7 @@ export class DriveSyncService {
     }
     this.accessToken = accessToken;
     this.tokenExpiresAt = expiresAt;
+    this.scheduleProactiveTokenRefresh();
     return true;
   }
 
@@ -517,7 +524,29 @@ export class DriveSyncService {
     });
   }
 
+  clearProactiveTokenRefresh() {
+    if (this.proactiveRefreshTimer) {
+      globalThis.clearTimeout?.(this.proactiveRefreshTimer);
+      this.proactiveRefreshTimer = null;
+    }
+  }
+
+  scheduleProactiveTokenRefresh() {
+    this.clearProactiveTokenRefresh();
+    if (typeof globalThis.window === 'undefined' || typeof globalThis.setTimeout !== 'function') return;
+    if (!this.tokenExpiresAt || !this.getDriveStatus().remembered) return;
+    const delay = Math.min(24 * 60 * 60 * 1000, Math.max(30_000, this.tokenExpiresAt - Date.now() - PROACTIVE_REFRESH_LEAD_MS));
+    const timer = globalThis.setTimeout(() => {
+      this.proactiveRefreshTimer = null;
+      if (!this.getDriveStatus().remembered || globalThis.navigator?.onLine === false) return;
+      this.renewGoogleToken({ interactive: false }).catch(() => {});
+    }, delay);
+    timer?.unref?.();
+    this.proactiveRefreshTimer = timer;
+  }
+
   clearGoogleToken() {
+    this.clearProactiveTokenRefresh();
     this.accessToken = null;
     this.tokenExpiresAt = 0;
     this.storage.removeItem(STORAGE_KEY_DRIVE_TOKEN);
@@ -544,14 +573,28 @@ export class DriveSyncService {
     if (nativeAuth) {
       const result = await nativeAuth.authorize({ interactive: true });
       this.assertGoogleAuthGeneration(generation);
+      if (result.email) this.setDriveStatus({ isConnected: true, remembered: true, email: result.email, lastError: null });
       this.acceptGoogleToken({ access_token: result.accessToken, expires_in: result.expiresIn });
       return this.finishGoogleConnection(generation);
     }
-    if (!globalThis.google?.accounts?.oauth2) throw new Error('Google Identity Services did not load. Check your connection and try again.');
-    const tokenResponse = await this.requestGoogleToken(GOOGLE_WEB_CLIENT_ID, 'consent');
+    if (!globalThis.google?.accounts?.oauth2 && !(await this.waitForGoogleOAuthClient())) throw new Error('Google Identity Services did not load. Check your connection and try again.');
+    const hint = this.getDriveStatus().email || '';
+    const tokenResponse = await this.requestGoogleToken(GOOGLE_WEB_CLIENT_ID, 'consent', hint);
     this.assertGoogleAuthGeneration(generation);
     this.acceptGoogleToken(tokenResponse);
     return this.finishGoogleConnection(generation);
+  }
+
+  async waitForGoogleOAuthClient(timeoutMs = GIS_WAIT_TIMEOUT_MS) {
+    if (globalThis.google?.accounts?.oauth2) return true;
+    const hasGisScript = Boolean(globalThis.document?.querySelector?.('script[src*="accounts.google.com/gsi/client"]'));
+    if (!hasGisScript) return false;
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      await new Promise(resolve => globalThis.setTimeout(resolve, 120));
+      if (globalThis.google?.accounts?.oauth2) return true;
+    }
+    return Boolean(globalThis.google?.accounts?.oauth2);
   }
 
   assertGoogleAuthGeneration(generation) {
@@ -560,24 +603,29 @@ export class DriveSyncService {
     }
   }
 
-  requestGoogleToken(clientId, prompt = '') {
+  requestGoogleToken(clientId, prompt = '', hint = '') {
     return new Promise((resolve, reject) => {
+      const cleanHint = String(hint || '').trim();
       const client = globalThis.google.accounts.oauth2.initTokenClient({
         client_id: clientId,
         scope: DRIVE_SCOPE,
+        ...(cleanHint ? { hint: cleanHint } : {}),
         callback: response => {
           if (response?.error) {
             const accessBlocked = /access_denied|org_internal|admin_policy_enforced/i.test(String(response.error));
-            reject(new Error(accessBlocked
+            reject(Object.assign(new Error(accessBlocked
               ? 'Google blocked this account. The KeepVocab OAuth app owner must allow external users and publish the consent screen, or add this account as a test user.'
-              : (response.error_description || response.error)));
+              : (response.error_description || response.error)), { code: String(response.error) }));
           }
           else if (!response?.access_token) reject(new Error('Google did not return an access token.'));
           else resolve(response);
         },
-        error_callback: error => reject(new Error(error?.message || error?.type || 'Google authorization was cancelled.'))
+        error_callback: error => reject(Object.assign(
+          new Error(error?.message || error?.type || 'Google authorization was cancelled.'),
+          { code: String(error?.type || error?.code || '') }
+        ))
       });
-      client.requestAccessToken({ prompt });
+      client.requestAccessToken({ prompt, ...(cleanHint ? { hint: cleanHint } : {}) });
     });
   }
 
@@ -585,6 +633,7 @@ export class DriveSyncService {
     this.accessToken = tokenResponse.access_token;
     this.tokenExpiresAt = Date.now() + Math.max(0, Number(tokenResponse.expires_in || 3600) - 60) * 1000;
     this.persistGoogleToken();
+    this.scheduleProactiveTokenRefresh();
   }
 
   async renewGoogleToken({ interactive = false } = {}) {
@@ -594,13 +643,21 @@ export class DriveSyncService {
       const nativeAuth = getNativeDriveAuthPlugin();
       const clientId = this.getGoogleClientId();
       if (!nativeAuth && !clientId) throw new Error('Connect Google Drive once on this device to enable automatic renewal.');
-      if (!nativeAuth && !globalThis.google?.accounts?.oauth2) throw new Error('Google Identity Services did not load.');
+      if (!nativeAuth && !globalThis.google?.accounts?.oauth2 && !(await this.waitForGoogleOAuthClient())) {
+        throw Object.assign(new Error('Google Identity Services did not load.'), { code: 'TRANSIENT_GIS_UNAVAILABLE' });
+      }
+      const hint = this.getDriveStatus().email || '';
       const tokenResponse = nativeAuth
-        ? await nativeAuth.authorize({ interactive }).then(result => ({ access_token: result.accessToken, expires_in: result.expiresIn }))
-        : await this.requestGoogleToken(clientId, interactive ? 'consent' : 'none');
+        ? await nativeAuth.authorize({ interactive }).then(result => ({ access_token: result.accessToken, expires_in: result.expiresIn, email: result.email || null }))
+        : await this.requestGoogleToken(clientId, interactive ? 'consent' : 'none', hint);
       this.assertGoogleAuthGeneration(generation);
       this.acceptGoogleToken(tokenResponse);
-      this.setDriveStatus({ isConnected: true, remembered: true, lastError: null });
+      this.setDriveStatus({
+        isConnected: true,
+        remembered: true,
+        ...(tokenResponse.email ? { email: tokenResponse.email } : {}),
+        lastError: null
+      });
       return tokenResponse;
     })();
     this.tokenRefreshPromise = renewal;
@@ -611,9 +668,24 @@ export class DriveSyncService {
     }
   }
 
-  renewalFailureMessage(error) {
+  isInteractiveAuthError(error) {
     const code = String(error?.code || error?.type || '').toUpperCase();
-    if (code.includes('RECONNECT') || code.includes('CONSENT') || code.includes('INTERACTION')) {
+    const message = String(error?.message || '').toUpperCase();
+    return /RECONNECT|CONSENT|INTERACTION|LOGIN_REQUIRED|INVALID_GRANT|ACCESS_DENIED|SCOPE_MISSING|TOKEN_MISSING/.test(`${code} ${message}`);
+  }
+
+  isTransientNetworkError(error) {
+    if (globalThis.navigator?.onLine === false) return true;
+    const code = String(error?.code || error?.type || '').toUpperCase();
+    const message = String(error?.message || '').toLowerCase();
+    if (code === 'TRANSIENT_GIS_UNAVAILABLE') return true;
+    if (error?.name === 'TypeError' || error?.name === 'AbortError') return true;
+    if (Number(error?.status) >= 500 || Number(error?.status) === 429) return true;
+    return /failed to fetch|network|offline|timed out|timeout|did not load|load failed|internet/.test(message);
+  }
+
+  renewalFailureMessage(error) {
+    if (this.isInteractiveAuthError(error)) {
       return 'Google Drive needs one confirmation. Tap Reconnect Drive once.';
     }
     if (globalThis.navigator?.onLine === false) return 'Drive will reconnect automatically when this device is online.';
@@ -629,7 +701,8 @@ export class DriveSyncService {
       return { ...sync };
     } catch (error) {
       this.assertGoogleAuthGeneration(generation);
-      this.setDriveStatus({ isConnected: true, lastError: error.message });
+      const transient = this.isTransientNetworkError(error) && !this.isInteractiveAuthError(error);
+      this.setDriveStatus({ isConnected: Boolean(this.accessToken && Date.now() < this.tokenExpiresAt), remembered: true, lastError: transient ? null : error.message });
       throw error;
     }
   }
@@ -644,8 +717,13 @@ export class DriveSyncService {
       return await this.finishGoogleConnection(generation);
     } catch (error) {
       this.assertGoogleAuthGeneration(generation);
-      this.clearGoogleToken();
-      this.setDriveStatus({ isConnected: false, remembered: true, lastError: this.renewalFailureMessage(error) });
+      const transient = this.isTransientNetworkError(error) && !this.isInteractiveAuthError(error);
+      if (!transient) this.clearGoogleToken();
+      this.setDriveStatus({
+        isConnected: false,
+        remembered: true,
+        lastError: transient ? null : this.renewalFailureMessage(error)
+      });
       throw error;
     }
   }
@@ -653,6 +731,7 @@ export class DriveSyncService {
   disconnectGoogleDrive(revoke = true) {
     this.googleAuthGeneration += 1;
     this.tokenRefreshPromise = null;
+    this.clearProactiveTokenRefresh();
     const nativeAuth = getNativeDriveAuthPlugin();
     if (revoke && nativeAuth) {
       nativeAuth.revoke().catch(() => {});
@@ -674,8 +753,9 @@ export class DriveSyncService {
         this.assertGoogleAuthGeneration(generation);
       } catch (error) {
         this.assertGoogleAuthGeneration(generation);
+        const transient = this.isTransientNetworkError(error) && !this.isInteractiveAuthError(error);
         const message = this.renewalFailureMessage(error);
-        this.setDriveStatus({ isConnected: false, remembered: true, lastError: message });
+        this.setDriveStatus({ isConnected: false, remembered: true, lastError: transient ? null : message });
         throw new Error(message, { cause: error });
       }
     }
@@ -696,8 +776,9 @@ export class DriveSyncService {
           return this.authorizedFetch(url, options, true);
         } catch (error) {
           this.assertGoogleAuthGeneration(generation);
+          const transient = this.isTransientNetworkError(error) && !this.isInteractiveAuthError(error);
           const message = this.renewalFailureMessage(error);
-          this.setDriveStatus({ isConnected: false, remembered: true, lastError: message });
+          this.setDriveStatus({ isConnected: false, remembered: true, lastError: transient ? null : message });
           throw new Error(message, { cause: error });
         }
       }

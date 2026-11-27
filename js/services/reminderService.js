@@ -5,7 +5,75 @@ export const DAILY_REMINDER_ID = 73001;
 export const STREAK_REMINDER_ID = 73002;
 export const TEST_REMINDER_ID = 73003;
 export const REMINDER_CHANNEL_ID = 'keepvocab-practice';
+export const REMINDER_ACTION_TYPE_ID = 'KEEPVOCAB_PRACTICE_ACTION';
 export const REMINDER_HORIZON_DAYS = 7;
+
+const NOTIF_STYLE = {
+  practice: { largeIcon: 'notif_sprig_thinking', iconColor: '#22A447', summaryText: '⚡ Quick workout' },
+  habit: { largeIcon: 'notif_sprig_reminder', iconColor: '#22A447', summaryText: '🌱 Sprig check-in' },
+  fresh: { largeIcon: 'notif_sprig_celebrate', iconColor: '#22A447', summaryText: '✨ Fresh round' },
+  streak: { largeIcon: 'notif_sprig_reminder', iconColor: '#FF9600', summaryText: '🔥 Streak alert' },
+  finalCall: { largeIcon: 'notif_sprig_reminder', iconColor: '#EF4444', summaryText: '🚨 Midnight countdown' }
+};
+
+function daySeed(date = new Date()) {
+  const key = localDateKey(date);
+  const [y, m, d] = key.split('-').map(Number);
+  return Math.abs(Math.floor(Date.UTC(y, m - 1, d) / 86_400_000));
+}
+
+function pickVariant(pool, date = new Date(), offset = 0) {
+  return pool[(daySeed(date) + offset) % pool.length];
+}
+
+const DUE_REVIEW_COPY = [
+  {
+    title: '👀 Hi! It’s Sprig — time to practice',
+    body: 'Your words are starting to fade. Two quick minutes right now locks them in before they slip away!'
+  },
+  {
+    title: '⚡ Quick brain spark?',
+    body: 'Your couch is cozy, but a fast vocab round feels way better. Jump in before those words go rusty!'
+  },
+  {
+    title: '🌱 Your words won’t memorize themselves',
+    body: 'Beat the forgetting curve right now — knock out a rapid practice round and walk away sharper.'
+  },
+  {
+    title: '💬 Sprig has a quick challenge for you',
+    body: 'Fresh words are queued up and waiting. Give it a couple of minutes and watch them click!'
+  }
+];
+
+const KEEP_LEARNING_COPY = [
+  {
+    title: '🌱 Ready for a quick win?',
+    body: 'Two focused minutes today keeps your English sharp tomorrow. Tap in and surprise yourself!'
+  },
+  {
+    title: '⚡ Time to wake up your vocabulary',
+    body: 'No marathon needed — jump in for a fast round and keep your momentum rolling.'
+  },
+  {
+    title: '👀 Sprig is checking in',
+    body: 'A couple of quick exercises right now is the easiest win of your day. Let’s go!'
+  }
+];
+
+const GOAL_COMPLETE_TOMORROW_COPY = [
+  {
+    title: '✨ Ready for a fresh practice?',
+    body: 'Yesterday’s words are locked in. Drop in for a fast round and keep your momentum rolling!'
+  },
+  {
+    title: '🌱 Time for a fresh practice!',
+    body: 'You crushed it last time — keep that winning energy going with a quick vocab workout today.'
+  },
+  {
+    title: '⚡ A fresh practice is waiting for you',
+    body: 'Your brain is warmed up from yesterday. Jump back in and level up a few more words!'
+  }
+];
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_SMART_HOUR = 8;
 const MAX_SMART_MINUTES = 21 * 60 + 30;
@@ -239,13 +307,13 @@ export function buildPracticeReadyPlan({
   const readyCount = Math.max(1, isUpcomingUnlock ? (readiness.nextReadyCount || readyNow || 1) : readyNow);
   const weakCount = isUpcomingUnlock ? readiness.nextWeakCount : readiness.weakReadyCount;
   const title = weakCount > 0
-    ? `${courseName}: ${readyCount} review exercise${readyCount === 1 ? '' : 's'} ready in Practice Mode`
-    : `${courseName}: ${readyCount} exercise${readyCount === 1 ? ' is' : 's are'} ready in Practice Mode`;
+    ? `🔥 Rematch time: ${readyCount} review exercise${readyCount === 1 ? '' : 's'} ready in Practice Mode`
+    : `⚡ ${readyCount} exercise${readyCount === 1 ? ' is' : 's are'} ready in Practice Mode`;
   const body = completed > 0 && remaining > 0 && localDateKey(scheduled.nextAt) === localDateKey(now)
-    ? `Your practice set is ready. ${remaining} more exercise${remaining === 1 ? '' : 's'} completes today’s goal.`
+    ? `Your practice set is hot and ready — ${remaining} more exercise${remaining === 1 ? '' : 's'} completes today’s goal. Let’s crush it!`
     : weakCount > 0
-      ? 'Words you missed earlier are ready for a quick recovery round in Practice Mode.'
-      : 'Your spaced-repetition review is ready. Jump into Practice Mode while these words are fresh.';
+      ? 'Words that tripped you up earlier are back for a rematch. Beat them now while they’re fresh!'
+      : 'Your spaced-repetition round just unlocked. Hit it right now while those memories are peaking!';
 
   return {
     time: scheduled.time,
@@ -254,6 +322,7 @@ export function buildPracticeReadyPlan({
     route: practiceRoute || 'review',
     reason: 'practice-ready',
     summary: `${readyCount} ready in practice`,
+    visual: weakCount > 0 ? NOTIF_STYLE.streak : NOTIF_STYLE.practice,
     repeat: false,
     nextAt: scheduled.nextAt,
     readyCount
@@ -281,40 +350,49 @@ export function buildSmartReminderPlan({
     : normalizeReminderTime(preferredTime);
 
   if (completed > 0) {
+    const tomorrow = getTomorrowReminderAt(time, now);
+    const copy = pickVariant(GOAL_COMPLETE_TOMORROW_COPY, tomorrow);
     return {
       time,
-      title: `${courseName}: a fresh practice is ready`,
-      body: 'Make a little time for learning today. A short practice keeps your habit growing.',
+      title: `${courseName}: ${copy.title}`,
+      body: copy.body,
       route: practiceRoute,
       reason: remaining === 0 ? 'goal-complete' : 'studied-today',
       summary: remaining === 0 ? 'goal complete' : 'practice started',
+      visual: NOTIF_STYLE.fresh,
       repeat: false,
-      nextAt: getTomorrowReminderAt(time, now)
+      nextAt: tomorrow
     };
   }
 
   if (due > 0) {
+    const nextAt = getNextReminderAt(time, now);
+    const copy = pickVariant(DUE_REVIEW_COPY, nextAt);
     return {
       time,
-      title: `${courseName}: time for a little practice`,
-      body: 'Revisit what you have learned and make it stick. Open your practice to see what is ready today.',
+      title: `${courseName}: ${copy.title}`,
+      body: copy.body,
       route: practiceRoute,
       reason: 'due-review',
       summary: `${due} due`,
+      visual: NOTIF_STYLE.practice,
       repeat: false,
-      nextAt: getNextReminderAt(time, now)
+      nextAt
     };
   }
 
+  const nextAt = getNextReminderAt(time, now);
+  const copy = pickVariant(KEEP_LEARNING_COPY, nextAt);
   return {
     time,
-    title: `${courseName}: keep your learning growing`,
-    body: 'A little practice goes a long way. Open KeepVocab and take the next step today.',
+    title: `${courseName}: ${copy.title}`,
+    body: copy.body,
     route: practiceRoute,
     reason: 'keep-learning',
     summary: `${remaining} goal step${remaining === 1 ? '' : 's'} left`,
+    visual: NOTIF_STYLE.habit,
     repeat: false,
-    nextAt: getNextReminderAt(time, now)
+    nextAt
   };
 }
 
@@ -380,23 +458,35 @@ export function buildStreakMaintenancePlan({
   }
 
   const nextMilestone = activeStreak % 7 === 6
-    ? 'Your next weekly milestone is within reach.'
+    ? 'One session unlocks your next weekly milestone!'
     : STREAK_MILESTONES.has(activeStreak + 1)
-      ? `One quick session unlocks your ${activeStreak + 1}-day milestone.`
+      ? `One quick session unlocks your ${activeStreak + 1}-day milestone!`
       : due > 0
-        ? `${due} practice exercise${due === 1 ? ' is' : 's are'} ready right now.`
-        : 'A small step counts—even on a busy day.';
+        ? `${due} practice exercise${due === 1 ? ' is' : 's are'} queued up right now.`
+        : 'Two minutes is all it takes to save the flame.';
   const remaining = goalReached ? goal : goal - completed;
+  const streakHooks = [
+    `🔥 Don’t lose your ${activeStreak}-day streak!`,
+    `🔥 Your ${activeStreak}-day streak is getting nervous`,
+    `⏳ Protect your ${activeStreak}-day streak tonight`
+  ];
+  const title = finalCall
+    ? `🚨 Final call: protect your ${activeStreak}-day streak!`
+    : pickVariant(streakHooks, nextAt);
+  const body = finalCall
+    ? `Midnight is close! Sprig is watching the clock — finish ${remaining} ${completed > 0 && !goalReached ? 'more ' : ''}exercise${remaining === 1 ? '' : 's'} before midnight to keep the flame alive. ${nextMilestone}`
+    : `Tick-tock! Finish ${remaining} ${completed > 0 && !goalReached ? 'more ' : ''}exercise${remaining === 1 ? '' : 's'} before midnight to keep your flame burning. ${nextMilestone}`;
 
   return {
     time,
-    title: finalCall
-      ? `Final call: protect your ${activeStreak}-day streak`
-      : `Protect your ${activeStreak}-day streak`,
-    body: `${finalCall ? 'Midnight is close! ' : ''}Finish ${remaining} ${completed > 0 && !goalReached ? 'more ' : ''}exercise${remaining === 1 ? '' : 's'} before midnight to keep your streak. ${nextMilestone}`,
+    title,
+    body,
     route: 'review',
     reason: 'streak-maintenance',
     summary: finalCall ? `${activeStreak}-day final call` : `${activeStreak}-day streak safeguard`,
+    visual: finalCall
+      ? NOTIF_STYLE.finalCall
+      : { ...NOTIF_STYLE.streak, summaryText: `🔥 ${activeStreak}-day streak` },
     repeat: false,
     finalCall,
     nextAt
@@ -405,28 +495,34 @@ export function buildStreakMaintenancePlan({
 
 const FOLLOW_UP_COPY = [
   {
-    title: 'Your next small win is waiting',
-    body: 'Meet familiar words in a new way. A short workout helps them stick.'
+    title: '👀 Sprig is waiting...',
+    body: 'Two quick minutes right now keeps your English sharp. Don’t leave your words hanging!',
+    visual: NOTIF_STYLE.habit
   },
   {
-    title: 'Your memory garden is ready to grow',
-    body: 'Reviewing words right as they fade locks them into long-term memory.'
+    title: '😬 These reminders aren’t working, are they?',
+    body: 'Prove Sprig wrong — jump in for one fast round before your words start getting dusty.',
+    visual: NOTIF_STYLE.habit
   },
   {
-    title: 'A fresh start is one word away',
-    body: 'Even a two-minute practice session wakes up your vocabulary recall.'
+    title: '🌱 Your words miss you',
+    body: 'Reviewing right as memories fade is the fastest cheat code for fluency. Take a tiny round now!',
+    visual: NOTIF_STYLE.practice
   },
   {
-    title: 'Keep your favorite words close',
-    body: 'Pick up right where you left off with a light, focused practice.'
+    title: '💬 Quick deal?',
+    body: 'Give Sprig two minutes of practice today and I’ll stop giving you the sad sprout eyes.',
+    visual: NOTIF_STYLE.habit
   },
   {
-    title: 'A quick vocabulary check-in',
-    body: 'No pressure—try a few quick flashcards or a listening prompt today.'
+    title: '⚡ Easy win waiting for you',
+    body: 'No marathon required — knock out a few quick prompts and walk away feeling sharper.',
+    visual: NOTIF_STYLE.practice
   },
   {
-    title: 'A fresh start is one word away',
-    body: 'No catching up required. Come back for a little practice whenever you are ready.'
+    title: '✨ Fresh start, zero guilt',
+    body: 'No catching up required. Jump back in with one easy round whenever you’re ready.',
+    visual: NOTIF_STYLE.fresh
   }
 ];
 
@@ -459,6 +555,7 @@ export function buildReminderSchedule(options = {}) {
       repeat: false,
       title: copy.title,
       body: copy.body,
+      visual: copy.visual,
       route: options.practiceRoute || 'review',
       reason: 'habit-follow-up'
     });
@@ -505,22 +602,40 @@ export function reminderNotifications(plan, streakPlan = plan?.streakPlan ?? nul
   });
   const primary = candidates.slice(0, REMINDER_HORIZON_DAYS).map((item, index) => {
     const [hour, minute] = normalizeReminderTime(item.time).split(':').map(Number);
+    const visual = item.visual || NOTIF_STYLE.habit;
     return {
       id: DAILY_REMINDER_ID + index * 10,
       channelId: REMINDER_CHANNEL_ID,
-      title: item.title, body: item.body,
+      title: item.title,
+      body: item.body,
+      largeBody: item.body,
+      summaryText: visual.summaryText,
+      largeIcon: visual.largeIcon,
+      iconColor: visual.iconColor,
+      actionTypeId: REMINDER_ACTION_TYPE_ID,
       schedule: item.repeat ? { on: { hour, minute }, allowWhileIdle: true }
         : { at: item.nextAt || getNextReminderAt(item.time), allowWhileIdle: true },
       autoCancel: true,
       extra: { route: item.route, reason: item.reason }
     };
   });
-  if (streakPlan) primary.push({
-    id: STREAK_REMINDER_ID, title: streakPlan.title, body: streakPlan.body,
-    channelId: REMINDER_CHANNEL_ID,
-    schedule: { at: streakPlan.nextAt || getNextReminderAt(streakPlan.time), allowWhileIdle: true },
-    autoCancel: true, extra: { route: streakPlan.route, reason: streakPlan.reason }
-  });
+  if (streakPlan) {
+    const visual = streakPlan.visual || NOTIF_STYLE.streak;
+    primary.push({
+      id: STREAK_REMINDER_ID,
+      title: streakPlan.title,
+      body: streakPlan.body,
+      largeBody: streakPlan.body,
+      summaryText: visual.summaryText,
+      largeIcon: visual.largeIcon,
+      iconColor: visual.iconColor,
+      actionTypeId: REMINDER_ACTION_TYPE_ID,
+      channelId: REMINDER_CHANNEL_ID,
+      schedule: { at: streakPlan.nextAt || getNextReminderAt(streakPlan.time), allowWhileIdle: true },
+      autoCancel: true,
+      extra: { route: streakPlan.route, reason: streakPlan.reason }
+    });
+  }
   return primary;
 }
 
@@ -592,6 +707,14 @@ async function prepareNativeReminders(plugin, requestPermission = false) {
   if (channels.some(channel => channel.id === REMINDER_CHANNEL_ID && channel.importance === 0)) {
     return { status: 'channel-blocked', platform: 'native' };
   }
+  try {
+    await plugin.registerActionTypes?.({
+      types: [{
+        id: REMINDER_ACTION_TYPE_ID,
+        actions: [{ id: 'practice-now', title: 'Practice now', foreground: true }]
+      }]
+    });
+  } catch { /* older native shells may omit action types */ }
   const exact = plugin.checkExactNotificationSetting ? await plugin.checkExactNotificationSetting() : {};
   return { status: 'ready', platform: 'native', exactAlarm: exact.exact_alarm || 'denied' };
 }
@@ -615,10 +738,17 @@ export async function sendTestReminder({ delaySeconds = 0 } = {}) {
     const ready = await prepareNativeReminders(plugin, true);
     if (ready.status !== 'ready') return ready;
     const delayed = delaySeconds > 0;
+    const testBody = delayed
+      ? 'Sprig made it through in the background! Tap to jump straight into a 2-minute workout.'
+      : 'Notifications are live! Expect playful Sprig nudges and streak saves right when they matter.';
     const scheduled = await plugin.schedule({ notifications: [{ id: TEST_REMINDER_ID, channelId: REMINDER_CHANNEL_ID,
-      title: delayed ? 'KeepVocab background reminder' : 'KeepVocab notification test',
-      body: delayed ? 'Your reminder arrived with KeepVocab in the background. Tap to open Practice.'
-        : 'Notification access is enabled. Tap to open Practice.',
+      title: delayed ? '🌱 Sprig’s background reminder arrived!' : '🔥 Sprig is ready to keep your streak alive!',
+      body: testBody,
+      largeBody: testBody,
+      summaryText: delayed ? '⚡ Background check' : '🌱 KeepVocab alerts',
+      largeIcon: delayed ? 'notif_sprig_celebrate' : 'notif_sprig_reminder',
+      iconColor: delayed ? '#22A447' : '#FF9600',
+      actionTypeId: REMINDER_ACTION_TYPE_ID,
       ...(delayed ? { schedule: { at: new Date(Date.now() + delaySeconds * 1000), allowWhileIdle: true } } : {}),
       isExactNotification: delayed && ready.exactAlarm === 'granted', autoCancel: true,
       extra: { route: 'review', reason: 'delivery-test' } }] });

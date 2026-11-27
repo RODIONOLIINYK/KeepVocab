@@ -3,6 +3,8 @@ import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
 import { mountUseItExercise } from './UseItExercise.js?v=18908';
+import { comboShellClasses } from './PracticeElements.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18915';
 import { createSpeechRecordingSession } from '../services/speechInput.js?v=18908';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -30,13 +32,14 @@ export function renderUseItMode(container, onNavigate) {
   recordModeWordSelections(driveSync, words, { mode: 'use-it' });
 
   let index = 0;
+  let combo = 0;
   let startedAt = performance.now();
   let exerciseController = null;
 
   function render(focusInput = false) {
     exerciseController?.destroy();
     const word = words[index];
-    container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell"><div class="practice-topline"><button class="status-pill offline" id="useit-exit"><i class="fa-solid fa-arrow-left"></i> Today</button><span>Use It · ${index + 1} of ${words.length}</span><strong>Active production</strong></div><div class="review-progress"><span style="width:${Math.round(index / words.length * 100)}%"></span></div><div id="useit-exercise-root"></div></div></section>`;
+    container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell${comboShellClasses(combo)}"><div class="practice-topline"><button class="status-pill offline" id="useit-exit"><i class="fa-solid fa-arrow-left"></i> Today</button><span>Use It · ${index + 1} of ${words.length}</span><strong>Active production</strong></div><div class="review-progress"><span style="width:${Math.round(index / words.length * 100)}%"></span></div><div id="useit-exercise-root"></div></div></section>`;
     container.querySelector('#useit-exit').addEventListener('click', () => {
       exerciseController?.destroy();
       teardownUseItMode();
@@ -48,9 +51,12 @@ export function renderUseItMode(container, onNavigate) {
       speechSession,
       nextLabel: index + 1 >= words.length ? 'Finish' : 'Next word',
       onEvaluated(result, sentence) {
+        if (result.correct) combo += 1; else combo = 0;
         recordExerciseResult({ wordId: word.id, exerciseType: 'use-it', correct: result.correct, responseTimeMs: performance.now() - startedAt, hintsUsed: 0, recallType: 'productive', producedUnaided: true, learnerResponse: sentence });
         window.dispatchEvent(new CustomEvent('keepvocab:progress'));
-        playInteractionSound(result.correct ? 'correct' : 'wrong');
+        if (!result.correct || !showComboCelebration(combo)) {
+          playInteractionSound(result.correct ? 'correct' : 'wrong', { combo });
+        }
       },
       onNext() {
         if (index + 1 >= words.length) {

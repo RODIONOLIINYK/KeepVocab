@@ -18,19 +18,19 @@ import { backfillLibraryTranslations } from './services/libraryTranslations.js?v
 
 import { renderLibraryView } from './components/LibraryView.js?v=18908';
 import { renderStatsView } from './components/StatsView.js?v=18913';
-import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18913';
-import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18908';
+import { renderSpellingMode, renderChooseWordMode } from './components/PracticeModes.js?v=18915';
+import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18915';
 import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18908';
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18908';
-import { renderDashboardView, updateDashboardGoalNudge, updateDashboardStreakUI } from './components/DashboardView.js?v=18914';
+import { renderDashboardView, updateDashboardGoalNudge, updateDashboardStreakUI } from './components/DashboardView.js?v=18915';
 import { showStreakCelebration } from './components/StreakCelebration.js?v=18914';
 import { getStreakSummary } from './services/studyActivity.js';
-import { renderDailySessionMode } from './components/DailySessionMode.js?v=18913';
-import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18912';
-import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18908';
-import { renderSentenceBuilderMode } from './components/SentenceBuilderMode.js?v=18912';
-import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18908';
-import { renderSettingsView, requestImageModelDownload } from './components/SettingsView.js?v=18908';
+import { renderDailySessionMode } from './components/DailySessionMode.js?v=18915';
+import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18915';
+import { renderContextQuizMode } from './components/ContextQuizMode.js?v=18915';
+import { renderSentenceBuilderMode } from './components/SentenceBuilderMode.js?v=18915';
+import { renderUseItMode, teardownUseItMode } from './components/UseItMode.js?v=18915';
+import { renderSettingsView, requestImageModelDownload } from './components/SettingsView.js?v=18915';
 
 function repairContradictoryExamples() {
   for (const word of driveSync.getWords()) {
@@ -128,8 +128,8 @@ function initApp() {
   setupMonthDropdown();
   setupKeyboardShortcuts();
   setupAutomaticDriveBackup();
+  void resumeRememberedDriveConnection();
   setupRemoteProgressRefresh();
-  resumeRememberedDriveConnection();
 
   window.addEventListener('keepvocab:progress', () => {
     rememberStudyStart();
@@ -649,6 +649,7 @@ function setupDriveBackupModal() {
 
   btnDisconnect.addEventListener('click', () => {
     driveSync.disconnectGoogleDrive();
+    markDriveDirty(false);
     renderConnectionState();
     status.textContent = 'Google Drive disconnected. The local cache remains available on this device.';
     showToast('Google Drive disconnected.');
@@ -656,21 +657,31 @@ function setupDriveBackupModal() {
 }
 
 let automaticSyncTimer = null;
-let driveChangeRevision = 0;
+let driveChangeRevision = driveSync.storage?.getItem?.('keepvocab_drive_dirty') ? 1 : 0;
 let syncedDriveRevision = 0;
 let lastAutomaticDriveSyncAt = 0;
 let automaticSyncRunning = false;
 let driveResumeRunning = false;
 
+function markDriveDirty(dirty) {
+  try {
+    if (dirty) driveSync.storage?.setItem?.('keepvocab_drive_dirty', '1');
+    else driveSync.storage?.removeItem?.('keepvocab_drive_dirty');
+  } catch { /* ignore storage quota errors */ }
+}
+
 async function runDriveSync() {
   document.getElementById('pill-syncing').style.display = 'inline-flex';
   try {
     const result = await driveSync.syncGoogleDrive();
+    markDriveDirty(false);
     updateDashboardDerivedState();
     queueSmartReminderRefresh();
     return result;
   } catch (error) {
-    driveSync.setDriveStatus({ isConnected: driveSync.getDriveStatus().isConnected, lastError: error.message });
+    const auth = driveSync.getDriveStatus();
+    const transient = driveSync.isTransientNetworkError?.(error) && !driveSync.isInteractiveAuthError?.(error);
+    driveSync.setDriveStatus({ isConnected: auth.isConnected, remembered: auth.remembered, lastError: transient ? null : error.message });
     renderConnectionState();
     throw error;
   } finally {
@@ -704,6 +715,7 @@ async function flushAutomaticDriveSync({ pullRemote = false } = {}) {
   try {
     await runDriveSync();
     syncedDriveRevision = Math.max(syncedDriveRevision, revisionAtStart);
+    if (!hasPendingDriveChanges()) markDriveDirty(false);
     lastAutomaticDriveSyncAt = Date.now();
   } catch (error) {
     console.warn('Automatic Drive backup failed.', error);
@@ -718,11 +730,28 @@ function setupAutomaticDriveBackup() {
     updateDashboardDerivedState();
     queueSmartReminderRefresh();
     driveChangeRevision += 1;
+    markDriveDirty(true);
+    scheduleAutomaticDriveSync();
+  });
+  window.addEventListener('storage', event => {
+    if (!['keepvocab_words_db', 'keepvocab_settings', 'keepvocab_drive_tombstones'].includes(event?.key)) return;
+    updateDashboardDerivedState();
+    queueSmartReminderRefresh();
+    driveChangeRevision += 1;
+    markDriveDirty(true);
     scheduleAutomaticDriveSync();
   });
   window.addEventListener('online', () => {
     resumeRememberedDriveConnection();
     scheduleAutomaticDriveSync();
+  });
+  window.addEventListener('pagehide', () => {
+    if (!hasPendingDriveChanges() || !canRunAutomaticDriveSync()) return;
+    if (automaticSyncTimer) {
+      window.clearTimeout(automaticSyncTimer);
+      automaticSyncTimer = null;
+    }
+    void flushAutomaticDriveSync();
   });
   window.setInterval(scheduleAutomaticDriveSync, DRIVE_SYNC_MIN_INTERVAL_MS);
 }
@@ -763,6 +792,7 @@ async function resumeRememberedDriveConnection() {
   try {
     if (!(await waitForGoogleIdentity())) return;
     await driveSync.resumeGoogleDrive();
+    markDriveDirty(false);
     updateDashboardDerivedState();
     queueSmartReminderRefresh();
     syncedDriveRevision = driveChangeRevision;
@@ -789,39 +819,34 @@ function renderConnectionState() {
   const connectedActions = document.getElementById('drive-connected-actions');
   banner.hidden = !auth.lastError;
 
-  if (auth.isConnected) {
+  const autoActive = Boolean(auth.autoBackupActive ?? (auth.isConnected || (auth.remembered && !auth.lastError)));
+  if (autoActive) {
     banner.className = 'keep-banner connected';
     icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
     title.textContent = 'Google Drive backup active';
-    subtitle.textContent = `${auth.email || 'Google account'} · “${auth.folderName}” · Last sync ${auth.lastSynced ? new Date(auth.lastSynced).toLocaleString() : 'pending'}.`;
+    subtitle.textContent = `${auth.email || 'Google account'} · “${auth.folderName}” · Auto-sync on · Last sync ${auth.lastSynced ? new Date(auth.lastSynced).toLocaleString() : 'pending'}.`;
     connectedPill.style.display = 'inline-flex';
     offlinePill.style.display = 'none';
     openButton.innerHTML = '<i class="fa-solid fa-gear"></i> Manage Sync';
-  } else if (auth.remembered && !auth.lastError) {
-    banner.className = 'keep-banner disconnected';
-    icon.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i>';
-    title.textContent = 'Google Drive is ready to reconnect';
-    subtitle.textContent = 'KeepVocab will not contact Drive until you choose to reconnect.';
-    connectedPill.style.display = 'none';
-    offlinePill.style.display = 'inline-flex';
-    openButton.innerHTML = '<i class="fa-brands fa-google-drive"></i> Reconnect Drive';
   } else {
     banner.className = 'keep-banner disconnected';
     icon.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i>';
-    title.textContent = 'Google Drive backup is off';
+    title.textContent = auth.remembered ? 'Google Drive needs confirmation' : 'Google Drive backup is off';
     subtitle.textContent = auth.lastError || 'Connect Drive to back up monthly vocabulary files and restore them after reinstalling.';
     connectedPill.style.display = 'none';
     offlinePill.style.display = 'inline-flex';
-    openButton.innerHTML = '<i class="fa-brands fa-google-drive"></i> Connect Drive';
+    openButton.innerHTML = auth.remembered
+      ? '<i class="fa-brands fa-google-drive"></i> Reconnect Drive'
+      : '<i class="fa-brands fa-google-drive"></i> Connect Drive';
   }
   syncingPill.style.display = 'none';
-  if (connectButton) connectButton.hidden = auth.isConnected;
-  if (connectedActions) connectedActions.hidden = !auth.isConnected;
+  if (connectButton) connectButton.hidden = autoActive;
+  if (connectedActions) connectedActions.hidden = !autoActive;
 
   const lastSync = document.getElementById('stat-last-sync');
   const syncLabel = document.getElementById('sync-time-label');
   if (lastSync) lastSync.textContent = auth.lastSynced ? new Date(auth.lastSynced).toLocaleString() : 'Not backed up';
-  if (syncLabel) syncLabel.textContent = auth.isConnected ? 'Drive active' : 'Drive off';
+  if (syncLabel) syncLabel.textContent = autoActive ? 'Drive active' : 'Drive off';
 }
 
 function setupMonthDropdown() {
@@ -903,11 +928,35 @@ function setupKeyboardShortcuts() {
 
 function setupRemoteProgressRefresh() {
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) pullRemoteProgress({ resumed: true });
+    if (document.hidden) {
+      if (hasPendingDriveChanges() && canRunAutomaticDriveSync()) {
+        if (automaticSyncTimer) {
+          window.clearTimeout(automaticSyncTimer);
+          automaticSyncTimer = null;
+        }
+        void flushAutomaticDriveSync();
+      }
+      return;
+    }
+    const auth = driveSync.getDriveStatus();
+    if (auth.remembered && !auth.isConnected) {
+      void resumeRememberedDriveConnection();
+      return;
+    }
+    pullRemoteProgress({ resumed: true });
   });
-  window.addEventListener('focus', () => pullRemoteProgress({ resumed: true }));
+  window.addEventListener('focus', () => {
+    const auth = driveSync.getDriveStatus();
+    if (auth.remembered && !auth.isConnected) {
+      void resumeRememberedDriveConnection();
+      return;
+    }
+    pullRemoteProgress({ resumed: true });
+  });
   window.setInterval(() => {
     if (!document.hidden) pullRemoteProgress();
   }, DRIVE_SYNC_MIN_INTERVAL_MS);
-  pullRemoteProgress({ resumed: true });
+  if (driveSync.getDriveStatus().isConnected) {
+    pullRemoteProgress({ resumed: true });
+  }
 }

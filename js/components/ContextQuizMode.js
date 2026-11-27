@@ -8,7 +8,8 @@ import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=18908';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { stableWordChoices } from '../services/wordChoices.js?v=18908';
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice, renderPracticeMascot } from './PracticeElements.js?v=18909';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice, renderPracticeMascot, comboShellClasses } from './PracticeElements.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18915';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE, now = new Date(), settings = null) {
@@ -102,7 +103,7 @@ export function renderContextQuizMode(container, onNavigate) {
     const correct = evaluateChoiceAnswer(target.id, selectedId);
     const cloze = clozeContextSentence(generatedItem.sentence, target.word);
     const sourceLabel = generatedItem.source === 'saved-example' ? 'Saved example' : 'AI-generated sentence';
-    container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell${combo >= 3 ? ' is-hot-combo' : ''}">
+    container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell${comboShellClasses(combo)}">
       ${renderPracticeHeader({ exitId: 'context-exit', label: 'Context', current, total: quizWords.length, score, answered })}
       <div class="practice-prompt choose-prompt">
         ${renderPracticeMascot({
@@ -122,7 +123,9 @@ export function renderContextQuizMode(container, onNavigate) {
       selectedId = button.dataset.contextWord;
       const isCorrect = evaluateChoiceAnswer(target.id, selectedId);
       if (isCorrect) combo += 1; else combo = 0;
-      playInteractionSound(isCorrect ? 'correct' : 'wrong', { combo });
+      if (!isCorrect || !showComboCelebration(combo)) {
+        playInteractionSound(isCorrect ? 'correct' : 'wrong', { combo });
+      }
       if (isCorrect) score += 1;
       recordExerciseResult({ wordId: target.id, exerciseType: 'context-cloze', correct: isCorrect, responseTimeMs: performance.now() - questionStartedAt, recallType: 'context', producedUnaided: false, confusedWithWordId: isCorrect ? '' : selectedId });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));

@@ -16,7 +16,8 @@ import { evaluateUseItSentence } from '../services/useItEvaluation.js?v=18908';
 import { getGeminiSettings } from '../services/geminiSettings.js?v=18908';
 import { buildSentencePuzzle, evaluateSentenceAssembly, generateSentenceBuilderSet } from '../services/sentenceBuilder.js';
 import { mountUseItExercise } from './UseItExercise.js?v=18908';
-import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement, formatMemoryBoost, renderPracticeMascot, renderVoiceWave, bindTalkingMascot } from './PracticeElements.js?v=18913';
+import { renderPracticeHeader, focusPracticeInput, practiceProgress, answerEncouragement, formatMemoryBoost, renderPracticeMascot, renderVoiceWave, bindTalkingMascot, renderComboBadge, comboShellClasses } from './PracticeElements.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18915';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function cloze(word) {
@@ -227,7 +228,9 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
       memoryBoost = '';
       queueMissedRecovery(exercise);
     }
-    playInteractionSound(correct ? 'correct' : 'wrong', { combo });
+    if (!correct || !showComboCelebration(combo)) {
+      playInteractionSound(correct ? 'correct' : 'wrong', { combo });
+    }
     window.dispatchEvent(new CustomEvent('keepvocab:progress'));
     render();
   }
@@ -267,7 +270,7 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     const progress = practiceProgress({ current: index, total: queue.length, score, answered });
     const mascot = answered ? (correct ? 'assets/keepvocab-sprig-celebrate.webp' : 'assets/keepvocab-sprout-mascot.webp') : 'assets/keepvocab-sprig-thinking.webp';
     if (exercise.exerciseType === 'use-it') {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell weak-use-it-shell${combo >= 3 ? ' is-hot-combo' : ''}"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> Use It</div><span class="muted-label">${escapeHtml(practiceNotebookLabel)}</span></div><div class="practice-topline"><button class="status-pill offline" id="daily-exit"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Today</button><span>${sessionLabel} · ${index + 1} of ${queue.length}</span><strong>${escapeHtml(progress.status)}</strong></div><div class="review-progress" role="progressbar" aria-label="${sessionLabel} progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${progress.completed}"><span style="width:${progress.percent}%"></span></div><div id="weak-useit-exercise-root"></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell weak-use-it-shell${comboShellClasses(combo)}"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> Use It</div><span class="muted-label">${escapeHtml(practiceNotebookLabel)}</span></div><div class="practice-topline"><button class="status-pill offline" id="daily-exit"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Today</button><span>${sessionLabel} · ${index + 1} of ${queue.length}</span><strong>${escapeHtml(progress.status)}</strong></div><div class="review-progress" role="progressbar" aria-label="${sessionLabel} progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${progress.completed}"><span style="width:${progress.percent}%"></span></div><div id="weak-useit-exercise-root"></div></div></section>`;
       container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
       useItController = mountUseItExercise(container.querySelector('#weak-useit-exercise-root'), {
         word,
@@ -290,7 +293,9 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
           });
           if (correct) { score += 1; combo += 1; } else { combo = 0; queueMissedRecovery(exercise); }
           window.dispatchEvent(new CustomEvent('keepvocab:progress'));
-          playInteractionSound(correct ? 'correct' : 'wrong', { combo });
+          if (!correct || !showComboCelebration(combo)) {
+            playInteractionSound(correct ? 'correct' : 'wrong', { combo });
+          }
         },
         onNext() {
           index += 1;
@@ -329,12 +334,12 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
           : contextMode
             ? `<blockquote class="duo-bubble-quote">${escapeHtml(cloze(word))}</blockquote><span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>`
             : `<blockquote class="duo-bubble-quote">${escapeHtml(definitionForLearning(word))}</blockquote>${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}<span class="review-pos-hint">${escapeHtml(word.partOfSpeech || 'word')}</span>`;
-      container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-heading"><div class="spec-card practice-shell review-recall-shell${combo >= 3 ? ' is-hot-combo' : ''}">
+      container.innerHTML = `<section class="full-view-stack" aria-labelledby="practice-heading"><div class="spec-card practice-shell review-recall-shell${comboShellClasses(combo)}">
         <div class="card-header-bar"><div class="card-tag" id="practice-heading"><i class="fa-solid fa-dumbbell" aria-hidden="true"></i> Practice</div><span class="muted-label">${escapeHtml(practiceNotebookLabel)}</span></div>
         ${renderPracticeHeader({ exitId: 'daily-exit', current: index, total: queue.length, score, answered })}
         <div class="${visual ? 'visual-prompt' : sentenceMode ? 'practice-prompt sentence-prompt' : 'practice-prompt typed-review-prompt'}">
           ${visual
-            ? `<div class="duo-stage-heading"><h2>${escapeHtml(headingText)}</h2>${combo >= 3 ? `<span class="duo-combo-badge"><i class="fa-solid fa-fire" aria-hidden="true"></i> ${combo} in a row</span>` : ''}</div><figure class="practice-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>`
+            ? `<div class="duo-stage-heading"><h2>${escapeHtml(headingText)}</h2>${renderComboBadge(combo)}</div><figure class="practice-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>`
             : renderPracticeMascot({ heading: headingText, bubbleHtml, answered, correct, combo, retry: Boolean(exercise.isRetry), talking: listening })}
           ${sentenceMode
             ? `<div class="sentence-answer-tray${answered ? (correct ? ' is-correct' : ' is-incorrect') : ''}" id="sentence-tray" aria-label="Your assembled sentence">

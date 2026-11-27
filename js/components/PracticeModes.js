@@ -9,7 +9,8 @@ import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18908';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections } from '../services/wordSelection.js?v=18908';
 import { stableWordChoices } from '../services/wordChoices.js?v=18908';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput, renderPracticeMascot, renderVoiceWave, bindTalkingMascot } from './PracticeElements.js?v=18913';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput, renderPracticeMascot, renderVoiceWave, bindTalkingMascot, comboShellClasses } from './PracticeElements.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18915';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function emptyMode(container, icon, title, detail, onNavigate) {
@@ -41,7 +42,7 @@ export function renderSpellingMode(container, onNavigate) {
     const word = queue[index];
     preloadAudioUrl(word.audioUrl);
     container.innerHTML = `
-      <section class="full-view-stack"><div class="spec-card practice-shell${combo >= 3 ? ' is-hot-combo' : ''}">
+      <section class="full-view-stack"><div class="spec-card practice-shell${comboShellClasses(combo)}">
         ${renderPracticeHeader({ exitId: 'spell-exit', label: '', current: index, total: queue.length, score, answered })}
         <div class="practice-prompt">
           ${renderPracticeMascot({
@@ -82,7 +83,9 @@ export function renderSpellingMode(container, onNavigate) {
       if (!answer) return;
       correct = evaluateRecallAnswer(word.word, answer);
       if (correct) { score += 1; combo += 1; } else { combo = 0; }
-      playInteractionSound(correct ? 'correct' : 'wrong', { combo });
+      if (!correct || !showComboCelebration(combo)) {
+        playInteractionSound(correct ? 'correct' : 'wrong', { combo });
+      }
       recordExerciseResult({ wordId: word.id, exerciseType: 'listen-and-spell', correct, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'listening-recall', producedUnaided: correct });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       answered = true;
@@ -121,7 +124,7 @@ export function renderChooseWordMode(container, onNavigate) {
     const answered = selectedId !== null;
     const isCorrect = evaluateChoiceAnswer(target.id, selectedId);
     container.innerHTML = `
-      <section class="full-view-stack"><div class="spec-card practice-shell${combo >= 3 ? ' is-hot-combo' : ''}">
+      <section class="full-view-stack"><div class="spec-card practice-shell${comboShellClasses(combo)}">
         ${renderPracticeHeader({ exitId: 'choose-exit', label: 'Choose Word', current: index, total: queue.length, score, answered })}
         <div class="practice-prompt choose-prompt">
           ${renderPracticeMascot({
@@ -141,7 +144,9 @@ export function renderChooseWordMode(container, onNavigate) {
       selectedId = button.dataset.choice;
       const correct = evaluateChoiceAnswer(target.id, selectedId);
       if (correct) { score += 1; combo += 1; } else { combo = 0; }
-      playInteractionSound(correct ? 'correct' : 'wrong', { combo });
+      if (!correct || !showComboCelebration(combo)) {
+        playInteractionSound(correct ? 'correct' : 'wrong', { combo });
+      }
       recordExerciseResult({ wordId: target.id, exerciseType: 'choose-word', correct, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: correct ? '' : selectedId });
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       render();

@@ -122,6 +122,9 @@ public class DriveAuthPlugin extends Plugin {
         JSObject response = new JSObject();
         response.put("accessToken", accessToken);
         response.put("expiresIn", DEFAULT_TOKEN_LIFETIME_SECONDS);
+        if (result.toGoogleSignInAccount() != null && result.toGoogleSignInAccount().getEmail() != null) {
+            response.put("email", result.toGoogleSignInAccount().getEmail());
+        }
         call.resolve(response);
     }
 

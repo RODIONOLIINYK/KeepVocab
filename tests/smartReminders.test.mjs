@@ -167,8 +167,13 @@ test('late-evening refresh after 20:30 escalates to a final-call streak rescue b
   assert.equal(plan.streakPlan.finalCall, true);
   assert.equal(plan.streakPlan.time, '22:00');
   assert.equal(plan.streakPlan.nextAt.getDate(), lateEvening.getDate());
-  assert.match(plan.streakPlan.title, /Final call: protect your 14-day streak/);
+  assert.match(plan.streakPlan.title, /Final call: protect your 14-day streak/i);
   assert.match(plan.streakPlan.body, /Midnight is close/);
+  const lateAlarms = reminderNotifications(plan, plan.streakPlan);
+  const streakAlarm = lateAlarms.find(item => item.extra.reason === 'streak-maintenance');
+  assert.equal(streakAlarm.largeIcon, 'notif_sprig_reminder');
+  assert.equal(streakAlarm.iconColor, '#EF4444');
+  assert.ok(streakAlarm.largeBody && streakAlarm.summaryText && streakAlarm.actionTypeId);
 
   const afterTen = new Date(2026, 8, 30, 22, 20);
   const latePlan = buildReminderSchedule({

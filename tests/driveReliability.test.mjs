@@ -336,3 +336,29 @@ test('disconnect before sync finishes cannot restore connected status', async ()
   assert.equal(service.getDriveStatus().remembered, false);
   assert.equal(service.accessToken, null);
 });
+
+test('transient network renewal blips keep Drive auto-backup active without flagging a false disconnect, while forwarding account hint', async context => {
+  const storage = new MemoryStorage();
+  const service = new DriveSyncService(storage, async () => { throw new TypeError('Failed to fetch'); });
+  service.setDriveStatus({ isConnected: false, remembered: true, email: 'learner@example.com' });
+  assert.equal(service.getDriveStatus().autoBackupActive, true);
+
+  const hints = [];
+  mockGoogle(context, {
+    initTokenClient(config) {
+      hints.push(config.hint);
+      return {
+        requestAccessToken({ hint }) {
+          hints.push(hint);
+          config.error_callback({ type: 'network_error', message: 'Failed to fetch' });
+        }
+      };
+    }
+  });
+
+  await assert.rejects(service.resumeGoogleDrive(), /Failed to fetch/i);
+  assert.deepEqual(hints, ['learner@example.com', 'learner@example.com']);
+  assert.equal(service.getDriveStatus().remembered, true);
+  assert.equal(service.getDriveStatus().lastError, null, 'transient network failure must not set a reconnect banner');
+  assert.equal(service.getDriveStatus().autoBackupActive, true);
+});

@@ -8,6 +8,7 @@ import { escapeHtml } from '../utils/html.js';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { navigateTo as go } from '../utils/navigation.js';
 import { safeImageUrl } from '../utils/imageUrls.js';
+import { showComboCelebration } from './ComboCelebration.js?v=18915';
 
 export function renderFlashcardsMode(container, onNavigate) {
   const allWords = getActivePracticeWords(driveSync);
@@ -21,6 +22,7 @@ export function renderFlashcardsMode(container, onNavigate) {
   recordModeWordSelections(driveSync, words, { mode: 'flashcards' });
 
   let currentIndex = 0;
+  let combo = 0;
   let revealed = false;
   let completed = false;
   const ratedIds = new Set();
@@ -62,7 +64,10 @@ export function renderFlashcardsMode(container, onNavigate) {
     container.querySelector('#flashcard-next').addEventListener('click', () => move(1));
     container.querySelectorAll('[data-flashcard-rating]').forEach(button => button.addEventListener('click', () => {
       const rating = button.dataset.flashcardRating;
-      recordExerciseResult({ wordId: word.id, exerciseType: 'flashcards', correct: rating !== 'again', ...reviewResult, responseTimeMs: recallTimeMs, learnerRating: rating });
+      const isCorrect = rating !== 'again';
+      if (isCorrect) combo += 1; else combo = 0;
+      recordExerciseResult({ wordId: word.id, exerciseType: 'flashcards', correct: isCorrect, ...reviewResult, responseTimeMs: recallTimeMs, learnerRating: rating });
+      if (isCorrect) showComboCelebration(combo);
       ratedIds.add(word.id);
       window.dispatchEvent(new CustomEvent('keepvocab:progress'));
       if (currentIndex < words.length - 1) move(1); else { completed = true; render(); }

@@ -16,6 +16,8 @@ import { DriveSyncService, MemoryStorage, mergeDriveSettings } from '../js/servi
 import { renderDashboardView, streakMilestoneCopy, updateDashboardStreakUI } from '../js/components/DashboardView.js';
 import { renderStatsView } from '../js/components/StatsView.js';
 import { renderStreakCelebrationMarkup } from '../js/components/StreakCelebration.js';
+import { comboCelebrationConfig, isComboMilestone, renderComboCelebrationMarkup } from '../js/components/ComboCelebration.js';
+import { getInteractionSoundProfile } from '../js/services/interactionSound.js';
 import { localDateKey } from '../js/utils/dates.js';
 
 test('streak freezes bridge a missed day without inflating active streak count and require meeting daily goal', () => {
@@ -284,4 +286,32 @@ test('scrollbars are hidden across both the main app and the macOS menu-bar quic
   assert.match(quickAdd, /scrollbar-width:\s*none/);
   assert.match(quickAdd, /::-webkit-scrollbar[\s\S]*display:\s*none/);
   assert.match(quickAdd, /scrollbar-gutter:\s*auto/);
+});
+
+test('5+ in-a-row combo milestones render tiered Duolingo-style celebrations with dedicated fanfare sounds', () => {
+  assert.equal(isComboMilestone(4), false);
+  assert.equal(isComboMilestone(5), true);
+  assert.equal(isComboMilestone(6), false);
+  assert.equal(isComboMilestone(10), true);
+  assert.equal(isComboMilestone(15), true);
+
+  assert.equal(comboCelebrationConfig(5).tier, 'blaze');
+  assert.equal(comboCelebrationConfig(10).tier, 'super');
+  assert.equal(comboCelebrationConfig(15).tier, 'legend');
+
+  const html5 = renderComboCelebrationMarkup(5);
+  assert.match(html5, /5 in a row!/);
+  assert.match(html5, /is-blaze/);
+  assert.match(html5, /keepvocab-sprig-celebrate\.webp/);
+  assert.match(html5, /combo-burst-svg/);
+
+  const html10 = renderComboCelebrationMarkup(10);
+  assert.match(html10, /10 in a row!/);
+  assert.match(html10, /is-super/);
+  assert.match(html10, /UNSTOPPABLE/);
+
+  const combo5 = getInteractionSoundProfile('combo5');
+  const combo10 = getInteractionSoundProfile('combo10');
+  assert.ok(combo5.length >= 4 && combo5.at(-1).frequency > combo5[0].frequency);
+  assert.ok(combo10.length >= 5 && combo10.at(-1).frequency > combo10[0].frequency);
 });

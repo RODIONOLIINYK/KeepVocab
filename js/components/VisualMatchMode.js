@@ -1,5 +1,6 @@
 import { definitionForLearning } from '../services/learningDefinitions.js?v=18908';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback } from './PracticeElements.js?v=18908';
+import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderComboBadge, comboShellClasses } from './PracticeElements.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18915';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { findRelevantImages, prepareImageScenes, imageSenseFingerprint, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18908';
 import { imageReplacementLabels } from '../services/imageChoicePolicy.js';
@@ -152,6 +153,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
     const originalCount = queue.length;
     let index = 0;
     let score = 0;
+    let combo = 0;
     let selectedId = null;
     let questionStartedAt = performance.now();
     const choiceState = { targetId: null, options: [] };
@@ -168,9 +170,9 @@ export async function renderVisualMatchMode(container, onNavigate) {
       const options = stableWordChoices(choiceState, target.word, allWords);
       const answered = selectedId !== null;
       const correct = evaluateChoiceAnswer(target.word.id, selectedId);
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell visual-shell">
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell visual-shell${comboShellClasses(combo)}">
         ${renderPracticeHeader({ exitId: 'visual-exit', current: index, total: queue.length, score, answered })}
-        <div class="visual-prompt"><p>Which word best matches this image?</p><figure><img src="${escapeHtml(safeImageUrl(target.image.url))}" alt="Visual clue"><figcaption>${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Image source</a>` : ''}${target.image.attribution ? `${sourceUrl ? ' · ' : ''}${escapeHtml(target.image.attribution)}` : ''}${target.image.license ? ` · ${escapeHtml(target.image.license)}` : ''}</figcaption></figure><button class="status-pill offline" id="visual-change-cue"><i class="fa-solid fa-rotate"></i> Change automatic suggestion</button>
+        <div class="visual-prompt"><div class="duo-stage-heading"><p>Which word best matches this image?</p>${renderComboBadge(combo)}</div><figure><img src="${escapeHtml(safeImageUrl(target.image.url))}" alt="Visual clue"><figcaption>${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Image source</a>` : ''}${target.image.attribution ? `${sourceUrl ? ' · ' : ''}${escapeHtml(target.image.attribution)}` : ''}${target.image.license ? ` · ${escapeHtml(target.image.license)}` : ''}</figcaption></figure><button class="status-pill offline" id="visual-change-cue"><i class="fa-solid fa-rotate"></i> Change automatic suggestion</button>
           ${renderChoiceGrid({ options, targetId: target.word.id, selectedId, attribute: 'data-visual-choice' })}
           ${renderAnswerFeedback({ answered, correct, answer: target.word.word, detail: definitionForLearning(target.word), nextId: 'visual-next', nextLabel: index + 1 === queue.length ? 'See result' : 'Next image' })}
         </div>
@@ -181,8 +183,10 @@ export async function renderVisualMatchMode(container, onNavigate) {
         if (selectedId !== null) return;
         selectedId = button.dataset.visualChoice;
         const isCorrect = evaluateChoiceAnswer(target.word.id, selectedId);
-        playInteractionSound(isCorrect ? 'correct' : 'wrong');
-        if (isCorrect) score += 1;
+        if (isCorrect) { score += 1; combo += 1; } else { combo = 0; }
+        if (!isCorrect || !showComboCelebration(combo)) {
+          playInteractionSound(isCorrect ? 'correct' : 'wrong', { combo });
+        }
         recordExerciseResult({ wordId: target.word.id, exerciseType: 'visual-match', correct: isCorrect, responseTimeMs: performance.now() - questionStartedAt, hintsUsed: 0, recallType: 'recognition', producedUnaided: false, confusedWithWordId: isCorrect ? '' : selectedId });
         window.dispatchEvent(new CustomEvent('keepvocab:progress'));
         render();
