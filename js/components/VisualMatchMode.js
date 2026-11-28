@@ -1,5 +1,5 @@
 import { definitionForLearning } from '../services/learningDefinitions.js?v=18908';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderComboBadge, comboShellClasses } from './PracticeElements.js?v=18915';
+import { renderPracticeFrame, renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderComboBadge, comboShellClasses } from './PracticeElements.js?v=18915';
 import { showComboCelebration } from './ComboCelebration.js?v=18917';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { findRelevantImages, prepareImageScenes, imageSenseFingerprint, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18908';
@@ -160,7 +160,7 @@ export async function renderVisualMatchMode(container, onNavigate) {
 
     function render() {
       if (index >= queue.length) {
-        container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state"><i class="fa-solid fa-images"></i><h2>Visual session complete</h2><p>You matched ${score} of ${originalCount} image–word pairs. Missed meanings will be prioritized next time.</p><div class="inline-actions"><button class="btn-green-solid" id="visual-again">Practice again</button><button class="status-pill offline" id="visual-done">Dashboard</button></div></div></section>`;
+        container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete practice-completion"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt=""><h2>Visual session complete</h2><p>You matched ${score} of ${originalCount} image–word pairs. Missed meanings will be prioritized next time.</p><div class="inline-actions"><button class="btn-green-solid" id="visual-again">Practice again</button><button class="status-pill offline" id="visual-done">Dashboard</button></div></div></section>`;
         container.querySelector('#visual-again').addEventListener('click', () => renderVisualMatchMode(container, onNavigate));
         container.querySelector('#visual-done').addEventListener('click', () => go('dashboard', onNavigate));
         return;
@@ -170,13 +170,13 @@ export async function renderVisualMatchMode(container, onNavigate) {
       const options = stableWordChoices(choiceState, target.word, allWords);
       const answered = selectedId !== null;
       const correct = evaluateChoiceAnswer(target.word.id, selectedId);
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell visual-shell${comboShellClasses(combo)}">
+      renderPracticeFrame(container, `<section class="full-view-stack"><div class="spec-card practice-shell visual-shell${comboShellClasses(combo)}">
         ${renderPracticeHeader({ exitId: 'visual-exit', current: index, total: queue.length, score, answered })}
         <div class="visual-prompt"><div class="duo-stage-heading"><p>Which word best matches this image?</p>${renderComboBadge(combo)}</div><figure><img src="${escapeHtml(safeImageUrl(target.image.url))}" alt="Visual clue"><figcaption>${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">Image source</a>` : ''}${target.image.attribution ? `${sourceUrl ? ' · ' : ''}${escapeHtml(target.image.attribution)}` : ''}${target.image.license ? ` · ${escapeHtml(target.image.license)}` : ''}</figcaption></figure><button class="status-pill offline" id="visual-change-cue"><i class="fa-solid fa-rotate"></i> Change automatic suggestion</button>
           ${renderChoiceGrid({ options, targetId: target.word.id, selectedId, attribute: 'data-visual-choice' })}
           ${renderAnswerFeedback({ answered, correct, answer: target.word.word, detail: definitionForLearning(target.word), nextId: 'visual-next', nextLabel: index + 1 === queue.length ? 'See result' : 'Next image' })}
         </div>
-      </div></section>`;
+      </div></section>`, { key: `visual:${index}`, result: answered ? (correct ? 'correct' : 'incorrect') : '' });
       container.querySelector('#visual-exit').addEventListener('click', () => go('dashboard', onNavigate));
       container.querySelector('#visual-change-cue').addEventListener('click', () => renderImageChooser(0, target.word));
       container.querySelectorAll('[data-visual-choice]').forEach(button => button.addEventListener('click', () => {

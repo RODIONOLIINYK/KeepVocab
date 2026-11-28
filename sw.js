@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v115007-fullscreen-celebrations';
+const CACHE_NAME = 'keepvocab-v115008-practice-motion';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
@@ -10,6 +10,7 @@ const ASSETS_TO_CACHE = [
   './css/polish.css',
   './css/mobile.css',
   './css/motion.css',
+  './css/practice.css',
   './css/icons.css',
   './css/quick-add.css',
   './js/app.js',
@@ -175,9 +176,9 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET' || new URL(event.request.url).origin !== self.location.origin) return;
   const pathname = new URL(event.request.url).pathname;
   if (pathname.startsWith('/_keepvocab_models/') || pathname.startsWith('/_capacitor_file_/')) return;
-  // Native runtime files already belong to the installed application. Keeping
-  // another copy in Chromium's profile would survive deletion of the macOS app.
-  if (NATIVE_APP && new URL(event.request.url).pathname.includes('/ml/runtime/')) return;
+  // The installer already carries native runtime files and the merge model
+  // source. They should not consume a second copy in the web shell cache.
+  if (NATIVE_APP && (pathname.includes('/ml/runtime/') || pathname.includes('/models/meaning-minilm-v8/'))) return;
 
   event.respondWith(
     fetch(event.request, { cache: 'no-store' })

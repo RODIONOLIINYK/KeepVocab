@@ -8,7 +8,7 @@ import { DEFAULT_SESSION_SIZE } from '../services/dailySession.js?v=18908';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { stableWordChoices } from '../services/wordChoices.js?v=18908';
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice, renderPracticeMascot, comboShellClasses } from './PracticeElements.js?v=18915';
+import { renderPracticeFrame, renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice, renderPracticeMascot, comboShellClasses } from './PracticeElements.js?v=18915';
 import { showComboCelebration } from './ComboCelebration.js?v=18917';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -103,7 +103,7 @@ export function renderContextQuizMode(container, onNavigate) {
     const correct = evaluateChoiceAnswer(target.id, selectedId);
     const cloze = clozeContextSentence(generatedItem.sentence, target.word);
     const sourceLabel = generatedItem.source === 'saved-example' ? 'Saved example' : 'AI-generated sentence';
-    container.innerHTML = `<section class="full-view-stack"><div class="spec-card practice-shell${comboShellClasses(combo)}">
+    renderPracticeFrame(container, `<section class="full-view-stack"><div class="spec-card practice-shell${comboShellClasses(combo)}">
       ${renderPracticeHeader({ exitId: 'context-exit', label: 'Context', current, total: quizWords.length, score, answered })}
       <div class="practice-prompt choose-prompt">
         ${renderPracticeMascot({
@@ -116,7 +116,7 @@ export function renderContextQuizMode(container, onNavigate) {
         ${renderChoiceGrid({ options, targetId: target.id, selectedId, attribute: 'data-context-word' })}
         ${renderAnswerFeedback({ recallType: 'context', answered, correct, answer: target.word, detail: generatedItem.sentence, nextId: 'context-next', nextLabel: current + 1 === quizWords.length ? 'See results' : 'Next sentence' })}
       </div>
-    </div></section>`;
+    </div></section>`, { key: `context:${current}`, result: answered ? (correct ? 'correct' : 'incorrect') : '' });
     container.querySelector('#context-exit').addEventListener('click', dashboard);
     container.querySelectorAll('[data-context-word]').forEach(button => button.addEventListener('click', () => {
       if (selectedId !== null) return;

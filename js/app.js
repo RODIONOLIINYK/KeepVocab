@@ -2,7 +2,7 @@ import { getActivePracticeWords, getScheduledPracticeWords } from './services/wo
 import { setupAddWordModal } from './components/AddWordModal.js?v=18908';
 import { startAutomaticUpdateChecks } from './services/appUpdates.js?v=18908';
 import { initializeImageLearning } from './services/imageLearning.js?v=18908';
-import { preloadMeaningModel } from './services/meaningReference.js';
+import { initializeMeaningModel } from './services/meaningReference.js';
 // Native application controller with monthly Google Drive backup.
 
 import { driveSync, usesNativeGoogleAuthorization } from './services/driveSync.js?v=18908';
@@ -24,6 +24,7 @@ import { renderMatchSprintMode, teardownMatchSprintMode } from './components/Mat
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18908';
 import { renderDashboardView, updateDashboardGoalNudge, updateDashboardStreakUI } from './components/DashboardView.js?v=18915';
 import { showStreakCelebration } from './components/StreakCelebration.js?v=18917';
+import { dismissComboCelebration } from './components/ComboCelebration.js?v=18917';
 import { getStreakSummary } from './services/studyActivity.js';
 import { renderDailySessionMode } from './components/DailySessionMode.js?v=18915';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18915';
@@ -156,7 +157,7 @@ function initApp() {
   renderConnectionState();
   updateDashboardDerivedState();
   // Installed inference starts on app opening, independent of idle time.
-  void preloadMeaningModel().catch(error => console.warn('Meaning model preload failed.', error));
+  void initializeMeaningModel().catch(error => console.warn('Meaning model startup failed.', error));
   void initializeImageLearning({ requestDownload: requestImageModelDownload }).catch(() => showToast('Image suggestions could not start. You can still choose photos.', 'error'));
 }
 
@@ -224,8 +225,6 @@ function updateVisibleDailyProgress(settings = driveSync.getSettings()) {
     const fill = track.querySelector('span');
     if (fill) fill.style.width = `${Math.min(100, Math.round(completed / dailyGoal * 100))}%`;
   }
-  const dashboardStreak = document.getElementById('today-streak-label');
-  if (dashboardStreak) dashboardStreak.textContent = `${Number(settings.dailyStreak || 0)} day streak`;
   const statsToday = document.getElementById('stats-today-count');
   if (statsToday) statsToday.textContent = `${completed}/${dailyGoal} today`;
   const goalInput = document.getElementById('daily-goal-input');
@@ -499,6 +498,7 @@ function setupEngagementSystem() {
 }
 
 function navigateTo(viewName) {
+  dismissComboCelebration();
   const navigationId = ++navigationRevision;
   if (viewName === 'daily' || viewName === 'weak') {
     viewName = 'review';

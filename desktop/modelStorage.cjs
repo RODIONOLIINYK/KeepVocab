@@ -1,12 +1,47 @@
-const { mkdir, readFile, writeFile, appendFile, rename, stat, rm, readdir } = require('node:fs/promises');
+const { mkdir, readFile, writeFile, appendFile, rename, stat, lstat, rm, readdir, copyFile } = require('node:fs/promises');
 const path = require('node:path');
-const { createReadStream } = require('node:fs');
+const { constants, createReadStream } = require('node:fs');
 const { Readable } = require('node:stream');
 
-// A packed macOS app owns its downloads. Removing the .app removes this folder.
 function modelStorageRoot(app) {
-  return app.isPackaged ? path.join(process.resourcesPath, 'model-cache')
-    : path.join(app.getPath('userData'), 'development-model-cache');
+  return path.join(app.getPath('userData'), app.isPackaged ? 'model-cache' : 'development-model-cache');
+}
+
+async function migrateBundleModelCache(root, legacyRoot) {
+  const marker = path.join(root, '.bundle-cache-migrated');
+  const exists = file => lstat(file).catch(error => {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  });
+  if (await exists(marker) || !(await exists(legacyRoot))?.isDirectory()) return;
+
+  // The old updater carries the legacy folder into the new bundle on first
+  // upgrade. Copy only committed pairs, and leave the bundle intact for rollback.
+  await mkdir(root, { recursive: true, mode: 0o700 });
+  for (const entry of await readdir(legacyRoot, { withFileTypes: true })) {
+    const cache = entry.name;
+    if (!entry.isDirectory() || !/^keepvocab-[a-z0-9-]{1,70}$/.test(cache)) continue;
+    const from = path.join(legacyRoot, cache), to = path.join(root, cache);
+    for (const metadata of await readdir(from, { withFileTypes: true })) {
+      if (!metadata.isFile() || !/^[a-f0-9]{64}\.json$/.test(metadata.name)) continue;
+      const key = metadata.name.slice(0, -5);
+      const file = await exists(path.join(from, key));
+      if (!file?.isFile() || !file.size) continue;
+      let info;
+      try { info = JSON.parse(await readFile(path.join(from, metadata.name), 'utf8')); }
+      catch (error) { if (error instanceof SyntaxError) continue; throw error; }
+      if (info?.size !== file.size) continue;
+      if ((await modelStorageOperation(root, { action: 'stat', cache, key })).size > 0) continue;
+      await mkdir(to, { recursive: true });
+      const temporary = path.join(to, key + '.migration');
+      await copyFile(path.join(from, key), temporary, constants.COPYFILE_FICLONE);
+      await rename(temporary, path.join(to, key));
+      await writeFile(temporary, JSON.stringify(info));
+      await rename(temporary, path.join(to, metadata.name));
+    }
+  }
+  // A subsequent Settings removal must never reimport the bundle copy.
+  await writeFile(marker, '');
 }
 async function modelStorageOperation(root, args) {
   const { action, cache, key, token = '' } = args;
@@ -65,4 +100,4 @@ async function handleModelStorageRequest(root, request) {
     'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'
   } });
 }
-module.exports = { modelStorageRoot, modelStorageOperation, handleModelStorageRequest };
+module.exports = { modelStorageRoot, migrateBundleModelCache, modelStorageOperation, handleModelStorageRequest };

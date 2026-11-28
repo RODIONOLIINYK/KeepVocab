@@ -13,7 +13,7 @@ import {
 import { ensureDailyStudyPlan, getActivePracticeWords, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
-import { formatMemoryBoost, renderPracticeHeader, renderPracticeMascot, renderPracticeNotice, comboShellClasses } from './PracticeElements.js?v=18915';
+import { renderPracticeFrame, formatMemoryBoost, renderPracticeHeader, renderPracticeMascot, renderPracticeNotice, comboShellClasses } from './PracticeElements.js?v=18915';
 import { showComboCelebration } from './ComboCelebration.js?v=18917';
 
 export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
@@ -191,7 +191,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
       ? `<span class="sentence-tile is-locked" aria-label="Sentence opening">${escapeHtml(puzzle.opening)}</span>`
       : '';
 
-    container.innerHTML = `<section class="full-view-stack" aria-labelledby="sentence-heading">
+    renderPracticeFrame(container, `<section class="full-view-stack" aria-labelledby="sentence-heading">
       <div class="spec-card practice-shell sentence-shell${comboShellClasses(combo)}">
         <div class="card-header-bar">
           <div class="card-tag" id="sentence-heading"><i class="fa-solid fa-align-left" aria-hidden="true"></i> Build Sentence</div>
@@ -213,15 +213,15 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
               : `<span class="sentence-tray-placeholder">${puzzle.opening ? 'Tap the phrase tiles below to finish the sentence.' : 'Tap the phrase tiles below in order.'}</span>`}
           </div>
           ${answered
-            ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite">
+            ? `<aside class="practice-answer-tray ${correct ? 'correct' : 'incorrect'}"><div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite">
                 <strong><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'}" aria-hidden="true"></i> ${correct ? 'Sentence locked in!' : 'Expected sentence'}</strong>
                 <span>${escapeHtml(puzzle.sentence)}</span>
                 ${correct && memoryBoost ? `<em class="memory-boost-pill"><i class="fa-solid fa-seedling" aria-hidden="true"></i> ${escapeHtml(memoryBoost)}</em>` : ''}
               </div>
               <div class="inline-actions">
                 <button type="button" class="status-pill offline" id="sentence-hear"><i class="fa-solid fa-volume-high" aria-hidden="true"></i> Hear sentence</button>
-                <button type="button" class="btn-green-solid" id="sentence-next">${index + 1 === words.length ? 'See result' : 'Next sentence'}</button>
-              </div>`
+                <button type="button" class="btn-green-solid" id="sentence-next" data-practice-continue>${index + 1 === words.length ? 'See result' : 'Next sentence'}</button>
+              </div></aside>`
             : `<div class="sentence-tile-bank" role="group" aria-label="Phrase bank">
                 ${puzzle.tiles.map(tile => {
                   const used = chosenSet.has(tile.id);
@@ -235,7 +235,7 @@ export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
               </div>`}
         </div>
       </div>
-    </section>`;
+    </section>`, { key: `sentence:${index}`, result: answered ? (correct ? 'correct' : 'incorrect') : '', step: chosenTiles.length });
 
     container.querySelector('#sentence-exit').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelectorAll('[data-pick-tile]').forEach(button => button.addEventListener('click', () => {

@@ -10,6 +10,59 @@ export function focusPracticeInput(input, { allowTouch = false } = {}) {
   input.focus({ preventScroll: !touch });
 }
 
+function progressFraction(fill) {
+  if (!fill) return 0;
+  const width = fill.parentElement.getBoundingClientRect().width;
+  return width ? fill.getBoundingClientRect().width / width : 0;
+}
+
+function animateProgress(fill, from) {
+  const to = progressFraction(fill);
+  if (!to || Math.abs(from - to) < .001) return;
+  fill.animate?.([{ scale: `${from / to} 1` }, { scale: '1 1' }], {
+    duration: 440, easing: 'cubic-bezier(.16, .85, .24, 1)'
+  });
+}
+
+export function updatePracticeProgress(rail, completed, total) {
+  const fill = rail.querySelector('span');
+  const from = progressFraction(fill);
+  rail.setAttribute('aria-valuemax', String(total));
+  rail.setAttribute('aria-valuenow', String(completed));
+  if (rail.classList.contains('is-segmented')) rail.style.setProperty('--practice-completed', completed);
+  fill.style.width = `${total ? 100 * completed / total : 0}%`;
+  if (!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) animateProgress(fill, from);
+}
+
+const frameStates = new WeakMap();
+export function renderPracticeFrame(container, markup, { key, result = '', step = '' }) {
+  const previous = frameStates.get(container.firstElementChild);
+  const sameQuestion = previous?.key === key;
+  const motion = !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const progressSelector = '.review-progress > span, .exercise-progress > i > b';
+  const from = previous && motion ? progressFraction(container.querySelector(progressSelector)) : 0;
+  const hadFocus = container.contains?.(container.ownerDocument?.activeElement);
+  talkingMascots.get(container)?.();
+  container.innerHTML = markup;
+  const node = container.firstElementChild;
+  if (!node) return;
+  frameStates.set(node, { key, result, step });
+  const stepMotion = typeof step === 'number'
+    ? step > (previous?.step || 0) ? 'place' : ''
+    : step;
+  node.dataset.practiceMotion = !sameQuestion ? 'enter'
+    : result !== previous.result && result ? result
+      : step !== previous.step ? stepMotion : '';
+  if (motion) animateProgress(node.querySelector(progressSelector), from);
+  if (hadFocus && result && result !== previous?.result) {
+    node.querySelector('[data-practice-continue]')?.focus({ preventScroll: true });
+  }
+}
+
+export function renderPracticeBurst() {
+  return '<span class="practice-burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>';
+}
+
 // The existing status and progress reflect submitted exercises, including a
 // missed answer. Milestones replace status text only; no extra UI or waiting.
 export function practiceProgress({ current = 0, total = 0, answered = false, score = 0 } = {}) {
@@ -33,8 +86,10 @@ export function answerEncouragement({ correct, recallType = 'recognition', hints
 
 export function renderPracticeHeader({ exitId, label, current, total, score, answered = false }) {
   const progress = practiceProgress({ current, total, score, answered });
+  const segmented = total >= 2 && total <= 10;
+  const segments = segmented ? ` style="--practice-segments:${total};--practice-completed:${progress.completed}"` : '';
   return `<div class="practice-topline"><button class="status-pill offline" id="${escapeHtml(exitId)}"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${escapeHtml(label ? `${label} · ` : '')}${current + 1} of ${total}</span><strong>${escapeHtml(progress.status)}</strong></div>
-    <div class="review-progress" role="progressbar" aria-label="Exercise progress" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${progress.completed}"><span style="width:${progress.percent}%"></span></div>`;
+    <div class="review-progress${segmented ? ' is-segmented' : ''}" role="progressbar" aria-label="Exercise progress" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${progress.completed}"${segments}><span style="width:${progress.percent}%"></span></div>`;
 }
 
 export function renderChoiceGrid({ options, targetId, selectedId = null, attribute = 'data-choice' }) {
@@ -48,12 +103,16 @@ export function renderChoiceGrid({ options, targetId, selectedId = null, attribu
 
 export function renderAnswerFeedback({ answered, correct, answer, detail = '', nextId, nextLabel, recallType = 'recognition', hintsUsed = 0 }) {
   const message = correct ? escapeHtml(detail) : `The correct answer is <b>${escapeHtml(answer)}</b>. ${escapeHtml(detail)}`;
-  return `<div class="answer-feedback-slot" aria-live="polite">${answered ? `<div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}"><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${escapeHtml(answerEncouragement({ correct, recallType, hintsUsed }))}</strong><span>${message}</span></div></div>` : ''}</div>
-    <div class="answer-action-slot">${answered ? `<button class="btn-green-solid" id="${escapeHtml(nextId)}">${escapeHtml(nextLabel)}</button>` : ''}</div>`;
+  if (!answered) return '';
+  const state = correct ? 'correct' : 'incorrect';
+  return `<aside class="practice-answer-tray ${state}">
+    <div class="answer-feedback-card ${state}" role="status"><i class="fa-solid ${correct ? 'fa-check' : 'fa-xmark'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${escapeHtml(answerEncouragement({ correct, recallType, hintsUsed }))}</strong><span>${message}</span></div></div>
+    <button class="btn-green-solid" data-practice-continue id="${escapeHtml(nextId)}">${escapeHtml(nextLabel)}</button>
+  </aside>`;
 }
 
 export function renderPracticeNotice({ title, detail, actions, complete = false, loading = false }) {
-  return `<section class="full-view-stack"><div class="spec-card useful-empty-state${complete ? ' mode-complete' : ''}"${loading ? ' aria-live="polite" aria-busy="true"' : ''}><img class="${loading ? 'practice-mascot' : 'mascot-result'}" src="assets/keepvocab-sprig-${complete ? 'celebrate' : 'thinking'}.webp" alt=""><h2>${escapeHtml(title)}</h2><p>${escapeHtml(detail)}</p><div class="inline-actions">${actions.map(({ id, label, secondary }) => `<button class="${secondary ? 'status-pill offline' : 'btn-green-solid'}" id="${escapeHtml(id)}">${escapeHtml(label)}</button>`).join('')}</div></div></section>`;
+  return `<section class="full-view-stack"><div class="spec-card useful-empty-state${complete ? ' mode-complete practice-completion' : ''}"${loading ? ' aria-live="polite" aria-busy="true"' : ''}><img class="${loading ? 'practice-mascot' : 'mascot-result'}" src="assets/keepvocab-sprig-${complete ? 'celebrate' : 'thinking'}.webp" alt=""><h2>${escapeHtml(title)}</h2><p>${escapeHtml(detail)}</p><div class="inline-actions">${actions.map(({ id, label, secondary }) => `<button class="${secondary ? 'status-pill offline' : 'btn-green-solid'}" id="${escapeHtml(id)}">${escapeHtml(label)}</button>`).join('')}</div></div></section>`;
 }
 
 export function formatMemoryBoost(transition) {
@@ -115,13 +174,14 @@ export function renderPracticeMascot({ heading = '', bubbleHtml = '', answered =
     : `<img class="duo-prompt-mascot" src="${asset}" alt="" aria-hidden="true" width="108" height="108">`;
   return `<div class="duo-stage-heading">${heading ? `<h2>${escapeHtml(heading)}</h2>` : ''}${comboBadge}</div>
     <div class="duo-prompt-row is-${mood}${talking ? ' has-talking-mascot' : ''}${talking && isSpeechActive() ? ' is-talking' : ''}">
-      ${mascotHtml}
+      <div class="practice-sprig">${mascotHtml}${correct && answered ? renderPracticeBurst() : ''}</div>
       <div class="duo-speech-bubble">${bubbleHtml}</div>
     </div>`;
 }
 
 // Keep Talking Sprig's mouth animation and voice equalizer in exact sync
 // with speech playback, auto-cleaning up when the view re-renders.
+const talkingMascots = new WeakMap();
 export function bindTalkingMascot(container, onReplay = null) {
   if (!container) return () => {};
   const row = container.querySelector('.duo-prompt-row');
@@ -131,10 +191,15 @@ export function bindTalkingMascot(container, onReplay = null) {
     row.querySelector('[data-sprig-talk]')?.addEventListener('click', () => onReplay());
   }
 
+  talkingMascots.get(container)?.();
   let unsubscribe = () => {};
+  const cleanup = () => {
+    unsubscribe();
+    if (talkingMascots.get(container) === cleanup) talkingMascots.delete(container);
+  };
   const syncState = ({ speaking } = {}) => {
     if (!container.contains?.(row) && row.isConnected === false) {
-      unsubscribe();
+      cleanup();
       return;
     }
     row.classList.toggle('is-talking', Boolean(speaking));
@@ -142,7 +207,8 @@ export function bindTalkingMascot(container, onReplay = null) {
 
   syncState({ speaking: isSpeechActive() });
   unsubscribe = onSpeechStateChange(syncState);
-  return unsubscribe;
+  talkingMascots.set(container, cleanup);
+  return cleanup;
 }
 
 export function renderSentenceExampleCue(sentence, revealed) {

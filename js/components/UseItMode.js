@@ -3,7 +3,7 @@ import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
 import { mountUseItExercise } from './UseItExercise.js?v=18908';
-import { comboShellClasses } from './PracticeElements.js?v=18915';
+import { renderPracticeFrame, renderPracticeHeader, updatePracticeProgress, comboShellClasses } from './PracticeElements.js?v=18915';
 import { showComboCelebration } from './ComboCelebration.js?v=18917';
 import { createSpeechRecordingSession } from '../services/speechInput.js?v=18908';
 import { navigateTo as go } from '../utils/navigation.js';
@@ -32,6 +32,7 @@ export function renderUseItMode(container, onNavigate) {
   recordModeWordSelections(driveSync, words, { mode: 'use-it' });
 
   let index = 0;
+  let score = 0;
   let combo = 0;
   let startedAt = performance.now();
   let exerciseController = null;
@@ -39,7 +40,7 @@ export function renderUseItMode(container, onNavigate) {
   function render(focusInput = false) {
     exerciseController?.destroy();
     const word = words[index];
-    container.innerHTML = `<section class="full-view-stack"><div class="spec-card use-it-shell${comboShellClasses(combo)}"><div class="practice-topline"><button class="status-pill offline" id="useit-exit"><i class="fa-solid fa-arrow-left"></i> Today</button><span>Use It · ${index + 1} of ${words.length}</span><strong>Active production</strong></div><div class="review-progress"><span style="width:${Math.round(index / words.length * 100)}%"></span></div><div id="useit-exercise-root"></div></div></section>`;
+    renderPracticeFrame(container, `<section class="full-view-stack"><div class="spec-card use-it-shell${comboShellClasses(combo)}">${renderPracticeHeader({ exitId: 'useit-exit', label: 'Use It', current: index, total: words.length, score })}<div id="useit-exercise-root"></div></div></section>`, { key: `useit:${index}` });
     container.querySelector('#useit-exit').addEventListener('click', () => {
       exerciseController?.destroy();
       teardownUseItMode();
@@ -51,7 +52,9 @@ export function renderUseItMode(container, onNavigate) {
       speechSession,
       nextLabel: index + 1 >= words.length ? 'Finish' : 'Next word',
       onEvaluated(result, sentence) {
-        if (result.correct) combo += 1; else combo = 0;
+        if (result.correct) { score += 1; combo += 1; } else combo = 0;
+        const rail = container.querySelector('.review-progress');
+        if (rail) updatePracticeProgress(rail, index + 1, words.length);
         recordExerciseResult({ wordId: word.id, exerciseType: 'use-it', correct: result.correct, responseTimeMs: performance.now() - startedAt, hintsUsed: 0, recallType: 'productive', producedUnaided: true, learnerResponse: sentence });
         window.dispatchEvent(new CustomEvent('keepvocab:progress'));
         if (!result.correct || !showComboCelebration(combo)) {

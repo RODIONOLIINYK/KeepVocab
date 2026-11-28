@@ -45,11 +45,12 @@ export function updateDashboardGoalNudge(root, completed, goal, streak) {
 
 export function streakMilestoneCopy(summary) {
   if (!summary) return '3-day streak unlocks a Streak Freeze.';
+  if (summary.maxFreezes && summary.bankedFreezes >= summary.maxFreezes) return 'Freeze bank full';
   if (summary.currentStreak === 0 && summary.longestStreak >= 3) {
     return `Best: ${summary.longestStreak} days`;
   }
   if (summary.currentStreak === 0) {
-    return 'Next freeze at 3d';
+    return 'First freeze at a 3-day streak';
   }
   const dayLabel = summary.daysToMilestone === 1 ? '1d' : `${summary.daysToMilestone}d`;
   const freezeBonus = summary.nextFreezeAtStreak === summary.nextMilestone ? ' · +1 freeze' : '';
@@ -79,6 +80,8 @@ export function renderStreakWeekStrip(weekWindow = []) {
 
 export function updateDashboardStreakUI(root, settings = {}) {
   const summary = getStreakSummary(settings);
+  const title = root.querySelector('#today-streak-label');
+  if (title) title.textContent = plural(summary.currentStreak, 'day');
   const streakPill = root.querySelector('#today-streak-pill');
   if (streakPill) {
     streakPill.classList?.toggle('is-at-risk', summary.atRisk);
@@ -177,24 +180,24 @@ export function renderDashboardView(container, onNavigate) {
 
       </div>
     </article>
-    <div class="spec-card today-progress-card">
+    <section class="spec-card today-progress-card" aria-labelledby="today-streak-heading">
       <div class="today-streak-main">
-        <div class="today-progress-top">
-          <span class="today-streak ${streakSummary.atRisk ? 'is-at-risk' : streakSummary.streakSafeToday ? 'is-safe' : ''}" id="today-streak-pill"><i class="fa-solid fa-fire" aria-hidden="true"></i> <span id="today-streak-label">${streakSummary.currentStreak} day streak</span></span>
-          <div class="streak-meta-inline">
-            <span class="streak-meta-item freeze" title="Streak Freezes automatically protect a missed day. Earn one at 3 days and every 7-day streak milestone (max 2 banked)."><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> <span id="today-freeze-pill">${streakSummary.bankedFreezes}/${streakSummary.maxFreezes} freezes</span></span>
-            ${streakSummary.longestStreak > 0 ? `<span class="streak-meta-sep" aria-hidden="true">·</span><span class="streak-meta-item">Best ${streakSummary.longestStreak}d</span>` : ''}
-            <span class="streak-meta-sep" aria-hidden="true">·</span>
-            <span class="streak-meta-item" id="today-milestone-note">${escapeHtml(streakMilestoneCopy(streakSummary))}</span>
-          </div>
+        <div class="today-streak ${streakSummary.atRisk ? 'is-at-risk' : streakSummary.streakSafeToday ? 'is-safe' : ''}" id="today-streak-pill">
+          <span class="today-streak-icon"><i class="fa-solid fa-fire" aria-hidden="true"></i></span>
+          <div><h2 id="today-streak-heading">Current streak</h2><strong id="today-streak-label">${plural(streakSummary.currentStreak, 'day')}</strong></div>
         </div>
-        <div class="today-goal-subtle">
-          <div class="today-goal-row"><small id="today-goal-nudge" class="${completedToday >= dailyGoal ? 'is-complete' : ''}">${escapeHtml(dailyGoalEncouragement(completedToday, dailyGoal, streakSummary.currentStreak))}</small><strong id="today-progress-count">${completedToday} / ${dailyGoal}</strong></div>
-          <div class="today-progress-track" id="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div>
+        <div class="today-freezes" title="Streak Freezes automatically protect a missed day.">
+          <span class="today-streak-icon"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
+          <div><strong id="today-freeze-pill">${streakSummary.bankedFreezes}/${streakSummary.maxFreezes} freezes</strong><small id="today-milestone-note">${escapeHtml(streakMilestoneCopy(streakSummary))}</small></div>
         </div>
       </div>
       <div class="streak-week-strip" id="today-streak-week" role="list" aria-label="Last 7 days study rhythm">${renderStreakWeekStrip(streakSummary.weekWindow)}</div>
-    </div>
+      <div class="today-goal-subtle">
+        <div class="today-goal-row"><strong>Today’s goal</strong><strong id="today-progress-count">${completedToday} / ${dailyGoal}</strong></div>
+        <div class="today-progress-track" id="today-progress-track" role="progressbar" aria-label="Daily progress" aria-valuemin="0" aria-valuemax="${dailyGoal}" aria-valuenow="${Math.min(completedToday, dailyGoal)}"><span style="width:${progress}%"></span></div>
+        <small id="today-goal-nudge" class="${completedToday >= dailyGoal ? 'is-complete' : ''}">${escapeHtml(dailyGoalEncouragement(completedToday, dailyGoal, streakSummary.currentStreak))}</small>
+      </div>
+    </section>
     <div class="today-grid">
       <section class="spec-card practice-launchpad" aria-labelledby="practice-heading"><div class="card-header-bar"><div><h2 id="practice-heading">Practice your way</h2><p>A little variety keeps it interesting.</p></div><i class="fa-solid fa-dumbbell" aria-hidden="true"></i></div><div class="practice-quick-grid">${MODES.map(([view, icon, title, copy], index) => `<button class="practice-quick-card" style="--i:${index}" data-practice-view="${view}"><i class="fa-solid ${icon}" aria-hidden="true"></i><span><strong>${title}</strong><small>${copy}</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>`).join('')}</div></section>
       <aside class="today-insights">

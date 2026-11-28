@@ -1,3 +1,4 @@
+import { renderPracticeFrame } from './PracticeElements.js?v=18915';
 import { definitionForLearning } from '../services/learningDefinitions.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { recordExerciseResult } from '../services/exerciseResult.js?v=18908';
@@ -6,6 +7,7 @@ import { escapeHtml } from '../utils/html.js';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { shuffleItems as shuffle } from '../utils/collections.js';
 import { navigateTo as go } from '../utils/navigation.js';
+import { updateAnimatedLayout } from '../utils/animatedLayout.js';
 
 let activeSprintCleanup = null;
 
@@ -91,9 +93,13 @@ export function renderMatchSprintMode(container, onNavigate) {
         attemptStartedAt = null;
         resolvingPair = false;
         progressCelebration = true;
-        animateBoard = true;
-        if (matched.size === round.length) complete(); else render();
-      }, 460);
+        if (matched.size === round.length) complete();
+        else updateAnimatedLayout(container, render, {
+          selector: '.match-tile',
+          keys: node => [`${node.dataset.matchKind}:${node.dataset.matchId}`],
+          preserveAnchor: false
+        });
+      }, 380);
       return;
     }
     mistakes += 1;
@@ -112,7 +118,7 @@ export function renderMatchSprintMode(container, onNavigate) {
       attemptStartedAt = null;
       resolvingPair = false;
       if (window.location.hash === '#match') render();
-    }, 550);
+    }, 390);
   }
 
   function render() {
@@ -127,12 +133,12 @@ export function renderMatchSprintMode(container, onNavigate) {
         : `<span>${escapeHtml(definitionForLearning(word))}</span>`;
       return `<button class="match-tile ${kind}${selected ? ' selected' : ''}${wrong ? ' wrong' : ''}${correct ? ' correct-match' : ''}${animateBoard ? ' tile-enter' : ''}" style="--match-delay:${Math.min(index, 6) * 35}ms" data-match-kind="${kind}" data-match-id="${escapeHtml(word.id)}" aria-pressed="${selected}"${resolvingPair ? ' disabled' : ''}>${content}${correct ? '<i class="fa-solid fa-check match-correct-check" aria-hidden="true"></i>' : ''}</button>`;
     };
-    container.innerHTML = `<section class="full-view-stack"><div class="spec-card match-shell">
+    renderPracticeFrame(container, `<section class="full-view-stack"><div class="spec-card match-shell">
       <div class="practice-topline"><button class="status-pill offline" id="match-exit"><i class="fa-solid fa-arrow-left"></i> Dashboard</button><span>${matched.size} of ${round.length} pairs</span><strong id="match-timer">${elapsedSeconds}s</strong></div>
-      <div class="review-progress match-progress"><span class="${progressCelebration ? 'progress-celebrate' : ''}" style="width:${progress}%"></span></div>
+      <div class="review-progress match-progress" role="progressbar" aria-label="Matched pairs" aria-valuemin="0" aria-valuemax="${round.length}" aria-valuenow="${matched.size}"><span class="${progressCelebration ? 'progress-celebrate' : ''}" style="width:${progress}%"></span></div>
       <div class="match-intro"><div class="practice-icon match-icon"><i class="fa-solid fa-stopwatch"></i></div><div><h2>Match Sprint</h2><p>Tap a word, then tap its exact meaning. The most difficult meanings appear first.</p></div><span>${mistakes} mistake${mistakes === 1 ? '' : 's'}</span></div>
       <div class="match-board" aria-label="Word and definition matching board"><div class="match-column"><h3>Words</h3>${getUnmatchedWords(terms, matched).map((word, index) => tile(word, 'term', index)).join('')}</div><div class="match-column"><h3>Meanings</h3>${getUnmatchedWords(definitions, matched).map((word, index) => tile(word, 'definition', index)).join('')}</div></div>
-    </div></section>`;
+    </div></section>`, { key: 'match' });
     animateBoard = false;
     progressCelebration = false;
     container.querySelector('#match-exit').addEventListener('click', () => go('dashboard', onNavigate));
@@ -142,8 +148,13 @@ export function renderMatchSprintMode(container, onNavigate) {
       if (!selectedTerm && !selectedDefinition) attemptStartedAt = performance.now();
       if (matchKind === 'term') selectedTerm = selectedTerm === matchId ? null : matchId;
       else selectedDefinition = selectedDefinition === matchId ? null : matchId;
-      render();
-      evaluate();
+      if (selectedTerm && selectedDefinition) evaluate();
+      else {
+        render();
+        const replacement = [...container.querySelectorAll('[data-match-kind]')]
+          .find(tile => tile.dataset.matchKind === matchKind && tile.dataset.matchId === matchId);
+        replacement?.focus({ preventScroll: true });
+      }
     }));
   }
 

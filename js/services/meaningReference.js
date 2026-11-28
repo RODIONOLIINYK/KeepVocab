@@ -12,6 +12,9 @@ const listeners = new Set();
 let installed = false, phase = 'not-installed', message = 'Download the merge model to compare meanings locally.', downloading;
 let downloadProgress = null, preloadPromise, installCheck, removal;
 let generation = 0;
+const PREVIOUS_CACHE = 'keepvocab-meaning-model-v1';
+const PREVIOUS_BASE = 'https://huggingface.co/Rodion228huyfogdrun/KeepVocab-meaning-merge-minilm-l6-v7/resolve/be8ee3e1076958149ee7a1e0ace8615d2c43ee86/';
+const PREVIOUS_FILES = ['config.json', 'tokenizer.json', 'tokenizer_config.json', 'scorer.json', 'onnx/model_fp16.onnx'];
 const downloadBytes = () => Object.values(MEANING_MODEL_ASSETS).reduce((sum, file) => sum + file.bytes, 0);
 export const getMeaningModelStatus = () => ({ installed, phase, message, ready: phase === 'ready', downloadProgress,
   downloadMB: Math.ceil(downloadBytes() / 1e6) });
@@ -40,11 +43,23 @@ export function checkMeaningModelInstalled() {
   installCheck = check;
   return check;
 }
-export async function downloadMeaningModel() {
+export async function initializeMeaningModel() {
+  const started = generation;
+  if (await checkMeaningModelInstalled()) return preloadMeaningModel();
+  const storage = modelCacheStorage();
+  if (!(await storage?.keys())?.includes(PREVIOUS_CACHE)) return null;
+  const previous = await storage.open(PREVIOUS_CACHE);
+  const urls = new Set((await previous.keys()).map(key => typeof key === 'string' ? key : key.url));
+  if (started !== generation || removal || !PREVIOUS_FILES.every(file => urls.has(PREVIOUS_BASE + file))) return null;
+  // v7 and v8 have different weights and calibration. Honor the existing
+  // installation by installing the verified v8 assets shipped with the app.
+  return downloadMeaningModel({ upgrade: true });
+}
+export async function downloadMeaningModel({ upgrade = false } = {}) {
   if (removal) await removal;
   if (downloading) return downloading;
   downloading = (async () => {
-    phase = 'downloading'; message = 'Downloading merge model…'; emit();
+    phase = 'downloading'; message = upgrade ? 'Updating your installed merge model…' : 'Downloading merge model…'; emit();
     const total = downloadBytes(); let completed = 0;
     downloadProgress = { loaded: 0, total, stage: 'downloading' }; emit();
     const cache = await modelCacheStorage()?.open(MEANING_CACHE);
@@ -52,7 +67,7 @@ export async function downloadMeaningModel() {
     for (const [file, asset] of Object.entries(MEANING_MODEL_ASSETS)) {
       const url = MEANING_MODEL_BASE + file;
       if (cache.has ? await cache.has(url) : (await cache.match(url))?.ok) { completed += asset.bytes; continue; }
-      message = `Downloading merge model: ${file}…`; emit();
+      message = upgrade ? 'Updating your installed merge model…' : `Downloading merge model: ${file}…`; emit();
       const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) throw new Error(`Merge model download failed (${response.status}).`);
       const bytes = await readModelDownload(response, { total: asset.bytes, onProgress: detail => {
@@ -83,7 +98,9 @@ export async function removeMeaningModel() {
   resetInferenceWorkers('meaning');
   stop(new Error('The merge model was removed.'));
   removal = Promise.resolve().then(async () => {
-    await modelCacheStorage()?.delete(MEANING_CACHE);
+    const storage = modelCacheStorage();
+    await storage?.delete(PREVIOUS_CACHE);
+    await storage?.delete(MEANING_CACHE);
     phase = 'not-installed'; downloadProgress = null; message = 'Merge model files removed.'; emit();
   }).catch(error => {
     phase = 'error'; message = error.message; emit(); throw error;

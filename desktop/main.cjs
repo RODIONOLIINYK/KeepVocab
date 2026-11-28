@@ -1,7 +1,7 @@
 const { app, BrowserWindow, dialog, ipcMain, nativeImage, net, protocol, screen, session, shell, systemPreferences, Tray } = require('electron');
 const { access, readFile, stat } = require('node:fs/promises');
 const path = require('node:path');
-const { modelStorageRoot, modelStorageOperation, handleModelStorageRequest } = require('./modelStorage.cjs');
+const { modelStorageRoot, migrateBundleModelCache, modelStorageOperation, handleModelStorageRequest } = require('./modelStorage.cjs');
 
 const APP_HOST = '127.0.0.1';
 const APP_PORT = 8085;
@@ -350,6 +350,10 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(async () => {
     try {
       if (process.platform === 'darwin') app.dock?.show?.();
+      if (app.isPackaged) {
+        await migrateBundleModelCache(modelStorageRoot(app), path.join(process.resourcesPath, 'model-cache'))
+          .catch(error => console.warn('Could not migrate downloaded models.', error));
+      }
       await configureAppProtocol();
       configurePermissions();
       configureDesktopBridge();

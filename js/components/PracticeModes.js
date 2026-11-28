@@ -9,7 +9,7 @@ import { escapeHtml } from '../utils/html.js';
 import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exerciseEvaluation.js?v=18908';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections } from '../services/wordSelection.js?v=18908';
 import { stableWordChoices } from '../services/wordChoices.js?v=18908';
-import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput, renderPracticeMascot, renderVoiceWave, bindTalkingMascot, comboShellClasses } from './PracticeElements.js?v=18915';
+import { renderPracticeFrame, renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput, renderPracticeMascot, renderVoiceWave, bindTalkingMascot, comboShellClasses } from './PracticeElements.js?v=18915';
 import { showComboCelebration } from './ComboCelebration.js?v=18917';
 import { navigateTo as go } from '../utils/navigation.js';
 
@@ -34,14 +34,14 @@ export function renderSpellingMode(container, onNavigate) {
 
   function render(focusInput = false) {
     if (index >= queue.length) {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Spelling session complete</h2><p>You recalled ${score} of ${originalCount} words. Missed words will be prioritized in your next session.</p><div class="inline-actions"><button class="btn-green-solid" id="spell-again">Practice again</button><button class="status-pill offline" id="spell-dashboard">Dashboard</button></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete practice-completion"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Spelling session complete</h2><p>You recalled ${score} of ${originalCount} words. Missed words will be prioritized in your next session.</p><div class="inline-actions"><button class="btn-green-solid" id="spell-again">Practice again</button><button class="status-pill offline" id="spell-dashboard">Dashboard</button></div></div></section>`;
       container.querySelector('#spell-again').addEventListener('click', () => renderSpellingMode(container, onNavigate));
       container.querySelector('#spell-dashboard').addEventListener('click', () => go('dashboard', onNavigate));
       return;
     }
     const word = queue[index];
     preloadAudioUrl(word.audioUrl);
-    container.innerHTML = `
+    renderPracticeFrame(container, `
       <section class="full-view-stack"><div class="spec-card practice-shell${comboShellClasses(combo)}">
         ${renderPracticeHeader({ exitId: 'spell-exit', label: '', current: index, total: queue.length, score, answered })}
         <div class="practice-prompt">
@@ -54,9 +54,9 @@ export function renderSpellingMode(container, onNavigate) {
             talking: true
           })}
           <p class="speech-help" id="spell-audio-status" role="status" aria-live="polite"></p>
-          ${answered ? `<div class="practice-feedback ${correct ? 'correct' : 'incorrect'}"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word will return sooner for another review.'}</span></div><button class="btn-green-solid" id="spell-next">${index + 1 === queue.length ? 'See result' : 'Next word'}</button>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
+          ${answered ? `<aside class="practice-answer-tray ${correct ? 'correct' : 'incorrect'}"><div class="practice-feedback ${correct ? 'correct' : 'incorrect'}" role="status"><strong>${correct ? 'Correct' : `Answer: ${escapeHtml(word.word)}`}</strong><span>${correct ? 'Excellent recall.' : 'This word will return sooner for another review.'}</span></div><button class="btn-green-solid" id="spell-next" data-practice-continue>${index + 1 === queue.length ? 'See result' : 'Next word'}</button></aside>` : `<form class="practice-answer-form" id="spell-form"><input id="spell-answer" lang="en" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" placeholder="Type the word" aria-label="Spelling answer"><button class="btn-green-solid" data-sound="none">Check</button></form>`}
         </div>
-      </div></section>`;
+      </div></section>`, { key: `spell:${index}`, result: answered ? (correct ? 'correct' : 'incorrect') : '' });
     container.querySelector('#spell-exit').addEventListener('click', () => go('dashboard', onNavigate));
     const playWord = async (button, rate = 0.95) => {
       if (button) {
@@ -114,7 +114,7 @@ export function renderChooseWordMode(container, onNavigate) {
 
   function render() {
     if (index >= queue.length) {
-      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Choose Word complete</h2><p>You mastered ${score} of ${originalCount} definitions. Missed meanings will come first next time.</p><div class="inline-actions"><button class="btn-green-solid" id="choose-again">Try again</button><button class="status-pill offline" id="choose-dashboard">Dashboard</button></div></div></section>`;
+      container.innerHTML = `<section class="full-view-stack"><div class="spec-card useful-empty-state mode-complete practice-completion"><img class="mascot-result" src="assets/keepvocab-sprig-celebrate.webp" alt="Sprig celebrating"><h2>Choose Word complete</h2><p>You mastered ${score} of ${originalCount} definitions. Missed meanings will come first next time.</p><div class="inline-actions"><button class="btn-green-solid" id="choose-again">Try again</button><button class="status-pill offline" id="choose-dashboard">Dashboard</button></div></div></section>`;
       container.querySelector('#choose-again').addEventListener('click', () => renderChooseWordMode(container, onNavigate));
       container.querySelector('#choose-dashboard').addEventListener('click', () => go('dashboard', onNavigate));
       return;
@@ -123,21 +123,21 @@ export function renderChooseWordMode(container, onNavigate) {
     const options = stableWordChoices(choiceState, target, all);
     const answered = selectedId !== null;
     const isCorrect = evaluateChoiceAnswer(target.id, selectedId);
-    container.innerHTML = `
+    renderPracticeFrame(container, `
       <section class="full-view-stack"><div class="spec-card practice-shell${comboShellClasses(combo)}">
         ${renderPracticeHeader({ exitId: 'choose-exit', label: 'Choose Word', current: index, total: queue.length, score, answered })}
         <div class="practice-prompt choose-prompt">
           ${renderPracticeMascot({
-            heading: 'Choose the word',
+            heading: 'Pick the matching word',
             bubbleHtml: `<blockquote class="duo-bubble-quote">${escapeHtml(definitionForLearning(target))}</blockquote>${isUkrainianTranslationEnabled() && target.translationLanguage === 'uk' && target.translation ? `<p class="word-translation" lang="uk">${escapeHtml(target.translation)}</p>` : ''}`,
             answered,
             correct: isCorrect,
             combo
           })}
           ${renderChoiceGrid({ options, targetId: target.id, selectedId })}
-          ${renderAnswerFeedback({ answered, correct: isCorrect, answer: target.word, detail: exampleForLearning(target) || (isCorrect ? 'You matched the meaning.' : ''), nextId: 'choose-next', nextLabel: index + 1 === queue.length ? 'See result' : 'Next question' })}
+          ${renderAnswerFeedback({ answered, correct: isCorrect, answer: target.word, detail: exampleForLearning(target) || '', nextId: 'choose-next', nextLabel: index + 1 === queue.length ? 'See result' : 'Next question' })}
         </div>
-      </div></section>`;
+      </div></section>`, { key: `choose:${index}`, result: answered ? (isCorrect ? 'correct' : 'incorrect') : '' });
     container.querySelector('#choose-exit').addEventListener('click', () => go('dashboard', onNavigate));
     container.querySelectorAll('[data-choice]').forEach(button => button.addEventListener('click', () => {
       if (selectedId !== null) return;
