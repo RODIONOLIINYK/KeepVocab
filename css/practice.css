@@ -51,7 +51,8 @@
 }
 .duo-combo-badge {
   background: #fff0ed;
-  border-color: #edc0b8;
+  border: 2px solid #cc433c;
+  border-bottom-width: 3px;
   color: #a33431;
 }
 
