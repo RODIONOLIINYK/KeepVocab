@@ -10,7 +10,7 @@ import { evaluateChoiceAnswer, evaluateRecallAnswer } from '../services/exercise
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections } from '../services/wordSelection.js?v=18908';
 import { stableWordChoices } from '../services/wordChoices.js?v=18908';
 import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, focusPracticeInput, renderPracticeMascot, renderVoiceWave, bindTalkingMascot, comboShellClasses } from './PracticeElements.js?v=18915';
-import { showComboCelebration } from './ComboCelebration.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18917';
 import { navigateTo as go } from '../utils/navigation.js';
 
 function emptyMode(container, icon, title, detail, onNavigate) {

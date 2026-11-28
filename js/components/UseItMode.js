@@ -4,7 +4,7 @@ import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections,
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
 import { mountUseItExercise } from './UseItExercise.js?v=18908';
 import { comboShellClasses } from './PracticeElements.js?v=18915';
-import { showComboCelebration } from './ComboCelebration.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18917';
 import { createSpeechRecordingSession } from '../services/speechInput.js?v=18908';
 import { navigateTo as go } from '../utils/navigation.js';
 

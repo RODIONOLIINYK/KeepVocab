@@ -8,7 +8,7 @@ import { escapeHtml } from '../utils/html.js';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { navigateTo as go } from '../utils/navigation.js';
 import { safeImageUrl } from '../utils/imageUrls.js';
-import { showComboCelebration } from './ComboCelebration.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18917';
 
 export function renderFlashcardsMode(container, onNavigate) {
   const allWords = getActivePracticeWords(driveSync);

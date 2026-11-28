@@ -9,7 +9,7 @@ import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections,
 import { stableWordChoices } from '../services/wordChoices.js?v=18908';
 import { playInteractionSound } from '../services/interactionSound.js?v=18908';
 import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderPracticeNotice, renderPracticeMascot, comboShellClasses } from './PracticeElements.js?v=18915';
-import { showComboCelebration } from './ComboCelebration.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18917';
 import { navigateTo as go } from '../utils/navigation.js';
 
 export function selectContextWords(words, limit = DEFAULT_SESSION_SIZE, now = new Date(), settings = null) {

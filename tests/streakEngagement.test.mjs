@@ -263,10 +263,9 @@ test('Today and Progress views render the 7-day strip, freezes, heatmap, and mil
       }
     }
   );
-  assert.match(celebrationHtml, /class="streak-flame-svg is-milestone"/);
-  assert.match(celebrationHtml, /class="streak-flame-unlit"/);
-  assert.match(celebrationHtml, /class="streak-flame-lit"/);
-  assert.match(celebrationHtml, /class="streak-sunburst"/);
+  assert.match(celebrationHtml, /class="streak-celebration-canvas"/);
+  assert.match(celebrationHtml, /class="streak-celebration-card is-milestone"/);
+  assert.match(celebrationHtml, /class="streak-celebration-stage"/);
   assert.match(celebrationHtml, /class="streak-counter-prev">6<\/span>/);
   assert.match(celebrationHtml, /data-from="6" data-to="7"/);
   assert.match(celebrationHtml, /7 day streak!/);
@@ -303,7 +302,8 @@ test('5+ in-a-row combo milestones render tiered Duolingo-style celebrations wit
   assert.match(html5, /5 in a row!/);
   assert.match(html5, /is-blaze/);
   assert.match(html5, /keepvocab-sprig-celebrate\.webp/);
-  assert.match(html5, /combo-burst-svg/);
+  assert.match(html5, /combo-celebration-canvas/);
+  assert.match(html5, /id="btn-combo-celebration-continue"/);
 
   const html10 = renderComboCelebrationMarkup(10);
   assert.match(html10, /10 in a row!/);

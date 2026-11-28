@@ -1,6 +1,6 @@
 import { definitionForLearning } from '../services/learningDefinitions.js?v=18908';
 import { renderPracticeHeader, renderChoiceGrid, renderAnswerFeedback, renderComboBadge, comboShellClasses } from './PracticeElements.js?v=18915';
-import { showComboCelebration } from './ComboCelebration.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18917';
 import { driveSync } from '../services/driveSync.js?v=18908';
 import { findRelevantImages, prepareImageScenes, imageSenseFingerprint, imageSelectionPatch, imageUrlsForWords, updateImageFeedback } from '../services/imageSearch.js?v=18908';
 import { imageReplacementLabels } from '../services/imageChoicePolicy.js';

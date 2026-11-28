@@ -14,7 +14,7 @@ import { ensureDailyStudyPlan, getActivePracticeWords, recordModeWordSelections,
 import { escapeHtml } from '../utils/html.js';
 import { navigateTo as go } from '../utils/navigation.js';
 import { formatMemoryBoost, renderPracticeHeader, renderPracticeMascot, renderPracticeNotice, comboShellClasses } from './PracticeElements.js?v=18915';
-import { showComboCelebration } from './ComboCelebration.js?v=18915';
+import { showComboCelebration } from './ComboCelebration.js?v=18917';
 
 export function renderSentenceBuilderMode(container, onNavigate, options = {}) {
   const allWords = getActivePracticeWords(driveSync);

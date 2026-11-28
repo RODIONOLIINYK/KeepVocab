@@ -23,7 +23,7 @@ import { renderVisualMatchMode } from './components/VisualMatchMode.js?v=18915';
 import { renderMatchSprintMode, teardownMatchSprintMode } from './components/MatchSprintMode.js?v=18908';
 import { renderSpeakingMode, teardownSpeakingMode } from './components/SpeakingMode.js?v=18908';
 import { renderDashboardView, updateDashboardGoalNudge, updateDashboardStreakUI } from './components/DashboardView.js?v=18915';
-import { showStreakCelebration } from './components/StreakCelebration.js?v=18916';
+import { showStreakCelebration } from './components/StreakCelebration.js?v=18917';
 import { getStreakSummary } from './services/studyActivity.js';
 import { renderDailySessionMode } from './components/DailySessionMode.js?v=18915';
 import { renderFlashcardsMode } from './components/FlashcardsMode.js?v=18915';

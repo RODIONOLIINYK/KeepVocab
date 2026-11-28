@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v115006-design-system-animations';
+const CACHE_NAME = 'keepvocab-v115007-fullscreen-celebrations';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
