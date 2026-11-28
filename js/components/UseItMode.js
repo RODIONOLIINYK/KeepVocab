@@ -46,14 +46,18 @@ export function renderUseItMode(container, onNavigate) {
       teardownUseItMode();
       go('dashboard', onNavigate);
     });
-    exerciseController = mountUseItExercise(container.querySelector('#useit-exercise-root'), {
+    const exerciseRoot = container.querySelector('#useit-exercise-root');
+    exerciseController = mountUseItExercise(exerciseRoot, {
       word,
       focusInput,
       speechSession,
+      getCombo: () => combo,
       nextLabel: index + 1 >= words.length ? 'Finish' : 'Next word',
       onEvaluated(result, sentence) {
         if (result.correct) { score += 1; combo += 1; } else combo = 0;
-        const rail = container.querySelector('.review-progress');
+        const shell = exerciseRoot.parentElement;
+        shell?.classList.toggle('is-hot-combo', combo >= 3);
+        const rail = shell?.querySelector('.review-progress');
         if (rail) updatePracticeProgress(rail, index + 1, words.length);
         recordExerciseResult({ wordId: word.id, exerciseType: 'use-it', correct: result.correct, responseTimeMs: performance.now() - startedAt, hintsUsed: 0, recallType: 'productive', producedUnaided: true, learnerResponse: sentence });
         window.dispatchEvent(new CustomEvent('keepvocab:progress'));

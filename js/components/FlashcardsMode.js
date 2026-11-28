@@ -1,4 +1,4 @@
-import { renderPracticeFrame } from './PracticeElements.js?v=18915';
+import { renderPracticeFrame, comboShellClasses, renderComboBadge } from './PracticeElements.js?v=18915';
 import { definitionForLearning, exampleForLearning } from '../services/learningDefinitions.js?v=18908';
 import { isUkrainianTranslationEnabled } from '../services/translationSettings.js?v=18908';
 import { driveSync } from '../services/driveSync.js?v=18908';
@@ -9,7 +9,7 @@ import { escapeHtml } from '../utils/html.js';
 import { getActivePracticeWords, ensureDailyStudyPlan, recordModeWordSelections, selectModeWords } from '../services/wordSelection.js?v=18908';
 import { navigateTo as go } from '../utils/navigation.js';
 import { safeImageUrl } from '../utils/imageUrls.js';
-import { showComboCelebration } from './ComboCelebration.js?v=18917';
+import { dismissComboCelebration, showComboCelebration } from './ComboCelebration.js?v=18917';
 
 export function renderFlashcardsMode(container, onNavigate) {
   const allWords = getActivePracticeWords(driveSync);
@@ -59,7 +59,8 @@ export function renderFlashcardsMode(container, onNavigate) {
     const showImageOnPrompt = Boolean(imageUrl && earlyStage);
     const reviewResult = { exerciseType: 'flashcards', recallType: 'free-recall', producedUnaided: !showImageOnPrompt, hintsUsed: showImageOnPrompt ? 1 : 0 };
     const previews = getRatingPreviews(word, new Date(), { settings: driveSync.getSettings(), result: reviewResult });
-    renderPracticeFrame(container, `<section class="flashcard-mode" aria-labelledby="flashcard-word"><header class="exercise-topbar"><button class="status-pill offline" id="flashcard-exit"><i class="fa-solid fa-arrow-left"></i> Exit</button><div class="exercise-progress"><span>${currentIndex + 1} of ${words.length}</span><i><b style="width:${Math.round((currentIndex + 1) / words.length * 100)}%"></b></i></div><button class="audio-btn-circle" id="flashcard-speak" aria-label="Hear ${escapeHtml(word.word)}"><i class="fa-solid fa-volume-high"></i></button></header>
+    renderPracticeFrame(container, `<section class="flashcard-mode${comboShellClasses(combo)}" aria-labelledby="flashcard-word"><header class="exercise-topbar"><button class="status-pill offline" id="flashcard-exit"><i class="fa-solid fa-arrow-left"></i> Exit</button><div class="exercise-progress"><span>${currentIndex + 1} of ${words.length}</span><i><b style="width:${Math.round((currentIndex + 1) / words.length * 100)}%"></b></i></div><button class="audio-btn-circle" id="flashcard-speak" aria-label="Hear ${escapeHtml(word.word)}"><i class="fa-solid fa-volume-high"></i></button></header>
+      ${renderComboBadge(combo)}
       <button class="smart-flashcard ${revealed ? 'revealed' : ''}" id="flashcard-reveal" aria-expanded="${revealed}">
         <div class="smart-flashcard-prompt" aria-hidden="${revealed}">${showImageOnPrompt ? `<img src="${escapeHtml(imageUrl)}" alt="Visual cue for ${escapeHtml(word.word)}">` : ''}<span class="eyebrow">${showImageOnPrompt ? 'Image-supported review' : 'Recall the meaning'}</span><h1 id="flashcard-word">${escapeHtml(word.word)}</h1><p>${escapeHtml(word.phonetic || '')}</p><small><i class="fa-solid fa-hand-pointer"></i> Tap or press Space to reveal</small></div>
         <div class="smart-flashcard-answer" aria-hidden="${!revealed}"><span class="eyebrow">${escapeHtml(word.partOfSpeech || 'word')}</span><h2>${escapeHtml(definitionForLearning(word))}</h2>${word.usageNote ? `<p class="meaning-usage"><strong>When to use it:</strong> ${escapeHtml(word.usageNote)}</p>` : ''}${isUkrainianTranslationEnabled() && word.translationLanguage === 'uk' && word.translation ? `<p class="word-translation" lang="uk">${escapeHtml(word.translation)}</p>` : ''}${exampleForLearning(word) ? `<blockquote>“${escapeHtml(exampleForLearning(word))}”</blockquote>` : '<p class="missing-example">Add a modern example in Library to see this meaning in use.</p>'}${imageUrl && !showImageOnPrompt ? `<img src="${escapeHtml(imageUrl)}" alt="Memory image for ${escapeHtml(word.word)}">` : ''}</div>
@@ -74,7 +75,11 @@ export function renderFlashcardsMode(container, onNavigate) {
     container.querySelectorAll('[data-flashcard-rating]').forEach(button => button.addEventListener('click', () => {
       const rating = button.dataset.flashcardRating;
       const isCorrect = rating !== 'again';
-      if (isCorrect) combo += 1; else combo = 0;
+      if (isCorrect) combo += 1;
+      else {
+        combo = 0;
+        dismissComboCelebration();
+      }
       recordExerciseResult({ wordId: word.id, exerciseType: 'flashcards', correct: isCorrect, ...reviewResult, responseTimeMs: recallTimeMs, learnerRating: rating });
       if (isCorrect) showComboCelebration(combo);
       ratedIds.add(word.id);

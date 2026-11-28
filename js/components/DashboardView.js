@@ -59,22 +59,14 @@ export function streakMilestoneCopy(summary) {
 
 export function renderStreakWeekStrip(weekWindow = []) {
   return weekWindow.map(day => {
-    const icon = day.status === 'goal' ? 'fa-check'
-      : day.status === 'frozen' ? 'fa-shield-halved'
-        : day.status === 'at-risk' ? 'fa-fire'
-          : '';
-    const inner = icon
-      ? `<i class="fa-solid ${icon}" aria-hidden="true"></i>`
-      : day.status === 'done'
-        ? '<span class="streak-partial-dot" aria-hidden="true"></span>'
-        : '';
+    const weekday = escapeHtml(day.weekdayLabel || day.weekdayShort);
     const stateLabel = day.status === 'goal' ? `Daily goal reached (${day.count} exercises)`
       : day.status === 'done' ? `${day.count} exercise${day.count === 1 ? '' : 's'} (finish daily goal to count for streak)`
         : day.status === 'frozen' ? 'Protected by Streak Freeze'
           : day.status === 'at-risk' ? 'Finish today’s goal to keep your streak'
             : day.isToday ? 'Today — finish your daily goal'
               : 'No practice';
-    return `<div class="streak-day is-${day.status}${day.isToday ? ' is-today' : ''}" role="listitem" title="${escapeHtml(`${day.dateKey}: ${stateLabel}`)}" aria-label="${escapeHtml(`${day.weekdayShort}: ${stateLabel}`)}"><span class="streak-day-dot">${inner}</span><small>${escapeHtml(day.weekdayShort)}</small></div>`;
+    return `<div class="streak-day is-${day.status}${day.isToday ? ' is-today' : ''}" role="listitem"${day.isToday ? ' aria-current="date"' : ''} title="${escapeHtml(`${day.dateKey}: ${stateLabel}`)}" aria-label="${weekday}: ${escapeHtml(stateLabel)}"><small>${weekday}</small><span class="streak-day-mark" aria-hidden="true"></span></div>`;
   }).join('');
 }
 

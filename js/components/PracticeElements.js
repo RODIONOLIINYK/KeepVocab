@@ -1,4 +1,5 @@
 import { escapeHtml } from '../utils/html.js';
+import { dismissComboCelebration } from './ComboCelebration.js?v=18917';
 import { isSpeechActive, onSpeechStateChange, speakWord } from '../services/speechService.js?v=18912';
 
 // Let touch users read the clue before opening their keyboard. An explicit
@@ -47,6 +48,7 @@ export function renderPracticeFrame(container, markup, { key, result = '', step 
   const node = container.firstElementChild;
   if (!node) return;
   frameStates.set(node, { key, result, step });
+  if (result === 'incorrect' && result !== previous?.result) dismissComboCelebration();
   const stepMotion = typeof step === 'number'
     ? step > (previous?.step || 0) ? 'place' : ''
     : step;
@@ -152,11 +154,7 @@ export function renderComboBadge(combo = 0) {
 }
 
 export function comboShellClasses(combo = 0) {
-  const count = Math.floor(Number(combo) || 0);
-  if (count >= 10) return ' is-hot-combo is-super-combo is-ultra-combo';
-  if (count >= 5) return ' is-hot-combo is-super-combo';
-  if (count >= 3) return ' is-hot-combo';
-  return '';
+  return combo >= 3 ? ' is-hot-combo' : '';
 }
 
 export function renderPracticeMascot({ heading = '', bubbleHtml = '', answered = false, correct = false, combo = 0, retry = false, talking = false } = {}) {

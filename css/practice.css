@@ -1,14 +1,17 @@
-/* Practice uses the same paper, ink and greens as Today. */
-[data-practice-motion] {
-  --practice-ink: #23452d;
-  --practice-sage: #dce8d4;
-  --practice-spring: cubic-bezier(.2, .8, .27, 1.24);
-}
+/* Practice uses the same paper, ink and primary green as Library. */
+[data-practice-motion] { --practice-spring: cubic-bezier(.2, .8, .27, 1.24); }
 
-[data-practice-motion] :is(.practice-shell, .daily-session-shell, .use-it-shell, .match-shell) {
-  background: linear-gradient(180deg, #fcfdf9, #f6f8f1 380px);
-  border-color: #dce5d7;
+body:has(:where(#view-container) .is-hot-combo) { --combo-canvas: #f9d7d2; }
+body:has(> .combo-celebration-layer.is-blaze:not(.is-leaving)) { --combo-canvas: #f5c9bf; }
+body:has(> .combo-celebration-layer.is-super:not(.is-leaving)) { --combo-canvas: #fbefd3; }
+body:has(> .combo-celebration-layer.is-legend:not(.is-leaving)) { --combo-canvas: #eee5fb; }
+body:has(#view-container .is-hot-combo, > .combo-celebration-layer) {
+  background-color: var(--combo-canvas, var(--bg-app));
 }
+.is-hot-combo.spec-card {
+  background: linear-gradient(var(--combo-canvas, var(--bg-card)), var(--bg-card) 156px);
+}
+.flashcard-mode > .duo-combo-badge { justify-self: end; }
 
 [data-practice-motion] .practice-topline {
   min-height: 44px;
@@ -18,7 +21,7 @@
 
 [data-practice-motion] :is(.review-progress, .exercise-progress > i) {
   height: 13px;
-  background: var(--practice-sage);
+  background: var(--bg-subtle);
   border-radius: 999px;
 }
 
@@ -29,7 +32,7 @@
 
 [data-practice-motion] :is(.review-progress > span, .exercise-progress > i > b) {
   border-radius: inherit;
-  background: #3f8247;
+  background: var(--primary-green);
   transform-origin: left center;
   transition: none;
 }
@@ -37,8 +40,33 @@
   width: calc(100% * var(--practice-completed) / var(--practice-segments)) !important;
 }
 
-[data-practice-motion] .is-super-combo .review-progress > span { background: #3e8a48; }
-[data-practice-motion] .is-ultra-combo .review-progress > span { background: #aa731e; }
+.is-hot-combo :is(.review-progress > span, .exercise-progress > i > b) {
+  background: linear-gradient(90deg, #eb5650, #f4b658 48%, var(--primary-green));
+}
+
+.duo-combo-badge,
+.combo-celebration-layer.is-blaze {
+  --combo-bg: #ffede7;
+  --combo-line: #eeb4a7;
+  --combo-ink: #893d33;
+}
+.duo-combo-badge.is-super,
+.combo-celebration-layer.is-super {
+  --combo-bg: #fff3d9;
+  --combo-line: #e7ca8f;
+  --combo-ink: #775015;
+}
+.duo-combo-badge.is-legend,
+.combo-celebration-layer.is-legend {
+  --combo-bg: #f1e8fb;
+  --combo-line: #cfbce8;
+  --combo-ink: #593a78;
+}
+.duo-combo-badge {
+  background: var(--combo-bg);
+  border-color: var(--combo-line);
+  color: var(--combo-ink);
+}
 
 [data-practice-motion] .practice-shell .practice-prompt {
   min-height: 0;
@@ -48,7 +76,7 @@
 }
 
 [data-practice-motion] :is(.duo-stage-heading h2, .daily-exercise-stage h1, .use-it-stage h1) {
-  color: var(--practice-ink);
+  color: var(--text-main);
   line-height: 1.1;
 }
 
@@ -57,9 +85,8 @@
 [data-practice-motion] .duo-speech-bubble {
   flex: 1 1 auto;
   min-width: 0;
-  border-radius: 20px;
+  border-radius: var(--duo-radius);
   border-bottom-width: 3px;
-  box-shadow: 0 4px 7px #3647330d;
   overflow-wrap: anywhere;
 }
 
@@ -115,15 +142,15 @@
 [data-practice-motion] .choice-button {
   min-height: 52px;
   border-radius: 16px;
-  border-color: #dce5d7;
+  border-color: var(--border-card);
   font-family: var(--font-heading);
   font-size: 1.08rem;
-  box-shadow: 0 3px 5px #3647330b;
+  box-shadow: none;
 }
 [data-practice-motion] .choice-button.correct {
-  border-color: #7db676;
-  background: #daf4d4;
-  color: #215626;
+  border-color: var(--success-line);
+  background: var(--primary-green-light);
+  color: var(--text-main);
   opacity: 1;
 }
 [data-practice-motion] .choice-button.incorrect {
@@ -132,15 +159,18 @@
   color: #80352d;
   opacity: 1;
 }
-[data-practice-motion] .choice-button.correct .choice-result-icon { background: #367741; }
-[data-practice-motion] .choice-button.incorrect .choice-result-icon { background: #a84c3d; }
+[data-practice-motion] .choice-button.correct .choice-result-icon,
+[data-practice-motion] .match-correct-check {
+  background: var(--bg-card);
+  color: var(--primary-green-hover);
+}
+[data-practice-motion] .choice-button.incorrect .choice-result-icon { background: var(--bg-card); color: #a84c3d; }
+[data-practice-motion] .choice-result-icon::before { color: inherit; }
 
 .practice-answer-tray {
-  --tray-bg: #e5f3dd;
-  --tray-line: #c4dfb9;
-  --tray-ink: #27572e;
-  --tray-button: #2f7139;
-  --tray-edge: #205329;
+  --tray-bg: var(--primary-green-light);
+  --tray-line: var(--success-line);
+  --tray-status: var(--primary-green-hover);
   display: grid;
   align-items: center;
   gap: 10px;
@@ -155,9 +185,7 @@
 .practice-answer-tray.incorrect {
   --tray-bg: #f9e9df;
   --tray-line: #ebc7b9;
-  --tray-ink: #80352d;
-  --tray-button: #a44839;
-  --tray-edge: #793328;
+  --tray-status: #a84c3d;
 }
 .practice-answer-tray :is(.practice-feedback, .answer-feedback-card) {
   width: 100%;
@@ -165,16 +193,31 @@
   border: 0;
   padding: 1px 0 4px;
   background: transparent;
-  color: var(--tray-ink);
+  color: var(--text-main);
   box-shadow: none;
   animation: none;
 }
-.practice-answer-tray :is(.answer-feedback-icon, .practice-feedback strong > i) { background: var(--tray-button); }
+.practice-answer-tray :is(.answer-feedback-icon, .practice-feedback strong > i) {
+  background: var(--bg-card);
+  color: var(--tray-status);
+}
+.practice-answer-tray .practice-feedback strong > i {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-inline-end: .2rem;
+  border-radius: 50%;
+  vertical-align: middle;
+  font-size: .74rem;
+}
+.practice-answer-tray .memory-boost-pill {
+  align-self: flex-start;
+  background: var(--bg-card);
+  color: var(--primary-green-hover);
+}
 .practice-answer-tray .answer-feedback-card span:empty { display: none; }
 .practice-answer-tray .btn-green-solid {
-  color: #fff;
-  background: var(--tray-button) !important;
-  border-bottom-color: var(--tray-edge) !important;
   min-height: 46px;
   justify-content: center;
 }
@@ -184,8 +227,15 @@
   .practice-answer-tray > .btn-green-solid { min-width: 128px; }
 }
 @media (max-width: 560px) {
+  .practice-answer-tray [data-practice-continue] { scroll-margin-block-end: calc(84px + env(safe-area-inset-bottom)); }
   .practice-answer-tray .inline-actions { flex-wrap: wrap; }
   .practice-answer-tray .inline-actions > .btn-green-solid { flex: 1 1 auto; }
+}
+
+@media (max-width: 360px) {
+  [data-practice-motion] .practice-shell .practice-prompt { gap: 10px; padding-block-start: 16px; }
+  [data-practice-motion] .choice-button { min-height: 46px; padding-block: 8px; }
+  .practice-answer-tray { gap: 8px; padding: 9px; }
 }
 
 .combo-celebration-layer {
@@ -204,14 +254,13 @@
   align-items: center;
   gap: 9px;
   padding: 5px 8px 5px 10px;
-  border: 2px solid #bdd3ab;
+  border: 2px solid var(--combo-line);
   border-bottom-width: 4px;
-  border-radius: 19px;
-  background: #f3f9e8;
-  color: #24482c;
+  border-radius: var(--duo-radius);
+  background: var(--combo-bg);
+  color: var(--combo-ink);
   box-shadow: 0 8px 26px #273f2630;
 }
-.combo-celebration-shell:is(.is-super, .is-legend) { border-color: #e7c576; background: #fff5d9; }
 .combo-celebration-canvas { position: absolute; top: 6px; left: 50%; translate: -50% -33%; }
 .combo-mascot-img { display: block; width: 52px; height: 52px; object-fit: contain; }
 .combo-copy { display: grid; gap: 2px; }
@@ -227,9 +276,10 @@
   cursor: pointer;
   pointer-events: auto;
 }
-.combo-continue-cta:hover { background: #23452d14; }
+.combo-continue-cta:hover { background: color-mix(in srgb, currentColor 9%, transparent); }
 
 @media (prefers-reduced-motion: no-preference) {
+  body:has([data-practice-motion], > .combo-celebration-layer) { transition: background-color 280ms ease; }
   [data-practice-motion="enter"] :is(.practice-prompt, .visual-prompt, .daily-exercise-stage, .use-it-stage, .smart-flashcard, .match-intro) {
     animation: practice-question-in 320ms var(--practice-spring) both;
   }

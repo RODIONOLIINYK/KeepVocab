@@ -223,6 +223,7 @@ export function buildStreakWindow(activity = {}, freezeDates = [], { days = 7, d
     const weekdayShort = date.toLocaleDateString(undefined, { weekday: 'short' });
     return {
       dateKey: key,
+      weekdayLabel: weekdayShort,
       weekdayShort: weekdayShort.slice(0, 2),
       weekdayNarrow: weekdayShort.slice(0, 1),
       dayNumber: date.getDate(),

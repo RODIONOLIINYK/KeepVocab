@@ -278,9 +278,11 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
     if (exercise.exerciseType === 'use-it') {
       renderPracticeFrame(container, `<section class="full-view-stack"><div class="spec-card use-it-shell weak-use-it-shell${comboShellClasses(combo)}"><div class="card-header-bar"><div class="card-tag"><i class="fa-solid fa-pen-nib" aria-hidden="true"></i> Use It</div><span class="muted-label">${escapeHtml(practiceNotebookLabel)}</span></div><div class="practice-topline"><button class="status-pill offline" id="daily-exit"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Today</button><span>${sessionLabel} · ${index + 1} of ${queue.length}</span><strong>${escapeHtml(progress.status)}</strong></div><div class="review-progress" role="progressbar" aria-label="${sessionLabel} progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${progress.completed}"><span style="width:${progress.percent}%"></span></div><div id="weak-useit-exercise-root"></div></div></section>`, { key: `daily:${index}:useit` });
       container.querySelector('#daily-exit').addEventListener('click', () => go('dashboard', onNavigate));
-      useItController = mountUseItExercise(container.querySelector('#weak-useit-exercise-root'), {
+      const exerciseRoot = container.querySelector('#weak-useit-exercise-root');
+      useItController = mountUseItExercise(exerciseRoot, {
         word,
         focusInput,
+        getCombo: () => combo,
         nextLabel: index + 1 >= queue.length ? 'Finish' : 'Continue',
         onEvaluated(result, sentence) {
           learnerResponse = sentence;
@@ -298,7 +300,9 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
             learnerResponse
           });
           if (correct) { score += 1; combo += 1; } else { combo = 0; queueMissedRecovery(exercise); }
-          const rail = container.querySelector('.review-progress');
+          const shell = exerciseRoot.parentElement;
+          shell?.classList.toggle('is-hot-combo', combo >= 3);
+          const rail = shell?.querySelector('.review-progress');
           if (rail) updatePracticeProgress(rail, index + 1, queue.length);
           window.dispatchEvent(new CustomEvent('keepvocab:progress'));
           if (!correct || !showComboCelebration(combo)) {
@@ -362,10 +366,10 @@ export function renderDailySessionMode(container, onNavigate, options = {}) {
         </div>
       </div></section>`, { key: `daily:${index}:${exercise.exerciseType}`, result: answered ? (correct ? 'correct' : 'incorrect') : '', step: chosenTiles.length });
     } else {
-      renderPracticeFrame(container, `<section class="full-view-stack"><div class="spec-card daily-session-shell ${options.kind === 'weak' ? 'is-weak-session' : ''}">
+      renderPracticeFrame(container, `<section class="full-view-stack"><div class="spec-card daily-session-shell${options.kind === 'weak' ? ' is-weak-session' : ''}${comboShellClasses(combo)}">
       <div class="daily-session-top"><button class="daily-exit-button" id="daily-exit" aria-label="Exit ${sessionLabel}"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="daily-exit-label">Exit</span></button><div><span>${sessionLabel}</span><strong>${index + 1} of ${queue.length}</strong></div><span class="daily-score">${escapeHtml(progress.status)}</span></div>
       <div class="review-progress" role="progressbar" aria-label="Practice progress" aria-valuemin="0" aria-valuemax="${queue.length}" aria-valuenow="${progress.completed}"><span style="width:${progress.percent}%"></span></div>
-      <div class="daily-exercise-stage ${answered ? (correct ? 'is-correct' : 'is-incorrect') : ''}"><div class="practice-sprig"><img class="daily-sprig" src="${mascot}" alt="" aria-hidden="true">${answered && correct ? renderPracticeBurst() : ''}</div><span class="eyebrow">${escapeHtml(copy.title)}</span><h1>${escapeHtml(copy.prompt)}</h1>
+      <div class="daily-exercise-stage ${answered ? (correct ? 'is-correct' : 'is-incorrect') : ''}"><div class="practice-sprig"><img class="daily-sprig" src="${mascot}" alt="" aria-hidden="true">${answered && correct ? renderPracticeBurst() : ''}</div><span class="eyebrow">${escapeHtml(copy.title)}</span><h1>${escapeHtml(copy.prompt)}</h1>${renderComboBadge(combo)}
         ${exercise.exerciseType === 'image-recognition' && word.imageUrl ? `<figure class="daily-image-prompt"><img src="${escapeHtml(word.imageUrl)}" alt="Visual clue"></figure>` : ''}
         ${exercise.exerciseType === 'listening-recall' ? `<button class="audio-btn-circle large" id="daily-listen" aria-label="Play the word"><i class="fa-solid fa-volume-high"></i></button>` : ''}
         ${answered ? `<aside class="practice-answer-tray ${correct ? 'correct' : 'incorrect'}"><div class="answer-feedback-card ${correct ? 'correct' : 'incorrect'}" role="status" aria-live="polite"><i class="fa-solid ${correct ? 'fa-check' : 'fa-arrow-rotate-left'} answer-feedback-icon" aria-hidden="true"></i><div><strong>${escapeHtml(answerEncouragement({ correct, recallType: exercise.exerciseType === 'use-it' ? 'productive' : choiceMode ? 'recognition' : exercise.exerciseType === 'listening-recall' ? 'listening-recall' : 'free-recall', hintsUsed }))}</strong><span>${exercise.exerciseType === 'use-it' ? escapeHtml(useItResult?.feedback || '') : (correct ? escapeHtml(exampleForLearning(word) || definitionForLearning(word)) : `Answer: <b>${escapeHtml(word.word)}</b> — ${escapeHtml(definitionForLearning(word))}. It will be prioritized next time.`)}</span></div></div><button class="btn-green-solid" id="daily-next" data-practice-continue>Continue</button></aside>`

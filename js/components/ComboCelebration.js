@@ -2,6 +2,11 @@ import { playInteractionSound } from '../services/interactionSound.js?v=18908';
 import { escapeHtml } from '../utils/html.js';
 
 const COMBO_STEP = 5;
+const particleColors = {
+  blaze: ['#ee866f', '#edb19f', '#f9c5a5'],
+  super: ['#dfa837', '#f2c76c', '#f5df9e'],
+  legend: ['#a782d2', '#c6a9e9', '#e2d1f4']
+};
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
@@ -48,7 +53,7 @@ export function comboCelebrationConfig(combo) {
 function burst(canvas, tier) {
   const ctx = canvas?.getContext('2d');
   if (!ctx || globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return () => {};
-  const colors = ['#e1bc4c', '#478a50', '#f3db8b', '#a6c884'];
+  const colors = particleColors[tier];
   const count = tier === 'blaze' ? 12 : 24;
   const particles = Array.from({ length: count }, (_, i) => ({
     angle: i * 2.39996,
@@ -109,7 +114,7 @@ export function showComboCelebration(combo, doc = globalThis.document) {
 
   const layer = doc.createElement('div');
   layer.id = 'combo-celebration-layer';
-  layer.className = 'combo-celebration-layer';
+  layer.className = `combo-celebration-layer is-${config.tier}`;
   layer.innerHTML = renderComboCelebrationMarkup(config.count);
   doc.body.appendChild(layer);
   const stopBurst = burst(layer.querySelector('canvas'), config.tier);
