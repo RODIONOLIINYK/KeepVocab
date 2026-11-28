@@ -1,16 +1,6 @@
 /* Practice uses the same paper, ink and primary green as Library. */
 [data-practice-motion] { --practice-spring: cubic-bezier(.2, .8, .27, 1.24); }
 
-body:has(:where(#view-container) .is-hot-combo) { --combo-canvas: #f9d7d2; }
-body:has(> .combo-celebration-layer.is-blaze:not(.is-leaving)) { --combo-canvas: #f5c9bf; }
-body:has(> .combo-celebration-layer.is-super:not(.is-leaving)) { --combo-canvas: #fbefd3; }
-body:has(> .combo-celebration-layer.is-legend:not(.is-leaving)) { --combo-canvas: #eee5fb; }
-body:has(#view-container .is-hot-combo, > .combo-celebration-layer) {
-  background-color: var(--combo-canvas, var(--bg-app));
-}
-.is-hot-combo.spec-card {
-  background: linear-gradient(var(--combo-canvas, var(--bg-card)), var(--bg-card) 156px);
-}
 .flashcard-mode > .duo-combo-badge { justify-self: end; }
 
 [data-practice-motion] .practice-topline {
@@ -41,31 +31,28 @@ body:has(#view-container .is-hot-combo, > .combo-celebration-layer) {
 }
 
 .is-hot-combo :is(.review-progress > span, .exercise-progress > i > b) {
-  background: linear-gradient(90deg, #eb5650, #f4b658 48%, var(--primary-green));
+  background: linear-gradient(to left, #eb5650, #f4b658 48%, var(--primary-green));
 }
 
-.duo-combo-badge,
 .combo-celebration-layer.is-blaze {
   --combo-bg: #ffede7;
   --combo-line: #eeb4a7;
   --combo-ink: #893d33;
 }
-.duo-combo-badge.is-super,
 .combo-celebration-layer.is-super {
   --combo-bg: #fff3d9;
   --combo-line: #e7ca8f;
   --combo-ink: #775015;
 }
-.duo-combo-badge.is-legend,
 .combo-celebration-layer.is-legend {
   --combo-bg: #f1e8fb;
   --combo-line: #cfbce8;
   --combo-ink: #593a78;
 }
 .duo-combo-badge {
-  background: var(--combo-bg);
-  border-color: var(--combo-line);
-  color: var(--combo-ink);
+  background: #fff0ed;
+  border-color: #edc0b8;
+  color: #a33431;
 }
 
 [data-practice-motion] .practice-shell .practice-prompt {
@@ -279,7 +266,6 @@ body:has(#view-container .is-hot-combo, > .combo-celebration-layer) {
 .combo-continue-cta:hover { background: color-mix(in srgb, currentColor 9%, transparent); }
 
 @media (prefers-reduced-motion: no-preference) {
-  body:has([data-practice-motion], > .combo-celebration-layer) { transition: background-color 280ms ease; }
   [data-practice-motion="enter"] :is(.practice-prompt, .visual-prompt, .daily-exercise-stage, .use-it-stage, .smart-flashcard, .match-intro) {
     animation: practice-question-in 320ms var(--practice-spring) both;
   }

@@ -1,6 +1,6 @@
 // Service Worker for KeepVocab (Android, Quest VR & Windows offline support)
 
-const CACHE_NAME = 'keepvocab-v115009-view-colors';
+const CACHE_NAME = 'keepvocab-v115010-streak-card';
 const NATIVE_APP = new URL(self.location.href).searchParams.get('native') === '1';
 const ASSETS_TO_CACHE = [
   './',
